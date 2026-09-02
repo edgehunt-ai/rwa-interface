@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("io.sentry.android.gradle")
 }
 
 android {
@@ -31,11 +32,25 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+sentry {
+    org.set(System.getenv("SENTRY_ORG") ?: "dodo-k4")
+    projectName.set(System.getenv("SENTRY_PROJECT") ?: "flutter")
+    authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
+    autoUploadProguardMapping.set(!System.getenv("SENTRY_AUTH_TOKEN").isNullOrBlank())
+    includeProguardMapping.set(true)
 }
 
 kotlin {

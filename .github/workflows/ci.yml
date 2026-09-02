@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  flutter-quality:
+    name: Flutter Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Analyze
+        run: dart analyze --fatal-infos
+
+      - name: Test
+        run: flutter test
+
+  android-release:
+    name: Android Release APK
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
+      SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'flutter' }}
+      SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+      SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT || 'production' }}
+      SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.10' }}
+      SENTRY_PROFILES_SAMPLE_RATE: ${{ vars.SENTRY_PROFILES_SAMPLE_RATE || '0.10' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Build Android release APK
+        shell: bash
+        run: >-
+          flutter build apk --release --obfuscate
+          --split-debug-info=build/symbols/android
+          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
+          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
+          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
+          --dart-define=SENTRY_RELEASE="rwa_interface@${GITHUB_SHA}"
+
+      - name: Upload Android symbols to Sentry
+        if: env.SENTRY_AUTH_TOKEN != ''
+        env:
+          SENTRY_RELEASE: rwa_interface@${{ github.sha }}
+        run: dart run sentry_dart_plugin
+
+      - name: Upload Android APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
+
+  ios-release:
+    name: iOS Release App
+    if: github.event_name != 'pull_request'
+    runs-on: macos-15
+    env:
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
+      SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'flutter' }}
+      SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+      SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT || 'production' }}
+      SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.10' }}
+      SENTRY_PROFILES_SAMPLE_RATE: ${{ vars.SENTRY_PROFILES_SAMPLE_RATE || '0.10' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Build unsigned iOS release app
+        shell: bash
+        run: >-
+          flutter build ios --release --no-codesign --obfuscate
+          --split-debug-info=build/symbols/ios
+          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
+          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
+          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
+          --dart-define=SENTRY_RELEASE="rwa_interface@${GITHUB_SHA}"
+
+      - name: Upload iOS symbols to Sentry
+        if: env.SENTRY_AUTH_TOKEN != ''
+        env:
+          SENTRY_RELEASE: rwa_interface@${{ github.sha }}
+        run: dart run sentry_dart_plugin
+
+      - name: Package unsigned iOS app
+        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/rwa-interface-ios-unsigned.zip
+
+      - name: Upload iOS app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-unsigned-app
+          path: build/ios/rwa-interface-ios-unsigned.zip
+          if-no-files-found: error
+          retention-days: 7
