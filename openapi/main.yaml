@@ -4591,6 +4591,7 @@ components:
         - purpose
         - asset
         - amount
+        - resource_id
       properties:
         purpose:
           type: string
@@ -4604,6 +4605,9 @@ components:
           example: USDC
         amount:
           $ref: "#/components/schemas/Decimal"
+        resource_id:
+          type: string
+          description: 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer
     WalletAuthorization:
       type: object
       required:
