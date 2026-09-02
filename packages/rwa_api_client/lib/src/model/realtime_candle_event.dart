@@ -20,6 +20,13 @@ part 'realtime_candle_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeCandleEvent implements RealtimeEventBase, Built<RealtimeCandleEvent, RealtimeCandleEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  RealtimeCandleUpdate get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeCandleEventEventEnum get event;
+  // enum eventEnum {  candle,  };
+
   RealtimeCandleEvent._();
 
   factory RealtimeCandleEvent([void updates(RealtimeCandleEventBuilder b)]) = _$RealtimeCandleEvent;
@@ -56,12 +63,12 @@ class _$RealtimeCandleEventSerializer implements PrimitiveSerializer<RealtimeCan
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(RealtimeCandleUpdate),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeCandleEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeCandleEventSerializer implements PrimitiveSerializer<RealtimeCan
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(RealtimeCandleUpdate),
+          ) as RealtimeCandleUpdate;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeCandleEventEventEnum),
+          ) as RealtimeCandleEventEventEnum;
           result.event = valueDes;
           break;
         default:

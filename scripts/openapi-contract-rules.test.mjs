@@ -371,3 +371,33 @@ test('nested request objects are closed and reject server-owned fields', () => {
   assert.match(violations, /forbidden server-owned field provider_order_id/);
   assert.match(violations, /forbidden server-owned field status/);
 });
+
+
+test("realtime event variants require typed data instead of a free-form base object", () => {
+  const document = {
+    openapi: "3.0.3",
+    paths: {},
+    components: {
+      schemas: {
+        RealtimeEventBase: {
+          type: "object",
+          properties: { data: { type: "object" } },
+        },
+        RealtimeEvent: {
+          oneOf: [{ $ref: "#/components/schemas/RealtimeOrderEvent" }],
+        },
+        RealtimeOrderEvent: {
+          allOf: [
+            { $ref: "#/components/schemas/RealtimeEventBase" },
+            { type: "object", properties: { data: { type: "object" } } },
+          ],
+        },
+      },
+    },
+  };
+
+  const violations = validateContract(document).join("\n");
+  assert.match(violations, /RealtimeEventBase: data must be defined by each typed event variant/);
+  assert.match(violations, /RealtimeOrderEvent: realtime event must require data/);
+  assert.match(violations, /RealtimeOrderEvent: realtime event data must use a typed schema/);
+});

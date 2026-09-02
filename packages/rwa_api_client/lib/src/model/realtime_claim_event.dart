@@ -20,6 +20,13 @@ part 'realtime_claim_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeClaimEvent implements RealtimeEventBase, Built<RealtimeClaimEvent, RealtimeClaimEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  Claim get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeClaimEventEventEnum get event;
+  // enum eventEnum {  claim,  };
+
   RealtimeClaimEvent._();
 
   factory RealtimeClaimEvent([void updates(RealtimeClaimEventBuilder b)]) = _$RealtimeClaimEvent;
@@ -56,12 +63,12 @@ class _$RealtimeClaimEventSerializer implements PrimitiveSerializer<RealtimeClai
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(Claim),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeClaimEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeClaimEventSerializer implements PrimitiveSerializer<RealtimeClai
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(Claim),
+          ) as Claim;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeClaimEventEventEnum),
+          ) as RealtimeClaimEventEventEnum;
           result.event = valueDes;
           break;
         default:

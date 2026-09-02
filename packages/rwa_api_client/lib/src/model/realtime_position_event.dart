@@ -20,6 +20,13 @@ part 'realtime_position_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimePositionEvent implements RealtimeEventBase, Built<RealtimePositionEvent, RealtimePositionEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  Position get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimePositionEventEventEnum get event;
+  // enum eventEnum {  position,  };
+
   RealtimePositionEvent._();
 
   factory RealtimePositionEvent([void updates(RealtimePositionEventBuilder b)]) = _$RealtimePositionEvent;
@@ -56,12 +63,12 @@ class _$RealtimePositionEventSerializer implements PrimitiveSerializer<RealtimeP
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(Position),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimePositionEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimePositionEventSerializer implements PrimitiveSerializer<RealtimeP
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(Position),
+          ) as Position;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimePositionEventEventEnum),
+          ) as RealtimePositionEventEventEnum;
           result.event = valueDes;
           break;
         default:

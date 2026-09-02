@@ -3,7 +3,6 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,8 +13,6 @@ part 'realtime_event_base.g.dart';
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
 /// * [emittedAt] 
-/// * [event] 
-/// * [data] 
 @BuiltValue(instantiable: false)
 abstract class RealtimeEventBase  {
   /// 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
@@ -24,12 +21,6 @@ abstract class RealtimeEventBase  {
 
   @BuiltValueField(wireName: r'emitted_at')
   DateTime get emittedAt;
-
-  @BuiltValueField(wireName: r'event')
-  String get event;
-
-  @BuiltValueField(wireName: r'data')
-  JsonObject get data;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<RealtimeEventBase> get serializer => _$RealtimeEventBaseSerializer();
@@ -56,16 +47,6 @@ class _$RealtimeEventBaseSerializer implements PrimitiveSerializer<RealtimeEvent
     yield serializers.serialize(
       object.emittedAt,
       specifiedType: const FullType(DateTime),
-    );
-    yield r'event';
-    yield serializers.serialize(
-      object.event,
-      specifiedType: const FullType(String),
-    );
-    yield r'data';
-    yield serializers.serialize(
-      object.data,
-      specifiedType: const FullType(JsonObject),
     );
   }
 
@@ -143,20 +124,6 @@ class _$$RealtimeEventBaseSerializer implements PrimitiveSerializer<$RealtimeEve
             specifiedType: const FullType(DateTime),
           ) as DateTime;
           result.emittedAt = valueDes;
-          break;
-        case r'event':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.event = valueDes;
-          break;
-        case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
           break;
         default:
           unhandled.add(key);

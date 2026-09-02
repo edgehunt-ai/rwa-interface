@@ -20,6 +20,13 @@ part 'realtime_session_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeSessionEvent implements RealtimeEventBase, Built<RealtimeSessionEvent, RealtimeSessionEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  MarketSessionInfo get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeSessionEventEventEnum get event;
+  // enum eventEnum {  session,  };
+
   RealtimeSessionEvent._();
 
   factory RealtimeSessionEvent([void updates(RealtimeSessionEventBuilder b)]) = _$RealtimeSessionEvent;
@@ -56,12 +63,12 @@ class _$RealtimeSessionEventSerializer implements PrimitiveSerializer<RealtimeSe
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(MarketSessionInfo),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeSessionEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeSessionEventSerializer implements PrimitiveSerializer<RealtimeSe
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(MarketSessionInfo),
+          ) as MarketSessionInfo;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeSessionEventEventEnum),
+          ) as RealtimeSessionEventEventEnum;
           result.event = valueDes;
           break;
         default:

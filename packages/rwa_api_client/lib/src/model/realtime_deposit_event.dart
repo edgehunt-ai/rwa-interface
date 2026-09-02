@@ -20,6 +20,13 @@ part 'realtime_deposit_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeDepositEvent implements RealtimeEventBase, Built<RealtimeDepositEvent, RealtimeDepositEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  Deposit get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeDepositEventEventEnum get event;
+  // enum eventEnum {  deposit,  };
+
   RealtimeDepositEvent._();
 
   factory RealtimeDepositEvent([void updates(RealtimeDepositEventBuilder b)]) = _$RealtimeDepositEvent;
@@ -56,12 +63,12 @@ class _$RealtimeDepositEventSerializer implements PrimitiveSerializer<RealtimeDe
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(Deposit),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeDepositEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeDepositEventSerializer implements PrimitiveSerializer<RealtimeDe
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(Deposit),
+          ) as Deposit;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeDepositEventEventEnum),
+          ) as RealtimeDepositEventEventEnum;
           result.event = valueDes;
           break;
         default:

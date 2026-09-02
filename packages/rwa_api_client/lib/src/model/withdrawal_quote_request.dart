@@ -32,7 +32,7 @@ abstract class WithdrawalQuoteRequest implements Built<WithdrawalQuoteRequest, W
   String get amount;
 
   @BuiltValueField(wireName: r'address')
-  String? get address;
+  String get address;
 
   WithdrawalQuoteRequest._();
 
@@ -72,13 +72,11 @@ class _$WithdrawalQuoteRequestSerializer implements PrimitiveSerializer<Withdraw
       object.amount,
       specifiedType: const FullType(String),
     );
-    if (object.address != null) {
-      yield r'address';
-      yield serializers.serialize(
-        object.address,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
+    yield r'address';
+    yield serializers.serialize(
+      object.address,
+      specifiedType: const FullType(String),
+    );
   }
 
   @override
@@ -126,9 +124,8 @@ class _$WithdrawalQuoteRequestSerializer implements PrimitiveSerializer<Withdraw
         case r'address':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(String),
+          ) as String;
           result.address = valueDes;
           break;
         default:

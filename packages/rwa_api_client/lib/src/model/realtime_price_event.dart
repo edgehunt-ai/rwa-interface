@@ -20,6 +20,13 @@ part 'realtime_price_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimePriceEvent implements RealtimeEventBase, Built<RealtimePriceEvent, RealtimePriceEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  RealtimePriceUpdate get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimePriceEventEventEnum get event;
+  // enum eventEnum {  price,  };
+
   RealtimePriceEvent._();
 
   factory RealtimePriceEvent([void updates(RealtimePriceEventBuilder b)]) = _$RealtimePriceEvent;
@@ -56,12 +63,12 @@ class _$RealtimePriceEventSerializer implements PrimitiveSerializer<RealtimePric
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(RealtimePriceUpdate),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimePriceEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimePriceEventSerializer implements PrimitiveSerializer<RealtimePric
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(RealtimePriceUpdate),
+          ) as RealtimePriceUpdate;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimePriceEventEventEnum),
+          ) as RealtimePriceEventEventEnum;
           result.event = valueDes;
           break;
         default:

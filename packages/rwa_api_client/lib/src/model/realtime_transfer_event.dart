@@ -20,6 +20,13 @@ part 'realtime_transfer_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeTransferEvent implements RealtimeEventBase, Built<RealtimeTransferEvent, RealtimeTransferEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  Transfer get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeTransferEventEventEnum get event;
+  // enum eventEnum {  transfer,  };
+
   RealtimeTransferEvent._();
 
   factory RealtimeTransferEvent([void updates(RealtimeTransferEventBuilder b)]) = _$RealtimeTransferEvent;
@@ -56,12 +63,12 @@ class _$RealtimeTransferEventSerializer implements PrimitiveSerializer<RealtimeT
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(Transfer),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeTransferEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeTransferEventSerializer implements PrimitiveSerializer<RealtimeT
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(Transfer),
+          ) as Transfer;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeTransferEventEventEnum),
+          ) as RealtimeTransferEventEventEnum;
           result.event = valueDes;
           break;
         default:

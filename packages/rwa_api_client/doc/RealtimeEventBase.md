@@ -10,8 +10,6 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **eventId** | **String** | 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重 | 
 **emittedAt** | [**DateTime**](DateTime.md) |  | 
-**event** | **String** |  | 
-**data** | [**JsonObject**](.md) |  | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

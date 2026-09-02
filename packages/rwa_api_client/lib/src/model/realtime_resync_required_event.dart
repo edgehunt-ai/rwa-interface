@@ -20,6 +20,13 @@ part 'realtime_resync_required_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeResyncRequiredEvent implements RealtimeEventBase, Built<RealtimeResyncRequiredEvent, RealtimeResyncRequiredEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  RealtimeResyncRequiredEventAllOfData get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeResyncRequiredEventEventEnum get event;
+  // enum eventEnum {  resync_required,  };
+
   RealtimeResyncRequiredEvent._();
 
   factory RealtimeResyncRequiredEvent([void updates(RealtimeResyncRequiredEventBuilder b)]) = _$RealtimeResyncRequiredEvent;
@@ -56,12 +63,12 @@ class _$RealtimeResyncRequiredEventSerializer implements PrimitiveSerializer<Rea
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(RealtimeResyncRequiredEventAllOfData),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeResyncRequiredEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeResyncRequiredEventSerializer implements PrimitiveSerializer<Rea
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(RealtimeResyncRequiredEventAllOfData),
+          ) as RealtimeResyncRequiredEventAllOfData;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeResyncRequiredEventEventEnum),
+          ) as RealtimeResyncRequiredEventEventEnum;
           result.event = valueDes;
           break;
         default:

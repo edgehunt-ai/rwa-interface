@@ -20,6 +20,13 @@ part 'realtime_activity_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeActivityEvent implements RealtimeEventBase, Built<RealtimeActivityEvent, RealtimeActivityEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  ActivityRecord get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeActivityEventEventEnum get event;
+  // enum eventEnum {  activity,  };
+
   RealtimeActivityEvent._();
 
   factory RealtimeActivityEvent([void updates(RealtimeActivityEventBuilder b)]) = _$RealtimeActivityEvent;
@@ -56,12 +63,12 @@ class _$RealtimeActivityEventSerializer implements PrimitiveSerializer<RealtimeA
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(ActivityRecord),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeActivityEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeActivityEventSerializer implements PrimitiveSerializer<RealtimeA
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(ActivityRecord),
+          ) as ActivityRecord;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeActivityEventEventEnum),
+          ) as RealtimeActivityEventEventEnum;
           result.event = valueDes;
           break;
         default:

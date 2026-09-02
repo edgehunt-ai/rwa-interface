@@ -81,7 +81,13 @@ npm run client:generate
 npm run client:check
 ```
 
-Generated files live under `packages/rwa_api_client` and must not be edited by hand. The app should wrap generated wire DTOs inside repository/data adapters before exposing domain models to UI code. The generator uses OpenAPI Generator 7.24.0 with `dart-dio`, `enumUnknownDefaultCase=true`, and `legacyDiscriminatorBehavior=false`.
+Before analyzing or building Flutter, generate the `built_value` parts:
+
+```sh
+(cd packages/rwa_api_client && dart pub get && dart run build_runner build)
+```
+
+Generated files live under `packages/rwa_api_client` and must not be edited by hand. The app wraps the package in `lib/data/api`; repositories must map generated wire DTOs to domain models before exposing them to UI code. The Privy adapter supplies the current access token to the Dio interceptor. A 401 triggers at most one Privy refresh and replay, then returns the app to its login state if refresh fails. Privy remains the only owner of refresh tokens. The generator uses OpenAPI Generator 7.24.0 with `dart-dio`, `enumUnknownDefaultCase=true`, and `legacyDiscriminatorBehavior=false`.
 
 The custom rules reject duplicate or missing `operationId` values, unresolved references,
 incomplete path parameters, orphan schemas, financial commands without a required

@@ -18,15 +18,5 @@ void main() {
       // TODO
     });
 
-    // String event
-    test('to test the property `event`', () async {
-      // TODO
-    });
-
-    // JsonObject data
-    test('to test the property `data`', () async {
-      // TODO
-    });
-
   });
 }

@@ -20,6 +20,13 @@ part 'realtime_order_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeOrderEvent implements RealtimeEventBase, Built<RealtimeOrderEvent, RealtimeOrderEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  Order get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeOrderEventEventEnum get event;
+  // enum eventEnum {  order,  };
+
   RealtimeOrderEvent._();
 
   factory RealtimeOrderEvent([void updates(RealtimeOrderEventBuilder b)]) = _$RealtimeOrderEvent;
@@ -56,12 +63,12 @@ class _$RealtimeOrderEventSerializer implements PrimitiveSerializer<RealtimeOrde
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(Order),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeOrderEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeOrderEventSerializer implements PrimitiveSerializer<RealtimeOrde
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(Order),
+          ) as Order;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeOrderEventEventEnum),
+          ) as RealtimeOrderEventEventEnum;
           result.event = valueDes;
           break;
         default:

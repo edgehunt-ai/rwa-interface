@@ -427,6 +427,27 @@ function validateSettlementDiscriminators(document, violations) {
     }
   }
 }
+function validateRealtimeEventPayloads(document, violations) {
+  const schemas = document.components?.schemas ?? {};
+  const base = schemas.RealtimeEventBase;
+  if (base?.properties?.data) {
+    violations.push("components.schemas.RealtimeEventBase: data must be defined by each typed event variant");
+  }
+
+  for (const candidate of schemas.RealtimeEvent?.oneOf ?? []) {
+    const name = localSchemaName(candidate?.$ref);
+    const schema = resolveLocalRef(document, candidate?.$ref);
+    if (!name || !schema) continue;
+    const data = schemaProperty(document, schema, "data");
+    if (!schemaRequiresProperty(document, schema, "data")) {
+      violations.push(`components.schemas.${name}: realtime event must require data`);
+    }
+    if (!data?.$ref && !data?.properties) {
+      violations.push(`components.schemas.${name}: realtime event data must use a typed schema`);
+    }
+  }
+}
+
 export function validateContract(document) {
   const violations = [];
   validateOperationIds(document, violations);
@@ -436,6 +457,7 @@ export function validateContract(document) {
   validateFinancialCommands(document, violations);
   validateRequestBodies(document, violations);
   validateSettlementDiscriminators(document, violations);
+  validateRealtimeEventPayloads(document, violations);
   validateSecurityResponses(document, violations);
   validateAllResponseHeaders(document, violations);
   validateDecimalFields(document, violations);

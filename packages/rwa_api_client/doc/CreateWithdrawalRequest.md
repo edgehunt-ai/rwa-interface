@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **address** | **String** |  | 
 **authorizationId** | **String** | 已授权且尚未消费的钱包操作授权 ID | 
 **memo** | **String** |  | [optional] 
-**quoteId** | **String** |  | [optional] 
+**quoteId** | **String** |  | 
 **saveAddress** | **bool** |  | [optional] [default to false]
 **addressLabel** | **String** |  | [optional] 
 

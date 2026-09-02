@@ -61,6 +61,13 @@ jobs:
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed lib test
 
+      - name: Build generated API package
+        working-directory: packages/rwa_api_client
+        run: dart pub get && dart run build_runner build
+
+      - name: Analyze generated API package
+        run: dart analyze packages/rwa_api_client --no-fatal-warnings
+
       - name: Analyze
         run: dart analyze --fatal-infos
 

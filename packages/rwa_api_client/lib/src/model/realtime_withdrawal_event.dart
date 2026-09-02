@@ -20,6 +20,13 @@ part 'realtime_withdrawal_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeWithdrawalEvent implements RealtimeEventBase, Built<RealtimeWithdrawalEvent, RealtimeWithdrawalEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  Withdrawal get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeWithdrawalEventEventEnum get event;
+  // enum eventEnum {  withdrawal,  };
+
   RealtimeWithdrawalEvent._();
 
   factory RealtimeWithdrawalEvent([void updates(RealtimeWithdrawalEventBuilder b)]) = _$RealtimeWithdrawalEvent;
@@ -56,12 +63,12 @@ class _$RealtimeWithdrawalEventSerializer implements PrimitiveSerializer<Realtim
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(Withdrawal),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeWithdrawalEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeWithdrawalEventSerializer implements PrimitiveSerializer<Realtim
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(Withdrawal),
+          ) as Withdrawal;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeWithdrawalEventEventEnum),
+          ) as RealtimeWithdrawalEventEventEnum;
           result.event = valueDes;
           break;
         default:

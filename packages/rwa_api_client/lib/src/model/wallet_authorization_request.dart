@@ -15,6 +15,7 @@ part 'wallet_authorization_request.g.dart';
 /// * [purpose] 
 /// * [asset] 
 /// * [amount] - 十进制字符串，避免浮点误差
+/// * [resourceId] - 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer
 @BuiltValue()
 abstract class WalletAuthorizationRequest implements Built<WalletAuthorizationRequest, WalletAuthorizationRequestBuilder> {
   @BuiltValueField(wireName: r'purpose')
@@ -27,6 +28,10 @@ abstract class WalletAuthorizationRequest implements Built<WalletAuthorizationRe
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'amount')
   String get amount;
+
+  /// 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer
+  @BuiltValueField(wireName: r'resource_id')
+  String get resourceId;
 
   WalletAuthorizationRequest._();
 
@@ -64,6 +69,11 @@ class _$WalletAuthorizationRequestSerializer implements PrimitiveSerializer<Wall
     yield r'amount';
     yield serializers.serialize(
       object.amount,
+      specifiedType: const FullType(String),
+    );
+    yield r'resource_id';
+    yield serializers.serialize(
+      object.resourceId,
       specifiedType: const FullType(String),
     );
   }
@@ -109,6 +119,13 @@ class _$WalletAuthorizationRequestSerializer implements PrimitiveSerializer<Wall
             specifiedType: const FullType(String),
           ) as String;
           result.amount = valueDes;
+          break;
+        case r'resource_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.resourceId = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -23,5 +23,11 @@ void main() {
       // TODO
     });
 
+    // 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer
+    // String resourceId
+    test('to test the property `resourceId`', () async {
+      // TODO
+    });
+
   });
 }

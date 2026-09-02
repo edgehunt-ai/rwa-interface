@@ -47,7 +47,7 @@ abstract class CreateWithdrawalRequest implements Built<CreateWithdrawalRequest,
   String? get memo;
 
   @BuiltValueField(wireName: r'quote_id')
-  String? get quoteId;
+  String get quoteId;
 
   @BuiltValueField(wireName: r'save_address')
   bool? get saveAddress;
@@ -111,13 +111,11 @@ class _$CreateWithdrawalRequestSerializer implements PrimitiveSerializer<CreateW
         specifiedType: const FullType.nullable(String),
       );
     }
-    if (object.quoteId != null) {
-      yield r'quote_id';
-      yield serializers.serialize(
-        object.quoteId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
+    yield r'quote_id';
+    yield serializers.serialize(
+      object.quoteId,
+      specifiedType: const FullType(String),
+    );
     if (object.saveAddress != null) {
       yield r'save_address';
       yield serializers.serialize(
@@ -201,9 +199,8 @@ class _$CreateWithdrawalRequestSerializer implements PrimitiveSerializer<CreateW
         case r'quote_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(String),
+          ) as String;
           result.quoteId = valueDes;
           break;
         case r'save_address':

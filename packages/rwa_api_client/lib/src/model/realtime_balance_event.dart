@@ -20,6 +20,13 @@ part 'realtime_balance_event.g.dart';
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeBalanceEvent implements RealtimeEventBase, Built<RealtimeBalanceEvent, RealtimeBalanceEventBuilder> {
+  @BuiltValueField(wireName: r'data')
+  AccountBalance get data;
+
+  @BuiltValueField(wireName: r'event')
+  RealtimeBalanceEventEventEnum get event;
+  // enum eventEnum {  balance,  };
+
   RealtimeBalanceEvent._();
 
   factory RealtimeBalanceEvent([void updates(RealtimeBalanceEventBuilder b)]) = _$RealtimeBalanceEvent;
@@ -56,12 +63,12 @@ class _$RealtimeBalanceEventSerializer implements PrimitiveSerializer<RealtimeBa
     yield r'data';
     yield serializers.serialize(
       object.data,
-      specifiedType: const FullType(JsonObject),
+      specifiedType: const FullType(AccountBalance),
     );
     yield r'event';
     yield serializers.serialize(
       object.event,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(RealtimeBalanceEventEventEnum),
     );
   }
 
@@ -103,15 +110,15 @@ class _$RealtimeBalanceEventSerializer implements PrimitiveSerializer<RealtimeBa
         case r'data':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(JsonObject),
-          ) as JsonObject;
-          result.data = valueDes;
+            specifiedType: const FullType(AccountBalance),
+          ) as AccountBalance;
+          result.data.replace(valueDes);
           break;
         case r'event':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(RealtimeBalanceEventEventEnum),
+          ) as RealtimeBalanceEventEventEnum;
           result.event = valueDes;
           break;
         default:
