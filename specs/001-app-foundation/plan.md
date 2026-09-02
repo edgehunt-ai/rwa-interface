@@ -6,7 +6,7 @@
 
 ## Summary
 
-Build the reusable Orbit application shell for Android, iOS, and web. Use declarative URL routing,
+Build the reusable application shell for Android, iOS, and web. Use declarative URL routing,
 Material 3 theming with centralized semantic styles, localized strings, platform-adaptive system
 interactions, safe page layout, shared feedback/copy components, and focused widget tests. Native iOS
 automation and all business features remain out of scope.

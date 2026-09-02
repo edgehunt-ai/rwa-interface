@@ -4,7 +4,7 @@ import 'package:rwa_interface/app.dart';
 
 void main() {
   testWidgets('renders the application shell', (tester) async {
-    await tester.pumpWidget(OrbitApp());
+    await tester.pumpWidget(AppRoot());
 
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.byType(Scaffold), findsOneWidget);

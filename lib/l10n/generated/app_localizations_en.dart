@@ -10,10 +10,10 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Orbit';
+  String get appTitle => 'RWA Interface';
 
   @override
-  String get homeTitle => 'Orbit foundation';
+  String get homeTitle => 'Application foundation';
 
   @override
   String get openDetails => 'Open details';
@@ -26,7 +26,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pageNotFoundMessage =>
-      'This address does not match an Orbit page.';
+      'This address does not match an application page.';
 
   @override
   String get returnHome => 'Return home';

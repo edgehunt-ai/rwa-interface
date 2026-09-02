@@ -5,8 +5,8 @@ import 'package:rwa_interface/app/routing/app_router.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
-class OrbitApp extends StatelessWidget {
-  OrbitApp({super.key, GoRouter? router})
+class AppRoot extends StatelessWidget {
+  AppRoot({super.key, GoRouter? router})
     : router = router ?? AppRouter.create();
 
   final GoRouter router;

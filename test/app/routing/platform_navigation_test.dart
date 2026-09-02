@@ -9,7 +9,7 @@ void main() {
   ) async {
     final router = AppRouter.create();
     addTearDown(router.dispose);
-    await tester.pumpWidget(OrbitApp(router: router));
+    await tester.pumpWidget(AppRoot(router: router));
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(FilledButton, 'Open details'));
@@ -18,6 +18,6 @@ void main() {
 
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    expect(find.text('Orbit foundation'), findsOneWidget);
+    expect(find.text('Application foundation'), findsOneWidget);
   });
 }

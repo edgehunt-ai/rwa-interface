@@ -28,7 +28,7 @@ custom transitions risk breaking interactive back gestures.
 date selection. Platform selection occurs only inside these wrappers.
 
 **Rationale**: These interactions carry strong platform expectations, while business components such
-as market cards should retain one Orbit design.
+as market cards should retain one product design.
 
 **Alternatives considered**: Platform checks in each feature duplicate behavior. A second complete
 Cupertino application tree would double maintenance.
@@ -52,7 +52,7 @@ foundation strings.
 **Rationale**: This retains accessible platform behavior, keeps brand values centralized, and avoids
 hard-coded production strings.
 
-**Alternatives considered**: Material defaults do not express Orbit semantics; a custom widget stack
+**Alternatives considered**: Material defaults do not express product semantics; a custom widget stack
 would recreate accessibility behavior; deferred localization causes costly string migration.
 
 ## Test scope

@@ -1,6 +1,6 @@
 # rwa_interface
 
-Orbit RWA trading interface.
+Cross-platform RWA trading interface.
 
 ## Getting Started
 

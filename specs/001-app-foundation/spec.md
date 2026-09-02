@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Establish the Orbit cross-platform application foundation for
+**Input**: User description: "Establish the application cross-platform application foundation for
 Android, iOS, and web, including URL-aware navigation, platform-appropriate behavior, safe layouts,
 semantic themes, shared feedback and copy components, long-text resilience, and automated widget
 coverage. Do not add iOS integration tests or business features."
@@ -57,7 +57,7 @@ tablet, and browser dimensions, with keyboard and system insets present.
    focused field, validation feedback, and primary action remain reachable.
 3. **Given** a platform-sensitive loading indicator, switch, dialog, action sheet, or date selector,
    **When** it is displayed, **Then** behavior and interaction conventions match the active platform
-   while Orbit branding remains consistent.
+   while product branding remains consistent.
 4. **Given** an iOS user on a secondary destination, **When** the user performs the standard edge-back
    gesture, **Then** navigation follows the gesture unless the current flow explicitly protects
    unsaved or consequential input.
@@ -199,7 +199,7 @@ screen widths, with long content and text scaled to 200%.
 
 - Android, iOS, and modern web browsers are the initial supported platforms; desktop-native targets
   are outside this feature.
-- Orbit uses one branded visual language across platforms while system-sensitive interactions adapt
+- The product uses one branded visual language across platforms while system-sensitive interactions adapt
   to platform conventions.
 - The initial navigation tree contains only enough destinations to validate routing behavior; future
   business destinations will be added by their own specifications.

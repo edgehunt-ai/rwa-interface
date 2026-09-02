@@ -97,13 +97,13 @@ abstract class AppLocalizations {
   /// Application title
   ///
   /// In en, this message translates to:
-  /// **'Orbit'**
+  /// **'RWA Interface'**
   String get appTitle;
 
   /// Foundation home screen title
   ///
   /// In en, this message translates to:
-  /// **'Orbit foundation'**
+  /// **'Application foundation'**
   String get homeTitle;
 
   /// Button opening the route demonstration
@@ -127,7 +127,7 @@ abstract class AppLocalizations {
   /// Unknown route explanation
   ///
   /// In en, this message translates to:
-  /// **'This address does not match an Orbit page.'**
+  /// **'This address does not match an application page.'**
   String get pageNotFoundMessage;
 
   /// Action returning to the root route
