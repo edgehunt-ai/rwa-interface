@@ -71,6 +71,18 @@ The gate runs custom semantic rules, Redocly CLI 2.50.0 lint, and OpenAPI Genera
 validation through wrapper 2.40.1. Generator validation is configured with `useDocker: true` so it
 does not depend on the host Java version; Docker must be available locally and in CI.
 
+
+### Generated Dart API client
+
+The formal Flutter app consumes the same `openapi/main.yaml` contract through a generated `dart-dio` package:
+
+```sh
+npm run client:generate
+npm run client:check
+```
+
+Generated files live under `packages/rwa_api_client` and must not be edited by hand. The app should wrap generated wire DTOs inside repository/data adapters before exposing domain models to UI code. The generator uses OpenAPI Generator 7.24.0 with `dart-dio`, `enumUnknownDefaultCase=true`, and `legacyDiscriminatorBehavior=false`.
+
 The custom rules reject duplicate or missing `operationId` values, unresolved references,
 incomplete path parameters, orphan schemas, financial commands without a required
 `Idempotency-Key`, `409`, and `422`, missing protected/public error response sets,

@@ -126,3 +126,4 @@ app.*.symbols
 
 # Node contract tooling
 node_modules/
+.contract-cache/

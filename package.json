@@ -7,7 +7,9 @@
     "contract:rules": "node scripts/validate-openapi-contract.mjs openapi/main.yaml",
     "contract:lint": "redocly lint openapi/main.yaml",
     "contract:validate": "openapi-generator-cli validate -i /local/openapi/main.yaml",
-    "contract:check": "npm run contract:test && npm run contract:rules && npm run contract:lint && npm run contract:validate"
+    "client:generate": "node scripts/generate-dart-client.mjs",
+    "client:check": "node scripts/check-dart-client.mjs",
+    "contract:check": "npm run contract:test && npm run contract:rules && npm run contract:lint && npm run contract:validate && npm run client:check"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.40.1",

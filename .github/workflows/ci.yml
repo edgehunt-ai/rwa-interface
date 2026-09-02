@@ -39,6 +39,9 @@ jobs:
       - name: Validate with OpenAPI Generator 7.24.0
         run: npm run contract:validate
 
+      - name: Check generated Dart API client
+        run: npm run client:check
+
   flutter-quality:
     name: Flutter Quality
     runs-on: ubuntu-latest
