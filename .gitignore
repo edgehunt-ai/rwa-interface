@@ -1,9 +1,15 @@
 # Miscellaneous
 *.class
 *.lock
+!pubspec.lock
 *.log
 *.pyc
 *.swp
+.DS_Store
+.env*
+.idea/
+.vscode/
+*.iml
 .buildlog/
 .history
 
