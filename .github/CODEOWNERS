@@ -1,0 +1,10 @@
+# Public API contract changes require backend platform and frontend review.
+/openapi/ @yongjun925 @junjieit
+/scripts/ @yongjun925 @junjieit
+/redocly.yaml @yongjun925 @junjieit
+/openapitools.json @yongjun925 @junjieit
+/package.json @yongjun925 @junjieit
+/package-lock.json @yongjun925 @junjieit
+/.github/workflows/ci.yml @yongjun925 @junjieit
+/.github/workflows/contract-approvals.yml @yongjun925 @junjieit
+/.github/CODEOWNERS @yongjun925 @junjieit

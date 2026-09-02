@@ -11,6 +11,34 @@ permissions:
   contents: read
 
 jobs:
+  contract:
+    name: OpenAPI Contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install pinned contract tools
+        run: npm ci --ignore-scripts
+
+      - name: Run custom contract rules
+        run: npm run contract:test
+
+      - name: Validate custom contract rules
+        run: npm run contract:rules
+
+      - name: Lint OpenAPI
+        run: npm run contract:lint
+
+      - name: Validate with OpenAPI Generator 7.24.0
+        run: npm run contract:validate
+
   flutter-quality:
     name: Flutter Quality
     runs-on: ubuntu-latest

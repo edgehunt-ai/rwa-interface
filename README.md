@@ -53,3 +53,31 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## OpenAPI contract
+
+`openapi/main.yaml` is the single public product contract shared by the backend and clients. It
+uses OpenAPI 3.0.3 and exposes explicit `/v1` paths. Runtime availability still requires a mounted
+backend route; a declared path is not evidence that an asset operation is enabled.
+
+Install and run the contract gate with Node.js 22:
+
+```sh
+npm ci --ignore-scripts
+npm run contract:check
+```
+
+The gate runs custom semantic rules, Redocly CLI 2.50.0 lint, and OpenAPI Generator 7.24.0
+validation through wrapper 2.40.1. Generator validation is configured with `useDocker: true` so it
+does not depend on the host Java version; Docker must be available locally and in CI.
+
+The custom rules reject duplicate or missing `operationId` values, unresolved references,
+incomplete path parameters, orphan schemas, financial commands without a required
+`Idempotency-Key`, `409`, and `422`, missing protected/public error response sets,
+server-owned request fields, non-Decimal financial wire values, and responses that omit
+`X-Request-ID`.
+
+`.github/CODEOWNERS` requests review from the verified backend platform and frontend owners.
+The `Contract approvals` workflow additionally requires both owners to approve the exact PR head
+commit whenever contract governance files change. Configure the repository ruleset to require the
+`Require frontend and backend contract approvals` status check before merging to `main`.
