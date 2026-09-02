@@ -13,11 +13,9 @@ rmSync(outputDir, { recursive: true, force: true });
 execFileSync("npx", [
   "openapi-generator-cli",
   "generate",
-  "-g", "dart-dio",
-  "-i", "/local/openapi/main.yaml",
-  "-o", `/local/${relativeOutput}`,
-  "--additional-properties=pubName=rwa_api_client,pubDescription=Generated_RWA_Trading_Platform_API_client,pubVersion=1.0.0,enumUnknownDefaultCase=true,legacyDiscriminatorBehavior=false",
+  "--generator-key", "rwa-api-client",
 ], {
   cwd: rootDir,
   stdio: "inherit",
+  env: { ...process.env, RWA_DART_CLIENT_OUTPUT: relativeOutput },
 });
