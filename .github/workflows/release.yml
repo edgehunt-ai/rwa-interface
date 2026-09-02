@@ -1,0 +1,283 @@
+name: Release Mobile
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - pubspec.yaml
+      - .github/workflows/release.yml
+
+permissions:
+  contents: write
+
+env:
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'flutter' }}
+  SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+  SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT || 'production' }}
+  SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.10' }}
+  SENTRY_PROFILES_SAMPLE_RATE: ${{ vars.SENTRY_PROFILES_SAMPLE_RATE || '0.10' }}
+
+jobs:
+  detect-release:
+    name: Detect Version Release
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.version.outputs.should_build }}
+      should_release: ${{ steps.version.outputs.should_release }}
+      tag: ${{ steps.version.outputs.tag }}
+      previous_tag: ${{ steps.version.outputs.previous_tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version and decide release
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version_line="$(awk -F': ' '/^version: /{print $2}' pubspec.yaml | tr -d '[:space:]')"
+          if [[ ! "$version_line" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9A-Za-z.-]+))?\+([1-9][0-9]*)$ ]]; then
+            echo "pubspec.yaml version must use semantic version plus a positive build number, for example 1.0.0+1." >&2
+            exit 1
+          fi
+
+          version_name="${version_line%%+*}"
+          tag="v${version_name}"
+          should_build="true"
+          should_release="false"
+
+          git fetch --tags --force
+          previous_tag="$(
+            git tag --sort=-version:refname |
+              grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' |
+              grep -Fxv "$tag" |
+              head -n1 || true
+          )"
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            tagged_commit="$(git rev-list -n 1 "$tag")"
+            if [[ "${{ github.event_name }}" == "push" && "$tagged_commit" != "$GITHUB_SHA" ]]; then
+              echo "Version ${version_name} already belongs to ${tagged_commit}; increment pubspec.yaml before releasing." >&2
+              exit 1
+            fi
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            should_release="true"
+          fi
+
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]]; then
+            before_sha="${{ github.event.before }}"
+            if git cat-file -e "${before_sha}:pubspec.yaml" 2>/dev/null; then
+              previous_version="$(git show "${before_sha}:pubspec.yaml" | awk -F': ' '/^version: /{print $2}' | tr -d '[:space:]')"
+              previous_name="${previous_version%%+*}"
+              workflow_changed="false"
+              if ! git diff --quiet "$before_sha" "$GITHUB_SHA" -- .github/workflows/release.yml; then
+                workflow_changed="true"
+              fi
+              if [[ "$previous_name" == "$version_name" && "$workflow_changed" != "true" ]]; then
+                should_build="false"
+                should_release="false"
+              fi
+            fi
+          fi
+
+          {
+            echo "version=${version_line}"
+            echo "tag=${tag}"
+            echo "previous_tag=${previous_tag}"
+            echo "should_build=${should_build}"
+            echo "should_release=${should_release}"
+          } >> "$GITHUB_OUTPUT"
+
+  release-quality:
+    name: Release Quality Gate
+    needs: detect-release
+    if: needs.detect-release.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Analyze
+        run: dart analyze --fatal-infos
+      - name: Test
+        run: flutter test
+
+  android-release:
+    name: Android Release APK
+    needs:
+      - detect-release
+      - release-quality
+    if: needs.detect-release.outputs.should_build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Build Android release APK
+        shell: bash
+        run: >-
+          flutter build apk --release --obfuscate
+          --split-debug-info=build/symbols/android
+          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
+          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
+          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
+          --dart-define=SENTRY_RELEASE="rwa_interface@${{ needs.detect-release.outputs.version }}"
+      - name: Preserve universal APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/release-assets
+          cp build/app/outputs/flutter-apk/app-release.apk build/release-assets/rwa-interface-android-universal.apk
+      - name: Build Android split APKs
+        shell: bash
+        run: >-
+          flutter build apk --release --split-per-abi --obfuscate
+          --split-debug-info=build/symbols/android
+          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
+          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
+          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
+          --dart-define=SENTRY_RELEASE="rwa_interface@${{ needs.detect-release.outputs.version }}"
+      - name: Collect split APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/release-assets/rwa-interface-android-armeabi-v7a.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/release-assets/rwa-interface-android-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk build/release-assets/rwa-interface-android-x86_64.apk
+      - name: Upload Android Dart symbols to Sentry
+        if: env.SENTRY_AUTH_TOKEN != ''
+        env:
+          SENTRY_RELEASE: rwa_interface@${{ needs.detect-release.outputs.version }}
+        run: dart run sentry_dart_plugin
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rwa-interface-android
+          path: build/release-assets/*.apk
+          if-no-files-found: error
+          retention-days: 7
+
+  ios-release:
+    name: iOS Unsigned Release App
+    needs:
+      - detect-release
+      - release-quality
+    if: needs.detect-release.outputs.should_build == 'true'
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Build unsigned iOS release app
+        shell: bash
+        run: >-
+          flutter build ios --release --no-codesign --obfuscate
+          --split-debug-info=build/symbols/ios
+          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
+          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
+          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
+          --dart-define=SENTRY_RELEASE="rwa_interface@${{ needs.detect-release.outputs.version }}"
+      - name: Upload iOS symbols to Sentry
+        if: env.SENTRY_AUTH_TOKEN != ''
+        env:
+          SENTRY_RELEASE: rwa_interface@${{ needs.detect-release.outputs.version }}
+        run: dart run sentry_dart_plugin
+      - name: Package unsigned iOS app
+        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/rwa-interface-ios-unsigned.zip
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rwa-interface-ios-unsigned
+          path: build/ios/rwa-interface-ios-unsigned.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-release:
+    name: Publish GitHub Release
+    needs:
+      - detect-release
+      - android-release
+      - ios-release
+    if: needs.detect-release.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rwa-interface-*
+          path: release-assets
+          merge-multiple: true
+      - name: Build release notes from commits
+        env:
+          PREVIOUS_TAG: ${{ needs.detect-release.outputs.previous_tag }}
+          TAG: ${{ needs.detect-release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          range="HEAD"
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            range="${PREVIOUS_TAG}..HEAD"
+          fi
+          {
+            echo "## Changes"
+            echo
+            git log "$range" --no-merges --pretty='format:- %s (`%h`)' || true
+          } > release-notes.md
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.detect-release.outputs.tag }}
+        shell: bash
+        run: >-
+          gh release create "$TAG"
+          release-assets/rwa-interface-android-universal.apk
+          release-assets/rwa-interface-android-armeabi-v7a.apk
+          release-assets/rwa-interface-android-arm64-v8a.apk
+          release-assets/rwa-interface-android-x86_64.apk
+          release-assets/rwa-interface-ios-unsigned.zip
+          --title "$TAG"
+          --notes-file release-notes.md
+          --target "$GITHUB_SHA"

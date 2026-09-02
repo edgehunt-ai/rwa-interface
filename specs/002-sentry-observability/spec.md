@@ -69,6 +69,14 @@ the configured sampling policy.
   applications; web packaging is outside scope.
 - **FR-013**: CI MUST read the Sentry upload token only from protected secrets, upload available Dart
   and native debug symbols when configured, and continue packaging when the token is absent.
+- **FR-014**: A mobile release MUST run only after the configured version passes validation and all
+  quality and platform build jobs succeed.
+- **FR-015**: A new version on the primary branch MUST create a matching Git tag and GitHub Release
+  containing mobile artifacts and commit subjects since the previous stable version tag; prerelease
+  tags MUST NOT be used as the release-note baseline, and an existing tag for a different commit MUST
+  fail safely.
+- **FR-016**: Android releases MUST provide a universal APK and architecture-specific APKs for
+  `arm64-v8a`, `armeabi-v7a`, and `x86_64`.
 
 ## Success Criteria *(mandatory)*
 
@@ -82,6 +90,8 @@ the configured sampling policy.
 - **SC-006**: A CI run passes every required formatting, analysis, and test quality gate.
 - **SC-007**: A primary-branch CI run produces Android and iOS artifacts, and no secret value appears
   in repository content or command output.
+- **SC-008**: Changing `pubspec.yaml` from one valid version name to another publishes exactly one
+  matching tag and Release after all required jobs pass; unrelated pushes publish nothing.
 
 ## Assumptions
 

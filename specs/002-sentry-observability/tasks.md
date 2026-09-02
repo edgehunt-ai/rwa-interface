@@ -16,3 +16,5 @@
 - [x] T014 Configure sentry_dart_plugin symbol upload metadata in pubspec.yaml
 - [x] T015 Document mobile artifacts, GitHub variables, secrets, and signing limits in README.md
 - [x] T016 Enable Android release R8 and conditional Sentry ProGuard mapping upload
+- [x] T017 Publish version-gated tags, commit-based release notes, and mobile GitHub Releases
+- [x] T018 Add universal and per-architecture Android release APKs

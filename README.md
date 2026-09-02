@@ -19,8 +19,14 @@ flutter run \
 Set `SENTRY_DSN` to an empty value to disable telemetry. Never commit a Sentry auth token; release,
 source-map, and debug-symbol upload credentials belong in CI secret storage.
 
-GitHub Actions runs quality checks for pull requests. Pushes to `main` additionally build an Android
-release APK and an unsigned iOS release app. Configure runtime values under Actions **Variables**:
+GitHub Actions runs quality checks for pushes and pull requests. Changing the version name in
+`pubspec.yaml` on `main` triggers Android and iOS release builds, creates the matching `v<version>`
+tag, and publishes a GitHub Release whose notes list commits since the previous stable version tag.
+A manual release workflow run builds artifacts without publishing a tag or Release. Configure
+runtime values under Actions **Variables**:
+
+Android releases include a universal APK plus smaller `arm64-v8a`, `armeabi-v7a`, and `x86_64`
+packages. Modern physical devices should normally use the `arm64-v8a` package.
 
 ```text
 SENTRY_DSN

@@ -18,6 +18,9 @@ and preserve normal startup when monitoring is disabled or initialization fails.
 
 **CI Packaging**: Android release APK and unsigned iOS release app; web packaging excluded
 
+**Release Automation**: A validated `pubspec.yaml` version change gates mobile builds, then publishes
+a matching Git tag and GitHub Release with commit-derived notes
+
 ## Constitution Check
 
 - Specification traceability: PASS
