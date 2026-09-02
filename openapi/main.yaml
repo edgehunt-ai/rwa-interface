@@ -3790,6 +3790,7 @@ components:
         - asset
         - chain
         - amount
+        - address
       properties:
         asset:
           type: string
@@ -3801,7 +3802,6 @@ components:
           $ref: "#/components/schemas/Decimal"
         address:
           type: string
-          nullable: true
     WithdrawalQuote:
       type: object
       required:
@@ -3866,6 +3866,7 @@ components:
         - amount
         - address
         - authorization_id
+        - quote_id
       properties:
         asset:
           type: string
@@ -3885,7 +3886,6 @@ components:
           nullable: true
         quote_id:
           type: string
-          nullable: true
         save_address:
           type: boolean
           default: false
