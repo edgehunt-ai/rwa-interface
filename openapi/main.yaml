@@ -1829,6 +1829,12 @@ paths:
       parameters:
         - $ref: "#/components/parameters/TransferId"
         - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferClaimRequest"
       responses:
         "201":
           description: Accepted; returns the current resource state without waiting for a terminal state
@@ -3859,6 +3865,7 @@ components:
         - chain
         - amount
         - address
+        - authorization_id
       properties:
         asset:
           type: string
@@ -3870,6 +3877,9 @@ components:
           $ref: "#/components/schemas/Decimal"
         address:
           type: string
+        authorization_id:
+          type: string
+          description: 已授权且尚未消费的钱包操作授权 ID
         memo:
           type: string
           nullable: true
@@ -4821,9 +4831,22 @@ components:
       additionalProperties: false
       required:
         - plan_id
+        - authorization_id
       properties:
         plan_id:
           type: string
+        authorization_id:
+          type: string
+          description: 已授权且尚未消费的钱包操作授权 ID
+    TransferClaimRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - authorization_id
+      properties:
+        authorization_id:
+          type: string
+          description: 已授权且尚未消费的 Claim 授权 ID
     Hip3ChallengeRequest:
       type: object
       additionalProperties: false
