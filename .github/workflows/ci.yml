@@ -11,6 +11,37 @@ permissions:
   contents: read
 
 jobs:
+  contract:
+    name: OpenAPI Contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install pinned contract tools
+        run: npm ci --ignore-scripts
+
+      - name: Run custom contract rules
+        run: npm run contract:test
+
+      - name: Validate custom contract rules
+        run: npm run contract:rules
+
+      - name: Lint OpenAPI
+        run: npm run contract:lint
+
+      - name: Validate with OpenAPI Generator 7.24.0
+        run: npm run contract:validate
+
+      - name: Check generated Dart API client
+        run: npm run client:check
+
   flutter-quality:
     name: Flutter Quality
     runs-on: ubuntu-latest
@@ -29,6 +60,13 @@ jobs:
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Build generated API package
+        working-directory: packages/rwa_api_client
+        run: dart pub get && dart run build_runner build
+
+      - name: Analyze generated API package
+        run: dart analyze packages/rwa_api_client --no-fatal-warnings
 
       - name: Analyze
         run: dart analyze --fatal-infos

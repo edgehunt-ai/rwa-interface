@@ -1,0 +1,19 @@
+{
+  "name": "rwa-interface-contract",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "contract:test": "node --test scripts/*.test.mjs",
+    "contract:rules": "node scripts/validate-openapi-contract.mjs openapi/main.yaml",
+    "contract:lint": "redocly lint openapi/main.yaml",
+    "contract:validate": "openapi-generator-cli validate -i /local/openapi/main.yaml",
+    "client:generate": "node scripts/generate-dart-client.mjs",
+    "client:check": "node scripts/check-dart-client.mjs",
+    "contract:check": "npm run contract:test && npm run contract:rules && npm run contract:lint && npm run contract:validate && npm run client:check"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "2.40.1",
+    "@redocly/cli": "2.50.0",
+    "yaml": "2.8.1"
+  }
+}

@@ -12,6 +12,7 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - lib/l10n/generated/**
+    - packages/rwa_api_client/**
     - build/**
     - android/**
     - ios/**

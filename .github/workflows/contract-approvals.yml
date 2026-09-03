@@ -1,0 +1,81 @@
+name: Contract approvals
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  require-contract-dual-approval:
+    name: Require frontend and backend contract approvals
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check approvals for the current contract commit
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pullNumber = context.payload.pull_request.number;
+            const headSha = context.payload.pull_request.head.sha;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullNumber,
+              per_page: 100,
+            });
+            const protectedFiles = [
+              'openapi/',
+              'scripts/',
+              'redocly.yaml',
+              'openapitools.json',
+              'package.json',
+              'package-lock.json',
+              '.github/workflows/ci.yml',
+              '.github/workflows/contract-approvals.yml',
+              '.github/CODEOWNERS',
+            ];
+            const changesContract = files.some(({ filename }) =>
+              protectedFiles.some((protectedFile) =>
+                protectedFile.endsWith('/')
+                  ? filename.startsWith(protectedFile)
+                  : filename === protectedFile
+              )
+            );
+            if (!changesContract) {
+              core.info('No public contract governance files changed.');
+              return;
+            }
+
+            const requiredApprovers = ['yongjun925', 'junjieit'];
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullNumber,
+              per_page: 100,
+            });
+            const latestDecisionByUser = new Map();
+            const decisionStates = new Set(['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED']);
+            for (const review of reviews) {
+              if (!decisionStates.has(review.state) || !review.user?.login) continue;
+              const login = review.user.login.toLowerCase();
+              const current = latestDecisionByUser.get(login);
+              const submittedAt = Date.parse(review.submitted_at ?? 0);
+              const currentSubmittedAt = Date.parse(current?.submitted_at ?? 0);
+              if (!current || submittedAt > currentSubmittedAt
+                || (submittedAt === currentSubmittedAt && review.id > current.id)) {
+                latestDecisionByUser.set(login, review);
+              }
+            }
+            const missing = requiredApprovers.filter((login) => {
+              const review = latestDecisionByUser.get(login);
+              return review?.state !== 'APPROVED' || review.commit_id !== headSha;
+            });
+            if (missing.length > 0) {
+              core.setFailed(
+                `Contract changes at ${headSha} require approvals from: ${missing.join(', ')}`
+              );
+            }

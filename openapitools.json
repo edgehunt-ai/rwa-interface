@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.24.0",
+    "useDocker": true,
+    "generators": {
+      "rwa-api-client": {
+        "generatorName": "dart-dio",
+        "inputSpec": "openapi/main.yaml",
+        "output": "${env.RWA_DART_CLIENT_OUTPUT}",
+        "additionalProperties": {
+          "pubName": "rwa_api_client",
+          "pubDescription": "Generated_RWA_Trading_Platform_API_client",
+          "pubVersion": "1.0.0",
+          "enumUnknownDefaultCase": true,
+          "legacyDiscriminatorBehavior": false
+        }
+      }
+    }
+  }
+}

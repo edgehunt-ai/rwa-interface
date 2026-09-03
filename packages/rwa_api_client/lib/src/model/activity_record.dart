@@ -1,0 +1,433 @@
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+
+// ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/key_value.dart';
+import 'package:rwa_api_client/src/model/activity_record_reference.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/product_kind.dart';
+import 'package:rwa_api_client/src/model/activity_record_explorer.dart';
+import 'package:rwa_api_client/src/model/activity_status.dart';
+import 'package:rwa_api_client/src/model/activity_type.dart';
+import 'package:rwa_api_client/src/model/activity_category.dart';
+import 'package:rwa_api_client/src/model/chain.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
+
+part 'activity_record.g.dart';
+
+/// ActivityRecord
+///
+/// Properties:
+/// * [id] 
+/// * [category] 
+/// * [type] 
+/// * [status] 
+/// * [title] 
+/// * [amount] - Decimal amount without a unit suffix.
+/// * [context] - 副标题，说明市场与当前状态
+/// * [symbol] 
+/// * [kind] 
+/// * [fields] - 展开后的键值对明细
+/// * [relatedId] - 关联记录 id（如划转失败 ↔ Claim 退款）
+/// * [reference] 
+/// * [chain] 
+/// * [txHash] 
+/// * [explorer] 
+/// * [createdAt] 
+/// * [updatedAt] 
+/// * [asset] - Unit for amount, for example USDC or NVDAB.
+@BuiltValue()
+abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBuilder> {
+  @BuiltValueField(wireName: r'id')
+  String get id;
+
+  @BuiltValueField(wireName: r'category')
+  ActivityCategory get category;
+  // enum categoryEnum {  orders,  funds,  signatures,  };
+
+  @BuiltValueField(wireName: r'type')
+  ActivityType get type;
+  // enum typeEnum {  market,  limit,  tpsl,  close,  liquidation,  deposit,  external,  bridge,  withdraw,  claim,  funding,  approval,  orderSign,  bridgeSign,  };
+
+  @BuiltValueField(wireName: r'status')
+  ActivityStatus get status;
+  // enum statusEnum {  pending,  success,  failed,  cancelled,  };
+
+  @BuiltValueField(wireName: r'title')
+  String get title;
+
+  /// Decimal amount without a unit suffix.
+  @BuiltValueField(wireName: r'amount')
+  String? get amount;
+
+  /// 副标题，说明市场与当前状态
+  @BuiltValueField(wireName: r'context')
+  String? get context;
+
+  @BuiltValueField(wireName: r'symbol')
+  String? get symbol;
+
+  @BuiltValueField(wireName: r'kind')
+  ProductKind? get kind;
+  // enum kindEnum {  bstock,  perp,  };
+
+  /// 展开后的键值对明细
+  @BuiltValueField(wireName: r'fields')
+  BuiltList<KeyValue>? get fields;
+
+  /// 关联记录 id（如划转失败 ↔ Claim 退款）
+  @BuiltValueField(wireName: r'related_id')
+  String? get relatedId;
+
+  @BuiltValueField(wireName: r'reference')
+  ActivityRecordReference? get reference;
+
+  @BuiltValueField(wireName: r'chain')
+  Chain? get chain;
+  // enum chainEnum {  BSC,  Arbitrum,  Base,  Ethereum,  Hyperliquid,  Polygon,  Solana,  };
+
+  @BuiltValueField(wireName: r'tx_hash')
+  String? get txHash;
+
+  @BuiltValueField(wireName: r'explorer')
+  ActivityRecordExplorer? get explorer;
+
+  @BuiltValueField(wireName: r'created_at')
+  DateTime get createdAt;
+
+  @BuiltValueField(wireName: r'updated_at')
+  DateTime? get updatedAt;
+
+  /// Unit for amount, for example USDC or NVDAB.
+  @BuiltValueField(wireName: r'asset')
+  String? get asset;
+
+  ActivityRecord._();
+
+  factory ActivityRecord([void updates(ActivityRecordBuilder b)]) = _$ActivityRecord;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults(ActivityRecordBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<ActivityRecord> get serializer => _$ActivityRecordSerializer();
+}
+
+class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> {
+  @override
+  final Iterable<Type> types = const [ActivityRecord, _$ActivityRecord];
+
+  @override
+  final String wireName = r'ActivityRecord';
+
+  Iterable<Object?> _serializeProperties(
+    Serializers serializers,
+    ActivityRecord object, {
+    FullType specifiedType = FullType.unspecified,
+  }) sync* {
+    yield r'id';
+    yield serializers.serialize(
+      object.id,
+      specifiedType: const FullType(String),
+    );
+    yield r'category';
+    yield serializers.serialize(
+      object.category,
+      specifiedType: const FullType(ActivityCategory),
+    );
+    yield r'type';
+    yield serializers.serialize(
+      object.type,
+      specifiedType: const FullType(ActivityType),
+    );
+    yield r'status';
+    yield serializers.serialize(
+      object.status,
+      specifiedType: const FullType(ActivityStatus),
+    );
+    yield r'title';
+    yield serializers.serialize(
+      object.title,
+      specifiedType: const FullType(String),
+    );
+    if (object.amount != null) {
+      yield r'amount';
+      yield serializers.serialize(
+        object.amount,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.context != null) {
+      yield r'context';
+      yield serializers.serialize(
+        object.context,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.symbol != null) {
+      yield r'symbol';
+      yield serializers.serialize(
+        object.symbol,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.kind != null) {
+      yield r'kind';
+      yield serializers.serialize(
+        object.kind,
+        specifiedType: const FullType(ProductKind),
+      );
+    }
+    if (object.fields != null) {
+      yield r'fields';
+      yield serializers.serialize(
+        object.fields,
+        specifiedType: const FullType(BuiltList, [FullType(KeyValue)]),
+      );
+    }
+    if (object.relatedId != null) {
+      yield r'related_id';
+      yield serializers.serialize(
+        object.relatedId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.reference != null) {
+      yield r'reference';
+      yield serializers.serialize(
+        object.reference,
+        specifiedType: const FullType.nullable(ActivityRecordReference),
+      );
+    }
+    if (object.chain != null) {
+      yield r'chain';
+      yield serializers.serialize(
+        object.chain,
+        specifiedType: const FullType(Chain),
+      );
+    }
+    if (object.txHash != null) {
+      yield r'tx_hash';
+      yield serializers.serialize(
+        object.txHash,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.explorer != null) {
+      yield r'explorer';
+      yield serializers.serialize(
+        object.explorer,
+        specifiedType: const FullType.nullable(ActivityRecordExplorer),
+      );
+    }
+    yield r'created_at';
+    yield serializers.serialize(
+      object.createdAt,
+      specifiedType: const FullType(DateTime),
+    );
+    if (object.updatedAt != null) {
+      yield r'updated_at';
+      yield serializers.serialize(
+        object.updatedAt,
+        specifiedType: const FullType(DateTime),
+      );
+    }
+    if (object.asset != null) {
+      yield r'asset';
+      yield serializers.serialize(
+        object.asset,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+  }
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    ActivityRecord object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required ActivityRecordBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.id = valueDes;
+          break;
+        case r'category':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(ActivityCategory),
+          ) as ActivityCategory;
+          result.category = valueDes;
+          break;
+        case r'type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(ActivityType),
+          ) as ActivityType;
+          result.type = valueDes;
+          break;
+        case r'status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(ActivityStatus),
+          ) as ActivityStatus;
+          result.status = valueDes;
+          break;
+        case r'title':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.title = valueDes;
+          break;
+        case r'amount':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.amount = valueDes;
+          break;
+        case r'context':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.context = valueDes;
+          break;
+        case r'symbol':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.symbol = valueDes;
+          break;
+        case r'kind':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ProductKind),
+          ) as ProductKind?;
+          if (valueDes == null) continue;
+          result.kind = valueDes;
+          break;
+        case r'fields':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+          ) as BuiltList<KeyValue>?;
+          if (valueDes == null) continue;
+          result.fields.replace(valueDes);
+          break;
+        case r'related_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.relatedId = valueDes;
+          break;
+        case r'reference':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ActivityRecordReference),
+          ) as ActivityRecordReference?;
+          if (valueDes == null) continue;
+          result.reference.replace(valueDes);
+          break;
+        case r'chain':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Chain),
+          ) as Chain?;
+          if (valueDes == null) continue;
+          result.chain = valueDes;
+          break;
+        case r'tx_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.txHash = valueDes;
+          break;
+        case r'explorer':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ActivityRecordExplorer),
+          ) as ActivityRecordExplorer?;
+          if (valueDes == null) continue;
+          result.explorer.replace(valueDes);
+          break;
+        case r'created_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
+          result.createdAt = valueDes;
+          break;
+        case r'updated_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.updatedAt = valueDes;
+          break;
+        case r'asset':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.asset = valueDes;
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
+  }
+
+  @override
+  ActivityRecord deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    final result = ActivityRecordBuilder();
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
+    return result.build();
+  }
+}
+
