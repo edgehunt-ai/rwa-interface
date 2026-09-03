@@ -7,6 +7,7 @@
     "contract:rules": "node scripts/validate-openapi-contract.mjs openapi/main.yaml",
     "contract:lint": "redocly lint openapi/main.yaml",
     "contract:validate": "openapi-generator-cli validate -i /local/openapi/main.yaml",
+    "docs:build": "redocly build-docs -o dist/index.html",
     "fixture:check": "node scripts/check-openapi-generator-fixture.mjs",
     "client:generate": "node scripts/generate-dart-client.mjs",
     "client:prepare": "cd packages/rwa_api_client && dart pub get && dart run build_runner build",
