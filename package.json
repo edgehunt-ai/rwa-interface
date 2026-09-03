@@ -7,9 +7,15 @@
     "contract:rules": "node scripts/validate-openapi-contract.mjs openapi/main.yaml",
     "contract:lint": "redocly lint openapi/main.yaml",
     "contract:validate": "openapi-generator-cli validate -i /local/openapi/main.yaml",
+    "fixture:check": "node scripts/check-openapi-generator-fixture.mjs",
     "client:generate": "node scripts/generate-dart-client.mjs",
+    "client:prepare": "cd packages/rwa_api_client && dart pub get && dart run build_runner build",
+    "client:regenerate": "npm run client:generate && npm run client:prepare && npm run quality:check",
+    "client:test": "flutter test test/data test/app/providers test/ui/features/api_example",
     "client:check": "node scripts/check-dart-client.mjs",
-    "contract:check": "npm run contract:test && npm run contract:rules && npm run contract:lint && npm run contract:validate && npm run client:check"
+    "contract:check": "npm run contract:test && npm run contract:rules && npm run contract:lint && npm run contract:validate && npm run fixture:check && npm run client:check",
+    "quality:check": "npm run contract:check && npm run client:prepare && dart format --output=none --set-exit-if-changed lib test && dart analyze --fatal-infos && flutter test",
+    "release:verify": "npm run quality:check"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.40.1",

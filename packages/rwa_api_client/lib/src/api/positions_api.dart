@@ -9,11 +9,11 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/close_position_request.dart';
-import 'package:rwa_api_client/src/model/error.dart';
-import 'package:rwa_api_client/src/model/list_positions200_response.dart';
 import 'package:rwa_api_client/src/model/order.dart';
 import 'package:rwa_api_client/src/model/position.dart';
+import 'package:rwa_api_client/src/model/position_page.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/tp_sl_update_request.dart';
 import 'package:rwa_api_client/src/model/update_position_leverage_request.dart';
@@ -312,9 +312,9 @@ class PositionsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListPositions200Response] as data
+  /// Returns a [Future] containing a [Response] with a [PositionPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListPositions200Response>> listPositions({ 
+  Future<Response<PositionPage>> listPositions({ 
     String? symbol,
     ProductKind? kind,
     String? cursor,
@@ -361,14 +361,14 @@ class PositionsApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListPositions200Response? _responseData;
+    PositionPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListPositions200Response),
-      ) as ListPositions200Response;
+        specifiedType: const FullType(PositionPage),
+      ) as PositionPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -380,7 +380,7 @@ class PositionsApi {
       );
     }
 
-    return Response<ListPositions200Response>(
+    return Response<PositionPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

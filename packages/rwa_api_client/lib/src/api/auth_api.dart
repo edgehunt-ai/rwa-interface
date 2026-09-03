@@ -8,7 +8,7 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
-import 'package:rwa_api_client/src/model/error.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/privy_client_config.dart';
 import 'package:rwa_api_client/src/model/session_request.dart';
 import 'package:rwa_api_client/src/model/session_response.dart';

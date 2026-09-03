@@ -262,7 +262,7 @@ function resolvedResponse(document, declaredResponse) {
 
 function hasUniformErrorSchema(document, declaredResponse) {
   const response = resolvedResponse(document, declaredResponse);
-  return response?.content?.['application/json']?.schema?.$ref === '#/components/schemas/Error';
+  return response?.content?.['application/json']?.schema?.$ref === '#/components/schemas/ApiError';
 }
 
 function validateSecurityResponses(document, violations) {
@@ -280,16 +280,16 @@ function validateSecurityResponses(document, violations) {
     for (const status of new Set(requiredStatuses)) {
       const declaredResponse = operation.responses?.[status];
       if (!declaredResponse) {
-        violations.push(`${method.toUpperCase()} ${path}: missing required ${status} Error response`);
+        violations.push(`${method.toUpperCase()} ${path}: missing required ${status} ApiError response`);
       } else if (!hasUniformErrorSchema(document, declaredResponse)) {
-        violations.push(`${method.toUpperCase()} ${path} ${status}: response must use the uniform Error schema`);
+        violations.push(`${method.toUpperCase()} ${path} ${status}: response must use the uniform ApiError schema`);
       }
     }
 
     for (const [status, declaredResponse] of Object.entries(operation.responses ?? {})) {
       if (!/^[45][0-9][0-9]$/.test(status)) continue;
       if (!hasUniformErrorSchema(document, declaredResponse)) {
-        violations.push(`${method.toUpperCase()} ${path} ${status}: response must use the uniform Error schema`);
+        violations.push(`${method.toUpperCase()} ${path} ${status}: response must use the uniform ApiError schema`);
       }
     }
   }

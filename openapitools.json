@@ -9,10 +9,20 @@
         "generatorName": "dart-dio",
         "inputSpec": "openapi/main.yaml",
         "output": "${env.RWA_DART_CLIENT_OUTPUT}",
+        "globalProperty": {
+          "apiDocs": "false",
+          "apiTests": "false",
+          "modelDocs": "false",
+          "modelTests": "false"
+        },
         "additionalProperties": {
           "pubName": "rwa_api_client",
-          "pubDescription": "Generated_RWA_Trading_Platform_API_client",
+          "pubDescription": "Generated transport client for the RWA Trading Platform API.",
           "pubVersion": "1.0.0",
+          "pubHomepage": "https://github.com/edgehunt-ai/rwa-interface",
+          "pubRepository": "https://github.com/edgehunt-ai/rwa-interface",
+          "hideGenerationTimestamp": true,
+          "buildRunnerVersion": "^2.7.0",
           "enumUnknownDefaultCase": true,
           "legacyDiscriminatorBehavior": false
         }

@@ -2,6 +2,36 @@
 
 Cross-platform RWA trading interface.
 
+## Generated API ownership
+
+`openapi/main.yaml` is the only wire-contract source. Files under
+`packages/rwa_api_client` are generated and must not be edited manually.
+Authentication, failure mapping, SSE, repositories, and Riverpod state are
+application-owned; presentation code must not import generated wire models or
+Dio response types.
+
+本功能的规格、计划、任务与集成说明统一使用中文。`openapi/main.yaml` 是唯一 wire contract；
+`packages/rwa_api_client/`（包括提交的 `*.g.dart`）由 OpenAPI Generator 7.24.0 和
+`dart-dio` 生成，禁止手改。生成器版本记录在 `openapitools.json` 和生成包的
+`.openapi-generator/VERSION`，可据此追溯 source identity。
+
+应用只通过 `lib/data/services/`、repository 和 domain model 消费 generated client。
+Dio 负责 HTTP、超时、认证 header 与取消；Riverpod 只负责依赖装配、生命周期和异步状态，
+不会替代 Dio，也不会形成一个永久的全局 AppState。query 默认 auto-dispose，刷新保留已有数据；
+命令防重复提交并保留调用方的 Idempotency-Key。登出或换用户通过 session generation 清理用户态，
+public provider 不受影响。
+
+普通请求使用显式 connect/send/receive timeout。SSE 使用独立的无 receive-timeout 长连接，支持 chunk frame、多行 data、heartbeat、
+去重、Last-Event-ID、有界退避、取消和 `resync_required`。所有 Dio/generated 异常在 data 边界映射
+为安全的 `ApiFailure`，常规诊断只记录分类、状态、code 与 request ID，不记录 token、raw body、
+stack trace 或金融 payload。
+
+完整本地验证命令是 `npm run quality:check`；Release 使用同一个 `npm run release:verify` 入口。
+修改 `openapi/main.yaml` 后，可使用 `npm run client:regenerate` 依次完成正式客户端生成、
+`build_runner` 辅助代码生成和完整质量验证。该命令保留并串联现有的 `client:generate`、
+`client:prepare`、`client:check` 和 `quality:check`，不会替换它们。
+发布时 Android/iOS 均把 artifact 大小写入 summary；大小只用于比较，不设阈值或门禁。
+
 ## Observability
 
 Sentry error reporting and sampled performance monitoring are enabled by default. Runtime values can
@@ -101,7 +131,8 @@ incomplete path parameters, orphan schemas, financial commands without a require
 server-owned request fields, non-Decimal financial wire values, and responses that omit
 `X-Request-ID`.
 
-`.github/CODEOWNERS` requests review from the verified backend platform and frontend owners.
-The `Contract approvals` workflow additionally requires both owners to approve the exact PR head
-commit whenever contract governance files change. Configure the repository ruleset to require the
-`Require frontend and backend contract approvals` status check before merging to `main`.
+`.github/CODEOWNERS` documents that contract changes are checked by the approval workflow.
+The `Contract approvals` workflow requires at least one authorized repository
+collaborator with write-level permission to approve the exact PR head commit whenever contract
+governance files change. Configure the repository ruleset to require the
+`Require an authorized contract approval` status check before merging to `main`.

@@ -1,14 +1,20 @@
 import 'package:dio/dio.dart';
 
 import 'privy_access_token_provider.dart';
+import 'request_replay_policy.dart';
 
 class PrivyAuthInterceptor extends Interceptor {
-  PrivyAuthInterceptor(this._dio, this._tokenProvider);
+  PrivyAuthInterceptor(
+    this._dio,
+    this._tokenProvider, {
+    this._replayPolicy = const RequestReplayPolicy(),
+  });
 
   static const _retriedKey = 'rwa_privy_auth_retried';
 
   final Dio _dio;
   final PrivyAccessTokenProvider _tokenProvider;
+  final RequestReplayPolicy _replayPolicy;
   Future<String?>? _refreshInFlight;
 
   @override
@@ -16,6 +22,10 @@ class PrivyAuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    if (!_requiresBearer(options)) {
+      handler.next(options);
+      return;
+    }
     final token = await _tokenProvider.getAccessToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -23,9 +33,19 @@ class PrivyAuthInterceptor extends Interceptor {
     handler.next(options);
   }
 
+  bool _requiresBearer(RequestOptions options) {
+    final security = options.extra['secure'];
+    if (security == null) return true;
+    if (security is! List || security.isEmpty) return false;
+    return security.whereType<Map<Object?, Object?>>().any(
+      (scheme) => scheme['type'] == 'http' && scheme['scheme'] == 'bearer',
+    );
+  }
+
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (!_shouldRetry(err.requestOptions, err.response?.statusCode)) {
+    if (!_shouldRetry(err.requestOptions, err.response?.statusCode) ||
+        !_replayPolicy.canReplay(err.requestOptions)) {
       handler.next(err);
       return;
     }

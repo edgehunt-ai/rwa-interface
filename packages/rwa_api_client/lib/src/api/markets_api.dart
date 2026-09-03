@@ -9,17 +9,17 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/asset_info.dart';
-import 'package:rwa_api_client/src/model/error.dart';
-import 'package:rwa_api_client/src/model/list_products200_response.dart';
-import 'package:rwa_api_client/src/model/list_stocks200_response.dart';
 import 'package:rwa_api_client/src/model/market_product_group.dart';
 import 'package:rwa_api_client/src/model/market_stats.dart';
 import 'package:rwa_api_client/src/model/order_book.dart';
 import 'package:rwa_api_client/src/model/product_detail.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
+import 'package:rwa_api_client/src/model/product_page.dart';
 import 'package:rwa_api_client/src/model/product_type.dart';
 import 'package:rwa_api_client/src/model/replace_favorites_request.dart';
+import 'package:rwa_api_client/src/model/stock_page.dart';
 
 class MarketsApi {
 
@@ -444,9 +444,9 @@ class MarketsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListProducts200Response] as data
+  /// Returns a [Future] containing a [Response] with a [ProductPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListProducts200Response>> listProducts({ 
+  Future<Response<ProductPage>> listProducts({ 
     MarketProductGroup? group,
     ProductType? productType,
     String? q,
@@ -495,14 +495,14 @@ class MarketsApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListProducts200Response? _responseData;
+    ProductPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListProducts200Response),
-      ) as ListProducts200Response;
+        specifiedType: const FullType(ProductPage),
+      ) as ProductPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -514,7 +514,7 @@ class MarketsApi {
       );
     }
 
-    return Response<ListProducts200Response>(
+    return Response<ProductPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -540,9 +540,9 @@ class MarketsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListStocks200Response] as data
+  /// Returns a [Future] containing a [Response] with a [StockPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListStocks200Response>> listStocks({ 
+  Future<Response<StockPage>> listStocks({ 
     String? q,
     String? cursor,
     int? limit = 20,
@@ -587,14 +587,14 @@ class MarketsApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListStocks200Response? _responseData;
+    StockPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListStocks200Response),
-      ) as ListStocks200Response;
+        specifiedType: const FullType(StockPage),
+      ) as StockPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -606,7 +606,7 @@ class MarketsApi {
       );
     }
 
-    return Response<ListStocks200Response>(
+    return Response<StockPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

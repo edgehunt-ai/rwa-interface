@@ -1,0 +1,376 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'order.dart';
+
+// **************************************************************************
+// BuiltValueGenerator
+// **************************************************************************
+
+class _$Order extends Order {
+  @override
+  final String orderId;
+  @override
+  final String? clientOrderId;
+  @override
+  final String symbol;
+  @override
+  final ProductKind kind;
+  @override
+  final OrderSide side;
+  @override
+  final OrderType type;
+  @override
+  final OrderStatus status;
+  @override
+  final String? limitPrice;
+  @override
+  final String? quantity;
+  @override
+  final String? filledQuantity;
+  @override
+  final String? averageFillPrice;
+  @override
+  final String? orderValue;
+  @override
+  final String? fee;
+  @override
+  final String? leverage;
+  @override
+  final MarginMode? marginMode;
+  @override
+  final bool? reduceOnly;
+  @override
+  final TpSlSpec? tpSl;
+  @override
+  final String? positionId;
+  @override
+  final String? realizedPnl;
+  @override
+  final String? txHash;
+  @override
+  final String? failureReason;
+  @override
+  final DateTime createdAt;
+  @override
+  final DateTime? updatedAt;
+
+  factory _$Order([void Function(OrderBuilder)? updates]) =>
+      (OrderBuilder()..update(updates))._build();
+
+  _$Order._(
+      {required this.orderId,
+      this.clientOrderId,
+      required this.symbol,
+      required this.kind,
+      required this.side,
+      required this.type,
+      required this.status,
+      this.limitPrice,
+      this.quantity,
+      this.filledQuantity,
+      this.averageFillPrice,
+      this.orderValue,
+      this.fee,
+      this.leverage,
+      this.marginMode,
+      this.reduceOnly,
+      this.tpSl,
+      this.positionId,
+      this.realizedPnl,
+      this.txHash,
+      this.failureReason,
+      required this.createdAt,
+      this.updatedAt})
+      : super._();
+  @override
+  Order rebuild(void Function(OrderBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  OrderBuilder toBuilder() => OrderBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is Order &&
+        orderId == other.orderId &&
+        clientOrderId == other.clientOrderId &&
+        symbol == other.symbol &&
+        kind == other.kind &&
+        side == other.side &&
+        type == other.type &&
+        status == other.status &&
+        limitPrice == other.limitPrice &&
+        quantity == other.quantity &&
+        filledQuantity == other.filledQuantity &&
+        averageFillPrice == other.averageFillPrice &&
+        orderValue == other.orderValue &&
+        fee == other.fee &&
+        leverage == other.leverage &&
+        marginMode == other.marginMode &&
+        reduceOnly == other.reduceOnly &&
+        tpSl == other.tpSl &&
+        positionId == other.positionId &&
+        realizedPnl == other.realizedPnl &&
+        txHash == other.txHash &&
+        failureReason == other.failureReason &&
+        createdAt == other.createdAt &&
+        updatedAt == other.updatedAt;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, orderId.hashCode);
+    _$hash = $jc(_$hash, clientOrderId.hashCode);
+    _$hash = $jc(_$hash, symbol.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, side.hashCode);
+    _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, status.hashCode);
+    _$hash = $jc(_$hash, limitPrice.hashCode);
+    _$hash = $jc(_$hash, quantity.hashCode);
+    _$hash = $jc(_$hash, filledQuantity.hashCode);
+    _$hash = $jc(_$hash, averageFillPrice.hashCode);
+    _$hash = $jc(_$hash, orderValue.hashCode);
+    _$hash = $jc(_$hash, fee.hashCode);
+    _$hash = $jc(_$hash, leverage.hashCode);
+    _$hash = $jc(_$hash, marginMode.hashCode);
+    _$hash = $jc(_$hash, reduceOnly.hashCode);
+    _$hash = $jc(_$hash, tpSl.hashCode);
+    _$hash = $jc(_$hash, positionId.hashCode);
+    _$hash = $jc(_$hash, realizedPnl.hashCode);
+    _$hash = $jc(_$hash, txHash.hashCode);
+    _$hash = $jc(_$hash, failureReason.hashCode);
+    _$hash = $jc(_$hash, createdAt.hashCode);
+    _$hash = $jc(_$hash, updatedAt.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'Order')
+          ..add('orderId', orderId)
+          ..add('clientOrderId', clientOrderId)
+          ..add('symbol', symbol)
+          ..add('kind', kind)
+          ..add('side', side)
+          ..add('type', type)
+          ..add('status', status)
+          ..add('limitPrice', limitPrice)
+          ..add('quantity', quantity)
+          ..add('filledQuantity', filledQuantity)
+          ..add('averageFillPrice', averageFillPrice)
+          ..add('orderValue', orderValue)
+          ..add('fee', fee)
+          ..add('leverage', leverage)
+          ..add('marginMode', marginMode)
+          ..add('reduceOnly', reduceOnly)
+          ..add('tpSl', tpSl)
+          ..add('positionId', positionId)
+          ..add('realizedPnl', realizedPnl)
+          ..add('txHash', txHash)
+          ..add('failureReason', failureReason)
+          ..add('createdAt', createdAt)
+          ..add('updatedAt', updatedAt))
+        .toString();
+  }
+}
+
+class OrderBuilder implements Builder<Order, OrderBuilder> {
+  _$Order? _$v;
+
+  String? _orderId;
+  String? get orderId => _$this._orderId;
+  set orderId(String? orderId) => _$this._orderId = orderId;
+
+  String? _clientOrderId;
+  String? get clientOrderId => _$this._clientOrderId;
+  set clientOrderId(String? clientOrderId) =>
+      _$this._clientOrderId = clientOrderId;
+
+  String? _symbol;
+  String? get symbol => _$this._symbol;
+  set symbol(String? symbol) => _$this._symbol = symbol;
+
+  ProductKind? _kind;
+  ProductKind? get kind => _$this._kind;
+  set kind(ProductKind? kind) => _$this._kind = kind;
+
+  OrderSide? _side;
+  OrderSide? get side => _$this._side;
+  set side(OrderSide? side) => _$this._side = side;
+
+  OrderType? _type;
+  OrderType? get type => _$this._type;
+  set type(OrderType? type) => _$this._type = type;
+
+  OrderStatus? _status;
+  OrderStatus? get status => _$this._status;
+  set status(OrderStatus? status) => _$this._status = status;
+
+  String? _limitPrice;
+  String? get limitPrice => _$this._limitPrice;
+  set limitPrice(String? limitPrice) => _$this._limitPrice = limitPrice;
+
+  String? _quantity;
+  String? get quantity => _$this._quantity;
+  set quantity(String? quantity) => _$this._quantity = quantity;
+
+  String? _filledQuantity;
+  String? get filledQuantity => _$this._filledQuantity;
+  set filledQuantity(String? filledQuantity) =>
+      _$this._filledQuantity = filledQuantity;
+
+  String? _averageFillPrice;
+  String? get averageFillPrice => _$this._averageFillPrice;
+  set averageFillPrice(String? averageFillPrice) =>
+      _$this._averageFillPrice = averageFillPrice;
+
+  String? _orderValue;
+  String? get orderValue => _$this._orderValue;
+  set orderValue(String? orderValue) => _$this._orderValue = orderValue;
+
+  String? _fee;
+  String? get fee => _$this._fee;
+  set fee(String? fee) => _$this._fee = fee;
+
+  String? _leverage;
+  String? get leverage => _$this._leverage;
+  set leverage(String? leverage) => _$this._leverage = leverage;
+
+  MarginMode? _marginMode;
+  MarginMode? get marginMode => _$this._marginMode;
+  set marginMode(MarginMode? marginMode) => _$this._marginMode = marginMode;
+
+  bool? _reduceOnly;
+  bool? get reduceOnly => _$this._reduceOnly;
+  set reduceOnly(bool? reduceOnly) => _$this._reduceOnly = reduceOnly;
+
+  TpSlSpecBuilder? _tpSl;
+  TpSlSpecBuilder get tpSl => _$this._tpSl ??= TpSlSpecBuilder();
+  set tpSl(TpSlSpecBuilder? tpSl) => _$this._tpSl = tpSl;
+
+  String? _positionId;
+  String? get positionId => _$this._positionId;
+  set positionId(String? positionId) => _$this._positionId = positionId;
+
+  String? _realizedPnl;
+  String? get realizedPnl => _$this._realizedPnl;
+  set realizedPnl(String? realizedPnl) => _$this._realizedPnl = realizedPnl;
+
+  String? _txHash;
+  String? get txHash => _$this._txHash;
+  set txHash(String? txHash) => _$this._txHash = txHash;
+
+  String? _failureReason;
+  String? get failureReason => _$this._failureReason;
+  set failureReason(String? failureReason) =>
+      _$this._failureReason = failureReason;
+
+  DateTime? _createdAt;
+  DateTime? get createdAt => _$this._createdAt;
+  set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
+
+  DateTime? _updatedAt;
+  DateTime? get updatedAt => _$this._updatedAt;
+  set updatedAt(DateTime? updatedAt) => _$this._updatedAt = updatedAt;
+
+  OrderBuilder() {
+    Order._defaults(this);
+  }
+
+  OrderBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _orderId = $v.orderId;
+      _clientOrderId = $v.clientOrderId;
+      _symbol = $v.symbol;
+      _kind = $v.kind;
+      _side = $v.side;
+      _type = $v.type;
+      _status = $v.status;
+      _limitPrice = $v.limitPrice;
+      _quantity = $v.quantity;
+      _filledQuantity = $v.filledQuantity;
+      _averageFillPrice = $v.averageFillPrice;
+      _orderValue = $v.orderValue;
+      _fee = $v.fee;
+      _leverage = $v.leverage;
+      _marginMode = $v.marginMode;
+      _reduceOnly = $v.reduceOnly;
+      _tpSl = $v.tpSl?.toBuilder();
+      _positionId = $v.positionId;
+      _realizedPnl = $v.realizedPnl;
+      _txHash = $v.txHash;
+      _failureReason = $v.failureReason;
+      _createdAt = $v.createdAt;
+      _updatedAt = $v.updatedAt;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(Order other) {
+    _$v = other as _$Order;
+  }
+
+  @override
+  void update(void Function(OrderBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  Order build() => _build();
+
+  _$Order _build() {
+    _$Order _$result;
+    try {
+      _$result = _$v ??
+          _$Order._(
+            orderId: BuiltValueNullFieldError.checkNotNull(
+                orderId, r'Order', 'orderId'),
+            clientOrderId: clientOrderId,
+            symbol: BuiltValueNullFieldError.checkNotNull(
+                symbol, r'Order', 'symbol'),
+            kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
+            side: BuiltValueNullFieldError.checkNotNull(side, r'Order', 'side'),
+            type: BuiltValueNullFieldError.checkNotNull(type, r'Order', 'type'),
+            status: BuiltValueNullFieldError.checkNotNull(
+                status, r'Order', 'status'),
+            limitPrice: limitPrice,
+            quantity: quantity,
+            filledQuantity: filledQuantity,
+            averageFillPrice: averageFillPrice,
+            orderValue: orderValue,
+            fee: fee,
+            leverage: leverage,
+            marginMode: marginMode,
+            reduceOnly: reduceOnly,
+            tpSl: _tpSl?.build(),
+            positionId: positionId,
+            realizedPnl: realizedPnl,
+            txHash: txHash,
+            failureReason: failureReason,
+            createdAt: BuiltValueNullFieldError.checkNotNull(
+                createdAt, r'Order', 'createdAt'),
+            updatedAt: updatedAt,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'tpSl';
+        _tpSl?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(r'Order', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+// ignore_for_file: deprecated_member_use_from_same_package,type=lint

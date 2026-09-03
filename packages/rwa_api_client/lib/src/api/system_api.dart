@@ -9,8 +9,8 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/disclosures.dart';
-import 'package:rwa_api_client/src/model/error.dart';
 import 'package:rwa_api_client/src/model/list_app_versions200_response.dart';
 import 'package:rwa_api_client/src/model/realtime_event.dart';
 

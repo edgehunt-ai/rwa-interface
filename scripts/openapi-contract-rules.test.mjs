@@ -12,6 +12,21 @@ test('the checked-in OpenAPI document satisfies every custom contract rule', asy
   assert.deepEqual(validateContract(document), []);
 });
 
+test('分页组合具名且错误模型使用 ApiError', async () => {
+  const document = parse(await readFile(new URL('../openapi/main.yaml', import.meta.url), 'utf8'));
+  assert.ok(document.components.schemas.ApiError);
+  assert.equal(document.components.schemas.Error, undefined);
+  for (const [path, pathItem] of Object.entries(document.paths)) {
+    for (const operation of Object.values(pathItem)) {
+      if (!operation || typeof operation !== 'object' || !operation.responses) continue;
+      for (const response of Object.values(operation.responses)) {
+        const schema = response?.content?.['application/json']?.schema;
+        if (schema?.allOf) assert.ok(schema.title, `${path} 的 inline allOf 必须具名`);
+      }
+    }
+  }
+});
+
 test('reports duplicate operation ids, unresolved refs, and incomplete path parameters', () => {
   const document = {
     openapi: '3.0.3',
@@ -244,14 +259,14 @@ test('protected and public operations declare their uniform error sets', () => {
   };
 
   const violations = validateContract(document).join('\n');
-  assert.match(violations, /GET \/v1\/private: missing required 401 Error response/);
-  assert.match(violations, /GET \/v1\/private: missing required 403 Error response/);
-  assert.match(violations, /GET \/v1\/private: missing required 429 Error response/);
-  assert.match(violations, /GET \/v1\/private: missing required 503 Error response/);
+  assert.match(violations, /GET \/v1\/private: missing required 401 ApiError response/);
+  assert.match(violations, /GET \/v1\/private: missing required 403 ApiError response/);
+  assert.match(violations, /GET \/v1\/private: missing required 429 ApiError response/);
+  assert.match(violations, /GET \/v1\/private: missing required 503 ApiError response/);
   assert.match(violations, /GET \/v1\/public 204: response must declare X-Request-ID/);
   assert.doesNotMatch(violations, /GET \/v1\/public: missing required 401/);
-  assert.match(violations, /GET \/v1\/public: missing required 429 Error response/);
-  assert.match(violations, /GET \/v1\/public: missing required 503 Error response/);
+  assert.match(violations, /GET \/v1\/public: missing required 429 ApiError response/);
+  assert.match(violations, /GET \/v1\/public: missing required 503 ApiError response/);
   assert.match(violations, /GET \/v1\/public 204: response must declare X-Request-ID/);
 });
 
@@ -279,7 +294,7 @@ test('financial commands require a 422 business rejection response', () => {
     },
   };
 
-  assert.match(validateContract(document).join('\n'), /POST \/v1\/orders: missing required 422 Error response/);
+  assert.match(validateContract(document).join('\n'), /POST \/v1\/orders: missing required 422 ApiError response/);
 });
 
 test('financial wire numbers use the shared Decimal schema', () => {

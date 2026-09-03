@@ -9,10 +9,10 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/device.dart';
+import 'package:rwa_api_client/src/model/device_page.dart';
 import 'package:rwa_api_client/src/model/device_register_request.dart';
-import 'package:rwa_api_client/src/model/error.dart';
-import 'package:rwa_api_client/src/model/list_devices200_response.dart';
 import 'package:rwa_api_client/src/model/user.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
@@ -170,9 +170,9 @@ class AccountApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListDevices200Response] as data
+  /// Returns a [Future] containing a [Response] with a [DevicePage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListDevices200Response>> listDevices({ 
+  Future<Response<DevicePage>> listDevices({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -215,14 +215,14 @@ class AccountApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListDevices200Response? _responseData;
+    DevicePage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListDevices200Response),
-      ) as ListDevices200Response;
+        specifiedType: const FullType(DevicePage),
+      ) as DevicePage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -234,7 +234,7 @@ class AccountApi {
       );
     }
 
-    return Response<ListDevices200Response>(
+    return Response<DevicePage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

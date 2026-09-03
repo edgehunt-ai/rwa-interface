@@ -10,9 +10,9 @@ import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
+import 'package:rwa_api_client/src/model/activity_page.dart';
 import 'package:rwa_api_client/src/model/activity_status.dart';
-import 'package:rwa_api_client/src/model/error.dart';
-import 'package:rwa_api_client/src/model/list_activity200_response.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 
 class ActivityApi {
 
@@ -37,9 +37,9 @@ class ActivityApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListActivity200Response] as data
+  /// Returns a [Future] containing a [Response] with a [ActivityPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListActivity200Response>> listActivity({ 
+  Future<Response<ActivityPage>> listActivity({ 
     ActivityCategory? category,
     ActivityStatus? status,
     String? cursor,
@@ -86,14 +86,14 @@ class ActivityApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListActivity200Response? _responseData;
+    ActivityPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListActivity200Response),
-      ) as ListActivity200Response;
+        specifiedType: const FullType(ActivityPage),
+      ) as ActivityPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -105,7 +105,7 @@ class ActivityApi {
       );
     }
 
-    return Response<ListActivity200Response>(
+    return Response<ActivityPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

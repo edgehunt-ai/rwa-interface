@@ -226,6 +226,7 @@ paths:
           content:
             application/json:
               schema:
+                title: DevicePage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -330,6 +331,7 @@ paths:
           content:
             application/json:
               schema:
+                title: StockPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -384,6 +386,7 @@ paths:
           content:
             application/json:
               schema:
+                title: ProductPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -770,6 +773,7 @@ paths:
           content:
             application/json:
               schema:
+                title: PositionPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -1058,6 +1062,7 @@ paths:
           content:
             application/json:
               schema:
+                title: HoldingPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -1208,6 +1213,7 @@ paths:
           content:
             application/json:
               schema:
+                title: WalletPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -1347,6 +1353,7 @@ paths:
           content:
             application/json:
               schema:
+                title: OrderPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -1675,6 +1682,7 @@ paths:
           content:
             application/json:
               schema:
+                title: DepositPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -1911,6 +1919,7 @@ paths:
           content:
             application/json:
               schema:
+                title: WithdrawalPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -2018,6 +2027,7 @@ paths:
           content:
             application/json:
               schema:
+                title: ActivityPage
                 allOf:
                   - $ref: "#/components/schemas/Page"
                   - type: object
@@ -2157,7 +2167,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
     NotFound:
       description: Resource not found
       headers:
@@ -2166,7 +2176,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
     Conflict:
       description: Idempotency, stale resource, or lifecycle conflict
       headers:
@@ -2175,7 +2185,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
     Unauthorized:
       description: Missing, invalid, or expired Privy bearer token
       headers:
@@ -2184,7 +2194,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
     Forbidden:
       description: Authenticated user cannot perform this action
       headers:
@@ -2193,7 +2203,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
     UnprocessableEntity:
       description: Business rule rejected the request
       headers:
@@ -2202,7 +2212,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
     TooManyRequests:
       description: Rate limit exceeded
       headers:
@@ -2211,7 +2221,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
     ServiceUnavailable:
       description: A required service is unavailable
       headers:
@@ -2220,14 +2230,14 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ApiError"
   schemas:
     Decimal:
       type: string
       description: 十进制字符串，避免浮点误差
       pattern: ^-?[0-9]+(\.[0-9]+)?$
       example: "183.25"
-    Error:
+    ApiError:
       type: object
       additionalProperties: false
       required:

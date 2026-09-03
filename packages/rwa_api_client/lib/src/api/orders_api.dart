@@ -9,13 +9,13 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/create_order_request.dart';
-import 'package:rwa_api_client/src/model/error.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
-import 'package:rwa_api_client/src/model/list_orders200_response.dart';
 import 'package:rwa_api_client/src/model/order.dart';
+import 'package:rwa_api_client/src/model/order_page.dart';
 import 'package:rwa_api_client/src/model/order_preview.dart';
 import 'package:rwa_api_client/src/model/order_preview_request.dart';
 import 'package:rwa_api_client/src/model/wallet_action_complete_request.dart';
@@ -628,9 +628,9 @@ class OrdersApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListOrders200Response] as data
+  /// Returns a [Future] containing a [Response] with a [OrderPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListOrders200Response>> listOrders({ 
+  Future<Response<OrderPage>> listOrders({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -673,14 +673,14 @@ class OrdersApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListOrders200Response? _responseData;
+    OrderPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListOrders200Response),
-      ) as ListOrders200Response;
+        specifiedType: const FullType(OrderPage),
+      ) as OrderPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -692,7 +692,7 @@ class OrdersApi {
       );
     }
 
-    return Response<ListOrders200Response>(
+    return Response<OrderPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

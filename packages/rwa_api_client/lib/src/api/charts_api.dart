@@ -9,9 +9,9 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/candle_series.dart';
 import 'package:rwa_api_client/src/model/chart_range.dart';
-import 'package:rwa_api_client/src/model/error.dart';
 import 'package:rwa_api_client/src/model/market_session_info.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/reference_price.dart';

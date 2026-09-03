@@ -9,20 +9,20 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/claim.dart';
 import 'package:rwa_api_client/src/model/create_deposit_intent_request.dart';
 import 'package:rwa_api_client/src/model/create_withdrawal_request.dart';
 import 'package:rwa_api_client/src/model/deposit.dart';
-import 'package:rwa_api_client/src/model/error.dart';
+import 'package:rwa_api_client/src/model/deposit_page.dart';
 import 'package:rwa_api_client/src/model/funding_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_plan_request.dart';
-import 'package:rwa_api_client/src/model/list_deposits200_response.dart';
-import 'package:rwa_api_client/src/model/list_withdrawals200_response.dart';
 import 'package:rwa_api_client/src/model/transfer.dart';
 import 'package:rwa_api_client/src/model/transfer_claim_request.dart';
 import 'package:rwa_api_client/src/model/transfer_request.dart';
 import 'package:rwa_api_client/src/model/withdrawal.dart';
+import 'package:rwa_api_client/src/model/withdrawal_page.dart';
 import 'package:rwa_api_client/src/model/withdrawal_quote.dart';
 import 'package:rwa_api_client/src/model/withdrawal_quote_request.dart';
 
@@ -1076,9 +1076,9 @@ class FundingApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListDeposits200Response] as data
+  /// Returns a [Future] containing a [Response] with a [DepositPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListDeposits200Response>> listDeposits({ 
+  Future<Response<DepositPage>> listDeposits({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -1121,14 +1121,14 @@ class FundingApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListDeposits200Response? _responseData;
+    DepositPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListDeposits200Response),
-      ) as ListDeposits200Response;
+        specifiedType: const FullType(DepositPage),
+      ) as DepositPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -1140,7 +1140,7 @@ class FundingApi {
       );
     }
 
-    return Response<ListDeposits200Response>(
+    return Response<DepositPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -1165,9 +1165,9 @@ class FundingApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListWithdrawals200Response] as data
+  /// Returns a [Future] containing a [Response] with a [WithdrawalPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListWithdrawals200Response>> listWithdrawals({ 
+  Future<Response<WithdrawalPage>> listWithdrawals({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -1210,14 +1210,14 @@ class FundingApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListWithdrawals200Response? _responseData;
+    WithdrawalPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListWithdrawals200Response),
-      ) as ListWithdrawals200Response;
+        specifiedType: const FullType(WithdrawalPage),
+      ) as WithdrawalPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -1229,7 +1229,7 @@ class FundingApi {
       );
     }
 
-    return Response<ListWithdrawals200Response>(
+    return Response<WithdrawalPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

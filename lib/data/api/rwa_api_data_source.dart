@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart';
 
 import 'privy_access_token_provider.dart';
 import 'privy_auth_interceptor.dart';
+import 'api_environment.dart';
 
 /// Data-layer owner of the generated wire client.
 ///
@@ -13,9 +14,17 @@ class RwaApiDataSource {
 
   factory RwaApiDataSource.create({
     required PrivyAccessTokenProvider tokenProvider,
-    String baseUrl = RwaApiClient.basePath,
+    required ApiEnvironment environment,
   }) {
-    final dio = Dio(BaseOptions(baseUrl: baseUrl));
+    final baseUrl = environment.validate().toString();
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: environment.connectTimeout,
+        sendTimeout: environment.sendTimeout,
+        receiveTimeout: environment.receiveTimeout,
+      ),
+    );
     final interceptor = PrivyAuthInterceptor(dio, tokenProvider);
     final client = RwaApiClient(dio: dio, interceptors: [interceptor]);
     return RwaApiDataSource._(client: client, dio: dio);

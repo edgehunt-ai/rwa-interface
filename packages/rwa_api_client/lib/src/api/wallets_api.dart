@@ -9,11 +9,11 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
-import 'package:rwa_api_client/src/model/error.dart';
-import 'package:rwa_api_client/src/model/list_wallets200_response.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/wallet.dart';
 import 'package:rwa_api_client/src/model/wallet_authorization.dart';
 import 'package:rwa_api_client/src/model/wallet_authorization_request.dart';
+import 'package:rwa_api_client/src/model/wallet_page.dart';
 
 class WalletsApi {
 
@@ -142,9 +142,9 @@ class WalletsApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListWallets200Response] as data
+  /// Returns a [Future] containing a [Response] with a [WalletPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListWallets200Response>> listWallets({ 
+  Future<Response<WalletPage>> listWallets({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -187,14 +187,14 @@ class WalletsApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListWallets200Response? _responseData;
+    WalletPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListWallets200Response),
-      ) as ListWallets200Response;
+        specifiedType: const FullType(WalletPage),
+      ) as WalletPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -206,7 +206,7 @@ class WalletsApi {
       );
     }
 
-    return Response<ListWallets200Response>(
+    return Response<WalletPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

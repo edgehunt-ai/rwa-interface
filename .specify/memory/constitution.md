@@ -1,6 +1,6 @@
 <!--
 Sync Impact Report
-- Version change: template (unratified) -> 1.0.0
+- Version change: 1.0.0 -> 1.1.0
 - Modified principles:
   - Template Principle 1 -> I. Specification-First and Traceability
   - Template Principle 2 -> II. Layered Architecture and Dependency Direction
@@ -13,8 +13,13 @@ Sync Impact Report
   - Technical and Product Constraints
   - Development Workflow and Quality Gates
 - Initial constraints cover semantic theming, copyable content, long text, and component reuse checks.
+- Expanded Principle II with a default Riverpod request boundary and documented exception policy.
 - Removed sections: None; template placeholders were replaced.
 - Follow-up TODOs: None.
+- Amendment rationale: keep API request lifecycle, dependency injection, and state observation at
+  the Riverpod/application boundary so generated transport details do not leak into presentation.
+- Compatibility/migration: existing direct infrastructure calls remain valid when they are explicitly
+  scoped as bootstrap, isolate, or test infrastructure; new feature code follows the Riverpod path.
 -->
 # RWA Interface Constitution
 
@@ -95,6 +100,11 @@ without replacing architecture with arbitrary file splitting or speculative abst
 - OpenAPI is the source of truth for HTTP contracts. Client code MUST NOT assume undeclared fields,
   states, or guarantees. Contract changes MUST trigger review of specifications, model mappings,
   compatibility behavior, and contract tests.
+- Application API requests MUST normally flow through Riverpod providers/notifiers and their
+  injected repository or use-case dependencies. Widgets, screens, and ordinary business classes
+  MUST NOT construct Dio clients or call generated API operations directly. Bootstrap code, non-
+  Flutter isolates, transport infrastructure, and focused tests MAY call lower layers directly only
+  when the exception is explicit, narrowly scoped, and covered by tests.
 - Shared UI MUST be layered as design-system primitives, cross-feature shared compositions, and
   feature-local components. Promotion to a broader layer requires proven consumers and compatible
   semantics; a generic `common/widgets` dumping ground is prohibited.
@@ -166,4 +176,4 @@ non-semantic clarification. Every feature plan and code review MUST include a co
 check. An exception MUST be recorded in the plan with its precise scope, risk, alternatives, expiry or
 containment strategy, and approving maintainer; schedule pressure alone is not sufficient.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-02 | **Last Amended**: 2026-09-02
+**Version**: 1.1.0 | **Ratified**: 2026-09-02 | **Last Amended**: 2026-09-03

@@ -12,6 +12,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
@@ -108,14 +112,17 @@ jobs:
         with:
           channel: stable
           cache: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install pinned contract tools
+        run: npm ci --ignore-scripts
       - name: Resolve dependencies
         run: flutter pub get
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed lib test
-      - name: Analyze
-        run: dart analyze --fatal-infos
-      - name: Test
-        run: flutter test
+      - name: Run release-equivalent verification
+        run: npm run release:verify
 
   android-release:
     name: Android Release APK
@@ -174,6 +181,14 @@ jobs:
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/release-assets/rwa-interface-android-armeabi-v7a.apk
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/release-assets/rwa-interface-android-arm64-v8a.apk
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk build/release-assets/rwa-interface-android-x86_64.apk
+      - name: Record Android artifact sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "## Android artifact sizes"
+            du -h build/release-assets/*.apk
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload Android Dart symbols to Sentry
         if: env.SENTRY_AUTH_TOKEN != ''
         env:
@@ -183,7 +198,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rwa-interface-android
-          path: build/release-assets/*.apk
+          path: |
+            build/release-assets/*.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -223,11 +239,20 @@ jobs:
         run: dart run sentry_dart_plugin
       - name: Package unsigned iOS app
         run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/rwa-interface-ios-unsigned.zip
+      - name: Record iOS artifact size
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "## iOS artifact size"
+            du -h build/ios/rwa-interface-ios-unsigned.zip
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: rwa-interface-ios-unsigned
-          path: build/ios/rwa-interface-ios-unsigned.zip
+          path: |
+            build/ios/rwa-interface-ios-unsigned.zip
           if-no-files-found: error
           retention-days: 7
 

@@ -9,9 +9,9 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
-import 'package:rwa_api_client/src/model/error.dart';
+import 'package:rwa_api_client/src/model/api_error.dart';
+import 'package:rwa_api_client/src/model/holding_page.dart';
 import 'package:rwa_api_client/src/model/list_accounts200_response.dart';
-import 'package:rwa_api_client/src/model/list_holdings200_response.dart';
 import 'package:rwa_api_client/src/model/portfolio_summary.dart';
 
 class PortfolioApi {
@@ -193,9 +193,9 @@ class PortfolioApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [ListHoldings200Response] as data
+  /// Returns a [Future] containing a [Response] with a [HoldingPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ListHoldings200Response>> listHoldings({ 
+  Future<Response<HoldingPage>> listHoldings({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -238,14 +238,14 @@ class PortfolioApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    ListHoldings200Response? _responseData;
+    HoldingPage? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(ListHoldings200Response),
-      ) as ListHoldings200Response;
+        specifiedType: const FullType(HoldingPage),
+      ) as HoldingPage;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -257,7 +257,7 @@ class PortfolioApi {
       );
     }
 
-    return Response<ListHoldings200Response>(
+    return Response<HoldingPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

@@ -11,8 +11,8 @@ permissions:
   pull-requests: read
 
 jobs:
-  require-contract-dual-approval:
-    name: Require frontend and backend contract approvals
+  require-contract-approval:
+    name: Require an authorized contract approval
     runs-on: ubuntu-latest
     steps:
       - name: Check approvals for the current contract commit
@@ -50,7 +50,6 @@ jobs:
               return;
             }
 
-            const requiredApprovers = ['yongjun925', 'junjieit'];
             const reviews = await github.paginate(github.rest.pulls.listReviews, {
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -70,12 +69,26 @@ jobs:
                 latestDecisionByUser.set(login, review);
               }
             }
-            const missing = requiredApprovers.filter((login) => {
-              const review = latestDecisionByUser.get(login);
-              return review?.state !== 'APPROVED' || review.commit_id !== headSha;
-            });
-            if (missing.length > 0) {
+            const allowedPermissions = new Set(['push', 'maintain', 'admin']);
+            const approvedUsers = [...latestDecisionByUser.entries()]
+              .filter(([, review]) => review.state === 'APPROVED' && review.commit_id === headSha)
+              .map(([login]) => login);
+            const authorizedApprovals = await Promise.all(approvedUsers.map(async (login) => {
+              try {
+                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  username: login,
+                });
+                return allowedPermissions.has(data.permission);
+              } catch (error) {
+                core.warning(`Unable to verify repository permission for ${login}: ${error.message}`);
+                return false;
+              }
+            }));
+            const hasApproval = authorizedApprovals.some(Boolean);
+            if (!hasApproval) {
               core.setFailed(
-                `Contract changes at ${headSha} require approvals from: ${missing.join(', ')}`
+                `Contract changes at ${headSha} require an approval from an authorized repository collaborator`
               );
             }
