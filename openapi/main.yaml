@@ -988,8 +988,14 @@ paths:
         - Portfolio
       summary: 资产总览
       description: |
-        资产页顶部：总资产、今日盈亏、可用于交易的金额（Available to trade）、
-        占用保证金（Margin in use）。
+        已验证身份下的只读资产总览，不接受 wallet address、account ID 或 network
+        作为资产所有权输入。总资产仅统计已成功估值且去重后的余额；普通钱包余额不会
+        自动计入可交易金额。
+
+        用户没有已验证钱包时返回 `200 empty`；部分余额来源或价格失败时返回
+        `200 partial`，使用合格的 PostgreSQL last-good snapshot 时 freshness 为
+        `stale`。只有所有必要 balance source 均不可用且没有合格 last-good 时才
+        返回 `503`。禁止 Mock fallback，也不得把来源错误转换为零余额。
       operationId: getPortfolioSummary
       responses:
         "200":
@@ -1009,17 +1015,58 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+  /v1/portfolio/assets:
+    get:
+      tags:
+        - Portfolio
+      summary: 分页列出真实用户资产
+      description: |
+        已验证身份下的只读资产列表，聚合 BSC、Arbitrum、Base、Ethereum 四条
+        allowlisted EVM 网络以及 Hyperliquid Mainnet Info 的余额事实。USDC/USDT
+        采用 `fixed_peg=1`，其他资产使用 DODOEX 价格；价格不可用时保留真实余额并
+        返回未估值状态。
+
+        该接口不接受 wallet address、account ID 或 network 作为资产所有权输入。
+        用户没有已验证钱包时返回 `200 empty`；部分来源或价格失败时返回
+        `200 partial`，使用合格的 PostgreSQL last-good snapshot 时 freshness 为
+        `stale`。只有所有必要 balance source 均不可用且没有合格 last-good 时才
+        返回 `503`。禁止 Mock fallback，也不得把来源错误转换为零余额。
+      operationId: listPortfolioAssets
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioAssetPage"
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestId"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /v1/portfolio/accounts:
     get:
       tags:
         - Portfolio
-      summary: 各账户余额
+      summary: 内部账本账户余额
       description: |
-        App 采用三段式账户结构，前端在资金流程中需要分别展示：
+        仅返回 `internal_ledger` scope 下的三段式内部账户结构：
 
         * `app` —— App 可用余额（聚合账户，入金默认到账处）；
         * `bstocks` —— BSC Wallet，bStocks 现货交易账户；
         * `hip3` —— HIP-3 交易账户（Hyperliquid 保证金）。
+
+        内部 ledger 可能是外部资产的业务镜像，不能与链上或 venue 余额双计。
+        ledger 不可用时不得回退到 Mock，也不得把错误转换为零余额。
       operationId: listAccounts
       responses:
         "200":
@@ -1027,14 +1074,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - items
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/AccountBalance"
+                $ref: "#/components/schemas/PortfolioAccountPage"
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestId"
@@ -1051,7 +1091,15 @@ paths:
       tags:
         - Portfolio
       summary: 按股票分组的持仓
-      description: 资产页 Stocks 区块：每支股票一组，组内列出该股票下的各产品持仓。
+      description: |
+        已验证身份下的只读 Hyperliquid HIP-3 持仓，每支股票一组。position notional
+        仅用于展示，不再累加进 summary；总资产采用 Hyperliquid account equity。
+        该接口不接受 wallet address、account ID 或 network 作为资产所有权输入。
+
+        用户没有已验证钱包时返回 `200 empty`；部分来源失败时返回 `200 partial`，
+        使用合格的 PostgreSQL last-good snapshot 时 freshness 为 `stale`。只有所有
+        必要 balance source 均不可用且没有合格 last-good 时才返回 `503`。禁止
+        Mock fallback，也不得把来源错误转换为零余额。
       operationId: listHoldings
       parameters:
         - $ref: "#/components/parameters/Cursor"
@@ -1062,20 +1110,7 @@ paths:
           content:
             application/json:
               schema:
-                title: HoldingPage
-                allOf:
-                  - $ref: "#/components/schemas/Page"
-                  - type: object
-                    required:
-                      - items
-                      - total_value_usd
-                    properties:
-                      total_value_usd:
-                        $ref: "#/components/schemas/Decimal"
-                      items:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/HoldingGroup"
+                $ref: "#/components/schemas/PortfolioHoldingPage"
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestId"
@@ -3961,29 +3996,330 @@ components:
           type: string
           format: date-time
           nullable: true
+    PortfolioDataStatus:
+      type: string
+      description: |
+        聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实
+        结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。
+      enum:
+        - complete
+        - partial
+        - empty
+    PortfolioFreshness:
+      type: string
+      description: |
+        数据新鲜度。`live` 来自当前读取，`cached` 来自 fresh PostgreSQL snapshot，
+        `stale` 来自仍在最大 stale 窗口内的 last-good snapshot。
+      enum:
+        - live
+        - cached
+        - stale
+    PortfolioPriceSource:
+      type: string
+      description: |
+        USD 价格来源。USDC/USDT 使用 `fixed_peg` 且价格固定为 1；其他资产使用
+        `dodoex`；无法获得有效价格时为 `unavailable`，不得转成零。
+      enum:
+        - fixed_peg
+        - dodoex
+        - unavailable
+    PortfolioSourceKind:
+      type: string
+      enum:
+        - evm_rpc
+        - hyperliquid_info
+        - dodoex_price
+        - fixed_peg
+        - internal_ledger
+    PortfolioSourceState:
+      type: string
+      enum:
+        - available
+        - unavailable
+    PortfolioWarningCode:
+      type: string
+      enum:
+        - evm_rpc_unavailable
+        - hyperliquid_unavailable
+        - price_unavailable
+        - asset_unvalued
+        - using_last_good
+        - wallet_set_changed
+        - internal_ledger_stale
+        - internal_ledger_unreconciled
+    PortfolioNoticeSeverity:
+      type: string
+      enum:
+        - info
+        - warning
+        - error
+    PortfolioNotice:
+      type: object
+      required:
+        - code
+        - severity
+        - message
+      properties:
+        code:
+          $ref: "#/components/schemas/PortfolioWarningCode"
+        severity:
+          $ref: "#/components/schemas/PortfolioNoticeSeverity"
+        message:
+          type: string
+        user_action:
+          type: string
+          nullable: true
+    PortfolioSourceSummary:
+      type: object
+      description: 单个只读余额、价格或内部账本来源的可用性与缓存新鲜度。
+      required:
+        - source
+        - status
+        - freshness
+      properties:
+        source:
+          $ref: "#/components/schemas/PortfolioSourceKind"
+        network:
+          allOf:
+            - $ref: "#/components/schemas/Chain"
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/PortfolioSourceState"
+        freshness:
+          $ref: "#/components/schemas/PortfolioFreshness"
+        observed_at:
+          type: string
+          format: date-time
+          nullable: true
+        warning_code:
+          allOf:
+            - $ref: "#/components/schemas/PortfolioWarningCode"
+          type: string
+          nullable: true
+    PortfolioAsset:
+      type: object
+      description: |
+        只读余额事实。EVM 资产的 network 仅使用 BSC、Arbitrum、Base、Ethereum
+        四链 allowlist；venue 资产使用 Hyperliquid。任何标识都由服务端已验证的
+        用户钱包集合或 venue account 派生，客户端不能覆盖所有权输入。
+      required:
+        - asset_id
+        - source
+        - network
+        - native
+        - symbol
+        - decimals
+        - balance_raw
+        - balance
+        - pricing_source
+        - observed_at
+        - freshness
+        - warnings
+      properties:
+        asset_id:
+          type: string
+        source:
+          $ref: "#/components/schemas/PortfolioSourceKind"
+        network:
+          $ref: "#/components/schemas/Chain"
+        wallet_id:
+          type: string
+          nullable: true
+        account_ref:
+          type: string
+          nullable: true
+          description: Server-issued opaque account reference; clients cannot override it.
+        contract_address:
+          type: string
+          nullable: true
+        native:
+          type: boolean
+        symbol:
+          type: string
+        decimals:
+          type: integer
+          minimum: 0
+          maximum: 255
+        balance_raw:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          type: string
+          pattern: ^[0-9]+$
+          description: 无符号十进制整数形式的最小单位余额，不允许小数点或负号。
+        balance:
+          $ref: "#/components/schemas/Decimal"
+        price_usd:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          type: string
+          nullable: true
+        pricing_source:
+          allOf:
+            - $ref: "#/components/schemas/PortfolioPriceSource"
+          description: USD 估值来源；不代表余额或钱包所有权来源。
+        value_usd:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          type: string
+          nullable: true
+        observed_at:
+          type: string
+          format: date-time
+        block_number:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: true
+        block_hash:
+          type: string
+          nullable: true
+        freshness:
+          $ref: "#/components/schemas/PortfolioFreshness"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioWarningCode"
+    PortfolioAssetPage:
+      description: 分页资产余额及其已估值小计、未估值数量、来源状态和缓存时间。
+      allOf:
+        - $ref: "#/components/schemas/Page"
+        - type: object
+          required:
+            - items
+            - valued_total_usd
+            - unvalued_asset_count
+            - data_status
+            - freshness
+            - calculated_at
+            - warnings
+            - sources
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/PortfolioAsset"
+            valued_total_usd:
+              allOf:
+                - $ref: "#/components/schemas/Decimal"
+              description: 仅包含已成功估值资产的 subtotal，不代表全部资产价值。
+            unvalued_asset_count:
+              type: integer
+              minimum: 0
+            data_status:
+              allOf:
+                - $ref: "#/components/schemas/PortfolioDataStatus"
+              description: 当 `unvalued_asset_count > 0` 时必须为 `partial`。
+            freshness:
+              $ref: "#/components/schemas/PortfolioFreshness"
+            calculated_at:
+              type: string
+              format: date-time
+            oldest_observation_at:
+              type: string
+              format: date-time
+              nullable: true
+            warnings:
+              type: array
+              items:
+                $ref: "#/components/schemas/PortfolioNotice"
+            sources:
+              type: array
+              items:
+                $ref: "#/components/schemas/PortfolioSourceSummary"
     PortfolioSummary:
       type: object
+      description: 去重后的只读资产总览；金额字段均使用 Decimal wire string。
       required:
         - total_value_usd
         - available_to_trade_usd
+        - margin_in_use_usd
+        - unvalued_asset_count
+        - data_status
+        - freshness
+        - calculated_at
+        - warnings
+        - sources
       properties:
         total_value_usd:
-          $ref: "#/components/schemas/Decimal"
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          description: 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。
         today_pnl_usd:
-          $ref: "#/components/schemas/Decimal"
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          type: string
+          nullable: true
+          description: 首版固定返回 null，不从不完整的缓存或历史估值推导。
         today_pnl_percent:
-          $ref: "#/components/schemas/Decimal"
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          type: string
+          nullable: true
+          description: 首版固定返回 null，不从不完整的缓存或历史估值推导。
         available_to_trade_usd:
           allOf:
             - $ref: "#/components/schemas/Decimal"
-          description: 各交易账户中可直接下单的现金合计
+          description: |
+            可证明为 spendable/withdrawable 且没有 blocker 的余额子集；普通钱包余额
+            不会自动等于 available to trade。
         margin_in_use_usd:
-          $ref: "#/components/schemas/Decimal"
-        stocks_value_usd:
-          $ref: "#/components/schemas/Decimal"
-        updated_at:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          description: Hyperliquid 报告的 margin used。
+        unvalued_asset_count:
+          type: integer
+          minimum: 0
+        data_status:
+          allOf:
+            - $ref: "#/components/schemas/PortfolioDataStatus"
+          description: 当 `unvalued_asset_count > 0` 时必须为 `partial`。
+        freshness:
+          $ref: "#/components/schemas/PortfolioFreshness"
+        calculated_at:
           type: string
           format: date-time
+        oldest_observation_at:
+          type: string
+          format: date-time
+          nullable: true
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioNotice"
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioSourceSummary"
+    PortfolioAccountPage:
+      type: object
+      description: |
+        内部账本可能是链上或 venue 外部资产的业务镜像，不能与外部余额双计。
+        只有已对账且没有 blocker 的余额才可以参与 available-to-trade 计算。
+      required:
+        - scope
+        - items
+        - reconciled
+        - freshness
+        - blockers
+      properties:
+        scope:
+          type: string
+          enum:
+            - internal_ledger
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountBalance"
+        reconciled:
+          type: boolean
+          description: 是否已与对应的外部资产来源完成对账。
+        freshness:
+          $ref: "#/components/schemas/PortfolioFreshness"
+        blockers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioNotice"
     AccountBalance:
       type: object
       required:
@@ -4047,6 +4383,49 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Position"
+    PortfolioHoldingPage:
+      description: |
+        分页 HIP-3 position 展示。position notional 只用于展示，不再累加进 summary；
+        total equity 采用 Hyperliquid account equity，避免对同一 venue 资产双计。
+      allOf:
+        - $ref: "#/components/schemas/Page"
+        - type: object
+          required:
+            - items
+            - total_equity_usd
+            - data_status
+            - freshness
+            - calculated_at
+            - warnings
+            - sources
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/HoldingGroup"
+            total_equity_usd:
+              allOf:
+                - $ref: "#/components/schemas/Decimal"
+              description: Hyperliquid account equity；不以 position notional 求和。
+            data_status:
+              $ref: "#/components/schemas/PortfolioDataStatus"
+            freshness:
+              $ref: "#/components/schemas/PortfolioFreshness"
+            calculated_at:
+              type: string
+              format: date-time
+            oldest_observation_at:
+              type: string
+              format: date-time
+              nullable: true
+            warnings:
+              type: array
+              items:
+                $ref: "#/components/schemas/PortfolioNotice"
+            sources:
+              type: array
+              items:
+                $ref: "#/components/schemas/PortfolioSourceSummary"
     ActivityCategory:
       type: string
       enum:
