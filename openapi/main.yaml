@@ -4031,6 +4031,21 @@ components:
         - dodoex_price
         - fixed_peg
         - internal_ledger
+    PortfolioAssetSourceKind:
+      type: string
+      description: 资产余额事实来源；估值来源由 `pricing_source` 单独表达。
+      enum:
+        - evm_rpc
+        - hyperliquid_info
+    PortfolioAssetNetwork:
+      type: string
+      description: Portfolio 资产及其来源允许返回的四条 EVM 网络与 Hyperliquid venue。
+      enum:
+        - BSC
+        - Arbitrum
+        - Base
+        - Ethereum
+        - Hyperliquid
     PortfolioSourceState:
       type: string
       enum:
@@ -4071,7 +4086,11 @@ components:
           nullable: true
     PortfolioSourceSummary:
       type: object
-      description: 单个只读余额、价格或内部账本来源的可用性与缓存新鲜度。
+      description: |
+        单个只读余额、价格或内部账本来源的可用性与缓存新鲜度。`status=available`
+        时 freshness 必须非 null；`status=unavailable` 且没有可用 last-good 时
+        freshness 必须为 null；使用 last-good 时必须返回 `status=available`、
+        `freshness=stale`，并附带 `using_last_good` warning。
       required:
         - source
         - status
@@ -4081,13 +4100,16 @@ components:
           $ref: "#/components/schemas/PortfolioSourceKind"
         network:
           allOf:
-            - $ref: "#/components/schemas/Chain"
+            - $ref: "#/components/schemas/PortfolioAssetNetwork"
           type: string
           nullable: true
         status:
           $ref: "#/components/schemas/PortfolioSourceState"
         freshness:
-          $ref: "#/components/schemas/PortfolioFreshness"
+          allOf:
+            - $ref: "#/components/schemas/PortfolioFreshness"
+          type: string
+          nullable: true
         observed_at:
           type: string
           format: date-time
@@ -4120,9 +4142,9 @@ components:
         asset_id:
           type: string
         source:
-          $ref: "#/components/schemas/PortfolioSourceKind"
+          $ref: "#/components/schemas/PortfolioAssetSourceKind"
         network:
-          $ref: "#/components/schemas/Chain"
+          $ref: "#/components/schemas/PortfolioAssetNetwork"
         wallet_id:
           type: string
           nullable: true
@@ -4181,7 +4203,10 @@ components:
           items:
             $ref: "#/components/schemas/PortfolioWarningCode"
     PortfolioAssetPage:
-      description: 分页资产余额及其已估值小计、未估值数量、来源状态和缓存时间。
+      description: |
+        分页资产余额及其已估值小计、未估值数量、来源状态和缓存时间。
+        `valued_total_usd` 与 `unvalued_asset_count` 是同一 immutable snapshot 下对
+        完整资产集合计算的全局聚合值，会在每一页重复；客户端不得跨页累加。
       allOf:
         - $ref: "#/components/schemas/Page"
         - type: object
@@ -4202,10 +4227,15 @@ components:
             valued_total_usd:
               allOf:
                 - $ref: "#/components/schemas/Decimal"
-              description: 仅包含已成功估值资产的 subtotal，不代表全部资产价值。
+              description: |
+                同一 immutable snapshot 范围内全部已成功估值资产的全局 subtotal，
+                不代表全部资产价值；该值会在每页重复，客户端不得跨页累加。
             unvalued_asset_count:
               type: integer
               minimum: 0
+              description: |
+                同一 immutable snapshot 范围内完整资产集合的全局未估值数量；该值会
+                在每页重复，客户端不得跨页累加。
             data_status:
               allOf:
                 - $ref: "#/components/schemas/PortfolioDataStatus"
