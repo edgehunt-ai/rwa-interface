@@ -43,8 +43,10 @@ export function generateClient(requestedOutput) {
   writeFileSync(pubspecPath, pubspec);
   execFileSync("dart", ["pub", "get"], { cwd: outputDir, stdio: "inherit" });
   execFileSync("dart", ["run", "build_runner", "build"], { cwd: outputDir, stdio: "inherit" });
-  // 二次源码已提交；本机绝对路径相关的 build cache 不属于可复现 artifact。
+  // 二次源码已提交；本机绝对路径相关的 build cache 和 pub resolution lock
+  // 不属于可复现 artifact（package lock 由应用根目录统一管理）。
   rmSync(resolve(outputDir, ".dart_tool"), { recursive: true, force: true });
+  rmSync(resolve(outputDir, "pubspec.lock"), { force: true });
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

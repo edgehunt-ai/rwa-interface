@@ -1,43 +1,114 @@
 # rwa_interface
 
-Cross-platform RWA trading interface.
+跨平台 RWA 交易界面（Flutter）。
 
-## Generated API ownership
+## 快速开始
 
-`openapi/main.yaml` is the only wire-contract source. Files under
-`packages/rwa_api_client` are generated and must not be edited manually.
-Authentication, failure mapping, SSE, repositories, and Riverpod state are
-application-owned; presentation code must not import generated wire models or
-Dio response types.
+环境要求：Node.js 22、Flutter 3.47/Dart 3.13，以及可用的 Docker daemon。
 
-本功能的规格、计划、任务与集成说明统一使用中文。`openapi/main.yaml` 是唯一 wire contract；
-`packages/rwa_api_client/`（包括提交的 `*.g.dart`）由 OpenAPI Generator 7.24.0 和
-`dart-dio` 生成，禁止手改。生成器版本记录在 `openapitools.json` 和生成包的
-`.openapi-generator/VERSION`，可据此追溯 source identity。
+安装依赖：
 
-应用只通过 `lib/data/services/`、repository 和 domain model 消费 generated client。
-Dio 负责 HTTP、超时、认证 header 与取消；Riverpod 只负责依赖装配、生命周期和异步状态，
-不会替代 Dio，也不会形成一个永久的全局 AppState。query 默认 auto-dispose，刷新保留已有数据；
-命令防重复提交并保留调用方的 Idempotency-Key。登出或换用户通过 session generation 清理用户态，
-public provider 不受影响。
+```bash
+npm ci --ignore-scripts
+flutter pub get
+```
 
-普通请求使用显式 connect/send/receive timeout。SSE 使用独立的无 receive-timeout 长连接，支持 chunk frame、多行 data、heartbeat、
-去重、Last-Event-ID、有界退避、取消和 `resync_required`。所有 Dio/generated 异常在 data 边界映射
-为安全的 `ApiFailure`，常规诊断只记录分类、状态、code 与 request ID，不记录 token、raw body、
-stack trace 或金融 payload。
+完整质量验证：
 
-完整本地验证命令是 `npm run quality:check`；Release 使用同一个 `npm run release:verify` 入口。
-修改 `openapi/main.yaml` 后，可使用 `npm run client:regenerate` 依次完成正式客户端生成、
-`build_runner` 辅助代码生成和完整质量验证。该命令保留并串联现有的 `client:generate`、
-`client:prepare`、`client:check` 和 `quality:check`，不会替换它们。
-发布时 Android/iOS 均把 artifact 大小写入 summary；大小只用于比较，不设阈值或门禁。
+```bash
+npm run quality:check
+```
 
-## Observability
+修改 `openapi/main.yaml` 后，使用一个命令完成正式客户端生成、`build_runner` 和完整验证：
 
-Sentry error reporting and sampled performance monitoring are enabled by default. Runtime values can
-be supplied without source changes:
+```bash
+npm run client:regenerate
+```
 
-```sh
+## API 客户端
+
+### 契约与生成
+
+`openapi/main.yaml` 是后端和客户端共享的唯一公共 API 契约，使用 OpenAPI 3.0.3，路径以 `/v1`
+开头。契约中声明的路径不代表后端运行时一定已启用对应操作。
+
+客户端使用 OpenAPI Generator 7.24.0 的 `dart-dio` 生成器，并通过 Docker 运行，以避免依赖宿主机
+Java 版本。生成配置位于 `openapitools.json`，生成器版本记录在：
+
+```text
+openapitools.json
+packages/rwa_api_client/.openapi-generator/VERSION
+```
+
+常用命令：
+
+```bash
+# 只重新生成客户端源码
+npm run client:generate
+
+# 运行 built_value/build_runner，生成 *.g.dart
+npm run client:prepare
+
+# 临时生成并检查客户端是否发生漂移
+npm run client:check
+
+# 契约、生成、分析和测试的完整质量门禁
+npm run quality:check
+
+# 正式生成后再执行完整质量门禁
+npm run client:regenerate
+```
+
+生成文件位于 `packages/rwa_api_client`，不得手动编辑。`client:check` 会将临时生成结果与仓库中的
+客户端执行 `diff -qr`，用于检查生成代码是否发生漂移。
+
+### 应用调用边界
+
+API 请求的标准依赖方向是：
+
+```text
+Widget/页面 → Riverpod provider/notifier → repository/use case
+           → data service → generated dart-dio client → Dio
+```
+
+- Widget、页面和普通业务类不得直接创建 Dio 或调用 generated API。
+- Riverpod 负责依赖装配、生命周期和异步状态，不替代 Dio。
+- Repository 负责将 wire DTO 映射为 domain model。
+- Presentation/state 层只暴露 domain value 和稳定的 `ApiFailure`，不暴露 DTO、`Response` 或
+  `DioException`。
+- 只有启动初始化、非 Flutter isolate、传输基础设施和 focused test 可以在明确记录理由后直接调用
+  底层 API。
+
+### 请求、失败与实时事件
+
+- 普通请求使用显式 connect/send/receive timeout。
+- 401 使用 single-flight refresh，每个请求最多安全重试一次；重要命令只有在可证明可重放且带
+  `Idempotency-Key` 时才允许重试。
+- 所有 Dio/generated 异常在 data 边界映射为 `ApiFailure`，诊断不记录 token、raw body、stack
+  trace 或金融 payload。
+- SSE 使用独立的长连接，支持 chunk frame、多行 `data`、heartbeat、去重、Last-Event-ID、有界
+  退避、取消和 `resync_required`。
+- 金融数值保持无损 `String`；分页保留 items 和 continuation cursor。
+
+## 契约质量门禁
+
+```bash
+npm run contract:test
+npm run contract:rules
+npm run contract:lint
+npm run contract:validate
+npm run fixture:check
+npm run client:check
+```
+
+门禁会检查 operation ID、引用、路径参数、错误响应、金融命令幂等键、服务端字段、Decimal 类型、
+生成器高风险 fixture 以及客户端漂移。`contract:validate` 和客户端生成要求 Docker 可用。
+
+## 可观测性
+
+默认启用 Sentry 错误上报和采样性能监控。运行时参数通过 `--dart-define` 提供：
+
+```bash
 flutter run \
   --dart-define=SENTRY_DSN=https://public-key@example.ingest.sentry.io/project \
   --dart-define=SENTRY_ENVIRONMENT=staging \
@@ -46,17 +117,10 @@ flutter run \
   --dart-define=SENTRY_RELEASE=app@1.0.0+1
 ```
 
-Set `SENTRY_DSN` to an empty value to disable telemetry. Never commit a Sentry auth token; release,
-source-map, and debug-symbol upload credentials belong in CI secret storage.
+将 `SENTRY_DSN` 设为空值可禁用遥测。禁止把 Sentry auth token 写入源码、变量、日志或 workflow；
+`SENTRY_AUTH_TOKEN` 只能存放在 GitHub Actions Secrets 中。
 
-GitHub Actions runs quality checks for pushes and pull requests. Changing the version name in
-`pubspec.yaml` on `main` triggers Android and iOS release builds, creates the matching `v<version>`
-tag, and publishes a GitHub Release whose notes list commits since the previous stable version tag.
-A manual release workflow run builds artifacts without publishing a tag or Release. Configure
-runtime values under Actions **Variables**:
-
-Android releases include a universal APK plus smaller `arm64-v8a`, `armeabi-v7a`, and `x86_64`
-packages. Modern physical devices should normally use the `arm64-v8a` package.
+Actions Variables：
 
 ```text
 SENTRY_DSN
@@ -67,72 +131,30 @@ SENTRY_ORG=dodo-k4
 SENTRY_PROJECT=flutter
 ```
 
-Configure `SENTRY_AUTH_TOKEN` under Actions **Secrets** to upload Dart debug symbols, Android R8
-mappings, and iOS dSYM files. When the secret is absent, packaging still succeeds and only symbol
-upload is skipped. Never write this token to source, variables, logs, or workflow files.
+未配置 `SENTRY_AUTH_TOKEN` 时，打包仍会成功，只跳过 Dart 调试符号、Android R8 mapping 和 iOS
+dSYM 上传。iOS artifact 默认未签名；可安装或 App Store IPA 还需要 Apple 证书和 provisioning
+profile secrets。Android release 启用 R8 代码和资源压缩。
 
-The iOS artifact is unsigned. Producing an installable or App Store IPA additionally requires Apple
-distribution certificate and provisioning-profile secrets. Android release builds enable R8 code
-and resource shrinking; Sentry's Android Gradle plugin uploads the generated mapping when the token
-is available.
+## CI 与发布
 
-## Getting Started
+- GitHub Actions 对 push 和 pull request 执行 `npm run quality:check`。
+- PR 使用 concurrency，新提交会取消旧的质量运行；Release 运行不会自动取消。
+- `main` 上修改 `pubspec.yaml` 版本会触发 Android/iOS 发布构建、创建 `v<version>` 标签并发布
+  GitHub Release。
+- 手动 Release 只构建产物，不创建标签或 Release。
+- Release 使用同一 commit 的完整质量验证后才打包，并只在 summary 中报告 artifact size；不设置
+  体积阈值，不生成 checksum，也不做 production URL 阻断。
+- 契约治理文件变更时，`Contract approvals` workflow 要求至少一名具备仓库写入级别权限的协作者
+  批准当前 PR head SHA。仓库 ruleset 应要求通过 `Require an authorized contract approval` 状态检查。
 
-This project is a starting point for a Flutter application.
+## 多语言
 
-A few resources to get you started if this is your first Flutter project:
+API 生成层和 data/domain 层不保存翻译后的 UI 文案，只传递稳定的错误 `code`、`userAction` 和
+结构化字段。后续 UI 本地化由 presentation 层按 locale 映射；后端 `message` 仅作为受控兜底。
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## 相关文档
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-## OpenAPI contract
-
-`openapi/main.yaml` is the single public product contract shared by the backend and clients. It
-uses OpenAPI 3.0.3 and exposes explicit `/v1` paths. Runtime availability still requires a mounted
-backend route; a declared path is not evidence that an asset operation is enabled.
-
-Install and run the contract gate with Node.js 22:
-
-```sh
-npm ci --ignore-scripts
-npm run contract:check
-```
-
-The gate runs custom semantic rules, Redocly CLI 2.50.0 lint, and OpenAPI Generator 7.24.0
-validation through wrapper 2.40.1. Generator validation is configured with `useDocker: true` so it
-does not depend on the host Java version; Docker must be available locally and in CI.
-
-
-### Generated Dart API client
-
-The formal Flutter app consumes the same `openapi/main.yaml` contract through a generated `dart-dio` package:
-
-```sh
-npm run client:generate
-npm run client:check
-```
-
-Before analyzing or building Flutter, generate the `built_value` parts:
-
-```sh
-(cd packages/rwa_api_client && dart pub get && dart run build_runner build)
-```
-
-Generated files live under `packages/rwa_api_client` and must not be edited by hand. The app wraps the package in `lib/data/api`; repositories must map generated wire DTOs to domain models before exposing them to UI code. The Privy adapter supplies the current access token to the Dio interceptor. A 401 triggers at most one Privy refresh and replay, then returns the app to its login state if refresh fails. Privy remains the only owner of refresh tokens. The generator uses OpenAPI Generator 7.24.0 with `dart-dio`, `enumUnknownDefaultCase=true`, and `legacyDiscriminatorBehavior=false`.
-
-The custom rules reject duplicate or missing `operationId` values, unresolved references,
-incomplete path parameters, orphan schemas, financial commands without a required
-`Idempotency-Key`, `409`, and `422`, missing protected/public error response sets,
-server-owned request fields, non-Decimal financial wire values, and responses that omit
-`X-Request-ID`.
-
-`.github/CODEOWNERS` documents that contract changes are checked by the approval workflow.
-The `Contract approvals` workflow requires at least one authorized repository
-collaborator with write-level permission to approve the exact PR head commit whenever contract
-governance files change. Configure the repository ruleset to require the
-`Require an authorized contract approval` status check before merging to `main`.
+- 项目架构和 agent 执行约束：[AGENTS.md](AGENTS.md)
+- 项目宪章：[.specify/memory/constitution.md](.specify/memory/constitution.md)
+- 功能规格与实现计划：[specs/003-generate-api-client/](specs/003-generate-api-client/)
+- [Flutter 文档](https://docs.flutter.dev/)
