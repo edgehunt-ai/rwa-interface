@@ -1704,6 +1704,9 @@ paths:
       tags:
         - Funding
       summary: 入金记录列表
+      description: |
+        仅返回当前账号的 `wallet + observe_only` 真实入金 intent。服务端必须在游标分页前
+        过滤内部历史 `sandbox_ledger` 记录，避免旧 Demo 数据改变分页边界或被解释为真实入金。
       operationId: listDeposits
       parameters:
         - $ref: "#/components/parameters/Cursor"
@@ -1776,6 +1779,9 @@ paths:
       tags:
         - Funding
       summary: 入金详情与权威状态
+      description: |
+        仅返回当前账号的 `wallet + observe_only` 真实入金 intent。内部历史
+        `sandbox_ledger` id 对公共 API 等同不存在并返回 404。
       operationId: getDeposit
       parameters:
         - $ref: "#/components/parameters/DepositId"
@@ -2041,6 +2047,9 @@ paths:
       tags:
         - Activity
       summary: 交易与资金活动列表
+      description: |
+        返回当前账号的交易与资金活动。Deposit activity 只投影 `wallet + observe_only`
+        真实入金；内部历史 `sandbox_ledger` Deposit 必须在游标分页前过滤。
       operationId: listActivity
       parameters:
         - name: category
@@ -3702,53 +3711,169 @@ components:
           $ref: "#/components/schemas/Decimal"
     DepositMode:
       type: string
-      description: |
-        * `wallet` —— 普通入金到 App 可用余额
-        * `trade` —— 交易上下文中的入金，到账后需划转
-        * `external_import` —— 直接导入对应交易账户，链 / Token 固定
+      description: "`wallet` 只读观察当前用户已验证钱包的链上入金；不会增加 App 内部账本余额。"
       enum:
         - wallet
-        - trade
-        - external_import
+    DepositSettlementMode:
+      type: string
+      description: "`observe_only` 只观察用户钱包的链上资产，不写入内部 ledger。"
+      enum:
+        - observe_only
+    DepositProviderStatus:
+      type: string
+      description: Deposit observer 与对应链只读 Provider 的当前可用状态。
+      enum:
+        - available
+        - unavailable
+    DepositCreditTarget:
+      type: string
+      description: "`wallet` 表示资产位于用户自己的已验证链上钱包，不代表 App 内部账本已经记账。"
+      enum:
+        - wallet
     DepositAddress:
+      description: BSC 或 Arbitrum 的严格 USDC 入金指引；网络、chain ID、合约、decimals 和确认数必须成组匹配。
+      oneOf:
+        - $ref: "#/components/schemas/BscDepositAddress"
+        - $ref: "#/components/schemas/ArbitrumDepositAddress"
+      discriminator:
+        propertyName: chain
+        mapping:
+          BSC: "#/components/schemas/BscDepositAddress"
+          Arbitrum: "#/components/schemas/ArbitrumDepositAddress"
+    DepositAddressBase:
       type: object
+      additionalProperties: false
       required:
         - chain
+        - chain_id
         - token
+        - token_contract
+        - token_decimals
         - address
+        - qr_payload
+        - min_deposit
+        - confirmations_required
+        - credited_to
+        - warning
       properties:
         chain:
-          $ref: "#/components/schemas/Chain"
+          type: string
+        chain_id:
+          type: integer
+          format: int64
+          minimum: 1
         token:
           type: string
-          enum:
-            - USDC
+        token_contract:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+          description: 所选网络上经过后端 allowlist 和启动预检的 USDC 合约地址。
+        token_decimals:
+          type: integer
+          minimum: 0
+          maximum: 255
         address:
           type: string
-          example: "0x71F4B39A6D20A8"
+          pattern: "^0x[a-fA-F0-9]{40}$"
+          example: "0x1111111111111111111111111111111111111111"
+          description: 当前账号唯一、active 且已验证的 Privy EVM 钱包地址。
         memo:
           type: string
           nullable: true
           description: 部分链需要的备注 / tag
         qr_payload:
           type: string
-          description: 二维码内容，通常是 `ethereum:0x…@56/transfer?address=…` 形式的 URI
+          description: |
+            二维码内容，使用 `ethereum:<token_contract>@<chain_id>/transfer?address=<recipient>`
+            形式。recipient 必须与同一响应中的结构化 `address` 大小写不敏感地相等；
+            后端生成/解析测试与客户端展示前校验共同执行该不变量，不一致时 fail-closed。
         min_deposit:
-          $ref: "#/components/schemas/Decimal"
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          description: 必须大于零；服务端按精确十进制语义校验。
         confirmations_required:
           type: integer
-          example: 12
+          minimum: 1
+          example: 15
         credited_to:
-          $ref: "#/components/schemas/AccountKind"
+          $ref: "#/components/schemas/DepositCreditTarget"
         warning:
           type: string
+          minLength: 1
           example: 请仅向此地址转入所选网络的 USDC。
+    BscDepositAddress:
+      allOf:
+        - $ref: "#/components/schemas/DepositAddressBase"
+        - type: object
+          properties:
+            chain:
+              type: string
+              enum:
+                - BSC
+            chain_id:
+              type: integer
+              format: int64
+              enum:
+                - 56
+            token:
+              type: string
+              enum:
+                - USDC
+            token_contract:
+              type: string
+              enum:
+                - "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
+            token_decimals:
+              type: integer
+              enum:
+                - 18
+            qr_payload:
+              type: string
+              pattern: '^ethereum:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d@56/transfer\?address=0x[a-fA-F0-9]{40}(?:&uint256=[0-9]+)?$'
+            confirmations_required:
+              type: integer
+              enum:
+                - 15
+    ArbitrumDepositAddress:
+      allOf:
+        - $ref: "#/components/schemas/DepositAddressBase"
+        - type: object
+          properties:
+            chain:
+              type: string
+              enum:
+                - Arbitrum
+            chain_id:
+              type: integer
+              format: int64
+              enum:
+                - 42161
+            token:
+              type: string
+              enum:
+                - USDC
+            token_contract:
+              type: string
+              enum:
+                - "0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+            token_decimals:
+              type: integer
+              enum:
+                - 6
+            qr_payload:
+              type: string
+              pattern: '^ethereum:0xaf88d065e77c8cc2239327c5edb3a432268e5831@42161/transfer\?address=0x[a-fA-F0-9]{40}(?:&uint256=[0-9]+)?$'
+            confirmations_required:
+              type: integer
+              enum:
+                - 20
     CreateDepositIntentRequest:
       type: object
       additionalProperties: false
       required:
         - chain
         - token
+        - mode
       properties:
         chain:
           type: string
@@ -3764,11 +3889,9 @@ components:
           allOf:
             - $ref: "#/components/schemas/Decimal"
           nullable: true
-          description: Optional user-declared deposit amount
+          description: Optional user-declared deposit amount; when present it must be greater than zero.
         mode:
-          allOf:
-            - $ref: "#/components/schemas/DepositMode"
-          default: wallet
+          $ref: "#/components/schemas/DepositMode"
     DepositStatus:
       type: string
       enum:
@@ -3778,19 +3901,62 @@ components:
         - failed
         - ambiguous
         - manual_review
+    DepositFailureCode:
+      type: string
+      nullable: true
+      description: 稳定、机器可读的失败或恢复原因；正常状态返回 null。
+      enum:
+        - intent_expired
+        - observer_disabled
+        - rpc_unavailable
+        - chain_id_mismatch
+        - token_contract_unavailable
+        - token_metadata_mismatch
+        - wallet_unavailable
+        - observation_ambiguous
+        - canonical_chain_changed
+        - manual_review_required
     Deposit:
+      description: BSC 或 Arbitrum 的 observe-only Deposit；顶层网络必须与 instructions 一致。
+      oneOf:
+        - $ref: "#/components/schemas/BscObservedDeposit"
+        - $ref: "#/components/schemas/ArbitrumObservedDeposit"
+      discriminator:
+        propertyName: chain
+        mapping:
+          BSC: "#/components/schemas/BscObservedDeposit"
+          Arbitrum: "#/components/schemas/ArbitrumObservedDeposit"
+    DepositBase:
       type: object
+      additionalProperties: false
       required:
         - deposit_id
+        - mode
         - chain
         - token
+        - amount
         - status
+        - settlement_mode
+        - provider_status
+        - confirmations
+        - confirmations_required
+        - credited_to
+        - requires_transfer
+        - tx_hash
+        - activity_id
+        - failure_reason
+        - created_at
+        - updated_at
+        - expires_at
+        - credited_at
         - instructions
       properties:
         deposit_id:
           type: string
+        mode:
+          $ref: "#/components/schemas/DepositMode"
         chain:
-          $ref: "#/components/schemas/Chain"
+          type: string
         token:
           type: string
           enum:
@@ -3802,24 +3968,41 @@ components:
           nullable: true
         status:
           $ref: "#/components/schemas/DepositStatus"
+        settlement_mode:
+          $ref: "#/components/schemas/DepositSettlementMode"
+        provider_status:
+          $ref: "#/components/schemas/DepositProviderStatus"
         confirmations:
           type: integer
+          minimum: 0
         confirmations_required:
           type: integer
+          minimum: 1
         credited_to:
-          $ref: "#/components/schemas/AccountKind"
+          $ref: "#/components/schemas/DepositCreditTarget"
         requires_transfer:
           type: boolean
+          enum:
+            - false
           description: |
-            为 `true` 表示资金进入 App 可用余额，交易前仍需划转至交易账户；
-            外部导入模式为 `false`。
+            observe-only Deposit 固定为 `false`；资产用途变更必须进入另行授权的资金流程，
+            不能由当前 Deposit 暗示或执行内部划转。
         tx_hash:
           type: string
           nullable: true
+          pattern: "^0x[a-fA-F0-9]{64}$"
         activity_id:
           type: string
           nullable: true
+        failure_reason:
+          $ref: "#/components/schemas/DepositFailureCode"
         created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        expires_at:
           type: string
           format: date-time
         credited_at:
@@ -3828,6 +4011,28 @@ components:
           nullable: true
         instructions:
           $ref: "#/components/schemas/DepositAddress"
+    BscObservedDeposit:
+      allOf:
+        - $ref: "#/components/schemas/DepositBase"
+        - type: object
+          properties:
+            chain:
+              type: string
+              enum:
+                - BSC
+            instructions:
+              $ref: "#/components/schemas/BscDepositAddress"
+    ArbitrumObservedDeposit:
+      allOf:
+        - $ref: "#/components/schemas/DepositBase"
+        - type: object
+          properties:
+            chain:
+              type: string
+              enum:
+                - Arbitrum
+            instructions:
+              $ref: "#/components/schemas/ArbitrumDepositAddress"
     WithdrawalQuoteRequest:
       type: object
       additionalProperties: false
@@ -4583,7 +4788,14 @@ components:
         - type
         - status
         - title
+        - amount
+        - reference
+        - chain
+        - tx_hash
+        - explorer
         - created_at
+        - updated_at
+        - asset
       properties:
         id:
           type: string
@@ -4600,6 +4812,8 @@ components:
         amount:
           allOf:
             - $ref: "#/components/schemas/Decimal"
+          type: string
+          nullable: true
           description: Decimal amount without a unit suffix.
         context:
           type: string
@@ -4623,6 +4837,9 @@ components:
           type: object
           nullable: true
           description: 指向对应的业务实体，便于前端跳转
+          required:
+            - type
+            - id
           properties:
             type:
               type: string
@@ -4636,7 +4853,16 @@ components:
             id:
               type: string
         chain:
-          $ref: "#/components/schemas/Chain"
+          type: string
+          nullable: true
+          enum:
+            - BSC
+            - Arbitrum
+            - Base
+            - Ethereum
+            - Hyperliquid
+            - Polygon
+            - Solana
         tx_hash:
           type: string
           nullable: true
@@ -4644,6 +4870,9 @@ components:
           type: object
           nullable: true
           description: 区块链浏览器链接
+          required:
+            - name
+            - url
           properties:
             name:
               type: string
@@ -5146,16 +5375,166 @@ components:
             - USDC
         minimum_amount:
           $ref: "#/components/schemas/Decimal"
+    DepositRailBlocker:
+      type: string
+      enum:
+        - observer_disabled
+        - rpc_unavailable
+        - chain_id_mismatch
+        - token_contract_unavailable
+        - token_metadata_mismatch
+        - wallet_unavailable
+    DepositRailAvailability:
+      description: Deposit rail readiness；`available` 必须没有 blocker，`unavailable` 至少一个 blocker。
+      oneOf:
+        - $ref: "#/components/schemas/AvailableDepositRailAvailability"
+        - $ref: "#/components/schemas/UnavailableDepositRailAvailability"
+      discriminator:
+        propertyName: status
+        mapping:
+          available: "#/components/schemas/AvailableDepositRailAvailability"
+          unavailable: "#/components/schemas/UnavailableDepositRailAvailability"
+    AvailableDepositRailAvailability:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - blockers
+      properties:
+        status:
+          type: string
+          enum:
+            - available
+        blockers:
+          type: array
+          maxItems: 0
+          items:
+            $ref: "#/components/schemas/DepositRailBlocker"
+    UnavailableDepositRailAvailability:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - blockers
+      properties:
+        status:
+          type: string
+          enum:
+            - unavailable
+        blockers:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/DepositRailBlocker"
+    DepositRail:
+      description: 用户钱包直入的只读观察 rail；网络、chain ID、Token 合约、decimals 和确认数必须成组匹配。
+      oneOf:
+        - $ref: "#/components/schemas/BscDepositRail"
+        - $ref: "#/components/schemas/ArbitrumDepositRail"
+      discriminator:
+        propertyName: chain
+        mapping:
+          BSC: "#/components/schemas/BscDepositRail"
+          Arbitrum: "#/components/schemas/ArbitrumDepositRail"
+    DepositRailBase:
+      type: object
+      additionalProperties: false
+      description: |
+        `unavailable` rail 只用于解释阻塞原因；API 必须拒绝为它创建 Deposit intent。
+      required:
+        - chain
+        - chain_id
+        - token
+        - token_contract
+        - token_decimals
+        - minimum_amount
+        - confirmations_required
+        - availability
+      properties:
+        chain:
+          type: string
+        chain_id:
+          type: integer
+          format: int64
+        token:
+          type: string
+        token_contract:
+          type: string
+        token_decimals:
+          type: integer
+        minimum_amount:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          description: 必须大于零；服务端按精确十进制语义校验。
+        confirmations_required:
+          type: integer
+          minimum: 1
+        availability:
+          $ref: "#/components/schemas/DepositRailAvailability"
+    BscDepositRail:
+      allOf:
+        - $ref: "#/components/schemas/DepositRailBase"
+        - type: object
+          properties:
+            chain:
+              type: string
+              enum: [BSC]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [56]
+            token:
+              type: string
+              enum: [USDC]
+            token_contract:
+              type: string
+              enum: ["0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"]
+            token_decimals:
+              type: integer
+              enum: [18]
+            confirmations_required:
+              type: integer
+              enum: [15]
+    ArbitrumDepositRail:
+      allOf:
+        - $ref: "#/components/schemas/DepositRailBase"
+        - type: object
+          properties:
+            chain:
+              type: string
+              enum: [Arbitrum]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [42161]
+            token:
+              type: string
+              enum: [USDC]
+            token_contract:
+              type: string
+              enum: ["0xaf88d065e77c8cc2239327c5edb3a432268e5831"]
+            token_decimals:
+              type: integer
+              enum: [6]
+            confirmations_required:
+              type: integer
+              enum: [20]
     FundingCatalog:
       type: object
       required:
         - rails
+        - deposit_rails
         - updated_at
       properties:
         rails:
           type: array
           items:
             $ref: "#/components/schemas/FundingRail"
+        deposit_rails:
+          type: array
+          description: 当前账号可查看的真实钱包入金 rail 及其只读 observer readiness。
+          items:
+            $ref: "#/components/schemas/DepositRail"
         updated_at:
           type: string
           format: date-time
