@@ -17,9 +17,9 @@ info:
 
     | | `bstock`（现货） | `perp`（合约） |
     |---|---|---|
-    | 市场 | BSC bStocks Token | Arbitrum HIP-3 Perpetual |
+    | 市场 | BSC bStocks Token | Hyperliquid HIP-3 Perpetual |
     | 资产结果 | BSC Wallet 内的链上证券代币 | HIP-3 合约仓位 |
-    | 计价 | USDC | USDC |
+    | 交易资金结算 | BSC USDT | Hyperliquid Perps USDC |
     | 保证金 | 无 | Isolated / Cross |
 
     ## 约定
@@ -1828,7 +1828,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Transfer"
+                $ref: "#/components/schemas/CrossChainFundingTransfer"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -1869,11 +1869,59 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+  /v1/transfers/{transfer_id}/actions/{action_id}/submissions:
+    post:
+      tags:
+        - Funding
+      summary: 报告已广播的钱包动作交易哈希
+      description: |
+        `tx_hash` 只是客户端提供的不可信定位符。服务端必须按 frozen action 校验源链 receipt
+        的 chain、sender、recipient、input、value、status 与 logs；本请求不能直接确认动作成功，
+        不能改变 Provider 或 route，也不能触发后端签名、广播或自动重发。
+      operationId: createTransferActionSubmission
+      parameters:
+        - $ref: "#/components/parameters/TransferId"
+        - $ref: "#/components/parameters/TransferActionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferActionSubmissionRequest"
+      responses:
+        "201":
+          description: Accepted; the transaction locator is awaiting authoritative receipt verification
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferActionSubmission"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /v1/transfers/{transfer_id}/claims:
     post:
       tags:
         - Funding
       summary: 为需要恢复的划转创建 Claim
+      description: |
+        仅保留给既有非跨链恢复流程。新的跨链 Funding Transfer 通过 Transfer 上的
+        `refund_status` 与只追加 refund observation 自动对账，不允许调用本端点创建 Claim，
+        也不会因此获得自动签名、广播或退款执行能力。
       operationId: createTransferClaim
       parameters:
         - $ref: "#/components/parameters/TransferId"
@@ -2180,6 +2228,12 @@ components:
         type: string
     TransferId:
       name: transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+    TransferActionId:
+      name: action_id
       in: path
       required: true
       schema:
@@ -3240,7 +3294,7 @@ components:
           bstock: "#/components/schemas/BstockOrderPreviewRequest"
           perp: "#/components/schemas/PerpOrderPreviewRequest"
     OrderPreview:
-      description: 根据 `kind` 锁定结算网络：bstock => BSC/USDC，perp => Arbitrum/USDC。
+      description: 根据 `kind` 锁定结算身份：bstock => BSC/USDT，perp => Hyperliquid Perps/USDC。
       oneOf:
         - $ref: "#/components/schemas/BstockOrderPreview"
         - $ref: "#/components/schemas/PerpOrderPreview"
@@ -3256,6 +3310,10 @@ components:
             - kind
             - network
             - settlement_asset
+            - settlement_chain_id
+            - settlement_asset_id
+            - settlement_token_contract
+            - settlement_token_decimals
           properties:
             kind:
               type: string
@@ -3268,7 +3326,24 @@ components:
             settlement_asset:
               type: string
               enum:
-                - USDC
+                - USDT
+            settlement_chain_id:
+              type: integer
+              format: int64
+              enum:
+                - 56
+            settlement_asset_id:
+              type: string
+              enum:
+                - eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955
+            settlement_token_contract:
+              type: string
+              enum:
+                - "0x55d398326f99059ff775485246999027b3197955"
+            settlement_token_decimals:
+              type: integer
+              enum:
+                - 18
         - $ref: "#/components/schemas/OrderPreviewCommon"
     PerpOrderPreview:
       allOf:
@@ -3277,6 +3352,10 @@ components:
             - kind
             - network
             - settlement_asset
+            - settlement_chain_id
+            - settlement_asset_id
+            - settlement_token_contract
+            - settlement_token_decimals
           properties:
             kind:
               type: string
@@ -3285,11 +3364,28 @@ components:
             network:
               type: string
               enum:
-                - Arbitrum
+                - Hyperliquid
             settlement_asset:
               type: string
               enum:
                 - USDC
+            settlement_chain_id:
+              type: integer
+              format: int64
+              enum:
+                - 1337
+            settlement_asset_id:
+              type: string
+              enum:
+                - hyperliquid:1337/perps:USDC-PERPS
+            settlement_token_contract:
+              type: string
+              enum:
+                - "0x2100000000000000000000000000000000000000"
+            settlement_token_decimals:
+              type: integer
+              enum:
+                - 8
         - $ref: "#/components/schemas/OrderPreviewCommon"
     OrderPreviewCommon:
       type: object
@@ -4700,8 +4796,14 @@ components:
         - failed
         - cancelled
     Transfer:
+      description: Legacy internal transfer or the new cross-chain funding transfer returned by the shared lookup and realtime surfaces.
+      oneOf:
+        - $ref: "#/components/schemas/LegacyTransfer"
+        - $ref: "#/components/schemas/CrossChainFundingTransfer"
+    LegacyTransfer:
       type: object
-      description: App 账户与交易账户之间的资金划转记录
+      additionalProperties: false
+      description: Existing account-to-account transfer retained for Claim and historical activity compatibility.
       required:
         - transfer_id
         - asset
@@ -4723,7 +4825,7 @@ components:
         to_account:
           $ref: "#/components/schemas/AccountKind"
         status:
-          $ref: "#/components/schemas/TransferStatus"
+          $ref: "#/components/schemas/LegacyTransferStatus"
         failure_reason:
           type: string
           nullable: true
@@ -4740,6 +4842,259 @@ components:
           type: string
           format: date-time
           nullable: true
+    CrossChainFundingTransfer:
+      type: object
+      additionalProperties: false
+      description: |
+        一条已冻结单来源、单 Provider route 的跨链交易资金划转。
+        主状态与 source/provider/target/refund observations 独立；只有源链 receipt、
+        Provider terminal success 和目标端独立入账三项证据同时满足时才能 `completed`。
+      allOf:
+        - oneOf:
+            - $ref: "#/components/schemas/CompletedFundingTransferState"
+            - $ref: "#/components/schemas/NonCompletedFundingTransferState"
+        - oneOf:
+            - $ref: "#/components/schemas/BstockFundingTransferTarget"
+            - $ref: "#/components/schemas/PerpFundingTransferTarget"
+        - oneOf:
+            - $ref: "#/components/schemas/LockedExecutableActionTransferState"
+            - $ref: "#/components/schemas/NoExecutableActionTransferState"
+      required:
+        - transfer_id
+        - plan_id
+        - rail
+        - amount
+        - source
+        - target
+        - provider
+        - status
+        - source_execution_status
+        - provider_status
+        - provider_observation
+        - target_credit_status
+        - refund_status
+        - recovery_status
+        - source_transaction
+        - target_credit
+        - refund
+        - next_action
+        - failure_reason
+        - ambiguous_reason
+        - manual_review_reason
+        - activity_id
+        - route_locked_at
+        - wallet_action_released_at
+        - created_at
+        - updated_at
+        - completed_at
+      properties:
+        transfer_id:
+          type: string
+        plan_id:
+          type: string
+        rail:
+          $ref: "#/components/schemas/ProductKind"
+        amount:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          description: Frozen target shortfall covered by this Transfer.
+        source:
+          $ref: "#/components/schemas/FundingSourceBalanceSnapshot"
+        target:
+          $ref: "#/components/schemas/FundingTargetBalanceSnapshot"
+        provider:
+          $ref: "#/components/schemas/FundingProvider"
+        status:
+          $ref: "#/components/schemas/TransferStatus"
+        source_execution_status:
+          $ref: "#/components/schemas/TransferSourceExecutionStatus"
+        provider_status:
+          $ref: "#/components/schemas/TransferProviderStatus"
+        provider_observation:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingProviderObservation"
+          nullable: true
+        target_credit_status:
+          $ref: "#/components/schemas/TransferTargetCreditStatus"
+        refund_status:
+          $ref: "#/components/schemas/TransferRefundStatus"
+        recovery_status:
+          $ref: "#/components/schemas/TransferRecoveryStatus"
+        source_transaction:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceTransactionObservation"
+          nullable: true
+        target_credit:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingTargetCreditObservation"
+          nullable: true
+        refund:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingRefundObservation"
+          nullable: true
+        next_action:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingWalletAction"
+          nullable: true
+          description: |
+            仅返回已冻结 route 中当前可执行的下一个动作；前序 receipt 未权威确认时为 null。
+            服务端必须先在同一事务持久化 `route_locked_at` 和 `wallet_action_released_at`，
+            才能返回含 `to/data/value` 的 next_action。
+        failure_reason:
+          type: string
+          nullable: true
+        ambiguous_reason:
+          type: string
+          nullable: true
+        manual_review_reason:
+          type: string
+          nullable: true
+        activity_id:
+          type: string
+          nullable: true
+        route_locked_at:
+          type: string
+          format: date-time
+          nullable: true
+        wallet_action_released_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+    CompletedFundingTransferState:
+      type: object
+      required:
+        - status
+        - source_execution_status
+        - provider_status
+        - provider_observation
+        - target_credit_status
+        - source_transaction
+        - target_credit
+        - recovery_status
+        - completed_at
+        - next_action
+      properties:
+        status:
+          type: string
+          enum: [completed]
+        source_execution_status:
+          type: string
+          enum: [confirmed]
+        provider_status:
+          type: string
+          enum: [succeeded]
+        provider_observation:
+          $ref: "#/components/schemas/CompletedFundingProviderObservation"
+        target_credit_status:
+          type: string
+          enum: [confirmed]
+        source_transaction:
+          $ref: "#/components/schemas/CompletedFundingSourceTransactionObservation"
+        target_credit:
+          $ref: "#/components/schemas/FundingTargetCreditObservation"
+        recovery_status:
+          type: string
+          enum: [none]
+        completed_at:
+          type: string
+          format: date-time
+        next_action:
+          type: object
+          nullable: true
+          enum: [null]
+    NonCompletedFundingTransferState:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - awaiting_authorization
+            - awaiting_wallet
+            - origin_submitted
+            - origin_confirmed
+            - filling
+            - refund_pending
+            - refunded
+            - failed
+            - ambiguous
+            - manual_review
+    BstockFundingTransferTarget:
+      type: object
+      required:
+        - rail
+        - target
+      properties:
+        rail:
+          type: string
+          enum: [bstock]
+        target:
+          $ref: "#/components/schemas/BstockFundingTargetBalanceSnapshot"
+        target_credit:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/BstockFundingTargetCreditObservation"
+          nullable: true
+    PerpFundingTransferTarget:
+      type: object
+      required:
+        - rail
+        - target
+      properties:
+        rail:
+          type: string
+          enum: [perp]
+        target:
+          $ref: "#/components/schemas/PerpFundingTargetBalanceSnapshot"
+        target_credit:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/PerpFundingTargetCreditObservation"
+          nullable: true
+    LockedExecutableActionTransferState:
+      type: object
+      required:
+        - status
+        - next_action
+        - route_locked_at
+        - wallet_action_released_at
+      properties:
+        status:
+          type: string
+          enum: [awaiting_wallet]
+        next_action:
+          $ref: "#/components/schemas/ReadyFundingWalletAction"
+        route_locked_at:
+          type: string
+          format: date-time
+        wallet_action_released_at:
+          type: string
+          format: date-time
+    NoExecutableActionTransferState:
+      type: object
+      required:
+        - next_action
+      properties:
+        next_action:
+          type: object
+          nullable: true
+          enum: [null]
     Claim:
       type: object
       description: 划转失败后的资金退回记录
@@ -5282,10 +5637,14 @@ components:
           type: string
           example: USDC
         amount:
-          $ref: "#/components/schemas/Decimal"
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          description: For transfer authorization this is the frozen source maximum input, not the target shortfall.
         resource_id:
           type: string
-          description: 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer
+          description: |
+            绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer。
+            Transfer 授权只能消费同账户、未过期且 source/amount 完全匹配的 frozen plan。
     WalletAuthorization:
       type: object
       required:
@@ -5321,8 +5680,501 @@ components:
         expires_at:
           type: string
           format: date-time
+    FundingProvider:
+      type: string
+      enum:
+        - across
+        - relay
+    FundingAssetProvenance:
+      type: string
+      enum:
+        - circle_native
+        - tether_native
+        - tether_usdt0
+        - l2_standard_bridged
+        - binance_peg
+        - hyperliquid_perps
+    FundingSourceAssetId:
+      type: string
+      description: Eight exact v1 source identities; symbol-only matching is forbidden.
+      enum:
+        - eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+        - eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7
+        - eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831
+        - eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9
+        - eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913
+        - eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2
+        - eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d
+        - eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955
+    FundingRouteCapabilityStatus:
+      type: string
+      enum:
+        - available
+        - unavailable
+    FundingRouteBlocker:
+      type: string
+      enum:
+        - provider_unavailable
+        - route_unsupported
+        - token_unsupported
+        - exact_output_unsupported
+        - liquidity_insufficient
+        - route_paused
+        - capability_stale
+    FundingRouteCapability:
+      type: object
+      additionalProperties: false
+      required:
+        - rail
+        - provider
+        - status
+        - blockers
+        - observed_at
+        - expires_at
+      properties:
+        rail:
+          $ref: "#/components/schemas/ProductKind"
+        provider:
+          $ref: "#/components/schemas/FundingProvider"
+        status:
+          $ref: "#/components/schemas/FundingRouteCapabilityStatus"
+        blockers:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingRouteBlocker"
+        observed_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+    FundingRouteCapabilityMatrix:
+      type: object
+      additionalProperties: false
+      description: Exact Across/Relay capability coverage for both settlement targets.
+      required:
+        - bstock_across
+        - bstock_relay
+        - perp_across
+        - perp_relay
+      properties:
+        bstock_across:
+          allOf:
+            - $ref: "#/components/schemas/FundingRouteCapability"
+            - type: object
+              properties:
+                rail:
+                  type: string
+                  enum: [bstock]
+                provider:
+                  type: string
+                  enum: [across]
+        bstock_relay:
+          allOf:
+            - $ref: "#/components/schemas/FundingRouteCapability"
+            - type: object
+              properties:
+                rail:
+                  type: string
+                  enum: [bstock]
+                provider:
+                  type: string
+                  enum: [relay]
+        perp_across:
+          allOf:
+            - $ref: "#/components/schemas/FundingRouteCapability"
+            - type: object
+              properties:
+                rail:
+                  type: string
+                  enum: [perp]
+                provider:
+                  type: string
+                  enum: [across]
+        perp_relay:
+          allOf:
+            - $ref: "#/components/schemas/FundingRouteCapability"
+            - type: object
+              properties:
+                rail:
+                  type: string
+                  enum: [perp]
+                provider:
+                  type: string
+                  enum: [relay]
+    FundingSourceAssetIdentity:
+      description: One of the eight exact v1 source chain-token identities.
+      oneOf:
+        - $ref: "#/components/schemas/EthereumUsdcFundingSourceAsset"
+        - $ref: "#/components/schemas/EthereumUsdtFundingSourceAsset"
+        - $ref: "#/components/schemas/ArbitrumUsdcFundingSourceAsset"
+        - $ref: "#/components/schemas/ArbitrumUsdtFundingSourceAsset"
+        - $ref: "#/components/schemas/BaseUsdcFundingSourceAsset"
+        - $ref: "#/components/schemas/BaseUsdtFundingSourceAsset"
+        - $ref: "#/components/schemas/BscUsdcFundingSourceAsset"
+        - $ref: "#/components/schemas/BscUsdtFundingSourceAsset"
+      discriminator:
+        propertyName: asset_id
+        mapping:
+          "eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": "#/components/schemas/EthereumUsdcFundingSourceAsset"
+          "eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7": "#/components/schemas/EthereumUsdtFundingSourceAsset"
+          "eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831": "#/components/schemas/ArbitrumUsdcFundingSourceAsset"
+          "eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9": "#/components/schemas/ArbitrumUsdtFundingSourceAsset"
+          "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": "#/components/schemas/BaseUsdcFundingSourceAsset"
+          "eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2": "#/components/schemas/BaseUsdtFundingSourceAsset"
+          "eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d": "#/components/schemas/BscUsdcFundingSourceAsset"
+          "eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955": "#/components/schemas/BscUsdtFundingSourceAsset"
+    FundingSourceAssetIdentityBase:
+      type: object
+      additionalProperties: false
+      description: |
+        Source identity fields form one indivisible allowlisted tuple. Provider capabilities are dynamic,
+        scoped to this exact tuple and target rail, and expire independently of the static catalog version.
+      required:
+        - asset_id
+        - namespace
+        - network
+        - chain_id
+        - token
+        - token_contract
+        - token_decimals
+        - provenance
+      properties:
+        asset_id:
+          $ref: "#/components/schemas/FundingSourceAssetId"
+        namespace:
+          type: string
+          enum:
+            - eip155
+        network:
+          type: string
+          enum:
+            - Ethereum
+            - Arbitrum
+            - Base
+            - BSC
+        chain_id:
+          type: integer
+          format: int64
+          enum:
+            - 1
+            - 42161
+            - 8453
+            - 56
+        token:
+          type: string
+          enum:
+            - USDC
+            - USDT
+        token_contract:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        token_decimals:
+          type: integer
+          enum:
+            - 6
+            - 18
+        provenance:
+          $ref: "#/components/schemas/FundingAssetProvenance"
+    EthereumUsdcFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"]
+            network:
+              type: string
+              enum: [Ethereum]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [1]
+            token:
+              type: string
+              enum: [USDC]
+            token_contract:
+              type: string
+              enum: ["0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"]
+            token_decimals:
+              type: integer
+              enum: [6]
+            provenance:
+              type: string
+              enum: [circle_native]
+    EthereumUsdtFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7"]
+            network:
+              type: string
+              enum: [Ethereum]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [1]
+            token:
+              type: string
+              enum: [USDT]
+            token_contract:
+              type: string
+              enum: ["0xdac17f958d2ee523a2206206994597c13d831ec7"]
+            token_decimals:
+              type: integer
+              enum: [6]
+            provenance:
+              type: string
+              enum: [tether_native]
+    ArbitrumUsdcFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831"]
+            network:
+              type: string
+              enum: [Arbitrum]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [42161]
+            token:
+              type: string
+              enum: [USDC]
+            token_contract:
+              type: string
+              enum: ["0xaf88d065e77c8cc2239327c5edb3a432268e5831"]
+            token_decimals:
+              type: integer
+              enum: [6]
+            provenance:
+              type: string
+              enum: [circle_native]
+    ArbitrumUsdtFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"]
+            network:
+              type: string
+              enum: [Arbitrum]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [42161]
+            token:
+              type: string
+              enum: [USDT]
+            token_contract:
+              type: string
+              enum: ["0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"]
+            token_decimals:
+              type: integer
+              enum: [6]
+            provenance:
+              type: string
+              enum: [tether_usdt0]
+    BaseUsdcFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"]
+            network:
+              type: string
+              enum: [Base]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [8453]
+            token:
+              type: string
+              enum: [USDC]
+            token_contract:
+              type: string
+              enum: ["0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"]
+            token_decimals:
+              type: integer
+              enum: [6]
+            provenance:
+              type: string
+              enum: [circle_native]
+    BaseUsdtFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2"]
+            network:
+              type: string
+              enum: [Base]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [8453]
+            token:
+              type: string
+              enum: [USDT]
+            token_contract:
+              type: string
+              enum: ["0xfde4c96c8593536e31f229ea8f37b2ada2699bb2"]
+            token_decimals:
+              type: integer
+              enum: [6]
+            provenance:
+              type: string
+              enum: [l2_standard_bridged]
+    BscUsdcFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"]
+            network:
+              type: string
+              enum: [BSC]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [56]
+            token:
+              type: string
+              enum: [USDC]
+            token_contract:
+              type: string
+              enum: ["0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"]
+            token_decimals:
+              type: integer
+              enum: [18]
+            provenance:
+              type: string
+              enum: [binance_peg]
+    BscUsdtFundingSourceAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceAssetIdentityBase"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955"]
+            network:
+              type: string
+              enum: [BSC]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [56]
+            token:
+              type: string
+              enum: [USDT]
+            token_contract:
+              type: string
+              enum: ["0x55d398326f99059ff775485246999027b3197955"]
+            token_decimals:
+              type: integer
+              enum: [18]
+            provenance:
+              type: string
+              enum: [binance_peg]
+    FundingSourceAsset:
+      type: object
+      additionalProperties: false
+      required:
+        - identity
+        - route_capabilities
+      properties:
+        identity:
+          $ref: "#/components/schemas/FundingSourceAssetIdentity"
+        route_capabilities:
+          $ref: "#/components/schemas/FundingRouteCapabilityMatrix"
+    FundingSourceAssetCatalog:
+      type: object
+      additionalProperties: false
+      description: Exact eight-entry v1 source allowlist; every named identity is required once.
+      required:
+        - ethereum_usdc
+        - ethereum_usdt
+        - arbitrum_usdc
+        - arbitrum_usdt
+        - base_usdc
+        - base_usdt
+        - bsc_usdc
+        - bsc_usdt
+      properties:
+        ethereum_usdc:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/EthereumUsdcFundingSourceAsset"
+        ethereum_usdt:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/EthereumUsdtFundingSourceAsset"
+        arbitrum_usdc:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/ArbitrumUsdcFundingSourceAsset"
+        arbitrum_usdt:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/ArbitrumUsdtFundingSourceAsset"
+        base_usdc:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/BaseUsdcFundingSourceAsset"
+        base_usdt:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/BaseUsdtFundingSourceAsset"
+        bsc_usdc:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/BscUsdcFundingSourceAsset"
+        bsc_usdt:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAsset"
+            - type: object
+              properties:
+                identity:
+                  $ref: "#/components/schemas/BscUsdtFundingSourceAsset"
     FundingRail:
-      description: 根据 `rail` 锁定入金网络：bstock => BSC/USDC，perp => Arbitrum/USDC。
+      description: 根据 `rail` 锁定目标结算身份：bstock => BSC/USDT，perp => Hyperliquid Perps/USDC。
       oneOf:
         - $ref: "#/components/schemas/BstockFundingRail"
         - $ref: "#/components/schemas/PerpFundingRail"
@@ -5338,6 +6190,11 @@ components:
         - rail
         - network
         - settlement_asset
+        - chain_id
+        - settlement_asset_id
+        - token_contract
+        - token_decimals
+        - provenance
       properties:
         rail:
           type: string
@@ -5350,7 +6207,29 @@ components:
         settlement_asset:
           type: string
           enum:
-            - USDC
+            - USDT
+        chain_id:
+          type: integer
+          format: int64
+          enum:
+            - 56
+        settlement_asset_id:
+          type: string
+          enum:
+            - eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955
+        token_contract:
+          type: string
+          enum:
+            - "0x55d398326f99059ff775485246999027b3197955"
+        token_decimals:
+          type: integer
+          enum:
+            - 18
+        provenance:
+          allOf:
+            - $ref: "#/components/schemas/FundingAssetProvenance"
+          enum:
+            - binance_peg
         minimum_amount:
           $ref: "#/components/schemas/Decimal"
     PerpFundingRail:
@@ -5360,6 +6239,11 @@ components:
         - rail
         - network
         - settlement_asset
+        - chain_id
+        - settlement_asset_id
+        - token_contract
+        - token_decimals
+        - provenance
       properties:
         rail:
           type: string
@@ -5368,11 +6252,33 @@ components:
         network:
           type: string
           enum:
-            - Arbitrum
+            - Hyperliquid
         settlement_asset:
           type: string
           enum:
             - USDC
+        chain_id:
+          type: integer
+          format: int64
+          enum:
+            - 1337
+        settlement_asset_id:
+          type: string
+          enum:
+            - hyperliquid:1337/perps:USDC-PERPS
+        token_contract:
+          type: string
+          enum:
+            - "0x2100000000000000000000000000000000000000"
+        token_decimals:
+          type: integer
+          enum:
+            - 8
+        provenance:
+          allOf:
+            - $ref: "#/components/schemas/FundingAssetProvenance"
+          enum:
+            - hyperliquid_perps
         minimum_amount:
           $ref: "#/components/schemas/Decimal"
     DepositRailBlocker:
@@ -5521,13 +6427,29 @@ components:
               enum: [20]
     FundingCatalog:
       type: object
+      additionalProperties: false
       required:
+        - catalog_version
+        - source_assets
         - rails
         - deposit_rails
         - updated_at
       properties:
+        catalog_version:
+          type: string
+          description: Immutable allowlist/config version frozen into every selected quote.
+        source_assets:
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceAssetCatalog"
+          description: |
+            Exactly the eight v1 Ethereum/Arbitrum/Base/BSC USDC/USDT source identities.
+            Each identity includes dynamic Across/Relay capability freshness for both target rails.
         rails:
           type: array
+          description: Backward-compatible target rail collection; each item has an exact settlement identity.
+          minItems: 2
+          maxItems: 2
+          uniqueItems: true
           items:
             $ref: "#/components/schemas/FundingRail"
         deposit_rails:
@@ -5538,24 +6460,519 @@ components:
         updated_at:
           type: string
           format: date-time
+    FundingPlanMode:
+      type: string
+      enum:
+        - auto_single_source
+    FundingPlanStatus:
+      type: string
+      enum:
+        - ready
+        - already_funded
+        - blocked
+        - expired
+        - consumed
+        - cancelled
+    FundingPlanBlocker:
+      type: string
+      enum:
+        - target_balance_unavailable
+        - target_balance_stale
+        - single_source_insufficient
+        - no_safe_route
+        - provider_unavailable
+        - quote_expired
+        - route_disabled
+        - manual_review_required
+    FundingAssetIdentity:
+      type: object
+      additionalProperties: false
+      description: Namespace, chain, contract and decimals form one immutable asset identity.
+      required:
+        - asset_id
+        - namespace
+        - network
+        - chain_id
+        - token
+        - token_contract
+        - token_decimals
+        - provenance
+      properties:
+        asset_id:
+          type: string
+        namespace:
+          type: string
+          enum:
+            - eip155
+            - hyperliquid
+        network:
+          $ref: "#/components/schemas/Chain"
+        chain_id:
+          type: integer
+          format: int64
+          minimum: 1
+        token:
+          type: string
+        token_contract:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        token_decimals:
+          type: integer
+          minimum: 0
+          maximum: 255
+        provenance:
+          $ref: "#/components/schemas/FundingAssetProvenance"
+    FundingSourceBalanceSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        - wallet_id
+        - wallet_address
+        - asset
+        - available_amount
+        - gas_asset
+        - gas_balance
+        - observed_at
+        - valid_until
+      properties:
+        wallet_id:
+          type: string
+        wallet_address:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        asset:
+          $ref: "#/components/schemas/FundingSourceAssetIdentity"
+        available_amount:
+          $ref: "#/components/schemas/Decimal"
+        gas_asset:
+          type: string
+        gas_balance:
+          $ref: "#/components/schemas/Decimal"
+        observed_at:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+    FundingTargetBalanceSource:
+      type: string
+      enum:
+        - bsc_rpc
+        - hyperliquid_info
+    FundingTargetBalanceSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        - account
+        - account_ref
+        - asset
+        - available_amount
+        - source
+        - observed_at
+        - valid_until
+      properties:
+        account:
+          $ref: "#/components/schemas/AccountKind"
+        account_ref:
+          type: string
+        asset:
+          $ref: "#/components/schemas/FundingAssetIdentity"
+        available_amount:
+          $ref: "#/components/schemas/Decimal"
+        source:
+          $ref: "#/components/schemas/FundingTargetBalanceSource"
+        observed_at:
+          type: string
+          format: date-time
+        valid_until:
+          type: string
+          format: date-time
+    FundingFeeBreakdown:
+      type: object
+      additionalProperties: false
+      required:
+        - fee_asset
+        - provider_fee
+        - bridge_fee
+        - swap_fee
+        - network_fee
+        - total_fee
+        - total_cost_usd
+      properties:
+        fee_asset:
+          type: string
+        provider_fee:
+          $ref: "#/components/schemas/Decimal"
+        bridge_fee:
+          $ref: "#/components/schemas/Decimal"
+        swap_fee:
+          $ref: "#/components/schemas/Decimal"
+        network_fee:
+          $ref: "#/components/schemas/Decimal"
+        total_fee:
+          $ref: "#/components/schemas/Decimal"
+        total_cost_usd:
+          $ref: "#/components/schemas/Decimal"
+    FundingRefundPolicy:
+      type: object
+      additionalProperties: false
+      required:
+        - address
+        - address_role
+        - may_deduct_gas
+        - timing_note
+      properties:
+        address:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        address_role:
+          type: string
+          enum:
+            - source_wallet
+        may_deduct_gas:
+          type: boolean
+        timing_note:
+          type: string
+          minLength: 1
+          description: Must not promise an instant or full refund.
+    FundingRouteQuote:
+      type: object
+      additionalProperties: false
+      description: The only selected, normalized and immutable Provider route exposed to the client.
+      required:
+        - quote_id
+        - provider
+        - input_amount
+        - maximum_input_amount
+        - minimum_received
+        - fees
+        - eta_seconds
+        - quoted_at
+        - expires_at
+        - quote_hash
+        - refund
+      properties:
+        quote_id:
+          type: string
+        provider:
+          $ref: "#/components/schemas/FundingProvider"
+        input_amount:
+          $ref: "#/components/schemas/Decimal"
+        maximum_input_amount:
+          $ref: "#/components/schemas/Decimal"
+        minimum_received:
+          $ref: "#/components/schemas/Decimal"
+        fees:
+          $ref: "#/components/schemas/FundingFeeBreakdown"
+        eta_seconds:
+          type: integer
+          minimum: 0
+        quoted_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        quote_hash:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+        refund:
+          $ref: "#/components/schemas/FundingRefundPolicy"
+    TransferActionStatus:
+      type: string
+      enum:
+        - planned
+        - ready
+        - submitted
+        - confirmed
+        - failed
+        - ambiguous
+        - manual_review
+    Erc20ApprovalAction:
+      type: object
+      additionalProperties: false
+      required:
+        - action_id
+        - ordinal
+        - kind
+        - chain_id
+        - from
+        - to
+        - data
+        - value
+        - payload_hash
+        - valid_until
+        - status
+        - token_contract
+        - spender
+        - approval_amount
+      properties:
+        action_id:
+          type: string
+        ordinal:
+          type: integer
+          minimum: 1
+        kind:
+          type: string
+          enum:
+            - erc20_approval
+        chain_id:
+          type: integer
+          format: int64
+          minimum: 1
+        from:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        to:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        data:
+          type: string
+          pattern: "^0x[a-fA-F0-9]*$"
+        value:
+          type: string
+          pattern: "^0x[a-fA-F0-9]+$"
+          description: Frozen EVM transaction value encoded as a hexadecimal quantity, not a display amount.
+        payload_hash:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+        valid_until:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/TransferActionStatus"
+        token_contract:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        spender:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        approval_amount:
+          $ref: "#/components/schemas/Decimal"
+    OriginTransactionAction:
+      type: object
+      additionalProperties: false
+      required:
+        - action_id
+        - ordinal
+        - kind
+        - chain_id
+        - from
+        - to
+        - data
+        - value
+        - payload_hash
+        - valid_until
+        - status
+        - recipient
+        - refund_address
+      properties:
+        action_id:
+          type: string
+        ordinal:
+          type: integer
+          minimum: 1
+        kind:
+          type: string
+          enum:
+            - origin_transaction
+        chain_id:
+          type: integer
+          format: int64
+          minimum: 1
+        from:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        to:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        data:
+          type: string
+          pattern: "^0x[a-fA-F0-9]*$"
+        value:
+          type: string
+          pattern: "^0x[a-fA-F0-9]+$"
+          description: Frozen EVM transaction value encoded as a hexadecimal quantity, not a display amount.
+        payload_hash:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+        valid_until:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/TransferActionStatus"
+        recipient:
+          type: string
+        refund_address:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+    FundingWalletAction:
+      description: |
+        A server-frozen action. Provider signature steps, permit, gasless, calls arrays, multicall and
+        embedded destination actions are not representable by this contract.
+      oneOf:
+        - $ref: "#/components/schemas/Erc20ApprovalAction"
+        - $ref: "#/components/schemas/OriginTransactionAction"
+      discriminator:
+        propertyName: kind
+        mapping:
+          erc20_approval: "#/components/schemas/Erc20ApprovalAction"
+          origin_transaction: "#/components/schemas/OriginTransactionAction"
+    ReadyErc20ApprovalAction:
+      allOf:
+        - $ref: "#/components/schemas/Erc20ApprovalAction"
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [ready]
+    ReadyOriginTransactionAction:
+      allOf:
+        - $ref: "#/components/schemas/OriginTransactionAction"
+        - type: object
+          properties:
+            status:
+              type: string
+              enum: [ready]
+    ReadyFundingWalletAction:
+      oneOf:
+        - $ref: "#/components/schemas/ReadyErc20ApprovalAction"
+        - $ref: "#/components/schemas/ReadyOriginTransactionAction"
+      discriminator:
+        propertyName: kind
+        mapping:
+          erc20_approval: "#/components/schemas/ReadyErc20ApprovalAction"
+          origin_transaction: "#/components/schemas/ReadyOriginTransactionAction"
+    FundingWalletActionSummary:
+      type: object
+      additionalProperties: false
+      description: Frozen action metadata without executable to/data/value; executable payload is released only as Transfer.next_action after route lock.
+      required:
+        - action_id
+        - ordinal
+        - kind
+        - payload_hash
+        - valid_until
+        - status
+      properties:
+        action_id:
+          type: string
+        ordinal:
+          type: integer
+          minimum: 1
+        kind:
+          type: string
+          enum:
+            - erc20_approval
+            - origin_transaction
+        payload_hash:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+        valid_until:
+          type: string
+          format: date-time
+        status:
+          $ref: "#/components/schemas/TransferActionStatus"
     FundingPlanRequest:
       type: object
       additionalProperties: false
       required:
-        - rail
-        - asset
-        - amount
+        - trade_preview_id
+        - mode
       properties:
-        rail:
-          $ref: "#/components/schemas/ProductKind"
-        asset:
+        trade_preview_id:
           type: string
-          enum:
-            - USDC
-        amount:
-          $ref: "#/components/schemas/Decimal"
+          description: Immutable trade preview from which purpose, target identity and required target amount are derived.
+        mode:
+          $ref: "#/components/schemas/FundingPlanMode"
+    BstockFundingTargetAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingAssetIdentity"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955"]
+            namespace:
+              type: string
+              enum: [eip155]
+            network:
+              type: string
+              enum: [BSC]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [56]
+            token:
+              type: string
+              enum: [USDT]
+            token_contract:
+              type: string
+              enum: ["0x55d398326f99059ff775485246999027b3197955"]
+            token_decimals:
+              type: integer
+              enum: [18]
+            provenance:
+              type: string
+              enum: [binance_peg]
+    PerpFundingTargetAsset:
+      allOf:
+        - $ref: "#/components/schemas/FundingAssetIdentity"
+        - type: object
+          properties:
+            asset_id:
+              type: string
+              enum: ["hyperliquid:1337/perps:USDC-PERPS"]
+            namespace:
+              type: string
+              enum: [hyperliquid]
+            network:
+              type: string
+              enum: [Hyperliquid]
+            chain_id:
+              type: integer
+              format: int64
+              enum: [1337]
+            token:
+              type: string
+              enum: [USDC-PERPS]
+            token_contract:
+              type: string
+              enum: ["0x2100000000000000000000000000000000000000"]
+            token_decimals:
+              type: integer
+              enum: [8]
+            provenance:
+              type: string
+              enum: [hyperliquid_perps]
+    BstockFundingTargetBalanceSnapshot:
+      allOf:
+        - $ref: "#/components/schemas/FundingTargetBalanceSnapshot"
+        - type: object
+          properties:
+            account:
+              type: string
+              enum: [bstocks]
+            asset:
+              $ref: "#/components/schemas/BstockFundingTargetAsset"
+            source:
+              type: string
+              enum: [bsc_rpc]
+    PerpFundingTargetBalanceSnapshot:
+      allOf:
+        - $ref: "#/components/schemas/FundingTargetBalanceSnapshot"
+        - type: object
+          properties:
+            account:
+              type: string
+              enum: [hip3]
+            asset:
+              $ref: "#/components/schemas/PerpFundingTargetAsset"
+            source:
+              type: string
+              enum: [hyperliquid_info]
     FundingPlan:
-      description: 根据 `rail` 锁定计划网络：bstock => BSC/USDC，perp => Arbitrum/USDC。
+      description: 根据 `rail` 锁定目标结算身份：bstock => BSC/USDT，perp => Hyperliquid Perps/USDC。
       oneOf:
         - $ref: "#/components/schemas/BstockFundingPlan"
         - $ref: "#/components/schemas/PerpFundingPlan"
@@ -5564,102 +6981,229 @@ components:
         mapping:
           bstock: "#/components/schemas/BstockFundingPlan"
           perp: "#/components/schemas/PerpFundingPlan"
+    FundingPlanBase:
+      type: object
+      description: |
+        Stable response shape. `already_funded` and `blocked` plans return null for source/selected_route/expires_at,
+        an empty wallet_actions array, and a nullable blocker appropriate to the status.
+      allOf:
+        - oneOf:
+            - $ref: "#/components/schemas/ReadyFundingPlanState"
+            - $ref: "#/components/schemas/AlreadyFundedFundingPlanState"
+            - $ref: "#/components/schemas/BlockedFundingPlanState"
+            - $ref: "#/components/schemas/TerminalFundingPlanState"
+      required:
+        - plan_id
+        - trade_preview_id
+        - mode
+        - required_target_amount
+        - target_snapshot
+        - shortfall
+        - status
+        - blocker
+        - source
+        - selected_route
+        - wallet_actions
+        - created_at
+        - expires_at
+      properties:
+        plan_id:
+          type: string
+        trade_preview_id:
+          type: string
+        mode:
+          $ref: "#/components/schemas/FundingPlanMode"
+        required_target_amount:
+          $ref: "#/components/schemas/Decimal"
+        target_snapshot:
+          $ref: "#/components/schemas/FundingTargetBalanceSnapshot"
+        shortfall:
+          $ref: "#/components/schemas/Decimal"
+        status:
+          $ref: "#/components/schemas/FundingPlanStatus"
+        blocker:
+          type: string
+          allOf:
+            - $ref: "#/components/schemas/FundingPlanBlocker"
+          nullable: true
+        source:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingSourceBalanceSnapshot"
+          nullable: true
+        selected_route:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingRouteQuote"
+          nullable: true
+        wallet_actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/FundingWalletActionSummary"
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+    ReadyFundingPlanState:
+      type: object
+      required:
+        - status
+        - blocker
+        - source
+        - selected_route
+        - wallet_actions
+        - expires_at
+      properties:
+        status:
+          type: string
+          enum: [ready]
+        blocker:
+          type: string
+          nullable: true
+          enum: [null]
+        source:
+          $ref: "#/components/schemas/FundingSourceBalanceSnapshot"
+        selected_route:
+          $ref: "#/components/schemas/FundingRouteQuote"
+        wallet_actions:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/FundingWalletActionSummary"
+        expires_at:
+          type: string
+          format: date-time
+    AlreadyFundedFundingPlanState:
+      type: object
+      required:
+        - status
+        - blocker
+        - source
+        - selected_route
+        - wallet_actions
+        - expires_at
+        - shortfall
+      properties:
+        status:
+          type: string
+          enum: [already_funded]
+        blocker:
+          type: string
+          nullable: true
+          enum: [null]
+        source:
+          type: object
+          nullable: true
+          enum: [null]
+        selected_route:
+          type: object
+          nullable: true
+          enum: [null]
+        wallet_actions:
+          type: array
+          maxItems: 0
+          items:
+            $ref: "#/components/schemas/FundingWalletActionSummary"
+        expires_at:
+          type: string
+          nullable: true
+          enum: [null]
+        shortfall:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          pattern: "^0(?:\\.0+)?$"
+    BlockedFundingPlanState:
+      type: object
+      required:
+        - status
+        - blocker
+        - source
+        - selected_route
+        - wallet_actions
+        - expires_at
+      properties:
+        status:
+          type: string
+          enum: [blocked]
+        blocker:
+          $ref: "#/components/schemas/FundingPlanBlocker"
+        source:
+          type: object
+          nullable: true
+          enum: [null]
+        selected_route:
+          type: object
+          nullable: true
+          enum: [null]
+        wallet_actions:
+          type: array
+          maxItems: 0
+          items:
+            $ref: "#/components/schemas/FundingWalletActionSummary"
+        expires_at:
+          type: string
+          nullable: true
+          enum: [null]
+    TerminalFundingPlanState:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - expired
+            - consumed
+            - cancelled
     BstockFundingPlan:
-      type: object
-      additionalProperties: false
-      required:
-        - plan_id
-        - rail
-        - network
-        - asset
-        - amount
-        - total_fee
-        - status
-        - created_at
-        - expires_at
-      properties:
-        plan_id:
-          type: string
-        rail:
-          type: string
-          enum:
-            - bstock
-        network:
-          type: string
-          enum:
-            - BSC
-        asset:
-          type: string
-          enum:
-            - USDC
-        amount:
-          $ref: "#/components/schemas/Decimal"
-        total_fee:
-          $ref: "#/components/schemas/Decimal"
-        status:
-          type: string
-          enum:
-            - ready
-            - expired
-            - consumed
-        steps:
-          type: array
-          items:
-            type: string
-        created_at:
-          type: string
-          format: date-time
-        expires_at:
-          type: string
-          format: date-time
+      allOf:
+        - $ref: "#/components/schemas/FundingPlanBase"
+        - type: object
+          required:
+            - rail
+            - network
+            - asset
+          properties:
+            target_snapshot:
+              $ref: "#/components/schemas/BstockFundingTargetBalanceSnapshot"
+            rail:
+              type: string
+              enum:
+                - bstock
+            network:
+              type: string
+              enum:
+                - BSC
+            asset:
+              type: string
+              enum:
+                - USDT
     PerpFundingPlan:
-      type: object
-      additionalProperties: false
-      required:
-        - plan_id
-        - rail
-        - network
-        - asset
-        - amount
-        - total_fee
-        - status
-        - created_at
-        - expires_at
-      properties:
-        plan_id:
-          type: string
-        rail:
-          type: string
-          enum:
-            - perp
-        network:
-          type: string
-          enum:
-            - Arbitrum
-        asset:
-          type: string
-          enum:
-            - USDC
-        amount:
-          $ref: "#/components/schemas/Decimal"
-        total_fee:
-          $ref: "#/components/schemas/Decimal"
-        status:
-          type: string
-          enum:
-            - ready
-            - expired
-            - consumed
-        steps:
-          type: array
-          items:
-            type: string
-        created_at:
-          type: string
-          format: date-time
-        expires_at:
-          type: string
-          format: date-time
+      allOf:
+        - $ref: "#/components/schemas/FundingPlanBase"
+        - type: object
+          required:
+            - rail
+            - network
+            - asset
+          properties:
+            target_snapshot:
+              $ref: "#/components/schemas/PerpFundingTargetBalanceSnapshot"
+            rail:
+              type: string
+              enum:
+                - perp
+            network:
+              type: string
+              enum:
+                - Hyperliquid
+            asset:
+              type: string
+              enum:
+                - USDC
     TransferRequest:
       type: object
       additionalProperties: false
@@ -5671,7 +7215,251 @@ components:
           type: string
         authorization_id:
           type: string
-          description: 已授权且尚未消费的钱包操作授权 ID
+          description: 已绑定同一 frozen plan 且尚未消费的一次性钱包授权 ID。
+    TransferActionSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - tx_hash
+      properties:
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+          description: Untrusted transaction locator; it cannot directly confirm action success.
+    TransferActionSubmissionStatus:
+      type: string
+      enum:
+        - reported
+        - verifying
+        - verified
+        - failed
+        - ambiguous
+        - manual_review
+    TransferActionSubmission:
+      type: object
+      additionalProperties: false
+      required:
+        - submission_id
+        - transfer_id
+        - action_id
+        - tx_hash
+        - status
+        - reported_at
+        - verified_at
+      properties:
+        submission_id:
+          type: string
+        transfer_id:
+          type: string
+        action_id:
+          type: string
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        status:
+          $ref: "#/components/schemas/TransferActionSubmissionStatus"
+        reported_at:
+          type: string
+          format: date-time
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+    TransferSourceExecutionStatus:
+      type: string
+      enum:
+        - awaiting_wallet
+        - submitted
+        - confirmed
+        - failed
+        - ambiguous
+        - manual_review
+    TransferProviderStatus:
+      type: string
+      enum:
+        - pending
+        - processing
+        - succeeded
+        - failed
+        - refund_pending
+        - refunded
+        - unknown
+        - manual_review
+    FundingProviderObservation:
+      type: object
+      additionalProperties: false
+      required:
+        - provider
+        - status
+        - observed_at
+      properties:
+        provider:
+          $ref: "#/components/schemas/FundingProvider"
+        status:
+          $ref: "#/components/schemas/TransferProviderStatus"
+        observed_at:
+          type: string
+          format: date-time
+    CompletedFundingProviderObservation:
+      allOf:
+        - $ref: "#/components/schemas/FundingProviderObservation"
+        - type: object
+          required:
+            - status
+          properties:
+            status:
+              type: string
+              enum: [succeeded]
+    TransferTargetCreditStatus:
+      type: string
+      enum:
+        - pending
+        - confirmed
+        - unavailable
+        - ambiguous
+        - manual_review
+    TransferRefundStatus:
+      type: string
+      enum:
+        - not_applicable
+        - eligible
+        - pending
+        - confirmed
+        - failed
+        - ambiguous
+        - manual_review
+    TransferRecoveryStatus:
+      type: string
+      enum:
+        - none
+        - tracking
+        - refund_tracking
+        - ambiguous
+        - manual_review
+    FundingSourceTransactionObservation:
+      type: object
+      additionalProperties: false
+      required:
+        - chain_id
+        - tx_hash
+        - status
+        - receipt_success
+        - confirmations
+        - observed_at
+      properties:
+        chain_id:
+          type: integer
+          format: int64
+          minimum: 1
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        status:
+          $ref: "#/components/schemas/TransferSourceExecutionStatus"
+        receipt_success:
+          type: boolean
+        confirmations:
+          type: integer
+          minimum: 0
+        observed_at:
+          type: string
+          format: date-time
+    CompletedFundingSourceTransactionObservation:
+      allOf:
+        - $ref: "#/components/schemas/FundingSourceTransactionObservation"
+        - type: object
+          required:
+            - status
+            - receipt_success
+          properties:
+            status:
+              type: string
+              enum: [confirmed]
+            receipt_success:
+              type: boolean
+              enum: [true]
+    FundingTargetCreditObservation:
+      type: object
+      additionalProperties: false
+      required:
+        - account_ref
+        - asset
+        - available_before
+        - available_after
+        - credited_amount
+        - source
+        - observed_at
+      properties:
+        account_ref:
+          type: string
+        asset:
+          $ref: "#/components/schemas/FundingAssetIdentity"
+        available_before:
+          $ref: "#/components/schemas/Decimal"
+        available_after:
+          $ref: "#/components/schemas/Decimal"
+        credited_amount:
+          $ref: "#/components/schemas/Decimal"
+        source:
+          $ref: "#/components/schemas/FundingTargetBalanceSource"
+        observed_at:
+          type: string
+          format: date-time
+    BstockFundingTargetCreditObservation:
+      allOf:
+        - $ref: "#/components/schemas/FundingTargetCreditObservation"
+        - type: object
+          properties:
+            asset:
+              $ref: "#/components/schemas/BstockFundingTargetAsset"
+            source:
+              type: string
+              enum: [bsc_rpc]
+    PerpFundingTargetCreditObservation:
+      allOf:
+        - $ref: "#/components/schemas/FundingTargetCreditObservation"
+        - type: object
+          properties:
+            asset:
+              $ref: "#/components/schemas/PerpFundingTargetAsset"
+            source:
+              type: string
+              enum: [hyperliquid_info]
+    FundingRefundObservation:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - asset
+        - address
+        - amount
+        - tx_hash
+        - observed_at
+      properties:
+        status:
+          $ref: "#/components/schemas/TransferRefundStatus"
+        asset:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/FundingAssetIdentity"
+          nullable: true
+        address:
+          type: string
+          nullable: true
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        amount:
+          type: string
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          nullable: true
+        tx_hash:
+          type: string
+          nullable: true
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        observed_at:
+          type: string
+          format: date-time
+          nullable: true
     TransferClaimRequest:
       type: object
       additionalProperties: false
@@ -5741,13 +7529,27 @@ components:
         signature:
           type: string
           description: Privy-produced signature for this exact server action
-    TransferStatus:
+    LegacyTransferStatus:
       type: string
       enum:
         - pending
         - processing
         - claim_required
         - completed
+        - failed
+        - ambiguous
+        - manual_review
+    TransferStatus:
+      type: string
+      enum:
+        - awaiting_authorization
+        - awaiting_wallet
+        - origin_submitted
+        - origin_confirmed
+        - filling
+        - completed
+        - refund_pending
+        - refunded
         - failed
         - ambiguous
         - manual_review
