@@ -1500,12 +1500,16 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
-  /v1/orders/{order_id}/wallet-actions/{step_id}/complete:
+  /v1/orders/{order_id}/wallet-actions/{step_id}/executions:
     post:
       tags:
         - Orders
-      summary: 提交指定钱包动作的签名结果
-      operationId: completeOrderWalletAction
+      summary: 创建订单钱包动作执行
+      description: |
+        服务端按 `order_id` 与 `step_id` 解析已冻结的 EVM 动作，客户端只能选择 gas 支付模式，
+        不得提交或覆盖 chain、to、data、value、payload hash 或业务资源绑定。HIP-3 EIP-712
+        动作不通过本端点执行；Provider 尚未实现时订单保持 `next_action=null`。
+      operationId: createOrderWalletActionExecution
       parameters:
         - $ref: "#/components/parameters/OrderId"
         - $ref: "#/components/parameters/StepId"
@@ -1515,21 +1519,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WalletActionCompleteRequest"
+              $ref: "#/components/schemas/WalletActionExecutionCreateRequest"
       responses:
-        "200":
-          description: Returns the current order state
+        "201":
+          description: Execution created from the exact server-frozen order action
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestId"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Order"
+                $ref: "#/components/schemas/WalletActionExecution"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
         "422":
@@ -1881,16 +1887,16 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
-  /v1/transfers/{transfer_id}/actions/{action_id}/submissions:
+  /v1/transfers/{transfer_id}/actions/{action_id}/executions:
     post:
       tags:
         - Funding
-      summary: 报告已广播的钱包动作交易哈希
+      summary: 创建资金划转钱包动作执行
       description: |
-        `tx_hash` 只是客户端提供的不可信定位符。服务端必须按 frozen action 校验源链 receipt
-        的 chain、sender、recipient、input、value、status 与 logs；本请求不能直接确认动作成功，
-        不能改变 Provider 或 route，也不能触发后端签名、广播或自动重发。
-      operationId: createTransferActionSubmission
+        服务端按 `transfer_id` 与 `action_id` 解析当前已释放的 frozen action。客户端只能选择
+        gas 支付模式，不得提交或覆盖 chain、to、data、value、payload hash、Provider、route
+        或业务资源绑定。
+      operationId: createTransferWalletActionExecution
       parameters:
         - $ref: "#/components/parameters/TransferId"
         - $ref: "#/components/parameters/TransferActionId"
@@ -1900,17 +1906,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TransferActionSubmissionRequest"
+              $ref: "#/components/schemas/WalletActionExecutionCreateRequest"
       responses:
         "201":
-          description: Accepted; the transaction locator is awaiting authoritative receipt verification
+          description: Execution created from the exact server-frozen transfer action
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestId"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TransferActionSubmission"
+                $ref: "#/components/schemas/WalletActionExecution"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -1921,6 +1927,88 @@ paths:
           $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /v1/wallet-action-executions/{execution_id}/submissions:
+    post:
+      tags:
+        - Wallets
+      summary: 提交钱包动作执行授权或交易定位符
+      description: |
+        `app_sponsored` 执行只接受 Privy SDK 针对服务端返回的结构化 authorization payload
+        生成的授权签名；`user_paid_native` 执行只接受 `tx_hash`，且该值仅是不可信定位符，
+        服务端仍须按 frozen transaction 独立核验 receipt。
+
+        API 必须先以 compare-and-set 持久化 `submitting`，再在本请求内同步 relay 到 Privy，
+        且绝不持久化、记录或回显授权签名。Privy accepted 后持久化 transaction id 和/或
+        user operation hash；Worker 只对已有该标识的执行做 polling/Webhook/RPC 对账。
+
+        Privy 已接受请求或 timeout/5xx/崩溃导致状态不明后，执行模式与 payload 均被冻结：
+        不得切换模式、重新签名或自动重播。只有确定发生在广播前的拒绝才可进入 user-paid
+        fallback；状态不明必须进入 `ambiguous` 或 `manual_review`。
+      operationId: submitWalletActionExecution
+      parameters:
+        - $ref: "#/components/parameters/ExecutionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WalletActionExecutionSubmissionRequest"
+      responses:
+        "200":
+          description: Returns the current authoritative execution state
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletActionExecution"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+  /v1/wallet-action-executions/{execution_id}:
+    get:
+      tags:
+        - Wallets
+      summary: 获取钱包动作执行权威状态
+      description: |
+        返回服务端冻结的交易、gas 决策和 Provider/链上观察结果。只有 Privy 或 RPC 已观察到
+        实际广播后，服务端才可为该用户创建 Activity；客户端提交授权或 tx hash 本身不构成广播证据。
+      operationId: getWalletActionExecution
+      parameters:
+        - $ref: "#/components/parameters/ExecutionId"
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletActionExecution"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "503":
@@ -2247,6 +2335,12 @@ components:
         type: string
     TransferActionId:
       name: action_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ExecutionId:
+      name: execution_id
       in: path
       required: true
       schema:
@@ -3599,6 +3693,64 @@ components:
         mapping:
           bstock: "#/components/schemas/BstockCreateOrderRequest"
           perp: "#/components/schemas/PerpCreateOrderRequest"
+    OrderEvmAction:
+      type: object
+      additionalProperties: false
+      description: |
+        服务端为 bStocks 订单冻结的单笔 EVM 钱包动作。`chain_id/from/to/data/value` 与
+        `payload_hash` 均为服务端权威值；客户端只能引用 `step_id` 创建 execution，不能回传
+        或覆盖交易内容。HIP-3 EIP-712 action 不属于此类型。
+      required:
+        - step_id
+        - ordinal
+        - kind
+        - chain_id
+        - from
+        - to
+        - data
+        - value
+        - payload_hash
+        - valid_until
+        - gas_payment
+      properties:
+        step_id:
+          type: string
+        ordinal:
+          type: integer
+          minimum: 1
+        kind:
+          type: string
+          enum:
+            - erc20_approval
+            - spot_swap
+        chain_id:
+          type: integer
+          format: int64
+          enum:
+            - 56
+        from:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        to:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        data:
+          type: string
+          pattern: "^0x([a-fA-F0-9]{2})+$"
+        value:
+          type: string
+          enum:
+            - "0x0"
+          description: Native-value transfer is forbidden; v1 only executes zero-value contract calls.
+        payload_hash:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+          description: Versioned canonical wallet-action SHA-256 digest without a `0x` prefix.
+        valid_until:
+          type: string
+          format: date-time
+        gas_payment:
+          $ref: "#/components/schemas/GasPaymentQuote"
     Order:
       type: object
       required:
@@ -3608,6 +3760,8 @@ components:
         - side
         - type
         - status
+        - next_action
+        - wallet_action_blocker
         - created_at
       properties:
         order_id:
@@ -3625,6 +3779,25 @@ components:
           $ref: "#/components/schemas/OrderType"
         status:
           $ref: "#/components/schemas/OrderStatus"
+        next_action:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/OrderEvmAction"
+          nullable: true
+          description: |
+            仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action；
+            对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。
+        wallet_action_blocker:
+          type: string
+          nullable: true
+          enum:
+            - provider_unavailable
+            - action_not_ready
+            - capability_disabled
+            - not_applicable
+          description: |
+            Machine-readable reason why `next_action` is null. It must be null when an action is
+            present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
         limit_price:
           allOf:
             - $ref: "#/components/schemas/Decimal"
@@ -3678,6 +3851,15 @@ components:
         updated_at:
           type: string
           format: date-time
+      allOf:
+        - oneOf:
+            - $ref: "#/components/schemas/BstockOrderWalletActionState"
+            - $ref: "#/components/schemas/PerpOrderWalletActionState"
+          discriminator:
+            propertyName: kind
+            mapping:
+              bstock: "#/components/schemas/BstockOrderWalletActionState"
+              perp: "#/components/schemas/PerpOrderWalletActionState"
     Position:
       type: object
       required:
@@ -3856,7 +4038,7 @@ components:
         chain_id:
           type: integer
           format: int64
-          minimum: 1
+          enum: [1, 56, 8453, 42161]
         token:
           type: string
         token_contract:
@@ -4282,6 +4464,47 @@ components:
           type: string
           format: date-time
           nullable: true
+    BstockOrderWalletActionState:
+      oneOf:
+        - type: object
+          required: [kind, next_action, wallet_action_blocker]
+          properties:
+            kind:
+              type: string
+              enum: [bstock]
+            next_action:
+              $ref: "#/components/schemas/OrderEvmAction"
+            wallet_action_blocker:
+              type: string
+              nullable: true
+              enum: [null]
+        - type: object
+          required: [kind, next_action, wallet_action_blocker]
+          properties:
+            kind:
+              type: string
+              enum: [bstock]
+            next_action:
+              type: object
+              nullable: true
+              enum: [null]
+            wallet_action_blocker:
+              type: string
+              enum: [provider_unavailable, action_not_ready, capability_disabled]
+    PerpOrderWalletActionState:
+      type: object
+      required: [kind, next_action, wallet_action_blocker]
+      properties:
+        kind:
+          type: string
+          enum: [perp]
+        next_action:
+          type: object
+          nullable: true
+          enum: [null]
+        wallet_action_blocker:
+          type: string
+          enum: [not_applicable]
     PortfolioDataStatus:
       type: string
       description: |
@@ -6492,7 +6715,7 @@ components:
         chain_id:
           type: integer
           format: int64
-          minimum: 1
+          enum: [1, 56, 8453, 42161]
         token:
           type: string
         token_contract:
@@ -6685,6 +6908,7 @@ components:
         - payload_hash
         - valid_until
         - status
+        - gas_payment
         - token_contract
         - spender
         - approval_amount
@@ -6701,7 +6925,7 @@ components:
         chain_id:
           type: integer
           format: int64
-          minimum: 1
+          enum: [1, 56, 8453, 42161]
         from:
           type: string
           pattern: "^0x[a-fA-F0-9]{40}$"
@@ -6710,11 +6934,11 @@ components:
           pattern: "^0x[a-fA-F0-9]{40}$"
         data:
           type: string
-          pattern: "^0x[a-fA-F0-9]*$"
+          pattern: "^0x([a-fA-F0-9]{2})+$"
         value:
           type: string
-          pattern: "^0x[a-fA-F0-9]+$"
-          description: Frozen EVM transaction value encoded as a hexadecimal quantity, not a display amount.
+          enum: ["0x0"]
+          description: Native-value transfer is forbidden; v1 only executes zero-value contract calls.
         payload_hash:
           type: string
           pattern: "^[a-fA-F0-9]{64}$"
@@ -6723,6 +6947,8 @@ components:
           format: date-time
         status:
           $ref: "#/components/schemas/TransferActionStatus"
+        gas_payment:
+          $ref: "#/components/schemas/GasPaymentQuote"
         token_contract:
           type: string
           pattern: "^0x[a-fA-F0-9]{40}$"
@@ -6746,6 +6972,7 @@ components:
         - payload_hash
         - valid_until
         - status
+        - gas_payment
         - recipient
         - refund_address
       properties:
@@ -6761,7 +6988,7 @@ components:
         chain_id:
           type: integer
           format: int64
-          minimum: 1
+          enum: [1, 56, 8453, 42161]
         from:
           type: string
           pattern: "^0x[a-fA-F0-9]{40}$"
@@ -6770,11 +6997,11 @@ components:
           pattern: "^0x[a-fA-F0-9]{40}$"
         data:
           type: string
-          pattern: "^0x[a-fA-F0-9]*$"
+          pattern: "^0x([a-fA-F0-9]{2})+$"
         value:
           type: string
-          pattern: "^0x[a-fA-F0-9]+$"
-          description: Frozen EVM transaction value encoded as a hexadecimal quantity, not a display amount.
+          enum: ["0x0"]
+          description: Native-value transfer is forbidden; v1 only executes zero-value contract calls.
         payload_hash:
           type: string
           pattern: "^[a-fA-F0-9]{64}$"
@@ -6783,6 +7010,8 @@ components:
           format: date-time
         status:
           $ref: "#/components/schemas/TransferActionStatus"
+        gas_payment:
+          $ref: "#/components/schemas/GasPaymentQuote"
         recipient:
           type: string
         refund_address:
@@ -7198,55 +7427,945 @@ components:
         authorization_id:
           type: string
           description: 已绑定同一 frozen plan 且尚未消费的一次性钱包授权 ID。
-    TransferActionSubmissionRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - tx_hash
-      properties:
-        tx_hash:
-          type: string
-          pattern: "^0x[a-fA-F0-9]{64}$"
-          description: Untrusted transaction locator; it cannot directly confirm action success.
-    TransferActionSubmissionStatus:
+    GasPaymentMode:
       type: string
       enum:
-        - reported
-        - verifying
-        - verified
+        - app_sponsored
+        - user_paid_native
+    GasSponsorshipDecision:
+      type: string
+      enum:
+        - eligible
+        - user_gas_confirmation_required
+        - unavailable
+        - limit_exceeded
+        - circuit_open
+        - provider_rejected
+        - provider_ambiguous
+    WalletActionExecutionStatus:
+      type: string
+      description: |
+        `submitting` is durably entered with compare-and-set before the synchronous Privy relay.
+        A Privy timeout, 5xx response or process crash after that point is not a deterministic rejection:
+        it transitions to `ambiguous` or `manual_review` and must never be automatically replayed.
+      enum:
+        - awaiting_user_authorization
+        - submitting
+        - provider_submitted
+        - chain_confirmed
+        - completed
+        - user_gas_confirmation_required
         - failed
         - ambiguous
         - manual_review
-    TransferActionSubmission:
+    WalletActionResourceType:
+      type: string
+      enum:
+        - transfer
+        - order
+    WalletActionKind:
+      type: string
+      enum:
+        - erc20_approval
+        - origin_transaction
+        - spot_swap
+    WalletActionExecutionProvider:
+      type: string
+      enum:
+        - privy
+        - user_wallet
+    WalletActionProviderStatus:
+      type: string
+      enum:
+        - not_submitted
+        - submitted
+        - pending
+        - confirmed
+        - reverted
+        - failed
+        - unknown
+    WalletActionExecutionCreateRequest:
       type: object
       additionalProperties: false
       required:
-        - submission_id
-        - transfer_id
-        - action_id
-        - tx_hash
-        - status
-        - reported_at
-        - verified_at
+        - mode
       properties:
-        submission_id:
+        mode:
+          $ref: "#/components/schemas/GasPaymentMode"
+    SponsoredWalletActionExecutionSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - privy_authorization_signature
+      properties:
+        privy_authorization_signature:
           type: string
-        transfer_id:
-          type: string
-        action_id:
-          type: string
+          minLength: 1
+          maxLength: 8192
+          description: |
+            Opaque signature produced by the Privy SDK for the exact `privy_authorization_payload`.
+            The API relays it synchronously and must never persist, log or echo the signature.
+    UserPaidWalletActionExecutionSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - tx_hash
+      properties:
         tx_hash:
           type: string
           pattern: "^0x[a-fA-F0-9]{64}$"
-        status:
-          $ref: "#/components/schemas/TransferActionSubmissionStatus"
-        reported_at:
+          description: |
+            Untrusted locator for a user-paid transaction. The server must independently match its
+            chain, sender, recipient, input, value, receipt status and logs to the frozen transaction.
+    WalletActionExecutionSubmissionRequest:
+      type: object
+      additionalProperties: false
+      description: |
+        The accepted variant is determined by the execution's server-stored mode. Supplying the other
+        variant, both fields or any transaction/resource field is rejected fail-closed.
+      properties:
+        privy_authorization_signature:
+          type: string
+          minLength: 1
+          maxLength: 8192
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+      oneOf:
+        - $ref: "#/components/schemas/SponsoredWalletActionExecutionSubmissionRequest"
+        - $ref: "#/components/schemas/UserPaidWalletActionExecutionSubmissionRequest"
+    FrozenEvmTransaction:
+      type: object
+      additionalProperties: false
+      description: |
+        Exact server-frozen EVM call; clients cannot submit or override any field. In v1 `value`
+        is always the canonical zero quantity `0x0`; calldata is non-empty, lowercased by the server
+        before hashing, and represents complete bytes rather than odd-length nibbles.
+      required:
+        - to
+        - data
+        - value
+      properties:
+        to:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        data:
+          type: string
+          pattern: "^0x([a-fA-F0-9]{2})+$"
+        value:
+          type: string
+          enum:
+            - "0x0"
+          description: Exact canonical EVM zero quantity; native-value transfers are not supported in v1.
+    PrivyAuthorizationHeaders:
+      type: object
+      additionalProperties: false
+      required:
+        - privy-app-id
+        - privy-idempotency-key
+        - privy-request-expiry
+      properties:
+        privy-app-id:
+          type: string
+          minLength: 1
+        privy-idempotency-key:
+          type: string
+          minLength: 1
+        privy-request-expiry:
+          type: string
+          pattern: "^[0-9]+$"
+          description: |
+            Unix timestamp in milliseconds. It expires no later than 60 seconds after issuance and never
+            later than the frozen business action's `valid_until`.
+    PrivyAuthorizationTransaction:
+      type: object
+      additionalProperties: false
+      required:
+        - to
+        - data
+        - value
+      properties:
+        to:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        data:
+          type: string
+          pattern: "^0x([a-fA-F0-9]{2})+$"
+        value:
+          type: string
+          enum:
+            - "0x0"
+    PrivyAuthorizationParams:
+      type: object
+      additionalProperties: false
+      required:
+        - transaction
+      properties:
+        transaction:
+          $ref: "#/components/schemas/PrivyAuthorizationTransaction"
+    PrivyAuthorizationBody:
+      type: object
+      additionalProperties: false
+      required:
+        - method
+        - caip2
+        - chain_type
+        - sponsor
+        - reference_id
+        - params
+      properties:
+        method:
+          type: string
+          enum:
+            - eth_sendTransaction
+        caip2:
+          type: string
+          enum:
+            - "eip155:1"
+            - "eip155:56"
+            - "eip155:8453"
+            - "eip155:42161"
+        chain_type:
+          type: string
+          enum:
+            - ethereum
+        sponsor:
+          type: boolean
+          enum:
+            - true
+        reference_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: |
+            Stable server-generated execution correlation identifier. It is included in Privy
+            transaction Webhooks and is never supplied or overridden by the client.
+        params:
+          $ref: "#/components/schemas/PrivyAuthorizationParams"
+    PrivyAuthorizationPayload:
+      type: object
+      additionalProperties: false
+      description: |
+        Exact structured input for Flutter/React Privy `generateAuthorizationSignature`. The client
+        passes this structure to the Privy SDK; RFC 8785 canonicalization is SDK-owned and this API
+        never accepts an arbitrary JSON blob. The URL is restricted to Privy's HTTPS wallet RPC.
+
+        `body.caip2` MUST equal `eip155:{WalletActionExecution.chain_id}`;
+        `body.reference_id` MUST equal the execution id; and `body.params.transaction.to/data/value`
+        MUST byte-for-byte equal `WalletActionExecution.frozen_transaction`. Any mismatch is a
+        server fault and the client must not sign it.
+      required:
+        - version
+        - method
+        - url
+        - headers
+        - body
+      properties:
+        version:
+          type: integer
+          enum:
+            - 1
+        method:
+          type: string
+          enum:
+            - POST
+        url:
+          type: string
+          format: uri
+          pattern: "^https://api\\.privy\\.io/v1/wallets/[^/]+/rpc$"
+        headers:
+          $ref: "#/components/schemas/PrivyAuthorizationHeaders"
+        body:
+          $ref: "#/components/schemas/PrivyAuthorizationBody"
+    GasPaymentQuote:
+      type: object
+      additionalProperties: false
+      description: Server-authoritative gas estimate and sponsorship/fallback decision.
+      required:
+        - mode
+        - decision
+        - platform_pays
+        - native_asset
+        - estimated_native_fee
+        - estimated_fee_usd
+        - wallet_native_balance
+        - fallback_allowed
+        - eip_7702_required
+        - eip_7702_notice
+      properties:
+        mode:
+          $ref: "#/components/schemas/GasPaymentMode"
+        decision:
+          $ref: "#/components/schemas/GasSponsorshipDecision"
+        platform_pays:
+          type: boolean
+        native_asset:
+          type: string
+          minLength: 1
+          description: Native gas asset symbol for the frozen action chain, for example BNB or ETH.
+        estimated_native_fee:
+          $ref: "#/components/schemas/Decimal"
+        estimated_fee_usd:
+          $ref: "#/components/schemas/Decimal"
+        wallet_native_balance:
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+          nullable: true
+        fallback_allowed:
+          type: boolean
+          description: |
+            True only when policy permits user-paid fallback. Fallback may be entered only after a
+            deterministic rejection proven to have occurred before any broadcast attempt.
+        eip_7702_required:
+          type: boolean
+        eip_7702_notice:
+          type: string
+          nullable: true
+          description: Required user-facing disclosure when EIP-7702 authorization is needed.
+    WalletActionChainObservation:
+      type: object
+      additionalProperties: false
+      description: Independently verified canonical-chain evidence for the exact frozen call.
+      required:
+        - tx_hash
+        - sender
+        - recipient
+        - payload_hash
+        - value
+        - receipt_success
+        - canonical
+        - block_number
+        - block_hash
+        - confirmations
+        - observed_at
+      properties:
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        sender:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        recipient:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        payload_hash:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+        value:
+          type: string
+          enum:
+            - "0x0"
+        receipt_success:
+          type: boolean
+          enum:
+            - true
+        canonical:
+          type: boolean
+          enum:
+            - true
+        block_number:
+          type: integer
+          format: int64
+          minimum: 0
+        block_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        confirmations:
+          type: integer
+          format: int64
+          minimum: 1
+        observed_at:
           type: string
           format: date-time
-        verified_at:
+    WalletActionExecution:
+      type: object
+      additionalProperties: false
+      description: |
+        Server-authoritative execution of one exact frozen business action. Creation binds the
+        resource, wallet, chain, payload hash and transaction permanently; clients supply only `mode`.
+
+        Submission performs a compare-and-set to `submitting` before synchronously relaying an
+        app-sponsored signature to Privy. The signature is never persisted. When Privy accepts the
+        request, the server stores `privy_transaction_id` and/or `user_operation_hash`; only executions
+        with such an identifier may be polled or reconciled by workers/Webhooks/RPC. A timeout, 5xx or
+        crash with an unknown result becomes `ambiguous` or `manual_review`, never an automatic replay.
+
+        After Privy acceptance or any ambiguous Provider result, mode switching, re-signing and
+        automatic replay are forbidden. User-paid fallback is allowed only after a deterministic
+        pre-broadcast rejection. Activity may be created only after Privy or RPC observes an actual
+        broadcast; authorization submission alone is not broadcast evidence.
+      required:
+        - execution_id
+        - resource_type
+        - resource_id
+        - action_id
+        - action_kind
+        - chain_id
+        - wallet_address
+        - payload_hash
+        - business_expires_at
+        - mode
+        - execution_provider
+        - status
+        - provider_status
+        - gas_payment
+        - frozen_transaction
+        - fallback_from_execution_id
+        - privy_authorization_payload
+        - authorization_expires_at
+        - privy_transaction_id
+        - user_operation_hash
+        - tx_hash
+        - chain_observation
+        - activity_id
+        - failure_reason
+        - manual_review_reason
+        - created_at
+        - updated_at
+      properties:
+        execution_id:
+          type: string
+        resource_type:
+          $ref: "#/components/schemas/WalletActionResourceType"
+        resource_id:
+          type: string
+          description: Bound order_id or transfer_id; it is never accepted from the client.
+        action_id:
+          type: string
+          description: Bound transfer action_id or order step_id; it is never accepted from the client.
+        action_kind:
+          $ref: "#/components/schemas/WalletActionKind"
+        chain_id:
+          type: integer
+          format: int64
+          enum:
+            - 1
+            - 56
+            - 8453
+            - 42161
+        wallet_address:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        payload_hash:
+          type: string
+          pattern: "^[a-fA-F0-9]{64}$"
+          description: |
+            Lowercase SHA-256 digest without `0x` over the versioned canonical
+            chain/from/to/calldata/value tuple. It MUST equal the bound business action hash.
+        business_expires_at:
+          type: string
+          format: date-time
+        mode:
+          $ref: "#/components/schemas/GasPaymentMode"
+        execution_provider:
+          $ref: "#/components/schemas/WalletActionExecutionProvider"
+        status:
+          $ref: "#/components/schemas/WalletActionExecutionStatus"
+        provider_status:
+          $ref: "#/components/schemas/WalletActionProviderStatus"
+        gas_payment:
+          $ref: "#/components/schemas/GasPaymentQuote"
+        frozen_transaction:
+          $ref: "#/components/schemas/FrozenEvmTransaction"
+        fallback_from_execution_id:
+          type: string
+          nullable: true
+          description: |
+            Null for app-sponsored execution. A user-paid execution must contain the server-derived
+            id of the matching sponsored execution that ended in `user_gas_confirmation_required`.
+        privy_authorization_payload:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/PrivyAuthorizationPayload"
+          nullable: true
+          description: |
+            Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in
+            every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen
+            business action expiry.
+        authorization_expires_at:
           type: string
           format: date-time
           nullable: true
+          description: Mirrors the structured Privy request expiry; null when no authorization is exposed.
+        privy_transaction_id:
+          type: string
+          nullable: true
+        user_operation_hash:
+          type: string
+          nullable: true
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+          nullable: true
+        chain_observation:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/WalletActionChainObservation"
+          nullable: true
+        activity_id:
+          type: string
+          nullable: true
+        failure_reason:
+          type: string
+          nullable: true
+        manual_review_reason:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      allOf:
+        - $ref: "#/components/schemas/WalletActionExecutionModeEvidence"
+        - $ref: "#/components/schemas/WalletActionExecutionStatusEvidence"
+    WalletActionExecutionModeEvidence:
+      oneOf:
+        - type: object
+          required:
+            - mode
+            - execution_provider
+            - fallback_from_execution_id
+            - gas_payment
+          properties:
+            mode:
+              type: string
+              enum: [app_sponsored]
+            execution_provider:
+              type: string
+              enum: [privy]
+            fallback_from_execution_id:
+              type: string
+              nullable: true
+              enum: [null]
+            gas_payment:
+              allOf:
+                - $ref: "#/components/schemas/GasPaymentQuote"
+                - type: object
+                  required: [mode]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [app_sponsored]
+        - type: object
+          required:
+            - mode
+            - execution_provider
+            - fallback_from_execution_id
+            - privy_authorization_payload
+            - authorization_expires_at
+            - privy_transaction_id
+            - user_operation_hash
+            - gas_payment
+          properties:
+            mode:
+              type: string
+              enum: [user_paid_native]
+            execution_provider:
+              type: string
+              enum: [user_wallet]
+            fallback_from_execution_id:
+              type: string
+              minLength: 1
+            privy_authorization_payload:
+              type: object
+              nullable: true
+              enum: [null]
+            authorization_expires_at:
+              type: string
+              format: date-time
+              nullable: true
+              enum: [null]
+            privy_transaction_id:
+              type: string
+              nullable: true
+              enum: [null]
+            user_operation_hash:
+              type: string
+              nullable: true
+              enum: [null]
+            gas_payment:
+              allOf:
+                - $ref: "#/components/schemas/GasPaymentQuote"
+                - type: object
+                  required: [mode, decision, platform_pays, fallback_allowed]
+                  properties:
+                    mode:
+                      type: string
+                      enum: [user_paid_native]
+                    decision:
+                      type: string
+                      enum: [user_gas_confirmation_required]
+                    platform_pays:
+                      type: boolean
+                      enum: [false]
+                    fallback_allowed:
+                      type: boolean
+                      enum: [false]
+    WalletActionExecutionStatusEvidence:
+      oneOf:
+        - $ref: "#/components/schemas/SponsoredAwaitingWalletActionExecution"
+        - $ref: "#/components/schemas/UserPaidAwaitingWalletActionExecution"
+        - $ref: "#/components/schemas/SubmittingWalletActionExecution"
+        - $ref: "#/components/schemas/SponsoredProviderSubmittedWalletActionExecution"
+        - $ref: "#/components/schemas/UserPaidProviderSubmittedWalletActionExecution"
+        - $ref: "#/components/schemas/ChainConfirmedWalletActionExecution"
+        - $ref: "#/components/schemas/CompletedWalletActionExecution"
+        - $ref: "#/components/schemas/UserGasConfirmationRequiredWalletActionExecution"
+        - $ref: "#/components/schemas/FailedWalletActionExecution"
+        - $ref: "#/components/schemas/AmbiguousWalletActionExecution"
+        - $ref: "#/components/schemas/ManualReviewWalletActionExecution"
+    SponsoredAwaitingWalletActionExecution:
+      type: object
+      required: [mode, status, provider_status, privy_authorization_payload, authorization_expires_at, activity_id]
+      properties:
+        mode:
+          type: string
+          enum: [app_sponsored]
+        status:
+          type: string
+          enum: [awaiting_user_authorization]
+        provider_status:
+          type: string
+          enum: [not_submitted]
+        privy_authorization_payload:
+          $ref: "#/components/schemas/PrivyAuthorizationPayload"
+        authorization_expires_at:
+          type: string
+          format: date-time
+        activity_id:
+          type: string
+          nullable: true
+          enum: [null]
+    UserPaidAwaitingWalletActionExecution:
+      type: object
+      required: [mode, status, provider_status, activity_id]
+      properties:
+        mode:
+          type: string
+          enum: [user_paid_native]
+        status:
+          type: string
+          enum: [awaiting_user_authorization]
+        provider_status:
+          type: string
+          enum: [not_submitted]
+        activity_id:
+          type: string
+          nullable: true
+          enum: [null]
+    SubmittingWalletActionExecution:
+      type: object
+      required: [status, provider_status, privy_authorization_payload, authorization_expires_at, activity_id]
+      properties:
+        status:
+          type: string
+          enum: [submitting]
+        provider_status:
+          type: string
+          enum: [not_submitted]
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+        activity_id:
+          type: string
+          nullable: true
+          enum: [null]
+    SponsoredProviderSubmittedWalletActionExecution:
+      type: object
+      required:
+        - mode
+        - status
+        - provider_status
+        - privy_transaction_id
+        - privy_authorization_payload
+        - authorization_expires_at
+      properties:
+        mode:
+          type: string
+          enum: [app_sponsored]
+        status:
+          type: string
+          enum: [provider_submitted]
+        provider_status:
+          type: string
+          enum: [submitted, pending]
+        privy_transaction_id:
+          type: string
+          minLength: 1
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+    UserPaidProviderSubmittedWalletActionExecution:
+      type: object
+      required:
+        - mode
+        - status
+        - provider_status
+        - tx_hash
+        - privy_authorization_payload
+        - authorization_expires_at
+      properties:
+        mode:
+          type: string
+          enum: [user_paid_native]
+        status:
+          type: string
+          enum: [provider_submitted]
+        provider_status:
+          type: string
+          enum: [submitted, pending]
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+    ChainConfirmedWalletActionExecution:
+      type: object
+      required:
+        - status
+        - provider_status
+        - tx_hash
+        - chain_observation
+        - privy_authorization_payload
+        - authorization_expires_at
+      properties:
+        status:
+          type: string
+          enum: [chain_confirmed]
+        provider_status:
+          type: string
+          enum: [confirmed]
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        chain_observation:
+          $ref: "#/components/schemas/WalletActionChainObservation"
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+      allOf:
+        - oneOf:
+            - type: object
+              required: [mode, privy_transaction_id]
+              properties:
+                mode:
+                  type: string
+                  enum: [app_sponsored]
+                privy_transaction_id:
+                  type: string
+                  minLength: 1
+            - type: object
+              required: [mode]
+              properties:
+                mode:
+                  type: string
+                  enum: [user_paid_native]
+    CompletedWalletActionExecution:
+      type: object
+      required:
+        - status
+        - provider_status
+        - tx_hash
+        - chain_observation
+        - privy_authorization_payload
+        - authorization_expires_at
+      properties:
+        status:
+          type: string
+          enum: [completed]
+        provider_status:
+          type: string
+          enum: [confirmed]
+        tx_hash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        chain_observation:
+          $ref: "#/components/schemas/WalletActionChainObservation"
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+      allOf:
+        - oneOf:
+            - type: object
+              required: [mode, privy_transaction_id]
+              properties:
+                mode:
+                  type: string
+                  enum: [app_sponsored]
+                privy_transaction_id:
+                  type: string
+                  minLength: 1
+            - type: object
+              required: [mode]
+              properties:
+                mode:
+                  type: string
+                  enum: [user_paid_native]
+    UserGasConfirmationRequiredWalletActionExecution:
+      type: object
+      required:
+        - mode
+        - status
+        - provider_status
+        - failure_reason
+        - gas_payment
+        - privy_authorization_payload
+        - authorization_expires_at
+        - activity_id
+      properties:
+        mode:
+          type: string
+          enum: [app_sponsored]
+        status:
+          type: string
+          enum: [user_gas_confirmation_required]
+        provider_status:
+          type: string
+          enum: [failed]
+        failure_reason:
+          type: string
+          minLength: 1
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+        activity_id:
+          type: string
+          nullable: true
+          enum: [null]
+        gas_payment:
+          allOf:
+            - $ref: "#/components/schemas/GasPaymentQuote"
+            - type: object
+              required: [mode, decision, platform_pays, fallback_allowed]
+              properties:
+                mode:
+                  type: string
+                  enum: [app_sponsored]
+                decision:
+                  type: string
+                  enum: [user_gas_confirmation_required]
+                platform_pays:
+                  type: boolean
+                  enum: [false]
+                fallback_allowed:
+                  type: boolean
+                  enum: [true]
+    FailedWalletActionExecution:
+      type: object
+      required:
+        - status
+        - provider_status
+        - failure_reason
+        - privy_authorization_payload
+        - authorization_expires_at
+      properties:
+        status:
+          type: string
+          enum: [failed]
+        provider_status:
+          type: string
+          enum: [not_submitted, failed, reverted]
+        failure_reason:
+          type: string
+          minLength: 1
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+    AmbiguousWalletActionExecution:
+      type: object
+      required:
+        - status
+        - provider_status
+        - failure_reason
+        - privy_authorization_payload
+        - authorization_expires_at
+      properties:
+        status:
+          type: string
+          enum: [ambiguous]
+        provider_status:
+          type: string
+          enum: [unknown]
+        failure_reason:
+          type: string
+          minLength: 1
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
+    ManualReviewWalletActionExecution:
+      type: object
+      required:
+        - status
+        - manual_review_reason
+        - privy_authorization_payload
+        - authorization_expires_at
+      properties:
+        status:
+          type: string
+          enum: [manual_review]
+        manual_review_reason:
+          type: string
+          minLength: 1
+        privy_authorization_payload:
+          type: object
+          nullable: true
+          enum: [null]
+        authorization_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          enum: [null]
     TransferSourceExecutionStatus:
       type: string
       enum:
@@ -7502,15 +8621,6 @@ components:
         expires_at:
           type: string
           format: date-time
-    WalletActionCompleteRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - signature
-      properties:
-        signature:
-          type: string
-          description: Privy-produced signature for this exact server action
     LegacyTransferStatus:
       type: string
       enum:
