@@ -2109,7 +2109,7 @@ paths:
       summary: 交易与资金活动列表
       description: |
         返回当前账号已经实际发生且具有外部证据的交易与资金活动。Deposit 只有完成链上独立核验后
-        才出现；Order 只有被交易场所接受并获得稳定 Provider Order ID，或具有链上交易证明后才出现。
+        才出现；Order 只有被交易场所接受并取得稳定 Provider 订单身份，或具有链上交易证明后才出现。
         Session、Intent、Preview、Authorization、等待付款和内部重试不得进入用户 History。
       operationId: listActivity
       parameters:
@@ -3971,7 +3971,6 @@ components:
       type: string
       enum:
         - confirmed
-        - manual_review
     Deposit:
       description: 已由链上 receipt、精确 Transfer、canonical block 和确认数独立核验的正式入金事实。
       oneOf:
@@ -6272,6 +6271,7 @@ components:
         - token_contract_unavailable
         - token_metadata_mismatch
         - wallet_unavailable
+        - activity_pipeline_unavailable
     DepositRailAvailability:
       description: Deposit rail readiness；`available` 必须没有 blocker，`unavailable` 至少一个 blocker。
       oneOf:
@@ -6328,7 +6328,7 @@ components:
       type: object
       additionalProperties: false
       description: |
-        `unavailable` rail 只用于解释阻塞原因；API 必须拒绝为它创建 Deposit intent。
+        `unavailable` rail 只用于解释阻塞原因；API 必须拒绝返回该 rail 的入金指引。
       required:
         - chain
         - chain_id
