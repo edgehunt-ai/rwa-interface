@@ -7581,10 +7581,15 @@ components:
       type: object
       additionalProperties: false
       required:
+        - from
         - to
         - data
         - value
       properties:
+        from:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+          description: Exact server-bound Privy wallet address; the client cannot override it.
         to:
           type: string
           pattern: "^0x[a-fA-F0-9]{40}$"
@@ -7651,7 +7656,7 @@ components:
         never accepts an arbitrary JSON blob. The URL is restricted to Privy's HTTPS wallet RPC.
 
         `body.caip2` MUST equal `eip155:{WalletActionExecution.chain_id}`;
-        `body.reference_id` MUST equal the execution id; and `body.params.transaction.to/data/value`
+        `body.reference_id` MUST equal the execution id; and `body.params.transaction.from/to/data/value`
         MUST byte-for-byte equal `WalletActionExecution.frozen_transaction`. Any mismatch is a
         server fault and the client must not sign it.
       required:
