@@ -3818,37 +3818,11 @@ components:
           nullable: true
         slippage_percent:
           $ref: "#/components/schemas/Decimal"
-    DepositMode:
-      type: string
-      description: "`wallet` 只读观察当前用户已验证钱包的链上入金；不会增加 App 内部账本余额。"
-      enum:
-        - wallet
-    DepositSettlementMode:
-      type: string
-      description: "`observe_only` 只观察用户钱包的链上资产，不写入内部 ledger。"
-      enum:
-        - observe_only
-    DepositProviderStatus:
-      type: string
-      description: Deposit observer 与对应链只读 Provider 的当前可用状态。
-      enum:
-        - available
-        - unavailable
     DepositCreditTarget:
       type: string
       description: "`wallet` 表示资产位于用户自己的已验证链上钱包，不代表 App 内部账本已经记账。"
       enum:
         - wallet
-    DepositAddress:
-      description: BSC 或 Arbitrum 的严格 USDC 入金指引；网络、chain ID、合约、decimals 和确认数必须成组匹配。
-      oneOf:
-        - $ref: "#/components/schemas/BscDepositAddress"
-        - $ref: "#/components/schemas/ArbitrumDepositAddress"
-      discriminator:
-        propertyName: chain
-        mapping:
-          BSC: "#/components/schemas/BscDepositAddress"
-          Arbitrum: "#/components/schemas/ArbitrumDepositAddress"
     DepositInstruction:
       description: |
         当前账号的只读入金指引。读取、复制地址或展示二维码不得创建入金意图、操作或用户历史记录。
@@ -4055,8 +4029,10 @@ components:
         amount:
           $ref: "#/components/schemas/Decimal"
         amount_raw:
-          type: string
-          pattern: "^[0-9]+$"
+          allOf:
+            - $ref: "#/components/schemas/Decimal"
+            - type: string
+              pattern: "^[0-9]+$"
           description: ERC-20 Transfer log 中的精确原始整数金额。
         status:
           $ref: "#/components/schemas/DepositStatus"
