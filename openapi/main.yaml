@@ -3855,11 +3855,6 @@ components:
         - oneOf:
             - $ref: "#/components/schemas/BstockOrderWalletActionState"
             - $ref: "#/components/schemas/PerpOrderWalletActionState"
-          discriminator:
-            propertyName: kind
-            mapping:
-              bstock: "#/components/schemas/BstockOrderWalletActionState"
-              perp: "#/components/schemas/PerpOrderWalletActionState"
     Position:
       type: object
       required:
@@ -7715,6 +7710,7 @@ components:
         wallet_native_balance:
           allOf:
             - $ref: "#/components/schemas/Decimal"
+          type: string
           nullable: true
         fallback_allowed:
           type: boolean
