@@ -1705,8 +1705,8 @@ paths:
         - Funding
       summary: 入金记录列表
       description: |
-        仅返回当前账号的 `wallet + observe_only` 真实入金 intent。服务端必须在游标分页前
-        过滤内部历史 `sandbox_ledger` 记录，避免旧 Demo 数据改变分页边界或被解释为真实入金。
+        仅返回当前账号已经由链上 receipt、精确 ERC-20 Transfer、canonical block 和确认数
+        独立核验的正式入金记录。Webhook、补账候选、观察中状态和旧 Deposit Intent 不属于本列表。
       operationId: listDeposits
       parameters:
         - $ref: "#/components/parameters/Cursor"
@@ -1739,35 +1739,47 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
-    post:
+  /v1/deposit-instructions:
+    get:
       tags:
         - Funding
-      summary: 创建入金意图
-      operationId: createDeposit
+      summary: 获取只读入金指引
+      description: |
+        返回当前账号已验证 Privy EVM 钱包在指定网络和 Token 上的只读入金指引。
+        该请求不得创建 Deposit Intent、Operation、Outbox 或 Activity；重复请求没有业务副作用。
+      operationId: getDepositInstruction
       parameters:
-        - $ref: "#/components/parameters/IdempotencyKey"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateDepositIntentRequest"
+        - name: chain
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - BSC
+              - Arbitrum
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - USDC
       responses:
-        "201":
-          description: Accepted; returns the current resource state without waiting for a terminal state
+        "200":
+          description: OK
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestId"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Deposit"
+                $ref: "#/components/schemas/DepositInstruction"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-        "409":
-          $ref: "#/components/responses/Conflict"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
         "429":
@@ -1780,8 +1792,8 @@ paths:
         - Funding
       summary: 入金详情与权威状态
       description: |
-        仅返回当前账号的 `wallet + observe_only` 真实入金 intent。内部历史
-        `sandbox_ledger` id 对公共 API 等同不存在并返回 404。
+        仅返回当前账号已经完成链上独立核验的正式入金。内部候选、观察和旧 Deposit Intent
+        对公共 API 等同不存在并返回 404。
       operationId: getDeposit
       parameters:
         - $ref: "#/components/parameters/DepositId"
@@ -2096,8 +2108,9 @@ paths:
         - Activity
       summary: 交易与资金活动列表
       description: |
-        返回当前账号的交易与资金活动。Deposit activity 只投影 `wallet + observe_only`
-        真实入金；内部历史 `sandbox_ledger` Deposit 必须在游标分页前过滤。
+        返回当前账号已经实际发生且具有外部证据的交易与资金活动。Deposit 只有完成链上独立核验后
+        才出现；Order 只有被交易场所接受并获得稳定 Provider Order ID，或具有链上交易证明后才出现。
+        Session、Intent、Preview、Authorization、等待付款和内部重试不得进入用户 History。
       operationId: listActivity
       parameters:
         - name: category
@@ -3836,6 +3849,17 @@ components:
         mapping:
           BSC: "#/components/schemas/BscDepositAddress"
           Arbitrum: "#/components/schemas/ArbitrumDepositAddress"
+    DepositInstruction:
+      description: |
+        当前账号的只读入金指引。读取、复制地址或展示二维码不得创建入金意图、操作或用户历史记录。
+      oneOf:
+        - $ref: "#/components/schemas/BscDepositAddress"
+        - $ref: "#/components/schemas/ArbitrumDepositAddress"
+      discriminator:
+        propertyName: chain
+        mapping:
+          BSC: "#/components/schemas/BscDepositAddress"
+          Arbitrum: "#/components/schemas/ArbitrumDepositAddress"
     DepositAddressBase:
       type: object
       additionalProperties: false
@@ -3849,6 +3873,7 @@ components:
         - qr_payload
         - min_deposit
         - confirmations_required
+        - estimated_arrival_seconds
         - credited_to
         - warning
       properties:
@@ -3891,6 +3916,11 @@ components:
           type: integer
           minimum: 1
           example: 15
+        estimated_arrival_seconds:
+          type: integer
+          minimum: 1
+          description: 达到当前 rail 确认门槛的保守预计时间；不是结算保证。
+          example: 60
         credited_to:
           $ref: "#/components/schemas/DepositCreditTarget"
         warning:
@@ -3963,151 +3993,109 @@ components:
               type: integer
               enum:
                 - 20
-    CreateDepositIntentRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - chain
-        - token
-        - mode
-      properties:
-        chain:
-          type: string
-          enum:
-            - BSC
-            - Arbitrum
-        token:
-          type: string
-          enum:
-            - USDC
-        amount:
-          type: string
-          allOf:
-            - $ref: "#/components/schemas/Decimal"
-          nullable: true
-          description: Optional user-declared deposit amount; when present it must be greater than zero.
-        mode:
-          $ref: "#/components/schemas/DepositMode"
     DepositStatus:
       type: string
       enum:
-        - awaiting
-        - confirming
-        - credited
-        - failed
-        - ambiguous
+        - confirmed
         - manual_review
-    DepositFailureCode:
-      type: string
-      nullable: true
-      description: 稳定、机器可读的失败或恢复原因；正常状态返回 null。
-      enum:
-        - intent_expired
-        - observer_disabled
-        - rpc_unavailable
-        - chain_id_mismatch
-        - token_contract_unavailable
-        - token_metadata_mismatch
-        - wallet_unavailable
-        - observation_ambiguous
-        - canonical_chain_changed
-        - manual_review_required
     Deposit:
-      description: BSC 或 Arbitrum 的 observe-only Deposit；顶层网络必须与 instructions 一致。
+      description: 已由链上 receipt、精确 Transfer、canonical block 和确认数独立核验的正式入金事实。
       oneOf:
-        - $ref: "#/components/schemas/BscObservedDeposit"
-        - $ref: "#/components/schemas/ArbitrumObservedDeposit"
+        - $ref: "#/components/schemas/BscConfirmedDeposit"
+        - $ref: "#/components/schemas/ArbitrumConfirmedDeposit"
       discriminator:
         propertyName: chain
         mapping:
-          BSC: "#/components/schemas/BscObservedDeposit"
-          Arbitrum: "#/components/schemas/ArbitrumObservedDeposit"
+          BSC: "#/components/schemas/BscConfirmedDeposit"
+          Arbitrum: "#/components/schemas/ArbitrumConfirmedDeposit"
     DepositBase:
       type: object
       additionalProperties: false
       required:
         - deposit_id
-        - mode
         - chain
+        - chain_id
         - token
+        - token_contract
+        - token_decimals
         - amount
+        - amount_raw
         - status
-        - settlement_mode
-        - provider_status
         - confirmations
         - confirmations_required
-        - credited_to
-        - requires_transfer
         - tx_hash
-        - activity_id
-        - failure_reason
-        - created_at
+        - log_index
+        - block_number
+        - block_hash
+        - sender
+        - recipient
+        - detected_at
+        - confirmed_at
         - updated_at
-        - expires_at
-        - credited_at
-        - instructions
       properties:
         deposit_id:
           type: string
-        mode:
-          $ref: "#/components/schemas/DepositMode"
         chain:
           type: string
+        chain_id:
+          type: integer
+          format: int64
+          minimum: 1
         token:
           type: string
           enum:
             - USDC
-        amount:
-          allOf:
-            - $ref: "#/components/schemas/Decimal"
+        token_contract:
           type: string
-          nullable: true
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        token_decimals:
+          type: integer
+          minimum: 0
+          maximum: 255
+        amount:
+          $ref: "#/components/schemas/Decimal"
+        amount_raw:
+          type: string
+          pattern: "^[0-9]+$"
+          description: ERC-20 Transfer log 中的精确原始整数金额。
         status:
           $ref: "#/components/schemas/DepositStatus"
-        settlement_mode:
-          $ref: "#/components/schemas/DepositSettlementMode"
-        provider_status:
-          $ref: "#/components/schemas/DepositProviderStatus"
         confirmations:
           type: integer
           minimum: 0
         confirmations_required:
           type: integer
           minimum: 1
-        credited_to:
-          $ref: "#/components/schemas/DepositCreditTarget"
-        requires_transfer:
-          type: boolean
-          enum:
-            - false
-          description: |
-            observe-only Deposit 固定为 `false`；资产用途变更必须进入另行授权的资金流程，
-            不能由当前 Deposit 暗示或执行内部划转。
         tx_hash:
           type: string
-          nullable: true
           pattern: "^0x[a-fA-F0-9]{64}$"
-        activity_id:
+        log_index:
+          type: integer
+          format: int64
+          minimum: 0
+        block_number:
+          type: integer
+          format: int64
+          minimum: 0
+        block_hash:
           type: string
-          nullable: true
-        failure_reason:
-          $ref: "#/components/schemas/DepositFailureCode"
-        created_at:
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        sender:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        recipient:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        detected_at:
+          type: string
+          format: date-time
+        confirmed_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-        expires_at:
-          type: string
-          format: date-time
-        credited_at:
-          type: string
-          format: date-time
-          nullable: true
-        instructions:
-          $ref: "#/components/schemas/DepositAddress"
-    BscObservedDeposit:
+    BscConfirmedDeposit:
       allOf:
         - $ref: "#/components/schemas/DepositBase"
         - type: object
@@ -4116,9 +4104,20 @@ components:
               type: string
               enum:
                 - BSC
-            instructions:
-              $ref: "#/components/schemas/BscDepositAddress"
-    ArbitrumObservedDeposit:
+            chain_id:
+              type: integer
+              format: int64
+              enum:
+                - 56
+            token_contract:
+              type: string
+              enum:
+                - "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
+            token_decimals:
+              type: integer
+              enum:
+                - 18
+    ArbitrumConfirmedDeposit:
       allOf:
         - $ref: "#/components/schemas/DepositBase"
         - type: object
@@ -4127,8 +4126,19 @@ components:
               type: string
               enum:
                 - Arbitrum
-            instructions:
-              $ref: "#/components/schemas/ArbitrumDepositAddress"
+            chain_id:
+              type: integer
+              format: int64
+              enum:
+                - 42161
+            token_contract:
+              type: string
+              enum:
+                - "0xaf88d065e77c8cc2239327c5edb3a432268e5831"
+            token_decimals:
+              type: integer
+              enum:
+                - 6
     WithdrawalQuoteRequest:
       type: object
       additionalProperties: false
@@ -4762,16 +4772,14 @@ components:
       enum:
         - orders
         - funds
-        - signatures
     ActivityType:
       type: string
       description: |
         订单类：`market` 市价单 · `limit` 限价单 · `tpsl` 止盈止损 · `close` 平仓 · `liquidation` 强平
 
         资金类：`deposit` 入金 · `external` 外部导入 · `bridge` 划转 · `withdraw` 提现 ·
-        `claim` Claim 退款 · `funding` 资金费
-
-        签名类：`approval` Token 授权 · `orderSign` 订单签名 · `bridgeSign` 划转签名
+        `claim` Claim 退款 · `funding` 资金费。内部 Session、Intent、Preview、Authorization
+        和签名请求不属于用户活动类型。
       enum:
         - market
         - limit
@@ -4784,17 +4792,15 @@ components:
         - withdraw
         - claim
         - funding
-        - approval
-        - orderSign
-        - bridgeSign
     ActivityStatus:
       type: string
-      description: "`pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消"
+      description: "`pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核"
       enum:
         - pending
         - success
         - failed
         - cancelled
+        - manual_review
     Transfer:
       description: Legacy internal transfer or the new cross-chain funding transfer returned by the shared lookup and realtime surfaces.
       oneOf:
@@ -5191,7 +5197,7 @@ components:
         reference:
           type: object
           nullable: true
-          description: 指向对应的业务实体，便于前端跳转
+          description: 指向经过严格枚举的实际业务实体，未知内部资源不得兜底映射为订单。
           required:
             - type
             - id
