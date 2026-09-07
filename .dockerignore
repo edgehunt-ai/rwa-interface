@@ -1,0 +1,12 @@
+node_modules/
+.git/
+.dart_tool/
+build/
+dist/
+coverage/
+.contract-cache/
+*.log*
+.env*
+.DS_Store
+.idea/
+.vscode/

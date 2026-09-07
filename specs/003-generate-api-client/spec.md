@@ -77,7 +77,7 @@
 - SSE 任意 chunk/newline、comment、blank data、重复 ID、unknown variant、resync；恢复中 cancel/teardown。
 - dispose、快速换参数、logout 后旧结果返回，以及 realtime 与 snapshot refresh 竞态。
 - 生成误删 serializer/operation/metadata，或 export 常驻全部未使用模型。
-- production URL 缺失/无效/误用 staging；普通请求和 SSE timeout 不同；symlink escape；generator upgrade 改变高风险 construct。
+- API URL 缺失或不是绝对地址；普通请求和 SSE timeout 不同；symlink escape；generator upgrade 改变高风险 construct。
 
 ## 功能需求
 
@@ -124,8 +124,8 @@
 - **FR-041**：应用边界能解决时不定制 template；例外记录升级维护成本。
 - **FR-042**：可记录 artifact size，但无 threshold/budget/gate。
 - **FR-043**：生成后 package compile-ready；secondary source 提交或由所有入口自动生成。
-- **FR-044**：service URL 来自显式环境，production 不 fallback staging。
-- **FR-045**：production URL 缺失/无效时安全失败；测试可 override。
+- **FR-044**：service URL 来自显式环境配置，不提供隐藏的默认地址。
+- **FR-045**：URL 缺失或不是绝对地址时安全失败；测试可 override。
 - **FR-046**：普通请求显式 connect/send/receive timeout；realtime 适配长连接。
 - **FR-047**：重要 inline response/composition 使用稳定表意名称。
 - **FR-048**：error schema 不与语言核心 Error 冲突，wire payload 不变。

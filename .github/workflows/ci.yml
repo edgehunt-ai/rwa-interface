@@ -37,5 +37,7 @@ jobs:
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
+      - name: Validate Flutter environment template
+        run: make env-check ENV_FILE=.env.example
       - name: Run shared quality gate
         run: npm run quality:check

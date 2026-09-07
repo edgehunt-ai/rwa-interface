@@ -152,9 +152,43 @@ profile secrets。Android release 启用 R8 代码和资源压缩。
 API 生成层和 data/domain 层不保存翻译后的 UI 文案，只传递稳定的错误 `code`、`userAction` 和
 结构化字段。后续 UI 本地化由 presentation 层按 locale 映射；后端 `message` 仅作为受控兜底。
 
+## Privy 登录集成
+
+- Android API 28+ 和 iOS 17+ 使用官方 `privy_flutter` SDK；Web、macOS、Windows 和 Linux 会返回
+  明确的 `unsupportedPlatform` 状态，不会初始化 native channel。
+- Android 使用 compile SDK 36（target SDK 仍由 Flutter 配置），用于满足当前 native plugins 与
+  Privy Core 的 AndroidX metadata；最低安装版本仍为 API 28。
+- App ID 和移动端 Client ID 通过编译期环境变量 `PRIVY_APP_ID`、`PRIVY_CLIENT_ID` 提供；允许的
+  登录方式集中定义在 `lib/app/config/privy_configuration.dart`，当前固定为 `email`。这些都是公开
+  客户端标识，Privy secret 不得进入源码或客户端构建参数。
+- `authenticationProvider` 提供启动恢复、邮件验证码请求/校验和登出命令；最终登录页面将在设计稿
+  确认后消费这些状态与命令。
+- Privy SDK 独占身份凭据持久化。应用不会保存或记录 access token、邮件验证码和原始 SDK 错误。
+
+真机联调前，需在 Privy Dashboard 为 staging App 注册 Android application ID
+`com.orbit.rwa_interface` 和 iOS bundle identifier，并确认 staging 配置启用了 `email` 登录。
+本功能不包含 OAuth redirect、passkey、外部钱包登录或钱包签名配置。
+
+复制环境配置模板并填写 Privy 公开客户端标识：
+
+```bash
+cp .env.example .env
+make run
+```
+
+也可以显式选择配置文件或附加 Flutter 参数：
+
+```bash
+make run ENV_FILE=.env.staging FLUTTER_ARGS='-d android'
+```
+
+Release CI 从同名 GitHub Actions Variables 生成临时 `.env.ci`，缺少 `API_BASE_URL`、
+`PRIVY_APP_ID` 或 `PRIVY_CLIENT_ID` 时停止构建。
+
 ## 相关文档
 
 - 项目架构和 agent 执行约束：[AGENTS.md](AGENTS.md)
 - 项目宪章：[.specify/memory/constitution.md](.specify/memory/constitution.md)
 - 功能规格与实现计划：[specs/003-generate-api-client/](specs/003-generate-api-client/)
+- Privy 认证规格与真机验证步骤：[specs/005-privy-auth-integration/](specs/005-privy-auth-integration/)
 - [Flutter 文档](https://docs.flutter.dev/)

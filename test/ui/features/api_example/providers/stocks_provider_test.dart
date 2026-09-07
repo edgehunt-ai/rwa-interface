@@ -39,6 +39,9 @@ void main() {
 
 final class _FakeMarketsRepository implements MarketsRepository {
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
   Future<DomainPage<Stock>> listStocks() async => const DomainPage(
     items: [Stock(symbol: 'NVDA', name: 'NVIDIA', referencePrice: '123.4500')],
   );

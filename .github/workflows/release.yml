@@ -17,6 +17,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
+  PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
+  PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'flutter' }}
@@ -148,10 +151,26 @@ jobs:
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
+      - name: Create Flutter environment file
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing required GitHub Actions variable: $key" >&2
+              exit 1
+            fi
+          done
+          printf '%s\n' \
+            "API_BASE_URL=$API_BASE_URL" \
+            "PRIVY_APP_ID=$PRIVY_APP_ID" \
+            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" > .env.ci
+          make env-check ENV_FILE=.env.ci
       - name: Build Android release APK
         shell: bash
         run: >-
           flutter build apk --release --obfuscate
+          --dart-define-from-file=.env.ci
           --split-debug-info=build/symbols/android
           ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
@@ -168,6 +187,7 @@ jobs:
         shell: bash
         run: >-
           flutter build apk --release --split-per-abi --obfuscate
+          --dart-define-from-file=.env.ci
           --split-debug-info=build/symbols/android
           ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
@@ -222,10 +242,26 @@ jobs:
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
+      - name: Create Flutter environment file
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing required GitHub Actions variable: $key" >&2
+              exit 1
+            fi
+          done
+          printf '%s\n' \
+            "API_BASE_URL=$API_BASE_URL" \
+            "PRIVY_APP_ID=$PRIVY_APP_ID" \
+            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" > .env.ci
+          make env-check ENV_FILE=.env.ci
       - name: Build unsigned iOS release app
         shell: bash
         run: >-
           flutter build ios --release --no-codesign --obfuscate
+          --dart-define-from-file=.env.ci
           --split-debug-info=build/symbols/ios
           ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"

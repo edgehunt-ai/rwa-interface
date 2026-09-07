@@ -20,7 +20,7 @@ final class ApiFailureMapper {
       return NetworkFailure(requestId: requestId);
     }
     final status = response?.statusCode;
-    if (status == 401 || status == 403) {
+    if (status == 401) {
       return AuthenticationFailure(
         requestId: requestId,
         userAction: 'reauthenticate',
@@ -37,9 +37,7 @@ final class ApiFailureMapper {
         requestId: requestId ?? json['request_id']?.toString(),
         retryable: json['retryable'] == true,
         userAction: json['user_action']?.toString(),
-        details: json['details'] is Map
-            ? Map<String, Object?>.from(json['details'] as Map)
-            : const {},
+        details: _safeDetails(json['details']),
       );
     }
     if (error.error is FormatException ||
@@ -47,5 +45,29 @@ final class ApiFailureMapper {
       return DecodingFailure(requestId: requestId);
     }
     return const UnknownFailure();
+  }
+
+  Map<String, Object?> _safeDetails(Object? value) {
+    if (value is! Map) return const {};
+    const blockedFragments = {
+      'token',
+      'signature',
+      'body',
+      'payload',
+      'account',
+      'amount',
+      'price',
+      'quantity',
+    };
+    return {
+      for (final entry in value.entries)
+        if (entry.key is String &&
+            entry.value is String &&
+            !blockedFragments.any(
+              (fragment) =>
+                  (entry.key as String).toLowerCase().contains(fragment),
+            ))
+          entry.key as String: entry.value,
+    };
   }
 }

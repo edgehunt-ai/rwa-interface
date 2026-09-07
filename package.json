@@ -16,7 +16,8 @@
     "client:check": "node scripts/check-dart-client.mjs",
     "contract:check": "npm run contract:test && npm run contract:rules && npm run contract:lint && npm run contract:validate && npm run fixture:check && npm run client:check",
     "quality:check": "npm run contract:check && npm run client:prepare && dart format --output=none --set-exit-if-changed lib test && dart analyze --fatal-infos && flutter test",
-    "release:verify": "npm run quality:check"
+    "release:verify": "npm run quality:check",
+    "staging:preflight": "node scripts/check-staging-readiness.mjs"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.40.1",

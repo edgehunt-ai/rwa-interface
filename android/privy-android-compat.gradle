@@ -1,0 +1,11 @@
+// privy_flutter 0.10.1 declares compileSdk 34 although Privy Core's resolved
+// AndroidX dependencies require 35. Keep this isolated workaround until the
+// upstream plugin raises its compile metadata. Groovy is used because the
+// plugin loads an older Android Gradle Plugin classloader than the host app.
+subprojects { subproject ->
+    if (subproject.name == "privy_flutter") {
+        subproject.afterEvaluate {
+            subproject.android.compileSdk = 36
+        }
+    }
+}

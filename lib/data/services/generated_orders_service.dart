@@ -10,6 +10,17 @@ final class GeneratedOrdersService implements OrdersService {
   final ApiFailureMapper _mapper;
 
   @override
+  Future<OrderPreview> previewOrder(
+    OrderPreviewRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.previewOrder(
+      idempotencyKey: idempotencyKey,
+      orderPreviewRequest: request,
+    ),
+  );
+
+  @override
   Future<Order> createOrder(
     CreateOrderRequest request, {
     required String idempotencyKey,
@@ -20,6 +31,29 @@ final class GeneratedOrdersService implements OrdersService {
         createOrderRequest: request,
       )).data;
       if (data == null) throw const FormatException('Missing createOrder body');
+      return data;
+    } on DioException catch (error) {
+      throw _mapper.fromDio(error);
+    }
+  }
+
+  @override
+  Future<OrderPage> listOrders({String? cursor}) =>
+      _body(() => _api.listOrders(cursor: cursor));
+  @override
+  Future<Order> getOrder(String orderId) =>
+      _body(() => _api.getOrder(orderId: orderId));
+  @override
+  Future<Order> cancelOrder(String orderId, {required String idempotencyKey}) =>
+      _body(
+        () =>
+            _api.cancelOrder(orderId: orderId, idempotencyKey: idempotencyKey),
+      );
+
+  Future<T> _body<T>(Future<Response<T>> Function() request) async {
+    try {
+      final data = (await request()).data;
+      if (data == null) throw const FormatException('Missing response body');
       return data;
     } on DioException catch (error) {
       throw _mapper.fromDio(error);

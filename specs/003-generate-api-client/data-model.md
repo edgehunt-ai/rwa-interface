@@ -2,8 +2,8 @@
 
 ## ApiEnvironment
 
-字段：`baseUrl`、普通请求 connect/send/receive timeout、environment。Production URL 必填、有效，
-不得隐式回退 staging；测试允许显式 HTTP override。
+字段：`baseUrl`、普通请求 connect/send/receive timeout。URL 必填且必须为绝对地址；不根据部署环境
+附加 production/staging 判断，测试允许显式 override。
 
 ## ApiFailure
 

@@ -18,7 +18,9 @@ test('Release 同 SHA 自验且不取消，并报告非门禁 size', async () =>
   assert.match(release, /cancel-in-progress: false/);
   assert.match(release, /npm run release:verify/);
   assert.match(release, /GITHUB_STEP_SUMMARY/);
-  assert.doesNotMatch(release, /API_BASE_URL|sha256sum|SHA256SUMS/);
+  assert.match(release, /--dart-define-from-file=\.env\.ci/);
+  assert.match(release, /PRIVY_APP_ID/);
+  assert.doesNotMatch(release, /sha256sum|SHA256SUMS/);
   assert.doesNotMatch(release, /max[-_ ]size|size[-_ ]limit/i);
 });
 

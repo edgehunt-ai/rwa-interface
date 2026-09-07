@@ -40,9 +40,13 @@ dependencies:
   flutter_riverpod: ^3.0.0
   rwa_api_client:
     path: packages/rwa_api_client
+  # Public union wrapper required by the generated OpenAPI request models.
+  one_of: ^1.5.0
   flutter_localizations:
     sdk: flutter
   sentry_flutter: ^9.28.0
+  # Official native identity provider used for Android/iOS authentication.
+  privy_flutter: 0.10.1
 
 dev_dependencies:
   flutter_test:
