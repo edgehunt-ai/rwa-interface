@@ -38,6 +38,7 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       previous_tag: ${{ steps.version.outputs.previous_tag }}
       version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -60,6 +61,14 @@ jobs:
           tag="v${version_name}"
           should_build="true"
           should_release="false"
+          prerelease="false"
+          if [[ ! "$version_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            prerelease="true"
+          fi
+          if [[ "$prerelease" == "false" && "${GITHUB_REF_NAME}" != "main" ]]; then
+            echo "Formal releases are only allowed from the main branch; use a prerelease suffix on ${GITHUB_REF_NAME}." >&2
+            exit 1
+          fi
 
           git fetch --tags --force
           previous_tag="$(
@@ -70,11 +79,11 @@ jobs:
           )"
           if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
             tagged_commit="$(git rev-list -n 1 "$tag")"
-            if [[ "${{ github.event_name }}" == "push" && "$tagged_commit" != "$GITHUB_SHA" ]]; then
+            if [[ "$tagged_commit" != "$GITHUB_SHA" ]]; then
               echo "Version ${version_name} already belongs to ${tagged_commit}; increment pubspec.yaml before releasing." >&2
               exit 1
             fi
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
+          elif [[ "${{ github.event_name }}" == "push" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             should_release="true"
           fi
 
@@ -100,6 +109,7 @@ jobs:
             echo "previous_tag=${previous_tag}"
             echo "should_build=${should_build}"
             echo "should_release=${should_release}"
+            echo "prerelease=${prerelease}"
           } >> "$GITHUB_OUTPUT"
 
   release-quality:
@@ -331,14 +341,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.detect-release.outputs.tag }}
+          PRERELEASE: ${{ needs.detect-release.outputs.prerelease }}
         shell: bash
-        run: >-
-          gh release create "$TAG"
-          release-assets/rwa-interface-android-universal.apk
-          release-assets/rwa-interface-android-armeabi-v7a.apk
-          release-assets/rwa-interface-android-arm64-v8a.apk
-          release-assets/rwa-interface-android-x86_64.apk
-          release-assets/rwa-interface-ios-unsigned.zip
-          --title "$TAG"
-          --notes-file release-notes.md
-          --target "$GITHUB_SHA"
+        run: |
+          set -euo pipefail
+          release_args=()
+          if [[ "$PRERELEASE" == "true" ]]; then
+            release_args+=(--prerelease)
+          fi
+          gh release create "$TAG" \
+            release-assets/rwa-interface-android-universal.apk \
+            release-assets/rwa-interface-android-armeabi-v7a.apk \
+            release-assets/rwa-interface-android-arm64-v8a.apk \
+            release-assets/rwa-interface-android-x86_64.apk \
+            release-assets/rwa-interface-ios-unsigned.zip \
+            --title "$TAG" \
+            --notes-file release-notes.md \
+            --target "$GITHUB_SHA" \
+            "${release_args[@]}"
