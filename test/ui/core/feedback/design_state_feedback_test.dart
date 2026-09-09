@@ -38,7 +38,9 @@ void main() {
     expect(find.byType(SkeletonBlock), findsWidgets);
   });
 
-  testWidgets('shows loading in the retry button while retrying', (tester) async {
+  testWidgets('shows loading in the retry button while retrying', (
+    tester,
+  ) async {
     final retry = Completer<void>();
     await tester.pumpWidget(
       buildTestApp(

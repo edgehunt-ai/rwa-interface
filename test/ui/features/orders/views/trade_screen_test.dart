@@ -14,6 +14,7 @@ import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
+import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
@@ -139,6 +140,46 @@ void main() {
       expect(find.text('+3.5%'), findsOneWidget);
     },
   );
+
+  testWidgets('Trade updates the favorite icon after a successful request', (
+    tester,
+  ) async {
+    final repository = _FavoriteMarketsRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add favorite'));
+    await tester.pumpAndSettle();
+
+    expect(repository.added, [
+      const MarketProductRef(symbol: 'NVDAB', kind: MarketProductKind.bstock),
+    ]);
+    expect(find.byTooltip('Remove favorite'), findsOneWidget);
+  });
+
+  testWidgets('Trade preserves the favorite icon when the request fails', (
+    tester,
+  ) async {
+    final repository = _FavoriteMarketsRepository(shouldFail: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add favorite'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Add favorite'), findsOneWidget);
+    expect(find.byTooltip('Remove favorite'), findsNothing);
+  });
 
   testWidgets('bStocks order acceptance shows only the success toast', (
     tester,
@@ -387,6 +428,40 @@ MarketProduct _marketProduct(String symbol, MarketProductKind kind) =>
       network: kind == MarketProductKind.bstock ? 'BSC' : 'Hyperliquid',
       tradable: true,
     );
+
+final class _FavoriteMarketsRepository implements MarketsRepository {
+  _FavoriteMarketsRepository({this.shouldFail = false});
+
+  final bool shouldFail;
+  final List<MarketProductRef> added = [];
+
+  @override
+  Future<DomainPage<MarketProduct>> listProducts({
+    String? query,
+    String? cursor,
+  }) async => DomainPage(
+    items: [
+      MarketProduct(
+        symbol: 'NVDAB',
+        name: 'NVDAB',
+        kind: MarketProductKind.bstock,
+        price: DecimalValue('100', asset: 'USD', unit: 'price'),
+        settlementAsset: 'USDT',
+        network: 'BSC',
+        tradable: true,
+      ),
+    ],
+  );
+
+  @override
+  Future<void> addFavorite(MarketProductRef ref) async {
+    if (shouldFail) throw const NetworkFailure();
+    added.add(ref);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 final _bstockIntent = OrderIntent(
   symbol: 'NVDAB',

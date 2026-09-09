@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../api/api_failure_mapper.dart';
@@ -6,9 +7,17 @@ import '../api/api_failure_mapper.dart';
 abstract interface class Hip3OrderActionService {
   Future<api.Order> getOrder(String orderId);
 
-  Future<api.Order> submit({
+  Future<api.Hip3Action> createPlaceOrderAction({
+    required String orderId,
+    required String idempotencyKey,
+  });
+
+  Future<api.Hip3Action> getAction(String actionId);
+
+  Future<api.Hip3Action> submitStep({
     required String orderId,
     required String actionId,
+    required String stepId,
     required api.Hip3ActionSubmissionRequest request,
     required String idempotencyKey,
   });
@@ -28,15 +37,49 @@ final class GeneratedHip3OrderActionService implements Hip3OrderActionService {
       _body(() => _api.getOrder(orderId: orderId));
 
   @override
-  Future<api.Order> submit({
+  Future<api.Hip3Action> createPlaceOrderAction({
+    required String orderId,
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.createHip3Action(
+      idempotencyKey: idempotencyKey,
+      hip3ActionCreateRequest: api.Hip3ActionCreateRequest(
+        (builder) => builder.oneOf = OneOfDynamic(
+          typeIndex: 3,
+          types: const [
+            api.Hip3CancelOrderActionRequest,
+            api.Hip3ClearTpSlActionRequest,
+            api.Hip3CloseActionRequest,
+            api.Hip3PlaceOrderActionRequest,
+            api.Hip3SetLeverageActionRequest,
+            api.Hip3SetTpSlActionRequest,
+          ],
+          value: api.Hip3PlaceOrderActionRequest(
+            (request) => request
+              ..operation =
+                  api.Hip3PlaceOrderActionRequestOperationEnum.placeOrder
+              ..orderId = orderId,
+          ),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Future<api.Hip3Action> getAction(String actionId) =>
+      _body(() => _api.getHip3Action(actionId: actionId));
+
+  @override
+  Future<api.Hip3Action> submitStep({
     required String orderId,
     required String actionId,
+    required String stepId,
     required api.Hip3ActionSubmissionRequest request,
     required String idempotencyKey,
   }) => _body(
-    () => _api.submitHip3OrderAction(
-      orderId: orderId,
+    () => _api.submitHip3ActionStep(
       actionId: actionId,
+      stepId: stepId,
       idempotencyKey: idempotencyKey,
       hip3ActionSubmissionRequest: request,
     ),

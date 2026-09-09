@@ -370,6 +370,9 @@ final class _FakeUser implements PrivyUser {
   List<EmbeddedEthereumWallet> get embeddedEthereumWallets => ethereumWallets;
 
   @override
+  List<LinkedAccounts> get linkedAccounts => const [];
+
+  @override
   Future<Result<String>> getAccessToken() async => Success(token);
 
   @override

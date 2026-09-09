@@ -51,6 +51,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   late MarketProductKind productKind;
   late String symbol;
   var _orderPanelOpen = false;
+  MarketProductRef? _favoriteOverrideRef;
+  bool? _favoriteOverride;
   @override
   void initState() {
     super.initState();
@@ -67,6 +69,25 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     setState(() {
       symbol = product.symbol;
       productKind = product.kind;
+      _favoriteOverrideRef = null;
+      _favoriteOverride = null;
+    });
+  }
+
+  Future<void> _toggleFavorite(
+    MarketProductRef product,
+    bool isFavorite,
+  ) async {
+    final command = ref.read(favoritesCommandProvider.notifier);
+    if (isFavorite) {
+      await command.remove(product);
+    } else {
+      await command.add(product);
+    }
+    if (!mounted || ref.read(favoritesCommandProvider).hasError) return;
+    setState(() {
+      _favoriteOverrideRef = product;
+      _favoriteOverride = !isFavorite;
     });
   }
 
@@ -96,18 +117,25 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
           (product) => _underlyingSymbol(product.symbol) == productQuery.query,
         )
         .toList(growable: false);
+    MarketProduct? activeProduct;
     if (availableProducts case final products? when products.isNotEmpty) {
-      final activeProduct = products.where(
+      final matchingProducts = products.where(
         (product) => product.kind == productKind && product.symbol == symbol,
       );
-      if (activeProduct.isEmpty) {
+      if (matchingProducts.isEmpty) {
         final fallback = products.first;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _changeProduct(fallback);
         });
+      } else {
+        activeProduct = matchingProducts.first;
       }
     }
     final productRef = MarketProductRef(symbol: symbol, kind: productKind);
+    final isFavorite = _favoriteOverrideRef == productRef
+        ? _favoriteOverride!
+        : activeProduct?.isFavorite ?? false;
+    final favoritesCommand = ref.watch(favoritesCommandProvider);
     final snapshotState = ref.watch(marketSnapshotProvider(productRef));
     final candlesState = ref.watch(
       marketCandlesProvider((product: productRef, interval: '1d')),
@@ -157,7 +185,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   chartStyle: chartStyle,
                   snapshot: snapshot,
                   loading: snapshotState.isLoading,
+                  isFavorite: isFavorite,
+                  favoriteLoading: favoritesCommand.isLoading,
                   onMarketHours: () => setState(() => marketHoursOpen = true),
+                  onFavoriteToggle: () =>
+                      _toggleFavorite(productRef, isFavorite),
                 ),
                 const SizedBox(height: 12),
                 _Chart(
@@ -367,14 +399,20 @@ class _ProductHeader extends StatelessWidget {
     required this.chartStyle,
     required this.snapshot,
     required this.loading,
+    required this.isFavorite,
+    required this.favoriteLoading,
     required this.onMarketHours,
+    required this.onFavoriteToggle,
   });
   final String symbol;
   final MarketProductKind kind;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
   final bool loading;
+  final bool isFavorite;
+  final bool favoriteLoading;
   final VoidCallback onMarketHours;
+  final VoidCallback onFavoriteToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -434,9 +472,9 @@ class _ProductHeader extends StatelessWidget {
             ),
             const Spacer(),
             IconButton(
-              tooltip: 'Favorite',
-              icon: const Icon(Icons.star_border, size: 28),
-              onPressed: () {},
+              tooltip: isFavorite ? 'Remove favorite' : 'Add favorite',
+              icon: Icon(isFavorite ? Icons.star : Icons.star_border, size: 28),
+              onPressed: favoriteLoading ? null : onFavoriteToggle,
             ),
           ],
         ),

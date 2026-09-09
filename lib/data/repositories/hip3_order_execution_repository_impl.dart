@@ -1,6 +1,5 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
-import '../../domain/models/hip3_order_action.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
@@ -29,69 +28,94 @@ final class Hip3OrderExecutionRepositoryImpl
   Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(String orderId) {
     return _inFlight.putIfAbsent(orderId, () async {
       try {
-        final action = await _awaitAction(orderId);
-        if (action.isExpiredAt(_now())) {
-          throw const Hip3SigningFailure(Hip3SigningFailureCode.actionExpired);
-        }
-        final signature = _signatures[action.actionId] ??=
-            Hip3RsvSignature.fromCompactHex(
-              await _signer.signTypedDataV4(
-                expectedSigner: action.expectedSigner,
-                typedData: action.typedData,
-              ),
-            );
-        final wire = await _service.submit(
+        var action = await _service.createPlaceOrderAction(
           orderId: orderId,
-          actionId: action.actionId,
-          request: _request(signature),
-          idempotencyKey: 'hip3-action-${action.actionId}',
+          idempotencyKey: 'hip3-action-create-$orderId',
         );
-        return ResourceResult(resource: mapOrder(wire));
+        for (var attempt = 0; attempt < 30; attempt++) {
+          if (action.status == api.Hip3ActionStatus.succeeded) {
+            return ResourceResult(
+              resource: mapOrder(await _service.getOrder(orderId)),
+            );
+          }
+          _throwIfTerminal(action);
+
+          final step = _signableStep(action);
+          if (step == null) {
+            await _delay(const Duration(milliseconds: 500));
+            action = await _service.getAction(action.actionId);
+            continue;
+          }
+
+          final signing = step.signing!;
+          if (!signing.validUntil.toUtc().isAfter(_now().toUtc())) {
+            throw const Hip3SigningFailure(
+              Hip3SigningFailureCode.actionExpired,
+            );
+          }
+          final signature = _signatures['${action.actionId}:${step.stepId}'] ??=
+              Hip3RsvSignature.fromCompactHex(
+                await _signer.signTypedDataV4(
+                  expectedSigner: signing.expectedSigner,
+                  typedData: _typedData(signing),
+                ),
+              );
+          action = await _service.submitStep(
+            orderId: orderId,
+            actionId: action.actionId,
+            stepId: step.stepId,
+            request: _request(signature),
+            idempotencyKey: 'hip3-action-${action.actionId}-${step.stepId}',
+          );
+        }
+        throw const Hip3SigningFailure(
+          Hip3SigningFailureCode.actionNotReady,
+          retryable: true,
+        );
       } finally {
         _inFlight.remove(orderId);
       }
     });
   }
 
-  Future<Hip3OrderAction> _awaitAction(String orderId) async {
-    for (var attempt = 0; attempt < 30; attempt++) {
-      final order = await _service.getOrder(orderId);
-      final action = order.hip3Action;
-      if (action != null) return _mapAction(orderId, action);
-      if (order.status == api.OrderStatus.failed ||
-          order.status == api.OrderStatus.cancelled) {
-        break;
-      }
-      await _delay(const Duration(milliseconds: 500));
-    }
-    throw const Hip3SigningFailure(
-      Hip3SigningFailureCode.actionNotReady,
-      retryable: true,
-    );
-  }
+  api.Hip3ActionStep? _signableStep(api.Hip3Action action) => action.steps
+      .where(
+        (step) => step.stepId == action.currentStepId && step.signing != null,
+      )
+      .firstOrNull;
 
-  Hip3OrderAction _mapAction(String orderId, api.Hip3OrderAction action) {
-    if (action.signingMethod !=
-            api.Hip3OrderActionSigningMethodEnum.ethSignTypedDataV4 ||
-        action.signatureFormat != api.Hip3OrderActionSignatureFormatEnum.rSV) {
+  Map<String, Object?> _typedData(api.Hip3StepSigningPayload signing) {
+    if (signing.signingMethod !=
+            api.Hip3StepSigningPayloadSigningMethodEnum.ethSignTypedDataV4 ||
+        signing.signatureFormat !=
+            api.Hip3StepSigningPayloadSignatureFormatEnum.rSV) {
       throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
     }
     final serialized = api.standardSerializers.serializeWith(
       api.Hip3Eip712TypedData.serializer,
-      action.signingTypedData,
+      signing.signingTypedData,
     );
     if (serialized is! Map) {
       throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
     }
-    return Hip3OrderAction(
-      orderId: orderId,
-      actionId: action.actionId,
-      expectedSigner: action.expectedSigner,
-      typedData: serialized.map(
-        (key, value) => MapEntry(key.toString(), value as Object?),
-      ),
-      validUntil: action.validUntil.toUtc(),
+    return serialized.map(
+      (key, value) => MapEntry(key.toString(), value as Object?),
     );
+  }
+
+  void _throwIfTerminal(api.Hip3Action action) {
+    switch (action.status) {
+      case api.Hip3ActionStatus.expired:
+        throw const Hip3SigningFailure(Hip3SigningFailureCode.actionExpired);
+      case api.Hip3ActionStatus.failed:
+      case api.Hip3ActionStatus.cancelled:
+      case api.Hip3ActionStatus.ambiguous:
+      case api.Hip3ActionStatus.manualReview:
+      case api.Hip3ActionStatus.unknownDefaultOpenApi:
+        throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+      default:
+        return;
+    }
   }
 
   api.Hip3ActionSubmissionRequest _request(Hip3RsvSignature signature) =>

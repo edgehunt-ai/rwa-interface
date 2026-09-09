@@ -35,7 +35,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   final _amount = TextEditingController(text: '100');
   final _limitPrice = TextEditingController();
   var _side = TradingSide.long;
-  var _type = TradingOrderType.market;
+  final _type = TradingOrderType.market;
   var _marginMode = TradingMarginMode.cross;
   var _leverage = 10;
   var _reduceOnly = false;
