@@ -481,7 +481,14 @@ class _ProductHeader extends StatelessWidget {
             const Spacer(),
             IconButton(
               tooltip: isFavorite ? 'Remove favorite' : 'Add favorite',
-              icon: Icon(isFavorite ? Icons.star : Icons.star_border, size: 28),
+              icon: favoriteLoading
+                  ? const SizedBox(
+                      key: Key('trade-favorite-loading'),
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(isFavorite ? Icons.star : Icons.star_border, size: 28),
               onPressed: favoriteLoading ? null : onFavoriteToggle,
             ),
           ],

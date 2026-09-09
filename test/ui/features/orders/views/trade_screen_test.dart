@@ -183,6 +183,27 @@ void main() {
     expect(find.byTooltip('Add favorite'), findsOneWidget);
   });
 
+  testWidgets('Trade shows progress while updating favorites', (tester) async {
+    final gate = Completer<void>();
+    final repository = _FavoriteMarketsRepository(addGate: gate);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add favorite'));
+    await tester.pump();
+
+    expect(find.byKey(const Key('trade-favorite-loading')), findsOneWidget);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('trade-favorite-loading')), findsNothing);
+  });
+
   testWidgets('Trade preserves the favorite icon when the request fails', (
     tester,
   ) async {
@@ -454,10 +475,12 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
   _FavoriteMarketsRepository({
     this.isFavorite = false,
     this.shouldFail = false,
+    this.addGate,
   });
 
   final bool isFavorite;
   final bool shouldFail;
+  final Completer<void>? addGate;
   final List<MarketProductRef> added = [];
   final List<MarketProductRef> removed = [];
 
@@ -482,6 +505,7 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
 
   @override
   Future<void> addFavorite(MarketProductRef ref) async {
+    await addGate?.future;
     if (shouldFail) throw const NetworkFailure();
     added.add(ref);
   }
