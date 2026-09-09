@@ -84,11 +84,19 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     } else {
       await command.add(product);
     }
-    if (!mounted || ref.read(favoritesCommandProvider).hasError) return;
+    if (!mounted) return;
+    if (ref.read(favoritesCommandProvider).hasError) {
+      AppToast.showFailure(context, 'Unable to update favorites.');
+      return;
+    }
     setState(() {
       _favoriteOverrideRef = product;
       _favoriteOverride = !isFavorite;
     });
+    AppToast.showSuccess(
+      context,
+      isFavorite ? 'Removed from favorites.' : 'Added to favorites.',
+    );
   }
 
   Future<void> _openOrderPanel(TradingSide side) async {
