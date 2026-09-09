@@ -10,6 +10,73 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get hip3PendingTitle => 'Unfinished HIP3 actions';
+
+  @override
+  String get hip3PendingRefresh => 'Refresh actions';
+
+  @override
+  String get hip3PendingLoading => 'Loading unfinished actions…';
+
+  @override
+  String get hip3PendingLoadError =>
+      'Could not load actions. Refresh to try again.';
+
+  @override
+  String get hip3PendingEmpty => 'No unfinished position actions on this page.';
+
+  @override
+  String get hip3PendingMore => 'Load more actions';
+
+  @override
+  String get hip3PendingContinue => 'Continue action';
+
+  @override
+  String get hip3PendingCheck => 'Check progress';
+
+  @override
+  String get hip3PendingBusy => 'Checking action…';
+
+  @override
+  String get hip3PendingReview =>
+      'Needs manual review. Do not create a replacement action. Contact support with the action ID.';
+
+  @override
+  String get hip3PendingSignature => 'Waiting for your signature';
+
+  @override
+  String get hip3PendingProcessing => 'Checking the exchange result';
+
+  @override
+  String get hip3PendingUnavailable => 'This action cannot be resumed here.';
+
+  @override
+  String get hip3PendingError =>
+      'Could not continue. Refresh and retry the same action.';
+
+  @override
+  String get hip3PendingStillActive =>
+      'The action is still unfinished. Continue this action instead of creating another.';
+
+  @override
+  String get hip3PendingComplete => 'Action confirmed';
+
+  @override
+  String get hip3PendingSetTpsl => 'Set or update TP/SL';
+
+  @override
+  String get hip3PendingClearTpsl => 'Cancel TP/SL';
+
+  @override
+  String get hip3PendingLeverage => 'Adjust leverage';
+
+  @override
+  String get hip3PendingClose => 'Close position';
+
+  @override
+  String get hip3PendingEffects => 'Earlier steps have already taken effect.';
+
+  @override
   String get appTitle => 'RWA Interface';
 
   @override

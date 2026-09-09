@@ -10,6 +10,69 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get hip3PendingTitle => '未完成的 HIP3 操作';
+
+  @override
+  String get hip3PendingRefresh => '刷新操作';
+
+  @override
+  String get hip3PendingLoading => '正在加载未完成的操作…';
+
+  @override
+  String get hip3PendingLoadError => '无法加载操作，请刷新重试。';
+
+  @override
+  String get hip3PendingEmpty => '本页没有未完成的持仓操作。';
+
+  @override
+  String get hip3PendingMore => '加载更多操作';
+
+  @override
+  String get hip3PendingContinue => '继续操作';
+
+  @override
+  String get hip3PendingCheck => '查询进度';
+
+  @override
+  String get hip3PendingBusy => '正在查询操作…';
+
+  @override
+  String get hip3PendingReview => '需要人工处理。请勿创建替代操作，请提供操作 ID 联系客服。';
+
+  @override
+  String get hip3PendingSignature => '等待你的签名';
+
+  @override
+  String get hip3PendingProcessing => '正在核对交易所结果';
+
+  @override
+  String get hip3PendingUnavailable => '此操作无法在这里继续。';
+
+  @override
+  String get hip3PendingError => '无法继续，请刷新后重试同一个操作。';
+
+  @override
+  String get hip3PendingStillActive => '操作尚未完成，请继续此操作，不要重复创建。';
+
+  @override
+  String get hip3PendingComplete => '操作已确认';
+
+  @override
+  String get hip3PendingSetTpsl => '设置或修改止盈止损';
+
+  @override
+  String get hip3PendingClearTpsl => '取消止盈止损';
+
+  @override
+  String get hip3PendingLeverage => '调整杠杆';
+
+  @override
+  String get hip3PendingClose => '平仓';
+
+  @override
+  String get hip3PendingEffects => '此前的步骤已生效。';
+
+  @override
   String get appTitle => 'RWA 交易界面';
 
   @override

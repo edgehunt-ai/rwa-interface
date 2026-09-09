@@ -98,6 +98,132 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @hip3PendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfinished HIP3 actions'**
+  String get hip3PendingTitle;
+
+  /// No description provided for @hip3PendingRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh actions'**
+  String get hip3PendingRefresh;
+
+  /// No description provided for @hip3PendingLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading unfinished actions…'**
+  String get hip3PendingLoading;
+
+  /// No description provided for @hip3PendingLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load actions. Refresh to try again.'**
+  String get hip3PendingLoadError;
+
+  /// No description provided for @hip3PendingEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No unfinished position actions on this page.'**
+  String get hip3PendingEmpty;
+
+  /// No description provided for @hip3PendingMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more actions'**
+  String get hip3PendingMore;
+
+  /// No description provided for @hip3PendingContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue action'**
+  String get hip3PendingContinue;
+
+  /// No description provided for @hip3PendingCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check progress'**
+  String get hip3PendingCheck;
+
+  /// No description provided for @hip3PendingBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking action…'**
+  String get hip3PendingBusy;
+
+  /// No description provided for @hip3PendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs manual review. Do not create a replacement action. Contact support with the action ID.'**
+  String get hip3PendingReview;
+
+  /// No description provided for @hip3PendingSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your signature'**
+  String get hip3PendingSignature;
+
+  /// No description provided for @hip3PendingProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the exchange result'**
+  String get hip3PendingProcessing;
+
+  /// No description provided for @hip3PendingUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be resumed here.'**
+  String get hip3PendingUnavailable;
+
+  /// No description provided for @hip3PendingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not continue. Refresh and retry the same action.'**
+  String get hip3PendingError;
+
+  /// No description provided for @hip3PendingStillActive.
+  ///
+  /// In en, this message translates to:
+  /// **'The action is still unfinished. Continue this action instead of creating another.'**
+  String get hip3PendingStillActive;
+
+  /// No description provided for @hip3PendingComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Action confirmed'**
+  String get hip3PendingComplete;
+
+  /// No description provided for @hip3PendingSetTpsl.
+  ///
+  /// In en, this message translates to:
+  /// **'Set or update TP/SL'**
+  String get hip3PendingSetTpsl;
+
+  /// No description provided for @hip3PendingClearTpsl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel TP/SL'**
+  String get hip3PendingClearTpsl;
+
+  /// No description provided for @hip3PendingLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust leverage'**
+  String get hip3PendingLeverage;
+
+  /// No description provided for @hip3PendingClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close position'**
+  String get hip3PendingClose;
+
+  /// No description provided for @hip3PendingEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier steps have already taken effect.'**
+  String get hip3PendingEffects;
+
   /// Application title
   ///
   /// In en, this message translates to:
