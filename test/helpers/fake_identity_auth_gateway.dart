@@ -16,8 +16,12 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   IdentityFailure? initializeFailure;
   IdentityFailure? sendFailure;
   IdentityFailure? verifyFailure;
+  IdentityFailure? loginFailure;
   IdentityFailure? oauthFailure;
   IdentityFailure? passkeyFailure;
+  PasskeyCredential? passkey;
+  int linkPasskeyCalls = 0;
+  int unlinkPasskeyCalls = 0;
   IdentityFailure? walletLoginFailure;
   IdentityFailure? logoutFailure;
   Future<void>? initializeBarrier;
@@ -76,6 +80,12 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   }
 
   @override
+  Future<IdentityPrincipal> login() async {
+    if (loginFailure case final failure?) throw failure;
+    return verifiedPrincipal;
+  }
+
+  @override
   Future<IdentityPrincipal> loginWithOAuth(String provider) async {
     if (oauthFailure case final failure?) throw failure;
     return verifiedPrincipal;
@@ -85,6 +95,23 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   Future<IdentityPrincipal> loginWithPasskey() async {
     if (passkeyFailure case final failure?) throw failure;
     return verifiedPrincipal;
+  }
+
+  @override
+  Future<PasskeyCredential?> getPasskey() async => passkey;
+
+  @override
+  Future<PasskeyCredential> linkPasskey({String? displayName}) async {
+    linkPasskeyCalls++;
+    if (passkeyFailure case final failure?) throw failure;
+    return passkey ??= const PasskeyCredential(id: 'passkey-credential');
+  }
+
+  @override
+  Future<void> unlinkPasskey(String credentialId) async {
+    unlinkPasskeyCalls++;
+    if (passkeyFailure case final failure?) throw failure;
+    if (passkey?.id == credentialId) passkey = null;
   }
 
   @override

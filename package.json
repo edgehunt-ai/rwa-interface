@@ -9,9 +9,16 @@
     "api:update:branch": "node scripts/update-contract-client.mjs --branch",
     "quality:check": "dart format --output=none --set-exit-if-changed lib test && dart analyze --fatal-infos && flutter test",
     "release:verify": "npm run quality:check",
-    "staging:preflight": "node scripts/check-staging-readiness.mjs"
+    "staging:preflight": "node scripts/check-staging-readiness.mjs",
+    "privy:web:build": "vite build --config tool/privy-auth/vite.config.mjs"
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "2.40.1"
+    "@openapitools/openapi-generator-cli": "2.40.1",
+    "@privy-io/react-auth": "3.40.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "esbuild": "0.28.2",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vite": "8.2.2"
   }
 }

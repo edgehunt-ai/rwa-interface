@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/auth_providers.dart';
 import '../../../../app/providers/session_scope.dart';
+import '../../../../domain/auth/identity_auth_gateway.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/registered_device.dart';
 import '../../../../domain/models/user_account.dart';
@@ -41,3 +43,44 @@ final settingsCommandProvider =
     AsyncNotifierProvider<SettingsCommand, UserPreferences?>(
       SettingsCommand.new,
     );
+
+final passkeyProvider =
+    AsyncNotifierProvider.autoDispose<PasskeyCommand, PasskeyCredential?>(
+      PasskeyCommand.new,
+    );
+
+final class PasskeyCommand extends AsyncNotifier<PasskeyCredential?> {
+  @override
+  Future<PasskeyCredential?> build() =>
+      ref.read(identityAuthGatewayProvider).getPasskey();
+
+  Future<void> link() async {
+    final previous = _valueOrNull(state);
+    state = const AsyncLoading();
+    try {
+      final passkey = await ref.read(identityAuthGatewayProvider).linkPasskey();
+      state = AsyncData(passkey);
+    } catch (error, stackTrace) {
+      state = AsyncData(previous);
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  Future<void> unlink(String credentialId) async {
+    final previous = _valueOrNull(state);
+    state = const AsyncLoading();
+    try {
+      await ref.read(identityAuthGatewayProvider).unlinkPasskey(credentialId);
+      state = const AsyncData(null);
+    } catch (error, stackTrace) {
+      state = AsyncData(previous);
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+  }
+
+  PasskeyCredential? _valueOrNull(AsyncValue<PasskeyCredential?> value) =>
+      switch (value) {
+        AsyncData(:final value) => value,
+        _ => null,
+      };
+}

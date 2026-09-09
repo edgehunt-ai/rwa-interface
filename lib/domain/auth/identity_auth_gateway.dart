@@ -26,9 +26,21 @@ abstract interface class IdentityAuthGateway {
     required String code,
   });
 
+  /// Opens the provider-owned login experience when it is available.
+  ///
+  /// Browser clients use this instead of reproducing Privy's login methods in
+  /// Flutter. Native clients retain their method-specific flows below.
+  Future<IdentityPrincipal> login();
+
   Future<IdentityPrincipal> loginWithOAuth(String provider);
 
   Future<IdentityPrincipal> loginWithPasskey();
+
+  Future<PasskeyCredential?> getPasskey();
+
+  Future<PasskeyCredential> linkPasskey({String? displayName});
+
+  Future<void> unlinkPasskey(String credentialId);
 
   Future<IdentityPrincipal> loginWithWallet(WalletConnection connection);
 
@@ -37,4 +49,11 @@ abstract interface class IdentityAuthGateway {
   Future<String?> refreshAccessToken();
 
   Future<void> logout();
+}
+
+final class PasskeyCredential {
+  const PasskeyCredential({required this.id, this.authenticatorName});
+
+  final String id;
+  final String? authenticatorName;
 }

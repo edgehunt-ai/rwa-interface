@@ -20,6 +20,73 @@ typedef PrivyTypedDataRequester = Future<Result<EthereumRpcResponse>> Function(
   EthereumRpcRequest request,
 );
 
+IdentityPrincipal _principalFromUser(PrivyUser user) => IdentityPrincipal(
+  user.id,
+  displayName: _privyDisplayName(user.linkedAccounts),
+);
+
+String? _privyDisplayName(List<LinkedAccounts> accounts) {
+  String? firstValue(Iterable<String?> values) {
+    for (final value in values) {
+      final trimmed = value?.trim();
+      if (trimmed != null && trimmed.isNotEmpty) return trimmed;
+    }
+    return null;
+  }
+
+  final profileName = firstValue([
+    for (final account in accounts)
+      switch (account) {
+        GoogleOAuthAccount(:final name) ||
+        TwitterOAuthAccount(:final name) => name,
+        TelegramAccount(:final firstName, :final lastName) => [
+          firstName,
+          lastName,
+        ].whereType<String>().join(' '),
+        _ => null,
+      },
+  ]);
+  if (profileName != null) return profileName;
+
+  final email = firstValue([
+    for (final account in accounts)
+      switch (account) {
+        EmailAccount(:final emailAddress) => emailAddress,
+        GoogleOAuthAccount(:final email) ||
+        AppleOAuthAccount(:final email) => email,
+        DiscordOAuthAccount(:final email) => email,
+        _ => null,
+      },
+  ]);
+  if (email != null) return email;
+
+  final username = firstValue([
+    for (final account in accounts)
+      switch (account) {
+        TwitterOAuthAccount(:final username) ||
+        DiscordOAuthAccount(:final username) ||
+        TelegramAccount(:final username) => username,
+        _ => null,
+      },
+  ]);
+  if (username != null) return username;
+
+  final wallet = firstValue([
+    for (final account in accounts)
+      switch (account) {
+        ExternalWalletAccount(:final address) ||
+        EmbeddedEthereumWalletAccount(:final address) ||
+        EmbeddedSolanaWalletAccount(:final address) => address,
+        _ => null,
+      },
+  ]);
+  return wallet == null ? null : _shortenWalletAddress(wallet);
+}
+
+String _shortenWalletAddress(String address) => address.length <= 12
+    ? address
+    : '${address.substring(0, 6)}...${address.substring(address.length - 4)}';
+
 final class PrivyIdentityAuthGateway
     implements IdentityAuthGateway, Hip3TypedDataSigner {
   PrivyIdentityAuthGateway({
@@ -73,7 +140,7 @@ final class PrivyIdentityAuthGateway
           _user = user;
           _externalWallet = null;
           _sessionUsable = true;
-          return IdentityPrincipal(user.id);
+          return _principalFromUser(user);
         case Unauthenticated():
           _user = null;
           _externalWallet = null;
@@ -131,7 +198,7 @@ final class PrivyIdentityAuthGateway
           _user = value;
           _externalWallet = null;
           _sessionUsable = true;
-          return IdentityPrincipal(value.id);
+          return _principalFromUser(value);
         case Failure<PrivyUser>(:final error):
           throw _mapFailure(
             error,
@@ -208,6 +275,12 @@ final class PrivyIdentityAuthGateway
   }
 
   @override
+  Future<IdentityPrincipal> login() async => throw const IdentityFailure(
+    AuthenticationFailureCode.methodUnavailable,
+    retryable: false,
+  );
+
+  @override
   Future<IdentityPrincipal> loginWithOAuth(String provider) async {
     try {
       final oauthProvider = switch (provider.toLowerCase()) {
@@ -230,7 +303,7 @@ final class PrivyIdentityAuthGateway
           _user = value;
           _externalWallet = null;
           _sessionUsable = true;
-          return IdentityPrincipal(value.id);
+          return _principalFromUser(value);
         case Failure<PrivyUser>(:final error):
           throw _mapFailure(
             error,
@@ -256,7 +329,7 @@ final class PrivyIdentityAuthGateway
           _user = value;
           _externalWallet = null;
           _sessionUsable = true;
-          return IdentityPrincipal(value.id);
+          return _principalFromUser(value);
         case Failure<PrivyUser>(:final error):
           throw _mapFailure(
             error,
@@ -268,6 +341,72 @@ final class PrivyIdentityAuthGateway
       rethrow;
     } catch (error) {
       throw _mapUnexpectedFailure(operation: 'passkey_login', error: error);
+    }
+  }
+
+  @override
+  Future<PasskeyCredential?> getPasskey() async {
+    if (!_sessionUsable) return null;
+    final user = _user ?? await _privy?.getUser();
+    if (user == null) return null;
+    _user = user;
+    return _passkeyFromUser(user);
+  }
+
+  @override
+  Future<PasskeyCredential> linkPasskey({String? displayName}) async {
+    try {
+      final result = await _initializedPrivy.passkey.link(
+        relyingParty: PrivyConfiguration.relyingParty,
+        displayName: displayName,
+      );
+      switch (result) {
+        case Success<PrivyUser>(:final value):
+          _user = value;
+          _sessionUsable = true;
+          final passkey = _passkeyFromUser(value);
+          if (passkey == null) {
+            throw const IdentityFailure(
+              AuthenticationFailureCode.provider,
+              retryable: true,
+            );
+          }
+          return passkey;
+        case Failure<PrivyUser>(:final error):
+          throw _mapFailure(
+            error,
+            operation: 'passkey_link',
+            codeOperation: false,
+          );
+      }
+    } on IdentityFailure {
+      rethrow;
+    } catch (error) {
+      throw _mapUnexpectedFailure(operation: 'passkey_link', error: error);
+    }
+  }
+
+  @override
+  Future<void> unlinkPasskey(String credentialId) async {
+    try {
+      final result = await _initializedPrivy.passkey.unlink(
+        credentialId: credentialId,
+      );
+      switch (result) {
+        case Success<PrivyUser>(:final value):
+          _user = value;
+          _sessionUsable = true;
+        case Failure<PrivyUser>(:final error):
+          throw _mapFailure(
+            error,
+            operation: 'passkey_unlink',
+            codeOperation: false,
+          );
+      }
+    } on IdentityFailure {
+      rethrow;
+    } catch (error) {
+      throw _mapUnexpectedFailure(operation: 'passkey_unlink', error: error);
     }
   }
 
@@ -309,7 +448,7 @@ final class PrivyIdentityAuthGateway
           _user = value;
           _externalWallet = connection;
           _sessionUsable = true;
-          return IdentityPrincipal(value.id);
+          return _principalFromUser(value);
         case Failure<PrivyUser>(:final error):
           throw _mapFailure(
             error,
@@ -384,6 +523,16 @@ final class PrivyIdentityAuthGateway
     Success<String>(:final value) when value.isNotEmpty => value,
     _ => null,
   };
+
+  PasskeyCredential? _passkeyFromUser(PrivyUser user) {
+    final account = user.linkedAccounts.whereType<PasskeyAccount>().firstOrNull;
+    return account == null
+        ? null
+        : PasskeyCredential(
+            id: account.credentialId,
+            authenticatorName: account.authenticatorName,
+          );
+  }
 
   IdentityFailure _mapFailure(
     PrivyException error, {

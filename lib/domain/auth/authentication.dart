@@ -30,9 +30,10 @@ final class IdentityConfiguration {
 }
 
 final class IdentityPrincipal {
-  const IdentityPrincipal(this.id);
+  const IdentityPrincipal(this.id, {this.displayName});
 
   final String id;
+  final String? displayName;
 }
 
 sealed class AuthenticationState {
@@ -63,9 +64,10 @@ final class AuthenticationAuthenticating extends AuthenticationState {
 }
 
 final class AuthenticationAuthenticated extends AuthenticationState {
-  const AuthenticationAuthenticated(this.session);
+  const AuthenticationAuthenticated(this.session, {required this.principal});
 
   final ProductSession session;
+  final IdentityPrincipal principal;
 }
 
 final class AuthenticationFailed extends AuthenticationState {

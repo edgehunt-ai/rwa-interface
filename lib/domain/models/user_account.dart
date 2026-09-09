@@ -47,3 +47,11 @@ final class UserAccount {
   final DateTime? createdAt;
   final UserPreferences settings;
 }
+
+String accountDisplayName(UserAccount account, {String? identityDisplayName}) {
+  final apiName = account.displayName?.trim();
+  if (apiName != null && apiName.isNotEmpty) return apiName;
+  final identityName = identityDisplayName?.trim();
+  if (identityName != null && identityName.isNotEmpty) return identityName;
+  return account.userId;
+}

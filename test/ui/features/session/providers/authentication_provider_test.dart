@@ -102,7 +102,12 @@ void main() {
   );
 
   test('email is normalized and valid code establishes session', () async {
-    final gateway = FakeIdentityAuthGateway();
+    final gateway = FakeIdentityAuthGateway(
+      verifiedPrincipal: const IdentityPrincipal(
+        'privy-user',
+        displayName: 'privy@example.com',
+      ),
+    );
     final repository = _SessionRepository();
     final container = _container(gateway, repository);
     final notifier = container.read(authenticationProvider.notifier);
@@ -121,6 +126,12 @@ void main() {
     expect(
       container.read(authenticationProvider),
       isA<AuthenticationAuthenticated>(),
+    );
+    expect(
+      (container.read(
+        authenticationProvider,
+      ) as AuthenticationAuthenticated).principal.displayName,
+      'privy@example.com',
     );
   });
 
@@ -149,6 +160,22 @@ void main() {
     await notifier.loginWithWallet(() async => wallet);
 
     expect(gateway.walletConnection, same(wallet));
+    expect(repository.createCalls, 1);
+    expect(
+      container.read(authenticationProvider),
+      isA<AuthenticationAuthenticated>(),
+    );
+  });
+
+  test('provider-owned login establishes a product session', () async {
+    final gateway = FakeIdentityAuthGateway();
+    final repository = _SessionRepository();
+    final container = _container(gateway, repository);
+    final notifier = container.read(authenticationProvider.notifier);
+    await notifier.bootstrap();
+
+    await notifier.login();
+
     expect(repository.createCalls, 1);
     expect(
       container.read(authenticationProvider),

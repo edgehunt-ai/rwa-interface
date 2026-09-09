@@ -54,7 +54,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
         state = const AuthenticationUnauthenticated();
         return;
       }
-      await _establishSession(operation, language: language);
+      await _establishSession(operation, principal, language: language);
     } on IdentityFailure catch (failure) {
       if (_isCurrent(operation)) state = AuthenticationFailed(failure);
     } catch (_) {
@@ -119,9 +119,12 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     final operation = ++_epoch;
     state = AuthenticationAuthenticating(email: email);
     try {
-      await _gateway.verifyEmailCode(email: email, code: submittedCode);
+      final principal = await _gateway.verifyEmailCode(
+        email: email,
+        code: submittedCode,
+      );
       if (!_isCurrent(operation)) return;
-      await _establishSession(operation, language: language);
+      await _establishSession(operation, principal, language: language);
       if (_isCurrent(operation) && state is AuthenticationAuthenticated) {
         _activeEmail = null;
       }
@@ -149,6 +152,10 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     );
   }
 
+  Future<void> login({String? language}) async {
+    await _loginWithProvider(_gateway.login, language: language);
+  }
+
   Future<void> loginWithPasskey({String? language}) async {
     await _loginWithProvider(_gateway.loginWithPasskey, language: language);
   }
@@ -162,9 +169,9 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     try {
       final connection = await connect();
       _walletConnection = connection;
-      await _gateway.loginWithWallet(connection);
+      final principal = await _gateway.loginWithWallet(connection);
       if (_isCurrent(operation)) {
-        await _establishSession(operation, language: language);
+        await _establishSession(operation, principal, language: language);
       }
     } on IdentityFailure catch (failure) {
       if (_isCurrent(operation)) {
@@ -191,9 +198,9 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     final operation = ++_epoch;
     state = const AuthenticationAuthenticating();
     try {
-      await login();
+      final principal = await login();
       if (_isCurrent(operation)) {
-        await _establishSession(operation, language: language);
+        await _establishSession(operation, principal, language: language);
       }
     } on IdentityFailure catch (failure) {
       if (_isCurrent(operation)) {
@@ -237,7 +244,11 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     }
   }
 
-  Future<void> _establishSession(int operation, {String? language}) async {
+  Future<void> _establishSession(
+    int operation,
+    IdentityPrincipal principal, {
+    String? language,
+  }) async {
     final generation = ref.read(sessionGenerationProvider).value;
     final session = await _createBackendSession(
       language: language,
@@ -247,7 +258,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     await _activateNotifications(session.account.settings);
     if (_isCurrent(operation) &&
         ref.read(sessionGenerationProvider).value == generation) {
-      state = AuthenticationAuthenticated(session);
+      state = AuthenticationAuthenticated(session, principal: principal);
     }
   }
 

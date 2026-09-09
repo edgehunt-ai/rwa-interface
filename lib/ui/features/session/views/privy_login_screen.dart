@@ -109,6 +109,17 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
     if (mounted) setState(() => _recentMethod = method);
   }
 
+  Future<void> _loginOnWeb() async {
+    await ref.read(authenticationProvider.notifier).login();
+    if (!mounted ||
+        ref.read(authenticationProvider) is! AuthenticationAuthenticated) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('recent_login_method', 'Privy');
+    if (mounted) setState(() => _recentMethod = 'Privy');
+  }
+
   Future<void> _loginWithWallet(BuildContext context) async {
     await ref
         .read(authenticationProvider.notifier)
@@ -280,6 +291,13 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                         TextButton(
                           onPressed: _sendCode,
                           child: const Text('Resend code'),
+                        ),
+                      ] else if (kIsWeb) ...[
+                        _LoginOption(
+                          asset: 'assets/figma/session/email.svg',
+                          label: 'Continue with Privy',
+                          badge: _recentMethod == 'Privy' ? 'Recent' : null,
+                          onTap: _loginOnWeb,
                         ),
                       ] else ...[
                         _EmailLoginOption(

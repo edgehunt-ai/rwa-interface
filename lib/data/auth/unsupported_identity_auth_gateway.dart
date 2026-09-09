@@ -21,11 +21,24 @@ final class UnsupportedIdentityAuthGateway implements IdentityAuthGateway {
   ) async => throw _failure;
 
   @override
+  Future<IdentityPrincipal> login() async => throw _failure;
+
+  @override
   Future<IdentityPrincipal> loginWithOAuth(String provider) async =>
       throw _failure;
 
   @override
   Future<IdentityPrincipal> loginWithPasskey() async => throw _failure;
+
+  @override
+  Future<PasskeyCredential?> getPasskey() async => throw _failure;
+
+  @override
+  Future<PasskeyCredential> linkPasskey({String? displayName}) async =>
+      throw _failure;
+
+  @override
+  Future<void> unlinkPasskey(String credentialId) async => throw _failure;
 
   @override
   Future<IdentityPrincipal> loginWithWallet(

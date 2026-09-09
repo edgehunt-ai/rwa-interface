@@ -131,3 +131,8 @@ node_modules/
 
 # Generated API documentation
 dist/
+
+# Web-only Privy authentication bundle, served from Flutter's web template.
+!web/privy-auth/
+!web/privy-auth/dist/
+!web/privy-auth/dist/privy-auth.js
