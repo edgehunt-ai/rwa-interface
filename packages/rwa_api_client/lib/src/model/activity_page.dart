@@ -15,10 +15,11 @@ part 'activity_page.g.dart';
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore] 
-/// * [items] 
+/// * [hasMore]
+/// * [items]
 @BuiltValue()
-abstract class ActivityPage implements Page, Built<ActivityPage, ActivityPageBuilder> {
+abstract class ActivityPage
+    implements Page, Built<ActivityPage, ActivityPageBuilder> {
   @BuiltValueField(wireName: r'items')
   BuiltList<ActivityRecord> get items;
 
@@ -46,10 +47,12 @@ class _$ActivityPageSerializer implements PrimitiveSerializer<ActivityPage> {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null ? null : serializers.serialize(
-      object.nextCursor,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.nextCursor == null
+        ? null
+        : serializers.serialize(
+            object.nextCursor,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'has_more';
     yield serializers.serialize(
       object.hasMore,
@@ -68,7 +71,9 @@ class _$ActivityPageSerializer implements PrimitiveSerializer<ActivityPage> {
     ActivityPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -101,7 +106,8 @@ class _$ActivityPageSerializer implements PrimitiveSerializer<ActivityPage> {
         case r'items':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(ActivityRecord)]),
+            specifiedType:
+                const FullType(BuiltList, [FullType(ActivityRecord)]),
           ) as BuiltList<ActivityRecord>;
           result.items.replace(valueDes);
           break;
@@ -133,4 +139,3 @@ class _$ActivityPageSerializer implements PrimitiveSerializer<ActivityPage> {
     return result.build();
   }
 }
-

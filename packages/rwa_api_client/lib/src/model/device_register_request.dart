@@ -12,21 +12,22 @@ part 'device_register_request.g.dart';
 /// DeviceRegisterRequest
 ///
 /// Properties:
-/// * [deviceId] 
-/// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。 
-/// * [appVersion] - 当前安装的版本号，可选。**用途是推送内容分流，不是设备统计**—— 比如老版本不支持富通知（图片 / 按钮）或某种深链格式时， 后端据此回退成纯文本推送，避免老版本收到解析不了的 payload。  与令牌一样会过期：客户端每次上报令牌时应一并带上当前版本号， 不需要单独维护更新时机。 
+/// * [deviceId]
+/// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
+/// * [appVersion] - 当前安装的版本号，可选。**用途是推送内容分流，不是设备统计**—— 比如老版本不支持富通知（图片 / 按钮）或某种深链格式时， 后端据此回退成纯文本推送，避免老版本收到解析不了的 payload。  与令牌一样会过期：客户端每次上报令牌时应一并带上当前版本号， 不需要单独维护更新时机。
 /// * [pushToken] - APNs / FCM 推送令牌
 /// * [pushProvider] - 不传则由后端按 `platform` 推断
 @BuiltValue()
-abstract class DeviceRegisterRequest implements Built<DeviceRegisterRequest, DeviceRegisterRequestBuilder> {
+abstract class DeviceRegisterRequest
+    implements Built<DeviceRegisterRequest, DeviceRegisterRequestBuilder> {
   @BuiltValueField(wireName: r'device_id')
   String get deviceId;
 
-  /// 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。 
+  /// 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
   @BuiltValueField(wireName: r'platform')
   String get platform;
 
-  /// 当前安装的版本号，可选。**用途是推送内容分流，不是设备统计**—— 比如老版本不支持富通知（图片 / 按钮）或某种深链格式时， 后端据此回退成纯文本推送，避免老版本收到解析不了的 payload。  与令牌一样会过期：客户端每次上报令牌时应一并带上当前版本号， 不需要单独维护更新时机。 
+  /// 当前安装的版本号，可选。**用途是推送内容分流，不是设备统计**—— 比如老版本不支持富通知（图片 / 按钮）或某种深链格式时， 后端据此回退成纯文本推送，避免老版本收到解析不了的 payload。  与令牌一样会过期：客户端每次上报令牌时应一并带上当前版本号， 不需要单独维护更新时机。
   @BuiltValueField(wireName: r'app_version')
   String? get appVersion;
 
@@ -41,18 +42,24 @@ abstract class DeviceRegisterRequest implements Built<DeviceRegisterRequest, Dev
 
   DeviceRegisterRequest._();
 
-  factory DeviceRegisterRequest([void updates(DeviceRegisterRequestBuilder b)]) = _$DeviceRegisterRequest;
+  factory DeviceRegisterRequest(
+      [void updates(DeviceRegisterRequestBuilder b)]) = _$DeviceRegisterRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeviceRegisterRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeviceRegisterRequest> get serializer => _$DeviceRegisterRequestSerializer();
+  static Serializer<DeviceRegisterRequest> get serializer =>
+      _$DeviceRegisterRequestSerializer();
 }
 
-class _$DeviceRegisterRequestSerializer implements PrimitiveSerializer<DeviceRegisterRequest> {
+class _$DeviceRegisterRequestSerializer
+    implements PrimitiveSerializer<DeviceRegisterRequest> {
   @override
-  final Iterable<Type> types = const [DeviceRegisterRequest, _$DeviceRegisterRequest];
+  final Iterable<Type> types = const [
+    DeviceRegisterRequest,
+    _$DeviceRegisterRequest
+  ];
 
   @override
   final String wireName = r'DeviceRegisterRequest';
@@ -99,7 +106,9 @@ class _$DeviceRegisterRequestSerializer implements PrimitiveSerializer<DeviceReg
     DeviceRegisterRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -146,7 +155,8 @@ class _$DeviceRegisterRequestSerializer implements PrimitiveSerializer<DeviceReg
         case r'push_provider':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(DeviceRegisterRequestPushProviderEnum),
+            specifiedType:
+                const FullType.nullable(DeviceRegisterRequestPushProviderEnum),
           ) as DeviceRegisterRequestPushProviderEnum?;
           if (valueDes == null) continue;
           result.pushProvider = valueDes;
@@ -181,22 +191,28 @@ class _$DeviceRegisterRequestSerializer implements PrimitiveSerializer<DeviceReg
 }
 
 class DeviceRegisterRequestPushProviderEnum extends EnumClass {
-
   /// 不传则由后端按 `platform` 推断
   @BuiltValueEnumConst(wireName: r'apns')
-  static const DeviceRegisterRequestPushProviderEnum apns = _$deviceRegisterRequestPushProviderEnum_apns;
+  static const DeviceRegisterRequestPushProviderEnum apns =
+      _$deviceRegisterRequestPushProviderEnum_apns;
+
   /// 不传则由后端按 `platform` 推断
   @BuiltValueEnumConst(wireName: r'fcm')
-  static const DeviceRegisterRequestPushProviderEnum fcm = _$deviceRegisterRequestPushProviderEnum_fcm;
+  static const DeviceRegisterRequestPushProviderEnum fcm =
+      _$deviceRegisterRequestPushProviderEnum_fcm;
+
   /// 不传则由后端按 `platform` 推断
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DeviceRegisterRequestPushProviderEnum unknownDefaultOpenApi = _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi;
+  static const DeviceRegisterRequestPushProviderEnum unknownDefaultOpenApi =
+      _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi;
 
-  static Serializer<DeviceRegisterRequestPushProviderEnum> get serializer => _$deviceRegisterRequestPushProviderEnumSerializer;
+  static Serializer<DeviceRegisterRequestPushProviderEnum> get serializer =>
+      _$deviceRegisterRequestPushProviderEnumSerializer;
 
-  const DeviceRegisterRequestPushProviderEnum._(String name): super(name);
+  const DeviceRegisterRequestPushProviderEnum._(String name) : super(name);
 
-  static BuiltSet<DeviceRegisterRequestPushProviderEnum> get values => _$deviceRegisterRequestPushProviderEnumValues;
-  static DeviceRegisterRequestPushProviderEnum valueOf(String name) => _$deviceRegisterRequestPushProviderEnumValueOf(name);
+  static BuiltSet<DeviceRegisterRequestPushProviderEnum> get values =>
+      _$deviceRegisterRequestPushProviderEnumValues;
+  static DeviceRegisterRequestPushProviderEnum valueOf(String name) =>
+      _$deviceRegisterRequestPushProviderEnumValueOf(name);
 }
-

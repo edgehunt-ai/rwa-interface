@@ -1,9 +1,25 @@
+enum FailureKind {
+  unauthorized,
+  forbidden,
+  validation,
+  conflict,
+  rateLimited,
+  unavailable,
+  network,
+  unknown,
+  cancelled,
+  decoding,
+  compatibility,
+}
+
 sealed class ApiFailure implements Exception {
   const ApiFailure({this.requestId, this.retryable = false, this.userAction});
 
   final String? requestId;
   final bool retryable;
   final String? userAction;
+
+  FailureKind get kind;
 
   Iterable<Object?> get _properties => [requestId, retryable, userAction];
 
@@ -37,6 +53,16 @@ final class ServerFailure extends ApiFailure {
   final Map<String, Object?> details;
 
   @override
+  FailureKind get kind => switch (statusCode) {
+    403 => FailureKind.forbidden,
+    409 => FailureKind.conflict,
+    422 => FailureKind.validation,
+    429 => FailureKind.rateLimited,
+    503 => FailureKind.unavailable,
+    _ => FailureKind.unknown,
+  };
+
+  @override
   Iterable<Object?> get _properties => [
     ...super._properties,
     statusCode,
@@ -49,28 +75,42 @@ final class ServerFailure extends ApiFailure {
 
 final class AuthenticationFailure extends ApiFailure {
   const AuthenticationFailure({super.requestId, super.userAction});
+  @override
+  FailureKind get kind => FailureKind.unauthorized;
 }
 
 final class NetworkFailure extends ApiFailure {
   const NetworkFailure({super.requestId, super.retryable = true});
+  @override
+  FailureKind get kind => FailureKind.network;
 }
 
 final class TimeoutFailure extends ApiFailure {
   const TimeoutFailure({super.requestId, super.retryable = true});
+  @override
+  FailureKind get kind => FailureKind.network;
 }
 
 final class CancelledFailure extends ApiFailure {
   const CancelledFailure({super.requestId});
+  @override
+  FailureKind get kind => FailureKind.cancelled;
 }
 
 final class DecodingFailure extends ApiFailure {
   const DecodingFailure({super.requestId});
+  @override
+  FailureKind get kind => FailureKind.decoding;
 }
 
 final class CompatibilityFailure extends ApiFailure {
   const CompatibilityFailure({super.requestId});
+  @override
+  FailureKind get kind => FailureKind.compatibility;
 }
 
 final class UnknownFailure extends ApiFailure {
   const UnknownFailure({super.requestId});
+  @override
+  FailureKind get kind => FailureKind.unknown;
 }

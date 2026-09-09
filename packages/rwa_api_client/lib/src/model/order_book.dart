@@ -13,9 +13,9 @@ part 'order_book.g.dart';
 /// OrderBook
 ///
 /// Properties:
-/// * [bids] 
-/// * [asks] 
-/// * [updatedAt] 
+/// * [bids]
+/// * [asks]
+/// * [updatedAt]
 @BuiltValue()
 abstract class OrderBook implements Built<OrderBook, OrderBookBuilder> {
   @BuiltValueField(wireName: r'bids')
@@ -75,7 +75,9 @@ class _$OrderBookSerializer implements PrimitiveSerializer<OrderBook> {
     OrderBook object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -93,14 +95,16 @@ class _$OrderBookSerializer implements PrimitiveSerializer<OrderBook> {
         case r'bids':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(OrderBookLevel)]),
+            specifiedType:
+                const FullType(BuiltList, [FullType(OrderBookLevel)]),
           ) as BuiltList<OrderBookLevel>;
           result.bids.replace(valueDes);
           break;
         case r'asks':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(OrderBookLevel)]),
+            specifiedType:
+                const FullType(BuiltList, [FullType(OrderBookLevel)]),
           ) as BuiltList<OrderBookLevel>;
           result.asks.replace(valueDes);
           break;
@@ -140,4 +144,3 @@ class _$OrderBookSerializer implements PrimitiveSerializer<OrderBook> {
     return result.build();
   }
 }
-

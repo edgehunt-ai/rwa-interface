@@ -8,15 +8,16 @@ part of 'activity_record_explorer.dart';
 
 class _$ActivityRecordExplorer extends ActivityRecordExplorer {
   @override
-  final String? name;
+  final String name;
   @override
-  final String? url;
+  final String url;
 
   factory _$ActivityRecordExplorer(
           [void Function(ActivityRecordExplorerBuilder)? updates]) =>
       (ActivityRecordExplorerBuilder()..update(updates))._build();
 
-  _$ActivityRecordExplorer._({this.name, this.url}) : super._();
+  _$ActivityRecordExplorer._({required this.name, required this.url})
+      : super._();
   @override
   ActivityRecordExplorer rebuild(
           void Function(ActivityRecordExplorerBuilder) updates) =>
@@ -94,8 +95,10 @@ class ActivityRecordExplorerBuilder
   _$ActivityRecordExplorer _build() {
     final _$result = _$v ??
         _$ActivityRecordExplorer._(
-          name: name,
-          url: url,
+          name: BuiltValueNullFieldError.checkNotNull(
+              name, r'ActivityRecordExplorer', 'name'),
+          url: BuiltValueNullFieldError.checkNotNull(
+              url, r'ActivityRecordExplorer', 'url'),
         );
     replace(_$result);
     return _$result;

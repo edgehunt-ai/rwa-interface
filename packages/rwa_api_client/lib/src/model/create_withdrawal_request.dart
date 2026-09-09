@@ -13,17 +13,18 @@ part 'create_withdrawal_request.g.dart';
 /// CreateWithdrawalRequest
 ///
 /// Properties:
-/// * [asset] 
-/// * [chain] 
+/// * [asset]
+/// * [chain]
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [address] 
+/// * [address]
 /// * [authorizationId] - 已授权且尚未消费的钱包操作授权 ID
-/// * [memo] 
-/// * [quoteId] 
-/// * [saveAddress] 
-/// * [addressLabel] 
+/// * [memo]
+/// * [quoteId]
+/// * [saveAddress]
+/// * [addressLabel]
 @BuiltValue()
-abstract class CreateWithdrawalRequest implements Built<CreateWithdrawalRequest, CreateWithdrawalRequestBuilder> {
+abstract class CreateWithdrawalRequest
+    implements Built<CreateWithdrawalRequest, CreateWithdrawalRequestBuilder> {
   @BuiltValueField(wireName: r'asset')
   CreateWithdrawalRequestAssetEnum get asset;
   // enum assetEnum {  USDC,  };
@@ -57,19 +58,26 @@ abstract class CreateWithdrawalRequest implements Built<CreateWithdrawalRequest,
 
   CreateWithdrawalRequest._();
 
-  factory CreateWithdrawalRequest([void updates(CreateWithdrawalRequestBuilder b)]) = _$CreateWithdrawalRequest;
+  factory CreateWithdrawalRequest(
+          [void updates(CreateWithdrawalRequestBuilder b)]) =
+      _$CreateWithdrawalRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CreateWithdrawalRequestBuilder b) => b
-      ..saveAddress = false;
+  static void _defaults(CreateWithdrawalRequestBuilder b) =>
+      b..saveAddress = false;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateWithdrawalRequest> get serializer => _$CreateWithdrawalRequestSerializer();
+  static Serializer<CreateWithdrawalRequest> get serializer =>
+      _$CreateWithdrawalRequestSerializer();
 }
 
-class _$CreateWithdrawalRequestSerializer implements PrimitiveSerializer<CreateWithdrawalRequest> {
+class _$CreateWithdrawalRequestSerializer
+    implements PrimitiveSerializer<CreateWithdrawalRequest> {
   @override
-  final Iterable<Type> types = const [CreateWithdrawalRequest, _$CreateWithdrawalRequest];
+  final Iterable<Type> types = const [
+    CreateWithdrawalRequest,
+    _$CreateWithdrawalRequest
+  ];
 
   @override
   final String wireName = r'CreateWithdrawalRequest';
@@ -138,7 +146,9 @@ class _$CreateWithdrawalRequestSerializer implements PrimitiveSerializer<CreateW
     CreateWithdrawalRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -249,17 +259,20 @@ class _$CreateWithdrawalRequestSerializer implements PrimitiveSerializer<CreateW
 }
 
 class CreateWithdrawalRequestAssetEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const CreateWithdrawalRequestAssetEnum USDC = _$createWithdrawalRequestAssetEnum_USDC;
+  static const CreateWithdrawalRequestAssetEnum USDC =
+      _$createWithdrawalRequestAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CreateWithdrawalRequestAssetEnum unknownDefaultOpenApi = _$createWithdrawalRequestAssetEnum_unknownDefaultOpenApi;
+  static const CreateWithdrawalRequestAssetEnum unknownDefaultOpenApi =
+      _$createWithdrawalRequestAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<CreateWithdrawalRequestAssetEnum> get serializer => _$createWithdrawalRequestAssetEnumSerializer;
+  static Serializer<CreateWithdrawalRequestAssetEnum> get serializer =>
+      _$createWithdrawalRequestAssetEnumSerializer;
 
-  const CreateWithdrawalRequestAssetEnum._(String name): super(name);
+  const CreateWithdrawalRequestAssetEnum._(String name) : super(name);
 
-  static BuiltSet<CreateWithdrawalRequestAssetEnum> get values => _$createWithdrawalRequestAssetEnumValues;
-  static CreateWithdrawalRequestAssetEnum valueOf(String name) => _$createWithdrawalRequestAssetEnumValueOf(name);
+  static BuiltSet<CreateWithdrawalRequestAssetEnum> get values =>
+      _$createWithdrawalRequestAssetEnumValues;
+  static CreateWithdrawalRequestAssetEnum valueOf(String name) =>
+      _$createWithdrawalRequestAssetEnumValueOf(name);
 }
-

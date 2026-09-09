@@ -14,17 +14,19 @@ part 'deposit_address.g.dart';
 /// DepositAddress
 ///
 /// Properties:
-/// * [chain] 
-/// * [token] 
-/// * [address] 
-/// * [memo] - 部分链需要的备注 / tag
-/// * [qrPayload] - 二维码内容，通常是 `ethereum:0x…@56/transfer?address=…` 形式的 URI
+/// * [chain]
+/// * [token]
+/// * [address]
+/// * [memo]
+/// * [qrPayload]
 /// * [minDeposit] - 十进制字符串，避免浮点误差
-/// * [confirmationsRequired] 
-/// * [creditedTo] 
-/// * [warning] 
+/// * [confirmationsRequired]
+/// * [creditedTo]
+/// * [warning]
+@Deprecated('DepositAddress has been deprecated')
 @BuiltValue()
-abstract class DepositAddress implements Built<DepositAddress, DepositAddressBuilder> {
+abstract class DepositAddress
+    implements Built<DepositAddress, DepositAddressBuilder> {
   @BuiltValueField(wireName: r'chain')
   Chain get chain;
   // enum chainEnum {  BSC,  Arbitrum,  Base,  Ethereum,  Hyperliquid,  Polygon,  Solana,  };
@@ -36,11 +38,9 @@ abstract class DepositAddress implements Built<DepositAddress, DepositAddressBui
   @BuiltValueField(wireName: r'address')
   String get address;
 
-  /// 部分链需要的备注 / tag
   @BuiltValueField(wireName: r'memo')
   String? get memo;
 
-  /// 二维码内容，通常是 `ethereum:0x…@56/transfer?address=…` 形式的 URI
   @BuiltValueField(wireName: r'qr_payload')
   String? get qrPayload;
 
@@ -60,16 +60,19 @@ abstract class DepositAddress implements Built<DepositAddress, DepositAddressBui
 
   DepositAddress._();
 
-  factory DepositAddress([void updates(DepositAddressBuilder b)]) = _$DepositAddress;
+  factory DepositAddress([void updates(DepositAddressBuilder b)]) =
+      _$DepositAddress;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DepositAddressBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DepositAddress> get serializer => _$DepositAddressSerializer();
+  static Serializer<DepositAddress> get serializer =>
+      _$DepositAddressSerializer();
 }
 
-class _$DepositAddressSerializer implements PrimitiveSerializer<DepositAddress> {
+class _$DepositAddressSerializer
+    implements PrimitiveSerializer<DepositAddress> {
   @override
   final Iterable<Type> types = const [DepositAddress, _$DepositAddress];
 
@@ -146,7 +149,9 @@ class _$DepositAddressSerializer implements PrimitiveSerializer<DepositAddress> 
     DepositAddress object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -259,18 +264,21 @@ class _$DepositAddressSerializer implements PrimitiveSerializer<DepositAddress> 
   }
 }
 
+@Deprecated('DepositAddressTokenEnum has been deprecated')
 class DepositAddressTokenEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'USDC')
   static const DepositAddressTokenEnum USDC = _$depositAddressTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositAddressTokenEnum unknownDefaultOpenApi = _$depositAddressTokenEnum_unknownDefaultOpenApi;
+  static const DepositAddressTokenEnum unknownDefaultOpenApi =
+      _$depositAddressTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<DepositAddressTokenEnum> get serializer => _$depositAddressTokenEnumSerializer;
+  static Serializer<DepositAddressTokenEnum> get serializer =>
+      _$depositAddressTokenEnumSerializer;
 
-  const DepositAddressTokenEnum._(String name): super(name);
+  const DepositAddressTokenEnum._(String name) : super(name);
 
-  static BuiltSet<DepositAddressTokenEnum> get values => _$depositAddressTokenEnumValues;
-  static DepositAddressTokenEnum valueOf(String name) => _$depositAddressTokenEnumValueOf(name);
+  static BuiltSet<DepositAddressTokenEnum> get values =>
+      _$depositAddressTokenEnumValues;
+  static DepositAddressTokenEnum valueOf(String name) =>
+      _$depositAddressTokenEnumValueOf(name);
 }
-

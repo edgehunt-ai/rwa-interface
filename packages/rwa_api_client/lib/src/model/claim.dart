@@ -13,17 +13,17 @@ part 'claim.g.dart';
 /// 划转失败后的资金退回记录
 ///
 /// Properties:
-/// * [claimId] 
-/// * [transferId] 
-/// * [asset] 
+/// * [claimId]
+/// * [transferId]
+/// * [asset]
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [creditedTo] 
-/// * [status] 
-/// * [failureReason] 
-/// * [txHash] 
-/// * [activityId] 
-/// * [createdAt] 
-/// * [completedAt] 
+/// * [creditedTo]
+/// * [status]
+/// * [failureReason]
+/// * [txHash]
+/// * [activityId]
+/// * [createdAt]
+/// * [completedAt]
 @BuiltValue()
 abstract class Claim implements Built<Claim, ClaimBuilder> {
   @BuiltValueField(wireName: r'claim_id')
@@ -45,7 +45,7 @@ abstract class Claim implements Built<Claim, ClaimBuilder> {
 
   @BuiltValueField(wireName: r'status')
   ActivityStatus get status;
-  // enum statusEnum {  pending,  success,  failed,  cancelled,  };
+  // enum statusEnum {  pending,  success,  failed,  cancelled,  manual_review,  };
 
   @BuiltValueField(wireName: r'failure_reason')
   String? get failureReason;
@@ -158,7 +158,9 @@ class _$ClaimSerializer implements PrimitiveSerializer<Claim> {
     Claim object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -283,4 +285,3 @@ class _$ClaimSerializer implements PrimitiveSerializer<Claim> {
     return result.build();
   }
 }
-

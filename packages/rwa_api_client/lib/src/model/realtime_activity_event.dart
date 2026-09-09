@@ -15,11 +15,14 @@ part 'realtime_activity_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
-/// * [event] 
-/// * [data] 
+/// * [emittedAt]
+/// * [event]
+/// * [data]
 @BuiltValue()
-abstract class RealtimeActivityEvent implements RealtimeEventBase, Built<RealtimeActivityEvent, RealtimeActivityEventBuilder> {
+abstract class RealtimeActivityEvent
+    implements
+        RealtimeEventBase,
+        Built<RealtimeActivityEvent, RealtimeActivityEventBuilder> {
   @BuiltValueField(wireName: r'data')
   ActivityRecord get data;
 
@@ -29,18 +32,24 @@ abstract class RealtimeActivityEvent implements RealtimeEventBase, Built<Realtim
 
   RealtimeActivityEvent._();
 
-  factory RealtimeActivityEvent([void updates(RealtimeActivityEventBuilder b)]) = _$RealtimeActivityEvent;
+  factory RealtimeActivityEvent(
+      [void updates(RealtimeActivityEventBuilder b)]) = _$RealtimeActivityEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeActivityEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeActivityEvent> get serializer => _$RealtimeActivityEventSerializer();
+  static Serializer<RealtimeActivityEvent> get serializer =>
+      _$RealtimeActivityEventSerializer();
 }
 
-class _$RealtimeActivityEventSerializer implements PrimitiveSerializer<RealtimeActivityEvent> {
+class _$RealtimeActivityEventSerializer
+    implements PrimitiveSerializer<RealtimeActivityEvent> {
   @override
-  final Iterable<Type> types = const [RealtimeActivityEvent, _$RealtimeActivityEvent];
+  final Iterable<Type> types = const [
+    RealtimeActivityEvent,
+    _$RealtimeActivityEvent
+  ];
 
   @override
   final String wireName = r'RealtimeActivityEvent';
@@ -78,7 +87,9 @@ class _$RealtimeActivityEventSerializer implements PrimitiveSerializer<RealtimeA
     RealtimeActivityEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -151,17 +162,20 @@ class _$RealtimeActivityEventSerializer implements PrimitiveSerializer<RealtimeA
 }
 
 class RealtimeActivityEventEventEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'activity')
-  static const RealtimeActivityEventEventEnum activity = _$realtimeActivityEventEventEnum_activity;
+  static const RealtimeActivityEventEventEnum activity =
+      _$realtimeActivityEventEventEnum_activity;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeActivityEventEventEnum unknownDefaultOpenApi = _$realtimeActivityEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeActivityEventEventEnum unknownDefaultOpenApi =
+      _$realtimeActivityEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeActivityEventEventEnum> get serializer => _$realtimeActivityEventEventEnumSerializer;
+  static Serializer<RealtimeActivityEventEventEnum> get serializer =>
+      _$realtimeActivityEventEventEnumSerializer;
 
-  const RealtimeActivityEventEventEnum._(String name): super(name);
+  const RealtimeActivityEventEventEnum._(String name) : super(name);
 
-  static BuiltSet<RealtimeActivityEventEventEnum> get values => _$realtimeActivityEventEventEnumValues;
-  static RealtimeActivityEventEventEnum valueOf(String name) => _$realtimeActivityEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeActivityEventEventEnum> get values =>
+      _$realtimeActivityEventEventEnumValues;
+  static RealtimeActivityEventEventEnum valueOf(String name) =>
+      _$realtimeActivityEventEventEnumValueOf(name);
 }
-

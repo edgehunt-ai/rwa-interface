@@ -17,6 +17,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
+  PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
+  PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
+  PRIVY_APP_URL_SCHEME: ${{ vars.PRIVY_APP_URL_SCHEME }}
+  REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'flutter' }}
@@ -35,6 +40,7 @@ jobs:
       tag: ${{ steps.version.outputs.tag }}
       previous_tag: ${{ steps.version.outputs.previous_tag }}
       version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,6 +63,14 @@ jobs:
           tag="v${version_name}"
           should_build="true"
           should_release="false"
+          prerelease="false"
+          if [[ ! "$version_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            prerelease="true"
+          fi
+          if [[ "$prerelease" == "false" && "${GITHUB_REF_NAME}" != "main" ]]; then
+            echo "Formal releases are only allowed from the main branch; use a prerelease suffix on ${GITHUB_REF_NAME}." >&2
+            exit 1
+          fi
 
           git fetch --tags --force
           previous_tag="$(
@@ -67,11 +81,11 @@ jobs:
           )"
           if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
             tagged_commit="$(git rev-list -n 1 "$tag")"
-            if [[ "${{ github.event_name }}" == "push" && "$tagged_commit" != "$GITHUB_SHA" ]]; then
+            if [[ "$tagged_commit" != "$GITHUB_SHA" ]]; then
               echo "Version ${version_name} already belongs to ${tagged_commit}; increment pubspec.yaml before releasing." >&2
               exit 1
             fi
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
+          elif [[ "${{ github.event_name }}" == "push" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             should_release="true"
           fi
 
@@ -97,6 +111,7 @@ jobs:
             echo "previous_tag=${previous_tag}"
             echo "should_build=${should_build}"
             echo "should_release=${should_release}"
+            echo "prerelease=${prerelease}"
           } >> "$GITHUB_OUTPUT"
 
   release-quality:
@@ -112,17 +127,13 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-      - name: Install pinned contract tools
-        run: npm ci --ignore-scripts
       - name: Resolve dependencies
         run: flutter pub get
       - name: Run release-equivalent verification
-        run: npm run release:verify
+        run: >-
+          dart format --output=none --set-exit-if-changed lib test
+          && dart analyze --fatal-infos
+          && flutter test
 
   android-release:
     name: Android Release APK
@@ -148,10 +159,28 @@ jobs:
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
+      - name: Create Flutter environment file
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing required GitHub Actions variable: $key" >&2
+              exit 1
+            fi
+          done
+          printf '%s\n' \
+            "API_BASE_URL=$API_BASE_URL" \
+            "PRIVY_APP_ID=$PRIVY_APP_ID" \
+            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" \
+            "PRIVY_APP_URL_SCHEME=$PRIVY_APP_URL_SCHEME" \
+            "REOWN_PROJECT_ID=$REOWN_PROJECT_ID" > .env.ci
+          make sync-privy-config ENV_FILE=.env.ci
       - name: Build Android release APK
         shell: bash
         run: >-
           flutter build apk --release --obfuscate
+          --dart-define-from-file=.env.ci
           --split-debug-info=build/symbols/android
           ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
@@ -168,6 +197,7 @@ jobs:
         shell: bash
         run: >-
           flutter build apk --release --split-per-abi --obfuscate
+          --dart-define-from-file=.env.ci
           --split-debug-info=build/symbols/android
           ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
@@ -222,10 +252,28 @@ jobs:
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
+      - name: Create Flutter environment file
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing required GitHub Actions variable: $key" >&2
+              exit 1
+            fi
+          done
+          printf '%s\n' \
+            "API_BASE_URL=$API_BASE_URL" \
+            "PRIVY_APP_ID=$PRIVY_APP_ID" \
+            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" \
+            "PRIVY_APP_URL_SCHEME=$PRIVY_APP_URL_SCHEME" \
+            "REOWN_PROJECT_ID=$REOWN_PROJECT_ID" > .env.ci
+          make sync-privy-config ENV_FILE=.env.ci
       - name: Build unsigned iOS release app
         shell: bash
         run: >-
           flutter build ios --release --no-codesign --obfuscate
+          --dart-define-from-file=.env.ci
           --split-debug-info=build/symbols/ios
           ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
@@ -295,14 +343,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.detect-release.outputs.tag }}
+          PRERELEASE: ${{ needs.detect-release.outputs.prerelease }}
         shell: bash
-        run: >-
-          gh release create "$TAG"
-          release-assets/rwa-interface-android-universal.apk
-          release-assets/rwa-interface-android-armeabi-v7a.apk
-          release-assets/rwa-interface-android-arm64-v8a.apk
-          release-assets/rwa-interface-android-x86_64.apk
-          release-assets/rwa-interface-ios-unsigned.zip
-          --title "$TAG"
-          --notes-file release-notes.md
-          --target "$GITHUB_SHA"
+        run: |
+          set -euo pipefail
+          release_args=()
+          if [[ "$PRERELEASE" == "true" ]]; then
+            release_args+=(--prerelease)
+          fi
+          gh release create "$TAG" \
+            release-assets/rwa-interface-android-universal.apk \
+            release-assets/rwa-interface-android-armeabi-v7a.apk \
+            release-assets/rwa-interface-android-arm64-v8a.apk \
+            release-assets/rwa-interface-android-x86_64.apk \
+            release-assets/rwa-interface-ios-unsigned.zip \
+            --title "$TAG" \
+            --notes-file release-notes.md \
+            --target "$GITHUB_SHA" \
+            "${release_args[@]}"

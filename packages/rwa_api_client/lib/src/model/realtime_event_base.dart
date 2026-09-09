@@ -12,9 +12,9 @@ part 'realtime_event_base.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
+/// * [emittedAt]
 @BuiltValue(instantiable: false)
-abstract class RealtimeEventBase  {
+abstract class RealtimeEventBase {
   /// 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
   @BuiltValueField(wireName: r'event_id')
   String get eventId;
@@ -23,10 +23,12 @@ abstract class RealtimeEventBase  {
   DateTime get emittedAt;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeEventBase> get serializer => _$RealtimeEventBaseSerializer();
+  static Serializer<RealtimeEventBase> get serializer =>
+      _$RealtimeEventBaseSerializer();
 }
 
-class _$RealtimeEventBaseSerializer implements PrimitiveSerializer<RealtimeEventBase> {
+class _$RealtimeEventBaseSerializer
+    implements PrimitiveSerializer<RealtimeEventBase> {
   @override
   final Iterable<Type> types = const [RealtimeEventBase];
 
@@ -56,7 +58,9 @@ class _$RealtimeEventBaseSerializer implements PrimitiveSerializer<RealtimeEvent
     RealtimeEventBase object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   @override
@@ -65,25 +69,33 @@ class _$RealtimeEventBaseSerializer implements PrimitiveSerializer<RealtimeEvent
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.deserialize(serialized, specifiedType: FullType($RealtimeEventBase)) as $RealtimeEventBase;
+    return serializers.deserialize(serialized,
+        specifiedType: FullType($RealtimeEventBase)) as $RealtimeEventBase;
   }
 }
 
 /// a concrete implementation of [RealtimeEventBase], since [RealtimeEventBase] is not instantiable
 @BuiltValue(instantiable: true)
-abstract class $RealtimeEventBase implements RealtimeEventBase, Built<$RealtimeEventBase, $RealtimeEventBaseBuilder> {
+abstract class $RealtimeEventBase
+    implements
+        RealtimeEventBase,
+        Built<$RealtimeEventBase, $RealtimeEventBaseBuilder> {
   $RealtimeEventBase._();
 
-  factory $RealtimeEventBase([void Function($RealtimeEventBaseBuilder)? updates]) = _$$RealtimeEventBase;
+  factory $RealtimeEventBase(
+          [void Function($RealtimeEventBaseBuilder)? updates]) =
+      _$$RealtimeEventBase;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults($RealtimeEventBaseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<$RealtimeEventBase> get serializer => _$$RealtimeEventBaseSerializer();
+  static Serializer<$RealtimeEventBase> get serializer =>
+      _$$RealtimeEventBaseSerializer();
 }
 
-class _$$RealtimeEventBaseSerializer implements PrimitiveSerializer<$RealtimeEventBase> {
+class _$$RealtimeEventBaseSerializer
+    implements PrimitiveSerializer<$RealtimeEventBase> {
   @override
   final Iterable<Type> types = const [$RealtimeEventBase, _$$RealtimeEventBase];
 
@@ -96,7 +108,8 @@ class _$$RealtimeEventBaseSerializer implements PrimitiveSerializer<$RealtimeEve
     $RealtimeEventBase object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.serialize(object, specifiedType: FullType(RealtimeEventBase))!;
+    return serializers.serialize(object,
+        specifiedType: FullType(RealtimeEventBase))!;
   }
 
   void _deserializeProperties(
@@ -153,4 +166,3 @@ class _$$RealtimeEventBaseSerializer implements PrimitiveSerializer<$RealtimeEve
     return result.build();
   }
 }
-

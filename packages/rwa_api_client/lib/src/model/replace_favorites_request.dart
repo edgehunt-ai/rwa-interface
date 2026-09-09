@@ -13,26 +13,34 @@ part 'replace_favorites_request.g.dart';
 /// ReplaceFavoritesRequest
 ///
 /// Properties:
-/// * [items] 
+/// * [items]
 @BuiltValue()
-abstract class ReplaceFavoritesRequest implements Built<ReplaceFavoritesRequest, ReplaceFavoritesRequestBuilder> {
+abstract class ReplaceFavoritesRequest
+    implements Built<ReplaceFavoritesRequest, ReplaceFavoritesRequestBuilder> {
   @BuiltValueField(wireName: r'items')
   BuiltList<ProductRef> get items;
 
   ReplaceFavoritesRequest._();
 
-  factory ReplaceFavoritesRequest([void updates(ReplaceFavoritesRequestBuilder b)]) = _$ReplaceFavoritesRequest;
+  factory ReplaceFavoritesRequest(
+          [void updates(ReplaceFavoritesRequestBuilder b)]) =
+      _$ReplaceFavoritesRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ReplaceFavoritesRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ReplaceFavoritesRequest> get serializer => _$ReplaceFavoritesRequestSerializer();
+  static Serializer<ReplaceFavoritesRequest> get serializer =>
+      _$ReplaceFavoritesRequestSerializer();
 }
 
-class _$ReplaceFavoritesRequestSerializer implements PrimitiveSerializer<ReplaceFavoritesRequest> {
+class _$ReplaceFavoritesRequestSerializer
+    implements PrimitiveSerializer<ReplaceFavoritesRequest> {
   @override
-  final Iterable<Type> types = const [ReplaceFavoritesRequest, _$ReplaceFavoritesRequest];
+  final Iterable<Type> types = const [
+    ReplaceFavoritesRequest,
+    _$ReplaceFavoritesRequest
+  ];
 
   @override
   final String wireName = r'ReplaceFavoritesRequest';
@@ -55,7 +63,9 @@ class _$ReplaceFavoritesRequestSerializer implements PrimitiveSerializer<Replace
     ReplaceFavoritesRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -105,4 +115,3 @@ class _$ReplaceFavoritesRequestSerializer implements PrimitiveSerializer<Replace
     return result.build();
   }
 }
-

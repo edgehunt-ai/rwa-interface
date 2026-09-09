@@ -15,16 +15,17 @@ part 'account_balance.g.dart';
 /// AccountBalance
 ///
 /// Properties:
-/// * [account] 
-/// * [label] 
-/// * [address] 
-/// * [chain] 
+/// * [account]
+/// * [label]
+/// * [address]
+/// * [chain]
 /// * [totalValueUsd] - 十进制字符串，避免浮点误差
 /// * [availableUsd] - 十进制字符串，避免浮点误差
 /// * [marginUsedUsd] - 十进制字符串，避免浮点误差
-/// * [balances] 
+/// * [balances]
 @BuiltValue()
-abstract class AccountBalance implements Built<AccountBalance, AccountBalanceBuilder> {
+abstract class AccountBalance
+    implements Built<AccountBalance, AccountBalanceBuilder> {
   @BuiltValueField(wireName: r'account')
   AccountKind get account;
   // enum accountEnum {  app,  bstocks,  hip3,  };
@@ -56,16 +57,19 @@ abstract class AccountBalance implements Built<AccountBalance, AccountBalanceBui
 
   AccountBalance._();
 
-  factory AccountBalance([void updates(AccountBalanceBuilder b)]) = _$AccountBalance;
+  factory AccountBalance([void updates(AccountBalanceBuilder b)]) =
+      _$AccountBalance;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AccountBalanceBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AccountBalance> get serializer => _$AccountBalanceSerializer();
+  static Serializer<AccountBalance> get serializer =>
+      _$AccountBalanceSerializer();
 }
 
-class _$AccountBalanceSerializer implements PrimitiveSerializer<AccountBalance> {
+class _$AccountBalanceSerializer
+    implements PrimitiveSerializer<AccountBalance> {
   @override
   final Iterable<Type> types = const [AccountBalance, _$AccountBalance];
 
@@ -137,7 +141,9 @@ class _$AccountBalanceSerializer implements PrimitiveSerializer<AccountBalance> 
     AccountBalance object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -242,4 +248,3 @@ class _$AccountBalanceSerializer implements PrimitiveSerializer<AccountBalance> 
     return result.build();
   }
 }
-

@@ -7,7 +7,7 @@
     "generators": {
       "rwa-api-client": {
         "generatorName": "dart-dio",
-        "inputSpec": "openapi/main.yaml",
+        "inputSpec": "contracts/rwa-api-contract/openapi/main.yaml",
         "output": "${env.RWA_DART_CLIENT_OUTPUT}",
         "globalProperty": {
           "apiDocs": "false",

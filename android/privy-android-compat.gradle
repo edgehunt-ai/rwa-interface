@@ -1,0 +1,17 @@
+// These plugins declare a lower compileSdk than their resolved AndroidX
+// dependencies require. Keep the overrides isolated until their upstream
+// Android Gradle metadata is updated. Groovy is used because the plugins load
+// an older Android Gradle Plugin classloader than the host app.
+subprojects { subproject ->
+    if (subproject.name in ["coinbase_wallet_sdk", "privy_flutter"]) {
+        subproject.afterEvaluate {
+            subproject.android.compileSdk = 36
+
+            // coinbase_wallet_sdk 1.0.10 references a consumer-rules.pro file
+            // that is absent from its published Android package.
+            if (subproject.name == "coinbase_wallet_sdk") {
+                subproject.android.defaultConfig.consumerProguardFiles.clear()
+            }
+        }
+    }
+}

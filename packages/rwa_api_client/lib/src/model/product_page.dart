@@ -15,11 +15,12 @@ part 'product_page.g.dart';
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore] 
+/// * [hasMore]
 /// * [caption] - 分组标题，如 `Losers · 24h 跌幅榜` 或 `Favorites · 自选`
-/// * [items] 
+/// * [items]
 @BuiltValue()
-abstract class ProductPage implements Page, Built<ProductPage, ProductPageBuilder> {
+abstract class ProductPage
+    implements Page, Built<ProductPage, ProductPageBuilder> {
   /// 分组标题，如 `Losers · 24h 跌幅榜` 或 `Favorites · 自选`
   @BuiltValueField(wireName: r'caption')
   String? get caption;
@@ -51,10 +52,12 @@ class _$ProductPageSerializer implements PrimitiveSerializer<ProductPage> {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null ? null : serializers.serialize(
-      object.nextCursor,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.nextCursor == null
+        ? null
+        : serializers.serialize(
+            object.nextCursor,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'has_more';
     yield serializers.serialize(
       object.hasMore,
@@ -80,7 +83,9 @@ class _$ProductPageSerializer implements PrimitiveSerializer<ProductPage> {
     ProductPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -121,7 +126,8 @@ class _$ProductPageSerializer implements PrimitiveSerializer<ProductPage> {
         case r'items':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(ProductListing)]),
+            specifiedType:
+                const FullType(BuiltList, [FullType(ProductListing)]),
           ) as BuiltList<ProductListing>;
           result.items.replace(valueDes);
           break;
@@ -153,4 +159,3 @@ class _$ProductPageSerializer implements PrimitiveSerializer<ProductPage> {
     return result.build();
   }
 }
-

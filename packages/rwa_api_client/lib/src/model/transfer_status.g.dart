@@ -6,10 +6,18 @@ part of 'transfer_status.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const TransferStatus _$pending = const TransferStatus._('pending');
-const TransferStatus _$processing = const TransferStatus._('processing');
-const TransferStatus _$claimRequired = const TransferStatus._('claimRequired');
+const TransferStatus _$awaitingAuthorization =
+    const TransferStatus._('awaitingAuthorization');
+const TransferStatus _$awaitingWallet =
+    const TransferStatus._('awaitingWallet');
+const TransferStatus _$originSubmitted =
+    const TransferStatus._('originSubmitted');
+const TransferStatus _$originConfirmed =
+    const TransferStatus._('originConfirmed');
+const TransferStatus _$filling = const TransferStatus._('filling');
 const TransferStatus _$completed = const TransferStatus._('completed');
+const TransferStatus _$refundPending = const TransferStatus._('refundPending');
+const TransferStatus _$refunded = const TransferStatus._('refunded');
 const TransferStatus _$failed = const TransferStatus._('failed');
 const TransferStatus _$ambiguous = const TransferStatus._('ambiguous');
 const TransferStatus _$manualReview = const TransferStatus._('manualReview');
@@ -18,14 +26,22 @@ const TransferStatus _$unknownDefaultOpenApi =
 
 TransferStatus _$valueOf(String name) {
   switch (name) {
-    case 'pending':
-      return _$pending;
-    case 'processing':
-      return _$processing;
-    case 'claimRequired':
-      return _$claimRequired;
+    case 'awaitingAuthorization':
+      return _$awaitingAuthorization;
+    case 'awaitingWallet':
+      return _$awaitingWallet;
+    case 'originSubmitted':
+      return _$originSubmitted;
+    case 'originConfirmed':
+      return _$originConfirmed;
+    case 'filling':
+      return _$filling;
     case 'completed':
       return _$completed;
+    case 'refundPending':
+      return _$refundPending;
+    case 'refunded':
+      return _$refunded;
     case 'failed':
       return _$failed;
     case 'ambiguous':
@@ -41,10 +57,14 @@ TransferStatus _$valueOf(String name) {
 
 final BuiltSet<TransferStatus> _$values =
     BuiltSet<TransferStatus>(const <TransferStatus>[
-  _$pending,
-  _$processing,
-  _$claimRequired,
+  _$awaitingAuthorization,
+  _$awaitingWallet,
+  _$originSubmitted,
+  _$originConfirmed,
+  _$filling,
   _$completed,
+  _$refundPending,
+  _$refunded,
   _$failed,
   _$ambiguous,
   _$manualReview,
@@ -53,10 +73,14 @@ final BuiltSet<TransferStatus> _$values =
 
 class _$TransferStatusMeta {
   const _$TransferStatusMeta();
-  TransferStatus get pending => _$pending;
-  TransferStatus get processing => _$processing;
-  TransferStatus get claimRequired => _$claimRequired;
+  TransferStatus get awaitingAuthorization => _$awaitingAuthorization;
+  TransferStatus get awaitingWallet => _$awaitingWallet;
+  TransferStatus get originSubmitted => _$originSubmitted;
+  TransferStatus get originConfirmed => _$originConfirmed;
+  TransferStatus get filling => _$filling;
   TransferStatus get completed => _$completed;
+  TransferStatus get refundPending => _$refundPending;
+  TransferStatus get refunded => _$refunded;
   TransferStatus get failed => _$failed;
   TransferStatus get ambiguous => _$ambiguous;
   TransferStatus get manualReview => _$manualReview;
@@ -76,20 +100,28 @@ Serializer<TransferStatus> _$transferStatusSerializer =
 class _$TransferStatusSerializer
     implements PrimitiveSerializer<TransferStatus> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'pending': 'pending',
-    'processing': 'processing',
-    'claimRequired': 'claim_required',
+    'awaitingAuthorization': 'awaiting_authorization',
+    'awaitingWallet': 'awaiting_wallet',
+    'originSubmitted': 'origin_submitted',
+    'originConfirmed': 'origin_confirmed',
+    'filling': 'filling',
     'completed': 'completed',
+    'refundPending': 'refund_pending',
+    'refunded': 'refunded',
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'pending': 'pending',
-    'processing': 'processing',
-    'claim_required': 'claimRequired',
+    'awaiting_authorization': 'awaitingAuthorization',
+    'awaiting_wallet': 'awaitingWallet',
+    'origin_submitted': 'originSubmitted',
+    'origin_confirmed': 'originConfirmed',
+    'filling': 'filling',
     'completed': 'completed',
+    'refund_pending': 'refundPending',
+    'refunded': 'refunded',
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',

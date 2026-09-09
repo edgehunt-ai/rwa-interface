@@ -37,7 +37,7 @@
 - [X] T016 创建 fixture 验证脚本与测试于 `scripts/check-openapi-generator-fixture.mjs` 和 `scripts/openapi-generator-fixture.test.mjs`
 - [X] T017 [P] 创建领域分页与 session generation 基础类型于 `lib/domain/models/domain_page.dart` 和 `lib/domain/models/session_generation.dart`
 - [X] T018 [P] 创建 API environment 模型和验证测试于 `test/data/api/api_environment_test.dart`
-- [X] T019 实现 production URL 必填、禁止隐式 staging fallback 和普通请求 timeout 的 `lib/data/api/api_environment.dart`
+- [X] T019 实现绝对 API URL 必填和普通请求 timeout 的 `lib/data/api/api_environment.dart`
 
 **检查点**：生成包在 clean checkout 可编译；共享模型、fixture 和安全生成边界就绪。
 

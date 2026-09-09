@@ -12,13 +12,14 @@ part 'reference_price.g.dart';
 /// ReferencePrice
 ///
 /// Properties:
-/// * [symbol] 
+/// * [symbol]
 /// * [price] - 十进制字符串，避免浮点误差
-/// * [session] 
-/// * [asOf] 
+/// * [session]
+/// * [asOf]
 /// * [isStale] - 休市 / 隔夜时段为 `true`，前端应提示参考价停留在最近收盘水平
 @BuiltValue()
-abstract class ReferencePrice implements Built<ReferencePrice, ReferencePriceBuilder> {
+abstract class ReferencePrice
+    implements Built<ReferencePrice, ReferencePriceBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -39,16 +40,19 @@ abstract class ReferencePrice implements Built<ReferencePrice, ReferencePriceBui
 
   ReferencePrice._();
 
-  factory ReferencePrice([void updates(ReferencePriceBuilder b)]) = _$ReferencePrice;
+  factory ReferencePrice([void updates(ReferencePriceBuilder b)]) =
+      _$ReferencePrice;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ReferencePriceBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ReferencePrice> get serializer => _$ReferencePriceSerializer();
+  static Serializer<ReferencePrice> get serializer =>
+      _$ReferencePriceSerializer();
 }
 
-class _$ReferencePriceSerializer implements PrimitiveSerializer<ReferencePrice> {
+class _$ReferencePriceSerializer
+    implements PrimitiveSerializer<ReferencePrice> {
   @override
   final Iterable<Type> types = const [ReferencePrice, _$ReferencePrice];
 
@@ -95,7 +99,9 @@ class _$ReferencePriceSerializer implements PrimitiveSerializer<ReferencePrice> 
     ReferencePrice object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -174,4 +180,3 @@ class _$ReferencePriceSerializer implements PrimitiveSerializer<ReferencePrice> 
     return result.build();
   }
 }
-

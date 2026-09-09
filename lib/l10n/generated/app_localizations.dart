@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -92,7 +93,10 @@ abstract class AppLocalizations {
       ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('zh'),
+  ];
 
   /// Application title
   ///
@@ -165,6 +169,870 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
+
+  /// No description provided for @assetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets'**
+  String get assetsTitle;
+
+  /// No description provided for @homePortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio'**
+  String get homePortfolio;
+
+  /// No description provided for @marketsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets'**
+  String get marketsTitle;
+
+  /// No description provided for @deposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get deposit;
+
+  /// No description provided for @withdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get withdraw;
+
+  /// No description provided for @selectAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Select asset'**
+  String get selectAsset;
+
+  /// No description provided for @searchAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Search assets'**
+  String get searchAssets;
+
+  /// No description provided for @availableToWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Available to withdraw'**
+  String get availableToWithdraw;
+
+  /// No description provided for @withdrawUsdc.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw USDC'**
+  String get withdrawUsdc;
+
+  /// No description provided for @recipientAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient address'**
+  String get recipientAddress;
+
+  /// No description provided for @enterWalletAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter wallet address'**
+  String get enterWalletAddress;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// No description provided for @network.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get network;
+
+  /// No description provided for @networkFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Network fee'**
+  String get networkFee;
+
+  /// No description provided for @reviewWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Review withdrawal'**
+  String get reviewWithdrawal;
+
+  /// No description provided for @preparingWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing withdrawal…'**
+  String get preparingWithdrawal;
+
+  /// No description provided for @withdrawalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal details'**
+  String get withdrawalDetails;
+
+  /// No description provided for @recipientReceives.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient receives'**
+  String get recipientReceives;
+
+  /// No description provided for @totalDeducted.
+  ///
+  /// In en, this message translates to:
+  /// **'Total deducted'**
+  String get totalDeducted;
+
+  /// No description provided for @authorizationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization required'**
+  String get authorizationRequired;
+
+  /// No description provided for @depositCrypto.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit crypto'**
+  String get depositCrypto;
+
+  /// No description provided for @allSupportedAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'All supported assets'**
+  String get allSupportedAssets;
+
+  /// No description provided for @loadingAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading assets'**
+  String get loadingAssets;
+
+  /// No description provided for @assetsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets unavailable'**
+  String get assetsUnavailable;
+
+  /// No description provided for @portfolioValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio value'**
+  String get portfolioValue;
+
+  /// No description provided for @allocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Allocation'**
+  String get allocation;
+
+  /// No description provided for @cash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// No description provided for @bstocks.
+  ///
+  /// In en, this message translates to:
+  /// **'bStocks'**
+  String get bstocks;
+
+  /// No description provided for @perps.
+  ///
+  /// In en, this message translates to:
+  /// **'Perps'**
+  String get perps;
+
+  /// No description provided for @cashBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash balances'**
+  String get cashBalances;
+
+  /// No description provided for @portfolioTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio trend'**
+  String get portfolioTrend;
+
+  /// No description provided for @loadingMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading markets'**
+  String get loadingMarkets;
+
+  /// No description provided for @marketsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets unavailable'**
+  String get marketsUnavailable;
+
+  /// No description provided for @noProductsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No products yet'**
+  String get noProductsYet;
+
+  /// No description provided for @favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favorites;
+
+  /// No description provided for @popular.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get popular;
+
+  /// No description provided for @gainers.
+  ///
+  /// In en, this message translates to:
+  /// **'Gainers'**
+  String get gainers;
+
+  /// No description provided for @losers.
+  ///
+  /// In en, this message translates to:
+  /// **'Losers'**
+  String get losers;
+
+  /// No description provided for @volume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get volume;
+
+  /// No description provided for @editTpSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit TP/SL'**
+  String get editTpSl;
+
+  /// No description provided for @takeProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit'**
+  String get takeProfit;
+
+  /// No description provided for @stopLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop loss'**
+  String get stopLoss;
+
+  /// No description provided for @price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @takeProfitStopLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit/stop loss'**
+  String get takeProfitStopLoss;
+
+  /// No description provided for @bstocksTpSlUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'TP/SL is not available for bStocks orders.'**
+  String get bstocksTpSlUnavailable;
+
+  /// No description provided for @saveTpSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Save TP/SL'**
+  String get saveTpSl;
+
+  /// No description provided for @tpSlPriceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter trigger prices for this position.'**
+  String get tpSlPriceHint;
+
+  /// No description provided for @tpSlSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save TP/SL. Check the prices and try again.'**
+  String get tpSlSaveFailed;
+
+  /// No description provided for @orderSubmissionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Order was not submitted. Try again.'**
+  String get orderSubmissionFailed;
+
+  /// No description provided for @marketPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Market price'**
+  String get marketPrice;
+
+  /// No description provided for @estimatedPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated price'**
+  String get estimatedPrice;
+
+  /// No description provided for @submittingOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting Order…'**
+  String get submittingOrder;
+
+  /// No description provided for @submittingOrderDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This may take a few moments. You can track the progress on the Details page.'**
+  String get submittingOrderDescription;
+
+  /// No description provided for @closeViewLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Close & View Later'**
+  String get closeViewLater;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @limitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit Price'**
+  String get limitPrice;
+
+  /// No description provided for @market.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get market;
+
+  /// No description provided for @dragToSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to set'**
+  String get dragToSet;
+
+  /// No description provided for @priceDeviation.
+  ///
+  /// In en, this message translates to:
+  /// **'Price deviation'**
+  String get priceDeviation;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @tradeUsStockReference.
+  ///
+  /// In en, this message translates to:
+  /// **'US Stock Reference'**
+  String get tradeUsStockReference;
+
+  /// No description provided for @tradePremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get tradePremium;
+
+  /// No description provided for @tradeSpread.
+  ///
+  /// In en, this message translates to:
+  /// **'Spread'**
+  String get tradeSpread;
+
+  /// No description provided for @tradeBestBidAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Bid / Ask'**
+  String get tradeBestBidAsk;
+
+  /// No description provided for @tradeAssetRights.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset & Rights'**
+  String get tradeAssetRights;
+
+  /// No description provided for @tradeAssetRightsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Provides economic exposure to underlying NVIDIA securities. You hold on-chain security tokens within your BSC wallet, not direct ownership of NVIDIA shares.'**
+  String get tradeAssetRightsDescription;
+
+  /// No description provided for @tradeIssuer.
+  ///
+  /// In en, this message translates to:
+  /// **'Issuer'**
+  String get tradeIssuer;
+
+  /// No description provided for @tradeIssuerValue.
+  ///
+  /// In en, this message translates to:
+  /// **'BTECH Holdings Limited'**
+  String get tradeIssuerValue;
+
+  /// No description provided for @tradeBacking.
+  ///
+  /// In en, this message translates to:
+  /// **'Backing'**
+  String get tradeBacking;
+
+  /// No description provided for @tradeBackingValue.
+  ///
+  /// In en, this message translates to:
+  /// **'1:1 Backed by Underlying Shares'**
+  String get tradeBackingValue;
+
+  /// No description provided for @tradeCorporateActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Corporate Actions'**
+  String get tradeCorporateActions;
+
+  /// No description provided for @tradeCorporateActionsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically Reflected via Multiplier'**
+  String get tradeCorporateActionsValue;
+
+  /// No description provided for @tradeDividendTreatment.
+  ///
+  /// In en, this message translates to:
+  /// **'Dividend Treatment'**
+  String get tradeDividendTreatment;
+
+  /// No description provided for @tradeDividendTreatmentValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Dividends Automatically Reinvested'**
+  String get tradeDividendTreatmentValue;
+
+  /// No description provided for @tradeVotingRights.
+  ///
+  /// In en, this message translates to:
+  /// **'Voting Rights'**
+  String get tradeVotingRights;
+
+  /// No description provided for @tradeVotingRightsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'No Shareholder Voting Rights'**
+  String get tradeVotingRightsValue;
+
+  /// No description provided for @tradeAssetLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset Location'**
+  String get tradeAssetLocation;
+
+  /// No description provided for @tradeAssetLocationValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Held in BSC Wallet'**
+  String get tradeAssetLocationValue;
+
+  /// No description provided for @tradeMarketHoursTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'US Market Trading Hours'**
+  String get tradeMarketHoursTitle;
+
+  /// No description provided for @tradeMarketHoursDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.'**
+  String get tradeMarketHoursDescription;
+
+  /// No description provided for @tradePreMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-Market'**
+  String get tradePreMarket;
+
+  /// No description provided for @tradeRegularMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular Market'**
+  String get tradeRegularMarket;
+
+  /// No description provided for @tradeAfterHours.
+  ///
+  /// In en, this message translates to:
+  /// **'After-Hours'**
+  String get tradeAfterHours;
+
+  /// No description provided for @tradeOvernight.
+  ///
+  /// In en, this message translates to:
+  /// **'Overnight'**
+  String get tradeOvernight;
+
+  /// No description provided for @tradeMarketClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Closed'**
+  String get tradeMarketClosed;
+
+  /// No description provided for @tradeMediumLiquidity.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium Liquidity'**
+  String get tradeMediumLiquidity;
+
+  /// No description provided for @tradeHighLiquidity.
+  ///
+  /// In en, this message translates to:
+  /// **'High Liquidity'**
+  String get tradeHighLiquidity;
+
+  /// No description provided for @tradeLowLiquidity.
+  ///
+  /// In en, this message translates to:
+  /// **'Low Liquidity'**
+  String get tradeLowLiquidity;
+
+  /// No description provided for @tradeMarketOpensIn.
+  ///
+  /// In en, this message translates to:
+  /// **'US market opens in 04:30:11'**
+  String get tradeMarketOpensIn;
+
+  /// No description provided for @tradeMarketClosedSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends, US holidays'**
+  String get tradeMarketClosedSchedule;
+
+  /// No description provided for @tradeReferencePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'US Stock Reference'**
+  String get tradeReferencePrice;
+
+  /// No description provided for @tradeReferenceValue.
+  ///
+  /// In en, this message translates to:
+  /// **'US \$175.22'**
+  String get tradeReferenceValue;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading settings'**
+  String get settingsLoading;
+
+  /// No description provided for @settingsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings unavailable'**
+  String get settingsUnavailable;
+
+  /// No description provided for @settingsRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull to refresh and try again.'**
+  String get settingsRetry;
+
+  /// No description provided for @settingsActiveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Account'**
+  String get settingsActiveAccount;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageSimplifiedChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'Simplified Chinese'**
+  String get languageSimplifiedChinese;
+
+  /// No description provided for @settingsExportPrivateKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Private Key'**
+  String get settingsExportPrivateKey;
+
+  /// No description provided for @settingsPrivateKeyWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Never share your private key with anyone. Anyone with this information can control your wallet.'**
+  String get settingsPrivateKeyWarning;
+
+  /// No description provided for @settingsCheckUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for Updates'**
+  String get settingsCheckUpdates;
+
+  /// No description provided for @settingsAppVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get settingsAppVersion;
+
+  /// No description provided for @settingsAppVersionValue.
+  ///
+  /// In en, this message translates to:
+  /// **'v1.0.0'**
+  String get settingsAppVersionValue;
+
+  /// No description provided for @settingsCacheSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache Size'**
+  String get settingsCacheSize;
+
+  /// No description provided for @settingsCacheSizeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'7.5 KB · Clear'**
+  String get settingsCacheSizeValue;
+
+  /// No description provided for @settingsLogOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get settingsLogOut;
+
+  /// No description provided for @settingsLogOutQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out?'**
+  String get settingsLogOutQuestion;
+
+  /// No description provided for @settingsDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get settingsDeleteAccount;
+
+  /// No description provided for @settingsDeleteAccountMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion is not available from this version of the app.'**
+  String get settingsDeleteAccountMessage;
+
+  /// No description provided for @activityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activityTitle;
+
+  /// No description provided for @activityAllProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'All product'**
+  String get activityAllProducts;
+
+  /// No description provided for @activityType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get activityType;
+
+  /// No description provided for @activityStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get activityStatus;
+
+  /// No description provided for @activityFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter status'**
+  String get activityFilterStatus;
+
+  /// No description provided for @activityAllStatuses.
+  ///
+  /// In en, this message translates to:
+  /// **'All statuses'**
+  String get activityAllStatuses;
+
+  /// No description provided for @activityOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get activityOrders;
+
+  /// No description provided for @activityFunding.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding'**
+  String get activityFunding;
+
+  /// No description provided for @activityApprovals.
+  ///
+  /// In en, this message translates to:
+  /// **'Approvals'**
+  String get activityApprovals;
+
+  /// No description provided for @activityInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get activityInProgress;
+
+  /// No description provided for @activityCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get activityCompleted;
+
+  /// No description provided for @activityFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get activityFailed;
+
+  /// No description provided for @activityCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get activityCancelled;
+
+  /// No description provided for @activityUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get activityUnknown;
+
+  /// No description provided for @activityLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading activity'**
+  String get activityLoading;
+
+  /// No description provided for @activityUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity unavailable'**
+  String get activityUnavailable;
+
+  /// No description provided for @activityRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull to refresh and try again.'**
+  String get activityRetry;
+
+  /// No description provided for @activityEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity yet'**
+  String get activityEmptyTitle;
+
+  /// No description provided for @activityEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your orders and funding events will appear here.'**
+  String get activityEmptyMessage;
+
+  /// No description provided for @activityCopyReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy activity reference'**
+  String get activityCopyReference;
+
+  /// No description provided for @tradeBasis.
+  ///
+  /// In en, this message translates to:
+  /// **'Basis'**
+  String get tradeBasis;
+
+  /// No description provided for @tradePerpAssetRightsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Perpetual contracts provide price exposure to NVIDIA only; they do not grant stocks, on-chain security tokens, or corporate shareholder rights.'**
+  String get tradePerpAssetRightsDescription;
+
+  /// No description provided for @tradeProductType.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Type'**
+  String get tradeProductType;
+
+  /// No description provided for @tradePerpProductType.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP-3 Perpetual Contract'**
+  String get tradePerpProductType;
+
+  /// No description provided for @tradeUnderlyingExposure.
+  ///
+  /// In en, this message translates to:
+  /// **'Underlying Exposure'**
+  String get tradeUnderlyingExposure;
+
+  /// No description provided for @tradePriceExposureOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Exposure Only'**
+  String get tradePriceExposureOnly;
+
+  /// No description provided for @tradeShareOwnership.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Ownership'**
+  String get tradeShareOwnership;
+
+  /// No description provided for @tradeNoShareOwnership.
+  ///
+  /// In en, this message translates to:
+  /// **'No Ownership of Underlying Shares'**
+  String get tradeNoShareOwnership;
+
+  /// No description provided for @tradeDividendRights.
+  ///
+  /// In en, this message translates to:
+  /// **'Dividend Rights'**
+  String get tradeDividendRights;
+
+  /// No description provided for @tradeNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get tradeNone;
+
+  /// No description provided for @tradePositionType.
+  ///
+  /// In en, this message translates to:
+  /// **'Position Type'**
+  String get tradePositionType;
+
+  /// No description provided for @tradePerpPositionType.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP-3 Perpetual Position'**
+  String get tradePerpPositionType;
 }
 
 class _AppLocalizationsDelegate
@@ -178,7 +1046,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en'].contains(locale.languageCode);
+      <String>['en', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -189,6 +1057,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(

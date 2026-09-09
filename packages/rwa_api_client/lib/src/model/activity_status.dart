@@ -10,26 +10,34 @@ import 'package:built_value/serializer.dart';
 part 'activity_status.g.dart';
 
 class ActivityStatus extends EnumClass {
-
-  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消
+  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
   @BuiltValueEnumConst(wireName: r'pending')
   static const ActivityStatus pending = _$pending;
-  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消
+
+  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
   @BuiltValueEnumConst(wireName: r'success')
   static const ActivityStatus success = _$success;
-  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消
+
+  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
   @BuiltValueEnumConst(wireName: r'failed')
   static const ActivityStatus failed = _$failed;
-  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消
+
+  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
   @BuiltValueEnumConst(wireName: r'cancelled')
   static const ActivityStatus cancelled = _$cancelled;
-  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消
+
+  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
+  @BuiltValueEnumConst(wireName: r'manual_review')
+  static const ActivityStatus manualReview = _$manualReview;
+
+  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const ActivityStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<ActivityStatus> get serializer => _$activityStatusSerializer;
+  static Serializer<ActivityStatus> get serializer =>
+      _$activityStatusSerializer;
 
-  const ActivityStatus._(String name): super(name);
+  const ActivityStatus._(String name) : super(name);
 
   static BuiltSet<ActivityStatus> get values => _$values;
   static ActivityStatus valueOf(String name) => _$valueOf(name);
@@ -42,4 +50,3 @@ class ActivityStatus extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class ActivityStatusMixin = Object with _$ActivityStatusMixin;
-

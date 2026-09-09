@@ -6,15 +6,102 @@ part of 'order.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const OrderWalletActionBlockerEnum
+    _$orderWalletActionBlockerEnum_providerUnavailable =
+    const OrderWalletActionBlockerEnum._('providerUnavailable');
+const OrderWalletActionBlockerEnum
+    _$orderWalletActionBlockerEnum_actionNotReady =
+    const OrderWalletActionBlockerEnum._('actionNotReady');
+const OrderWalletActionBlockerEnum
+    _$orderWalletActionBlockerEnum_capabilityDisabled =
+    const OrderWalletActionBlockerEnum._('capabilityDisabled');
+const OrderWalletActionBlockerEnum
+    _$orderWalletActionBlockerEnum_notApplicable =
+    const OrderWalletActionBlockerEnum._('notApplicable');
+const OrderWalletActionBlockerEnum
+    _$orderWalletActionBlockerEnum_unknownDefaultOpenApi =
+    const OrderWalletActionBlockerEnum._('unknownDefaultOpenApi');
+
+OrderWalletActionBlockerEnum _$orderWalletActionBlockerEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'providerUnavailable':
+      return _$orderWalletActionBlockerEnum_providerUnavailable;
+    case 'actionNotReady':
+      return _$orderWalletActionBlockerEnum_actionNotReady;
+    case 'capabilityDisabled':
+      return _$orderWalletActionBlockerEnum_capabilityDisabled;
+    case 'notApplicable':
+      return _$orderWalletActionBlockerEnum_notApplicable;
+    case 'unknownDefaultOpenApi':
+      return _$orderWalletActionBlockerEnum_unknownDefaultOpenApi;
+    default:
+      return _$orderWalletActionBlockerEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<OrderWalletActionBlockerEnum>
+    _$orderWalletActionBlockerEnumValues =
+    BuiltSet<OrderWalletActionBlockerEnum>(const <OrderWalletActionBlockerEnum>[
+  _$orderWalletActionBlockerEnum_providerUnavailable,
+  _$orderWalletActionBlockerEnum_actionNotReady,
+  _$orderWalletActionBlockerEnum_capabilityDisabled,
+  _$orderWalletActionBlockerEnum_notApplicable,
+  _$orderWalletActionBlockerEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<OrderWalletActionBlockerEnum>
+    _$orderWalletActionBlockerEnumSerializer =
+    _$OrderWalletActionBlockerEnumSerializer();
+
+class _$OrderWalletActionBlockerEnumSerializer
+    implements PrimitiveSerializer<OrderWalletActionBlockerEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'providerUnavailable': 'provider_unavailable',
+    'actionNotReady': 'action_not_ready',
+    'capabilityDisabled': 'capability_disabled',
+    'notApplicable': 'not_applicable',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'provider_unavailable': 'providerUnavailable',
+    'action_not_ready': 'actionNotReady',
+    'capability_disabled': 'capabilityDisabled',
+    'not_applicable': 'notApplicable',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[OrderWalletActionBlockerEnum];
+  @override
+  final String wireName = 'OrderWalletActionBlockerEnum';
+
+  @override
+  Object serialize(Serializers serializers, OrderWalletActionBlockerEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  OrderWalletActionBlockerEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      OrderWalletActionBlockerEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$Order extends Order {
+  @override
+  final ProductKind kind;
+  @override
+  final JsonObject? nextAction;
+  @override
+  final OrderWalletActionBlockerEnum? walletActionBlocker;
   @override
   final String orderId;
   @override
   final String? clientOrderId;
   @override
   final String symbol;
-  @override
-  final ProductKind kind;
   @override
   final OrderSide side;
   @override
@@ -58,10 +145,12 @@ class _$Order extends Order {
       (OrderBuilder()..update(updates))._build();
 
   _$Order._(
-      {required this.orderId,
+      {required this.kind,
+      this.nextAction,
+      this.walletActionBlocker,
+      required this.orderId,
       this.clientOrderId,
       required this.symbol,
-      required this.kind,
       required this.side,
       required this.type,
       required this.status,
@@ -93,10 +182,12 @@ class _$Order extends Order {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Order &&
+        kind == other.kind &&
+        nextAction == other.nextAction &&
+        walletActionBlocker == other.walletActionBlocker &&
         orderId == other.orderId &&
         clientOrderId == other.clientOrderId &&
         symbol == other.symbol &&
-        kind == other.kind &&
         side == other.side &&
         type == other.type &&
         status == other.status &&
@@ -121,10 +212,12 @@ class _$Order extends Order {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, nextAction.hashCode);
+    _$hash = $jc(_$hash, walletActionBlocker.hashCode);
     _$hash = $jc(_$hash, orderId.hashCode);
     _$hash = $jc(_$hash, clientOrderId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
-    _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, side.hashCode);
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
@@ -151,10 +244,12 @@ class _$Order extends Order {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Order')
+          ..add('kind', kind)
+          ..add('nextAction', nextAction)
+          ..add('walletActionBlocker', walletActionBlocker)
           ..add('orderId', orderId)
           ..add('clientOrderId', clientOrderId)
           ..add('symbol', symbol)
-          ..add('kind', kind)
           ..add('side', side)
           ..add('type', type)
           ..add('status', status)
@@ -181,6 +276,20 @@ class _$Order extends Order {
 class OrderBuilder implements Builder<Order, OrderBuilder> {
   _$Order? _$v;
 
+  ProductKind? _kind;
+  ProductKind? get kind => _$this._kind;
+  set kind(ProductKind? kind) => _$this._kind = kind;
+
+  JsonObject? _nextAction;
+  JsonObject? get nextAction => _$this._nextAction;
+  set nextAction(JsonObject? nextAction) => _$this._nextAction = nextAction;
+
+  OrderWalletActionBlockerEnum? _walletActionBlocker;
+  OrderWalletActionBlockerEnum? get walletActionBlocker =>
+      _$this._walletActionBlocker;
+  set walletActionBlocker(OrderWalletActionBlockerEnum? walletActionBlocker) =>
+      _$this._walletActionBlocker = walletActionBlocker;
+
   String? _orderId;
   String? get orderId => _$this._orderId;
   set orderId(String? orderId) => _$this._orderId = orderId;
@@ -193,10 +302,6 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   String? _symbol;
   String? get symbol => _$this._symbol;
   set symbol(String? symbol) => _$this._symbol = symbol;
-
-  ProductKind? _kind;
-  ProductKind? get kind => _$this._kind;
-  set kind(ProductKind? kind) => _$this._kind = kind;
 
   OrderSide? _side;
   OrderSide? get side => _$this._side;
@@ -284,10 +389,12 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   OrderBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _kind = $v.kind;
+      _nextAction = $v.nextAction;
+      _walletActionBlocker = $v.walletActionBlocker;
       _orderId = $v.orderId;
       _clientOrderId = $v.clientOrderId;
       _symbol = $v.symbol;
-      _kind = $v.kind;
       _side = $v.side;
       _type = $v.type;
       _status = $v.status;
@@ -330,12 +437,14 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
     try {
       _$result = _$v ??
           _$Order._(
+            kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
+            nextAction: nextAction,
+            walletActionBlocker: walletActionBlocker,
             orderId: BuiltValueNullFieldError.checkNotNull(
                 orderId, r'Order', 'orderId'),
             clientOrderId: clientOrderId,
             symbol: BuiltValueNullFieldError.checkNotNull(
                 symbol, r'Order', 'symbol'),
-            kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
             side: BuiltValueNullFieldError.checkNotNull(side, r'Order', 'side'),
             type: BuiltValueNullFieldError.checkNotNull(type, r'Order', 'type'),
             status: BuiltValueNullFieldError.checkNotNull(

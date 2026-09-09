@@ -14,10 +14,11 @@ part 'session_response.g.dart';
 ///
 /// Properties:
 /// * [created] - Whether this call created the product account
-/// * [user] 
-/// * [session] 
+/// * [user]
+/// * [session]
 @BuiltValue()
-abstract class SessionResponse implements Built<SessionResponse, SessionResponseBuilder> {
+abstract class SessionResponse
+    implements Built<SessionResponse, SessionResponseBuilder> {
   /// Whether this call created the product account
   @BuiltValueField(wireName: r'created')
   bool get created;
@@ -30,16 +31,19 @@ abstract class SessionResponse implements Built<SessionResponse, SessionResponse
 
   SessionResponse._();
 
-  factory SessionResponse([void updates(SessionResponseBuilder b)]) = _$SessionResponse;
+  factory SessionResponse([void updates(SessionResponseBuilder b)]) =
+      _$SessionResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SessionResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SessionResponse> get serializer => _$SessionResponseSerializer();
+  static Serializer<SessionResponse> get serializer =>
+      _$SessionResponseSerializer();
 }
 
-class _$SessionResponseSerializer implements PrimitiveSerializer<SessionResponse> {
+class _$SessionResponseSerializer
+    implements PrimitiveSerializer<SessionResponse> {
   @override
   final Iterable<Type> types = const [SessionResponse, _$SessionResponse];
 
@@ -74,7 +78,9 @@ class _$SessionResponseSerializer implements PrimitiveSerializer<SessionResponse
     SessionResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -138,4 +144,3 @@ class _$SessionResponseSerializer implements PrimitiveSerializer<SessionResponse
     return result.build();
   }
 }
-

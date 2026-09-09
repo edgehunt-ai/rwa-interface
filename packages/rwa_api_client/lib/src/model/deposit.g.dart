@@ -6,6 +6,28 @@ part of 'deposit.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const DepositChainIdEnum _$depositChainIdEnum_number42161 =
+    const DepositChainIdEnum._('number42161');
+const DepositChainIdEnum _$depositChainIdEnum_unknownDefaultOpenApi =
+    const DepositChainIdEnum._('unknownDefaultOpenApi');
+
+DepositChainIdEnum _$depositChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number42161':
+      return _$depositChainIdEnum_number42161;
+    case 'unknownDefaultOpenApi':
+      return _$depositChainIdEnum_unknownDefaultOpenApi;
+    default:
+      return _$depositChainIdEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<DepositChainIdEnum> _$depositChainIdEnumValues =
+    BuiltSet<DepositChainIdEnum>(const <DepositChainIdEnum>[
+  _$depositChainIdEnum_number42161,
+  _$depositChainIdEnum_unknownDefaultOpenApi,
+]);
+
 const DepositTokenEnum _$depositTokenEnum_USDC =
     const DepositTokenEnum._('USDC');
 const DepositTokenEnum _$depositTokenEnum_unknownDefaultOpenApi =
@@ -28,8 +50,90 @@ final BuiltSet<DepositTokenEnum> _$depositTokenEnumValues =
   _$depositTokenEnum_unknownDefaultOpenApi,
 ]);
 
+const DepositTokenContractEnum
+    _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831 =
+    const DepositTokenContractEnum._(
+        'n0xaf88d065e77c8cc2239327c5edb3a432268e5831');
+const DepositTokenContractEnum
+    _$depositTokenContractEnum_unknownDefaultOpenApi =
+    const DepositTokenContractEnum._('unknownDefaultOpenApi');
+
+DepositTokenContractEnum _$depositTokenContractEnumValueOf(String name) {
+  switch (name) {
+    case 'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
+      return _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
+    case 'unknownDefaultOpenApi':
+      return _$depositTokenContractEnum_unknownDefaultOpenApi;
+    default:
+      return _$depositTokenContractEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<DepositTokenContractEnum> _$depositTokenContractEnumValues =
+    BuiltSet<DepositTokenContractEnum>(const <DepositTokenContractEnum>[
+  _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831,
+  _$depositTokenContractEnum_unknownDefaultOpenApi,
+]);
+
+const DepositTokenDecimalsEnum _$depositTokenDecimalsEnum_number6 =
+    const DepositTokenDecimalsEnum._('number6');
+const DepositTokenDecimalsEnum
+    _$depositTokenDecimalsEnum_unknownDefaultOpenApi =
+    const DepositTokenDecimalsEnum._('unknownDefaultOpenApi');
+
+DepositTokenDecimalsEnum _$depositTokenDecimalsEnumValueOf(String name) {
+  switch (name) {
+    case 'number6':
+      return _$depositTokenDecimalsEnum_number6;
+    case 'unknownDefaultOpenApi':
+      return _$depositTokenDecimalsEnum_unknownDefaultOpenApi;
+    default:
+      return _$depositTokenDecimalsEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<DepositTokenDecimalsEnum> _$depositTokenDecimalsEnumValues =
+    BuiltSet<DepositTokenDecimalsEnum>(const <DepositTokenDecimalsEnum>[
+  _$depositTokenDecimalsEnum_number6,
+  _$depositTokenDecimalsEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<DepositChainIdEnum> _$depositChainIdEnumSerializer =
+    _$DepositChainIdEnumSerializer();
 Serializer<DepositTokenEnum> _$depositTokenEnumSerializer =
     _$DepositTokenEnumSerializer();
+Serializer<DepositTokenContractEnum> _$depositTokenContractEnumSerializer =
+    _$DepositTokenContractEnumSerializer();
+Serializer<DepositTokenDecimalsEnum> _$depositTokenDecimalsEnumSerializer =
+    _$DepositTokenDecimalsEnumSerializer();
+
+class _$DepositChainIdEnumSerializer
+    implements PrimitiveSerializer<DepositChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number42161': 42161,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    42161: 'number42161',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[DepositChainIdEnum];
+  @override
+  final String wireName = 'DepositChainIdEnum';
+
+  @override
+  Object serialize(Serializers serializers, DepositChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  DepositChainIdEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      DepositChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$DepositTokenEnumSerializer
     implements PrimitiveSerializer<DepositTokenEnum> {
@@ -59,55 +163,74 @@ class _$DepositTokenEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$DepositTokenContractEnumSerializer
+    implements PrimitiveSerializer<DepositTokenContractEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
+        '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    '0xaf88d065e77c8cc2239327c5edb3a432268e5831':
+        'n0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[DepositTokenContractEnum];
+  @override
+  final String wireName = 'DepositTokenContractEnum';
+
+  @override
+  Object serialize(Serializers serializers, DepositTokenContractEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  DepositTokenContractEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      DepositTokenContractEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$DepositTokenDecimalsEnumSerializer
+    implements PrimitiveSerializer<DepositTokenDecimalsEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number6': 6,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    6: 'number6',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[DepositTokenDecimalsEnum];
+  @override
+  final String wireName = 'DepositTokenDecimalsEnum';
+
+  @override
+  Object serialize(Serializers serializers, DepositTokenDecimalsEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  DepositTokenDecimalsEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      DepositTokenDecimalsEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$Deposit extends Deposit {
   @override
-  final String depositId;
-  @override
-  final Chain chain;
-  @override
-  final DepositTokenEnum token;
-  @override
-  final String? amount;
-  @override
-  final DepositStatus status;
-  @override
-  final int? confirmations;
-  @override
-  final int? confirmationsRequired;
-  @override
-  final AccountKind? creditedTo;
-  @override
-  final bool? requiresTransfer;
-  @override
-  final String? txHash;
-  @override
-  final String? activityId;
-  @override
-  final DateTime? createdAt;
-  @override
-  final DateTime? creditedAt;
-  @override
-  final DepositAddress instructions;
+  final OneOf oneOf;
 
   factory _$Deposit([void Function(DepositBuilder)? updates]) =>
       (DepositBuilder()..update(updates))._build();
 
-  _$Deposit._(
-      {required this.depositId,
-      required this.chain,
-      required this.token,
-      this.amount,
-      required this.status,
-      this.confirmations,
-      this.confirmationsRequired,
-      this.creditedTo,
-      this.requiresTransfer,
-      this.txHash,
-      this.activityId,
-      this.createdAt,
-      this.creditedAt,
-      required this.instructions})
-      : super._();
+  _$Deposit._({required this.oneOf}) : super._();
   @override
   Deposit rebuild(void Function(DepositBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -118,61 +241,20 @@ class _$Deposit extends Deposit {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is Deposit &&
-        depositId == other.depositId &&
-        chain == other.chain &&
-        token == other.token &&
-        amount == other.amount &&
-        status == other.status &&
-        confirmations == other.confirmations &&
-        confirmationsRequired == other.confirmationsRequired &&
-        creditedTo == other.creditedTo &&
-        requiresTransfer == other.requiresTransfer &&
-        txHash == other.txHash &&
-        activityId == other.activityId &&
-        createdAt == other.createdAt &&
-        creditedAt == other.creditedAt &&
-        instructions == other.instructions;
+    return other is Deposit && oneOf == other.oneOf;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, depositId.hashCode);
-    _$hash = $jc(_$hash, chain.hashCode);
-    _$hash = $jc(_$hash, token.hashCode);
-    _$hash = $jc(_$hash, amount.hashCode);
-    _$hash = $jc(_$hash, status.hashCode);
-    _$hash = $jc(_$hash, confirmations.hashCode);
-    _$hash = $jc(_$hash, confirmationsRequired.hashCode);
-    _$hash = $jc(_$hash, creditedTo.hashCode);
-    _$hash = $jc(_$hash, requiresTransfer.hashCode);
-    _$hash = $jc(_$hash, txHash.hashCode);
-    _$hash = $jc(_$hash, activityId.hashCode);
-    _$hash = $jc(_$hash, createdAt.hashCode);
-    _$hash = $jc(_$hash, creditedAt.hashCode);
-    _$hash = $jc(_$hash, instructions.hashCode);
+    _$hash = $jc(_$hash, oneOf.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'Deposit')
-          ..add('depositId', depositId)
-          ..add('chain', chain)
-          ..add('token', token)
-          ..add('amount', amount)
-          ..add('status', status)
-          ..add('confirmations', confirmations)
-          ..add('confirmationsRequired', confirmationsRequired)
-          ..add('creditedTo', creditedTo)
-          ..add('requiresTransfer', requiresTransfer)
-          ..add('txHash', txHash)
-          ..add('activityId', activityId)
-          ..add('createdAt', createdAt)
-          ..add('creditedAt', creditedAt)
-          ..add('instructions', instructions))
+    return (newBuiltValueToStringHelper(r'Deposit')..add('oneOf', oneOf))
         .toString();
   }
 }
@@ -180,66 +262,9 @@ class _$Deposit extends Deposit {
 class DepositBuilder implements Builder<Deposit, DepositBuilder> {
   _$Deposit? _$v;
 
-  String? _depositId;
-  String? get depositId => _$this._depositId;
-  set depositId(String? depositId) => _$this._depositId = depositId;
-
-  Chain? _chain;
-  Chain? get chain => _$this._chain;
-  set chain(Chain? chain) => _$this._chain = chain;
-
-  DepositTokenEnum? _token;
-  DepositTokenEnum? get token => _$this._token;
-  set token(DepositTokenEnum? token) => _$this._token = token;
-
-  String? _amount;
-  String? get amount => _$this._amount;
-  set amount(String? amount) => _$this._amount = amount;
-
-  DepositStatus? _status;
-  DepositStatus? get status => _$this._status;
-  set status(DepositStatus? status) => _$this._status = status;
-
-  int? _confirmations;
-  int? get confirmations => _$this._confirmations;
-  set confirmations(int? confirmations) =>
-      _$this._confirmations = confirmations;
-
-  int? _confirmationsRequired;
-  int? get confirmationsRequired => _$this._confirmationsRequired;
-  set confirmationsRequired(int? confirmationsRequired) =>
-      _$this._confirmationsRequired = confirmationsRequired;
-
-  AccountKind? _creditedTo;
-  AccountKind? get creditedTo => _$this._creditedTo;
-  set creditedTo(AccountKind? creditedTo) => _$this._creditedTo = creditedTo;
-
-  bool? _requiresTransfer;
-  bool? get requiresTransfer => _$this._requiresTransfer;
-  set requiresTransfer(bool? requiresTransfer) =>
-      _$this._requiresTransfer = requiresTransfer;
-
-  String? _txHash;
-  String? get txHash => _$this._txHash;
-  set txHash(String? txHash) => _$this._txHash = txHash;
-
-  String? _activityId;
-  String? get activityId => _$this._activityId;
-  set activityId(String? activityId) => _$this._activityId = activityId;
-
-  DateTime? _createdAt;
-  DateTime? get createdAt => _$this._createdAt;
-  set createdAt(DateTime? createdAt) => _$this._createdAt = createdAt;
-
-  DateTime? _creditedAt;
-  DateTime? get creditedAt => _$this._creditedAt;
-  set creditedAt(DateTime? creditedAt) => _$this._creditedAt = creditedAt;
-
-  DepositAddressBuilder? _instructions;
-  DepositAddressBuilder get instructions =>
-      _$this._instructions ??= DepositAddressBuilder();
-  set instructions(DepositAddressBuilder? instructions) =>
-      _$this._instructions = instructions;
+  OneOf? _oneOf;
+  OneOf? get oneOf => _$this._oneOf;
+  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
 
   DepositBuilder() {
     Deposit._defaults(this);
@@ -248,20 +273,7 @@ class DepositBuilder implements Builder<Deposit, DepositBuilder> {
   DepositBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _depositId = $v.depositId;
-      _chain = $v.chain;
-      _token = $v.token;
-      _amount = $v.amount;
-      _status = $v.status;
-      _confirmations = $v.confirmations;
-      _confirmationsRequired = $v.confirmationsRequired;
-      _creditedTo = $v.creditedTo;
-      _requiresTransfer = $v.requiresTransfer;
-      _txHash = $v.txHash;
-      _activityId = $v.activityId;
-      _createdAt = $v.createdAt;
-      _creditedAt = $v.creditedAt;
-      _instructions = $v.instructions.toBuilder();
+      _oneOf = $v.oneOf;
       _$v = null;
     }
     return this;
@@ -281,40 +293,11 @@ class DepositBuilder implements Builder<Deposit, DepositBuilder> {
   Deposit build() => _build();
 
   _$Deposit _build() {
-    _$Deposit _$result;
-    try {
-      _$result = _$v ??
-          _$Deposit._(
-            depositId: BuiltValueNullFieldError.checkNotNull(
-                depositId, r'Deposit', 'depositId'),
-            chain: BuiltValueNullFieldError.checkNotNull(
-                chain, r'Deposit', 'chain'),
-            token: BuiltValueNullFieldError.checkNotNull(
-                token, r'Deposit', 'token'),
-            amount: amount,
-            status: BuiltValueNullFieldError.checkNotNull(
-                status, r'Deposit', 'status'),
-            confirmations: confirmations,
-            confirmationsRequired: confirmationsRequired,
-            creditedTo: creditedTo,
-            requiresTransfer: requiresTransfer,
-            txHash: txHash,
-            activityId: activityId,
-            createdAt: createdAt,
-            creditedAt: creditedAt,
-            instructions: instructions.build(),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'instructions';
-        instructions.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-            r'Deposit', _$failedField, e.toString());
-      }
-      rethrow;
-    }
+    final _$result = _$v ??
+        _$Deposit._(
+          oneOf:
+              BuiltValueNullFieldError.checkNotNull(oneOf, r'Deposit', 'oneOf'),
+        );
     replace(_$result);
     return _$result;
   }

@@ -1,0 +1,43 @@
+import 'decimal_value.dart';
+import 'market_product.dart';
+
+enum PositionSide { long, short, none }
+
+final class Position {
+  const Position({
+    required this.positionId,
+    required this.symbol,
+    required this.kind,
+    required this.quantity,
+    required this.valueUsd,
+    this.side = PositionSide.none,
+    this.entryPrice,
+    this.markPrice,
+    this.unrealizedPnl,
+    this.realizedPnl,
+    this.leverage,
+    this.margin,
+    this.liquidationPrice,
+    this.takeProfitPrice,
+    this.stopLossPrice,
+    this.stopLimitPrice,
+    this.updatedAt,
+  });
+  final String positionId;
+  final String symbol;
+  final MarketProductKind kind;
+  final PositionSide side;
+  final DecimalValue quantity;
+  final DecimalValue valueUsd;
+  final DecimalValue? entryPrice;
+  final DecimalValue? markPrice;
+  final DecimalValue? unrealizedPnl;
+  final DecimalValue? realizedPnl;
+  final DecimalValue? leverage;
+  final DecimalValue? margin;
+  final DecimalValue? liquidationPrice;
+  final DecimalValue? takeProfitPrice;
+  final DecimalValue? stopLossPrice;
+  final DecimalValue? stopLimitPrice;
+  final DateTime? updatedAt;
+}

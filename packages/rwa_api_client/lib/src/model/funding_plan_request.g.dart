@@ -65,19 +65,13 @@ class _$FundingPlanRequestAssetEnumSerializer
 
 class _$FundingPlanRequest extends FundingPlanRequest {
   @override
-  final ProductKind rail;
-  @override
-  final FundingPlanRequestAssetEnum asset;
-  @override
-  final String amount;
+  final OneOf oneOf;
 
   factory _$FundingPlanRequest(
           [void Function(FundingPlanRequestBuilder)? updates]) =>
       (FundingPlanRequestBuilder()..update(updates))._build();
 
-  _$FundingPlanRequest._(
-      {required this.rail, required this.asset, required this.amount})
-      : super._();
+  _$FundingPlanRequest._({required this.oneOf}) : super._();
   @override
   FundingPlanRequest rebuild(
           void Function(FundingPlanRequestBuilder) updates) =>
@@ -90,18 +84,13 @@ class _$FundingPlanRequest extends FundingPlanRequest {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is FundingPlanRequest &&
-        rail == other.rail &&
-        asset == other.asset &&
-        amount == other.amount;
+    return other is FundingPlanRequest && oneOf == other.oneOf;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, rail.hashCode);
-    _$hash = $jc(_$hash, asset.hashCode);
-    _$hash = $jc(_$hash, amount.hashCode);
+    _$hash = $jc(_$hash, oneOf.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -109,9 +98,7 @@ class _$FundingPlanRequest extends FundingPlanRequest {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'FundingPlanRequest')
-          ..add('rail', rail)
-          ..add('asset', asset)
-          ..add('amount', amount))
+          ..add('oneOf', oneOf))
         .toString();
   }
 }
@@ -120,17 +107,9 @@ class FundingPlanRequestBuilder
     implements Builder<FundingPlanRequest, FundingPlanRequestBuilder> {
   _$FundingPlanRequest? _$v;
 
-  ProductKind? _rail;
-  ProductKind? get rail => _$this._rail;
-  set rail(ProductKind? rail) => _$this._rail = rail;
-
-  FundingPlanRequestAssetEnum? _asset;
-  FundingPlanRequestAssetEnum? get asset => _$this._asset;
-  set asset(FundingPlanRequestAssetEnum? asset) => _$this._asset = asset;
-
-  String? _amount;
-  String? get amount => _$this._amount;
-  set amount(String? amount) => _$this._amount = amount;
+  OneOf? _oneOf;
+  OneOf? get oneOf => _$this._oneOf;
+  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
 
   FundingPlanRequestBuilder() {
     FundingPlanRequest._defaults(this);
@@ -139,9 +118,7 @@ class FundingPlanRequestBuilder
   FundingPlanRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _rail = $v.rail;
-      _asset = $v.asset;
-      _amount = $v.amount;
+      _oneOf = $v.oneOf;
       _$v = null;
     }
     return this;
@@ -163,12 +140,8 @@ class FundingPlanRequestBuilder
   _$FundingPlanRequest _build() {
     final _$result = _$v ??
         _$FundingPlanRequest._(
-          rail: BuiltValueNullFieldError.checkNotNull(
-              rail, r'FundingPlanRequest', 'rail'),
-          asset: BuiltValueNullFieldError.checkNotNull(
-              asset, r'FundingPlanRequest', 'asset'),
-          amount: BuiltValueNullFieldError.checkNotNull(
-              amount, r'FundingPlanRequest', 'amount'),
+          oneOf: BuiltValueNullFieldError.checkNotNull(
+              oneOf, r'FundingPlanRequest', 'oneOf'),
         );
     replace(_$result);
     return _$result;

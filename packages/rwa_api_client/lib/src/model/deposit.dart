@@ -3,82 +3,60 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/deposit_status.dart';
+import 'package:rwa_api_client/src/model/arbitrum_confirmed_deposit.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/legacy_deposit_status.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
 import 'package:rwa_api_client/src/model/deposit_address.dart';
+import 'package:rwa_api_client/src/model/bsc_confirmed_deposit.dart';
 import 'package:rwa_api_client/src/model/chain.dart';
+import 'package:rwa_api_client/src/model/legacy_deposit.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:one_of/one_of.dart';
 
 part 'deposit.g.dart';
 
-/// Deposit
+/// 已由链上 receipt、精确 Transfer、canonical block 和确认数独立核验的正式入金事实。
 ///
 /// Properties:
-/// * [depositId] 
-/// * [chain] 
-/// * [token] 
+/// * [depositId]
+/// * [chain]
+/// * [chainId]
+/// * [token]
+/// * [tokenContract]
+/// * [tokenDecimals]
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [status] 
-/// * [confirmations] 
-/// * [confirmationsRequired] 
-/// * [creditedTo] 
-/// * [requiresTransfer] - 为 `true` 表示资金进入 App 可用余额，交易前仍需划转至交易账户； 外部导入模式为 `false`。 
-/// * [txHash] 
-/// * [activityId] 
-/// * [createdAt] 
-/// * [creditedAt] 
-/// * [instructions] 
+/// * [amountRaw] - ERC-20 Transfer log 中的精确原始整数金额。
+/// * [status]
+/// * [confirmations]
+/// * [confirmationsRequired]
+/// * [txHash]
+/// * [logIndex]
+/// * [blockNumber]
+/// * [blockHash]
+/// * [sender]
+/// * [recipient]
+/// * [detectedAt]
+/// * [confirmedAt]
+/// * [updatedAt]
+/// * [creditedTo]
+/// * [requiresTransfer]
+/// * [activityId]
+/// * [createdAt]
+/// * [creditedAt]
+/// * [instructions]
 @BuiltValue()
 abstract class Deposit implements Built<Deposit, DepositBuilder> {
-  @BuiltValueField(wireName: r'deposit_id')
-  String get depositId;
+  /// One Of [ArbitrumConfirmedDeposit], [BscConfirmedDeposit], [LegacyDeposit]
+  OneOf get oneOf;
 
-  @BuiltValueField(wireName: r'chain')
-  Chain get chain;
-  // enum chainEnum {  BSC,  Arbitrum,  Base,  Ethereum,  Hyperliquid,  Polygon,  Solana,  };
+  static const String discriminatorFieldName = r'chain';
 
-  @BuiltValueField(wireName: r'token')
-  DepositTokenEnum get token;
-  // enum tokenEnum {  USDC,  };
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'amount')
-  String? get amount;
-
-  @BuiltValueField(wireName: r'status')
-  DepositStatus get status;
-  // enum statusEnum {  awaiting,  confirming,  credited,  failed,  ambiguous,  manual_review,  };
-
-  @BuiltValueField(wireName: r'confirmations')
-  int? get confirmations;
-
-  @BuiltValueField(wireName: r'confirmations_required')
-  int? get confirmationsRequired;
-
-  @BuiltValueField(wireName: r'credited_to')
-  AccountKind? get creditedTo;
-  // enum creditedToEnum {  app,  bstocks,  hip3,  };
-
-  /// 为 `true` 表示资金进入 App 可用余额，交易前仍需划转至交易账户； 外部导入模式为 `false`。 
-  @BuiltValueField(wireName: r'requires_transfer')
-  bool? get requiresTransfer;
-
-  @BuiltValueField(wireName: r'tx_hash')
-  String? get txHash;
-
-  @BuiltValueField(wireName: r'activity_id')
-  String? get activityId;
-
-  @BuiltValueField(wireName: r'created_at')
-  DateTime? get createdAt;
-
-  @BuiltValueField(wireName: r'credited_at')
-  DateTime? get creditedAt;
-
-  @BuiltValueField(wireName: r'instructions')
-  DepositAddress get instructions;
+  static const Map<String, Type> discriminatorMapping = {
+    r'Arbitrum': ArbitrumConfirmedDeposit,
+    r'BSC': BscConfirmedDeposit,
+  };
 
   Deposit._();
 
@@ -89,6 +67,30 @@ abstract class Deposit implements Built<Deposit, DepositBuilder> {
 
   @BuiltValueSerializer(custom: true)
   static Serializer<Deposit> get serializer => _$DepositSerializer();
+}
+
+extension DepositDiscriminatorExt on Deposit {
+  String? get discriminatorValue {
+    if (this is ArbitrumConfirmedDeposit) {
+      return r'Arbitrum';
+    }
+    if (this is BscConfirmedDeposit) {
+      return r'BSC';
+    }
+    return null;
+  }
+}
+
+extension DepositBuilderDiscriminatorExt on DepositBuilder {
+  String? get discriminatorValue {
+    if (this is ArbitrumConfirmedDepositBuilder) {
+      return r'Arbitrum';
+    }
+    if (this is BscConfirmedDepositBuilder) {
+      return r'BSC';
+    }
+    return null;
+  }
 }
 
 class _$DepositSerializer implements PrimitiveSerializer<Deposit> {
@@ -102,96 +104,7 @@ class _$DepositSerializer implements PrimitiveSerializer<Deposit> {
     Serializers serializers,
     Deposit object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {
-    yield r'deposit_id';
-    yield serializers.serialize(
-      object.depositId,
-      specifiedType: const FullType(String),
-    );
-    yield r'chain';
-    yield serializers.serialize(
-      object.chain,
-      specifiedType: const FullType(Chain),
-    );
-    yield r'token';
-    yield serializers.serialize(
-      object.token,
-      specifiedType: const FullType(DepositTokenEnum),
-    );
-    if (object.amount != null) {
-      yield r'amount';
-      yield serializers.serialize(
-        object.amount,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    yield r'status';
-    yield serializers.serialize(
-      object.status,
-      specifiedType: const FullType(DepositStatus),
-    );
-    if (object.confirmations != null) {
-      yield r'confirmations';
-      yield serializers.serialize(
-        object.confirmations,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.confirmationsRequired != null) {
-      yield r'confirmations_required';
-      yield serializers.serialize(
-        object.confirmationsRequired,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.creditedTo != null) {
-      yield r'credited_to';
-      yield serializers.serialize(
-        object.creditedTo,
-        specifiedType: const FullType(AccountKind),
-      );
-    }
-    if (object.requiresTransfer != null) {
-      yield r'requires_transfer';
-      yield serializers.serialize(
-        object.requiresTransfer,
-        specifiedType: const FullType(bool),
-      );
-    }
-    if (object.txHash != null) {
-      yield r'tx_hash';
-      yield serializers.serialize(
-        object.txHash,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.activityId != null) {
-      yield r'activity_id';
-      yield serializers.serialize(
-        object.activityId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.createdAt != null) {
-      yield r'created_at';
-      yield serializers.serialize(
-        object.createdAt,
-        specifiedType: const FullType(DateTime),
-      );
-    }
-    if (object.creditedAt != null) {
-      yield r'credited_at';
-      yield serializers.serialize(
-        object.creditedAt,
-        specifiedType: const FullType.nullable(DateTime),
-      );
-    }
-    yield r'instructions';
-    yield serializers.serialize(
-      object.instructions,
-      specifiedType: const FullType(DepositAddress),
-    );
-  }
+  }) sync* {}
 
   @override
   Object serialize(
@@ -199,134 +112,9 @@ class _$DepositSerializer implements PrimitiveSerializer<Deposit> {
     Deposit object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
-
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required DepositBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'deposit_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.depositId = valueDes;
-          break;
-        case r'chain':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(Chain),
-          ) as Chain;
-          result.chain = valueDes;
-          break;
-        case r'token':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DepositTokenEnum),
-          ) as DepositTokenEnum;
-          result.token = valueDes;
-          break;
-        case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.amount = valueDes;
-          break;
-        case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DepositStatus),
-          ) as DepositStatus;
-          result.status = valueDes;
-          break;
-        case r'confirmations':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
-          if (valueDes == null) continue;
-          result.confirmations = valueDes;
-          break;
-        case r'confirmations_required':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
-          if (valueDes == null) continue;
-          result.confirmationsRequired = valueDes;
-          break;
-        case r'credited_to':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(AccountKind),
-          ) as AccountKind?;
-          if (valueDes == null) continue;
-          result.creditedTo = valueDes;
-          break;
-        case r'requires_transfer':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(bool),
-          ) as bool?;
-          if (valueDes == null) continue;
-          result.requiresTransfer = valueDes;
-          break;
-        case r'tx_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.txHash = valueDes;
-          break;
-        case r'activity_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.activityId = valueDes;
-          break;
-        case r'created_at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
-          if (valueDes == null) continue;
-          result.createdAt = valueDes;
-          break;
-        case r'credited_at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
-          if (valueDes == null) continue;
-          result.creditedAt = valueDes;
-          break;
-        case r'instructions':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DepositAddress),
-          ) as DepositAddress;
-          result.instructions.replace(valueDes);
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
+    final oneOf = object.oneOf;
+    return serializers.serialize(oneOf.value,
+        specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -336,32 +124,116 @@ class _$DepositSerializer implements PrimitiveSerializer<Deposit> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = DepositBuilder();
+    Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
+    final discIndex =
+        serializedList.indexOf(Deposit.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex],
+        specifiedType: FullType(String)) as String;
+    oneOfDataSrc = serialized;
+    final oneOfTypes = [
+      ArbitrumConfirmedDeposit,
+      BscConfirmedDeposit,
+    ];
+    Object oneOfResult;
+    Type oneOfType;
+    switch (discValue) {
+      case r'Arbitrum':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(ArbitrumConfirmedDeposit),
+        ) as ArbitrumConfirmedDeposit;
+        oneOfType = ArbitrumConfirmedDeposit;
+        break;
+      case r'BSC':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(BscConfirmedDeposit),
+        ) as BscConfirmedDeposit;
+        oneOfType = BscConfirmedDeposit;
+        break;
+      default:
+        throw UnsupportedError(
+            "Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+    }
+    result.oneOf = OneOfDynamic(
+        typeIndex: oneOfTypes.indexOf(oneOfType),
+        types: oneOfTypes,
+        value: oneOfResult);
     return result.build();
   }
 }
 
-class DepositTokenEnum extends EnumClass {
+class DepositChainIdEnum extends EnumClass {
+  @BuiltValueEnumConst(wireNumber: 42161)
+  static const DepositChainIdEnum number42161 =
+      _$depositChainIdEnum_number42161;
+  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
+  static const DepositChainIdEnum unknownDefaultOpenApi =
+      _$depositChainIdEnum_unknownDefaultOpenApi;
 
+  static Serializer<DepositChainIdEnum> get serializer =>
+      _$depositChainIdEnumSerializer;
+
+  const DepositChainIdEnum._(String name) : super(name);
+
+  static BuiltSet<DepositChainIdEnum> get values => _$depositChainIdEnumValues;
+  static DepositChainIdEnum valueOf(String name) =>
+      _$depositChainIdEnumValueOf(name);
+}
+
+class DepositTokenEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'USDC')
   static const DepositTokenEnum USDC = _$depositTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositTokenEnum unknownDefaultOpenApi = _$depositTokenEnum_unknownDefaultOpenApi;
+  static const DepositTokenEnum unknownDefaultOpenApi =
+      _$depositTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<DepositTokenEnum> get serializer => _$depositTokenEnumSerializer;
+  static Serializer<DepositTokenEnum> get serializer =>
+      _$depositTokenEnumSerializer;
 
-  const DepositTokenEnum._(String name): super(name);
+  const DepositTokenEnum._(String name) : super(name);
 
   static BuiltSet<DepositTokenEnum> get values => _$depositTokenEnumValues;
-  static DepositTokenEnum valueOf(String name) => _$depositTokenEnumValueOf(name);
+  static DepositTokenEnum valueOf(String name) =>
+      _$depositTokenEnumValueOf(name);
 }
 
+class DepositTokenContractEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'0xaf88d065e77c8cc2239327c5edb3a432268e5831')
+  static const DepositTokenContractEnum
+      n0xaf88d065e77c8cc2239327c5edb3a432268e5831 =
+      _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const DepositTokenContractEnum unknownDefaultOpenApi =
+      _$depositTokenContractEnum_unknownDefaultOpenApi;
+
+  static Serializer<DepositTokenContractEnum> get serializer =>
+      _$depositTokenContractEnumSerializer;
+
+  const DepositTokenContractEnum._(String name) : super(name);
+
+  static BuiltSet<DepositTokenContractEnum> get values =>
+      _$depositTokenContractEnumValues;
+  static DepositTokenContractEnum valueOf(String name) =>
+      _$depositTokenContractEnumValueOf(name);
+}
+
+class DepositTokenDecimalsEnum extends EnumClass {
+  @BuiltValueEnumConst(wireNumber: 6)
+  static const DepositTokenDecimalsEnum number6 =
+      _$depositTokenDecimalsEnum_number6;
+  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
+  static const DepositTokenDecimalsEnum unknownDefaultOpenApi =
+      _$depositTokenDecimalsEnum_unknownDefaultOpenApi;
+
+  static Serializer<DepositTokenDecimalsEnum> get serializer =>
+      _$depositTokenDecimalsEnumSerializer;
+
+  const DepositTokenDecimalsEnum._(String name) : super(name);
+
+  static BuiltSet<DepositTokenDecimalsEnum> get values =>
+      _$depositTokenDecimalsEnumValues;
+  static DepositTokenDecimalsEnum valueOf(String name) =>
+      _$depositTokenDecimalsEnumValueOf(name);
+}

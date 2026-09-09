@@ -17,16 +17,16 @@ part 'bstock_order_preview.g.dart';
 /// BstockOrderPreview
 ///
 /// Properties:
-/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
-/// * [symbol] 
-/// * [side] 
-/// * [type] 
+/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。
+/// * [symbol]
+/// * [side]
+/// * [type]
 /// * [marketPrice] - 十进制字符串，避免浮点误差
 /// * [estimatedPrice] - 预计成交价；与 `market_price` 不同时前端提示「价格已更新」
 /// * [priceUpdated] - 报价较用户上次看到的价格是否已变化
 /// * [estimatedQuantity] - 十进制字符串，避免浮点误差
 /// * [estimatedReceive] - 预计获得数量（扣除滑点后）
-/// * [estimatedReceiveUnit] 
+/// * [estimatedReceiveUnit]
 /// * [orderValue] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
 /// * [feeRate] - 十进制字符串，避免浮点误差
@@ -34,25 +34,48 @@ part 'bstock_order_preview.g.dart';
 /// * [orderBookImpactPercent] - 十进制字符串，避免浮点误差
 /// * [networkFee] - Network fee as a decimal string. The asset is carried separately in fee_asset.
 /// * [settlementAccount] - 成交后资产的到账账户
-/// * [settlementAccountLabel] 
+/// * [settlementAccountLabel]
 /// * [marginRequired] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 仅 HIP-3
-/// * [quoteExpiresAt] 
+/// * [quoteExpiresAt]
 /// * [details] - 「查看详情」中逐行展示的键值对
 /// * [feeAsset] - Asset used to denominate network_fee, for example BNB or USDC.
 /// * [feeNote] - Optional localized display note, for example Included.
-/// * [kind] 
-/// * [network] 
-/// * [settlementAsset] 
+/// * [kind]
+/// * [network]
+/// * [settlementAsset]
+/// * [settlementChainId]
+/// * [settlementAssetId]
+/// * [settlementTokenContract]
+/// * [settlementTokenDecimals]
 @BuiltValue()
-abstract class BstockOrderPreview implements OrderPreviewCommon, Built<BstockOrderPreview, BstockOrderPreviewBuilder> {
+abstract class BstockOrderPreview
+    implements
+        OrderPreviewCommon,
+        Built<BstockOrderPreview, BstockOrderPreviewBuilder> {
   @BuiltValueField(wireName: r'settlement_asset')
   BstockOrderPreviewSettlementAssetEnum get settlementAsset;
-  // enum settlementAssetEnum {  USDC,  };
+  // enum settlementAssetEnum {  USDT,  };
+
+  @BuiltValueField(wireName: r'settlement_token_contract')
+  BstockOrderPreviewSettlementTokenContractEnum get settlementTokenContract;
+  // enum settlementTokenContractEnum {  0x55d398326f99059ff775485246999027b3197955,  };
+
+  @BuiltValueField(wireName: r'settlement_token_decimals')
+  BstockOrderPreviewSettlementTokenDecimalsEnum get settlementTokenDecimals;
+  // enum settlementTokenDecimalsEnum {  18,  };
 
   @BuiltValueField(wireName: r'kind')
   BstockOrderPreviewKindEnum get kind;
   // enum kindEnum {  bstock,  };
+
+  @BuiltValueField(wireName: r'settlement_asset_id')
+  BstockOrderPreviewSettlementAssetIdEnum get settlementAssetId;
+  // enum settlementAssetIdEnum {  eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955,  };
+
+  @BuiltValueField(wireName: r'settlement_chain_id')
+  BstockOrderPreviewSettlementChainIdEnum get settlementChainId;
+  // enum settlementChainIdEnum {  56,  };
 
   @BuiltValueField(wireName: r'network')
   BstockOrderPreviewNetworkEnum get network;
@@ -60,16 +83,19 @@ abstract class BstockOrderPreview implements OrderPreviewCommon, Built<BstockOrd
 
   BstockOrderPreview._();
 
-  factory BstockOrderPreview([void updates(BstockOrderPreviewBuilder b)]) = _$BstockOrderPreview;
+  factory BstockOrderPreview([void updates(BstockOrderPreviewBuilder b)]) =
+      _$BstockOrderPreview;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BstockOrderPreviewBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BstockOrderPreview> get serializer => _$BstockOrderPreviewSerializer();
+  static Serializer<BstockOrderPreview> get serializer =>
+      _$BstockOrderPreviewSerializer();
 }
 
-class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderPreview> {
+class _$BstockOrderPreviewSerializer
+    implements PrimitiveSerializer<BstockOrderPreview> {
   @override
   final Iterable<Type> types = const [BstockOrderPreview, _$BstockOrderPreview];
 
@@ -176,6 +202,12 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
         specifiedType: const FullType.nullable(String),
       );
     }
+    yield r'settlement_token_contract';
+    yield serializers.serialize(
+      object.settlementTokenContract,
+      specifiedType:
+          const FullType(BstockOrderPreviewSettlementTokenContractEnum),
+    );
     if (object.estimatedPrice != null) {
       yield r'estimated_price';
       yield serializers.serialize(
@@ -207,6 +239,12 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
       object.side,
       specifiedType: const FullType(OrderSide),
     );
+    yield r'settlement_token_decimals';
+    yield serializers.serialize(
+      object.settlementTokenDecimals,
+      specifiedType:
+          const FullType(BstockOrderPreviewSettlementTokenDecimalsEnum),
+    );
     if (object.estimatedReceiveUnit != null) {
       yield r'estimated_receive_unit';
       yield serializers.serialize(
@@ -218,6 +256,11 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
     yield serializers.serialize(
       object.kind,
       specifiedType: const FullType(BstockOrderPreviewKindEnum),
+    );
+    yield r'settlement_asset_id';
+    yield serializers.serialize(
+      object.settlementAssetId,
+      specifiedType: const FullType(BstockOrderPreviewSettlementAssetIdEnum),
     );
     if (object.slippagePercent != null) {
       yield r'slippage_percent';
@@ -247,6 +290,11 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
         specifiedType: const FullType.nullable(String),
       );
     }
+    yield r'settlement_chain_id';
+    yield serializers.serialize(
+      object.settlementChainId,
+      specifiedType: const FullType(BstockOrderPreviewSettlementChainIdEnum),
+    );
     if (object.settlementAccount != null) {
       yield r'settlement_account';
       yield serializers.serialize(
@@ -262,7 +310,9 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
     BstockOrderPreview object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -280,7 +330,8 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BstockOrderPreviewSettlementAssetEnum),
+            specifiedType:
+                const FullType(BstockOrderPreviewSettlementAssetEnum),
           ) as BstockOrderPreviewSettlementAssetEnum;
           result.settlementAsset = valueDes;
           break;
@@ -392,6 +443,14 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
           if (valueDes == null) continue;
           result.feeNote = valueDes;
           break;
+        case r'settlement_token_contract':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType:
+                const FullType(BstockOrderPreviewSettlementTokenContractEnum),
+          ) as BstockOrderPreviewSettlementTokenContractEnum;
+          result.settlementTokenContract = valueDes;
+          break;
         case r'estimated_price':
           final valueDes = serializers.deserialize(
             value,
@@ -411,7 +470,8 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
         case r'details':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+            specifiedType:
+                const FullType.nullable(BuiltList, [FullType(KeyValue)]),
           ) as BuiltList<KeyValue>?;
           if (valueDes == null) continue;
           result.details.replace(valueDes);
@@ -430,6 +490,14 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
           ) as OrderSide;
           result.side = valueDes;
           break;
+        case r'settlement_token_decimals':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType:
+                const FullType(BstockOrderPreviewSettlementTokenDecimalsEnum),
+          ) as BstockOrderPreviewSettlementTokenDecimalsEnum;
+          result.settlementTokenDecimals = valueDes;
+          break;
         case r'estimated_receive_unit':
           final valueDes = serializers.deserialize(
             value,
@@ -444,6 +512,14 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
             specifiedType: const FullType(BstockOrderPreviewKindEnum),
           ) as BstockOrderPreviewKindEnum;
           result.kind = valueDes;
+          break;
+        case r'settlement_asset_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType:
+                const FullType(BstockOrderPreviewSettlementAssetIdEnum),
+          ) as BstockOrderPreviewSettlementAssetIdEnum;
+          result.settlementAssetId = valueDes;
           break;
         case r'slippage_percent':
           final valueDes = serializers.deserialize(
@@ -476,6 +552,14 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
           ) as String?;
           if (valueDes == null) continue;
           result.feeAsset = valueDes;
+          break;
+        case r'settlement_chain_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType:
+                const FullType(BstockOrderPreviewSettlementChainIdEnum),
+          ) as BstockOrderPreviewSettlementChainIdEnum;
+          result.settlementChainId = valueDes;
           break;
         case r'settlement_account':
           final valueDes = serializers.deserialize(
@@ -515,47 +599,143 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
 }
 
 class BstockOrderPreviewKindEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'bstock')
-  static const BstockOrderPreviewKindEnum bstock = _$bstockOrderPreviewKindEnum_bstock;
+  static const BstockOrderPreviewKindEnum bstock =
+      _$bstockOrderPreviewKindEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewKindEnum unknownDefaultOpenApi = _$bstockOrderPreviewKindEnum_unknownDefaultOpenApi;
+  static const BstockOrderPreviewKindEnum unknownDefaultOpenApi =
+      _$bstockOrderPreviewKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockOrderPreviewKindEnum> get serializer => _$bstockOrderPreviewKindEnumSerializer;
+  static Serializer<BstockOrderPreviewKindEnum> get serializer =>
+      _$bstockOrderPreviewKindEnumSerializer;
 
-  const BstockOrderPreviewKindEnum._(String name): super(name);
+  const BstockOrderPreviewKindEnum._(String name) : super(name);
 
-  static BuiltSet<BstockOrderPreviewKindEnum> get values => _$bstockOrderPreviewKindEnumValues;
-  static BstockOrderPreviewKindEnum valueOf(String name) => _$bstockOrderPreviewKindEnumValueOf(name);
+  static BuiltSet<BstockOrderPreviewKindEnum> get values =>
+      _$bstockOrderPreviewKindEnumValues;
+  static BstockOrderPreviewKindEnum valueOf(String name) =>
+      _$bstockOrderPreviewKindEnumValueOf(name);
 }
 
 class BstockOrderPreviewNetworkEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const BstockOrderPreviewNetworkEnum BSC = _$bstockOrderPreviewNetworkEnum_BSC;
+  static const BstockOrderPreviewNetworkEnum BSC =
+      _$bstockOrderPreviewNetworkEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewNetworkEnum unknownDefaultOpenApi = _$bstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+  static const BstockOrderPreviewNetworkEnum unknownDefaultOpenApi =
+      _$bstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockOrderPreviewNetworkEnum> get serializer => _$bstockOrderPreviewNetworkEnumSerializer;
+  static Serializer<BstockOrderPreviewNetworkEnum> get serializer =>
+      _$bstockOrderPreviewNetworkEnumSerializer;
 
-  const BstockOrderPreviewNetworkEnum._(String name): super(name);
+  const BstockOrderPreviewNetworkEnum._(String name) : super(name);
 
-  static BuiltSet<BstockOrderPreviewNetworkEnum> get values => _$bstockOrderPreviewNetworkEnumValues;
-  static BstockOrderPreviewNetworkEnum valueOf(String name) => _$bstockOrderPreviewNetworkEnumValueOf(name);
+  static BuiltSet<BstockOrderPreviewNetworkEnum> get values =>
+      _$bstockOrderPreviewNetworkEnumValues;
+  static BstockOrderPreviewNetworkEnum valueOf(String name) =>
+      _$bstockOrderPreviewNetworkEnumValueOf(name);
 }
 
 class BstockOrderPreviewSettlementAssetEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'USDC')
-  static const BstockOrderPreviewSettlementAssetEnum USDC = _$bstockOrderPreviewSettlementAssetEnum_USDC;
+  @BuiltValueEnumConst(wireName: r'USDT')
+  static const BstockOrderPreviewSettlementAssetEnum USDT =
+      _$bstockOrderPreviewSettlementAssetEnum_USDT;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+  static const BstockOrderPreviewSettlementAssetEnum unknownDefaultOpenApi =
+      _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockOrderPreviewSettlementAssetEnum> get serializer => _$bstockOrderPreviewSettlementAssetEnumSerializer;
+  static Serializer<BstockOrderPreviewSettlementAssetEnum> get serializer =>
+      _$bstockOrderPreviewSettlementAssetEnumSerializer;
 
-  const BstockOrderPreviewSettlementAssetEnum._(String name): super(name);
+  const BstockOrderPreviewSettlementAssetEnum._(String name) : super(name);
 
-  static BuiltSet<BstockOrderPreviewSettlementAssetEnum> get values => _$bstockOrderPreviewSettlementAssetEnumValues;
-  static BstockOrderPreviewSettlementAssetEnum valueOf(String name) => _$bstockOrderPreviewSettlementAssetEnumValueOf(name);
+  static BuiltSet<BstockOrderPreviewSettlementAssetEnum> get values =>
+      _$bstockOrderPreviewSettlementAssetEnumValues;
+  static BstockOrderPreviewSettlementAssetEnum valueOf(String name) =>
+      _$bstockOrderPreviewSettlementAssetEnumValueOf(name);
 }
 
+class BstockOrderPreviewSettlementChainIdEnum extends EnumClass {
+  @BuiltValueEnumConst(wireNumber: 56)
+  static const BstockOrderPreviewSettlementChainIdEnum number56 =
+      _$bstockOrderPreviewSettlementChainIdEnum_number56;
+  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
+  static const BstockOrderPreviewSettlementChainIdEnum unknownDefaultOpenApi =
+      _$bstockOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+
+  static Serializer<BstockOrderPreviewSettlementChainIdEnum> get serializer =>
+      _$bstockOrderPreviewSettlementChainIdEnumSerializer;
+
+  const BstockOrderPreviewSettlementChainIdEnum._(String name) : super(name);
+
+  static BuiltSet<BstockOrderPreviewSettlementChainIdEnum> get values =>
+      _$bstockOrderPreviewSettlementChainIdEnumValues;
+  static BstockOrderPreviewSettlementChainIdEnum valueOf(String name) =>
+      _$bstockOrderPreviewSettlementChainIdEnumValueOf(name);
+}
+
+class BstockOrderPreviewSettlementAssetIdEnum extends EnumClass {
+  @BuiltValueEnumConst(
+      wireName: r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955')
+  static const BstockOrderPreviewSettlementAssetIdEnum
+      eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 =
+      _$bstockOrderPreviewSettlementAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const BstockOrderPreviewSettlementAssetIdEnum unknownDefaultOpenApi =
+      _$bstockOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+
+  static Serializer<BstockOrderPreviewSettlementAssetIdEnum> get serializer =>
+      _$bstockOrderPreviewSettlementAssetIdEnumSerializer;
+
+  const BstockOrderPreviewSettlementAssetIdEnum._(String name) : super(name);
+
+  static BuiltSet<BstockOrderPreviewSettlementAssetIdEnum> get values =>
+      _$bstockOrderPreviewSettlementAssetIdEnumValues;
+  static BstockOrderPreviewSettlementAssetIdEnum valueOf(String name) =>
+      _$bstockOrderPreviewSettlementAssetIdEnumValueOf(name);
+}
+
+class BstockOrderPreviewSettlementTokenContractEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'0x55d398326f99059ff775485246999027b3197955')
+  static const BstockOrderPreviewSettlementTokenContractEnum
+      n0x55d398326f99059ff775485246999027b3197955 =
+      _$bstockOrderPreviewSettlementTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const BstockOrderPreviewSettlementTokenContractEnum
+      unknownDefaultOpenApi =
+      _$bstockOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
+
+  static Serializer<BstockOrderPreviewSettlementTokenContractEnum>
+      get serializer =>
+          _$bstockOrderPreviewSettlementTokenContractEnumSerializer;
+
+  const BstockOrderPreviewSettlementTokenContractEnum._(String name)
+      : super(name);
+
+  static BuiltSet<BstockOrderPreviewSettlementTokenContractEnum> get values =>
+      _$bstockOrderPreviewSettlementTokenContractEnumValues;
+  static BstockOrderPreviewSettlementTokenContractEnum valueOf(String name) =>
+      _$bstockOrderPreviewSettlementTokenContractEnumValueOf(name);
+}
+
+class BstockOrderPreviewSettlementTokenDecimalsEnum extends EnumClass {
+  @BuiltValueEnumConst(wireNumber: 18)
+  static const BstockOrderPreviewSettlementTokenDecimalsEnum number18 =
+      _$bstockOrderPreviewSettlementTokenDecimalsEnum_number18;
+  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
+  static const BstockOrderPreviewSettlementTokenDecimalsEnum
+      unknownDefaultOpenApi =
+      _$bstockOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
+
+  static Serializer<BstockOrderPreviewSettlementTokenDecimalsEnum>
+      get serializer =>
+          _$bstockOrderPreviewSettlementTokenDecimalsEnumSerializer;
+
+  const BstockOrderPreviewSettlementTokenDecimalsEnum._(String name)
+      : super(name);
+
+  static BuiltSet<BstockOrderPreviewSettlementTokenDecimalsEnum> get values =>
+      _$bstockOrderPreviewSettlementTokenDecimalsEnumValues;
+  static BstockOrderPreviewSettlementTokenDecimalsEnum valueOf(String name) =>
+      _$bstockOrderPreviewSettlementTokenDecimalsEnumValueOf(name);
+}

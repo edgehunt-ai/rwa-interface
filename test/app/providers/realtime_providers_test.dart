@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/realtime_providers.dart';
+import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/data/services/realtime_service.dart';
 import 'package:rwa_interface/domain/models/realtime_envelope.dart';
+import 'package:rwa_interface/domain/repositories/realtime_repository.dart';
 
 void main() {
   test('canonical channel key prevents order-dependent state', () {
@@ -38,6 +42,56 @@ void main() {
     final event = await container.read(realtimeEntityProvider(key).future);
     expect(event.data['order_id'], 'wanted');
   });
+
+  test(
+    'session generation cancels the old typed stream before resubscribe',
+    () async {
+      final repository = _TypedRealtime();
+      final container = ProviderContainer(
+        overrides: [realtimeRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      const oldKey = (channelsKey: 'orders', generation: 0);
+      final old = container.listen(
+        typedRealtimeEventsProvider(oldKey),
+        (_, _) {},
+      );
+      addTearDown(old.close);
+      await pumpEventQueue();
+      expect(repository.subscriptions, 1);
+
+      container.read(sessionGenerationProvider.notifier).clearUserScope();
+      await pumpEventQueue();
+      expect(repository.cancellations, 1);
+
+      const newKey = (channelsKey: 'orders', generation: 1);
+      final current = container.listen(
+        typedRealtimeEventsProvider(newKey),
+        (_, _) {},
+      );
+      addTearDown(current.close);
+      await pumpEventQueue();
+      expect(repository.subscriptions, 2);
+    },
+  );
+}
+
+final class _TypedRealtime implements RealtimeRepository {
+  int subscriptions = 0;
+  int cancellations = 0;
+
+  @override
+  Stream<TypedRealtimeEvent> subscribe({required Set<String> channels}) {
+    late final StreamController<TypedRealtimeEvent> controller;
+    controller = StreamController<TypedRealtimeEvent>(
+      onListen: () => subscriptions++,
+      onCancel: () {
+        cancellations++;
+        return controller.close();
+      },
+    );
+    return controller.stream;
+  }
 }
 
 final class _EntityRealtime implements RealtimeService {

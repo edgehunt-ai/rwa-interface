@@ -106,15 +106,16 @@ class _$ActivityRecordReferenceTypeEnumSerializer
 
 class _$ActivityRecordReference extends ActivityRecordReference {
   @override
-  final ActivityRecordReferenceTypeEnum? type;
+  final ActivityRecordReferenceTypeEnum type;
   @override
-  final String? id;
+  final String id;
 
   factory _$ActivityRecordReference(
           [void Function(ActivityRecordReferenceBuilder)? updates]) =>
       (ActivityRecordReferenceBuilder()..update(updates))._build();
 
-  _$ActivityRecordReference._({this.type, this.id}) : super._();
+  _$ActivityRecordReference._({required this.type, required this.id})
+      : super._();
   @override
   ActivityRecordReference rebuild(
           void Function(ActivityRecordReferenceBuilder) updates) =>
@@ -193,8 +194,10 @@ class ActivityRecordReferenceBuilder
   _$ActivityRecordReference _build() {
     final _$result = _$v ??
         _$ActivityRecordReference._(
-          type: type,
-          id: id,
+          type: BuiltValueNullFieldError.checkNotNull(
+              type, r'ActivityRecordReference', 'type'),
+          id: BuiltValueNullFieldError.checkNotNull(
+              id, r'ActivityRecordReference', 'id'),
         );
     replace(_$result);
     return _$result;

@@ -1,6 +1,6 @@
 <!--
 同步影响报告
-- 版本变更：1.0.0 -> 1.1.0
+- 版本变更：1.1.0 -> 1.2.0
 - 修改原则：
   - 模板原则 1 -> I. 规范优先与可追溯性
   - 模板原则 2 -> II. 分层架构与依赖方向
@@ -14,12 +14,14 @@
   - 开发流程与质量门禁
 - 初始约束覆盖语义化主题、可复制内容、长文本和组件复用检查。
 - 扩展原则 II，加入默认的 Riverpod 请求边界和明确的例外策略。
+- 扩展原则 IV，要求所有用户可见的金额、Token 数量和相关金融数值统一通过项目共享格式化 API
+  展示，并保护 Token decimals 与十进制精度。
 - 删除章节：无；模板占位内容已替换。
 - 后续 TODO：无。
-- 修订理由：将 API 请求生命周期、依赖注入和状态观察集中在 Riverpod/应用边界，避免生成的
-  传输细节泄漏到 presentation 层。
-- 兼容性/迁移：已有直接基础设施调用在明确属于启动、isolate 或测试基础设施时仍然有效；新功能
-  代码统一遵循 Riverpod 调用路径。
+- 修订理由：禁止页面和组件各自格式化金融数值，避免展示精度、Token decimals、尾零及极小非零
+  金额的处理在不同界面产生偏差。
+- 兼容性/迁移：新增展示必须直接使用共享格式化 API；已有或后续发现的手写金额格式化必须迁移到
+  共享 formatter，并以精度边界测试保护。
 -->
 # RWA Interface 项目宪章
 
@@ -56,6 +58,10 @@
 
 Secret MUST NOT 出现在源码、日志、分析数据、崩溃信息或普通本地存储中。诊断信息 MUST 脱敏身份、
 账户和交易数据。外部数据 MUST 经过校验。金额 MUST 保留币种、单位、精度和舍入语义，不得隐式转换。
+所有用户可见的金额、余额、价格、数量、费用、盈亏和 Token 数量 MUST 使用项目批准的共享格式化 API
+之一生成展示文本；Widget、页面和 feature 代码 MUST NOT 自行解析、截断、舍入或拼接这些金融数值。
+Token 展示 MUST 使用契约或 domain model 提供的 decimals；缺少 decimals 时 MUST 保留原始十进制 scale，
+极小非零值 MUST NOT 显示为零，且任何精度缩减 MUST 有明确、已测试的舍入或近似语义。
 UI MUST 区分待处理、已确认和失败的操作，MUST NOT 推断交易最终成功。认证、授权和签名失败 MUST
 以 fail closed 方式处理。安全例外 MUST 记录威胁、缓解措施、剩余风险和批准信息。
 
@@ -111,6 +117,12 @@ MUST 评估，并在第三次出现前提取或记录不提取的理由。频繁
   可感知的目标。
 - 新依赖 MUST 有明确的负责人和用途。重复标准库或现有项目能力的依赖 MUST NOT 在没有书面理由时添加。
 - 用户可见文本 MUST 可本地化，MUST NOT 散落为未管理的字面量。
+- 金融数值展示 MUST 调用 `lib/ui/core/formatters/` 下项目批准的 formatter 方法。Token 十进制金额
+  MUST 使用 `TokenAmountFormatter.format`；最小单位整数 MUST 使用
+  `TokenAmountFormatter.formatAtomic`；完整精度和规范化展示 MUST 通过其 `exact` 或 `normalized`
+  模式选择。Presentation 代码 MUST NOT 对金融值使用 `double`、`num`、`toStringAsFixed`、直接
+  `NumberFormat` 或手写小数截断。新增法币、百分比或紧凑显示需求 MUST 先扩展共享 formatter 及其
+  精度测试，再由页面使用，不得在 feature 内建立旁路实现。
 - 运行时失败 MUST 转换为可理解的 domain failure state；MUST NOT 向用户展示原始 exception 或 stack trace。
 - 首个生产客户端功能获批前，MUST 记录支持的平台、最低系统版本和浏览器覆盖范围。
 
@@ -142,4 +154,4 @@ MUST 评估，并在第三次出现前提取或记录不提取的理由。频繁
 MINOR；非语义澄清时递增 PATCH。每份功能计划和代码评审 MUST 包含宪章合规检查。例外 MUST 在计划中
 记录准确范围、风险、备选方案、到期或隔离策略以及批准的维护者；不能仅以进度压力作为理由。
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-02 | **Last Amended**: 2026-09-03
+**Version**: 1.2.0 | **Ratified**: 2026-09-02 | **Last Amended**: 2026-09-04

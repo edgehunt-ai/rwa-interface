@@ -15,10 +15,11 @@ part 'device_page.g.dart';
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore] 
-/// * [items] 
+/// * [hasMore]
+/// * [items]
 @BuiltValue()
-abstract class DevicePage implements Page, Built<DevicePage, DevicePageBuilder> {
+abstract class DevicePage
+    implements Page, Built<DevicePage, DevicePageBuilder> {
   @BuiltValueField(wireName: r'items')
   BuiltList<Device> get items;
 
@@ -46,10 +47,12 @@ class _$DevicePageSerializer implements PrimitiveSerializer<DevicePage> {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null ? null : serializers.serialize(
-      object.nextCursor,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.nextCursor == null
+        ? null
+        : serializers.serialize(
+            object.nextCursor,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'has_more';
     yield serializers.serialize(
       object.hasMore,
@@ -68,7 +71,9 @@ class _$DevicePageSerializer implements PrimitiveSerializer<DevicePage> {
     DevicePage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -133,4 +138,3 @@ class _$DevicePageSerializer implements PrimitiveSerializer<DevicePage> {
     return result.build();
   }
 }
-

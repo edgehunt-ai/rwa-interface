@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "61814072625",
+    "project_id": "rwa-trade-f6f60",
+    "storage_bucket": "rwa-trade-f6f60.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:61814072625:android:207cc50429af2282b77c10",
+        "android_client_info": {
+          "package_name": "com.orbit.rwa_interface"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxyu7C5cjm-nwKYBnHqg-N-_nSRFYQR6E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -11,7 +11,6 @@ import 'package:rwa_api_client/src/model/activity_record_explorer.dart';
 import 'package:rwa_api_client/src/model/activity_status.dart';
 import 'package:rwa_api_client/src/model/activity_type.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
-import 'package:rwa_api_client/src/model/chain.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -20,26 +19,27 @@ part 'activity_record.g.dart';
 /// ActivityRecord
 ///
 /// Properties:
-/// * [id] 
-/// * [category] 
-/// * [type] 
-/// * [status] 
-/// * [title] 
+/// * [id]
+/// * [category]
+/// * [type]
+/// * [status]
+/// * [title]
 /// * [amount] - Decimal amount without a unit suffix.
 /// * [context] - 副标题，说明市场与当前状态
-/// * [symbol] 
-/// * [kind] 
+/// * [symbol]
+/// * [kind]
 /// * [fields] - 展开后的键值对明细
 /// * [relatedId] - 关联记录 id（如划转失败 ↔ Claim 退款）
-/// * [reference] 
-/// * [chain] 
-/// * [txHash] 
-/// * [explorer] 
-/// * [createdAt] 
-/// * [updatedAt] 
+/// * [reference]
+/// * [chain]
+/// * [txHash]
+/// * [explorer]
+/// * [createdAt]
+/// * [updatedAt]
 /// * [asset] - Unit for amount, for example USDC or NVDAB.
 @BuiltValue()
-abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBuilder> {
+abstract class ActivityRecord
+    implements Built<ActivityRecord, ActivityRecordBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -53,7 +53,7 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
 
   @BuiltValueField(wireName: r'status')
   ActivityStatus get status;
-  // enum statusEnum {  pending,  success,  failed,  cancelled,  };
+  // enum statusEnum {  pending,  success,  failed,  cancelled,  manual_review,  };
 
   @BuiltValueField(wireName: r'title')
   String get title;
@@ -85,7 +85,7 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
   ActivityRecordReference? get reference;
 
   @BuiltValueField(wireName: r'chain')
-  Chain? get chain;
+  ActivityRecordChainEnum? get chain;
   // enum chainEnum {  BSC,  Arbitrum,  Base,  Ethereum,  Hyperliquid,  Polygon,  Solana,  };
 
   @BuiltValueField(wireName: r'tx_hash')
@@ -98,7 +98,7 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
   DateTime get createdAt;
 
   @BuiltValueField(wireName: r'updated_at')
-  DateTime? get updatedAt;
+  DateTime get updatedAt;
 
   /// Unit for amount, for example USDC or NVDAB.
   @BuiltValueField(wireName: r'asset')
@@ -106,16 +106,19 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
 
   ActivityRecord._();
 
-  factory ActivityRecord([void updates(ActivityRecordBuilder b)]) = _$ActivityRecord;
+  factory ActivityRecord([void updates(ActivityRecordBuilder b)]) =
+      _$ActivityRecord;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ActivityRecordBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ActivityRecord> get serializer => _$ActivityRecordSerializer();
+  static Serializer<ActivityRecord> get serializer =>
+      _$ActivityRecordSerializer();
 }
 
-class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> {
+class _$ActivityRecordSerializer
+    implements PrimitiveSerializer<ActivityRecord> {
   @override
   final Iterable<Type> types = const [ActivityRecord, _$ActivityRecord];
 
@@ -152,13 +155,13 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
       object.title,
       specifiedType: const FullType(String),
     );
-    if (object.amount != null) {
-      yield r'amount';
-      yield serializers.serialize(
-        object.amount,
-        specifiedType: const FullType(String),
-      );
-    }
+    yield r'amount';
+    yield object.amount == null
+        ? null
+        : serializers.serialize(
+            object.amount,
+            specifiedType: const FullType.nullable(String),
+          );
     if (object.context != null) {
       yield r'context';
       yield serializers.serialize(
@@ -194,53 +197,51 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
         specifiedType: const FullType.nullable(String),
       );
     }
-    if (object.reference != null) {
-      yield r'reference';
-      yield serializers.serialize(
-        object.reference,
-        specifiedType: const FullType.nullable(ActivityRecordReference),
-      );
-    }
-    if (object.chain != null) {
-      yield r'chain';
-      yield serializers.serialize(
-        object.chain,
-        specifiedType: const FullType(Chain),
-      );
-    }
-    if (object.txHash != null) {
-      yield r'tx_hash';
-      yield serializers.serialize(
-        object.txHash,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.explorer != null) {
-      yield r'explorer';
-      yield serializers.serialize(
-        object.explorer,
-        specifiedType: const FullType.nullable(ActivityRecordExplorer),
-      );
-    }
+    yield r'reference';
+    yield object.reference == null
+        ? null
+        : serializers.serialize(
+            object.reference,
+            specifiedType: const FullType.nullable(ActivityRecordReference),
+          );
+    yield r'chain';
+    yield object.chain == null
+        ? null
+        : serializers.serialize(
+            object.chain,
+            specifiedType: const FullType.nullable(ActivityRecordChainEnum),
+          );
+    yield r'tx_hash';
+    yield object.txHash == null
+        ? null
+        : serializers.serialize(
+            object.txHash,
+            specifiedType: const FullType.nullable(String),
+          );
+    yield r'explorer';
+    yield object.explorer == null
+        ? null
+        : serializers.serialize(
+            object.explorer,
+            specifiedType: const FullType.nullable(ActivityRecordExplorer),
+          );
     yield r'created_at';
     yield serializers.serialize(
       object.createdAt,
       specifiedType: const FullType(DateTime),
     );
-    if (object.updatedAt != null) {
-      yield r'updated_at';
-      yield serializers.serialize(
-        object.updatedAt,
-        specifiedType: const FullType(DateTime),
-      );
-    }
-    if (object.asset != null) {
-      yield r'asset';
-      yield serializers.serialize(
-        object.asset,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
+    yield r'updated_at';
+    yield serializers.serialize(
+      object.updatedAt,
+      specifiedType: const FullType(DateTime),
+    );
+    yield r'asset';
+    yield object.asset == null
+        ? null
+        : serializers.serialize(
+            object.asset,
+            specifiedType: const FullType.nullable(String),
+          );
   }
 
   @override
@@ -249,7 +250,9 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
     ActivityRecord object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -334,7 +337,8 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
         case r'fields':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+            specifiedType:
+                const FullType.nullable(BuiltList, [FullType(KeyValue)]),
           ) as BuiltList<KeyValue>?;
           if (valueDes == null) continue;
           result.fields.replace(valueDes);
@@ -358,8 +362,8 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
         case r'chain':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(Chain),
-          ) as Chain?;
+            specifiedType: const FullType.nullable(ActivityRecordChainEnum),
+          ) as ActivityRecordChainEnum?;
           if (valueDes == null) continue;
           result.chain = valueDes;
           break;
@@ -389,9 +393,8 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
         case r'updated_at':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
           result.updatedAt = valueDes;
           break;
         case r'asset':
@@ -431,3 +434,37 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
   }
 }
 
+class ActivityRecordChainEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'BSC')
+  static const ActivityRecordChainEnum BSC = _$activityRecordChainEnum_BSC;
+  @BuiltValueEnumConst(wireName: r'Arbitrum')
+  static const ActivityRecordChainEnum arbitrum =
+      _$activityRecordChainEnum_arbitrum;
+  @BuiltValueEnumConst(wireName: r'Base')
+  static const ActivityRecordChainEnum base_ = _$activityRecordChainEnum_base_;
+  @BuiltValueEnumConst(wireName: r'Ethereum')
+  static const ActivityRecordChainEnum ethereum =
+      _$activityRecordChainEnum_ethereum;
+  @BuiltValueEnumConst(wireName: r'Hyperliquid')
+  static const ActivityRecordChainEnum hyperliquid =
+      _$activityRecordChainEnum_hyperliquid;
+  @BuiltValueEnumConst(wireName: r'Polygon')
+  static const ActivityRecordChainEnum polygon =
+      _$activityRecordChainEnum_polygon;
+  @BuiltValueEnumConst(wireName: r'Solana')
+  static const ActivityRecordChainEnum solana =
+      _$activityRecordChainEnum_solana;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const ActivityRecordChainEnum unknownDefaultOpenApi =
+      _$activityRecordChainEnum_unknownDefaultOpenApi;
+
+  static Serializer<ActivityRecordChainEnum> get serializer =>
+      _$activityRecordChainEnumSerializer;
+
+  const ActivityRecordChainEnum._(String name) : super(name);
+
+  static BuiltSet<ActivityRecordChainEnum> get values =>
+      _$activityRecordChainEnumValues;
+  static ActivityRecordChainEnum valueOf(String name) =>
+      _$activityRecordChainEnumValueOf(name);
+}

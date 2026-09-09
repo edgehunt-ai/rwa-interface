@@ -16,11 +16,25 @@ class _$PortfolioSummary extends PortfolioSummary {
   @override
   final String availableToTradeUsd;
   @override
-  final String? marginInUseUsd;
+  final String marginInUseUsd;
   @override
   final String? stocksValueUsd;
   @override
+  final int unvaluedAssetCount;
+  @override
+  final PortfolioDataStatus dataStatus;
+  @override
+  final PortfolioFreshness freshness;
+  @override
+  final DateTime calculatedAt;
+  @override
   final DateTime? updatedAt;
+  @override
+  final DateTime? oldestObservationAt;
+  @override
+  final BuiltList<PortfolioNotice> warnings;
+  @override
+  final BuiltList<PortfolioSourceSummary> sources;
 
   factory _$PortfolioSummary(
           [void Function(PortfolioSummaryBuilder)? updates]) =>
@@ -31,9 +45,16 @@ class _$PortfolioSummary extends PortfolioSummary {
       this.todayPnlUsd,
       this.todayPnlPercent,
       required this.availableToTradeUsd,
-      this.marginInUseUsd,
+      required this.marginInUseUsd,
       this.stocksValueUsd,
-      this.updatedAt})
+      required this.unvaluedAssetCount,
+      required this.dataStatus,
+      required this.freshness,
+      required this.calculatedAt,
+      this.updatedAt,
+      this.oldestObservationAt,
+      required this.warnings,
+      required this.sources})
       : super._();
   @override
   PortfolioSummary rebuild(void Function(PortfolioSummaryBuilder) updates) =>
@@ -53,7 +74,14 @@ class _$PortfolioSummary extends PortfolioSummary {
         availableToTradeUsd == other.availableToTradeUsd &&
         marginInUseUsd == other.marginInUseUsd &&
         stocksValueUsd == other.stocksValueUsd &&
-        updatedAt == other.updatedAt;
+        unvaluedAssetCount == other.unvaluedAssetCount &&
+        dataStatus == other.dataStatus &&
+        freshness == other.freshness &&
+        calculatedAt == other.calculatedAt &&
+        updatedAt == other.updatedAt &&
+        oldestObservationAt == other.oldestObservationAt &&
+        warnings == other.warnings &&
+        sources == other.sources;
   }
 
   @override
@@ -65,7 +93,14 @@ class _$PortfolioSummary extends PortfolioSummary {
     _$hash = $jc(_$hash, availableToTradeUsd.hashCode);
     _$hash = $jc(_$hash, marginInUseUsd.hashCode);
     _$hash = $jc(_$hash, stocksValueUsd.hashCode);
+    _$hash = $jc(_$hash, unvaluedAssetCount.hashCode);
+    _$hash = $jc(_$hash, dataStatus.hashCode);
+    _$hash = $jc(_$hash, freshness.hashCode);
+    _$hash = $jc(_$hash, calculatedAt.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
+    _$hash = $jc(_$hash, oldestObservationAt.hashCode);
+    _$hash = $jc(_$hash, warnings.hashCode);
+    _$hash = $jc(_$hash, sources.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -79,7 +114,14 @@ class _$PortfolioSummary extends PortfolioSummary {
           ..add('availableToTradeUsd', availableToTradeUsd)
           ..add('marginInUseUsd', marginInUseUsd)
           ..add('stocksValueUsd', stocksValueUsd)
-          ..add('updatedAt', updatedAt))
+          ..add('unvaluedAssetCount', unvaluedAssetCount)
+          ..add('dataStatus', dataStatus)
+          ..add('freshness', freshness)
+          ..add('calculatedAt', calculatedAt)
+          ..add('updatedAt', updatedAt)
+          ..add('oldestObservationAt', oldestObservationAt)
+          ..add('warnings', warnings)
+          ..add('sources', sources))
         .toString();
   }
 }
@@ -117,9 +159,45 @@ class PortfolioSummaryBuilder
   set stocksValueUsd(String? stocksValueUsd) =>
       _$this._stocksValueUsd = stocksValueUsd;
 
+  int? _unvaluedAssetCount;
+  int? get unvaluedAssetCount => _$this._unvaluedAssetCount;
+  set unvaluedAssetCount(int? unvaluedAssetCount) =>
+      _$this._unvaluedAssetCount = unvaluedAssetCount;
+
+  PortfolioDataStatus? _dataStatus;
+  PortfolioDataStatus? get dataStatus => _$this._dataStatus;
+  set dataStatus(PortfolioDataStatus? dataStatus) =>
+      _$this._dataStatus = dataStatus;
+
+  PortfolioFreshness? _freshness;
+  PortfolioFreshness? get freshness => _$this._freshness;
+  set freshness(PortfolioFreshness? freshness) => _$this._freshness = freshness;
+
+  DateTime? _calculatedAt;
+  DateTime? get calculatedAt => _$this._calculatedAt;
+  set calculatedAt(DateTime? calculatedAt) =>
+      _$this._calculatedAt = calculatedAt;
+
   DateTime? _updatedAt;
   DateTime? get updatedAt => _$this._updatedAt;
   set updatedAt(DateTime? updatedAt) => _$this._updatedAt = updatedAt;
+
+  DateTime? _oldestObservationAt;
+  DateTime? get oldestObservationAt => _$this._oldestObservationAt;
+  set oldestObservationAt(DateTime? oldestObservationAt) =>
+      _$this._oldestObservationAt = oldestObservationAt;
+
+  ListBuilder<PortfolioNotice>? _warnings;
+  ListBuilder<PortfolioNotice> get warnings =>
+      _$this._warnings ??= ListBuilder<PortfolioNotice>();
+  set warnings(ListBuilder<PortfolioNotice>? warnings) =>
+      _$this._warnings = warnings;
+
+  ListBuilder<PortfolioSourceSummary>? _sources;
+  ListBuilder<PortfolioSourceSummary> get sources =>
+      _$this._sources ??= ListBuilder<PortfolioSourceSummary>();
+  set sources(ListBuilder<PortfolioSourceSummary>? sources) =>
+      _$this._sources = sources;
 
   PortfolioSummaryBuilder() {
     PortfolioSummary._defaults(this);
@@ -134,7 +212,14 @@ class PortfolioSummaryBuilder
       _availableToTradeUsd = $v.availableToTradeUsd;
       _marginInUseUsd = $v.marginInUseUsd;
       _stocksValueUsd = $v.stocksValueUsd;
+      _unvaluedAssetCount = $v.unvaluedAssetCount;
+      _dataStatus = $v.dataStatus;
+      _freshness = $v.freshness;
+      _calculatedAt = $v.calculatedAt;
       _updatedAt = $v.updatedAt;
+      _oldestObservationAt = $v.oldestObservationAt;
+      _warnings = $v.warnings.toBuilder();
+      _sources = $v.sources.toBuilder();
       _$v = null;
     }
     return this;
@@ -154,18 +239,47 @@ class PortfolioSummaryBuilder
   PortfolioSummary build() => _build();
 
   _$PortfolioSummary _build() {
-    final _$result = _$v ??
-        _$PortfolioSummary._(
-          totalValueUsd: BuiltValueNullFieldError.checkNotNull(
-              totalValueUsd, r'PortfolioSummary', 'totalValueUsd'),
-          todayPnlUsd: todayPnlUsd,
-          todayPnlPercent: todayPnlPercent,
-          availableToTradeUsd: BuiltValueNullFieldError.checkNotNull(
-              availableToTradeUsd, r'PortfolioSummary', 'availableToTradeUsd'),
-          marginInUseUsd: marginInUseUsd,
-          stocksValueUsd: stocksValueUsd,
-          updatedAt: updatedAt,
-        );
+    _$PortfolioSummary _$result;
+    try {
+      _$result = _$v ??
+          _$PortfolioSummary._(
+            totalValueUsd: BuiltValueNullFieldError.checkNotNull(
+                totalValueUsd, r'PortfolioSummary', 'totalValueUsd'),
+            todayPnlUsd: todayPnlUsd,
+            todayPnlPercent: todayPnlPercent,
+            availableToTradeUsd: BuiltValueNullFieldError.checkNotNull(
+                availableToTradeUsd,
+                r'PortfolioSummary',
+                'availableToTradeUsd'),
+            marginInUseUsd: BuiltValueNullFieldError.checkNotNull(
+                marginInUseUsd, r'PortfolioSummary', 'marginInUseUsd'),
+            stocksValueUsd: stocksValueUsd,
+            unvaluedAssetCount: BuiltValueNullFieldError.checkNotNull(
+                unvaluedAssetCount, r'PortfolioSummary', 'unvaluedAssetCount'),
+            dataStatus: BuiltValueNullFieldError.checkNotNull(
+                dataStatus, r'PortfolioSummary', 'dataStatus'),
+            freshness: BuiltValueNullFieldError.checkNotNull(
+                freshness, r'PortfolioSummary', 'freshness'),
+            calculatedAt: BuiltValueNullFieldError.checkNotNull(
+                calculatedAt, r'PortfolioSummary', 'calculatedAt'),
+            updatedAt: updatedAt,
+            oldestObservationAt: oldestObservationAt,
+            warnings: warnings.build(),
+            sources: sources.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'warnings';
+        warnings.build();
+        _$failedField = 'sources';
+        sources.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'PortfolioSummary', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

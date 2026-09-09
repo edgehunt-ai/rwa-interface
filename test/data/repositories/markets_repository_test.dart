@@ -18,6 +18,9 @@ final class _Markets implements MarketsService {
   final String financial;
 
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
   Future<wire.StockPage> listStocks() async => wire.StockPage(
     (page) => page
       ..hasMore = true

@@ -55,8 +55,8 @@ final BuiltSet<BstockOrderPreviewNetworkEnum>
 ]);
 
 const BstockOrderPreviewSettlementAssetEnum
-    _$bstockOrderPreviewSettlementAssetEnum_USDC =
-    const BstockOrderPreviewSettlementAssetEnum._('USDC');
+    _$bstockOrderPreviewSettlementAssetEnum_USDT =
+    const BstockOrderPreviewSettlementAssetEnum._('USDT');
 const BstockOrderPreviewSettlementAssetEnum
     _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
     const BstockOrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
@@ -64,8 +64,8 @@ const BstockOrderPreviewSettlementAssetEnum
 BstockOrderPreviewSettlementAssetEnum
     _$bstockOrderPreviewSettlementAssetEnumValueOf(String name) {
   switch (name) {
-    case 'USDC':
-      return _$bstockOrderPreviewSettlementAssetEnum_USDC;
+    case 'USDT':
+      return _$bstockOrderPreviewSettlementAssetEnum_USDT;
     case 'unknownDefaultOpenApi':
       return _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
     default:
@@ -76,8 +76,116 @@ BstockOrderPreviewSettlementAssetEnum
 final BuiltSet<BstockOrderPreviewSettlementAssetEnum>
     _$bstockOrderPreviewSettlementAssetEnumValues = BuiltSet<
         BstockOrderPreviewSettlementAssetEnum>(const <BstockOrderPreviewSettlementAssetEnum>[
-  _$bstockOrderPreviewSettlementAssetEnum_USDC,
+  _$bstockOrderPreviewSettlementAssetEnum_USDT,
   _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
+]);
+
+const BstockOrderPreviewSettlementChainIdEnum
+    _$bstockOrderPreviewSettlementChainIdEnum_number56 =
+    const BstockOrderPreviewSettlementChainIdEnum._('number56');
+const BstockOrderPreviewSettlementChainIdEnum
+    _$bstockOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi =
+    const BstockOrderPreviewSettlementChainIdEnum._('unknownDefaultOpenApi');
+
+BstockOrderPreviewSettlementChainIdEnum
+    _$bstockOrderPreviewSettlementChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number56':
+      return _$bstockOrderPreviewSettlementChainIdEnum_number56;
+    case 'unknownDefaultOpenApi':
+      return _$bstockOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockOrderPreviewSettlementChainIdEnum>
+    _$bstockOrderPreviewSettlementChainIdEnumValues = BuiltSet<
+        BstockOrderPreviewSettlementChainIdEnum>(const <BstockOrderPreviewSettlementChainIdEnum>[
+  _$bstockOrderPreviewSettlementChainIdEnum_number56,
+  _$bstockOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi,
+]);
+
+const BstockOrderPreviewSettlementAssetIdEnum
+    _$bstockOrderPreviewSettlementAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 =
+    const BstockOrderPreviewSettlementAssetIdEnum._(
+        'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955');
+const BstockOrderPreviewSettlementAssetIdEnum
+    _$bstockOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi =
+    const BstockOrderPreviewSettlementAssetIdEnum._('unknownDefaultOpenApi');
+
+BstockOrderPreviewSettlementAssetIdEnum
+    _$bstockOrderPreviewSettlementAssetIdEnumValueOf(String name) {
+  switch (name) {
+    case 'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
+      return _$bstockOrderPreviewSettlementAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
+    case 'unknownDefaultOpenApi':
+      return _$bstockOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockOrderPreviewSettlementAssetIdEnum>
+    _$bstockOrderPreviewSettlementAssetIdEnumValues = BuiltSet<
+        BstockOrderPreviewSettlementAssetIdEnum>(const <BstockOrderPreviewSettlementAssetIdEnum>[
+  _$bstockOrderPreviewSettlementAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955,
+  _$bstockOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi,
+]);
+
+const BstockOrderPreviewSettlementTokenContractEnum
+    _$bstockOrderPreviewSettlementTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955 =
+    const BstockOrderPreviewSettlementTokenContractEnum._(
+        'n0x55d398326f99059ff775485246999027b3197955');
+const BstockOrderPreviewSettlementTokenContractEnum
+    _$bstockOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi =
+    const BstockOrderPreviewSettlementTokenContractEnum._(
+        'unknownDefaultOpenApi');
+
+BstockOrderPreviewSettlementTokenContractEnum
+    _$bstockOrderPreviewSettlementTokenContractEnumValueOf(String name) {
+  switch (name) {
+    case 'n0x55d398326f99059ff775485246999027b3197955':
+      return _$bstockOrderPreviewSettlementTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
+    case 'unknownDefaultOpenApi':
+      return _$bstockOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockOrderPreviewSettlementTokenContractEnum>
+    _$bstockOrderPreviewSettlementTokenContractEnumValues = BuiltSet<
+        BstockOrderPreviewSettlementTokenContractEnum>(const <BstockOrderPreviewSettlementTokenContractEnum>[
+  _$bstockOrderPreviewSettlementTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955,
+  _$bstockOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi,
+]);
+
+const BstockOrderPreviewSettlementTokenDecimalsEnum
+    _$bstockOrderPreviewSettlementTokenDecimalsEnum_number18 =
+    const BstockOrderPreviewSettlementTokenDecimalsEnum._('number18');
+const BstockOrderPreviewSettlementTokenDecimalsEnum
+    _$bstockOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi =
+    const BstockOrderPreviewSettlementTokenDecimalsEnum._(
+        'unknownDefaultOpenApi');
+
+BstockOrderPreviewSettlementTokenDecimalsEnum
+    _$bstockOrderPreviewSettlementTokenDecimalsEnumValueOf(String name) {
+  switch (name) {
+    case 'number18':
+      return _$bstockOrderPreviewSettlementTokenDecimalsEnum_number18;
+    case 'unknownDefaultOpenApi':
+      return _$bstockOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockOrderPreviewSettlementTokenDecimalsEnum>
+    _$bstockOrderPreviewSettlementTokenDecimalsEnumValues = BuiltSet<
+        BstockOrderPreviewSettlementTokenDecimalsEnum>(const <BstockOrderPreviewSettlementTokenDecimalsEnum>[
+  _$bstockOrderPreviewSettlementTokenDecimalsEnum_number18,
+  _$bstockOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockOrderPreviewKindEnum> _$bstockOrderPreviewKindEnumSerializer =
@@ -88,6 +196,18 @@ Serializer<BstockOrderPreviewNetworkEnum>
 Serializer<BstockOrderPreviewSettlementAssetEnum>
     _$bstockOrderPreviewSettlementAssetEnumSerializer =
     _$BstockOrderPreviewSettlementAssetEnumSerializer();
+Serializer<BstockOrderPreviewSettlementChainIdEnum>
+    _$bstockOrderPreviewSettlementChainIdEnumSerializer =
+    _$BstockOrderPreviewSettlementChainIdEnumSerializer();
+Serializer<BstockOrderPreviewSettlementAssetIdEnum>
+    _$bstockOrderPreviewSettlementAssetIdEnumSerializer =
+    _$BstockOrderPreviewSettlementAssetIdEnumSerializer();
+Serializer<BstockOrderPreviewSettlementTokenContractEnum>
+    _$bstockOrderPreviewSettlementTokenContractEnumSerializer =
+    _$BstockOrderPreviewSettlementTokenContractEnumSerializer();
+Serializer<BstockOrderPreviewSettlementTokenDecimalsEnum>
+    _$bstockOrderPreviewSettlementTokenDecimalsEnumSerializer =
+    _$BstockOrderPreviewSettlementTokenDecimalsEnumSerializer();
 
 class _$BstockOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<BstockOrderPreviewKindEnum> {
@@ -151,11 +271,11 @@ class _$BstockOrderPreviewNetworkEnumSerializer
 class _$BstockOrderPreviewSettlementAssetEnumSerializer
     implements PrimitiveSerializer<BstockOrderPreviewSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'USDC': 'USDC',
+    'USDT': 'USDT',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDC': 'USDC',
+    'USDT': 'USDT',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
@@ -180,11 +300,153 @@ class _$BstockOrderPreviewSettlementAssetEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$BstockOrderPreviewSettlementChainIdEnumSerializer
+    implements PrimitiveSerializer<BstockOrderPreviewSettlementChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number56': 56,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    56: 'number56',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockOrderPreviewSettlementChainIdEnum
+  ];
+  @override
+  final String wireName = 'BstockOrderPreviewSettlementChainIdEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockOrderPreviewSettlementChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockOrderPreviewSettlementChainIdEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockOrderPreviewSettlementChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockOrderPreviewSettlementAssetIdEnumSerializer
+    implements PrimitiveSerializer<BstockOrderPreviewSettlementAssetIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
+        'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955':
+        'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockOrderPreviewSettlementAssetIdEnum
+  ];
+  @override
+  final String wireName = 'BstockOrderPreviewSettlementAssetIdEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockOrderPreviewSettlementAssetIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockOrderPreviewSettlementAssetIdEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockOrderPreviewSettlementAssetIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockOrderPreviewSettlementTokenContractEnumSerializer
+    implements
+        PrimitiveSerializer<BstockOrderPreviewSettlementTokenContractEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'n0x55d398326f99059ff775485246999027b3197955':
+        '0x55d398326f99059ff775485246999027b3197955',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    '0x55d398326f99059ff775485246999027b3197955':
+        'n0x55d398326f99059ff775485246999027b3197955',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockOrderPreviewSettlementTokenContractEnum
+  ];
+  @override
+  final String wireName = 'BstockOrderPreviewSettlementTokenContractEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockOrderPreviewSettlementTokenContractEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockOrderPreviewSettlementTokenContractEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockOrderPreviewSettlementTokenContractEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockOrderPreviewSettlementTokenDecimalsEnumSerializer
+    implements
+        PrimitiveSerializer<BstockOrderPreviewSettlementTokenDecimalsEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number18': 18,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    18: 'number18',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockOrderPreviewSettlementTokenDecimalsEnum
+  ];
+  @override
+  final String wireName = 'BstockOrderPreviewSettlementTokenDecimalsEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockOrderPreviewSettlementTokenDecimalsEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockOrderPreviewSettlementTokenDecimalsEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockOrderPreviewSettlementTokenDecimalsEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$BstockOrderPreview extends BstockOrderPreview {
   @override
   final BstockOrderPreviewSettlementAssetEnum settlementAsset;
   @override
+  final BstockOrderPreviewSettlementTokenContractEnum settlementTokenContract;
+  @override
+  final BstockOrderPreviewSettlementTokenDecimalsEnum settlementTokenDecimals;
+  @override
   final BstockOrderPreviewKindEnum kind;
+  @override
+  final BstockOrderPreviewSettlementAssetIdEnum settlementAssetId;
+  @override
+  final BstockOrderPreviewSettlementChainIdEnum settlementChainId;
   @override
   final BstockOrderPreviewNetworkEnum network;
   @override
@@ -242,7 +504,11 @@ class _$BstockOrderPreview extends BstockOrderPreview {
 
   _$BstockOrderPreview._(
       {required this.settlementAsset,
+      required this.settlementTokenContract,
+      required this.settlementTokenDecimals,
       required this.kind,
+      required this.settlementAssetId,
+      required this.settlementChainId,
       required this.network,
       required this.previewId,
       required this.symbol,
@@ -283,7 +549,11 @@ class _$BstockOrderPreview extends BstockOrderPreview {
     if (identical(other, this)) return true;
     return other is BstockOrderPreview &&
         settlementAsset == other.settlementAsset &&
+        settlementTokenContract == other.settlementTokenContract &&
+        settlementTokenDecimals == other.settlementTokenDecimals &&
         kind == other.kind &&
+        settlementAssetId == other.settlementAssetId &&
+        settlementChainId == other.settlementChainId &&
         network == other.network &&
         previewId == other.previewId &&
         symbol == other.symbol &&
@@ -315,7 +585,11 @@ class _$BstockOrderPreview extends BstockOrderPreview {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, settlementAsset.hashCode);
+    _$hash = $jc(_$hash, settlementTokenContract.hashCode);
+    _$hash = $jc(_$hash, settlementTokenDecimals.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, settlementAssetId.hashCode);
+    _$hash = $jc(_$hash, settlementChainId.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
     _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
@@ -349,7 +623,11 @@ class _$BstockOrderPreview extends BstockOrderPreview {
   String toString() {
     return (newBuiltValueToStringHelper(r'BstockOrderPreview')
           ..add('settlementAsset', settlementAsset)
+          ..add('settlementTokenContract', settlementTokenContract)
+          ..add('settlementTokenDecimals', settlementTokenDecimals)
           ..add('kind', kind)
+          ..add('settlementAssetId', settlementAssetId)
+          ..add('settlementChainId', settlementChainId)
           ..add('network', network)
           ..add('previewId', previewId)
           ..add('symbol', symbol)
@@ -392,9 +670,41 @@ class BstockOrderPreviewBuilder
           covariant BstockOrderPreviewSettlementAssetEnum? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
+  BstockOrderPreviewSettlementTokenContractEnum? _settlementTokenContract;
+  BstockOrderPreviewSettlementTokenContractEnum? get settlementTokenContract =>
+      _$this._settlementTokenContract;
+  set settlementTokenContract(
+          covariant BstockOrderPreviewSettlementTokenContractEnum?
+              settlementTokenContract) =>
+      _$this._settlementTokenContract = settlementTokenContract;
+
+  BstockOrderPreviewSettlementTokenDecimalsEnum? _settlementTokenDecimals;
+  BstockOrderPreviewSettlementTokenDecimalsEnum? get settlementTokenDecimals =>
+      _$this._settlementTokenDecimals;
+  set settlementTokenDecimals(
+          covariant BstockOrderPreviewSettlementTokenDecimalsEnum?
+              settlementTokenDecimals) =>
+      _$this._settlementTokenDecimals = settlementTokenDecimals;
+
   BstockOrderPreviewKindEnum? _kind;
   BstockOrderPreviewKindEnum? get kind => _$this._kind;
   set kind(covariant BstockOrderPreviewKindEnum? kind) => _$this._kind = kind;
+
+  BstockOrderPreviewSettlementAssetIdEnum? _settlementAssetId;
+  BstockOrderPreviewSettlementAssetIdEnum? get settlementAssetId =>
+      _$this._settlementAssetId;
+  set settlementAssetId(
+          covariant BstockOrderPreviewSettlementAssetIdEnum?
+              settlementAssetId) =>
+      _$this._settlementAssetId = settlementAssetId;
+
+  BstockOrderPreviewSettlementChainIdEnum? _settlementChainId;
+  BstockOrderPreviewSettlementChainIdEnum? get settlementChainId =>
+      _$this._settlementChainId;
+  set settlementChainId(
+          covariant BstockOrderPreviewSettlementChainIdEnum?
+              settlementChainId) =>
+      _$this._settlementChainId = settlementChainId;
 
   BstockOrderPreviewNetworkEnum? _network;
   BstockOrderPreviewNetworkEnum? get network => _$this._network;
@@ -522,7 +832,11 @@ class BstockOrderPreviewBuilder
     final $v = _$v;
     if ($v != null) {
       _settlementAsset = $v.settlementAsset;
+      _settlementTokenContract = $v.settlementTokenContract;
+      _settlementTokenDecimals = $v.settlementTokenDecimals;
       _kind = $v.kind;
+      _settlementAssetId = $v.settlementAssetId;
+      _settlementChainId = $v.settlementChainId;
       _network = $v.network;
       _previewId = $v.previewId;
       _symbol = $v.symbol;
@@ -573,8 +887,20 @@ class BstockOrderPreviewBuilder
           _$BstockOrderPreview._(
             settlementAsset: BuiltValueNullFieldError.checkNotNull(
                 settlementAsset, r'BstockOrderPreview', 'settlementAsset'),
+            settlementTokenContract: BuiltValueNullFieldError.checkNotNull(
+                settlementTokenContract,
+                r'BstockOrderPreview',
+                'settlementTokenContract'),
+            settlementTokenDecimals: BuiltValueNullFieldError.checkNotNull(
+                settlementTokenDecimals,
+                r'BstockOrderPreview',
+                'settlementTokenDecimals'),
             kind: BuiltValueNullFieldError.checkNotNull(
                 kind, r'BstockOrderPreview', 'kind'),
+            settlementAssetId: BuiltValueNullFieldError.checkNotNull(
+                settlementAssetId, r'BstockOrderPreview', 'settlementAssetId'),
+            settlementChainId: BuiltValueNullFieldError.checkNotNull(
+                settlementChainId, r'BstockOrderPreview', 'settlementChainId'),
             network: BuiltValueNullFieldError.checkNotNull(
                 network, r'BstockOrderPreview', 'network'),
             previewId: BuiltValueNullFieldError.checkNotNull(

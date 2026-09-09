@@ -13,9 +13,10 @@ part 'session_request.g.dart';
 ///
 /// Properties:
 /// * [language] - Preferred BCP 47 language tag. Existing users update their preference when supplied.
-/// * [device] 
+/// * [device]
 @BuiltValue()
-abstract class SessionRequest implements Built<SessionRequest, SessionRequestBuilder> {
+abstract class SessionRequest
+    implements Built<SessionRequest, SessionRequestBuilder> {
   /// Preferred BCP 47 language tag. Existing users update their preference when supplied.
   @BuiltValueField(wireName: r'language')
   String? get language;
@@ -25,16 +26,19 @@ abstract class SessionRequest implements Built<SessionRequest, SessionRequestBui
 
   SessionRequest._();
 
-  factory SessionRequest([void updates(SessionRequestBuilder b)]) = _$SessionRequest;
+  factory SessionRequest([void updates(SessionRequestBuilder b)]) =
+      _$SessionRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SessionRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SessionRequest> get serializer => _$SessionRequestSerializer();
+  static Serializer<SessionRequest> get serializer =>
+      _$SessionRequestSerializer();
 }
 
-class _$SessionRequestSerializer implements PrimitiveSerializer<SessionRequest> {
+class _$SessionRequestSerializer
+    implements PrimitiveSerializer<SessionRequest> {
   @override
   final Iterable<Type> types = const [SessionRequest, _$SessionRequest];
 
@@ -68,7 +72,9 @@ class _$SessionRequestSerializer implements PrimitiveSerializer<SessionRequest> 
     SessionRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -127,4 +133,3 @@ class _$SessionRequestSerializer implements PrimitiveSerializer<SessionRequest> 
     return result.build();
   }
 }
-

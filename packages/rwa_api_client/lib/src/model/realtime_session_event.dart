@@ -15,11 +15,14 @@ part 'realtime_session_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
-/// * [event] 
-/// * [data] 
+/// * [emittedAt]
+/// * [event]
+/// * [data]
 @BuiltValue()
-abstract class RealtimeSessionEvent implements RealtimeEventBase, Built<RealtimeSessionEvent, RealtimeSessionEventBuilder> {
+abstract class RealtimeSessionEvent
+    implements
+        RealtimeEventBase,
+        Built<RealtimeSessionEvent, RealtimeSessionEventBuilder> {
   @BuiltValueField(wireName: r'data')
   MarketSessionInfo get data;
 
@@ -29,18 +32,24 @@ abstract class RealtimeSessionEvent implements RealtimeEventBase, Built<Realtime
 
   RealtimeSessionEvent._();
 
-  factory RealtimeSessionEvent([void updates(RealtimeSessionEventBuilder b)]) = _$RealtimeSessionEvent;
+  factory RealtimeSessionEvent([void updates(RealtimeSessionEventBuilder b)]) =
+      _$RealtimeSessionEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeSessionEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeSessionEvent> get serializer => _$RealtimeSessionEventSerializer();
+  static Serializer<RealtimeSessionEvent> get serializer =>
+      _$RealtimeSessionEventSerializer();
 }
 
-class _$RealtimeSessionEventSerializer implements PrimitiveSerializer<RealtimeSessionEvent> {
+class _$RealtimeSessionEventSerializer
+    implements PrimitiveSerializer<RealtimeSessionEvent> {
   @override
-  final Iterable<Type> types = const [RealtimeSessionEvent, _$RealtimeSessionEvent];
+  final Iterable<Type> types = const [
+    RealtimeSessionEvent,
+    _$RealtimeSessionEvent
+  ];
 
   @override
   final String wireName = r'RealtimeSessionEvent';
@@ -78,7 +87,9 @@ class _$RealtimeSessionEventSerializer implements PrimitiveSerializer<RealtimeSe
     RealtimeSessionEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -151,17 +162,20 @@ class _$RealtimeSessionEventSerializer implements PrimitiveSerializer<RealtimeSe
 }
 
 class RealtimeSessionEventEventEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'session')
-  static const RealtimeSessionEventEventEnum session = _$realtimeSessionEventEventEnum_session;
+  static const RealtimeSessionEventEventEnum session =
+      _$realtimeSessionEventEventEnum_session;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeSessionEventEventEnum unknownDefaultOpenApi = _$realtimeSessionEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeSessionEventEventEnum unknownDefaultOpenApi =
+      _$realtimeSessionEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeSessionEventEventEnum> get serializer => _$realtimeSessionEventEventEnumSerializer;
+  static Serializer<RealtimeSessionEventEventEnum> get serializer =>
+      _$realtimeSessionEventEventEnumSerializer;
 
-  const RealtimeSessionEventEventEnum._(String name): super(name);
+  const RealtimeSessionEventEventEnum._(String name) : super(name);
 
-  static BuiltSet<RealtimeSessionEventEventEnum> get values => _$realtimeSessionEventEventEnumValues;
-  static RealtimeSessionEventEventEnum valueOf(String name) => _$realtimeSessionEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeSessionEventEventEnum> get values =>
+      _$realtimeSessionEventEventEnumValues;
+  static RealtimeSessionEventEventEnum valueOf(String name) =>
+      _$realtimeSessionEventEventEnumValueOf(name);
 }
-

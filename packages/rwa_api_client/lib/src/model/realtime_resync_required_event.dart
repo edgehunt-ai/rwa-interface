@@ -15,11 +15,14 @@ part 'realtime_resync_required_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
-/// * [event] 
-/// * [data] 
+/// * [emittedAt]
+/// * [event]
+/// * [data]
 @BuiltValue()
-abstract class RealtimeResyncRequiredEvent implements RealtimeEventBase, Built<RealtimeResyncRequiredEvent, RealtimeResyncRequiredEventBuilder> {
+abstract class RealtimeResyncRequiredEvent
+    implements
+        RealtimeEventBase,
+        Built<RealtimeResyncRequiredEvent, RealtimeResyncRequiredEventBuilder> {
   @BuiltValueField(wireName: r'data')
   RealtimeResyncRequiredEventAllOfData get data;
 
@@ -29,18 +32,25 @@ abstract class RealtimeResyncRequiredEvent implements RealtimeEventBase, Built<R
 
   RealtimeResyncRequiredEvent._();
 
-  factory RealtimeResyncRequiredEvent([void updates(RealtimeResyncRequiredEventBuilder b)]) = _$RealtimeResyncRequiredEvent;
+  factory RealtimeResyncRequiredEvent(
+          [void updates(RealtimeResyncRequiredEventBuilder b)]) =
+      _$RealtimeResyncRequiredEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeResyncRequiredEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeResyncRequiredEvent> get serializer => _$RealtimeResyncRequiredEventSerializer();
+  static Serializer<RealtimeResyncRequiredEvent> get serializer =>
+      _$RealtimeResyncRequiredEventSerializer();
 }
 
-class _$RealtimeResyncRequiredEventSerializer implements PrimitiveSerializer<RealtimeResyncRequiredEvent> {
+class _$RealtimeResyncRequiredEventSerializer
+    implements PrimitiveSerializer<RealtimeResyncRequiredEvent> {
   @override
-  final Iterable<Type> types = const [RealtimeResyncRequiredEvent, _$RealtimeResyncRequiredEvent];
+  final Iterable<Type> types = const [
+    RealtimeResyncRequiredEvent,
+    _$RealtimeResyncRequiredEvent
+  ];
 
   @override
   final String wireName = r'RealtimeResyncRequiredEvent';
@@ -78,7 +88,9 @@ class _$RealtimeResyncRequiredEventSerializer implements PrimitiveSerializer<Rea
     RealtimeResyncRequiredEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -151,17 +163,20 @@ class _$RealtimeResyncRequiredEventSerializer implements PrimitiveSerializer<Rea
 }
 
 class RealtimeResyncRequiredEventEventEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'resync_required')
-  static const RealtimeResyncRequiredEventEventEnum resyncRequired = _$realtimeResyncRequiredEventEventEnum_resyncRequired;
+  static const RealtimeResyncRequiredEventEventEnum resyncRequired =
+      _$realtimeResyncRequiredEventEventEnum_resyncRequired;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeResyncRequiredEventEventEnum unknownDefaultOpenApi = _$realtimeResyncRequiredEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeResyncRequiredEventEventEnum unknownDefaultOpenApi =
+      _$realtimeResyncRequiredEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeResyncRequiredEventEventEnum> get serializer => _$realtimeResyncRequiredEventEventEnumSerializer;
+  static Serializer<RealtimeResyncRequiredEventEventEnum> get serializer =>
+      _$realtimeResyncRequiredEventEventEnumSerializer;
 
-  const RealtimeResyncRequiredEventEventEnum._(String name): super(name);
+  const RealtimeResyncRequiredEventEventEnum._(String name) : super(name);
 
-  static BuiltSet<RealtimeResyncRequiredEventEventEnum> get values => _$realtimeResyncRequiredEventEventEnumValues;
-  static RealtimeResyncRequiredEventEventEnum valueOf(String name) => _$realtimeResyncRequiredEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeResyncRequiredEventEventEnum> get values =>
+      _$realtimeResyncRequiredEventEventEnumValues;
+  static RealtimeResyncRequiredEventEventEnum valueOf(String name) =>
+      _$realtimeResyncRequiredEventEventEnumValueOf(name);
 }
-

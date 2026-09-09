@@ -16,19 +16,20 @@ part 'candle_series.g.dart';
 /// CandleSeries
 ///
 /// Properties:
-/// * [symbol] 
-/// * [kind] 
-/// * [range] 
-/// * [interval] 
-/// * [from] 
-/// * [to] 
+/// * [symbol]
+/// * [kind]
+/// * [range]
+/// * [interval]
+/// * [from]
+/// * [to]
 /// * [changeAbsolute] - 区间涨跌额，用于图表标题 `+$4.12 (+2.31%) 24h`
 /// * [changePercent] - 十进制字符串，避免浮点误差
 /// * [points] - 链上产品价格序列
-/// * [referencePoints] - 美股参考价序列。仅在美股有报价的时段有值 —— 隔夜与休市时段为空洞， 前端应断开连线或画虚线。 
+/// * [referencePoints] - 美股参考价序列。仅在美股有报价的时段有值 —— 隔夜与休市时段为空洞， 前端应断开连线或画虚线。
 /// * [sessions] - 该区间内的时段分段，用于绘制底部色带
 @BuiltValue()
-abstract class CandleSeries implements Built<CandleSeries, CandleSeriesBuilder> {
+abstract class CandleSeries
+    implements Built<CandleSeries, CandleSeriesBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -61,7 +62,7 @@ abstract class CandleSeries implements Built<CandleSeries, CandleSeriesBuilder> 
   @BuiltValueField(wireName: r'points')
   BuiltList<CandlePoint> get points;
 
-  /// 美股参考价序列。仅在美股有报价的时段有值 —— 隔夜与休市时段为空洞， 前端应断开连线或画虚线。 
+  /// 美股参考价序列。仅在美股有报价的时段有值 —— 隔夜与休市时段为空洞， 前端应断开连线或画虚线。
   @BuiltValueField(wireName: r'reference_points')
   BuiltList<CandlePoint>? get referencePoints;
 
@@ -169,7 +170,9 @@ class _$CandleSeriesSerializer implements PrimitiveSerializer<CandleSeries> {
     CandleSeries object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -255,7 +258,8 @@ class _$CandleSeriesSerializer implements PrimitiveSerializer<CandleSeries> {
         case r'reference_points':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(BuiltList, [FullType(CandlePoint)]),
+            specifiedType:
+                const FullType.nullable(BuiltList, [FullType(CandlePoint)]),
           ) as BuiltList<CandlePoint>?;
           if (valueDes == null) continue;
           result.referencePoints.replace(valueDes);
@@ -263,7 +267,8 @@ class _$CandleSeriesSerializer implements PrimitiveSerializer<CandleSeries> {
         case r'sessions':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(BuiltList, [FullType(SessionSegment)]),
+            specifiedType:
+                const FullType.nullable(BuiltList, [FullType(SessionSegment)]),
           ) as BuiltList<SessionSegment>?;
           if (valueDes == null) continue;
           result.sessions.replace(valueDes);
@@ -296,4 +301,3 @@ class _$CandleSeriesSerializer implements PrimitiveSerializer<CandleSeries> {
     return result.build();
   }
 }
-

@@ -45,4 +45,447 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get assetsTitle => 'Assets';
+
+  @override
+  String get homePortfolio => 'Portfolio';
+
+  @override
+  String get marketsTitle => 'Markets';
+
+  @override
+  String get deposit => 'Deposit';
+
+  @override
+  String get withdraw => 'Withdraw';
+
+  @override
+  String get selectAsset => 'Select asset';
+
+  @override
+  String get searchAssets => 'Search assets';
+
+  @override
+  String get availableToWithdraw => 'Available to withdraw';
+
+  @override
+  String get withdrawUsdc => 'Withdraw USDC';
+
+  @override
+  String get recipientAddress => 'Recipient address';
+
+  @override
+  String get enterWalletAddress => 'Enter wallet address';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get network => 'Network';
+
+  @override
+  String get networkFee => 'Network fee';
+
+  @override
+  String get reviewWithdrawal => 'Review withdrawal';
+
+  @override
+  String get preparingWithdrawal => 'Preparing withdrawal…';
+
+  @override
+  String get withdrawalDetails => 'Withdrawal details';
+
+  @override
+  String get recipientReceives => 'Recipient receives';
+
+  @override
+  String get totalDeducted => 'Total deducted';
+
+  @override
+  String get authorizationRequired => 'Authorization required';
+
+  @override
+  String get depositCrypto => 'Deposit crypto';
+
+  @override
+  String get allSupportedAssets => 'All supported assets';
+
+  @override
+  String get loadingAssets => 'Loading assets';
+
+  @override
+  String get assetsUnavailable => 'Assets unavailable';
+
+  @override
+  String get portfolioValue => 'Portfolio value';
+
+  @override
+  String get allocation => 'Allocation';
+
+  @override
+  String get cash => 'Cash';
+
+  @override
+  String get bstocks => 'bStocks';
+
+  @override
+  String get perps => 'Perps';
+
+  @override
+  String get cashBalances => 'Cash balances';
+
+  @override
+  String get portfolioTrend => 'Portfolio trend';
+
+  @override
+  String get loadingMarkets => 'Loading markets';
+
+  @override
+  String get marketsUnavailable => 'Markets unavailable';
+
+  @override
+  String get noProductsYet => 'No products yet';
+
+  @override
+  String get favorites => 'Favorites';
+
+  @override
+  String get popular => 'Popular';
+
+  @override
+  String get gainers => 'Gainers';
+
+  @override
+  String get losers => 'Losers';
+
+  @override
+  String get volume => 'Volume';
+
+  @override
+  String get editTpSl => 'Edit TP/SL';
+
+  @override
+  String get takeProfit => 'Take profit';
+
+  @override
+  String get stopLoss => 'Stop loss';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get takeProfitStopLoss => 'Take profit/stop loss';
+
+  @override
+  String get bstocksTpSlUnavailable =>
+      'TP/SL is not available for bStocks orders.';
+
+  @override
+  String get saveTpSl => 'Save TP/SL';
+
+  @override
+  String get tpSlPriceHint => 'Enter trigger prices for this position.';
+
+  @override
+  String get tpSlSaveFailed =>
+      'Could not save TP/SL. Check the prices and try again.';
+
+  @override
+  String get orderSubmissionFailed => 'Order was not submitted. Try again.';
+
+  @override
+  String get marketPrice => 'Market price';
+
+  @override
+  String get estimatedPrice => 'Estimated price';
+
+  @override
+  String get submittingOrder => 'Submitting Order…';
+
+  @override
+  String get submittingOrderDescription =>
+      'This may take a few moments. You can track the progress on the Details page.';
+
+  @override
+  String get closeViewLater => 'Close & View Later';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get limitPrice => 'Limit Price';
+
+  @override
+  String get market => 'Market';
+
+  @override
+  String get dragToSet => 'Drag to set';
+
+  @override
+  String get priceDeviation => 'Price deviation';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get tradeUsStockReference => 'US Stock Reference';
+
+  @override
+  String get tradePremium => 'Premium';
+
+  @override
+  String get tradeSpread => 'Spread';
+
+  @override
+  String get tradeBestBidAsk => 'Best Bid / Ask';
+
+  @override
+  String get tradeAssetRights => 'Asset & Rights';
+
+  @override
+  String get tradeAssetRightsDescription =>
+      'Provides economic exposure to underlying NVIDIA securities. You hold on-chain security tokens within your BSC wallet, not direct ownership of NVIDIA shares.';
+
+  @override
+  String get tradeIssuer => 'Issuer';
+
+  @override
+  String get tradeIssuerValue => 'BTECH Holdings Limited';
+
+  @override
+  String get tradeBacking => 'Backing';
+
+  @override
+  String get tradeBackingValue => '1:1 Backed by Underlying Shares';
+
+  @override
+  String get tradeCorporateActions => 'Corporate Actions';
+
+  @override
+  String get tradeCorporateActionsValue =>
+      'Automatically Reflected via Multiplier';
+
+  @override
+  String get tradeDividendTreatment => 'Dividend Treatment';
+
+  @override
+  String get tradeDividendTreatmentValue =>
+      'Net Dividends Automatically Reinvested';
+
+  @override
+  String get tradeVotingRights => 'Voting Rights';
+
+  @override
+  String get tradeVotingRightsValue => 'No Shareholder Voting Rights';
+
+  @override
+  String get tradeAssetLocation => 'Asset Location';
+
+  @override
+  String get tradeAssetLocationValue => 'Held in BSC Wallet';
+
+  @override
+  String get tradeMarketHoursTitle => 'US Market Trading Hours';
+
+  @override
+  String get tradeMarketHoursDescription =>
+      'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.';
+
+  @override
+  String get tradePreMarket => 'Pre-Market';
+
+  @override
+  String get tradeRegularMarket => 'Regular Market';
+
+  @override
+  String get tradeAfterHours => 'After-Hours';
+
+  @override
+  String get tradeOvernight => 'Overnight';
+
+  @override
+  String get tradeMarketClosed => 'Market Closed';
+
+  @override
+  String get tradeMediumLiquidity => 'Medium Liquidity';
+
+  @override
+  String get tradeHighLiquidity => 'High Liquidity';
+
+  @override
+  String get tradeLowLiquidity => 'Low Liquidity';
+
+  @override
+  String get tradeMarketOpensIn => 'US market opens in 04:30:11';
+
+  @override
+  String get tradeMarketClosedSchedule => 'Weekends, US holidays';
+
+  @override
+  String get tradeReferencePrice => 'US Stock Reference';
+
+  @override
+  String get tradeReferenceValue => 'US \$175.22';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsLoading => 'Loading settings';
+
+  @override
+  String get settingsUnavailable => 'Settings unavailable';
+
+  @override
+  String get settingsRetry => 'Pull to refresh and try again.';
+
+  @override
+  String get settingsActiveAccount => 'Active Account';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageSimplifiedChinese => 'Simplified Chinese';
+
+  @override
+  String get settingsExportPrivateKey => 'Export Private Key';
+
+  @override
+  String get settingsPrivateKeyWarning =>
+      'Never share your private key with anyone. Anyone with this information can control your wallet.';
+
+  @override
+  String get settingsCheckUpdates => 'Check for Updates';
+
+  @override
+  String get settingsAppVersion => 'App Version';
+
+  @override
+  String get settingsAppVersionValue => 'v1.0.0';
+
+  @override
+  String get settingsCacheSize => 'Cache Size';
+
+  @override
+  String get settingsCacheSizeValue => '7.5 KB · Clear';
+
+  @override
+  String get settingsLogOut => 'Log Out';
+
+  @override
+  String get settingsLogOutQuestion => 'Are you sure you want to log out?';
+
+  @override
+  String get settingsDeleteAccount => 'Delete Account';
+
+  @override
+  String get settingsDeleteAccountMessage =>
+      'Account deletion is not available from this version of the app.';
+
+  @override
+  String get activityTitle => 'Activity';
+
+  @override
+  String get activityAllProducts => 'All product';
+
+  @override
+  String get activityType => 'Type';
+
+  @override
+  String get activityStatus => 'Status';
+
+  @override
+  String get activityFilterStatus => 'Filter status';
+
+  @override
+  String get activityAllStatuses => 'All statuses';
+
+  @override
+  String get activityOrders => 'Orders';
+
+  @override
+  String get activityFunding => 'Funding';
+
+  @override
+  String get activityApprovals => 'Approvals';
+
+  @override
+  String get activityInProgress => 'In Progress';
+
+  @override
+  String get activityCompleted => 'Completed';
+
+  @override
+  String get activityFailed => 'Failed';
+
+  @override
+  String get activityCancelled => 'Cancelled';
+
+  @override
+  String get activityUnknown => 'Unknown';
+
+  @override
+  String get activityLoading => 'Loading activity';
+
+  @override
+  String get activityUnavailable => 'Activity unavailable';
+
+  @override
+  String get activityRetry => 'Pull to refresh and try again.';
+
+  @override
+  String get activityEmptyTitle => 'No activity yet';
+
+  @override
+  String get activityEmptyMessage =>
+      'Your orders and funding events will appear here.';
+
+  @override
+  String get activityCopyReference => 'Copy activity reference';
+
+  @override
+  String get tradeBasis => 'Basis';
+
+  @override
+  String get tradePerpAssetRightsDescription =>
+      'Perpetual contracts provide price exposure to NVIDIA only; they do not grant stocks, on-chain security tokens, or corporate shareholder rights.';
+
+  @override
+  String get tradeProductType => 'Product Type';
+
+  @override
+  String get tradePerpProductType => 'HIP-3 Perpetual Contract';
+
+  @override
+  String get tradeUnderlyingExposure => 'Underlying Exposure';
+
+  @override
+  String get tradePriceExposureOnly => 'Price Exposure Only';
+
+  @override
+  String get tradeShareOwnership => 'Share Ownership';
+
+  @override
+  String get tradeNoShareOwnership => 'No Ownership of Underlying Shares';
+
+  @override
+  String get tradeDividendRights => 'Dividend Rights';
+
+  @override
+  String get tradeNone => 'None';
+
+  @override
+  String get tradePositionType => 'Position Type';
+
+  @override
+  String get tradePerpPositionType => 'HIP-3 Perpetual Position';
 }

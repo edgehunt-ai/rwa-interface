@@ -38,11 +38,20 @@ dependencies:
   intl: ^0.20.3
   dio: ^5.7.0
   flutter_riverpod: ^3.0.0
+  flutter_svg: ^2.2.4
   rwa_api_client:
     path: packages/rwa_api_client
+  # Public union wrapper required by the generated OpenAPI request models.
+  one_of: ^1.5.0
   flutter_localizations:
     sdk: flutter
   sentry_flutter: ^9.28.0
+  # Official native identity provider used for Android/iOS authentication.
+  privy_flutter: 0.10.1
+  shared_preferences: ^2.5.3
+  reown_appkit: ^1.9.0
+  firebase_core: ^4.14.0
+  firebase_messaging: ^16.6.0
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +71,13 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   generate: true
+  assets:
+    - assets/figma/home_markets/
+    - assets/figma/funding/
+    - assets/figma/trade/
+    - assets/figma/account_activity/
+    - assets/figma/session/
+    - assets/figma/common/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
