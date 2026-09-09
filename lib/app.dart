@@ -51,6 +51,7 @@ final class _AppViewState extends ConsumerState<_AppView> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.light,
       routerConfig: widget.router,
       locale: locale,
       localizationsDelegates: const [
