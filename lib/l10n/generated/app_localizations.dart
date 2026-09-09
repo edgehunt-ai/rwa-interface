@@ -758,6 +758,102 @@ abstract class AppLocalizations {
   /// **'Active Account'**
   String get settingsActiveAccount;
 
+  /// No description provided for @settingsPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey'**
+  String get settingsPasskey;
+
+  /// No description provided for @settingsPasskeyNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get settingsPasskeyNotSet;
+
+  /// No description provided for @settingsPasskeyNotSetUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set up'**
+  String get settingsPasskeyNotSetUp;
+
+  /// No description provided for @settingsPasskeyEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get settingsPasskeyEnabled;
+
+  /// No description provided for @settingsPasskeyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Face ID, Touch ID, or your device security to sign in faster.'**
+  String get settingsPasskeyDescription;
+
+  /// No description provided for @settingsPasskeySetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up Passkey'**
+  String get settingsPasskeySetupTitle;
+
+  /// No description provided for @settingsPasskeySetupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in faster using Face ID, Touch ID, or your device security.'**
+  String get settingsPasskeySetupDescription;
+
+  /// No description provided for @settingsPasskeyRemoveDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey is enabled for this account.'**
+  String get settingsPasskeyRemoveDescription;
+
+  /// No description provided for @settingsPasskeyExistingMethods.
+  ///
+  /// In en, this message translates to:
+  /// **'Your existing login methods will still work.'**
+  String get settingsPasskeyExistingMethods;
+
+  /// No description provided for @settingsPasskeySetUpAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Up'**
+  String get settingsPasskeySetUpAction;
+
+  /// No description provided for @settingsPasskeyRemoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Passkey'**
+  String get settingsPasskeyRemoveAction;
+
+  /// No description provided for @settingsNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Now'**
+  String get settingsNotNow;
+
+  /// No description provided for @settingsPasskeySetupSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey set up successfully'**
+  String get settingsPasskeySetupSucceeded;
+
+  /// No description provided for @settingsPasskeySetupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey setup failed. Please try again.'**
+  String get settingsPasskeySetupFailed;
+
+  /// No description provided for @settingsPasskeyRemoveSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey removed'**
+  String get settingsPasskeyRemoveSucceeded;
+
+  /// No description provided for @settingsPasskeyRemoveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove passkey. Please try again.'**
+  String get settingsPasskeyRemoveFailed;
+
   /// No description provided for @settingsLanguage.
   ///
   /// In en, this message translates to:
@@ -800,11 +896,41 @@ abstract class AppLocalizations {
   /// **'App Version'**
   String get settingsAppVersion;
 
-  /// No description provided for @settingsAppVersionValue.
+  /// No description provided for @settingsUpToDate.
   ///
   /// In en, this message translates to:
-  /// **'v1.0.0'**
-  String get settingsAppVersionValue;
+  /// **'You\'\'re on the latest version.'**
+  String get settingsUpToDate;
+
+  /// No description provided for @settingsUpdateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check for updates.'**
+  String get settingsUpdateCheckFailed;
+
+  /// No description provided for @settingsUpdateUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No update source is available for this platform.'**
+  String get settingsUpdateUnavailable;
+
+  /// No description provided for @settingsUpdateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Available'**
+  String get settingsUpdateAvailable;
+
+  /// No description provided for @settingsUpdateAvailableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available.'**
+  String settingsUpdateAvailableMessage(Object version);
+
+  /// No description provided for @settingsUpdateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get settingsUpdateNow;
 
   /// No description provided for @settingsCacheSize.
   ///
@@ -812,11 +938,17 @@ abstract class AppLocalizations {
   /// **'Cache Size'**
   String get settingsCacheSize;
 
-  /// No description provided for @settingsCacheSizeValue.
+  /// No description provided for @settingsClearCache.
   ///
   /// In en, this message translates to:
-  /// **'7.5 KB · Clear'**
-  String get settingsCacheSizeValue;
+  /// **'Clear'**
+  String get settingsClearCache;
+
+  /// No description provided for @settingsTermsConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & Conditions'**
+  String get settingsTermsConditions;
 
   /// No description provided for @settingsLogOut.
   ///

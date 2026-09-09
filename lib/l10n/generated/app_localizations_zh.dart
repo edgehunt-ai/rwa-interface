@@ -341,6 +341,54 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsActiveAccount => '当前账户';
 
   @override
+  String get settingsPasskey => '通行密钥';
+
+  @override
+  String get settingsPasskeyNotSet => '未设置';
+
+  @override
+  String get settingsPasskeyNotSetUp => '未设置';
+
+  @override
+  String get settingsPasskeyEnabled => '已启用';
+
+  @override
+  String get settingsPasskeyDescription => '使用面容 ID、触控 ID 或设备安全验证，更快登录。';
+
+  @override
+  String get settingsPasskeySetupTitle => '设置通行密钥';
+
+  @override
+  String get settingsPasskeySetupDescription => '使用面容 ID、触控 ID 或设备安全验证，更快登录。';
+
+  @override
+  String get settingsPasskeyRemoveDescription => '此账户已启用通行密钥。';
+
+  @override
+  String get settingsPasskeyExistingMethods => '现有登录方式仍可继续使用。';
+
+  @override
+  String get settingsPasskeySetUpAction => '设置';
+
+  @override
+  String get settingsPasskeyRemoveAction => '移除通行密钥';
+
+  @override
+  String get settingsNotNow => '暂不设置';
+
+  @override
+  String get settingsPasskeySetupSucceeded => '通行密钥设置成功';
+
+  @override
+  String get settingsPasskeySetupFailed => '通行密钥设置失败，请重试。';
+
+  @override
+  String get settingsPasskeyRemoveSucceeded => '通行密钥已移除';
+
+  @override
+  String get settingsPasskeyRemoveFailed => '无法移除通行密钥，请重试。';
+
+  @override
   String get settingsLanguage => '语言';
 
   @override
@@ -362,13 +410,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAppVersion => '应用版本';
 
   @override
-  String get settingsAppVersionValue => 'v1.0.0';
+  String get settingsUpToDate => '当前已是最新版本。';
+
+  @override
+  String get settingsUpdateCheckFailed => '无法检查更新。';
+
+  @override
+  String get settingsUpdateUnavailable => '此平台没有可用的更新来源。';
+
+  @override
+  String get settingsUpdateAvailable => '发现新版本';
+
+  @override
+  String settingsUpdateAvailableMessage(Object version) {
+    return '版本 $version 已可更新。';
+  }
+
+  @override
+  String get settingsUpdateNow => '立即更新';
 
   @override
   String get settingsCacheSize => '缓存大小';
 
   @override
-  String get settingsCacheSizeValue => '7.5 KB · 清除';
+  String get settingsClearCache => '清除';
+
+  @override
+  String get settingsTermsConditions => '条款与条件';
 
   @override
   String get settingsLogOut => '退出登录';

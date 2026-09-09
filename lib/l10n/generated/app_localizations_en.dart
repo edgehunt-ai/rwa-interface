@@ -348,6 +348,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsActiveAccount => 'Active Account';
 
   @override
+  String get settingsPasskey => 'Passkey';
+
+  @override
+  String get settingsPasskeyNotSet => 'Not set';
+
+  @override
+  String get settingsPasskeyNotSetUp => 'Not set up';
+
+  @override
+  String get settingsPasskeyEnabled => 'Enabled';
+
+  @override
+  String get settingsPasskeyDescription =>
+      'Use Face ID, Touch ID, or your device security to sign in faster.';
+
+  @override
+  String get settingsPasskeySetupTitle => 'Set Up Passkey';
+
+  @override
+  String get settingsPasskeySetupDescription =>
+      'Sign in faster using Face ID, Touch ID, or your device security.';
+
+  @override
+  String get settingsPasskeyRemoveDescription =>
+      'Passkey is enabled for this account.';
+
+  @override
+  String get settingsPasskeyExistingMethods =>
+      'Your existing login methods will still work.';
+
+  @override
+  String get settingsPasskeySetUpAction => 'Set Up';
+
+  @override
+  String get settingsPasskeyRemoveAction => 'Remove Passkey';
+
+  @override
+  String get settingsNotNow => 'Not Now';
+
+  @override
+  String get settingsPasskeySetupSucceeded => 'Passkey set up successfully';
+
+  @override
+  String get settingsPasskeySetupFailed =>
+      'Passkey setup failed. Please try again.';
+
+  @override
+  String get settingsPasskeyRemoveSucceeded => 'Passkey removed';
+
+  @override
+  String get settingsPasskeyRemoveFailed =>
+      'Could not remove passkey. Please try again.';
+
+  @override
   String get settingsLanguage => 'Language';
 
   @override
@@ -370,13 +424,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAppVersion => 'App Version';
 
   @override
-  String get settingsAppVersionValue => 'v1.0.0';
+  String get settingsUpToDate => 'You\'re on the latest version.';
+
+  @override
+  String get settingsUpdateCheckFailed => 'Could not check for updates.';
+
+  @override
+  String get settingsUpdateUnavailable =>
+      'No update source is available for this platform.';
+
+  @override
+  String get settingsUpdateAvailable => 'Update Available';
+
+  @override
+  String settingsUpdateAvailableMessage(Object version) {
+    return 'Version $version is available.';
+  }
+
+  @override
+  String get settingsUpdateNow => 'Update now';
 
   @override
   String get settingsCacheSize => 'Cache Size';
 
   @override
-  String get settingsCacheSizeValue => '7.5 KB · Clear';
+  String get settingsClearCache => 'Clear';
+
+  @override
+  String get settingsTermsConditions => 'Terms & Conditions';
 
   @override
   String get settingsLogOut => 'Log Out';

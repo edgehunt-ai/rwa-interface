@@ -3,13 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/domain/auth/authentication.dart';
+import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
+import 'package:rwa_interface/domain/models/app_update.dart';
 import 'package:rwa_interface/app/providers/locale_provider.dart';
 import 'package:rwa_interface/domain/models/user_account.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/account/providers/account_providers.dart';
+import 'package:rwa_interface/ui/features/account/providers/app_update_providers.dart';
+import 'package:rwa_interface/ui/features/account/providers/cache_providers.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,6 +24,12 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final account = ref.watch(accountProvider);
+    final authentication = ref.watch(authenticationProvider);
+    final passkey = ref.watch(passkeyProvider);
+    final cacheSize = ref.watch(cacheSizeProvider);
+    final clearingCache = ref.watch(cacheCommandProvider).isLoading;
+    final installedAppInfo = ref.watch(installedAppInfoProvider);
+    final checkingForUpdate = ref.watch(appUpdateCommandProvider).isLoading;
     ref.listen<AsyncValue<UserAccount>>(accountProvider, (_, next) {
       next.whenData(
         (account) => ref
@@ -38,17 +51,111 @@ class SettingsScreen extends ConsumerWidget {
             onRetry: () => ref.refresh(accountProvider.future),
           ),
           data: (account) => _SettingsContent(
-            name: account.displayName ?? account.userId,
+            name: accountDisplayName(
+              account,
+              identityDisplayName: switch (authentication) {
+                AuthenticationAuthenticated(:final principal) =>
+                  principal.displayName,
+                _ => null,
+              },
+            ),
             language: account.settings.language,
+            passkey: _passkeyValue(passkey),
+            passkeyLoading: passkey.isLoading,
+            onPasskey: () =>
+                _showPasskeySheet(context, ref, _passkeyValue(passkey)),
             onLanguage: () =>
                 _showLanguageSheet(context, ref, account.settings.language),
             onPrivateKey: () => _showPrivateKeyWarning(context),
+            appVersion: switch (installedAppInfo) {
+              AsyncData(:final value) => 'v${value.version}',
+              _ => '...',
+            },
+            checkingForUpdate: checkingForUpdate,
+            onCheckForUpdates: () => _checkForUpdates(context, ref),
+            cacheSizeBytes: switch (cacheSize) {
+              AsyncData(:final value) => value,
+              _ => null,
+            },
+            clearingCache: clearingCache,
+            onClearCache: () => ref.read(cacheCommandProvider.notifier).clear(),
             onLogOut: () => _showLogOutConfirmation(context, ref),
             onDeleteAccount: () => _showDeletionUnavailable(context),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _checkForUpdates(BuildContext context, WidgetRef ref) async {
+    final update = await ref
+        .read(appUpdateCommandProvider.notifier)
+        .checkForUpdate();
+    if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context);
+    if (update == null) {
+      AppToast.showFailure(context, l10n.settingsUpdateCheckFailed);
+      return;
+    }
+    switch (update.availability) {
+      case AppUpdateAvailability.upToDate:
+        AppToast.showSuccess(context, l10n.settingsUpToDate);
+      case AppUpdateAvailability.unavailable:
+        AppToast.showFailure(context, l10n.settingsUpdateUnavailable);
+      case AppUpdateAvailability.available || AppUpdateAvailability.required:
+        final storeUri = update.storeUri;
+        if (storeUri == null) {
+          AppToast.showFailure(context, l10n.settingsUpdateUnavailable);
+          return;
+        }
+        showModalBottomSheet<void>(
+          context: context,
+          builder: (sheetContext) => _NoticeSheet(
+            title: l10n.settingsUpdateAvailable,
+            message: update.releaseNotes?.trim().isNotEmpty == true
+                ? update.releaseNotes!
+                : l10n.settingsUpdateAvailableMessage(update.latestVersion!),
+            actions: [
+              if (update.availability == AppUpdateAvailability.available)
+                OutlinedButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+              FilledButton(
+                onPressed: () async {
+                  await launchUrl(
+                    storeUri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+                child: Text(l10n.settingsUpdateNow),
+              ),
+            ],
+          ),
+        );
+    }
+  }
+
+  Future<void> _showPasskeySheet(
+    BuildContext context,
+    WidgetRef ref,
+    PasskeyCredential? passkey,
+  ) async {
+    final action = await showModalBottomSheet<_PasskeyAction>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x70111215),
+      builder: (_) => _PasskeySheet(passkey: passkey),
+    );
+    if (!context.mounted || action == null) return;
+    final l10n = AppLocalizations.of(context);
+    switch (action) {
+      case _PasskeyAction.linked:
+        AppToast.showSuccess(context, l10n.settingsPasskeySetupSucceeded);
+      case _PasskeyAction.unlinked:
+        AppToast.showSuccess(context, l10n.settingsPasskeyRemoveSucceeded);
+    }
   }
 
   Future<void> _showLanguageSheet(
@@ -59,6 +166,8 @@ class SettingsScreen extends ConsumerWidget {
     final selected = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x70111215),
       builder: (_) => _LanguageSheet(current: current),
     );
     if (selected != null && selected != current) {
@@ -139,20 +248,44 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
+PasskeyCredential? _passkeyValue(AsyncValue<PasskeyCredential?> value) =>
+    switch (value) {
+      AsyncData(:final value) => value,
+      _ => null,
+    };
+
 class _SettingsContent extends StatelessWidget {
   const _SettingsContent({
     required this.name,
     required this.language,
+    required this.passkey,
+    required this.passkeyLoading,
+    required this.onPasskey,
     required this.onLanguage,
     required this.onPrivateKey,
+    required this.appVersion,
+    required this.checkingForUpdate,
+    required this.onCheckForUpdates,
+    required this.cacheSizeBytes,
+    required this.clearingCache,
+    required this.onClearCache,
     required this.onLogOut,
     required this.onDeleteAccount,
   });
 
   final String name;
   final String language;
+  final PasskeyCredential? passkey;
+  final bool passkeyLoading;
+  final VoidCallback onPasskey;
   final VoidCallback onLanguage;
   final VoidCallback onPrivateKey;
+  final String appVersion;
+  final bool checkingForUpdate;
+  final VoidCallback onCheckForUpdates;
+  final int? cacheSizeBytes;
+  final bool clearingCache;
+  final VoidCallback onClearCache;
   final VoidCallback onLogOut;
   final VoidCallback onDeleteAccount;
 
@@ -186,39 +319,13 @@ class _SettingsContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
+        _Card(child: _AccountRow(name: name)),
+        const SizedBox(height: 16),
         _Card(
-          child: SizedBox(
-            height: 66,
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              minLeadingWidth: 40,
-              leading: CircleAvatar(
-                backgroundImage: const AssetImage(
-                  'assets/figma/account_activity/account_avatar.png',
-                ),
-              ),
-              title: Text(
-                name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 20,
-                  height: 1,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              subtitle: Text(
-                AppLocalizations.of(context).settingsActiveAccount,
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 16 / 12,
-                  color: Theme.of(context)
-                      .extension<AppRwaColors>()!
-                      .secondaryText,
-                ),
-              ),
-            ),
+          child: _PasskeyRow(
+            passkey: passkey,
+            loading: passkeyLoading,
+            onTap: onPasskey,
           ),
         ),
         const SizedBox(height: 16),
@@ -226,7 +333,6 @@ class _SettingsContent extends StatelessWidget {
           child: Column(
             children: [
               _SettingRow(
-                icon: Icons.language,
                 asset: 'assets/figma/account_activity/language.svg',
                 label: AppLocalizations.of(context).settingsLanguage,
                 value: _languageLabel(AppLocalizations.of(context), language),
@@ -234,10 +340,9 @@ class _SettingsContent extends StatelessWidget {
               ),
               const Divider(height: 1, indent: 16, endIndent: 16),
               _SettingRow(
-                icon: Icons.key_outlined,
                 asset: 'assets/figma/account_activity/private_key.svg',
                 label: AppLocalizations.of(context).settingsExportPrivateKey,
-                trailing: Icon(Icons.chevron_right),
+                trailing: const _ChevronRight(),
                 onTap: onPrivateKey,
               ),
             ],
@@ -248,24 +353,33 @@ class _SettingsContent extends StatelessWidget {
           child: Column(
             children: [
               _SettingRow(
-                icon: Icons.system_update_outlined,
                 asset: 'assets/figma/account_activity/update.svg',
                 label: AppLocalizations.of(context).settingsCheckUpdates,
-                value: AppLocalizations.of(context).settingsCheckUpdates,
+                value: checkingForUpdate ? '...' : 'Check',
+                onTap: checkingForUpdate ? null : onCheckForUpdates,
               ),
               Divider(height: 1, indent: 16, endIndent: 16),
               _SettingRow(
-                icon: Icons.info_outline,
                 asset: 'assets/figma/account_activity/version.svg',
                 label: AppLocalizations.of(context).settingsAppVersion,
-                value: AppLocalizations.of(context).settingsAppVersionValue,
+                value: appVersion,
               ),
               Divider(height: 1, indent: 16, endIndent: 16),
               _SettingRow(
-                icon: Icons.storage_outlined,
                 asset: 'assets/figma/account_activity/cache.svg',
                 label: AppLocalizations.of(context).settingsCacheSize,
-                value: AppLocalizations.of(context).settingsCacheSizeValue,
+                trailing: _CacheSizeValue(
+                  bytes: cacheSizeBytes,
+                  clearing: clearingCache,
+                  onClear: onClearCache,
+                ),
+                trailingBelowAtLargeText: true,
+              ),
+              Divider(height: 1, indent: 16, endIndent: 16),
+              _SettingRow(
+                asset: 'assets/figma/account_activity/terms_conditions.svg',
+                label: AppLocalizations.of(context).settingsTermsConditions,
+                trailing: const _ChevronRight(),
               ),
             ],
           ),
@@ -275,7 +389,6 @@ class _SettingsContent extends StatelessWidget {
           child: Column(
             children: [
               _SettingRow(
-                icon: Icons.power_settings_new,
                 asset: 'assets/figma/account_activity/logout.svg',
                 label: AppLocalizations.of(context).settingsLogOut,
                 labelColor: Theme.of(context)
@@ -285,10 +398,9 @@ class _SettingsContent extends StatelessWidget {
               ),
               const Divider(height: 1, indent: 16, endIndent: 16),
               _SettingRow(
-                icon: Icons.no_accounts_outlined,
                 asset: 'assets/figma/account_activity/delete_account.svg',
                 label: AppLocalizations.of(context).settingsDeleteAccount,
-                trailing: Icon(Icons.chevron_right),
+                trailing: const _ChevronRight(),
                 onTap: onDeleteAccount,
               ),
             ],
@@ -320,26 +432,24 @@ class _Card extends StatelessWidget {
 
 class _SettingRow extends StatelessWidget {
   const _SettingRow({
-    required this.icon,
-    this.asset,
+    required this.asset,
     required this.label,
     this.value,
     this.trailing,
     this.labelColor,
     this.onTap,
+    this.trailingBelowAtLargeText = false,
   });
-  final IconData icon;
-  final String? asset;
+  final String asset;
   final String label;
   final String? value;
   final Widget? trailing;
   final Color? labelColor;
   final VoidCallback? onTap;
+  final bool trailingBelowAtLargeText;
   @override
   Widget build(BuildContext context) {
-    final iconWidget = asset == null
-        ? Icon(icon)
-        : SvgPicture.asset(asset!, width: 24, height: 24);
+    final iconWidget = SvgPicture.asset(asset, width: 24, height: 24);
     final valueStyle = TextStyle(
       color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
       fontSize: 15,
@@ -363,11 +473,14 @@ class _SettingRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: iconWidget,
+                SizedBox(
+                  width: 40,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Center(child: iconWidget),
+                  ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,10 +490,14 @@ class _SettingRow extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(value!, style: valueStyle, maxLines: 2),
                       ],
+                      if (trailingBelowAtLargeText && trailing != null) ...[
+                        const SizedBox(height: 4),
+                        trailing!,
+                      ],
                     ],
                   ),
                 ),
-                if (trailing != null) ...[
+                if (!trailingBelowAtLargeText && trailing != null) ...[
                   const SizedBox(width: 12),
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
@@ -393,18 +510,398 @@ class _SettingRow extends StatelessWidget {
         ),
       );
     }
-    return SizedBox(
-      height: 70,
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        minLeadingWidth: 40,
-        leading: iconWidget,
-        title: Text(label, style: labelStyle),
-        trailing: trailing ?? Text(value ?? '', style: valueStyle),
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 70,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              SizedBox(width: 40, height: 40, child: Center(child: iconWidget)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: labelStyle,
+                ),
+              ),
+              if (trailing ?? _value(value, valueStyle)
+                  case final trailing?) ...[
+                const SizedBox(width: 12),
+                trailing,
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
+
+  Widget? _value(String? value, TextStyle style) => value == null
+      ? null
+      : Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
+}
+
+class _PasskeyRow extends StatelessWidget {
+  const _PasskeyRow({
+    required this.passkey,
+    required this.loading,
+    required this.onTap,
+  });
+
+  final PasskeyCredential? passkey;
+  final bool loading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final enlargedText = MediaQuery.textScalerOf(context).scale(14) > 18;
+    final status = loading
+        ? const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : Text(
+            passkey == null
+                ? l10n.settingsPasskeyNotSetUp
+                : l10n.settingsPasskeyEnabled,
+            style: TextStyle(
+              color: colors.secondaryText,
+              fontSize: 15,
+              height: 22 / 15,
+              fontWeight: FontWeight.w500,
+            ),
+          );
+    return InkWell(
+      onTap: loading ? null : onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 110),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(
+                  child: SvgPicture.asset(
+                    'assets/figma/account_activity/passkey.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.settingsPasskey,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 22 / 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.settingsPasskeyDescription,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 12,
+                        height: 16 / 12,
+                      ),
+                    ),
+                    if (enlargedText) ...[const SizedBox(height: 4), status],
+                  ],
+                ),
+              ),
+              if (!enlargedText) ...[const SizedBox(width: 12), status],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _PasskeyAction { linked, unlinked }
+
+class _PasskeySheet extends ConsumerStatefulWidget {
+  const _PasskeySheet({required this.passkey});
+
+  final PasskeyCredential? passkey;
+
+  @override
+  ConsumerState<_PasskeySheet> createState() => _PasskeySheetState();
+}
+
+class _PasskeySheetState extends ConsumerState<_PasskeySheet> {
+  var _submitting = false;
+
+  Future<void> _submit() async {
+    setState(() => _submitting = true);
+    try {
+      if (widget.passkey case final passkey?) {
+        await ref.read(passkeyProvider.notifier).unlink(passkey.id);
+        if (mounted) Navigator.of(context).pop(_PasskeyAction.unlinked);
+      } else {
+        await ref.read(passkeyProvider.notifier).link();
+        if (mounted) Navigator.of(context).pop(_PasskeyAction.linked);
+      }
+    } on Object {
+      if (mounted) {
+        AppToast.showFailure(
+          context,
+          widget.passkey == null
+              ? AppLocalizations.of(context).settingsPasskeySetupFailed
+              : AppLocalizations.of(context).settingsPasskeyRemoveFailed,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final removing = widget.passkey != null;
+    return Material(
+      color: colors.surface,
+      clipBehavior: Clip.antiAlias,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.secondaryText.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.settingsPasskeySetupTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                removing
+                    ? l10n.settingsPasskeyRemoveDescription
+                    : l10n.settingsPasskeySetupDescription,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.settingsPasskeyExistingMethods,
+                style: TextStyle(
+                  color: colors.secondaryText,
+                  fontSize: 13,
+                  height: 18 / 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _submitting ? null : _submit,
+                      style: removing
+                          ? FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFFDE596E),
+                            )
+                          : null,
+                      child: _submitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              removing
+                                  ? l10n.settingsPasskeyRemoveAction
+                                  : l10n.settingsPasskeySetUpAction,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _submitting
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: colors.subtleSurface,
+                      ),
+                      child: Text(l10n.settingsNotNow),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AccountRow extends StatelessWidget {
+  const _AccountRow({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 66),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                border: Border.all(color: colors.border),
+                shape: BoxShape.circle,
+              ),
+              child: Image.asset(
+                'assets/figma/account_activity/account_avatar.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      height: 1,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppLocalizations.of(context).settingsActiveAccount,
+                    style: TextStyle(
+                      color: colors.secondaryText,
+                      fontSize: 12,
+                      height: 16 / 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChevronRight extends StatelessWidget {
+  const _ChevronRight();
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 20,
+    height: 20,
+    child: SvgPicture.asset(
+      'assets/figma/account_activity/chevron_right.svg',
+      fit: BoxFit.none,
+    ),
+  );
+}
+
+class _CacheSizeValue extends StatelessWidget {
+  const _CacheSizeValue({
+    required this.bytes,
+    required this.clearing,
+    required this.onClear,
+  });
+
+  final int? bytes;
+  final bool clearing;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    final textStyle = TextStyle(
+      color: colors.secondaryText,
+      fontSize: 15,
+      height: 22 / 15,
+      fontWeight: FontWeight.w500,
+    );
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(_formatCacheSize(bytes), style: textStyle),
+        Text(' · ', style: textStyle),
+        TextButton(
+          onPressed: clearing ? null : onClear,
+          style: TextButton.styleFrom(
+            minimumSize: Size.zero,
+            padding: EdgeInsets.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            foregroundColor: colors.secondaryText,
+            textStyle: textStyle,
+          ),
+          child: clearing
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 1.5),
+                )
+              : Text(l10n.settingsClearCache),
+        ),
+      ],
+    );
+  }
+}
+
+String _formatCacheSize(int? bytes) {
+  if (bytes == null) return '...';
+  if (bytes < 1024) return '$bytes B';
+  final kilobytes = bytes / 1024;
+  if (kilobytes < 1024) return '${kilobytes.toStringAsFixed(1)} KB';
+  final megabytes = kilobytes / 1024;
+  return '${megabytes.toStringAsFixed(1)} MB';
 }
 
 class _NoticeSheet extends StatelessWidget {
@@ -489,57 +986,123 @@ class _LanguageSheet extends StatefulWidget {
 class _LanguageSheetState extends State<_LanguageSheet> {
   late var _selected = widget.current;
 
-  static const _languages = <String>['en', 'zh-CN'];
+  static const _languages = <({String code, String label})>[
+    (code: 'en', label: 'English'),
+    (code: 'zh-CN', label: '中文 (Chinese)'),
+  ];
 
   @override
-  Widget build(BuildContext context) => Material(
-    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-    child: SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).extension<AppRwaColors>()!.border,
-                  borderRadius: BorderRadius.circular(2),
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Material(
+      color: colors.surface,
+      clipBehavior: Clip.antiAlias,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.secondaryText.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context).settingsLanguage,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            for (final language in _languages)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  _languageLabel(AppLocalizations.of(context), language),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context).settingsLanguage,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              for (var index = 0; index < _languages.length; index++) ...[
+                _LanguageOption(
+                  key: ValueKey('language-option-${_languages[index].code}'),
+                  label: _languages[index].label,
+                  selected: _selected == _languages[index].code,
+                  onTap: () =>
+                      setState(() => _selected = _languages[index].code),
                 ),
-                trailing: _selected == language
-                    ? const Icon(Icons.check)
-                    : null,
-                onTap: () => setState(() => _selected = language),
+                if (index < _languages.length - 1)
+                  Divider(color: colors.subtleSurface, height: 1),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(_selected),
+                  child: Text(AppLocalizations.of(context).confirm),
+                ),
               ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(_selected),
-                child: Text(AppLocalizations.of(context).confirm),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+class _LanguageOption extends StatelessWidget {
+  const _LanguageOption({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Semantics(
+      selected: selected,
+      button: true,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 48,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 18 / 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: selected ? colors.primaryAction : colors.subtleSurface,
+                  shape: BoxShape.circle,
+                  border: selected
+                      ? null
+                      : Border.all(color: colors.border.withValues(alpha: 0.7)),
+                ),
+                child: selected
+                    ? Icon(Icons.check, size: 14, color: colors.onPrimaryAction)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

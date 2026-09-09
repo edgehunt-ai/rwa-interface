@@ -12,6 +12,7 @@ import '../../data/repositories/positions_repository_impl.dart';
 import '../../data/repositories/account_repository_impl.dart';
 import '../../data/repositories/activity_repository_impl.dart';
 import '../../data/repositories/session_repository_impl.dart';
+import '../../data/repositories/app_update_repository_impl.dart';
 import '../../data/repositories/wallets_repository_impl.dart';
 import '../../data/repositories/realtime_repository_impl.dart';
 import '../../data/services/generated_account_service.dart';
@@ -26,6 +27,8 @@ import '../../data/services/generated_session_service.dart';
 import '../../data/services/generated_wallets_service.dart';
 import '../../data/services/hip3_order_action_service.dart';
 import '../../data/services/dio_realtime_service.dart';
+import '../../data/services/generated_system_service.dart';
+import '../../data/services/package_info_service.dart';
 import '../../data/services/realtime_service.dart';
 import '../../domain/repositories/markets_repository.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
@@ -39,6 +42,7 @@ import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/wallets_repository.dart';
 import '../../domain/repositories/realtime_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
+import '../../domain/repositories/app_update_repository.dart';
 import 'auth_providers.dart';
 import 'session_scope.dart';
 
@@ -64,6 +68,13 @@ final accountRepositoryProvider = Provider<AccountRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return AccountRepositoryImpl(
     GeneratedAccountService(source.client.getAccountApi()),
+  );
+});
+final appUpdateRepositoryProvider = Provider<AppUpdateRepository>((ref) {
+  final source = ref.watch(apiDataSourceProvider);
+  return AppUpdateRepositoryImpl(
+    GeneratedSystemService(source.client.getSystemApi()),
+    PackageInfoPlusService(),
   );
 });
 final walletsRepositoryProvider = Provider<WalletsRepository>((ref) {

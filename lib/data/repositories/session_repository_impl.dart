@@ -40,7 +40,11 @@ UserAccount mapUser(api.User value) => UserAccount(
 );
 
 UserPreferences mapSettings(api.UserSettings value) => UserPreferences(
-  language: value.language.name,
+  language: switch (value.language) {
+    api.UserSettingsLanguageEnum.zhCN => 'zh-CN',
+    api.UserSettingsLanguageEnum.en => 'en',
+    _ => 'en',
+  },
   pushEnabled: value.pushEnabled,
   notifyOrderFilled: value.notifyOrderFilled,
   notifyOrderFailed: value.notifyOrderFailed,

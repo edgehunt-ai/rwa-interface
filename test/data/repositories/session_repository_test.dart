@@ -12,9 +12,23 @@ void main() {
     expect(session.account.userId, 'user-1');
     expect(session.account.settings.language, 'en');
   });
+
+  test('maps the zh-CN wire enum to the canonical language code', () async {
+    final repository = SessionRepositoryImpl(
+      _SessionService(language: api.UserSettingsLanguageEnum.zhCN),
+    );
+
+    final session = await repository.createOrRestore(generation: 7);
+
+    expect(session.account.settings.language, 'zh-CN');
+  });
 }
 
 final class _SessionService implements SessionService {
+  _SessionService({this.language = api.UserSettingsLanguageEnum.en});
+
+  final api.UserSettingsLanguageEnum language;
+
   @override
   Future<api.SessionResponse> createSession({String? language}) async =>
       api.SessionResponse(
@@ -26,7 +40,7 @@ final class _SessionService implements SessionService {
               ..createdAt = DateTime.utc(2026)
               ..expiresAt = DateTime.utc(2027),
           )
-          ..user.replace(_user()),
+          ..user.replace(_user(this.language)),
       );
 
   @override
@@ -40,12 +54,12 @@ final class _SessionService implements SessionService {
   );
 }
 
-api.User _user() => api.User(
+api.User _user(api.UserSettingsLanguageEnum language) => api.User(
   (builder) => builder
     ..userId = 'user-1'
     ..settings.update(
       (settings) => settings
-        ..language = api.UserSettingsLanguageEnum.en
+        ..language = language
         ..pushEnabled = true
         ..notifyOrderFilled = true
         ..notifyOrderFailed = true
