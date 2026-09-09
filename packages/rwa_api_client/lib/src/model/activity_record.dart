@@ -19,27 +19,26 @@ part 'activity_record.g.dart';
 /// ActivityRecord
 ///
 /// Properties:
-/// * [id]
-/// * [category]
-/// * [type]
-/// * [status]
-/// * [title]
+/// * [id] 
+/// * [category] 
+/// * [type] 
+/// * [status] 
+/// * [title] 
 /// * [amount] - Decimal amount without a unit suffix.
 /// * [context] - 副标题，说明市场与当前状态
-/// * [symbol]
-/// * [kind]
+/// * [symbol] 
+/// * [kind] 
 /// * [fields] - 展开后的键值对明细
 /// * [relatedId] - 关联记录 id（如划转失败 ↔ Claim 退款）
-/// * [reference]
-/// * [chain]
-/// * [txHash]
-/// * [explorer]
-/// * [createdAt]
-/// * [updatedAt]
+/// * [reference] 
+/// * [chain] 
+/// * [txHash] 
+/// * [explorer] 
+/// * [createdAt] 
+/// * [updatedAt] 
 /// * [asset] - Unit for amount, for example USDC or NVDAB.
 @BuiltValue()
-abstract class ActivityRecord
-    implements Built<ActivityRecord, ActivityRecordBuilder> {
+abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -106,19 +105,16 @@ abstract class ActivityRecord
 
   ActivityRecord._();
 
-  factory ActivityRecord([void updates(ActivityRecordBuilder b)]) =
-      _$ActivityRecord;
+  factory ActivityRecord([void updates(ActivityRecordBuilder b)]) = _$ActivityRecord;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ActivityRecordBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ActivityRecord> get serializer =>
-      _$ActivityRecordSerializer();
+  static Serializer<ActivityRecord> get serializer => _$ActivityRecordSerializer();
 }
 
-class _$ActivityRecordSerializer
-    implements PrimitiveSerializer<ActivityRecord> {
+class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> {
   @override
   final Iterable<Type> types = const [ActivityRecord, _$ActivityRecord];
 
@@ -156,12 +152,10 @@ class _$ActivityRecordSerializer
       specifiedType: const FullType(String),
     );
     yield r'amount';
-    yield object.amount == null
-        ? null
-        : serializers.serialize(
-            object.amount,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.amount == null ? null : serializers.serialize(
+      object.amount,
+      specifiedType: const FullType.nullable(String),
+    );
     if (object.context != null) {
       yield r'context';
       yield serializers.serialize(
@@ -198,33 +192,25 @@ class _$ActivityRecordSerializer
       );
     }
     yield r'reference';
-    yield object.reference == null
-        ? null
-        : serializers.serialize(
-            object.reference,
-            specifiedType: const FullType.nullable(ActivityRecordReference),
-          );
+    yield object.reference == null ? null : serializers.serialize(
+      object.reference,
+      specifiedType: const FullType.nullable(ActivityRecordReference),
+    );
     yield r'chain';
-    yield object.chain == null
-        ? null
-        : serializers.serialize(
-            object.chain,
-            specifiedType: const FullType.nullable(ActivityRecordChainEnum),
-          );
+    yield object.chain == null ? null : serializers.serialize(
+      object.chain,
+      specifiedType: const FullType.nullable(ActivityRecordChainEnum),
+    );
     yield r'tx_hash';
-    yield object.txHash == null
-        ? null
-        : serializers.serialize(
-            object.txHash,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.txHash == null ? null : serializers.serialize(
+      object.txHash,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'explorer';
-    yield object.explorer == null
-        ? null
-        : serializers.serialize(
-            object.explorer,
-            specifiedType: const FullType.nullable(ActivityRecordExplorer),
-          );
+    yield object.explorer == null ? null : serializers.serialize(
+      object.explorer,
+      specifiedType: const FullType.nullable(ActivityRecordExplorer),
+    );
     yield r'created_at';
     yield serializers.serialize(
       object.createdAt,
@@ -236,12 +222,10 @@ class _$ActivityRecordSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'asset';
-    yield object.asset == null
-        ? null
-        : serializers.serialize(
-            object.asset,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.asset == null ? null : serializers.serialize(
+      object.asset,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -250,9 +234,7 @@ class _$ActivityRecordSerializer
     ActivityRecord object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -337,8 +319,7 @@ class _$ActivityRecordSerializer
         case r'fields':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
           ) as BuiltList<KeyValue>?;
           if (valueDes == null) continue;
           result.fields.replace(valueDes);
@@ -435,36 +416,29 @@ class _$ActivityRecordSerializer
 }
 
 class ActivityRecordChainEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
   static const ActivityRecordChainEnum BSC = _$activityRecordChainEnum_BSC;
   @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const ActivityRecordChainEnum arbitrum =
-      _$activityRecordChainEnum_arbitrum;
+  static const ActivityRecordChainEnum arbitrum = _$activityRecordChainEnum_arbitrum;
   @BuiltValueEnumConst(wireName: r'Base')
   static const ActivityRecordChainEnum base_ = _$activityRecordChainEnum_base_;
   @BuiltValueEnumConst(wireName: r'Ethereum')
-  static const ActivityRecordChainEnum ethereum =
-      _$activityRecordChainEnum_ethereum;
+  static const ActivityRecordChainEnum ethereum = _$activityRecordChainEnum_ethereum;
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
-  static const ActivityRecordChainEnum hyperliquid =
-      _$activityRecordChainEnum_hyperliquid;
+  static const ActivityRecordChainEnum hyperliquid = _$activityRecordChainEnum_hyperliquid;
   @BuiltValueEnumConst(wireName: r'Polygon')
-  static const ActivityRecordChainEnum polygon =
-      _$activityRecordChainEnum_polygon;
+  static const ActivityRecordChainEnum polygon = _$activityRecordChainEnum_polygon;
   @BuiltValueEnumConst(wireName: r'Solana')
-  static const ActivityRecordChainEnum solana =
-      _$activityRecordChainEnum_solana;
+  static const ActivityRecordChainEnum solana = _$activityRecordChainEnum_solana;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ActivityRecordChainEnum unknownDefaultOpenApi =
-      _$activityRecordChainEnum_unknownDefaultOpenApi;
+  static const ActivityRecordChainEnum unknownDefaultOpenApi = _$activityRecordChainEnum_unknownDefaultOpenApi;
 
-  static Serializer<ActivityRecordChainEnum> get serializer =>
-      _$activityRecordChainEnumSerializer;
+  static Serializer<ActivityRecordChainEnum> get serializer => _$activityRecordChainEnumSerializer;
 
-  const ActivityRecordChainEnum._(String name) : super(name);
+  const ActivityRecordChainEnum._(String name): super(name);
 
-  static BuiltSet<ActivityRecordChainEnum> get values =>
-      _$activityRecordChainEnumValues;
-  static ActivityRecordChainEnum valueOf(String name) =>
-      _$activityRecordChainEnumValueOf(name);
+  static BuiltSet<ActivityRecordChainEnum> get values => _$activityRecordChainEnumValues;
+  static ActivityRecordChainEnum valueOf(String name) => _$activityRecordChainEnumValueOf(name);
 }
+

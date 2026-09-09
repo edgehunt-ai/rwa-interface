@@ -24,26 +24,26 @@ part 'funding_plan.g.dart';
 /// 根据 `rail` 锁定目标结算身份：bstock => BSC/USDT，perp => Hyperliquid Perps/USDC。
 ///
 /// Properties:
-/// * [planId]
-/// * [tradePreviewId]
-/// * [mode]
+/// * [planId] 
+/// * [tradePreviewId] 
+/// * [mode] 
 /// * [requiredTargetAmount] - 十进制字符串，避免浮点误差
-/// * [targetSnapshot]
+/// * [targetSnapshot] 
 /// * [shortfall] - 十进制字符串，避免浮点误差
-/// * [status]
-/// * [blocker]
-/// * [source_]
-/// * [selectedRoute]
-/// * [walletActions]
-/// * [circuitSnapshot]
-/// * [createdAt]
-/// * [expiresAt]
-/// * [rail]
-/// * [network]
-/// * [asset]
+/// * [status] 
+/// * [blocker] 
+/// * [source_] 
+/// * [selectedRoute] 
+/// * [walletActions] 
+/// * [circuitSnapshot] 
+/// * [createdAt] 
+/// * [expiresAt] 
+/// * [rail] 
+/// * [network] 
+/// * [asset] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [totalFee] - 十进制字符串，避免浮点误差
-/// * [steps]
+/// * [steps] 
 @BuiltValue()
 abstract class FundingPlan implements Built<FundingPlan, FundingPlanBuilder> {
   /// One Of [BstockFundingPlan], [LegacyBstockFundingPlan], [LegacyPerpFundingPlan], [PerpFundingPlan]
@@ -68,27 +68,26 @@ abstract class FundingPlan implements Built<FundingPlan, FundingPlanBuilder> {
 }
 
 extension FundingPlanDiscriminatorExt on FundingPlan {
-  String? get discriminatorValue {
-    if (this is BstockFundingPlan) {
-      return r'bstock';
+    String? get discriminatorValue {
+        if (this is BstockFundingPlan) {
+            return r'bstock';
+        }
+        if (this is PerpFundingPlan) {
+            return r'perp';
+        }
+        return null;
     }
-    if (this is PerpFundingPlan) {
-      return r'perp';
-    }
-    return null;
-  }
 }
-
 extension FundingPlanBuilderDiscriminatorExt on FundingPlanBuilder {
-  String? get discriminatorValue {
-    if (this is BstockFundingPlanBuilder) {
-      return r'bstock';
+    String? get discriminatorValue {
+        if (this is BstockFundingPlanBuilder) {
+            return r'bstock';
+        }
+        if (this is PerpFundingPlanBuilder) {
+            return r'perp';
+        }
+        return null;
     }
-    if (this is PerpFundingPlanBuilder) {
-      return r'perp';
-    }
-    return null;
-  }
 }
 
 class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
@@ -102,7 +101,8 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
     Serializers serializers,
     FundingPlan object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+  }
 
   @override
   Object serialize(
@@ -111,8 +111,7 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value,
-        specifiedType: FullType(oneOf.valueType))!;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -124,15 +123,10 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
     final result = FundingPlanBuilder();
     Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex =
-        serializedList.indexOf(FundingPlan.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex],
-        specifiedType: FullType(String)) as String;
+    final discIndex = serializedList.indexOf(FundingPlan.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [
-      BstockFundingPlan,
-      PerpFundingPlan,
-    ];
+    final oneOfTypes = [BstockFundingPlan, PerpFundingPlan, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
@@ -151,91 +145,74 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
         oneOfType = PerpFundingPlan;
         break;
       default:
-        throw UnsupportedError(
-            "Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
     }
-    result.oneOf = OneOfDynamic(
-        typeIndex: oneOfTypes.indexOf(oneOfType),
-        types: oneOfTypes,
-        value: oneOfResult);
+    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
 }
 
 class FundingPlanStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'ready')
   static const FundingPlanStatusEnum ready = _$fundingPlanStatusEnum_ready;
   @BuiltValueEnumConst(wireName: r'expired')
   static const FundingPlanStatusEnum expired = _$fundingPlanStatusEnum_expired;
   @BuiltValueEnumConst(wireName: r'consumed')
-  static const FundingPlanStatusEnum consumed =
-      _$fundingPlanStatusEnum_consumed;
+  static const FundingPlanStatusEnum consumed = _$fundingPlanStatusEnum_consumed;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanStatusEnum unknownDefaultOpenApi =
-      _$fundingPlanStatusEnum_unknownDefaultOpenApi;
+  static const FundingPlanStatusEnum unknownDefaultOpenApi = _$fundingPlanStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingPlanStatusEnum> get serializer =>
-      _$fundingPlanStatusEnumSerializer;
+  static Serializer<FundingPlanStatusEnum> get serializer => _$fundingPlanStatusEnumSerializer;
 
-  const FundingPlanStatusEnum._(String name) : super(name);
+  const FundingPlanStatusEnum._(String name): super(name);
 
-  static BuiltSet<FundingPlanStatusEnum> get values =>
-      _$fundingPlanStatusEnumValues;
-  static FundingPlanStatusEnum valueOf(String name) =>
-      _$fundingPlanStatusEnumValueOf(name);
+  static BuiltSet<FundingPlanStatusEnum> get values => _$fundingPlanStatusEnumValues;
+  static FundingPlanStatusEnum valueOf(String name) => _$fundingPlanStatusEnumValueOf(name);
 }
 
 class FundingPlanRailEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'perp')
   static const FundingPlanRailEnum perp = _$fundingPlanRailEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanRailEnum unknownDefaultOpenApi =
-      _$fundingPlanRailEnum_unknownDefaultOpenApi;
+  static const FundingPlanRailEnum unknownDefaultOpenApi = _$fundingPlanRailEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingPlanRailEnum> get serializer =>
-      _$fundingPlanRailEnumSerializer;
+  static Serializer<FundingPlanRailEnum> get serializer => _$fundingPlanRailEnumSerializer;
 
-  const FundingPlanRailEnum._(String name) : super(name);
+  const FundingPlanRailEnum._(String name): super(name);
 
-  static BuiltSet<FundingPlanRailEnum> get values =>
-      _$fundingPlanRailEnumValues;
-  static FundingPlanRailEnum valueOf(String name) =>
-      _$fundingPlanRailEnumValueOf(name);
+  static BuiltSet<FundingPlanRailEnum> get values => _$fundingPlanRailEnumValues;
+  static FundingPlanRailEnum valueOf(String name) => _$fundingPlanRailEnumValueOf(name);
 }
 
 class FundingPlanNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const FundingPlanNetworkEnum arbitrum =
-      _$fundingPlanNetworkEnum_arbitrum;
+  static const FundingPlanNetworkEnum arbitrum = _$fundingPlanNetworkEnum_arbitrum;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanNetworkEnum unknownDefaultOpenApi =
-      _$fundingPlanNetworkEnum_unknownDefaultOpenApi;
+  static const FundingPlanNetworkEnum unknownDefaultOpenApi = _$fundingPlanNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingPlanNetworkEnum> get serializer =>
-      _$fundingPlanNetworkEnumSerializer;
+  static Serializer<FundingPlanNetworkEnum> get serializer => _$fundingPlanNetworkEnumSerializer;
 
-  const FundingPlanNetworkEnum._(String name) : super(name);
+  const FundingPlanNetworkEnum._(String name): super(name);
 
-  static BuiltSet<FundingPlanNetworkEnum> get values =>
-      _$fundingPlanNetworkEnumValues;
-  static FundingPlanNetworkEnum valueOf(String name) =>
-      _$fundingPlanNetworkEnumValueOf(name);
+  static BuiltSet<FundingPlanNetworkEnum> get values => _$fundingPlanNetworkEnumValues;
+  static FundingPlanNetworkEnum valueOf(String name) => _$fundingPlanNetworkEnumValueOf(name);
 }
 
 class FundingPlanAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
   static const FundingPlanAssetEnum USDC = _$fundingPlanAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanAssetEnum unknownDefaultOpenApi =
-      _$fundingPlanAssetEnum_unknownDefaultOpenApi;
+  static const FundingPlanAssetEnum unknownDefaultOpenApi = _$fundingPlanAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingPlanAssetEnum> get serializer =>
-      _$fundingPlanAssetEnumSerializer;
+  static Serializer<FundingPlanAssetEnum> get serializer => _$fundingPlanAssetEnumSerializer;
 
-  const FundingPlanAssetEnum._(String name) : super(name);
+  const FundingPlanAssetEnum._(String name): super(name);
 
-  static BuiltSet<FundingPlanAssetEnum> get values =>
-      _$fundingPlanAssetEnumValues;
-  static FundingPlanAssetEnum valueOf(String name) =>
-      _$fundingPlanAssetEnumValueOf(name);
+  static BuiltSet<FundingPlanAssetEnum> get values => _$fundingPlanAssetEnumValues;
+  static FundingPlanAssetEnum valueOf(String name) => _$fundingPlanAssetEnumValueOf(name);
 }
+

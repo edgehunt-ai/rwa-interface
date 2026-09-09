@@ -13,13 +13,10 @@ part 'privy_client_config_embedded_wallet.g.dart';
 /// Embedded Wallet 创建策略
 ///
 /// Properties:
-/// * [createOnLogin]
-/// * [chains]
+/// * [createOnLogin] 
+/// * [chains] 
 @BuiltValue()
-abstract class PrivyClientConfigEmbeddedWallet
-    implements
-        Built<PrivyClientConfigEmbeddedWallet,
-            PrivyClientConfigEmbeddedWalletBuilder> {
+abstract class PrivyClientConfigEmbeddedWallet implements Built<PrivyClientConfigEmbeddedWallet, PrivyClientConfigEmbeddedWalletBuilder> {
   @BuiltValueField(wireName: r'create_on_login')
   PrivyClientConfigEmbeddedWalletCreateOnLoginEnum? get createOnLogin;
   // enum createOnLoginEnum {  users-without-wallets,  all-users,  false,  };
@@ -29,25 +26,18 @@ abstract class PrivyClientConfigEmbeddedWallet
 
   PrivyClientConfigEmbeddedWallet._();
 
-  factory PrivyClientConfigEmbeddedWallet(
-          [void updates(PrivyClientConfigEmbeddedWalletBuilder b)]) =
-      _$PrivyClientConfigEmbeddedWallet;
+  factory PrivyClientConfigEmbeddedWallet([void updates(PrivyClientConfigEmbeddedWalletBuilder b)]) = _$PrivyClientConfigEmbeddedWallet;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PrivyClientConfigEmbeddedWalletBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PrivyClientConfigEmbeddedWallet> get serializer =>
-      _$PrivyClientConfigEmbeddedWalletSerializer();
+  static Serializer<PrivyClientConfigEmbeddedWallet> get serializer => _$PrivyClientConfigEmbeddedWalletSerializer();
 }
 
-class _$PrivyClientConfigEmbeddedWalletSerializer
-    implements PrimitiveSerializer<PrivyClientConfigEmbeddedWallet> {
+class _$PrivyClientConfigEmbeddedWalletSerializer implements PrimitiveSerializer<PrivyClientConfigEmbeddedWallet> {
   @override
-  final Iterable<Type> types = const [
-    PrivyClientConfigEmbeddedWallet,
-    _$PrivyClientConfigEmbeddedWallet
-  ];
+  final Iterable<Type> types = const [PrivyClientConfigEmbeddedWallet, _$PrivyClientConfigEmbeddedWallet];
 
   @override
   final String wireName = r'PrivyClientConfigEmbeddedWallet';
@@ -61,8 +51,7 @@ class _$PrivyClientConfigEmbeddedWalletSerializer
       yield r'create_on_login';
       yield serializers.serialize(
         object.createOnLogin,
-        specifiedType:
-            const FullType(PrivyClientConfigEmbeddedWalletCreateOnLoginEnum),
+        specifiedType: const FullType(PrivyClientConfigEmbeddedWalletCreateOnLoginEnum),
       );
     }
     if (object.chains != null) {
@@ -80,9 +69,7 @@ class _$PrivyClientConfigEmbeddedWalletSerializer
     PrivyClientConfigEmbeddedWallet object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -100,8 +87,7 @@ class _$PrivyClientConfigEmbeddedWalletSerializer
         case r'create_on_login':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(
-                PrivyClientConfigEmbeddedWalletCreateOnLoginEnum),
+            specifiedType: const FullType.nullable(PrivyClientConfigEmbeddedWalletCreateOnLoginEnum),
           ) as PrivyClientConfigEmbeddedWalletCreateOnLoginEnum?;
           if (valueDes == null) continue;
           result.createOnLogin = valueDes;
@@ -109,8 +95,7 @@ class _$PrivyClientConfigEmbeddedWalletSerializer
         case r'chains':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(Chain)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(Chain)]),
           ) as BuiltList<Chain>?;
           if (valueDes == null) continue;
           result.chains.replace(valueDes);
@@ -145,31 +130,21 @@ class _$PrivyClientConfigEmbeddedWalletSerializer
 }
 
 class PrivyClientConfigEmbeddedWalletCreateOnLoginEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'users-without-wallets')
-  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum
-      usersWithoutWallets =
-      _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_usersWithoutWallets;
+  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum usersWithoutWallets = _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_usersWithoutWallets;
   @BuiltValueEnumConst(wireName: r'all-users')
-  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum allUsers =
-      _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_allUsers;
+  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum allUsers = _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_allUsers;
   @BuiltValueEnumConst(wireName: r'false')
-  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum false_ =
-      _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_false_;
+  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum false_ = _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_false_;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum
-      unknownDefaultOpenApi =
-      _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_unknownDefaultOpenApi;
+  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum unknownDefaultOpenApi = _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyClientConfigEmbeddedWalletCreateOnLoginEnum>
-      get serializer =>
-          _$privyClientConfigEmbeddedWalletCreateOnLoginEnumSerializer;
+  static Serializer<PrivyClientConfigEmbeddedWalletCreateOnLoginEnum> get serializer => _$privyClientConfigEmbeddedWalletCreateOnLoginEnumSerializer;
 
-  const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum._(String name)
-      : super(name);
+  const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum._(String name): super(name);
 
-  static BuiltSet<PrivyClientConfigEmbeddedWalletCreateOnLoginEnum>
-      get values => _$privyClientConfigEmbeddedWalletCreateOnLoginEnumValues;
-  static PrivyClientConfigEmbeddedWalletCreateOnLoginEnum valueOf(
-          String name) =>
-      _$privyClientConfigEmbeddedWalletCreateOnLoginEnumValueOf(name);
+  static BuiltSet<PrivyClientConfigEmbeddedWalletCreateOnLoginEnum> get values => _$privyClientConfigEmbeddedWalletCreateOnLoginEnumValues;
+  static PrivyClientConfigEmbeddedWalletCreateOnLoginEnum valueOf(String name) => _$privyClientConfigEmbeddedWalletCreateOnLoginEnumValueOf(name);
 }
+

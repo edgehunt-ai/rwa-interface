@@ -14,51 +14,42 @@ part 'bsc_confirmed_deposit.g.dart';
 /// BscConfirmedDeposit
 ///
 /// Properties:
-/// * [depositId]
-/// * [chain]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
+/// * [depositId] 
+/// * [chain] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [amountRaw] - ERC-20 Transfer log 中的精确原始整数金额。
-/// * [status]
-/// * [confirmations]
-/// * [confirmationsRequired]
-/// * [txHash]
-/// * [logIndex]
-/// * [blockNumber]
-/// * [blockHash]
-/// * [sender]
-/// * [recipient]
-/// * [detectedAt]
-/// * [confirmedAt]
-/// * [updatedAt]
+/// * [status] 
+/// * [confirmations] 
+/// * [confirmationsRequired] 
+/// * [txHash] 
+/// * [logIndex] 
+/// * [blockNumber] 
+/// * [blockHash] 
+/// * [sender] 
+/// * [recipient] 
+/// * [detectedAt] 
+/// * [confirmedAt] 
+/// * [updatedAt] 
 @BuiltValue()
-abstract class BscConfirmedDeposit
-    implements
-        DepositBase,
-        Built<BscConfirmedDeposit, BscConfirmedDepositBuilder> {
+abstract class BscConfirmedDeposit implements DepositBase, Built<BscConfirmedDeposit, BscConfirmedDepositBuilder> {
   BscConfirmedDeposit._();
 
-  factory BscConfirmedDeposit([void updates(BscConfirmedDepositBuilder b)]) =
-      _$BscConfirmedDeposit;
+  factory BscConfirmedDeposit([void updates(BscConfirmedDepositBuilder b)]) = _$BscConfirmedDeposit;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BscConfirmedDepositBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BscConfirmedDeposit> get serializer =>
-      _$BscConfirmedDepositSerializer();
+  static Serializer<BscConfirmedDeposit> get serializer => _$BscConfirmedDepositSerializer();
 }
 
-class _$BscConfirmedDepositSerializer
-    implements PrimitiveSerializer<BscConfirmedDeposit> {
+class _$BscConfirmedDepositSerializer implements PrimitiveSerializer<BscConfirmedDeposit> {
   @override
-  final Iterable<Type> types = const [
-    BscConfirmedDeposit,
-    _$BscConfirmedDeposit
-  ];
+  final Iterable<Type> types = const [BscConfirmedDeposit, _$BscConfirmedDeposit];
 
   @override
   final String wireName = r'BscConfirmedDeposit';
@@ -176,9 +167,7 @@ class _$BscConfirmedDepositSerializer
     BscConfirmedDeposit object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -363,97 +352,77 @@ class _$BscConfirmedDepositSerializer
 }
 
 class BscConfirmedDepositChainEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const BscConfirmedDepositChainEnum BSC =
-      _$bscConfirmedDepositChainEnum_BSC;
+  static const BscConfirmedDepositChainEnum BSC = _$bscConfirmedDepositChainEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscConfirmedDepositChainEnum unknownDefaultOpenApi =
-      _$bscConfirmedDepositChainEnum_unknownDefaultOpenApi;
+  static const BscConfirmedDepositChainEnum unknownDefaultOpenApi = _$bscConfirmedDepositChainEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscConfirmedDepositChainEnum> get serializer =>
-      _$bscConfirmedDepositChainEnumSerializer;
+  static Serializer<BscConfirmedDepositChainEnum> get serializer => _$bscConfirmedDepositChainEnumSerializer;
 
-  const BscConfirmedDepositChainEnum._(String name) : super(name);
+  const BscConfirmedDepositChainEnum._(String name): super(name);
 
-  static BuiltSet<BscConfirmedDepositChainEnum> get values =>
-      _$bscConfirmedDepositChainEnumValues;
-  static BscConfirmedDepositChainEnum valueOf(String name) =>
-      _$bscConfirmedDepositChainEnumValueOf(name);
+  static BuiltSet<BscConfirmedDepositChainEnum> get values => _$bscConfirmedDepositChainEnumValues;
+  static BscConfirmedDepositChainEnum valueOf(String name) => _$bscConfirmedDepositChainEnumValueOf(name);
 }
 
 class BscConfirmedDepositChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 56)
-  static const BscConfirmedDepositChainIdEnum number56 =
-      _$bscConfirmedDepositChainIdEnum_number56;
+  static const BscConfirmedDepositChainIdEnum number56 = _$bscConfirmedDepositChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscConfirmedDepositChainIdEnum unknownDefaultOpenApi =
-      _$bscConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
+  static const BscConfirmedDepositChainIdEnum unknownDefaultOpenApi = _$bscConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscConfirmedDepositChainIdEnum> get serializer =>
-      _$bscConfirmedDepositChainIdEnumSerializer;
+  static Serializer<BscConfirmedDepositChainIdEnum> get serializer => _$bscConfirmedDepositChainIdEnumSerializer;
 
-  const BscConfirmedDepositChainIdEnum._(String name) : super(name);
+  const BscConfirmedDepositChainIdEnum._(String name): super(name);
 
-  static BuiltSet<BscConfirmedDepositChainIdEnum> get values =>
-      _$bscConfirmedDepositChainIdEnumValues;
-  static BscConfirmedDepositChainIdEnum valueOf(String name) =>
-      _$bscConfirmedDepositChainIdEnumValueOf(name);
+  static BuiltSet<BscConfirmedDepositChainIdEnum> get values => _$bscConfirmedDepositChainIdEnumValues;
+  static BscConfirmedDepositChainIdEnum valueOf(String name) => _$bscConfirmedDepositChainIdEnumValueOf(name);
 }
 
 class BscConfirmedDepositTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const BscConfirmedDepositTokenEnum USDC =
-      _$bscConfirmedDepositTokenEnum_USDC;
+  static const BscConfirmedDepositTokenEnum USDC = _$bscConfirmedDepositTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscConfirmedDepositTokenEnum unknownDefaultOpenApi =
-      _$bscConfirmedDepositTokenEnum_unknownDefaultOpenApi;
+  static const BscConfirmedDepositTokenEnum unknownDefaultOpenApi = _$bscConfirmedDepositTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscConfirmedDepositTokenEnum> get serializer =>
-      _$bscConfirmedDepositTokenEnumSerializer;
+  static Serializer<BscConfirmedDepositTokenEnum> get serializer => _$bscConfirmedDepositTokenEnumSerializer;
 
-  const BscConfirmedDepositTokenEnum._(String name) : super(name);
+  const BscConfirmedDepositTokenEnum._(String name): super(name);
 
-  static BuiltSet<BscConfirmedDepositTokenEnum> get values =>
-      _$bscConfirmedDepositTokenEnumValues;
-  static BscConfirmedDepositTokenEnum valueOf(String name) =>
-      _$bscConfirmedDepositTokenEnumValueOf(name);
+  static BuiltSet<BscConfirmedDepositTokenEnum> get values => _$bscConfirmedDepositTokenEnumValues;
+  static BscConfirmedDepositTokenEnum valueOf(String name) => _$bscConfirmedDepositTokenEnumValueOf(name);
 }
 
 class BscConfirmedDepositTokenContractEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')
-  static const BscConfirmedDepositTokenContractEnum
-      n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d =
-      _$bscConfirmedDepositTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
+  static const BscConfirmedDepositTokenContractEnum n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d = _$bscConfirmedDepositTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscConfirmedDepositTokenContractEnum unknownDefaultOpenApi =
-      _$bscConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
+  static const BscConfirmedDepositTokenContractEnum unknownDefaultOpenApi = _$bscConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscConfirmedDepositTokenContractEnum> get serializer =>
-      _$bscConfirmedDepositTokenContractEnumSerializer;
+  static Serializer<BscConfirmedDepositTokenContractEnum> get serializer => _$bscConfirmedDepositTokenContractEnumSerializer;
 
-  const BscConfirmedDepositTokenContractEnum._(String name) : super(name);
+  const BscConfirmedDepositTokenContractEnum._(String name): super(name);
 
-  static BuiltSet<BscConfirmedDepositTokenContractEnum> get values =>
-      _$bscConfirmedDepositTokenContractEnumValues;
-  static BscConfirmedDepositTokenContractEnum valueOf(String name) =>
-      _$bscConfirmedDepositTokenContractEnumValueOf(name);
+  static BuiltSet<BscConfirmedDepositTokenContractEnum> get values => _$bscConfirmedDepositTokenContractEnumValues;
+  static BscConfirmedDepositTokenContractEnum valueOf(String name) => _$bscConfirmedDepositTokenContractEnumValueOf(name);
 }
 
 class BscConfirmedDepositTokenDecimalsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 18)
-  static const BscConfirmedDepositTokenDecimalsEnum number18 =
-      _$bscConfirmedDepositTokenDecimalsEnum_number18;
+  static const BscConfirmedDepositTokenDecimalsEnum number18 = _$bscConfirmedDepositTokenDecimalsEnum_number18;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscConfirmedDepositTokenDecimalsEnum unknownDefaultOpenApi =
-      _$bscConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
+  static const BscConfirmedDepositTokenDecimalsEnum unknownDefaultOpenApi = _$bscConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscConfirmedDepositTokenDecimalsEnum> get serializer =>
-      _$bscConfirmedDepositTokenDecimalsEnumSerializer;
+  static Serializer<BscConfirmedDepositTokenDecimalsEnum> get serializer => _$bscConfirmedDepositTokenDecimalsEnumSerializer;
 
-  const BscConfirmedDepositTokenDecimalsEnum._(String name) : super(name);
+  const BscConfirmedDepositTokenDecimalsEnum._(String name): super(name);
 
-  static BuiltSet<BscConfirmedDepositTokenDecimalsEnum> get values =>
-      _$bscConfirmedDepositTokenDecimalsEnumValues;
-  static BscConfirmedDepositTokenDecimalsEnum valueOf(String name) =>
-      _$bscConfirmedDepositTokenDecimalsEnumValueOf(name);
+  static BuiltSet<BscConfirmedDepositTokenDecimalsEnum> get values => _$bscConfirmedDepositTokenDecimalsEnumValues;
+  static BscConfirmedDepositTokenDecimalsEnum valueOf(String name) => _$bscConfirmedDepositTokenDecimalsEnumValueOf(name);
 }
+

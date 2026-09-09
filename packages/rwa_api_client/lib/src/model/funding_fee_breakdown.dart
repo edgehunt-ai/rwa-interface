@@ -11,7 +11,7 @@ part 'funding_fee_breakdown.g.dart';
 /// FundingFeeBreakdown
 ///
 /// Properties:
-/// * [feeAsset]
+/// * [feeAsset] 
 /// * [providerFee] - 十进制字符串，避免浮点误差
 /// * [bridgeFee] - 十进制字符串，避免浮点误差
 /// * [swapFee] - 十进制字符串，避免浮点误差
@@ -19,8 +19,7 @@ part 'funding_fee_breakdown.g.dart';
 /// * [totalFee] - 十进制字符串，避免浮点误差
 /// * [totalCostUsd] - 十进制字符串，避免浮点误差
 @BuiltValue()
-abstract class FundingFeeBreakdown
-    implements Built<FundingFeeBreakdown, FundingFeeBreakdownBuilder> {
+abstract class FundingFeeBreakdown implements Built<FundingFeeBreakdown, FundingFeeBreakdownBuilder> {
   @BuiltValueField(wireName: r'fee_asset')
   String get feeAsset;
 
@@ -50,24 +49,18 @@ abstract class FundingFeeBreakdown
 
   FundingFeeBreakdown._();
 
-  factory FundingFeeBreakdown([void updates(FundingFeeBreakdownBuilder b)]) =
-      _$FundingFeeBreakdown;
+  factory FundingFeeBreakdown([void updates(FundingFeeBreakdownBuilder b)]) = _$FundingFeeBreakdown;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingFeeBreakdownBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingFeeBreakdown> get serializer =>
-      _$FundingFeeBreakdownSerializer();
+  static Serializer<FundingFeeBreakdown> get serializer => _$FundingFeeBreakdownSerializer();
 }
 
-class _$FundingFeeBreakdownSerializer
-    implements PrimitiveSerializer<FundingFeeBreakdown> {
+class _$FundingFeeBreakdownSerializer implements PrimitiveSerializer<FundingFeeBreakdown> {
   @override
-  final Iterable<Type> types = const [
-    FundingFeeBreakdown,
-    _$FundingFeeBreakdown
-  ];
+  final Iterable<Type> types = const [FundingFeeBreakdown, _$FundingFeeBreakdown];
 
   @override
   final String wireName = r'FundingFeeBreakdown';
@@ -120,9 +113,7 @@ class _$FundingFeeBreakdownSerializer
     FundingFeeBreakdown object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -214,3 +205,4 @@ class _$FundingFeeBreakdownSerializer
     return result.build();
   }
 }
+

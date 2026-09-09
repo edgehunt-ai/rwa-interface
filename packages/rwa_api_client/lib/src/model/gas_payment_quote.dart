@@ -13,19 +13,18 @@ part 'gas_payment_quote.g.dart';
 /// Server-authoritative gas estimate and sponsorship/fallback decision.
 ///
 /// Properties:
-/// * [mode]
-/// * [decision]
-/// * [platformPays]
+/// * [mode] 
+/// * [decision] 
+/// * [platformPays] 
 /// * [nativeAsset] - Native gas asset symbol for the frozen action chain, for example BNB or ETH.
 /// * [estimatedNativeFee] - 十进制字符串，避免浮点误差
 /// * [estimatedFeeUsd] - 十进制字符串，避免浮点误差
 /// * [walletNativeBalance] - 十进制字符串，避免浮点误差
-/// * [fallbackAllowed] - True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt.
-/// * [eip7702Required]
+/// * [fallbackAllowed] - True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt. 
+/// * [eip7702Required] 
 /// * [eip7702Notice] - Required user-facing disclosure when EIP-7702 authorization is needed.
 @BuiltValue()
-abstract class GasPaymentQuote
-    implements Built<GasPaymentQuote, GasPaymentQuoteBuilder> {
+abstract class GasPaymentQuote implements Built<GasPaymentQuote, GasPaymentQuoteBuilder> {
   @BuiltValueField(wireName: r'mode')
   GasPaymentMode get mode;
   // enum modeEnum {  app_sponsored,  user_paid_native,  };
@@ -53,7 +52,7 @@ abstract class GasPaymentQuote
   @BuiltValueField(wireName: r'wallet_native_balance')
   String? get walletNativeBalance;
 
-  /// True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt.
+  /// True only when policy permits user-paid fallback. Fallback may be entered only after a deterministic rejection proven to have occurred before any broadcast attempt. 
   @BuiltValueField(wireName: r'fallback_allowed')
   bool get fallbackAllowed;
 
@@ -66,19 +65,16 @@ abstract class GasPaymentQuote
 
   GasPaymentQuote._();
 
-  factory GasPaymentQuote([void updates(GasPaymentQuoteBuilder b)]) =
-      _$GasPaymentQuote;
+  factory GasPaymentQuote([void updates(GasPaymentQuoteBuilder b)]) = _$GasPaymentQuote;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GasPaymentQuoteBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GasPaymentQuote> get serializer =>
-      _$GasPaymentQuoteSerializer();
+  static Serializer<GasPaymentQuote> get serializer => _$GasPaymentQuoteSerializer();
 }
 
-class _$GasPaymentQuoteSerializer
-    implements PrimitiveSerializer<GasPaymentQuote> {
+class _$GasPaymentQuoteSerializer implements PrimitiveSerializer<GasPaymentQuote> {
   @override
   final Iterable<Type> types = const [GasPaymentQuote, _$GasPaymentQuote];
 
@@ -121,12 +117,10 @@ class _$GasPaymentQuoteSerializer
       specifiedType: const FullType(String),
     );
     yield r'wallet_native_balance';
-    yield object.walletNativeBalance == null
-        ? null
-        : serializers.serialize(
-            object.walletNativeBalance,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.walletNativeBalance == null ? null : serializers.serialize(
+      object.walletNativeBalance,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'fallback_allowed';
     yield serializers.serialize(
       object.fallbackAllowed,
@@ -138,12 +132,10 @@ class _$GasPaymentQuoteSerializer
       specifiedType: const FullType(bool),
     );
     yield r'eip_7702_notice';
-    yield object.eip7702Notice == null
-        ? null
-        : serializers.serialize(
-            object.eip7702Notice,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.eip7702Notice == null ? null : serializers.serialize(
+      object.eip7702Notice,
+      specifiedType: const FullType.nullable(String),
+    );
   }
 
   @override
@@ -152,9 +144,7 @@ class _$GasPaymentQuoteSerializer
     GasPaymentQuote object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -269,3 +259,4 @@ class _$GasPaymentQuoteSerializer
     return result.build();
   }
 }
+

@@ -7,6 +7,7 @@ import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -16,16 +17,17 @@ part 'order_preview_common.g.dart';
 /// OrderPreviewCommon
 ///
 /// Properties:
-/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。
-/// * [symbol]
-/// * [side]
-/// * [type]
+/// * [hip3Execution] 
+/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
+/// * [symbol] 
+/// * [side] 
+/// * [type] 
 /// * [marketPrice] - 十进制字符串，避免浮点误差
 /// * [estimatedPrice] - 预计成交价；与 `market_price` 不同时前端提示「价格已更新」
 /// * [priceUpdated] - 报价较用户上次看到的价格是否已变化
 /// * [estimatedQuantity] - 十进制字符串，避免浮点误差
 /// * [estimatedReceive] - 预计获得数量（扣除滑点后）
-/// * [estimatedReceiveUnit]
+/// * [estimatedReceiveUnit] 
 /// * [orderValue] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
 /// * [feeRate] - 十进制字符串，避免浮点误差
@@ -33,16 +35,19 @@ part 'order_preview_common.g.dart';
 /// * [orderBookImpactPercent] - 十进制字符串，避免浮点误差
 /// * [networkFee] - Network fee as a decimal string. The asset is carried separately in fee_asset.
 /// * [settlementAccount] - 成交后资产的到账账户
-/// * [settlementAccountLabel]
+/// * [settlementAccountLabel] 
 /// * [marginRequired] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 仅 HIP-3
-/// * [quoteExpiresAt]
+/// * [quoteExpiresAt] 
 /// * [details] - 「查看详情」中逐行展示的键值对
 /// * [feeAsset] - Asset used to denominate network_fee, for example BNB or USDC.
 /// * [feeNote] - Optional localized display note, for example Included.
 @BuiltValue(instantiable: false)
-abstract class OrderPreviewCommon {
-  /// 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。
+abstract class OrderPreviewCommon  {
+  @BuiltValueField(wireName: r'hip3_execution')
+  Hip3PreviewExecution? get hip3Execution;
+
+  /// 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
   @BuiltValueField(wireName: r'preview_id')
   String get previewId;
 
@@ -136,12 +141,10 @@ abstract class OrderPreviewCommon {
   String? get feeNote;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<OrderPreviewCommon> get serializer =>
-      _$OrderPreviewCommonSerializer();
+  static Serializer<OrderPreviewCommon> get serializer => _$OrderPreviewCommonSerializer();
 }
 
-class _$OrderPreviewCommonSerializer
-    implements PrimitiveSerializer<OrderPreviewCommon> {
+class _$OrderPreviewCommonSerializer implements PrimitiveSerializer<OrderPreviewCommon> {
   @override
   final Iterable<Type> types = const [OrderPreviewCommon];
 
@@ -153,6 +156,13 @@ class _$OrderPreviewCommonSerializer
     OrderPreviewCommon object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.hip3Execution != null) {
+      yield r'hip3_execution';
+      yield serializers.serialize(
+        object.hip3Execution,
+        specifiedType: const FullType(Hip3PreviewExecution),
+      );
+    }
     yield r'preview_id';
     yield serializers.serialize(
       object.previewId,
@@ -319,9 +329,7 @@ class _$OrderPreviewCommonSerializer
     OrderPreviewCommon object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   @override
@@ -330,38 +338,27 @@ class _$OrderPreviewCommonSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.deserialize(serialized,
-        specifiedType: FullType($OrderPreviewCommon)) as $OrderPreviewCommon;
+    return serializers.deserialize(serialized, specifiedType: FullType($OrderPreviewCommon)) as $OrderPreviewCommon;
   }
 }
 
 /// a concrete implementation of [OrderPreviewCommon], since [OrderPreviewCommon] is not instantiable
 @BuiltValue(instantiable: true)
-abstract class $OrderPreviewCommon
-    implements
-        OrderPreviewCommon,
-        Built<$OrderPreviewCommon, $OrderPreviewCommonBuilder> {
+abstract class $OrderPreviewCommon implements OrderPreviewCommon, Built<$OrderPreviewCommon, $OrderPreviewCommonBuilder> {
   $OrderPreviewCommon._();
 
-  factory $OrderPreviewCommon(
-          [void Function($OrderPreviewCommonBuilder)? updates]) =
-      _$$OrderPreviewCommon;
+  factory $OrderPreviewCommon([void Function($OrderPreviewCommonBuilder)? updates]) = _$$OrderPreviewCommon;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults($OrderPreviewCommonBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<$OrderPreviewCommon> get serializer =>
-      _$$OrderPreviewCommonSerializer();
+  static Serializer<$OrderPreviewCommon> get serializer => _$$OrderPreviewCommonSerializer();
 }
 
-class _$$OrderPreviewCommonSerializer
-    implements PrimitiveSerializer<$OrderPreviewCommon> {
+class _$$OrderPreviewCommonSerializer implements PrimitiveSerializer<$OrderPreviewCommon> {
   @override
-  final Iterable<Type> types = const [
-    $OrderPreviewCommon,
-    _$$OrderPreviewCommon
-  ];
+  final Iterable<Type> types = const [$OrderPreviewCommon, _$$OrderPreviewCommon];
 
   @override
   final String wireName = r'$OrderPreviewCommon';
@@ -372,8 +369,7 @@ class _$$OrderPreviewCommonSerializer
     $OrderPreviewCommon object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.serialize(object,
-        specifiedType: FullType(OrderPreviewCommon))!;
+    return serializers.serialize(object, specifiedType: FullType(OrderPreviewCommon))!;
   }
 
   void _deserializeProperties(
@@ -388,6 +384,14 @@ class _$$OrderPreviewCommonSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'hip3_execution':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3PreviewExecution),
+          ) as Hip3PreviewExecution?;
+          if (valueDes == null) continue;
+          result.hip3Execution.replace(valueDes);
+          break;
         case r'preview_id':
           final valueDes = serializers.deserialize(
             value,
@@ -554,8 +558,7 @@ class _$$OrderPreviewCommonSerializer
         case r'details':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
           ) as BuiltList<KeyValue>?;
           if (valueDes == null) continue;
           result.details.replace(valueDes);
@@ -604,3 +607,4 @@ class _$$OrderPreviewCommonSerializer
     return result.build();
   }
 }
+

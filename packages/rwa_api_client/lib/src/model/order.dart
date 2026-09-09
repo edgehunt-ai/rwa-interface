@@ -7,12 +7,13 @@ import 'package:rwa_api_client/src/model/order_fill.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:rwa_api_client/src/model/order_status.dart';
-import 'package:rwa_api_client/src/model/hip3_order_action.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
+import 'package:rwa_api_client/src/model/hip3_conditional_order.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -22,21 +23,24 @@ part 'order.g.dart';
 /// Order
 ///
 /// Properties:
-/// * [kind]
-/// * [nextAction] - 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。
-/// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
-/// * [orderId]
-/// * [clientOrderId]
-/// * [providerOrderId]
+/// * [kind] 
+/// * [nextAction] - 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
+/// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
+/// * [productId] - HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
+/// * [hip3ActionId] - 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
+/// * [timeInForce] 
+/// * [conditional] 
+/// * [orderId] 
+/// * [clientOrderId] 
+/// * [providerOrderId] 
 /// * [providerStatus] - Provider-native status retained for support and reconciliation.
-/// * [providerObservedAt]
-/// * [reconciliationStatus]
-/// * [fills]
-/// * [symbol]
-/// * [side]
-/// * [type]
-/// * [status]
-/// * [hip3Action]
+/// * [providerObservedAt] 
+/// * [reconciliationStatus] 
+/// * [fills] 
+/// * [symbol] 
+/// * [side] 
+/// * [type] 
+/// * [status] 
 /// * [limitPrice] - 十进制字符串，避免浮点误差
 /// * [quantity] - 十进制字符串，避免浮点误差
 /// * [filledQuantity] - 十进制字符串，避免浮点误差
@@ -44,29 +48,44 @@ part 'order.g.dart';
 /// * [orderValue] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode]
-/// * [reduceOnly]
-/// * [tpSl]
-/// * [positionId]
+/// * [marginMode] 
+/// * [reduceOnly] 
+/// * [tpSl] 
+/// * [positionId] 
 /// * [realizedPnl] - 平仓单的已实现盈亏
-/// * [txHash]
-/// * [failureReason]
-/// * [createdAt]
-/// * [updatedAt]
+/// * [txHash] 
+/// * [failureReason] 
+/// * [createdAt] 
+/// * [updatedAt] 
 @BuiltValue()
 abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'kind')
   ProductKind get kind;
   // enum kindEnum {  bstock,  perp,  };
 
-  /// 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。
+  /// 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
   @BuiltValueField(wireName: r'next_action')
   JsonObject? get nextAction;
 
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
+  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueField(wireName: r'wallet_action_blocker')
   OrderWalletActionBlockerEnum? get walletActionBlocker;
   // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  not_applicable,  };
+
+  /// HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
+  @BuiltValueField(wireName: r'product_id')
+  String? get productId;
+
+  /// 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
+  @BuiltValueField(wireName: r'hip3_action_id')
+  String? get hip3ActionId;
+
+  @BuiltValueField(wireName: r'time_in_force')
+  Hip3TimeInForce? get timeInForce;
+  // enum timeInForceEnum {  gtc,  ioc,  alo,  };
+
+  @BuiltValueField(wireName: r'conditional')
+  Hip3ConditionalOrder? get conditional;
 
   @BuiltValueField(wireName: r'order_id')
   String get orderId;
@@ -105,9 +124,6 @@ abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'status')
   OrderStatus get status;
   // enum statusEnum {  pending_signature,  submitted,  open,  partially_filled,  filled,  cancelled,  failed,  ambiguous,  manual_review,  };
-
-  @BuiltValueField(wireName: r'hip3_action')
-  Hip3OrderAction? get hip3Action;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'limit_price')
@@ -171,7 +187,8 @@ abstract class Order implements Built<Order, OrderBuilder> {
   factory Order([void updates(OrderBuilder b)]) = _$Order;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(OrderBuilder b) => b..reduceOnly = false;
+  static void _defaults(OrderBuilder b) => b
+      ..reduceOnly = false;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<Order> get serializer => _$OrderSerializer();
@@ -195,20 +212,43 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       specifiedType: const FullType(ProductKind),
     );
     yield r'next_action';
-    yield object.nextAction == null
-        ? null
-        : serializers.serialize(
-            object.nextAction,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.nextAction == null ? null : serializers.serialize(
+      object.nextAction,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'wallet_action_blocker';
-    yield object.walletActionBlocker == null
-        ? null
-        : serializers.serialize(
-            object.walletActionBlocker,
-            specifiedType:
-                const FullType.nullable(OrderWalletActionBlockerEnum),
-          );
+    yield object.walletActionBlocker == null ? null : serializers.serialize(
+      object.walletActionBlocker,
+      specifiedType: const FullType.nullable(OrderWalletActionBlockerEnum),
+    );
+    if (object.productId != null) {
+      yield r'product_id';
+      yield serializers.serialize(
+        object.productId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.hip3ActionId != null) {
+      yield r'hip3_action_id';
+      yield serializers.serialize(
+        object.hip3ActionId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.timeInForce != null) {
+      yield r'time_in_force';
+      yield serializers.serialize(
+        object.timeInForce,
+        specifiedType: const FullType(Hip3TimeInForce),
+      );
+    }
+    if (object.conditional != null) {
+      yield r'conditional';
+      yield serializers.serialize(
+        object.conditional,
+        specifiedType: const FullType(Hip3ConditionalOrder),
+      );
+    }
     yield r'order_id';
     yield serializers.serialize(
       object.orderId,
@@ -276,13 +316,6 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       object.status,
       specifiedType: const FullType(OrderStatus),
     );
-    if (object.hip3Action != null) {
-      yield r'hip3_action';
-      yield serializers.serialize(
-        object.hip3Action,
-        specifiedType: const FullType(Hip3OrderAction),
-      );
-    }
     if (object.limitPrice != null) {
       yield r'limit_price';
       yield serializers.serialize(
@@ -401,9 +434,7 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
     Order object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -436,11 +467,42 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
         case r'wallet_action_blocker':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(OrderWalletActionBlockerEnum),
+            specifiedType: const FullType.nullable(OrderWalletActionBlockerEnum),
           ) as OrderWalletActionBlockerEnum?;
           if (valueDes == null) continue;
           result.walletActionBlocker = valueDes;
+          break;
+        case r'product_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.productId = valueDes;
+          break;
+        case r'hip3_action_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.hip3ActionId = valueDes;
+          break;
+        case r'time_in_force':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3TimeInForce),
+          ) as Hip3TimeInForce?;
+          if (valueDes == null) continue;
+          result.timeInForce = valueDes;
+          break;
+        case r'conditional':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3ConditionalOrder),
+          ) as Hip3ConditionalOrder?;
+          if (valueDes == null) continue;
+          result.conditional.replace(valueDes);
           break;
         case r'order_id':
           final valueDes = serializers.deserialize(
@@ -492,8 +554,7 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
         case r'fills':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(OrderFill)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(OrderFill)]),
           ) as BuiltList<OrderFill>?;
           if (valueDes == null) continue;
           result.fills.replace(valueDes);
@@ -525,14 +586,6 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
             specifiedType: const FullType(OrderStatus),
           ) as OrderStatus;
           result.status = valueDes;
-          break;
-        case r'hip3_action':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(Hip3OrderAction),
-          ) as Hip3OrderAction?;
-          if (valueDes == null) continue;
-          result.hip3Action.replace(valueDes);
           break;
         case r'limit_price':
           final valueDes = serializers.deserialize(
@@ -691,38 +744,28 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
 }
 
 class OrderWalletActionBlockerEnum extends EnumClass {
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
+
+  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueEnumConst(wireName: r'provider_unavailable')
-  static const OrderWalletActionBlockerEnum providerUnavailable =
-      _$orderWalletActionBlockerEnum_providerUnavailable;
-
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
+  static const OrderWalletActionBlockerEnum providerUnavailable = _$orderWalletActionBlockerEnum_providerUnavailable;
+  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueEnumConst(wireName: r'action_not_ready')
-  static const OrderWalletActionBlockerEnum actionNotReady =
-      _$orderWalletActionBlockerEnum_actionNotReady;
-
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
+  static const OrderWalletActionBlockerEnum actionNotReady = _$orderWalletActionBlockerEnum_actionNotReady;
+  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueEnumConst(wireName: r'capability_disabled')
-  static const OrderWalletActionBlockerEnum capabilityDisabled =
-      _$orderWalletActionBlockerEnum_capabilityDisabled;
-
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
+  static const OrderWalletActionBlockerEnum capabilityDisabled = _$orderWalletActionBlockerEnum_capabilityDisabled;
+  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueEnumConst(wireName: r'not_applicable')
-  static const OrderWalletActionBlockerEnum notApplicable =
-      _$orderWalletActionBlockerEnum_notApplicable;
-
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
+  static const OrderWalletActionBlockerEnum notApplicable = _$orderWalletActionBlockerEnum_notApplicable;
+  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderWalletActionBlockerEnum unknownDefaultOpenApi =
-      _$orderWalletActionBlockerEnum_unknownDefaultOpenApi;
+  static const OrderWalletActionBlockerEnum unknownDefaultOpenApi = _$orderWalletActionBlockerEnum_unknownDefaultOpenApi;
 
-  static Serializer<OrderWalletActionBlockerEnum> get serializer =>
-      _$orderWalletActionBlockerEnumSerializer;
+  static Serializer<OrderWalletActionBlockerEnum> get serializer => _$orderWalletActionBlockerEnumSerializer;
 
-  const OrderWalletActionBlockerEnum._(String name) : super(name);
+  const OrderWalletActionBlockerEnum._(String name): super(name);
 
-  static BuiltSet<OrderWalletActionBlockerEnum> get values =>
-      _$orderWalletActionBlockerEnumValues;
-  static OrderWalletActionBlockerEnum valueOf(String name) =>
-      _$orderWalletActionBlockerEnumValueOf(name);
+  static BuiltSet<OrderWalletActionBlockerEnum> get values => _$orderWalletActionBlockerEnumValues;
+  static OrderWalletActionBlockerEnum valueOf(String name) => _$orderWalletActionBlockerEnumValueOf(name);
 }
+

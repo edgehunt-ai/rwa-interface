@@ -12,15 +12,13 @@ part 'funding_global_circuit_open.g.dart';
 /// FundingGlobalCircuitOpen
 ///
 /// Properties:
-/// * [scope]
-/// * [state]
-/// * [generation]
-/// * [reason]
-/// * [trippedAt]
+/// * [scope] 
+/// * [state] 
+/// * [generation] 
+/// * [reason] 
+/// * [trippedAt] 
 @BuiltValue()
-abstract class FundingGlobalCircuitOpen
-    implements
-        Built<FundingGlobalCircuitOpen, FundingGlobalCircuitOpenBuilder> {
+abstract class FundingGlobalCircuitOpen implements Built<FundingGlobalCircuitOpen, FundingGlobalCircuitOpenBuilder> {
   @BuiltValueField(wireName: r'scope')
   FundingGlobalCircuitOpenScopeEnum get scope;
   // enum scopeEnum {  global,  };
@@ -40,25 +38,18 @@ abstract class FundingGlobalCircuitOpen
 
   FundingGlobalCircuitOpen._();
 
-  factory FundingGlobalCircuitOpen(
-          [void updates(FundingGlobalCircuitOpenBuilder b)]) =
-      _$FundingGlobalCircuitOpen;
+  factory FundingGlobalCircuitOpen([void updates(FundingGlobalCircuitOpenBuilder b)]) = _$FundingGlobalCircuitOpen;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingGlobalCircuitOpenBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingGlobalCircuitOpen> get serializer =>
-      _$FundingGlobalCircuitOpenSerializer();
+  static Serializer<FundingGlobalCircuitOpen> get serializer => _$FundingGlobalCircuitOpenSerializer();
 }
 
-class _$FundingGlobalCircuitOpenSerializer
-    implements PrimitiveSerializer<FundingGlobalCircuitOpen> {
+class _$FundingGlobalCircuitOpenSerializer implements PrimitiveSerializer<FundingGlobalCircuitOpen> {
   @override
-  final Iterable<Type> types = const [
-    FundingGlobalCircuitOpen,
-    _$FundingGlobalCircuitOpen
-  ];
+  final Iterable<Type> types = const [FundingGlobalCircuitOpen, _$FundingGlobalCircuitOpen];
 
   @override
   final String wireName = r'FundingGlobalCircuitOpen';
@@ -101,9 +92,7 @@ class _$FundingGlobalCircuitOpenSerializer
     FundingGlobalCircuitOpen object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -183,39 +172,32 @@ class _$FundingGlobalCircuitOpenSerializer
 }
 
 class FundingGlobalCircuitOpenScopeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'global')
-  static const FundingGlobalCircuitOpenScopeEnum global =
-      _$fundingGlobalCircuitOpenScopeEnum_global;
+  static const FundingGlobalCircuitOpenScopeEnum global = _$fundingGlobalCircuitOpenScopeEnum_global;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitOpenScopeEnum unknownDefaultOpenApi =
-      _$fundingGlobalCircuitOpenScopeEnum_unknownDefaultOpenApi;
+  static const FundingGlobalCircuitOpenScopeEnum unknownDefaultOpenApi = _$fundingGlobalCircuitOpenScopeEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingGlobalCircuitOpenScopeEnum> get serializer =>
-      _$fundingGlobalCircuitOpenScopeEnumSerializer;
+  static Serializer<FundingGlobalCircuitOpenScopeEnum> get serializer => _$fundingGlobalCircuitOpenScopeEnumSerializer;
 
-  const FundingGlobalCircuitOpenScopeEnum._(String name) : super(name);
+  const FundingGlobalCircuitOpenScopeEnum._(String name): super(name);
 
-  static BuiltSet<FundingGlobalCircuitOpenScopeEnum> get values =>
-      _$fundingGlobalCircuitOpenScopeEnumValues;
-  static FundingGlobalCircuitOpenScopeEnum valueOf(String name) =>
-      _$fundingGlobalCircuitOpenScopeEnumValueOf(name);
+  static BuiltSet<FundingGlobalCircuitOpenScopeEnum> get values => _$fundingGlobalCircuitOpenScopeEnumValues;
+  static FundingGlobalCircuitOpenScopeEnum valueOf(String name) => _$fundingGlobalCircuitOpenScopeEnumValueOf(name);
 }
 
 class FundingGlobalCircuitOpenStateEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'open')
-  static const FundingGlobalCircuitOpenStateEnum open =
-      _$fundingGlobalCircuitOpenStateEnum_open;
+  static const FundingGlobalCircuitOpenStateEnum open = _$fundingGlobalCircuitOpenStateEnum_open;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitOpenStateEnum unknownDefaultOpenApi =
-      _$fundingGlobalCircuitOpenStateEnum_unknownDefaultOpenApi;
+  static const FundingGlobalCircuitOpenStateEnum unknownDefaultOpenApi = _$fundingGlobalCircuitOpenStateEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingGlobalCircuitOpenStateEnum> get serializer =>
-      _$fundingGlobalCircuitOpenStateEnumSerializer;
+  static Serializer<FundingGlobalCircuitOpenStateEnum> get serializer => _$fundingGlobalCircuitOpenStateEnumSerializer;
 
-  const FundingGlobalCircuitOpenStateEnum._(String name) : super(name);
+  const FundingGlobalCircuitOpenStateEnum._(String name): super(name);
 
-  static BuiltSet<FundingGlobalCircuitOpenStateEnum> get values =>
-      _$fundingGlobalCircuitOpenStateEnumValues;
-  static FundingGlobalCircuitOpenStateEnum valueOf(String name) =>
-      _$fundingGlobalCircuitOpenStateEnumValueOf(name);
+  static BuiltSet<FundingGlobalCircuitOpenStateEnum> get values => _$fundingGlobalCircuitOpenStateEnumValues;
+  static FundingGlobalCircuitOpenStateEnum valueOf(String name) => _$fundingGlobalCircuitOpenStateEnumValueOf(name);
 }
+

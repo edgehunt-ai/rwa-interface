@@ -16,11 +16,10 @@ part 'deposit_rail_availability.g.dart';
 /// Deposit rail readiness；`available` 必须没有 blocker，`unavailable` 至少一个 blocker。
 ///
 /// Properties:
-/// * [status]
-/// * [blockers]
+/// * [status] 
+/// * [blockers] 
 @BuiltValue()
-abstract class DepositRailAvailability
-    implements Built<DepositRailAvailability, DepositRailAvailabilityBuilder> {
+abstract class DepositRailAvailability implements Built<DepositRailAvailability, DepositRailAvailabilityBuilder> {
   /// One Of [AvailableDepositRailAvailability], [UnavailableDepositRailAvailability]
   OneOf get oneOf;
 
@@ -33,50 +32,41 @@ abstract class DepositRailAvailability
 
   DepositRailAvailability._();
 
-  factory DepositRailAvailability(
-          [void updates(DepositRailAvailabilityBuilder b)]) =
-      _$DepositRailAvailability;
+  factory DepositRailAvailability([void updates(DepositRailAvailabilityBuilder b)]) = _$DepositRailAvailability;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DepositRailAvailabilityBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DepositRailAvailability> get serializer =>
-      _$DepositRailAvailabilitySerializer();
+  static Serializer<DepositRailAvailability> get serializer => _$DepositRailAvailabilitySerializer();
 }
 
 extension DepositRailAvailabilityDiscriminatorExt on DepositRailAvailability {
-  String? get discriminatorValue {
-    if (this is AvailableDepositRailAvailability) {
-      return r'available';
+    String? get discriminatorValue {
+        if (this is AvailableDepositRailAvailability) {
+            return r'available';
+        }
+        if (this is UnavailableDepositRailAvailability) {
+            return r'unavailable';
+        }
+        return null;
     }
-    if (this is UnavailableDepositRailAvailability) {
-      return r'unavailable';
+}
+extension DepositRailAvailabilityBuilderDiscriminatorExt on DepositRailAvailabilityBuilder {
+    String? get discriminatorValue {
+        if (this is AvailableDepositRailAvailabilityBuilder) {
+            return r'available';
+        }
+        if (this is UnavailableDepositRailAvailabilityBuilder) {
+            return r'unavailable';
+        }
+        return null;
     }
-    return null;
-  }
 }
 
-extension DepositRailAvailabilityBuilderDiscriminatorExt
-    on DepositRailAvailabilityBuilder {
-  String? get discriminatorValue {
-    if (this is AvailableDepositRailAvailabilityBuilder) {
-      return r'available';
-    }
-    if (this is UnavailableDepositRailAvailabilityBuilder) {
-      return r'unavailable';
-    }
-    return null;
-  }
-}
-
-class _$DepositRailAvailabilitySerializer
-    implements PrimitiveSerializer<DepositRailAvailability> {
+class _$DepositRailAvailabilitySerializer implements PrimitiveSerializer<DepositRailAvailability> {
   @override
-  final Iterable<Type> types = const [
-    DepositRailAvailability,
-    _$DepositRailAvailability
-  ];
+  final Iterable<Type> types = const [DepositRailAvailability, _$DepositRailAvailability];
 
   @override
   final String wireName = r'DepositRailAvailability';
@@ -85,7 +75,8 @@ class _$DepositRailAvailabilitySerializer
     Serializers serializers,
     DepositRailAvailability object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+  }
 
   @override
   Object serialize(
@@ -94,8 +85,7 @@ class _$DepositRailAvailabilitySerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value,
-        specifiedType: FullType(oneOf.valueType))!;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -107,16 +97,10 @@ class _$DepositRailAvailabilitySerializer
     final result = DepositRailAvailabilityBuilder();
     Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex =
-        serializedList.indexOf(DepositRailAvailability.discriminatorFieldName) +
-            1;
-    final discValue = serializers.deserialize(serializedList[discIndex],
-        specifiedType: FullType(String)) as String;
+    final discIndex = serializedList.indexOf(DepositRailAvailability.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [
-      AvailableDepositRailAvailability,
-      UnavailableDepositRailAvailability,
-    ];
+    final oneOfTypes = [AvailableDepositRailAvailability, UnavailableDepositRailAvailability, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
@@ -135,32 +119,25 @@ class _$DepositRailAvailabilitySerializer
         oneOfType = UnavailableDepositRailAvailability;
         break;
       default:
-        throw UnsupportedError(
-            "Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
     }
-    result.oneOf = OneOfDynamic(
-        typeIndex: oneOfTypes.indexOf(oneOfType),
-        types: oneOfTypes,
-        value: oneOfResult);
+    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
 }
 
 class DepositRailAvailabilityStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'unavailable')
-  static const DepositRailAvailabilityStatusEnum unavailable =
-      _$depositRailAvailabilityStatusEnum_unavailable;
+  static const DepositRailAvailabilityStatusEnum unavailable = _$depositRailAvailabilityStatusEnum_unavailable;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositRailAvailabilityStatusEnum unknownDefaultOpenApi =
-      _$depositRailAvailabilityStatusEnum_unknownDefaultOpenApi;
+  static const DepositRailAvailabilityStatusEnum unknownDefaultOpenApi = _$depositRailAvailabilityStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<DepositRailAvailabilityStatusEnum> get serializer =>
-      _$depositRailAvailabilityStatusEnumSerializer;
+  static Serializer<DepositRailAvailabilityStatusEnum> get serializer => _$depositRailAvailabilityStatusEnumSerializer;
 
-  const DepositRailAvailabilityStatusEnum._(String name) : super(name);
+  const DepositRailAvailabilityStatusEnum._(String name): super(name);
 
-  static BuiltSet<DepositRailAvailabilityStatusEnum> get values =>
-      _$depositRailAvailabilityStatusEnumValues;
-  static DepositRailAvailabilityStatusEnum valueOf(String name) =>
-      _$depositRailAvailabilityStatusEnumValueOf(name);
+  static BuiltSet<DepositRailAvailabilityStatusEnum> get values => _$depositRailAvailabilityStatusEnumValues;
+  static DepositRailAvailabilityStatusEnum valueOf(String name) => _$depositRailAvailabilityStatusEnumValueOf(name);
 }
+

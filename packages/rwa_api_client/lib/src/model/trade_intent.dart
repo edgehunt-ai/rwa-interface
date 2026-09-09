@@ -16,20 +16,20 @@ part 'trade_intent.g.dart';
 /// TradeIntent
 ///
 /// Properties:
-/// * [tradeIntentId]
-/// * [previewId]
-/// * [authorizationId]
-/// * [productId]
-/// * [status]
-/// * [nextAction]
-/// * [blocker]
-/// * [executionPolicy]
-/// * [fundingPlanId]
-/// * [transferId]
-/// * [orderId]
-/// * [createdAt]
-/// * [updatedAt]
-/// * [expiresAt]
+/// * [tradeIntentId] 
+/// * [previewId] 
+/// * [authorizationId] 
+/// * [productId] 
+/// * [status] 
+/// * [nextAction] 
+/// * [blocker] 
+/// * [executionPolicy] 
+/// * [fundingPlanId] 
+/// * [transferId] 
+/// * [orderId] 
+/// * [createdAt] 
+/// * [updatedAt] 
+/// * [expiresAt] 
 @BuiltValue()
 abstract class TradeIntent implements Built<TradeIntent, TradeIntentBuilder> {
   @BuiltValueField(wireName: r'trade_intent_id')
@@ -132,38 +132,30 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
       specifiedType: const FullType(TradeIntentNextAction),
     );
     yield r'blocker';
-    yield object.blocker == null
-        ? null
-        : serializers.serialize(
-            object.blocker,
-            specifiedType: const FullType.nullable(TradeIntentBlocker),
-          );
+    yield object.blocker == null ? null : serializers.serialize(
+      object.blocker,
+      specifiedType: const FullType.nullable(TradeIntentBlocker),
+    );
     yield r'execution_policy';
     yield serializers.serialize(
       object.executionPolicy,
       specifiedType: const FullType(TradeIntentExecutionPolicy),
     );
     yield r'funding_plan_id';
-    yield object.fundingPlanId == null
-        ? null
-        : serializers.serialize(
-            object.fundingPlanId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.fundingPlanId == null ? null : serializers.serialize(
+      object.fundingPlanId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'transfer_id';
-    yield object.transferId == null
-        ? null
-        : serializers.serialize(
-            object.transferId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.transferId == null ? null : serializers.serialize(
+      object.transferId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'order_id';
-    yield object.orderId == null
-        ? null
-        : serializers.serialize(
-            object.orderId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.orderId == null ? null : serializers.serialize(
+      object.orderId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'created_at';
     yield serializers.serialize(
       object.createdAt,
@@ -187,9 +179,7 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
     TradeIntent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -334,3 +324,4 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
     return result.build();
   }
 }
+

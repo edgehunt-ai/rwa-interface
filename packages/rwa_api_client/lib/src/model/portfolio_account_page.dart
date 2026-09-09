@@ -12,17 +12,16 @@ import 'package:built_value/serializer.dart';
 
 part 'portfolio_account_page.g.dart';
 
-/// 内部账本可能是链上或 venue 外部资产的业务镜像，不能与外部余额双计。 只有已对账且没有 blocker 的余额才可以参与 available-to-trade 计算。
+/// 内部账本可能是链上或 venue 外部资产的业务镜像，不能与外部余额双计。 只有已对账且没有 blocker 的余额才可以参与 available-to-trade 计算。 
 ///
 /// Properties:
-/// * [scope]
-/// * [items]
+/// * [scope] 
+/// * [items] 
 /// * [reconciled] - 是否已与对应的外部资产来源完成对账。
-/// * [freshness]
-/// * [blockers]
+/// * [freshness] 
+/// * [blockers] 
 @BuiltValue()
-abstract class PortfolioAccountPage
-    implements Built<PortfolioAccountPage, PortfolioAccountPageBuilder> {
+abstract class PortfolioAccountPage implements Built<PortfolioAccountPage, PortfolioAccountPageBuilder> {
   @BuiltValueField(wireName: r'scope')
   PortfolioAccountPageScopeEnum get scope;
   // enum scopeEnum {  internal_ledger,  };
@@ -43,24 +42,18 @@ abstract class PortfolioAccountPage
 
   PortfolioAccountPage._();
 
-  factory PortfolioAccountPage([void updates(PortfolioAccountPageBuilder b)]) =
-      _$PortfolioAccountPage;
+  factory PortfolioAccountPage([void updates(PortfolioAccountPageBuilder b)]) = _$PortfolioAccountPage;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PortfolioAccountPageBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PortfolioAccountPage> get serializer =>
-      _$PortfolioAccountPageSerializer();
+  static Serializer<PortfolioAccountPage> get serializer => _$PortfolioAccountPageSerializer();
 }
 
-class _$PortfolioAccountPageSerializer
-    implements PrimitiveSerializer<PortfolioAccountPage> {
+class _$PortfolioAccountPageSerializer implements PrimitiveSerializer<PortfolioAccountPage> {
   @override
-  final Iterable<Type> types = const [
-    PortfolioAccountPage,
-    _$PortfolioAccountPage
-  ];
+  final Iterable<Type> types = const [PortfolioAccountPage, _$PortfolioAccountPage];
 
   @override
   final String wireName = r'PortfolioAccountPage';
@@ -103,9 +96,7 @@ class _$PortfolioAccountPageSerializer
     PortfolioAccountPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -130,8 +121,7 @@ class _$PortfolioAccountPageSerializer
         case r'items':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(AccountBalance)]),
+            specifiedType: const FullType(BuiltList, [FullType(AccountBalance)]),
           ) as BuiltList<AccountBalance>;
           result.items.replace(valueDes);
           break;
@@ -152,8 +142,7 @@ class _$PortfolioAccountPageSerializer
         case r'blockers':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioNotice)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioNotice)]),
           ) as BuiltList<PortfolioNotice>;
           result.blockers.replace(valueDes);
           break;
@@ -187,20 +176,17 @@ class _$PortfolioAccountPageSerializer
 }
 
 class PortfolioAccountPageScopeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'internal_ledger')
-  static const PortfolioAccountPageScopeEnum internalLedger =
-      _$portfolioAccountPageScopeEnum_internalLedger;
+  static const PortfolioAccountPageScopeEnum internalLedger = _$portfolioAccountPageScopeEnum_internalLedger;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioAccountPageScopeEnum unknownDefaultOpenApi =
-      _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi;
+  static const PortfolioAccountPageScopeEnum unknownDefaultOpenApi = _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi;
 
-  static Serializer<PortfolioAccountPageScopeEnum> get serializer =>
-      _$portfolioAccountPageScopeEnumSerializer;
+  static Serializer<PortfolioAccountPageScopeEnum> get serializer => _$portfolioAccountPageScopeEnumSerializer;
 
-  const PortfolioAccountPageScopeEnum._(String name) : super(name);
+  const PortfolioAccountPageScopeEnum._(String name): super(name);
 
-  static BuiltSet<PortfolioAccountPageScopeEnum> get values =>
-      _$portfolioAccountPageScopeEnumValues;
-  static PortfolioAccountPageScopeEnum valueOf(String name) =>
-      _$portfolioAccountPageScopeEnumValueOf(name);
+  static BuiltSet<PortfolioAccountPageScopeEnum> get values => _$portfolioAccountPageScopeEnumValues;
+  static PortfolioAccountPageScopeEnum valueOf(String name) => _$portfolioAccountPageScopeEnumValueOf(name);
 }
+

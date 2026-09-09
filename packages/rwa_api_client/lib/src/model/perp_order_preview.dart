@@ -7,6 +7,7 @@ import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_preview_common.dart';
 import 'package:built_value/built_value.dart';
@@ -17,16 +18,17 @@ part 'perp_order_preview.g.dart';
 /// PerpOrderPreview
 ///
 /// Properties:
-/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。
-/// * [symbol]
-/// * [side]
-/// * [type]
+/// * [hip3Execution] 
+/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
+/// * [symbol] 
+/// * [side] 
+/// * [type] 
 /// * [marketPrice] - 十进制字符串，避免浮点误差
 /// * [estimatedPrice] - 预计成交价；与 `market_price` 不同时前端提示「价格已更新」
 /// * [priceUpdated] - 报价较用户上次看到的价格是否已变化
 /// * [estimatedQuantity] - 十进制字符串，避免浮点误差
 /// * [estimatedReceive] - 预计获得数量（扣除滑点后）
-/// * [estimatedReceiveUnit]
+/// * [estimatedReceiveUnit] 
 /// * [orderValue] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
 /// * [feeRate] - 十进制字符串，避免浮点误差
@@ -34,25 +36,22 @@ part 'perp_order_preview.g.dart';
 /// * [orderBookImpactPercent] - 十进制字符串，避免浮点误差
 /// * [networkFee] - Network fee as a decimal string. The asset is carried separately in fee_asset.
 /// * [settlementAccount] - 成交后资产的到账账户
-/// * [settlementAccountLabel]
+/// * [settlementAccountLabel] 
 /// * [marginRequired] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 仅 HIP-3
-/// * [quoteExpiresAt]
+/// * [quoteExpiresAt] 
 /// * [details] - 「查看详情」中逐行展示的键值对
 /// * [feeAsset] - Asset used to denominate network_fee, for example BNB or USDC.
 /// * [feeNote] - Optional localized display note, for example Included.
-/// * [kind]
-/// * [network]
-/// * [settlementAsset]
-/// * [settlementChainId]
-/// * [settlementAssetId]
-/// * [settlementTokenContract]
-/// * [settlementTokenDecimals]
+/// * [kind] 
+/// * [network] 
+/// * [settlementAsset] 
+/// * [settlementChainId] 
+/// * [settlementAssetId] 
+/// * [settlementTokenContract] 
+/// * [settlementTokenDecimals] 
 @BuiltValue()
-abstract class PerpOrderPreview
-    implements
-        OrderPreviewCommon,
-        Built<PerpOrderPreview, PerpOrderPreviewBuilder> {
+abstract class PerpOrderPreview implements OrderPreviewCommon, Built<PerpOrderPreview, PerpOrderPreviewBuilder> {
   @BuiltValueField(wireName: r'settlement_asset')
   PerpOrderPreviewSettlementAssetEnum get settlementAsset;
   // enum settlementAssetEnum {  USDC,  };
@@ -83,19 +82,16 @@ abstract class PerpOrderPreview
 
   PerpOrderPreview._();
 
-  factory PerpOrderPreview([void updates(PerpOrderPreviewBuilder b)]) =
-      _$PerpOrderPreview;
+  factory PerpOrderPreview([void updates(PerpOrderPreviewBuilder b)]) = _$PerpOrderPreview;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PerpOrderPreviewBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpOrderPreview> get serializer =>
-      _$PerpOrderPreviewSerializer();
+  static Serializer<PerpOrderPreview> get serializer => _$PerpOrderPreviewSerializer();
 }
 
-class _$PerpOrderPreviewSerializer
-    implements PrimitiveSerializer<PerpOrderPreview> {
+class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPreview> {
   @override
   final Iterable<Type> types = const [PerpOrderPreview, _$PerpOrderPreview];
 
@@ -122,6 +118,13 @@ class _$PerpOrderPreviewSerializer
       yield serializers.serialize(
         object.marketPrice,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.hip3Execution != null) {
+      yield r'hip3_execution';
+      yield serializers.serialize(
+        object.hip3Execution,
+        specifiedType: const FullType(Hip3PreviewExecution),
       );
     }
     if (object.estimatedQuantity != null) {
@@ -205,8 +208,7 @@ class _$PerpOrderPreviewSerializer
     yield r'settlement_token_contract';
     yield serializers.serialize(
       object.settlementTokenContract,
-      specifiedType:
-          const FullType(PerpOrderPreviewSettlementTokenContractEnum),
+      specifiedType: const FullType(PerpOrderPreviewSettlementTokenContractEnum),
     );
     if (object.estimatedPrice != null) {
       yield r'estimated_price';
@@ -242,8 +244,7 @@ class _$PerpOrderPreviewSerializer
     yield r'settlement_token_decimals';
     yield serializers.serialize(
       object.settlementTokenDecimals,
-      specifiedType:
-          const FullType(PerpOrderPreviewSettlementTokenDecimalsEnum),
+      specifiedType: const FullType(PerpOrderPreviewSettlementTokenDecimalsEnum),
     );
     if (object.estimatedReceiveUnit != null) {
       yield r'estimated_receive_unit';
@@ -310,9 +311,7 @@ class _$PerpOrderPreviewSerializer
     PerpOrderPreview object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -348,6 +347,14 @@ class _$PerpOrderPreviewSerializer
           ) as String?;
           if (valueDes == null) continue;
           result.marketPrice = valueDes;
+          break;
+        case r'hip3_execution':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3PreviewExecution),
+          ) as Hip3PreviewExecution?;
+          if (valueDes == null) continue;
+          result.hip3Execution.replace(valueDes);
           break;
         case r'estimated_quantity':
           final valueDes = serializers.deserialize(
@@ -445,8 +452,7 @@ class _$PerpOrderPreviewSerializer
         case r'settlement_token_contract':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PerpOrderPreviewSettlementTokenContractEnum),
+            specifiedType: const FullType(PerpOrderPreviewSettlementTokenContractEnum),
           ) as PerpOrderPreviewSettlementTokenContractEnum;
           result.settlementTokenContract = valueDes;
           break;
@@ -469,8 +475,7 @@ class _$PerpOrderPreviewSerializer
         case r'details':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
           ) as BuiltList<KeyValue>?;
           if (valueDes == null) continue;
           result.details.replace(valueDes);
@@ -492,8 +497,7 @@ class _$PerpOrderPreviewSerializer
         case r'settlement_token_decimals':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PerpOrderPreviewSettlementTokenDecimalsEnum),
+            specifiedType: const FullType(PerpOrderPreviewSettlementTokenDecimalsEnum),
           ) as PerpOrderPreviewSettlementTokenDecimalsEnum;
           result.settlementTokenDecimals = valueDes;
           break;
@@ -515,8 +519,7 @@ class _$PerpOrderPreviewSerializer
         case r'settlement_asset_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PerpOrderPreviewSettlementAssetIdEnum),
+            specifiedType: const FullType(PerpOrderPreviewSettlementAssetIdEnum),
           ) as PerpOrderPreviewSettlementAssetIdEnum;
           result.settlementAssetId = valueDes;
           break;
@@ -555,8 +558,7 @@ class _$PerpOrderPreviewSerializer
         case r'settlement_chain_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PerpOrderPreviewSettlementChainIdEnum),
+            specifiedType: const FullType(PerpOrderPreviewSettlementChainIdEnum),
           ) as PerpOrderPreviewSettlementChainIdEnum;
           result.settlementChainId = valueDes;
           break;
@@ -598,139 +600,107 @@ class _$PerpOrderPreviewSerializer
 }
 
 class PerpOrderPreviewKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'perp')
   static const PerpOrderPreviewKindEnum perp = _$perpOrderPreviewKindEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewKindEnum unknownDefaultOpenApi =
-      _$perpOrderPreviewKindEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewKindEnum unknownDefaultOpenApi = _$perpOrderPreviewKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewKindEnum> get serializer =>
-      _$perpOrderPreviewKindEnumSerializer;
+  static Serializer<PerpOrderPreviewKindEnum> get serializer => _$perpOrderPreviewKindEnumSerializer;
 
-  const PerpOrderPreviewKindEnum._(String name) : super(name);
+  const PerpOrderPreviewKindEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderPreviewKindEnum> get values =>
-      _$perpOrderPreviewKindEnumValues;
-  static PerpOrderPreviewKindEnum valueOf(String name) =>
-      _$perpOrderPreviewKindEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewKindEnum> get values => _$perpOrderPreviewKindEnumValues;
+  static PerpOrderPreviewKindEnum valueOf(String name) => _$perpOrderPreviewKindEnumValueOf(name);
 }
 
 class PerpOrderPreviewNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
-  static const PerpOrderPreviewNetworkEnum hyperliquid =
-      _$perpOrderPreviewNetworkEnum_hyperliquid;
+  static const PerpOrderPreviewNetworkEnum hyperliquid = _$perpOrderPreviewNetworkEnum_hyperliquid;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewNetworkEnum unknownDefaultOpenApi =
-      _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewNetworkEnum unknownDefaultOpenApi = _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewNetworkEnum> get serializer =>
-      _$perpOrderPreviewNetworkEnumSerializer;
+  static Serializer<PerpOrderPreviewNetworkEnum> get serializer => _$perpOrderPreviewNetworkEnumSerializer;
 
-  const PerpOrderPreviewNetworkEnum._(String name) : super(name);
+  const PerpOrderPreviewNetworkEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderPreviewNetworkEnum> get values =>
-      _$perpOrderPreviewNetworkEnumValues;
-  static PerpOrderPreviewNetworkEnum valueOf(String name) =>
-      _$perpOrderPreviewNetworkEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewNetworkEnum> get values => _$perpOrderPreviewNetworkEnumValues;
+  static PerpOrderPreviewNetworkEnum valueOf(String name) => _$perpOrderPreviewNetworkEnumValueOf(name);
 }
 
 class PerpOrderPreviewSettlementAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const PerpOrderPreviewSettlementAssetEnum USDC =
-      _$perpOrderPreviewSettlementAssetEnum_USDC;
+  static const PerpOrderPreviewSettlementAssetEnum USDC = _$perpOrderPreviewSettlementAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewSettlementAssetEnum unknownDefaultOpenApi =
-      _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewSettlementAssetEnum> get serializer =>
-      _$perpOrderPreviewSettlementAssetEnumSerializer;
+  static Serializer<PerpOrderPreviewSettlementAssetEnum> get serializer => _$perpOrderPreviewSettlementAssetEnumSerializer;
 
-  const PerpOrderPreviewSettlementAssetEnum._(String name) : super(name);
+  const PerpOrderPreviewSettlementAssetEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderPreviewSettlementAssetEnum> get values =>
-      _$perpOrderPreviewSettlementAssetEnumValues;
-  static PerpOrderPreviewSettlementAssetEnum valueOf(String name) =>
-      _$perpOrderPreviewSettlementAssetEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewSettlementAssetEnum> get values => _$perpOrderPreviewSettlementAssetEnumValues;
+  static PerpOrderPreviewSettlementAssetEnum valueOf(String name) => _$perpOrderPreviewSettlementAssetEnumValueOf(name);
 }
 
 class PerpOrderPreviewSettlementChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 1337)
-  static const PerpOrderPreviewSettlementChainIdEnum number1337 =
-      _$perpOrderPreviewSettlementChainIdEnum_number1337;
+  static const PerpOrderPreviewSettlementChainIdEnum number1337 = _$perpOrderPreviewSettlementChainIdEnum_number1337;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PerpOrderPreviewSettlementChainIdEnum unknownDefaultOpenApi =
-      _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewSettlementChainIdEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewSettlementChainIdEnum> get serializer =>
-      _$perpOrderPreviewSettlementChainIdEnumSerializer;
+  static Serializer<PerpOrderPreviewSettlementChainIdEnum> get serializer => _$perpOrderPreviewSettlementChainIdEnumSerializer;
 
-  const PerpOrderPreviewSettlementChainIdEnum._(String name) : super(name);
+  const PerpOrderPreviewSettlementChainIdEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderPreviewSettlementChainIdEnum> get values =>
-      _$perpOrderPreviewSettlementChainIdEnumValues;
-  static PerpOrderPreviewSettlementChainIdEnum valueOf(String name) =>
-      _$perpOrderPreviewSettlementChainIdEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewSettlementChainIdEnum> get values => _$perpOrderPreviewSettlementChainIdEnumValues;
+  static PerpOrderPreviewSettlementChainIdEnum valueOf(String name) => _$perpOrderPreviewSettlementChainIdEnumValueOf(name);
 }
 
 class PerpOrderPreviewSettlementAssetIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'hyperliquid:1337/perps:USDC-PERPS')
-  static const PerpOrderPreviewSettlementAssetIdEnum
-      hyperliquidColon1337SlashPerpsColonUSDCPERPS =
-      _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
+  static const PerpOrderPreviewSettlementAssetIdEnum hyperliquidColon1337SlashPerpsColonUSDCPERPS = _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewSettlementAssetIdEnum unknownDefaultOpenApi =
-      _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewSettlementAssetIdEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewSettlementAssetIdEnum> get serializer =>
-      _$perpOrderPreviewSettlementAssetIdEnumSerializer;
+  static Serializer<PerpOrderPreviewSettlementAssetIdEnum> get serializer => _$perpOrderPreviewSettlementAssetIdEnumSerializer;
 
-  const PerpOrderPreviewSettlementAssetIdEnum._(String name) : super(name);
+  const PerpOrderPreviewSettlementAssetIdEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderPreviewSettlementAssetIdEnum> get values =>
-      _$perpOrderPreviewSettlementAssetIdEnumValues;
-  static PerpOrderPreviewSettlementAssetIdEnum valueOf(String name) =>
-      _$perpOrderPreviewSettlementAssetIdEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewSettlementAssetIdEnum> get values => _$perpOrderPreviewSettlementAssetIdEnumValues;
+  static PerpOrderPreviewSettlementAssetIdEnum valueOf(String name) => _$perpOrderPreviewSettlementAssetIdEnumValueOf(name);
 }
 
 class PerpOrderPreviewSettlementTokenContractEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0x2100000000000000000000000000000000000000')
-  static const PerpOrderPreviewSettlementTokenContractEnum
-      n0x2100000000000000000000000000000000000000 =
-      _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000;
+  static const PerpOrderPreviewSettlementTokenContractEnum n0x2100000000000000000000000000000000000000 = _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewSettlementTokenContractEnum
-      unknownDefaultOpenApi =
-      _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewSettlementTokenContractEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewSettlementTokenContractEnum>
-      get serializer => _$perpOrderPreviewSettlementTokenContractEnumSerializer;
+  static Serializer<PerpOrderPreviewSettlementTokenContractEnum> get serializer => _$perpOrderPreviewSettlementTokenContractEnumSerializer;
 
-  const PerpOrderPreviewSettlementTokenContractEnum._(String name)
-      : super(name);
+  const PerpOrderPreviewSettlementTokenContractEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderPreviewSettlementTokenContractEnum> get values =>
-      _$perpOrderPreviewSettlementTokenContractEnumValues;
-  static PerpOrderPreviewSettlementTokenContractEnum valueOf(String name) =>
-      _$perpOrderPreviewSettlementTokenContractEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewSettlementTokenContractEnum> get values => _$perpOrderPreviewSettlementTokenContractEnumValues;
+  static PerpOrderPreviewSettlementTokenContractEnum valueOf(String name) => _$perpOrderPreviewSettlementTokenContractEnumValueOf(name);
 }
 
 class PerpOrderPreviewSettlementTokenDecimalsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 8)
-  static const PerpOrderPreviewSettlementTokenDecimalsEnum number8 =
-      _$perpOrderPreviewSettlementTokenDecimalsEnum_number8;
+  static const PerpOrderPreviewSettlementTokenDecimalsEnum number8 = _$perpOrderPreviewSettlementTokenDecimalsEnum_number8;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PerpOrderPreviewSettlementTokenDecimalsEnum
-      unknownDefaultOpenApi =
-      _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewSettlementTokenDecimalsEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewSettlementTokenDecimalsEnum>
-      get serializer => _$perpOrderPreviewSettlementTokenDecimalsEnumSerializer;
+  static Serializer<PerpOrderPreviewSettlementTokenDecimalsEnum> get serializer => _$perpOrderPreviewSettlementTokenDecimalsEnumSerializer;
 
-  const PerpOrderPreviewSettlementTokenDecimalsEnum._(String name)
-      : super(name);
+  const PerpOrderPreviewSettlementTokenDecimalsEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderPreviewSettlementTokenDecimalsEnum> get values =>
-      _$perpOrderPreviewSettlementTokenDecimalsEnumValues;
-  static PerpOrderPreviewSettlementTokenDecimalsEnum valueOf(String name) =>
-      _$perpOrderPreviewSettlementTokenDecimalsEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewSettlementTokenDecimalsEnum> get values => _$perpOrderPreviewSettlementTokenDecimalsEnumValues;
+  static PerpOrderPreviewSettlementTokenDecimalsEnum valueOf(String name) => _$perpOrderPreviewSettlementTokenDecimalsEnumValueOf(name);
 }
+

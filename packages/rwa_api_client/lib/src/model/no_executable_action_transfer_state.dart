@@ -12,36 +12,26 @@ part 'no_executable_action_transfer_state.g.dart';
 /// NoExecutableActionTransferState
 ///
 /// Properties:
-/// * [nextAction]
+/// * [nextAction] 
 @BuiltValue()
-abstract class NoExecutableActionTransferState
-    implements
-        Built<NoExecutableActionTransferState,
-            NoExecutableActionTransferStateBuilder> {
+abstract class NoExecutableActionTransferState implements Built<NoExecutableActionTransferState, NoExecutableActionTransferStateBuilder> {
   @BuiltValueField(wireName: r'next_action')
   JsonObject? get nextAction;
 
   NoExecutableActionTransferState._();
 
-  factory NoExecutableActionTransferState(
-          [void updates(NoExecutableActionTransferStateBuilder b)]) =
-      _$NoExecutableActionTransferState;
+  factory NoExecutableActionTransferState([void updates(NoExecutableActionTransferStateBuilder b)]) = _$NoExecutableActionTransferState;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(NoExecutableActionTransferStateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<NoExecutableActionTransferState> get serializer =>
-      _$NoExecutableActionTransferStateSerializer();
+  static Serializer<NoExecutableActionTransferState> get serializer => _$NoExecutableActionTransferStateSerializer();
 }
 
-class _$NoExecutableActionTransferStateSerializer
-    implements PrimitiveSerializer<NoExecutableActionTransferState> {
+class _$NoExecutableActionTransferStateSerializer implements PrimitiveSerializer<NoExecutableActionTransferState> {
   @override
-  final Iterable<Type> types = const [
-    NoExecutableActionTransferState,
-    _$NoExecutableActionTransferState
-  ];
+  final Iterable<Type> types = const [NoExecutableActionTransferState, _$NoExecutableActionTransferState];
 
   @override
   final String wireName = r'NoExecutableActionTransferState';
@@ -52,12 +42,10 @@ class _$NoExecutableActionTransferStateSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_action';
-    yield object.nextAction == null
-        ? null
-        : serializers.serialize(
-            object.nextAction,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.nextAction == null ? null : serializers.serialize(
+      object.nextAction,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
   }
 
   @override
@@ -66,9 +54,7 @@ class _$NoExecutableActionTransferStateSerializer
     NoExecutableActionTransferState object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -119,3 +105,4 @@ class _$NoExecutableActionTransferStateSerializer
     return result.build();
   }
 }
+

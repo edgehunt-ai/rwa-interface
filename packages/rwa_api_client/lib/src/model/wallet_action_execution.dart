@@ -19,39 +19,38 @@ import 'package:built_value/serializer.dart';
 
 part 'wallet_action_execution.g.dart';
 
-/// Server-authoritative execution of one exact frozen business action. Creation binds the resource, wallet, chain, payload hash and transaction permanently; clients supply only `mode`.  Submission performs a compare-and-set to `submitting` before synchronously relaying an app-sponsored signature to Privy. The signature is never persisted. When Privy accepts the request, the server stores `privy_transaction_id` and/or `user_operation_hash`; only executions with such an identifier may be polled or reconciled by workers/Webhooks/RPC. A timeout, 5xx or crash with an unknown result becomes `ambiguous` or `manual_review`, never an automatic replay.  After Privy acceptance or any ambiguous Provider result, mode switching, re-signing and automatic replay are forbidden. User-paid fallback is allowed only after a deterministic pre-broadcast rejection. Activity may be created only after Privy or RPC observes an actual broadcast; authorization submission alone is not broadcast evidence. Mode- and status-specific cross-field invariants are enforced fail-closed by server/domain validation.
+/// Server-authoritative execution of one exact frozen business action. Creation binds the resource, wallet, chain, payload hash and transaction permanently; clients supply only `mode`.  Submission performs a compare-and-set to `submitting` before synchronously relaying an app-sponsored signature to Privy. The signature is never persisted. When Privy accepts the request, the server stores `privy_transaction_id` and/or `user_operation_hash`; only executions with such an identifier may be polled or reconciled by workers/Webhooks/RPC. A timeout, 5xx or crash with an unknown result becomes `ambiguous` or `manual_review`, never an automatic replay.  After Privy acceptance or any ambiguous Provider result, mode switching, re-signing and automatic replay are forbidden. User-paid fallback is allowed only after a deterministic pre-broadcast rejection. Activity may be created only after Privy or RPC observes an actual broadcast; authorization submission alone is not broadcast evidence. Mode- and status-specific cross-field invariants are enforced fail-closed by server/domain validation. 
 ///
 /// Properties:
-/// * [executionId]
-/// * [resourceType]
+/// * [executionId] 
+/// * [resourceType] 
 /// * [resourceId] - Bound order_id or transfer_id; it is never accepted from the client.
 /// * [actionId] - Bound transfer action_id or order step_id; it is never accepted from the client.
-/// * [actionKind]
-/// * [chainId]
-/// * [walletAddress]
-/// * [payloadHash] - Lowercase SHA-256 digest without `0x` over the versioned canonical chain/from/to/calldata/value tuple. It MUST equal the bound business action hash.
-/// * [businessExpiresAt]
-/// * [mode]
-/// * [executionProvider]
-/// * [status]
-/// * [providerStatus]
-/// * [gasPayment]
-/// * [frozenTransaction]
-/// * [fallbackFromExecutionId] - Null for app-sponsored execution. A user-paid execution must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required`.
-/// * [privyAuthorizationPayload] - Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry.
+/// * [actionKind] 
+/// * [chainId] 
+/// * [walletAddress] 
+/// * [payloadHash] - Lowercase SHA-256 digest without `0x` over the versioned canonical chain/from/to/calldata/value tuple. It MUST equal the bound business action hash. 
+/// * [businessExpiresAt] 
+/// * [mode] 
+/// * [executionProvider] 
+/// * [status] 
+/// * [providerStatus] 
+/// * [gasPayment] 
+/// * [frozenTransaction] 
+/// * [fallbackFromExecutionId] - Null for app-sponsored execution. A user-paid execution must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required`. 
+/// * [privyAuthorizationPayload] - Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry. 
 /// * [authorizationExpiresAt] - Mirrors the structured Privy request expiry; null when no authorization is exposed.
-/// * [privyTransactionId]
-/// * [userOperationHash]
-/// * [txHash]
-/// * [chainObservation]
-/// * [activityId]
-/// * [failureReason]
-/// * [manualReviewReason]
-/// * [createdAt]
-/// * [updatedAt]
+/// * [privyTransactionId] 
+/// * [userOperationHash] 
+/// * [txHash] 
+/// * [chainObservation] 
+/// * [activityId] 
+/// * [failureReason] 
+/// * [manualReviewReason] 
+/// * [createdAt] 
+/// * [updatedAt] 
 @BuiltValue()
-abstract class WalletActionExecution
-    implements Built<WalletActionExecution, WalletActionExecutionBuilder> {
+abstract class WalletActionExecution implements Built<WalletActionExecution, WalletActionExecutionBuilder> {
   @BuiltValueField(wireName: r'execution_id')
   String get executionId;
 
@@ -78,7 +77,7 @@ abstract class WalletActionExecution
   @BuiltValueField(wireName: r'wallet_address')
   String get walletAddress;
 
-  /// Lowercase SHA-256 digest without `0x` over the versioned canonical chain/from/to/calldata/value tuple. It MUST equal the bound business action hash.
+  /// Lowercase SHA-256 digest without `0x` over the versioned canonical chain/from/to/calldata/value tuple. It MUST equal the bound business action hash. 
   @BuiltValueField(wireName: r'payload_hash')
   String get payloadHash;
 
@@ -107,11 +106,11 @@ abstract class WalletActionExecution
   @BuiltValueField(wireName: r'frozen_transaction')
   FrozenEvmTransaction get frozenTransaction;
 
-  /// Null for app-sponsored execution. A user-paid execution must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required`.
+  /// Null for app-sponsored execution. A user-paid execution must contain the server-derived id of the matching sponsored execution that ended in `user_gas_confirmation_required`. 
   @BuiltValueField(wireName: r'fallback_from_execution_id')
   String? get fallbackFromExecutionId;
 
-  /// Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry.
+  /// Non-null only for an `app_sponsored` execution in `awaiting_user_authorization`; null in every other mode or status. Its expiry is at most 60 seconds and never exceeds the frozen business action expiry. 
   @BuiltValueField(wireName: r'privy_authorization_payload')
   PrivyAuthorizationPayload? get privyAuthorizationPayload;
 
@@ -148,24 +147,18 @@ abstract class WalletActionExecution
 
   WalletActionExecution._();
 
-  factory WalletActionExecution(
-      [void updates(WalletActionExecutionBuilder b)]) = _$WalletActionExecution;
+  factory WalletActionExecution([void updates(WalletActionExecutionBuilder b)]) = _$WalletActionExecution;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WalletActionExecutionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletActionExecution> get serializer =>
-      _$WalletActionExecutionSerializer();
+  static Serializer<WalletActionExecution> get serializer => _$WalletActionExecutionSerializer();
 }
 
-class _$WalletActionExecutionSerializer
-    implements PrimitiveSerializer<WalletActionExecution> {
+class _$WalletActionExecutionSerializer implements PrimitiveSerializer<WalletActionExecution> {
   @override
-  final Iterable<Type> types = const [
-    WalletActionExecution,
-    _$WalletActionExecution
-  ];
+  final Iterable<Type> types = const [WalletActionExecution, _$WalletActionExecution];
 
   @override
   final String wireName = r'WalletActionExecution';
@@ -251,76 +244,55 @@ class _$WalletActionExecutionSerializer
       specifiedType: const FullType(FrozenEvmTransaction),
     );
     yield r'fallback_from_execution_id';
-    yield object.fallbackFromExecutionId == null
-        ? null
-        : serializers.serialize(
-            object.fallbackFromExecutionId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.fallbackFromExecutionId == null ? null : serializers.serialize(
+      object.fallbackFromExecutionId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'privy_authorization_payload';
-    yield object.privyAuthorizationPayload == null
-        ? null
-        : serializers.serialize(
-            object.privyAuthorizationPayload,
-            specifiedType: const FullType.nullable(PrivyAuthorizationPayload),
-          );
+    yield object.privyAuthorizationPayload == null ? null : serializers.serialize(
+      object.privyAuthorizationPayload,
+      specifiedType: const FullType.nullable(PrivyAuthorizationPayload),
+    );
     yield r'authorization_expires_at';
-    yield object.authorizationExpiresAt == null
-        ? null
-        : serializers.serialize(
-            object.authorizationExpiresAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.authorizationExpiresAt == null ? null : serializers.serialize(
+      object.authorizationExpiresAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'privy_transaction_id';
-    yield object.privyTransactionId == null
-        ? null
-        : serializers.serialize(
-            object.privyTransactionId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.privyTransactionId == null ? null : serializers.serialize(
+      object.privyTransactionId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'user_operation_hash';
-    yield object.userOperationHash == null
-        ? null
-        : serializers.serialize(
-            object.userOperationHash,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.userOperationHash == null ? null : serializers.serialize(
+      object.userOperationHash,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'tx_hash';
-    yield object.txHash == null
-        ? null
-        : serializers.serialize(
-            object.txHash,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.txHash == null ? null : serializers.serialize(
+      object.txHash,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'chain_observation';
-    yield object.chainObservation == null
-        ? null
-        : serializers.serialize(
-            object.chainObservation,
-            specifiedType:
-                const FullType.nullable(WalletActionChainObservation),
-          );
+    yield object.chainObservation == null ? null : serializers.serialize(
+      object.chainObservation,
+      specifiedType: const FullType.nullable(WalletActionChainObservation),
+    );
     yield r'activity_id';
-    yield object.activityId == null
-        ? null
-        : serializers.serialize(
-            object.activityId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.activityId == null ? null : serializers.serialize(
+      object.activityId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'failure_reason';
-    yield object.failureReason == null
-        ? null
-        : serializers.serialize(
-            object.failureReason,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.failureReason == null ? null : serializers.serialize(
+      object.failureReason,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'manual_review_reason';
-    yield object.manualReviewReason == null
-        ? null
-        : serializers.serialize(
-            object.manualReviewReason,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.manualReviewReason == null ? null : serializers.serialize(
+      object.manualReviewReason,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'created_at';
     yield serializers.serialize(
       object.createdAt,
@@ -339,9 +311,7 @@ class _$WalletActionExecutionSerializer
     WalletActionExecution object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -512,8 +482,7 @@ class _$WalletActionExecutionSerializer
         case r'chain_observation':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(WalletActionChainObservation),
+            specifiedType: const FullType.nullable(WalletActionChainObservation),
           ) as WalletActionChainObservation?;
           if (valueDes == null) continue;
           result.chainObservation.replace(valueDes);
@@ -586,29 +555,23 @@ class _$WalletActionExecutionSerializer
 }
 
 class WalletActionExecutionChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 1)
-  static const WalletActionExecutionChainIdEnum number1 =
-      _$walletActionExecutionChainIdEnum_number1;
+  static const WalletActionExecutionChainIdEnum number1 = _$walletActionExecutionChainIdEnum_number1;
   @BuiltValueEnumConst(wireNumber: 56)
-  static const WalletActionExecutionChainIdEnum number56 =
-      _$walletActionExecutionChainIdEnum_number56;
+  static const WalletActionExecutionChainIdEnum number56 = _$walletActionExecutionChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 8453)
-  static const WalletActionExecutionChainIdEnum number8453 =
-      _$walletActionExecutionChainIdEnum_number8453;
+  static const WalletActionExecutionChainIdEnum number8453 = _$walletActionExecutionChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
-  static const WalletActionExecutionChainIdEnum number42161 =
-      _$walletActionExecutionChainIdEnum_number42161;
+  static const WalletActionExecutionChainIdEnum number42161 = _$walletActionExecutionChainIdEnum_number42161;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const WalletActionExecutionChainIdEnum unknownDefaultOpenApi =
-      _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi;
+  static const WalletActionExecutionChainIdEnum unknownDefaultOpenApi = _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<WalletActionExecutionChainIdEnum> get serializer =>
-      _$walletActionExecutionChainIdEnumSerializer;
+  static Serializer<WalletActionExecutionChainIdEnum> get serializer => _$walletActionExecutionChainIdEnumSerializer;
 
-  const WalletActionExecutionChainIdEnum._(String name) : super(name);
+  const WalletActionExecutionChainIdEnum._(String name): super(name);
 
-  static BuiltSet<WalletActionExecutionChainIdEnum> get values =>
-      _$walletActionExecutionChainIdEnumValues;
-  static WalletActionExecutionChainIdEnum valueOf(String name) =>
-      _$walletActionExecutionChainIdEnumValueOf(name);
+  static BuiltSet<WalletActionExecutionChainIdEnum> get values => _$walletActionExecutionChainIdEnumValues;
+  static WalletActionExecutionChainIdEnum valueOf(String name) => _$walletActionExecutionChainIdEnumValueOf(name);
 }
+

@@ -12,14 +12,13 @@ part 'legacy_perp_funding_rail.g.dart';
 /// LegacyPerpFundingRail
 ///
 /// Properties:
-/// * [rail]
-/// * [network]
-/// * [settlementAsset]
+/// * [rail] 
+/// * [network] 
+/// * [settlementAsset] 
 /// * [minimumAmount] - 十进制字符串，避免浮点误差
 @Deprecated('LegacyPerpFundingRail has been deprecated')
 @BuiltValue()
-abstract class LegacyPerpFundingRail
-    implements Built<LegacyPerpFundingRail, LegacyPerpFundingRailBuilder> {
+abstract class LegacyPerpFundingRail implements Built<LegacyPerpFundingRail, LegacyPerpFundingRailBuilder> {
   @BuiltValueField(wireName: r'rail')
   LegacyPerpFundingRailRailEnum get rail;
   // enum railEnum {  perp,  };
@@ -38,24 +37,18 @@ abstract class LegacyPerpFundingRail
 
   LegacyPerpFundingRail._();
 
-  factory LegacyPerpFundingRail(
-      [void updates(LegacyPerpFundingRailBuilder b)]) = _$LegacyPerpFundingRail;
+  factory LegacyPerpFundingRail([void updates(LegacyPerpFundingRailBuilder b)]) = _$LegacyPerpFundingRail;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LegacyPerpFundingRailBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LegacyPerpFundingRail> get serializer =>
-      _$LegacyPerpFundingRailSerializer();
+  static Serializer<LegacyPerpFundingRail> get serializer => _$LegacyPerpFundingRailSerializer();
 }
 
-class _$LegacyPerpFundingRailSerializer
-    implements PrimitiveSerializer<LegacyPerpFundingRail> {
+class _$LegacyPerpFundingRailSerializer implements PrimitiveSerializer<LegacyPerpFundingRail> {
   @override
-  final Iterable<Type> types = const [
-    LegacyPerpFundingRail,
-    _$LegacyPerpFundingRail
-  ];
+  final Iterable<Type> types = const [LegacyPerpFundingRail, _$LegacyPerpFundingRail];
 
   @override
   final String wireName = r'LegacyPerpFundingRail';
@@ -95,9 +88,7 @@ class _$LegacyPerpFundingRailSerializer
     LegacyPerpFundingRail object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -129,8 +120,7 @@ class _$LegacyPerpFundingRailSerializer
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(LegacyPerpFundingRailSettlementAssetEnum),
+            specifiedType: const FullType(LegacyPerpFundingRailSettlementAssetEnum),
           ) as LegacyPerpFundingRailSettlementAssetEnum;
           result.settlementAsset = valueDes;
           break;
@@ -173,60 +163,49 @@ class _$LegacyPerpFundingRailSerializer
 
 @Deprecated('LegacyPerpFundingRailRailEnum has been deprecated')
 class LegacyPerpFundingRailRailEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'perp')
-  static const LegacyPerpFundingRailRailEnum perp =
-      _$legacyPerpFundingRailRailEnum_perp;
+  static const LegacyPerpFundingRailRailEnum perp = _$legacyPerpFundingRailRailEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingRailRailEnum unknownDefaultOpenApi =
-      _$legacyPerpFundingRailRailEnum_unknownDefaultOpenApi;
+  static const LegacyPerpFundingRailRailEnum unknownDefaultOpenApi = _$legacyPerpFundingRailRailEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyPerpFundingRailRailEnum> get serializer =>
-      _$legacyPerpFundingRailRailEnumSerializer;
+  static Serializer<LegacyPerpFundingRailRailEnum> get serializer => _$legacyPerpFundingRailRailEnumSerializer;
 
-  const LegacyPerpFundingRailRailEnum._(String name) : super(name);
+  const LegacyPerpFundingRailRailEnum._(String name): super(name);
 
-  static BuiltSet<LegacyPerpFundingRailRailEnum> get values =>
-      _$legacyPerpFundingRailRailEnumValues;
-  static LegacyPerpFundingRailRailEnum valueOf(String name) =>
-      _$legacyPerpFundingRailRailEnumValueOf(name);
+  static BuiltSet<LegacyPerpFundingRailRailEnum> get values => _$legacyPerpFundingRailRailEnumValues;
+  static LegacyPerpFundingRailRailEnum valueOf(String name) => _$legacyPerpFundingRailRailEnumValueOf(name);
 }
 
 @Deprecated('LegacyPerpFundingRailNetworkEnum has been deprecated')
 class LegacyPerpFundingRailNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const LegacyPerpFundingRailNetworkEnum arbitrum =
-      _$legacyPerpFundingRailNetworkEnum_arbitrum;
+  static const LegacyPerpFundingRailNetworkEnum arbitrum = _$legacyPerpFundingRailNetworkEnum_arbitrum;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingRailNetworkEnum unknownDefaultOpenApi =
-      _$legacyPerpFundingRailNetworkEnum_unknownDefaultOpenApi;
+  static const LegacyPerpFundingRailNetworkEnum unknownDefaultOpenApi = _$legacyPerpFundingRailNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyPerpFundingRailNetworkEnum> get serializer =>
-      _$legacyPerpFundingRailNetworkEnumSerializer;
+  static Serializer<LegacyPerpFundingRailNetworkEnum> get serializer => _$legacyPerpFundingRailNetworkEnumSerializer;
 
-  const LegacyPerpFundingRailNetworkEnum._(String name) : super(name);
+  const LegacyPerpFundingRailNetworkEnum._(String name): super(name);
 
-  static BuiltSet<LegacyPerpFundingRailNetworkEnum> get values =>
-      _$legacyPerpFundingRailNetworkEnumValues;
-  static LegacyPerpFundingRailNetworkEnum valueOf(String name) =>
-      _$legacyPerpFundingRailNetworkEnumValueOf(name);
+  static BuiltSet<LegacyPerpFundingRailNetworkEnum> get values => _$legacyPerpFundingRailNetworkEnumValues;
+  static LegacyPerpFundingRailNetworkEnum valueOf(String name) => _$legacyPerpFundingRailNetworkEnumValueOf(name);
 }
 
 @Deprecated('LegacyPerpFundingRailSettlementAssetEnum has been deprecated')
 class LegacyPerpFundingRailSettlementAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const LegacyPerpFundingRailSettlementAssetEnum USDC =
-      _$legacyPerpFundingRailSettlementAssetEnum_USDC;
+  static const LegacyPerpFundingRailSettlementAssetEnum USDC = _$legacyPerpFundingRailSettlementAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingRailSettlementAssetEnum unknownDefaultOpenApi =
-      _$legacyPerpFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
+  static const LegacyPerpFundingRailSettlementAssetEnum unknownDefaultOpenApi = _$legacyPerpFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyPerpFundingRailSettlementAssetEnum> get serializer =>
-      _$legacyPerpFundingRailSettlementAssetEnumSerializer;
+  static Serializer<LegacyPerpFundingRailSettlementAssetEnum> get serializer => _$legacyPerpFundingRailSettlementAssetEnumSerializer;
 
-  const LegacyPerpFundingRailSettlementAssetEnum._(String name) : super(name);
+  const LegacyPerpFundingRailSettlementAssetEnum._(String name): super(name);
 
-  static BuiltSet<LegacyPerpFundingRailSettlementAssetEnum> get values =>
-      _$legacyPerpFundingRailSettlementAssetEnumValues;
-  static LegacyPerpFundingRailSettlementAssetEnum valueOf(String name) =>
-      _$legacyPerpFundingRailSettlementAssetEnumValueOf(name);
+  static BuiltSet<LegacyPerpFundingRailSettlementAssetEnum> get values => _$legacyPerpFundingRailSettlementAssetEnumValues;
+  static LegacyPerpFundingRailSettlementAssetEnum valueOf(String name) => _$legacyPerpFundingRailSettlementAssetEnumValueOf(name);
 }
+

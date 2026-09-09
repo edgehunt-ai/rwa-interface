@@ -15,14 +15,11 @@ part 'realtime_transfer_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt]
-/// * [event]
-/// * [data]
+/// * [emittedAt] 
+/// * [event] 
+/// * [data] 
 @BuiltValue()
-abstract class RealtimeTransferEvent
-    implements
-        RealtimeEventBase,
-        Built<RealtimeTransferEvent, RealtimeTransferEventBuilder> {
+abstract class RealtimeTransferEvent implements RealtimeEventBase, Built<RealtimeTransferEvent, RealtimeTransferEventBuilder> {
   @BuiltValueField(wireName: r'data')
   Transfer get data;
 
@@ -32,24 +29,18 @@ abstract class RealtimeTransferEvent
 
   RealtimeTransferEvent._();
 
-  factory RealtimeTransferEvent(
-      [void updates(RealtimeTransferEventBuilder b)]) = _$RealtimeTransferEvent;
+  factory RealtimeTransferEvent([void updates(RealtimeTransferEventBuilder b)]) = _$RealtimeTransferEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeTransferEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeTransferEvent> get serializer =>
-      _$RealtimeTransferEventSerializer();
+  static Serializer<RealtimeTransferEvent> get serializer => _$RealtimeTransferEventSerializer();
 }
 
-class _$RealtimeTransferEventSerializer
-    implements PrimitiveSerializer<RealtimeTransferEvent> {
+class _$RealtimeTransferEventSerializer implements PrimitiveSerializer<RealtimeTransferEvent> {
   @override
-  final Iterable<Type> types = const [
-    RealtimeTransferEvent,
-    _$RealtimeTransferEvent
-  ];
+  final Iterable<Type> types = const [RealtimeTransferEvent, _$RealtimeTransferEvent];
 
   @override
   final String wireName = r'RealtimeTransferEvent';
@@ -87,9 +78,7 @@ class _$RealtimeTransferEventSerializer
     RealtimeTransferEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -162,20 +151,17 @@ class _$RealtimeTransferEventSerializer
 }
 
 class RealtimeTransferEventEventEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'transfer')
-  static const RealtimeTransferEventEventEnum transfer =
-      _$realtimeTransferEventEventEnum_transfer;
+  static const RealtimeTransferEventEventEnum transfer = _$realtimeTransferEventEventEnum_transfer;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeTransferEventEventEnum unknownDefaultOpenApi =
-      _$realtimeTransferEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeTransferEventEventEnum unknownDefaultOpenApi = _$realtimeTransferEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeTransferEventEventEnum> get serializer =>
-      _$realtimeTransferEventEventEnumSerializer;
+  static Serializer<RealtimeTransferEventEventEnum> get serializer => _$realtimeTransferEventEventEnumSerializer;
 
-  const RealtimeTransferEventEventEnum._(String name) : super(name);
+  const RealtimeTransferEventEventEnum._(String name): super(name);
 
-  static BuiltSet<RealtimeTransferEventEventEnum> get values =>
-      _$realtimeTransferEventEventEnumValues;
-  static RealtimeTransferEventEventEnum valueOf(String name) =>
-      _$realtimeTransferEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeTransferEventEventEnum> get values => _$realtimeTransferEventEventEnumValues;
+  static RealtimeTransferEventEventEnum valueOf(String name) => _$realtimeTransferEventEventEnumValueOf(name);
 }
+

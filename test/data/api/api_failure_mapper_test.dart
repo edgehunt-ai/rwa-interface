@@ -105,4 +105,21 @@ void main() {
       FailureKind.unknown,
     );
   });
+
+  test(
+    'maps a successful response that fails decoding as decoding failure',
+    () {
+      final request = RequestOptions(path: '/v1/funding/catalog');
+      final failure = mapper.fromDio(
+        DioException(
+          requestOptions: request,
+          response: Response(requestOptions: request, statusCode: 200),
+          type: DioExceptionType.unknown,
+          error: const FormatException('Unexpected response shape'),
+        ),
+      );
+
+      expect(failure, isA<DecodingFailure>());
+    },
+  );
 }

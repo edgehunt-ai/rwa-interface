@@ -9,13 +9,13 @@ import 'package:built_value/serializer.dart';
 
 part 'device_info.g.dart';
 
-/// 登录时一并提交的设备信息，等价于调用一次 `POST /v1/me/devices`。 令牌轮换必须走 `POST /v1/me/devices`。
+/// 登录时一并提交的设备信息，等价于调用一次 `POST /v1/me/devices`。 令牌轮换必须走 `POST /v1/me/devices`。 
 ///
 /// Properties:
 /// * [deviceId] - 客户端生成并持久化的设备标识，用于 upsert
-/// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
-/// * [appVersion]
-/// * [pushToken]
+/// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。 
+/// * [appVersion] 
+/// * [pushToken] 
 /// * [pushProvider] - Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
 @BuiltValue()
 abstract class DeviceInfo implements Built<DeviceInfo, DeviceInfoBuilder> {
@@ -23,7 +23,7 @@ abstract class DeviceInfo implements Built<DeviceInfo, DeviceInfoBuilder> {
   @BuiltValueField(wireName: r'device_id')
   String? get deviceId;
 
-  /// 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
+  /// 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。 
   @BuiltValueField(wireName: r'platform')
   String? get platform;
 
@@ -104,9 +104,7 @@ class _$DeviceInfoSerializer implements PrimitiveSerializer<DeviceInfo> {
     DeviceInfo object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -191,28 +189,22 @@ class _$DeviceInfoSerializer implements PrimitiveSerializer<DeviceInfo> {
 }
 
 class DeviceInfoPushProviderEnum extends EnumClass {
+
   /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
   @BuiltValueEnumConst(wireName: r'apns')
-  static const DeviceInfoPushProviderEnum apns =
-      _$deviceInfoPushProviderEnum_apns;
-
+  static const DeviceInfoPushProviderEnum apns = _$deviceInfoPushProviderEnum_apns;
   /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
   @BuiltValueEnumConst(wireName: r'fcm')
-  static const DeviceInfoPushProviderEnum fcm =
-      _$deviceInfoPushProviderEnum_fcm;
-
+  static const DeviceInfoPushProviderEnum fcm = _$deviceInfoPushProviderEnum_fcm;
   /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DeviceInfoPushProviderEnum unknownDefaultOpenApi =
-      _$deviceInfoPushProviderEnum_unknownDefaultOpenApi;
+  static const DeviceInfoPushProviderEnum unknownDefaultOpenApi = _$deviceInfoPushProviderEnum_unknownDefaultOpenApi;
 
-  static Serializer<DeviceInfoPushProviderEnum> get serializer =>
-      _$deviceInfoPushProviderEnumSerializer;
+  static Serializer<DeviceInfoPushProviderEnum> get serializer => _$deviceInfoPushProviderEnumSerializer;
 
-  const DeviceInfoPushProviderEnum._(String name) : super(name);
+  const DeviceInfoPushProviderEnum._(String name): super(name);
 
-  static BuiltSet<DeviceInfoPushProviderEnum> get values =>
-      _$deviceInfoPushProviderEnumValues;
-  static DeviceInfoPushProviderEnum valueOf(String name) =>
-      _$deviceInfoPushProviderEnumValueOf(name);
+  static BuiltSet<DeviceInfoPushProviderEnum> get values => _$deviceInfoPushProviderEnumValues;
+  static DeviceInfoPushProviderEnum valueOf(String name) => _$deviceInfoPushProviderEnumValueOf(name);
 }
+

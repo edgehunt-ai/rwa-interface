@@ -12,22 +12,19 @@ part 'wallet_action_chain_observation.g.dart';
 /// Independently verified canonical-chain evidence for the exact frozen call.
 ///
 /// Properties:
-/// * [txHash]
-/// * [sender]
-/// * [recipient]
-/// * [payloadHash]
-/// * [value]
-/// * [receiptSuccess]
-/// * [canonical]
-/// * [blockNumber]
-/// * [blockHash]
-/// * [confirmations]
-/// * [observedAt]
+/// * [txHash] 
+/// * [sender] 
+/// * [recipient] 
+/// * [payloadHash] 
+/// * [value] 
+/// * [receiptSuccess] 
+/// * [canonical] 
+/// * [blockNumber] 
+/// * [blockHash] 
+/// * [confirmations] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class WalletActionChainObservation
-    implements
-        Built<WalletActionChainObservation,
-            WalletActionChainObservationBuilder> {
+abstract class WalletActionChainObservation implements Built<WalletActionChainObservation, WalletActionChainObservationBuilder> {
   @BuiltValueField(wireName: r'tx_hash')
   String get txHash;
 
@@ -64,25 +61,18 @@ abstract class WalletActionChainObservation
 
   WalletActionChainObservation._();
 
-  factory WalletActionChainObservation(
-          [void updates(WalletActionChainObservationBuilder b)]) =
-      _$WalletActionChainObservation;
+  factory WalletActionChainObservation([void updates(WalletActionChainObservationBuilder b)]) = _$WalletActionChainObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WalletActionChainObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletActionChainObservation> get serializer =>
-      _$WalletActionChainObservationSerializer();
+  static Serializer<WalletActionChainObservation> get serializer => _$WalletActionChainObservationSerializer();
 }
 
-class _$WalletActionChainObservationSerializer
-    implements PrimitiveSerializer<WalletActionChainObservation> {
+class _$WalletActionChainObservationSerializer implements PrimitiveSerializer<WalletActionChainObservation> {
   @override
-  final Iterable<Type> types = const [
-    WalletActionChainObservation,
-    _$WalletActionChainObservation
-  ];
+  final Iterable<Type> types = const [WalletActionChainObservation, _$WalletActionChainObservation];
 
   @override
   final String wireName = r'WalletActionChainObservation';
@@ -155,9 +145,7 @@ class _$WalletActionChainObservationSerializer
     WalletActionChainObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -203,8 +191,7 @@ class _$WalletActionChainObservationSerializer
         case r'value':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(WalletActionChainObservationValueEnum),
+            specifiedType: const FullType(WalletActionChainObservationValueEnum),
           ) as WalletActionChainObservationValueEnum;
           result.value = valueDes;
           break;
@@ -280,20 +267,17 @@ class _$WalletActionChainObservationSerializer
 }
 
 class WalletActionChainObservationValueEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0x0')
-  static const WalletActionChainObservationValueEnum n0x0 =
-      _$walletActionChainObservationValueEnum_n0x0;
+  static const WalletActionChainObservationValueEnum n0x0 = _$walletActionChainObservationValueEnum_n0x0;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionChainObservationValueEnum unknownDefaultOpenApi =
-      _$walletActionChainObservationValueEnum_unknownDefaultOpenApi;
+  static const WalletActionChainObservationValueEnum unknownDefaultOpenApi = _$walletActionChainObservationValueEnum_unknownDefaultOpenApi;
 
-  static Serializer<WalletActionChainObservationValueEnum> get serializer =>
-      _$walletActionChainObservationValueEnumSerializer;
+  static Serializer<WalletActionChainObservationValueEnum> get serializer => _$walletActionChainObservationValueEnumSerializer;
 
-  const WalletActionChainObservationValueEnum._(String name) : super(name);
+  const WalletActionChainObservationValueEnum._(String name): super(name);
 
-  static BuiltSet<WalletActionChainObservationValueEnum> get values =>
-      _$walletActionChainObservationValueEnumValues;
-  static WalletActionChainObservationValueEnum valueOf(String name) =>
-      _$walletActionChainObservationValueEnumValueOf(name);
+  static BuiltSet<WalletActionChainObservationValueEnum> get values => _$walletActionChainObservationValueEnumValues;
+  static WalletActionChainObservationValueEnum valueOf(String name) => _$walletActionChainObservationValueEnumValueOf(name);
 }
+

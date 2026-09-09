@@ -12,13 +12,13 @@ part 'stock.g.dart';
 /// Stock
 ///
 /// Properties:
-/// * [symbol]
-/// * [name]
-/// * [logoUrl]
+/// * [symbol] 
+/// * [name] 
+/// * [logoUrl] 
 /// * [logoText] - 无图时的占位字母
 /// * [referencePrice] - 美股最近参考价
-/// * [referenceSession]
-/// * [referenceAt]
+/// * [referenceSession] 
+/// * [referenceAt] 
 @BuiltValue()
 abstract class Stock implements Built<Stock, StockBuilder> {
   @BuiltValueField(wireName: r'symbol')
@@ -119,9 +119,7 @@ class _$StockSerializer implements PrimitiveSerializer<Stock> {
     Stock object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -217,3 +215,4 @@ class _$StockSerializer implements PrimitiveSerializer<Stock> {
     return result.build();
   }
 }
+

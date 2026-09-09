@@ -11,18 +11,16 @@ import 'package:built_value/serializer.dart';
 
 part 'privy_authorization_payload.g.dart';
 
-/// Exact structured input for Flutter/React Privy `generateAuthorizationSignature`. The client passes this structure to the Privy SDK; RFC 8785 canonicalization is SDK-owned and this API never accepts an arbitrary JSON blob. The URL is restricted to Privy's HTTPS wallet RPC.  `body.caip2` MUST equal `eip155:{WalletActionExecution.chain_id}`; `body.reference_id` MUST equal the execution id; and `body.params.transaction.from/to/data/value` MUST byte-for-byte equal `WalletActionExecution.frozen_transaction`. Any mismatch is a server fault and the client must not sign it.
+/// Exact structured input for Flutter/React Privy `generateAuthorizationSignature`. The client passes this structure to the Privy SDK; RFC 8785 canonicalization is SDK-owned and this API never accepts an arbitrary JSON blob. The URL is restricted to Privy's HTTPS wallet RPC.  `body.caip2` MUST equal `eip155:{WalletActionExecution.chain_id}`; `body.reference_id` MUST equal the execution id; and `body.params.transaction.from/to/data/value` MUST byte-for-byte equal `WalletActionExecution.frozen_transaction`. Any mismatch is a server fault and the client must not sign it. 
 ///
 /// Properties:
-/// * [version]
-/// * [method]
-/// * [url]
-/// * [headers]
-/// * [body]
+/// * [version] 
+/// * [method] 
+/// * [url] 
+/// * [headers] 
+/// * [body] 
 @BuiltValue()
-abstract class PrivyAuthorizationPayload
-    implements
-        Built<PrivyAuthorizationPayload, PrivyAuthorizationPayloadBuilder> {
+abstract class PrivyAuthorizationPayload implements Built<PrivyAuthorizationPayload, PrivyAuthorizationPayloadBuilder> {
   @BuiltValueField(wireName: r'version')
   PrivyAuthorizationPayloadVersionEnum get version;
   // enum versionEnum {  1,  };
@@ -42,25 +40,18 @@ abstract class PrivyAuthorizationPayload
 
   PrivyAuthorizationPayload._();
 
-  factory PrivyAuthorizationPayload(
-          [void updates(PrivyAuthorizationPayloadBuilder b)]) =
-      _$PrivyAuthorizationPayload;
+  factory PrivyAuthorizationPayload([void updates(PrivyAuthorizationPayloadBuilder b)]) = _$PrivyAuthorizationPayload;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PrivyAuthorizationPayloadBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PrivyAuthorizationPayload> get serializer =>
-      _$PrivyAuthorizationPayloadSerializer();
+  static Serializer<PrivyAuthorizationPayload> get serializer => _$PrivyAuthorizationPayloadSerializer();
 }
 
-class _$PrivyAuthorizationPayloadSerializer
-    implements PrimitiveSerializer<PrivyAuthorizationPayload> {
+class _$PrivyAuthorizationPayloadSerializer implements PrimitiveSerializer<PrivyAuthorizationPayload> {
   @override
-  final Iterable<Type> types = const [
-    PrivyAuthorizationPayload,
-    _$PrivyAuthorizationPayload
-  ];
+  final Iterable<Type> types = const [PrivyAuthorizationPayload, _$PrivyAuthorizationPayload];
 
   @override
   final String wireName = r'PrivyAuthorizationPayload';
@@ -103,9 +94,7 @@ class _$PrivyAuthorizationPayloadSerializer
     PrivyAuthorizationPayload object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -185,39 +174,32 @@ class _$PrivyAuthorizationPayloadSerializer
 }
 
 class PrivyAuthorizationPayloadVersionEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 1)
-  static const PrivyAuthorizationPayloadVersionEnum number1 =
-      _$privyAuthorizationPayloadVersionEnum_number1;
+  static const PrivyAuthorizationPayloadVersionEnum number1 = _$privyAuthorizationPayloadVersionEnum_number1;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PrivyAuthorizationPayloadVersionEnum unknownDefaultOpenApi =
-      _$privyAuthorizationPayloadVersionEnum_unknownDefaultOpenApi;
+  static const PrivyAuthorizationPayloadVersionEnum unknownDefaultOpenApi = _$privyAuthorizationPayloadVersionEnum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyAuthorizationPayloadVersionEnum> get serializer =>
-      _$privyAuthorizationPayloadVersionEnumSerializer;
+  static Serializer<PrivyAuthorizationPayloadVersionEnum> get serializer => _$privyAuthorizationPayloadVersionEnumSerializer;
 
-  const PrivyAuthorizationPayloadVersionEnum._(String name) : super(name);
+  const PrivyAuthorizationPayloadVersionEnum._(String name): super(name);
 
-  static BuiltSet<PrivyAuthorizationPayloadVersionEnum> get values =>
-      _$privyAuthorizationPayloadVersionEnumValues;
-  static PrivyAuthorizationPayloadVersionEnum valueOf(String name) =>
-      _$privyAuthorizationPayloadVersionEnumValueOf(name);
+  static BuiltSet<PrivyAuthorizationPayloadVersionEnum> get values => _$privyAuthorizationPayloadVersionEnumValues;
+  static PrivyAuthorizationPayloadVersionEnum valueOf(String name) => _$privyAuthorizationPayloadVersionEnumValueOf(name);
 }
 
 class PrivyAuthorizationPayloadMethodEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'POST')
-  static const PrivyAuthorizationPayloadMethodEnum POST =
-      _$privyAuthorizationPayloadMethodEnum_POST;
+  static const PrivyAuthorizationPayloadMethodEnum POST = _$privyAuthorizationPayloadMethodEnum_POST;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationPayloadMethodEnum unknownDefaultOpenApi =
-      _$privyAuthorizationPayloadMethodEnum_unknownDefaultOpenApi;
+  static const PrivyAuthorizationPayloadMethodEnum unknownDefaultOpenApi = _$privyAuthorizationPayloadMethodEnum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyAuthorizationPayloadMethodEnum> get serializer =>
-      _$privyAuthorizationPayloadMethodEnumSerializer;
+  static Serializer<PrivyAuthorizationPayloadMethodEnum> get serializer => _$privyAuthorizationPayloadMethodEnumSerializer;
 
-  const PrivyAuthorizationPayloadMethodEnum._(String name) : super(name);
+  const PrivyAuthorizationPayloadMethodEnum._(String name): super(name);
 
-  static BuiltSet<PrivyAuthorizationPayloadMethodEnum> get values =>
-      _$privyAuthorizationPayloadMethodEnumValues;
-  static PrivyAuthorizationPayloadMethodEnum valueOf(String name) =>
-      _$privyAuthorizationPayloadMethodEnumValueOf(name);
+  static BuiltSet<PrivyAuthorizationPayloadMethodEnum> get values => _$privyAuthorizationPayloadMethodEnumValues;
+  static PrivyAuthorizationPayloadMethodEnum valueOf(String name) => _$privyAuthorizationPayloadMethodEnumValueOf(name);
 }
+

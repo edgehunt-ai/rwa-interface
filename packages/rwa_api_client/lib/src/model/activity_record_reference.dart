@@ -12,11 +12,10 @@ part 'activity_record_reference.g.dart';
 /// 指向经过严格枚举的实际业务实体，未知内部资源不得兜底映射为订单。
 ///
 /// Properties:
-/// * [type]
-/// * [id]
+/// * [type] 
+/// * [id] 
 @BuiltValue()
-abstract class ActivityRecordReference
-    implements Built<ActivityRecordReference, ActivityRecordReferenceBuilder> {
+abstract class ActivityRecordReference implements Built<ActivityRecordReference, ActivityRecordReferenceBuilder> {
   @BuiltValueField(wireName: r'type')
   ActivityRecordReferenceTypeEnum get type;
   // enum typeEnum {  order,  position,  transfer,  claim,  deposit,  withdrawal,  };
@@ -26,25 +25,18 @@ abstract class ActivityRecordReference
 
   ActivityRecordReference._();
 
-  factory ActivityRecordReference(
-          [void updates(ActivityRecordReferenceBuilder b)]) =
-      _$ActivityRecordReference;
+  factory ActivityRecordReference([void updates(ActivityRecordReferenceBuilder b)]) = _$ActivityRecordReference;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ActivityRecordReferenceBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ActivityRecordReference> get serializer =>
-      _$ActivityRecordReferenceSerializer();
+  static Serializer<ActivityRecordReference> get serializer => _$ActivityRecordReferenceSerializer();
 }
 
-class _$ActivityRecordReferenceSerializer
-    implements PrimitiveSerializer<ActivityRecordReference> {
+class _$ActivityRecordReferenceSerializer implements PrimitiveSerializer<ActivityRecordReference> {
   @override
-  final Iterable<Type> types = const [
-    ActivityRecordReference,
-    _$ActivityRecordReference
-  ];
+  final Iterable<Type> types = const [ActivityRecordReference, _$ActivityRecordReference];
 
   @override
   final String wireName = r'ActivityRecordReference';
@@ -72,9 +64,7 @@ class _$ActivityRecordReferenceSerializer
     ActivityRecordReference object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -133,35 +123,27 @@ class _$ActivityRecordReferenceSerializer
 }
 
 class ActivityRecordReferenceTypeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'order')
-  static const ActivityRecordReferenceTypeEnum order =
-      _$activityRecordReferenceTypeEnum_order;
+  static const ActivityRecordReferenceTypeEnum order = _$activityRecordReferenceTypeEnum_order;
   @BuiltValueEnumConst(wireName: r'position')
-  static const ActivityRecordReferenceTypeEnum position =
-      _$activityRecordReferenceTypeEnum_position;
+  static const ActivityRecordReferenceTypeEnum position = _$activityRecordReferenceTypeEnum_position;
   @BuiltValueEnumConst(wireName: r'transfer')
-  static const ActivityRecordReferenceTypeEnum transfer =
-      _$activityRecordReferenceTypeEnum_transfer;
+  static const ActivityRecordReferenceTypeEnum transfer = _$activityRecordReferenceTypeEnum_transfer;
   @BuiltValueEnumConst(wireName: r'claim')
-  static const ActivityRecordReferenceTypeEnum claim =
-      _$activityRecordReferenceTypeEnum_claim;
+  static const ActivityRecordReferenceTypeEnum claim = _$activityRecordReferenceTypeEnum_claim;
   @BuiltValueEnumConst(wireName: r'deposit')
-  static const ActivityRecordReferenceTypeEnum deposit =
-      _$activityRecordReferenceTypeEnum_deposit;
+  static const ActivityRecordReferenceTypeEnum deposit = _$activityRecordReferenceTypeEnum_deposit;
   @BuiltValueEnumConst(wireName: r'withdrawal')
-  static const ActivityRecordReferenceTypeEnum withdrawal =
-      _$activityRecordReferenceTypeEnum_withdrawal;
+  static const ActivityRecordReferenceTypeEnum withdrawal = _$activityRecordReferenceTypeEnum_withdrawal;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ActivityRecordReferenceTypeEnum unknownDefaultOpenApi =
-      _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi;
+  static const ActivityRecordReferenceTypeEnum unknownDefaultOpenApi = _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi;
 
-  static Serializer<ActivityRecordReferenceTypeEnum> get serializer =>
-      _$activityRecordReferenceTypeEnumSerializer;
+  static Serializer<ActivityRecordReferenceTypeEnum> get serializer => _$activityRecordReferenceTypeEnumSerializer;
 
-  const ActivityRecordReferenceTypeEnum._(String name) : super(name);
+  const ActivityRecordReferenceTypeEnum._(String name): super(name);
 
-  static BuiltSet<ActivityRecordReferenceTypeEnum> get values =>
-      _$activityRecordReferenceTypeEnumValues;
-  static ActivityRecordReferenceTypeEnum valueOf(String name) =>
-      _$activityRecordReferenceTypeEnumValueOf(name);
+  static BuiltSet<ActivityRecordReferenceTypeEnum> get values => _$activityRecordReferenceTypeEnumValues;
+  static ActivityRecordReferenceTypeEnum valueOf(String name) => _$activityRecordReferenceTypeEnumValueOf(name);
 }
+

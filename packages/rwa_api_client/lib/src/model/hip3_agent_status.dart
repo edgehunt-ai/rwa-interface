@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'hip3_agent_status.g.dart';
 
 class Hip3AgentStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'awaiting_owner_approval')
   static const Hip3AgentStatus awaitingOwnerApproval = _$awaitingOwnerApproval;
   @BuiltValueEnumConst(wireName: r'registering')
@@ -31,10 +32,9 @@ class Hip3AgentStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const Hip3AgentStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<Hip3AgentStatus> get serializer =>
-      _$hip3AgentStatusSerializer;
+  static Serializer<Hip3AgentStatus> get serializer => _$hip3AgentStatusSerializer;
 
-  const Hip3AgentStatus._(String name) : super(name);
+  const Hip3AgentStatus._(String name): super(name);
 
   static BuiltSet<Hip3AgentStatus> get values => _$values;
   static Hip3AgentStatus valueOf(String name) => _$valueOf(name);
@@ -47,3 +47,4 @@ class Hip3AgentStatus extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class Hip3AgentStatusMixin = Object with _$Hip3AgentStatusMixin;
+

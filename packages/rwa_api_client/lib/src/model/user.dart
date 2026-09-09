@@ -9,15 +9,15 @@ import 'package:built_value/serializer.dart';
 
 part 'user.g.dart';
 
-/// 账户主体，只放 **Privy 给不了的** 信息。  邮箱、登录方式这些属于 Privy 的身份数据，客户端登录后已经拿在手里 （`privyUser.linkedAccounts`），本接口不再重复返回一份 —— 两份数据 同步不及时反而会不一致。设置页的「当前登录账户」直接读 SDK。  用户偏好收在 `settings` 子对象里，更新走 `PATCH /v1/me/settings`。
+/// 账户主体，只放 **Privy 给不了的** 信息。  邮箱、登录方式这些属于 Privy 的身份数据，客户端登录后已经拿在手里 （`privyUser.linkedAccounts`），本接口不再重复返回一份 —— 两份数据 同步不及时反而会不一致。设置页的「当前登录账户」直接读 SDK。  用户偏好收在 `settings` 子对象里，更新走 `PATCH /v1/me/settings`。 
 ///
 /// Properties:
-/// * [userId]
+/// * [userId] 
 /// * [privyDid] - Privy 用户 DID
-/// * [displayName]
-/// * [avatarUrl]
-/// * [settings]
-/// * [createdAt]
+/// * [displayName] 
+/// * [avatarUrl] 
+/// * [settings] 
+/// * [createdAt] 
 @BuiltValue()
 abstract class User implements Built<User, UserBuilder> {
   @BuiltValueField(wireName: r'user_id')
@@ -108,9 +108,7 @@ class _$UserSerializer implements PrimitiveSerializer<User> {
     User object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -199,3 +197,4 @@ class _$UserSerializer implements PrimitiveSerializer<User> {
     return result.build();
   }
 }
+

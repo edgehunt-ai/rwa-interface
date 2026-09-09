@@ -12,20 +12,19 @@ part 'legacy_bstock_funding_plan.g.dart';
 /// LegacyBstockFundingPlan
 ///
 /// Properties:
-/// * [planId]
-/// * [rail]
-/// * [network]
-/// * [asset]
+/// * [planId] 
+/// * [rail] 
+/// * [network] 
+/// * [asset] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [totalFee] - 十进制字符串，避免浮点误差
-/// * [status]
-/// * [steps]
-/// * [createdAt]
-/// * [expiresAt]
+/// * [status] 
+/// * [steps] 
+/// * [createdAt] 
+/// * [expiresAt] 
 @Deprecated('LegacyBstockFundingPlan has been deprecated')
 @BuiltValue()
-abstract class LegacyBstockFundingPlan
-    implements Built<LegacyBstockFundingPlan, LegacyBstockFundingPlanBuilder> {
+abstract class LegacyBstockFundingPlan implements Built<LegacyBstockFundingPlan, LegacyBstockFundingPlanBuilder> {
   @BuiltValueField(wireName: r'plan_id')
   String get planId;
 
@@ -64,25 +63,18 @@ abstract class LegacyBstockFundingPlan
 
   LegacyBstockFundingPlan._();
 
-  factory LegacyBstockFundingPlan(
-          [void updates(LegacyBstockFundingPlanBuilder b)]) =
-      _$LegacyBstockFundingPlan;
+  factory LegacyBstockFundingPlan([void updates(LegacyBstockFundingPlanBuilder b)]) = _$LegacyBstockFundingPlan;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LegacyBstockFundingPlanBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LegacyBstockFundingPlan> get serializer =>
-      _$LegacyBstockFundingPlanSerializer();
+  static Serializer<LegacyBstockFundingPlan> get serializer => _$LegacyBstockFundingPlanSerializer();
 }
 
-class _$LegacyBstockFundingPlanSerializer
-    implements PrimitiveSerializer<LegacyBstockFundingPlan> {
+class _$LegacyBstockFundingPlanSerializer implements PrimitiveSerializer<LegacyBstockFundingPlan> {
   @override
-  final Iterable<Type> types = const [
-    LegacyBstockFundingPlan,
-    _$LegacyBstockFundingPlan
-  ];
+  final Iterable<Type> types = const [LegacyBstockFundingPlan, _$LegacyBstockFundingPlan];
 
   @override
   final String wireName = r'LegacyBstockFundingPlan';
@@ -152,9 +144,7 @@ class _$LegacyBstockFundingPlanSerializer
     LegacyBstockFundingPlan object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -221,8 +211,7 @@ class _$LegacyBstockFundingPlanSerializer
         case r'steps':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(String)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(String)]),
           ) as BuiltList<String>?;
           if (valueDes == null) continue;
           result.steps.replace(valueDes);
@@ -272,86 +261,69 @@ class _$LegacyBstockFundingPlanSerializer
 
 @Deprecated('LegacyBstockFundingPlanRailEnum has been deprecated')
 class LegacyBstockFundingPlanRailEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bstock')
-  static const LegacyBstockFundingPlanRailEnum bstock =
-      _$legacyBstockFundingPlanRailEnum_bstock;
+  static const LegacyBstockFundingPlanRailEnum bstock = _$legacyBstockFundingPlanRailEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanRailEnum unknownDefaultOpenApi =
-      _$legacyBstockFundingPlanRailEnum_unknownDefaultOpenApi;
+  static const LegacyBstockFundingPlanRailEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanRailEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockFundingPlanRailEnum> get serializer =>
-      _$legacyBstockFundingPlanRailEnumSerializer;
+  static Serializer<LegacyBstockFundingPlanRailEnum> get serializer => _$legacyBstockFundingPlanRailEnumSerializer;
 
-  const LegacyBstockFundingPlanRailEnum._(String name) : super(name);
+  const LegacyBstockFundingPlanRailEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockFundingPlanRailEnum> get values =>
-      _$legacyBstockFundingPlanRailEnumValues;
-  static LegacyBstockFundingPlanRailEnum valueOf(String name) =>
-      _$legacyBstockFundingPlanRailEnumValueOf(name);
+  static BuiltSet<LegacyBstockFundingPlanRailEnum> get values => _$legacyBstockFundingPlanRailEnumValues;
+  static LegacyBstockFundingPlanRailEnum valueOf(String name) => _$legacyBstockFundingPlanRailEnumValueOf(name);
 }
 
 @Deprecated('LegacyBstockFundingPlanNetworkEnum has been deprecated')
 class LegacyBstockFundingPlanNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const LegacyBstockFundingPlanNetworkEnum BSC =
-      _$legacyBstockFundingPlanNetworkEnum_BSC;
+  static const LegacyBstockFundingPlanNetworkEnum BSC = _$legacyBstockFundingPlanNetworkEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanNetworkEnum unknownDefaultOpenApi =
-      _$legacyBstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
+  static const LegacyBstockFundingPlanNetworkEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockFundingPlanNetworkEnum> get serializer =>
-      _$legacyBstockFundingPlanNetworkEnumSerializer;
+  static Serializer<LegacyBstockFundingPlanNetworkEnum> get serializer => _$legacyBstockFundingPlanNetworkEnumSerializer;
 
-  const LegacyBstockFundingPlanNetworkEnum._(String name) : super(name);
+  const LegacyBstockFundingPlanNetworkEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockFundingPlanNetworkEnum> get values =>
-      _$legacyBstockFundingPlanNetworkEnumValues;
-  static LegacyBstockFundingPlanNetworkEnum valueOf(String name) =>
-      _$legacyBstockFundingPlanNetworkEnumValueOf(name);
+  static BuiltSet<LegacyBstockFundingPlanNetworkEnum> get values => _$legacyBstockFundingPlanNetworkEnumValues;
+  static LegacyBstockFundingPlanNetworkEnum valueOf(String name) => _$legacyBstockFundingPlanNetworkEnumValueOf(name);
 }
 
 @Deprecated('LegacyBstockFundingPlanAssetEnum has been deprecated')
 class LegacyBstockFundingPlanAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const LegacyBstockFundingPlanAssetEnum USDC =
-      _$legacyBstockFundingPlanAssetEnum_USDC;
+  static const LegacyBstockFundingPlanAssetEnum USDC = _$legacyBstockFundingPlanAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanAssetEnum unknownDefaultOpenApi =
-      _$legacyBstockFundingPlanAssetEnum_unknownDefaultOpenApi;
+  static const LegacyBstockFundingPlanAssetEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockFundingPlanAssetEnum> get serializer =>
-      _$legacyBstockFundingPlanAssetEnumSerializer;
+  static Serializer<LegacyBstockFundingPlanAssetEnum> get serializer => _$legacyBstockFundingPlanAssetEnumSerializer;
 
-  const LegacyBstockFundingPlanAssetEnum._(String name) : super(name);
+  const LegacyBstockFundingPlanAssetEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockFundingPlanAssetEnum> get values =>
-      _$legacyBstockFundingPlanAssetEnumValues;
-  static LegacyBstockFundingPlanAssetEnum valueOf(String name) =>
-      _$legacyBstockFundingPlanAssetEnumValueOf(name);
+  static BuiltSet<LegacyBstockFundingPlanAssetEnum> get values => _$legacyBstockFundingPlanAssetEnumValues;
+  static LegacyBstockFundingPlanAssetEnum valueOf(String name) => _$legacyBstockFundingPlanAssetEnumValueOf(name);
 }
 
 @Deprecated('LegacyBstockFundingPlanStatusEnum has been deprecated')
 class LegacyBstockFundingPlanStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'ready')
-  static const LegacyBstockFundingPlanStatusEnum ready =
-      _$legacyBstockFundingPlanStatusEnum_ready;
+  static const LegacyBstockFundingPlanStatusEnum ready = _$legacyBstockFundingPlanStatusEnum_ready;
   @BuiltValueEnumConst(wireName: r'expired')
-  static const LegacyBstockFundingPlanStatusEnum expired =
-      _$legacyBstockFundingPlanStatusEnum_expired;
+  static const LegacyBstockFundingPlanStatusEnum expired = _$legacyBstockFundingPlanStatusEnum_expired;
   @BuiltValueEnumConst(wireName: r'consumed')
-  static const LegacyBstockFundingPlanStatusEnum consumed =
-      _$legacyBstockFundingPlanStatusEnum_consumed;
+  static const LegacyBstockFundingPlanStatusEnum consumed = _$legacyBstockFundingPlanStatusEnum_consumed;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanStatusEnum unknownDefaultOpenApi =
-      _$legacyBstockFundingPlanStatusEnum_unknownDefaultOpenApi;
+  static const LegacyBstockFundingPlanStatusEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockFundingPlanStatusEnum> get serializer =>
-      _$legacyBstockFundingPlanStatusEnumSerializer;
+  static Serializer<LegacyBstockFundingPlanStatusEnum> get serializer => _$legacyBstockFundingPlanStatusEnumSerializer;
 
-  const LegacyBstockFundingPlanStatusEnum._(String name) : super(name);
+  const LegacyBstockFundingPlanStatusEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockFundingPlanStatusEnum> get values =>
-      _$legacyBstockFundingPlanStatusEnumValues;
-  static LegacyBstockFundingPlanStatusEnum valueOf(String name) =>
-      _$legacyBstockFundingPlanStatusEnumValueOf(name);
+  static BuiltSet<LegacyBstockFundingPlanStatusEnum> get values => _$legacyBstockFundingPlanStatusEnumValues;
+  static LegacyBstockFundingPlanStatusEnum valueOf(String name) => _$legacyBstockFundingPlanStatusEnumValueOf(name);
 }
+

@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'transfer_target_credit_status.g.dart';
 
 class TransferTargetCreditStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'pending')
   static const TransferTargetCreditStatus pending = _$pending;
   @BuiltValueEnumConst(wireName: r'confirmed')
@@ -21,13 +22,11 @@ class TransferTargetCreditStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferTargetCreditStatus manualReview = _$manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TransferTargetCreditStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const TransferTargetCreditStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<TransferTargetCreditStatus> get serializer =>
-      _$transferTargetCreditStatusSerializer;
+  static Serializer<TransferTargetCreditStatus> get serializer => _$transferTargetCreditStatusSerializer;
 
-  const TransferTargetCreditStatus._(String name) : super(name);
+  const TransferTargetCreditStatus._(String name): super(name);
 
   static BuiltSet<TransferTargetCreditStatus> get values => _$values;
   static TransferTargetCreditStatus valueOf(String name) => _$valueOf(name);
@@ -39,5 +38,5 @@ class TransferTargetCreditStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class TransferTargetCreditStatusMixin = Object
-    with _$TransferTargetCreditStatusMixin;
+abstract class TransferTargetCreditStatusMixin = Object with _$TransferTargetCreditStatusMixin;
+

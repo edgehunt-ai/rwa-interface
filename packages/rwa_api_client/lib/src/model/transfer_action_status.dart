@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'transfer_action_status.g.dart';
 
 class TransferActionStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'planned')
   static const TransferActionStatus planned = _$planned;
   @BuiltValueEnumConst(wireName: r'ready')
@@ -25,13 +26,11 @@ class TransferActionStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferActionStatus manualReview = _$manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TransferActionStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const TransferActionStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<TransferActionStatus> get serializer =>
-      _$transferActionStatusSerializer;
+  static Serializer<TransferActionStatus> get serializer => _$transferActionStatusSerializer;
 
-  const TransferActionStatus._(String name) : super(name);
+  const TransferActionStatus._(String name): super(name);
 
   static BuiltSet<TransferActionStatus> get values => _$values;
   static TransferActionStatus valueOf(String name) => _$valueOf(name);
@@ -43,5 +42,5 @@ class TransferActionStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class TransferActionStatusMixin = Object
-    with _$TransferActionStatusMixin;
+abstract class TransferActionStatusMixin = Object with _$TransferActionStatusMixin;
+

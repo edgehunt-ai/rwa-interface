@@ -13,18 +13,15 @@ part 'bstock_funding_target_credit_observation.g.dart';
 /// BstockFundingTargetCreditObservation
 ///
 /// Properties:
-/// * [accountRef]
-/// * [asset]
+/// * [accountRef] 
+/// * [asset] 
 /// * [availableBefore] - 十进制字符串，避免浮点误差
 /// * [availableAfter] - 十进制字符串，避免浮点误差
 /// * [creditedAmount] - 十进制字符串，避免浮点误差
-/// * [source_]
-/// * [observedAt]
+/// * [source_] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class BstockFundingTargetCreditObservation
-    implements
-        Built<BstockFundingTargetCreditObservation,
-            BstockFundingTargetCreditObservationBuilder> {
+abstract class BstockFundingTargetCreditObservation implements Built<BstockFundingTargetCreditObservation, BstockFundingTargetCreditObservationBuilder> {
   @BuiltValueField(wireName: r'account_ref')
   String get accountRef;
 
@@ -52,25 +49,18 @@ abstract class BstockFundingTargetCreditObservation
 
   BstockFundingTargetCreditObservation._();
 
-  factory BstockFundingTargetCreditObservation(
-          [void updates(BstockFundingTargetCreditObservationBuilder b)]) =
-      _$BstockFundingTargetCreditObservation;
+  factory BstockFundingTargetCreditObservation([void updates(BstockFundingTargetCreditObservationBuilder b)]) = _$BstockFundingTargetCreditObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BstockFundingTargetCreditObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BstockFundingTargetCreditObservation> get serializer =>
-      _$BstockFundingTargetCreditObservationSerializer();
+  static Serializer<BstockFundingTargetCreditObservation> get serializer => _$BstockFundingTargetCreditObservationSerializer();
 }
 
-class _$BstockFundingTargetCreditObservationSerializer
-    implements PrimitiveSerializer<BstockFundingTargetCreditObservation> {
+class _$BstockFundingTargetCreditObservationSerializer implements PrimitiveSerializer<BstockFundingTargetCreditObservation> {
   @override
-  final Iterable<Type> types = const [
-    BstockFundingTargetCreditObservation,
-    _$BstockFundingTargetCreditObservation
-  ];
+  final Iterable<Type> types = const [BstockFundingTargetCreditObservation, _$BstockFundingTargetCreditObservation];
 
   @override
   final String wireName = r'BstockFundingTargetCreditObservation';
@@ -108,8 +98,7 @@ class _$BstockFundingTargetCreditObservationSerializer
     yield r'source';
     yield serializers.serialize(
       object.source_,
-      specifiedType:
-          const FullType(BstockFundingTargetCreditObservationSource_Enum),
+      specifiedType: const FullType(BstockFundingTargetCreditObservationSource_Enum),
     );
     yield r'observed_at';
     yield serializers.serialize(
@@ -124,9 +113,7 @@ class _$BstockFundingTargetCreditObservationSerializer
     BstockFundingTargetCreditObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -179,8 +166,7 @@ class _$BstockFundingTargetCreditObservationSerializer
         case r'source':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BstockFundingTargetCreditObservationSource_Enum),
+            specifiedType: const FullType(BstockFundingTargetCreditObservationSource_Enum),
           ) as BstockFundingTargetCreditObservationSource_Enum;
           result.source_ = valueDes;
           break;
@@ -221,23 +207,17 @@ class _$BstockFundingTargetCreditObservationSerializer
 }
 
 class BstockFundingTargetCreditObservationSource_Enum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bsc_rpc')
-  static const BstockFundingTargetCreditObservationSource_Enum bscRpc =
-      _$bstockFundingTargetCreditObservationSourceEnum_bscRpc;
+  static const BstockFundingTargetCreditObservationSource_Enum bscRpc = _$bstockFundingTargetCreditObservationSourceEnum_bscRpc;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetCreditObservationSource_Enum
-      unknownDefaultOpenApi =
-      _$bstockFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetCreditObservationSource_Enum unknownDefaultOpenApi = _$bstockFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetCreditObservationSource_Enum>
-      get serializer =>
-          _$bstockFundingTargetCreditObservationSourceEnumSerializer;
+  static Serializer<BstockFundingTargetCreditObservationSource_Enum> get serializer => _$bstockFundingTargetCreditObservationSourceEnumSerializer;
 
-  const BstockFundingTargetCreditObservationSource_Enum._(String name)
-      : super(name);
+  const BstockFundingTargetCreditObservationSource_Enum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetCreditObservationSource_Enum> get values =>
-      _$bstockFundingTargetCreditObservationSourceEnumValues;
-  static BstockFundingTargetCreditObservationSource_Enum valueOf(String name) =>
-      _$bstockFundingTargetCreditObservationSourceEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetCreditObservationSource_Enum> get values => _$bstockFundingTargetCreditObservationSourceEnumValues;
+  static BstockFundingTargetCreditObservationSource_Enum valueOf(String name) => _$bstockFundingTargetCreditObservationSourceEnumValueOf(name);
 }
+

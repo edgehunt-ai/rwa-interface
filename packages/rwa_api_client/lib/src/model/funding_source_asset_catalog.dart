@@ -12,18 +12,16 @@ part 'funding_source_asset_catalog.g.dart';
 /// Exact eight-entry v1 source allowlist; every named identity is required once.
 ///
 /// Properties:
-/// * [ethereumUsdc]
-/// * [ethereumUsdt]
-/// * [arbitrumUsdc]
-/// * [arbitrumUsdt]
-/// * [baseUsdc]
-/// * [baseUsdt]
-/// * [bscUsdc]
-/// * [bscUsdt]
+/// * [ethereumUsdc] 
+/// * [ethereumUsdt] 
+/// * [arbitrumUsdc] 
+/// * [arbitrumUsdt] 
+/// * [baseUsdc] 
+/// * [baseUsdt] 
+/// * [bscUsdc] 
+/// * [bscUsdt] 
 @BuiltValue()
-abstract class FundingSourceAssetCatalog
-    implements
-        Built<FundingSourceAssetCatalog, FundingSourceAssetCatalogBuilder> {
+abstract class FundingSourceAssetCatalog implements Built<FundingSourceAssetCatalog, FundingSourceAssetCatalogBuilder> {
   @BuiltValueField(wireName: r'ethereum_usdc')
   FundingSourceAsset get ethereumUsdc;
 
@@ -50,25 +48,18 @@ abstract class FundingSourceAssetCatalog
 
   FundingSourceAssetCatalog._();
 
-  factory FundingSourceAssetCatalog(
-          [void updates(FundingSourceAssetCatalogBuilder b)]) =
-      _$FundingSourceAssetCatalog;
+  factory FundingSourceAssetCatalog([void updates(FundingSourceAssetCatalogBuilder b)]) = _$FundingSourceAssetCatalog;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingSourceAssetCatalogBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingSourceAssetCatalog> get serializer =>
-      _$FundingSourceAssetCatalogSerializer();
+  static Serializer<FundingSourceAssetCatalog> get serializer => _$FundingSourceAssetCatalogSerializer();
 }
 
-class _$FundingSourceAssetCatalogSerializer
-    implements PrimitiveSerializer<FundingSourceAssetCatalog> {
+class _$FundingSourceAssetCatalogSerializer implements PrimitiveSerializer<FundingSourceAssetCatalog> {
   @override
-  final Iterable<Type> types = const [
-    FundingSourceAssetCatalog,
-    _$FundingSourceAssetCatalog
-  ];
+  final Iterable<Type> types = const [FundingSourceAssetCatalog, _$FundingSourceAssetCatalog];
 
   @override
   final String wireName = r'FundingSourceAssetCatalog';
@@ -126,9 +117,7 @@ class _$FundingSourceAssetCatalogSerializer
     FundingSourceAssetCatalog object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -227,3 +216,4 @@ class _$FundingSourceAssetCatalogSerializer
     return result.build();
   }
 }
+

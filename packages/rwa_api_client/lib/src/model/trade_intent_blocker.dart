@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'trade_intent_blocker.g.dart';
 
 class TradeIntentBlocker extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'agent_required')
   static const TradeIntentBlocker agentRequired = _$agentRequired;
   @BuiltValueEnumConst(wireName: r'funding_required')
@@ -37,13 +38,11 @@ class TradeIntentBlocker extends EnumClass {
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TradeIntentBlocker manualReview = _$manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentBlocker unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const TradeIntentBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<TradeIntentBlocker> get serializer =>
-      _$tradeIntentBlockerSerializer;
+  static Serializer<TradeIntentBlocker> get serializer => _$tradeIntentBlockerSerializer;
 
-  const TradeIntentBlocker._(String name) : super(name);
+  const TradeIntentBlocker._(String name): super(name);
 
   static BuiltSet<TradeIntentBlocker> get values => _$values;
   static TradeIntentBlocker valueOf(String name) => _$valueOf(name);
@@ -56,3 +55,4 @@ class TradeIntentBlocker extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class TradeIntentBlockerMixin = Object with _$TradeIntentBlockerMixin;
+

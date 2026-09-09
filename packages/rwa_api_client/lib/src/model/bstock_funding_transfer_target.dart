@@ -14,13 +14,11 @@ part 'bstock_funding_transfer_target.g.dart';
 /// BstockFundingTransferTarget
 ///
 /// Properties:
-/// * [rail]
-/// * [target]
-/// * [targetCredit]
+/// * [rail] 
+/// * [target] 
+/// * [targetCredit] 
 @BuiltValue()
-abstract class BstockFundingTransferTarget
-    implements
-        Built<BstockFundingTransferTarget, BstockFundingTransferTargetBuilder> {
+abstract class BstockFundingTransferTarget implements Built<BstockFundingTransferTarget, BstockFundingTransferTargetBuilder> {
   @BuiltValueField(wireName: r'rail')
   BstockFundingTransferTargetRailEnum get rail;
   // enum railEnum {  bstock,  };
@@ -33,25 +31,18 @@ abstract class BstockFundingTransferTarget
 
   BstockFundingTransferTarget._();
 
-  factory BstockFundingTransferTarget(
-          [void updates(BstockFundingTransferTargetBuilder b)]) =
-      _$BstockFundingTransferTarget;
+  factory BstockFundingTransferTarget([void updates(BstockFundingTransferTargetBuilder b)]) = _$BstockFundingTransferTarget;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BstockFundingTransferTargetBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BstockFundingTransferTarget> get serializer =>
-      _$BstockFundingTransferTargetSerializer();
+  static Serializer<BstockFundingTransferTarget> get serializer => _$BstockFundingTransferTargetSerializer();
 }
 
-class _$BstockFundingTransferTargetSerializer
-    implements PrimitiveSerializer<BstockFundingTransferTarget> {
+class _$BstockFundingTransferTargetSerializer implements PrimitiveSerializer<BstockFundingTransferTarget> {
   @override
-  final Iterable<Type> types = const [
-    BstockFundingTransferTarget,
-    _$BstockFundingTransferTarget
-  ];
+  final Iterable<Type> types = const [BstockFundingTransferTarget, _$BstockFundingTransferTarget];
 
   @override
   final String wireName = r'BstockFundingTransferTarget';
@@ -75,8 +66,7 @@ class _$BstockFundingTransferTargetSerializer
       yield r'target_credit';
       yield serializers.serialize(
         object.targetCredit,
-        specifiedType:
-            const FullType.nullable(BstockFundingTargetCreditObservation),
+        specifiedType: const FullType.nullable(BstockFundingTargetCreditObservation),
       );
     }
   }
@@ -87,9 +77,7 @@ class _$BstockFundingTransferTargetSerializer
     BstockFundingTransferTarget object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -121,8 +109,7 @@ class _$BstockFundingTransferTargetSerializer
         case r'target_credit':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BstockFundingTargetCreditObservation),
+            specifiedType: const FullType.nullable(BstockFundingTargetCreditObservation),
           ) as BstockFundingTargetCreditObservation?;
           if (valueDes == null) continue;
           result.targetCredit.replace(valueDes);
@@ -157,20 +144,17 @@ class _$BstockFundingTransferTargetSerializer
 }
 
 class BstockFundingTransferTargetRailEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bstock')
-  static const BstockFundingTransferTargetRailEnum bstock =
-      _$bstockFundingTransferTargetRailEnum_bstock;
+  static const BstockFundingTransferTargetRailEnum bstock = _$bstockFundingTransferTargetRailEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTransferTargetRailEnum unknownDefaultOpenApi =
-      _$bstockFundingTransferTargetRailEnum_unknownDefaultOpenApi;
+  static const BstockFundingTransferTargetRailEnum unknownDefaultOpenApi = _$bstockFundingTransferTargetRailEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTransferTargetRailEnum> get serializer =>
-      _$bstockFundingTransferTargetRailEnumSerializer;
+  static Serializer<BstockFundingTransferTargetRailEnum> get serializer => _$bstockFundingTransferTargetRailEnumSerializer;
 
-  const BstockFundingTransferTargetRailEnum._(String name) : super(name);
+  const BstockFundingTransferTargetRailEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTransferTargetRailEnum> get values =>
-      _$bstockFundingTransferTargetRailEnumValues;
-  static BstockFundingTransferTargetRailEnum valueOf(String name) =>
-      _$bstockFundingTransferTargetRailEnumValueOf(name);
+  static BuiltSet<BstockFundingTransferTargetRailEnum> get values => _$bstockFundingTransferTargetRailEnumValues;
+  static BstockFundingTransferTargetRailEnum valueOf(String name) => _$bstockFundingTransferTargetRailEnumValueOf(name);
 }
+

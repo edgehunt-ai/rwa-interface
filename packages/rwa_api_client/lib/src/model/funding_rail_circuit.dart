@@ -15,14 +15,13 @@ part 'funding_rail_circuit.g.dart';
 /// FundingRailCircuit
 ///
 /// Properties:
-/// * [scope]
-/// * [state]
-/// * [generation]
-/// * [reason]
-/// * [trippedAt]
+/// * [scope] 
+/// * [state] 
+/// * [generation] 
+/// * [reason] 
+/// * [trippedAt] 
 @BuiltValue()
-abstract class FundingRailCircuit
-    implements Built<FundingRailCircuit, FundingRailCircuitBuilder> {
+abstract class FundingRailCircuit implements Built<FundingRailCircuit, FundingRailCircuitBuilder> {
   /// One Of [FundingRailCircuitClosed], [FundingRailCircuitOpen]
   OneOf get oneOf;
 
@@ -35,44 +34,39 @@ abstract class FundingRailCircuit
 
   FundingRailCircuit._();
 
-  factory FundingRailCircuit([void updates(FundingRailCircuitBuilder b)]) =
-      _$FundingRailCircuit;
+  factory FundingRailCircuit([void updates(FundingRailCircuitBuilder b)]) = _$FundingRailCircuit;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRailCircuitBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRailCircuit> get serializer =>
-      _$FundingRailCircuitSerializer();
+  static Serializer<FundingRailCircuit> get serializer => _$FundingRailCircuitSerializer();
 }
 
 extension FundingRailCircuitDiscriminatorExt on FundingRailCircuit {
-  String? get discriminatorValue {
-    if (this is FundingRailCircuitClosed) {
-      return r'closed';
+    String? get discriminatorValue {
+        if (this is FundingRailCircuitClosed) {
+            return r'closed';
+        }
+        if (this is FundingRailCircuitOpen) {
+            return r'open';
+        }
+        return null;
     }
-    if (this is FundingRailCircuitOpen) {
-      return r'open';
+}
+extension FundingRailCircuitBuilderDiscriminatorExt on FundingRailCircuitBuilder {
+    String? get discriminatorValue {
+        if (this is FundingRailCircuitClosedBuilder) {
+            return r'closed';
+        }
+        if (this is FundingRailCircuitOpenBuilder) {
+            return r'open';
+        }
+        return null;
     }
-    return null;
-  }
 }
 
-extension FundingRailCircuitBuilderDiscriminatorExt
-    on FundingRailCircuitBuilder {
-  String? get discriminatorValue {
-    if (this is FundingRailCircuitClosedBuilder) {
-      return r'closed';
-    }
-    if (this is FundingRailCircuitOpenBuilder) {
-      return r'open';
-    }
-    return null;
-  }
-}
-
-class _$FundingRailCircuitSerializer
-    implements PrimitiveSerializer<FundingRailCircuit> {
+class _$FundingRailCircuitSerializer implements PrimitiveSerializer<FundingRailCircuit> {
   @override
   final Iterable<Type> types = const [FundingRailCircuit, _$FundingRailCircuit];
 
@@ -83,7 +77,8 @@ class _$FundingRailCircuitSerializer
     Serializers serializers,
     FundingRailCircuit object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+  }
 
   @override
   Object serialize(
@@ -92,8 +87,7 @@ class _$FundingRailCircuitSerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value,
-        specifiedType: FullType(oneOf.valueType))!;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -105,15 +99,10 @@ class _$FundingRailCircuitSerializer
     final result = FundingRailCircuitBuilder();
     Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex =
-        serializedList.indexOf(FundingRailCircuit.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex],
-        specifiedType: FullType(String)) as String;
+    final discIndex = serializedList.indexOf(FundingRailCircuit.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [
-      FundingRailCircuitClosed,
-      FundingRailCircuitOpen,
-    ];
+    final oneOfTypes = [FundingRailCircuitClosed, FundingRailCircuitOpen, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
@@ -132,54 +121,42 @@ class _$FundingRailCircuitSerializer
         oneOfType = FundingRailCircuitOpen;
         break;
       default:
-        throw UnsupportedError(
-            "Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
     }
-    result.oneOf = OneOfDynamic(
-        typeIndex: oneOfTypes.indexOf(oneOfType),
-        types: oneOfTypes,
-        value: oneOfResult);
+    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
 }
 
 class FundingRailCircuitScopeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'hip3')
-  static const FundingRailCircuitScopeEnum hip3 =
-      _$fundingRailCircuitScopeEnum_hip3;
+  static const FundingRailCircuitScopeEnum hip3 = _$fundingRailCircuitScopeEnum_hip3;
   @BuiltValueEnumConst(wireName: r'bstocks')
-  static const FundingRailCircuitScopeEnum bstocks =
-      _$fundingRailCircuitScopeEnum_bstocks;
+  static const FundingRailCircuitScopeEnum bstocks = _$fundingRailCircuitScopeEnum_bstocks;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRailCircuitScopeEnum unknownDefaultOpenApi =
-      _$fundingRailCircuitScopeEnum_unknownDefaultOpenApi;
+  static const FundingRailCircuitScopeEnum unknownDefaultOpenApi = _$fundingRailCircuitScopeEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingRailCircuitScopeEnum> get serializer =>
-      _$fundingRailCircuitScopeEnumSerializer;
+  static Serializer<FundingRailCircuitScopeEnum> get serializer => _$fundingRailCircuitScopeEnumSerializer;
 
-  const FundingRailCircuitScopeEnum._(String name) : super(name);
+  const FundingRailCircuitScopeEnum._(String name): super(name);
 
-  static BuiltSet<FundingRailCircuitScopeEnum> get values =>
-      _$fundingRailCircuitScopeEnumValues;
-  static FundingRailCircuitScopeEnum valueOf(String name) =>
-      _$fundingRailCircuitScopeEnumValueOf(name);
+  static BuiltSet<FundingRailCircuitScopeEnum> get values => _$fundingRailCircuitScopeEnumValues;
+  static FundingRailCircuitScopeEnum valueOf(String name) => _$fundingRailCircuitScopeEnumValueOf(name);
 }
 
 class FundingRailCircuitStateEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'open')
-  static const FundingRailCircuitStateEnum open =
-      _$fundingRailCircuitStateEnum_open;
+  static const FundingRailCircuitStateEnum open = _$fundingRailCircuitStateEnum_open;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRailCircuitStateEnum unknownDefaultOpenApi =
-      _$fundingRailCircuitStateEnum_unknownDefaultOpenApi;
+  static const FundingRailCircuitStateEnum unknownDefaultOpenApi = _$fundingRailCircuitStateEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingRailCircuitStateEnum> get serializer =>
-      _$fundingRailCircuitStateEnumSerializer;
+  static Serializer<FundingRailCircuitStateEnum> get serializer => _$fundingRailCircuitStateEnumSerializer;
 
-  const FundingRailCircuitStateEnum._(String name) : super(name);
+  const FundingRailCircuitStateEnum._(String name): super(name);
 
-  static BuiltSet<FundingRailCircuitStateEnum> get values =>
-      _$fundingRailCircuitStateEnumValues;
-  static FundingRailCircuitStateEnum valueOf(String name) =>
-      _$fundingRailCircuitStateEnumValueOf(name);
+  static BuiltSet<FundingRailCircuitStateEnum> get values => _$fundingRailCircuitStateEnumValues;
+  static FundingRailCircuitStateEnum valueOf(String name) => _$fundingRailCircuitStateEnumValueOf(name);
 }
+

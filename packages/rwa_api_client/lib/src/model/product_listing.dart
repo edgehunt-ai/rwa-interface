@@ -13,22 +13,21 @@ part 'product_listing.g.dart';
 /// 榜单 / 分组中的单个产品行
 ///
 /// Properties:
-/// * [symbol]
-/// * [name]
-/// * [kind]
-/// * [productType]
+/// * [symbol] 
+/// * [name] 
+/// * [kind] 
+/// * [productType] 
 /// * [label] - 展示名，`bStocks` 或 `HIP-3`
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [change24hPercent] - 24h 涨跌幅（百分比数值，如 `\"0.47\"`）
 /// * [spreadVsReferencePercent] - 相对美股参考价的价差百分比
 /// * [volume24h] - 24h 成交量（以基础资产计价）
-/// * [volume24hUnit]
+/// * [volume24hUnit] 
 /// * [turnover24hUsd] - 十进制字符串，避免浮点误差
-/// * [hotRank]
-/// * [isFavorite]
+/// * [hotRank] 
+/// * [isFavorite] 
 @BuiltValue()
-abstract class ProductListing
-    implements Built<ProductListing, ProductListingBuilder> {
+abstract class ProductListing implements Built<ProductListing, ProductListingBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -78,19 +77,17 @@ abstract class ProductListing
 
   ProductListing._();
 
-  factory ProductListing([void updates(ProductListingBuilder b)]) =
-      _$ProductListing;
+  factory ProductListing([void updates(ProductListingBuilder b)]) = _$ProductListing;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(ProductListingBuilder b) => b..isFavorite = false;
+  static void _defaults(ProductListingBuilder b) => b
+      ..isFavorite = false;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ProductListing> get serializer =>
-      _$ProductListingSerializer();
+  static Serializer<ProductListing> get serializer => _$ProductListingSerializer();
 }
 
-class _$ProductListingSerializer
-    implements PrimitiveSerializer<ProductListing> {
+class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> {
   @override
   final Iterable<Type> types = const [ProductListing, _$ProductListing];
 
@@ -195,9 +192,7 @@ class _$ProductListingSerializer
     ProductListing object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -237,8 +232,7 @@ class _$ProductListingSerializer
         case r'product_type':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(ProductListingProductTypeEnum),
+            specifiedType: const FullType.nullable(ProductListingProductTypeEnum),
           ) as ProductListingProductTypeEnum?;
           if (valueDes == null) continue;
           result.productType = valueDes;
@@ -344,23 +338,19 @@ class _$ProductListingSerializer
 }
 
 class ProductListingProductTypeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'spot')
-  static const ProductListingProductTypeEnum spot =
-      _$productListingProductTypeEnum_spot;
+  static const ProductListingProductTypeEnum spot = _$productListingProductTypeEnum_spot;
   @BuiltValueEnumConst(wireName: r'contract')
-  static const ProductListingProductTypeEnum contract =
-      _$productListingProductTypeEnum_contract;
+  static const ProductListingProductTypeEnum contract = _$productListingProductTypeEnum_contract;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductListingProductTypeEnum unknownDefaultOpenApi =
-      _$productListingProductTypeEnum_unknownDefaultOpenApi;
+  static const ProductListingProductTypeEnum unknownDefaultOpenApi = _$productListingProductTypeEnum_unknownDefaultOpenApi;
 
-  static Serializer<ProductListingProductTypeEnum> get serializer =>
-      _$productListingProductTypeEnumSerializer;
+  static Serializer<ProductListingProductTypeEnum> get serializer => _$productListingProductTypeEnumSerializer;
 
-  const ProductListingProductTypeEnum._(String name) : super(name);
+  const ProductListingProductTypeEnum._(String name): super(name);
 
-  static BuiltSet<ProductListingProductTypeEnum> get values =>
-      _$productListingProductTypeEnumValues;
-  static ProductListingProductTypeEnum valueOf(String name) =>
-      _$productListingProductTypeEnumValueOf(name);
+  static BuiltSet<ProductListingProductTypeEnum> get values => _$productListingProductTypeEnumValues;
+  static ProductListingProductTypeEnum valueOf(String name) => _$productListingProductTypeEnumValueOf(name);
 }
+

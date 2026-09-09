@@ -13,11 +13,10 @@ part 'funding_circuit_snapshot.g.dart';
 /// API 响应时从持久化 circuit 表实时读取的 global 与当前 rail 快照。 缺失、重复或无法完整读取时服务端必须返回 unavailable，不得合成 closed。
 ///
 /// Properties:
-/// * [global]
-/// * [rail]
+/// * [global] 
+/// * [rail] 
 @BuiltValue()
-abstract class FundingCircuitSnapshot
-    implements Built<FundingCircuitSnapshot, FundingCircuitSnapshotBuilder> {
+abstract class FundingCircuitSnapshot implements Built<FundingCircuitSnapshot, FundingCircuitSnapshotBuilder> {
   @BuiltValueField(wireName: r'global')
   FundingGlobalCircuit get global;
 
@@ -26,25 +25,18 @@ abstract class FundingCircuitSnapshot
 
   FundingCircuitSnapshot._();
 
-  factory FundingCircuitSnapshot(
-          [void updates(FundingCircuitSnapshotBuilder b)]) =
-      _$FundingCircuitSnapshot;
+  factory FundingCircuitSnapshot([void updates(FundingCircuitSnapshotBuilder b)]) = _$FundingCircuitSnapshot;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingCircuitSnapshotBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingCircuitSnapshot> get serializer =>
-      _$FundingCircuitSnapshotSerializer();
+  static Serializer<FundingCircuitSnapshot> get serializer => _$FundingCircuitSnapshotSerializer();
 }
 
-class _$FundingCircuitSnapshotSerializer
-    implements PrimitiveSerializer<FundingCircuitSnapshot> {
+class _$FundingCircuitSnapshotSerializer implements PrimitiveSerializer<FundingCircuitSnapshot> {
   @override
-  final Iterable<Type> types = const [
-    FundingCircuitSnapshot,
-    _$FundingCircuitSnapshot
-  ];
+  final Iterable<Type> types = const [FundingCircuitSnapshot, _$FundingCircuitSnapshot];
 
   @override
   final String wireName = r'FundingCircuitSnapshot';
@@ -72,9 +64,7 @@ class _$FundingCircuitSnapshotSerializer
     FundingCircuitSnapshot object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -131,3 +121,4 @@ class _$FundingCircuitSnapshotSerializer
     return result.build();
   }
 }
+

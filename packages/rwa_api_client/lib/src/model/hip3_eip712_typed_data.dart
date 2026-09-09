@@ -15,13 +15,12 @@ part 'hip3_eip712_typed_data.g.dart';
 /// 可直接交给钱包 typed-data 签名方法的服务端冻结数据。
 ///
 /// Properties:
-/// * [domain]
-/// * [types]
-/// * [primaryType]
-/// * [message]
+/// * [domain] 
+/// * [types] 
+/// * [primaryType] 
+/// * [message] 
 @BuiltValue()
-abstract class Hip3Eip712TypedData
-    implements Built<Hip3Eip712TypedData, Hip3Eip712TypedDataBuilder> {
+abstract class Hip3Eip712TypedData implements Built<Hip3Eip712TypedData, Hip3Eip712TypedDataBuilder> {
   @BuiltValueField(wireName: r'domain')
   Hip3Eip712Domain get domain;
 
@@ -37,24 +36,18 @@ abstract class Hip3Eip712TypedData
 
   Hip3Eip712TypedData._();
 
-  factory Hip3Eip712TypedData([void updates(Hip3Eip712TypedDataBuilder b)]) =
-      _$Hip3Eip712TypedData;
+  factory Hip3Eip712TypedData([void updates(Hip3Eip712TypedDataBuilder b)]) = _$Hip3Eip712TypedData;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3Eip712TypedDataBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3Eip712TypedData> get serializer =>
-      _$Hip3Eip712TypedDataSerializer();
+  static Serializer<Hip3Eip712TypedData> get serializer => _$Hip3Eip712TypedDataSerializer();
 }
 
-class _$Hip3Eip712TypedDataSerializer
-    implements PrimitiveSerializer<Hip3Eip712TypedData> {
+class _$Hip3Eip712TypedDataSerializer implements PrimitiveSerializer<Hip3Eip712TypedData> {
   @override
-  final Iterable<Type> types = const [
-    Hip3Eip712TypedData,
-    _$Hip3Eip712TypedData
-  ];
+  final Iterable<Type> types = const [Hip3Eip712TypedData, _$Hip3Eip712TypedData];
 
   @override
   final String wireName = r'Hip3Eip712TypedData';
@@ -92,9 +85,7 @@ class _$Hip3Eip712TypedDataSerializer
     Hip3Eip712TypedData object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -167,20 +158,17 @@ class _$Hip3Eip712TypedDataSerializer
 }
 
 class Hip3Eip712TypedDataPrimaryTypeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'Agent')
-  static const Hip3Eip712TypedDataPrimaryTypeEnum agent =
-      _$hip3Eip712TypedDataPrimaryTypeEnum_agent;
+  static const Hip3Eip712TypedDataPrimaryTypeEnum agent = _$hip3Eip712TypedDataPrimaryTypeEnum_agent;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712TypedDataPrimaryTypeEnum unknownDefaultOpenApi =
-      _$hip3Eip712TypedDataPrimaryTypeEnum_unknownDefaultOpenApi;
+  static const Hip3Eip712TypedDataPrimaryTypeEnum unknownDefaultOpenApi = _$hip3Eip712TypedDataPrimaryTypeEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3Eip712TypedDataPrimaryTypeEnum> get serializer =>
-      _$hip3Eip712TypedDataPrimaryTypeEnumSerializer;
+  static Serializer<Hip3Eip712TypedDataPrimaryTypeEnum> get serializer => _$hip3Eip712TypedDataPrimaryTypeEnumSerializer;
 
-  const Hip3Eip712TypedDataPrimaryTypeEnum._(String name) : super(name);
+  const Hip3Eip712TypedDataPrimaryTypeEnum._(String name): super(name);
 
-  static BuiltSet<Hip3Eip712TypedDataPrimaryTypeEnum> get values =>
-      _$hip3Eip712TypedDataPrimaryTypeEnumValues;
-  static Hip3Eip712TypedDataPrimaryTypeEnum valueOf(String name) =>
-      _$hip3Eip712TypedDataPrimaryTypeEnumValueOf(name);
+  static BuiltSet<Hip3Eip712TypedDataPrimaryTypeEnum> get values => _$hip3Eip712TypedDataPrimaryTypeEnumValues;
+  static Hip3Eip712TypedDataPrimaryTypeEnum valueOf(String name) => _$hip3Eip712TypedDataPrimaryTypeEnumValueOf(name);
 }
+

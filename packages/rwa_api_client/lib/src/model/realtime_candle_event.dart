@@ -15,14 +15,11 @@ part 'realtime_candle_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt]
-/// * [event]
-/// * [data]
+/// * [emittedAt] 
+/// * [event] 
+/// * [data] 
 @BuiltValue()
-abstract class RealtimeCandleEvent
-    implements
-        RealtimeEventBase,
-        Built<RealtimeCandleEvent, RealtimeCandleEventBuilder> {
+abstract class RealtimeCandleEvent implements RealtimeEventBase, Built<RealtimeCandleEvent, RealtimeCandleEventBuilder> {
   @BuiltValueField(wireName: r'data')
   RealtimeCandleUpdate get data;
 
@@ -32,24 +29,18 @@ abstract class RealtimeCandleEvent
 
   RealtimeCandleEvent._();
 
-  factory RealtimeCandleEvent([void updates(RealtimeCandleEventBuilder b)]) =
-      _$RealtimeCandleEvent;
+  factory RealtimeCandleEvent([void updates(RealtimeCandleEventBuilder b)]) = _$RealtimeCandleEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeCandleEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeCandleEvent> get serializer =>
-      _$RealtimeCandleEventSerializer();
+  static Serializer<RealtimeCandleEvent> get serializer => _$RealtimeCandleEventSerializer();
 }
 
-class _$RealtimeCandleEventSerializer
-    implements PrimitiveSerializer<RealtimeCandleEvent> {
+class _$RealtimeCandleEventSerializer implements PrimitiveSerializer<RealtimeCandleEvent> {
   @override
-  final Iterable<Type> types = const [
-    RealtimeCandleEvent,
-    _$RealtimeCandleEvent
-  ];
+  final Iterable<Type> types = const [RealtimeCandleEvent, _$RealtimeCandleEvent];
 
   @override
   final String wireName = r'RealtimeCandleEvent';
@@ -87,9 +78,7 @@ class _$RealtimeCandleEventSerializer
     RealtimeCandleEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -162,20 +151,17 @@ class _$RealtimeCandleEventSerializer
 }
 
 class RealtimeCandleEventEventEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'candle')
-  static const RealtimeCandleEventEventEnum candle =
-      _$realtimeCandleEventEventEnum_candle;
+  static const RealtimeCandleEventEventEnum candle = _$realtimeCandleEventEventEnum_candle;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeCandleEventEventEnum unknownDefaultOpenApi =
-      _$realtimeCandleEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeCandleEventEventEnum unknownDefaultOpenApi = _$realtimeCandleEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeCandleEventEventEnum> get serializer =>
-      _$realtimeCandleEventEventEnumSerializer;
+  static Serializer<RealtimeCandleEventEventEnum> get serializer => _$realtimeCandleEventEventEnumSerializer;
 
-  const RealtimeCandleEventEventEnum._(String name) : super(name);
+  const RealtimeCandleEventEventEnum._(String name): super(name);
 
-  static BuiltSet<RealtimeCandleEventEventEnum> get values =>
-      _$realtimeCandleEventEventEnumValues;
-  static RealtimeCandleEventEventEnum valueOf(String name) =>
-      _$realtimeCandleEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeCandleEventEventEnum> get values => _$realtimeCandleEventEventEnumValues;
+  static RealtimeCandleEventEventEnum valueOf(String name) => _$realtimeCandleEventEventEnumValueOf(name);
 }
+

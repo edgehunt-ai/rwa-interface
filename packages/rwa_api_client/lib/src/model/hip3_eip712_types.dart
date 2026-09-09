@@ -15,27 +15,23 @@ part 'hip3_eip712_types.g.dart';
 /// Properties:
 /// * [agent] - 必须依次为 `source:string` 与 `connectionId:bytes32`。
 @BuiltValue()
-abstract class Hip3Eip712Types
-    implements Built<Hip3Eip712Types, Hip3Eip712TypesBuilder> {
+abstract class Hip3Eip712Types implements Built<Hip3Eip712Types, Hip3Eip712TypesBuilder> {
   /// 必须依次为 `source:string` 与 `connectionId:bytes32`。
   @BuiltValueField(wireName: r'Agent')
   BuiltList<Hip3Eip712Field> get agent;
 
   Hip3Eip712Types._();
 
-  factory Hip3Eip712Types([void updates(Hip3Eip712TypesBuilder b)]) =
-      _$Hip3Eip712Types;
+  factory Hip3Eip712Types([void updates(Hip3Eip712TypesBuilder b)]) = _$Hip3Eip712Types;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3Eip712TypesBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3Eip712Types> get serializer =>
-      _$Hip3Eip712TypesSerializer();
+  static Serializer<Hip3Eip712Types> get serializer => _$Hip3Eip712TypesSerializer();
 }
 
-class _$Hip3Eip712TypesSerializer
-    implements PrimitiveSerializer<Hip3Eip712Types> {
+class _$Hip3Eip712TypesSerializer implements PrimitiveSerializer<Hip3Eip712Types> {
   @override
   final Iterable<Type> types = const [Hip3Eip712Types, _$Hip3Eip712Types];
 
@@ -60,9 +56,7 @@ class _$Hip3Eip712TypesSerializer
     Hip3Eip712Types object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -80,8 +74,7 @@ class _$Hip3Eip712TypesSerializer
         case r'Agent':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(Hip3Eip712Field)]),
+            specifiedType: const FullType(BuiltList, [FullType(Hip3Eip712Field)]),
           ) as BuiltList<Hip3Eip712Field>;
           result.agent.replace(valueDes);
           break;
@@ -113,3 +106,4 @@ class _$Hip3Eip712TypesSerializer
     return result.build();
   }
 }
+

@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
-import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/ui/core/feedback/copyable_text.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
+import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 
@@ -25,81 +25,81 @@ class DepositRoutesSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final catalog = ref.watch(fundingCatalogProvider);
+    final routes = ref.watch(depositRoutesProvider);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return SafeArea(
       top: false,
       child: Material(
         color: colors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  height: 4,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: colors.subtleSurface,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Deposit',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    height: 4,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: colors.subtleSurface,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  TextButton.icon(
-                    onPressed: () {},
-                    icon: SvgPicture.asset(
-                      'assets/figma/funding/activity.svg',
-                      width: 20,
-                      height: 20,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Deposit',
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
                     ),
-                    label: const Text('History'),
-                  ),
-                  IconButton(
-                    tooltip: 'Close deposit routes',
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, size: 20),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Choose a recommended route, or browse all supported assets.',
-                style: TextStyle(color: colors.secondaryText),
-              ),
-              const SizedBox(height: 12),
-              catalog.when(
-                loading: () => const SizedBox(
-                  height: 160,
-                  child: DesignStateFeedback(
-                    state: DesignState.loading,
-                    title: 'Loading deposit routes',
-                  ),
+                    TextButton.icon(
+                      onPressed: () {},
+                      icon: SvgPicture.asset(
+                        'assets/figma/funding/activity.svg',
+                        width: 20,
+                        height: 20,
+                      ),
+                      label: const Text('History'),
+                    ),
+                    IconButton(
+                      tooltip: 'Close deposit routes',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, size: 20),
+                    ),
+                  ],
                 ),
-                error: (_, _) => SizedBox(
-                  height: 340,
-                  child: DesignStateFeedback(
-                    state: DesignState.failure,
-                    title: 'Deposit routes unavailable',
-                    message: 'Try again when your account connection recovers.',
-                    onRetry: () => ref.refresh(fundingCatalogProvider.future),
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Choose a recommended route, or browse all supported assets.',
+                  style: TextStyle(color: colors.secondaryText),
                 ),
-                data: (value) => _DepositRouteList(catalog: value),
-              ),
-            ],
+                const SizedBox(height: 12),
+                routes.when(
+                  loading: () => const LoadingSkeleton(
+                    rows: 2,
+                    padding: EdgeInsets.only(top: 12),
+                  ),
+                  error: (_, _) => SizedBox(
+                    height: 340,
+                    child: DesignStateFeedback(
+                      state: DesignState.failure,
+                      title: 'Deposit routes unavailable',
+                      message:
+                          'Try again when your account connection recovers.',
+                      onRetry: () => ref.refresh(fundingCatalogProvider.future),
+                    ),
+                  ),
+                  data: _DepositRouteList.new,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -108,15 +108,20 @@ class DepositRoutesSheet extends ConsumerWidget {
 }
 
 class _DepositRouteList extends StatelessWidget {
-  const _DepositRouteList({required this.catalog});
-  final FundingCatalog catalog;
+  const _DepositRouteList(this.routes);
+  final List<DepositRoute> routes;
 
   @override
   Widget build(BuildContext context) {
-    final routes = catalog.rails.take(2).toList(growable: false);
+    final recommendedRoutes = routes
+        .where((route) => route.isRecommended)
+        .toList();
+    final additionalRoutes = routes
+        .where((route) => !route.isRecommended)
+        .toList();
     return Column(
       children: [
-        if (routes.isEmpty)
+        if (recommendedRoutes.isEmpty && additionalRoutes.isEmpty)
           const SizedBox(
             height: 120,
             child: EmptyState(
@@ -126,35 +131,47 @@ class _DepositRouteList extends StatelessWidget {
             ),
           )
         else
-          for (final route in routes) ...[
+          for (final route in recommendedRoutes) ...[
             _DepositRouteTile(route: route),
             const SizedBox(height: 12),
           ],
-        _AllAssetsTile(
-          onTap: () {
-            Navigator.of(context).pop();
-            context.pushNamed(AppRoutes.depositSelectName);
-          },
-        ),
+        if (additionalRoutes.isNotEmpty)
+          _AllAssetsTile(
+            onTap: () {
+              final router = GoRouter.of(context);
+              Navigator.of(context).pop();
+              router.pushNamed(AppRoutes.depositSelectName);
+            },
+          ),
       ],
     );
   }
 }
 
-class _DepositRouteTile extends StatelessWidget {
+class _DepositRouteTile extends ConsumerWidget {
   const _DepositRouteTile({required this.route});
-  final FundingRail route;
+  final DepositRoute route;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Semantics(
       button: true,
-      label: 'Deposit ${route.settlementAsset} on ${route.network}',
+      label: 'Deposit ${route.token} on ${route.chain}',
       child: InkWell(
         onTap: () {
+          final router = GoRouter.of(context);
+          ref.read(
+            depositInstructionProvider((
+              chain: route.chain,
+              token: route.token,
+            )),
+          );
           Navigator.of(context).pop();
-          context.pushNamed(AppRoutes.depositName);
+          router.pushNamed(
+            AppRoutes.depositName,
+            queryParameters: {'chain': route.chain, 'token': route.token},
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -166,7 +183,7 @@ class _DepositRouteTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              _AssetMark(asset: route.settlementAsset),
+              _AssetMark(asset: route.token, chain: route.chain),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -174,11 +191,11 @@ class _DepositRouteTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${route.settlementAsset} on ${route.network}',
+                      '${route.token} on ${route.chain}',
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      'Best for ${route.kind == FundingRailKind.bstock ? 'bStocks' : 'HIP-3 Perps'}',
+                      'Best for ${route.chain == 'BSC' ? 'bStocks' : 'HIP-3 Perps'}',
                       style: TextStyle(
                         color: colors.secondaryText,
                         fontSize: 12,
@@ -201,11 +218,28 @@ class _DepositRouteTile extends StatelessWidget {
 }
 
 class _AssetMark extends StatelessWidget {
-  const _AssetMark({required this.asset});
+  const _AssetMark({required this.asset, required this.chain});
   final String asset;
+  final String chain;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => SizedBox(
+    width: 40,
+    height: 40,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _tokenIcon(context),
+        Positioned(
+          right: -2,
+          bottom: -2,
+          child: SvgPicture.asset(_chainIcon(chain), width: 18, height: 18),
+        ),
+      ],
+    ),
+  );
+
+  Widget _tokenIcon(BuildContext context) {
     if (asset == 'USDC') {
       return SvgPicture.asset(
         'assets/figma/funding/usdc.svg',
@@ -232,6 +266,10 @@ class _AssetMark extends StatelessWidget {
       child: Text(asset, style: const TextStyle(fontWeight: FontWeight.w600)),
     );
   }
+
+  String _chainIcon(String value) => value == 'BSC'
+      ? 'assets/figma/funding/bnb_chain.svg'
+      : 'assets/figma/funding/arbitrum.svg';
 }
 
 class _AllAssetsTile extends StatelessWidget {
@@ -241,49 +279,42 @@ class _AllAssetsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Semantics(
-      button: true,
-      label: 'All supported assets',
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          height: 72,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            border: Border.all(color: colors.border),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              const _SupportedAssetMark(),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'All supported assets',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      'Choose any supported asset and network',
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 72,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: colors.border),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            const _SupportedAssetMark(),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'All supported assets',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    'Choose another available asset and network',
+                    style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                  ),
+                ],
               ),
-              SvgPicture.asset(
-                'assets/figma/funding/chevron_right.svg',
-                width: 20,
-                height: 20,
-              ),
-            ],
-          ),
+            ),
+            SvgPicture.asset(
+              'assets/figma/funding/chevron_right.svg',
+              width: 20,
+              height: 20,
+            ),
+          ],
         ),
       ),
     );
@@ -313,16 +344,36 @@ class _SupportedAssetMark extends StatelessWidget {
 }
 
 class DepositScreen extends ConsumerWidget {
-  const DepositScreen({super.key, this.showSelector = false});
+  const DepositScreen({
+    super.key,
+    this.showSelector = false,
+    this.chain,
+    this.token,
+  });
   final bool showSelector;
+  final String? chain;
+  final String? token;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (showSelector) return const _DepositSelector();
-    final deposits = ref.watch(depositsProvider(null));
+    if (chain == null || token == null) {
+      return const Scaffold(
+        body: SafeArea(
+          child: DesignStateFeedback(
+            state: DesignState.unavailable,
+            title: 'Deposit route required',
+            message: 'Choose a supported route to receive an address.',
+          ),
+        ),
+      );
+    }
+    final instruction = ref.watch(
+      depositInstructionProvider((chain: chain!, token: token!)),
+    );
     return Scaffold(
       body: SafeArea(
-        child: deposits.when(
+        child: instruction.when(
           loading: () => const DesignStateFeedback(
             state: DesignState.loading,
             title: 'Loading deposit instructions',
@@ -331,37 +382,20 @@ class DepositScreen extends ConsumerWidget {
             state: DesignState.failure,
             title: 'Deposit instructions unavailable',
             message: 'Return to deposit routes and try again.',
-            onRetry: () => ref.refresh(depositsProvider(null).future),
+            onRetry: () => ref.refresh(
+              depositInstructionProvider((chain: chain!, token: token!)).future,
+            ),
           ),
-          data: (page) {
-            final deposit = _preferredDeposit(page.items);
-            if (deposit == null) {
-              return const DesignStateFeedback(
-                state: DesignState.unavailable,
-                title: 'Deposit instructions unavailable',
-                message: 'Choose a supported route to receive an address.',
-              );
-            }
-            return _DepositInstructions(deposit: deposit);
-          },
+          data: (value) => _DepositInstructions(instruction: value),
         ),
       ),
     );
   }
-
-  Deposit? _preferredDeposit(List<ResourceResult<Deposit>> items) {
-    for (final item in items) {
-      if (item.resource.token == 'USDC' && item.resource.chain == 'Arbitrum') {
-        return item.resource;
-      }
-    }
-    return items.isEmpty ? null : items.first.resource;
-  }
 }
 
 class _DepositInstructions extends StatelessWidget {
-  const _DepositInstructions({required this.deposit});
-  final Deposit deposit;
+  const _DepositInstructions({required this.instruction});
+  final DepositInstruction instruction;
 
   @override
   Widget build(BuildContext context) {
@@ -384,13 +418,13 @@ class _DepositInstructions extends StatelessWidget {
               ),
             ),
             Text(
-              'Deposit ${deposit.token}',
+              'Deposit ${instruction.token}',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ],
         ),
         const SizedBox(height: 40),
-        _ReadonlyRoute(deposit: deposit),
+        _ReadonlyRoute(instruction: instruction),
         const SizedBox(height: 32),
         Center(
           child: Container(
@@ -418,22 +452,22 @@ class _DepositInstructions extends StatelessWidget {
           child: Align(
             alignment: Alignment.centerLeft,
             child: CopyableText(
-              value: deposit.instructions.address,
+              value: instruction.address,
               shorten: false,
               semanticLabel: 'Deposit address',
             ),
           ),
         ),
         const SizedBox(height: 32),
-        _RouteDetails(deposit: deposit),
+        _RouteDetails(instruction: instruction),
       ],
     );
   }
 }
 
 class _ReadonlyRoute extends StatelessWidget {
-  const _ReadonlyRoute({required this.deposit});
-  final Deposit deposit;
+  const _ReadonlyRoute({required this.instruction});
+  final DepositInstruction instruction;
 
   @override
   Widget build(BuildContext context) {
@@ -448,14 +482,16 @@ class _ReadonlyRoute extends StatelessWidget {
         children: [
           _RouteValue(
             label: 'Token',
-            value: deposit.token,
+            value: instruction.token,
             asset: 'assets/figma/funding/usdc.svg',
           ),
           Divider(height: 1, color: colors.border),
           _RouteValue(
             label: 'Network',
-            value: deposit.chain,
-            asset: 'assets/figma/funding/arbitrum.svg',
+            value: instruction.chain,
+            asset: instruction.chain == 'BSC'
+                ? 'assets/figma/funding/bnb_chain.svg'
+                : 'assets/figma/funding/arbitrum.svg',
           ),
         ],
       ),
@@ -492,8 +528,8 @@ class _RouteValue extends StatelessWidget {
 }
 
 class _RouteDetails extends StatelessWidget {
-  const _RouteDetails({required this.deposit});
-  final Deposit deposit;
+  const _RouteDetails({required this.instruction});
+  final DepositInstruction instruction;
 
   @override
   Widget build(BuildContext context) {
@@ -504,20 +540,24 @@ class _RouteDetails extends StatelessWidget {
         Text('Route details', style: TextStyle(color: colors.secondaryText)),
         const SizedBox(height: 4),
         Text(
-          'Send ${deposit.token} on ${deposit.chain} only.',
+          'Send ${instruction.token} on ${instruction.chain} only.',
           style: TextStyle(color: colors.secondaryText, fontSize: 12),
         ),
         const SizedBox(height: 12),
-        _DetailRow(label: 'Credits as', value: deposit.token),
+        _DetailRow(
+          label: 'Minimum deposit',
+          value: '${instruction.minimumAmount.value} ${instruction.token}',
+        ),
         const SizedBox(height: 8),
-        const _DetailRow(label: 'Estimated arrival', value: '< 1 minute'),
-        if (deposit.confirmationsRequired != null) ...[
-          const SizedBox(height: 8),
-          _DetailRow(
-            label: 'Confirmations required',
-            value: '${deposit.confirmationsRequired}',
-          ),
-        ],
+        _DetailRow(
+          label: 'Estimated arrival',
+          value: '${instruction.estimatedArrivalSeconds}s',
+        ),
+        const SizedBox(height: 8),
+        _DetailRow(
+          label: 'Confirmations required',
+          value: '${instruction.confirmationsRequired}',
+        ),
       ],
     );
   }
@@ -541,117 +581,73 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-class _DepositSelector extends StatelessWidget {
+class _DepositSelector extends ConsumerWidget {
   const _DepositSelector();
 
   @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final routes = ref.watch(depositRoutesProvider);
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-          children: [
-            Row(
+        child: routes.when(
+          loading: () => const DesignStateFeedback(
+            state: DesignState.loading,
+            title: 'Loading supported assets',
+          ),
+          error: (_, _) => DesignStateFeedback(
+            state: DesignState.failure,
+            title: 'Supported assets unavailable',
+            onRetry: () => ref.refresh(fundingCatalogProvider.future),
+          ),
+          data: (value) {
+            final additionalRoutes = value
+                .where((route) => !route.isRecommended)
+                .toList();
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
               children: [
-                IconButton(
-                  tooltip: 'Back to deposit routes',
-                  onPressed: () => context.pop(),
-                  icon: Transform.rotate(
-                    angle: 3.141592653589793,
-                    child: SvgPicture.asset(
-                      'assets/figma/funding/back.svg',
-                      width: 20,
-                      height: 20,
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: 'Back to deposit routes',
+                      onPressed: () => context.pop(),
+                      icon: Transform.rotate(
+                        angle: 3.141592653589793,
+                        child: SvgPicture.asset(
+                          'assets/figma/funding/back.svg',
+                          width: 20,
+                          height: 20,
+                        ),
+                      ),
                     ),
-                  ),
+                    Text(
+                      'Deposit crypto',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ],
                 ),
-                Text(
-                  'Deposit crypto',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ],
-            ),
-            const SizedBox(height: 40),
-            Container(
-              decoration: BoxDecoration(
-                color: colors.surface,
-                border: Border.all(color: colors.border),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Column(
-                children: [
-                  _SelectorRow(
-                    label: 'Token',
-                    value: 'Choose token',
-                    enabled: true,
+                const SizedBox(height: 32),
+                for (final route in additionalRoutes) ...[
+                  _DepositRouteTile(route: route),
+                  const SizedBox(height: 12),
+                ],
+                if (additionalRoutes.isEmpty) ...[
+                  const SizedBox(height: 60),
+                  Image.asset(
+                    'assets/figma/funding/deposit_empty.png',
+                    width: 160,
+                    height: 160,
                   ),
-                  Divider(height: 1),
-                  _SelectorRow(
-                    label: 'Network',
-                    value: 'Choose token first',
-                    enabled: false,
+                  const SizedBox(height: 12),
+                  const Text(
+                    'No additional deposit routes available',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 60),
-            Image.asset(
-              'assets/figma/funding/deposit_empty.png',
-              width: 160,
-              height: 160,
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Choose a token and network',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Your deposit address will appear here.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SelectorRow extends StatelessWidget {
-  const _SelectorRow({
-    required this.label,
-    required this.value,
-    required this.enabled,
-  });
-  final String label;
-  final String value;
-  final bool enabled;
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return SizedBox(
-      height: 51,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            SizedBox(width: 80, child: Text(label)),
-            Expanded(
-              child: Text(
-                value,
-                style: TextStyle(
-                  color: enabled ? colors.primaryText : colors.tertiaryText,
-                  fontWeight: enabled ? FontWeight.w600 : null,
-                ),
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: enabled ? colors.primaryText : colors.tertiaryText,
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );

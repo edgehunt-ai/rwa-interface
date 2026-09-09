@@ -14,6 +14,7 @@ import 'package:rwa_api_client/src/model/session_request.dart';
 import 'package:rwa_api_client/src/model/session_response.dart';
 
 class AuthApi {
+
   final Dio _dio;
 
   final Serializers _serializers;
@@ -24,7 +25,7 @@ class AuthApi {
   /// 客户端在 Privy SDK 登录后，把 Privy access token 直接放入 Authorization Bearer header。请求体仅包含可选语言和设备信息；响应不签发 access token。
   ///
   /// Parameters:
-  /// * [sessionRequest]
+  /// * [sessionRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -34,7 +35,7 @@ class AuthApi {
   ///
   /// Returns a [Future] containing a [Response] with a [SessionResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<SessionResponse>> createSession({
+  Future<Response<SessionResponse>> createSession({ 
     required SessionRequest sessionRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -68,9 +69,10 @@ class AuthApi {
     try {
       const _type = FullType(SessionRequest);
       _bodyData = _serializers.serialize(sessionRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -93,12 +95,11 @@ class AuthApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(SessionResponse),
-            ) as SessionResponse;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SessionResponse),
+      ) as SessionResponse;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -134,7 +135,7 @@ class AuthApi {
   ///
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> deleteSession({
+  Future<Response<void>> deleteSession({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -173,7 +174,7 @@ class AuthApi {
   }
 
   /// 获取客户端 Privy 配置
-  /// Flutter 端启动时拉取，用于初始化 Privy SDK。避免把 App ID / 支持的登录方式硬编码在客户端。
+  /// Flutter 端启动时拉取，用于初始化 Privy SDK。避免把 App ID / 支持的登录方式硬编码在客户端。 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -185,7 +186,7 @@ class AuthApi {
   ///
   /// Returns a [Future] containing a [Response] with a [PrivyClientConfig] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PrivyClientConfig>> getAuthConfig({
+  Future<Response<PrivyClientConfig>> getAuthConfig({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -218,12 +219,11 @@ class AuthApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(PrivyClientConfig),
-            ) as PrivyClientConfig;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(PrivyClientConfig),
+      ) as PrivyClientConfig;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -245,4 +245,5 @@ class AuthApi {
       extra: _response.extra,
     );
   }
+
 }

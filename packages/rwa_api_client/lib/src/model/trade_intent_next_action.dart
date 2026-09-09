@@ -10,13 +10,13 @@ import 'package:built_value/serializer.dart';
 part 'trade_intent_next_action.g.dart';
 
 class TradeIntentNextAction extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'approve_agent')
   static const TradeIntentNextAction approveAgent = _$approveAgent;
   @BuiltValueEnumConst(wireName: r'authorize_funding')
   static const TradeIntentNextAction authorizeFunding = _$authorizeFunding;
   @BuiltValueEnumConst(wireName: r'execute_funding_action')
-  static const TradeIntentNextAction executeFundingAction =
-      _$executeFundingAction;
+  static const TradeIntentNextAction executeFundingAction = _$executeFundingAction;
   @BuiltValueEnumConst(wireName: r'wait_funding')
   static const TradeIntentNextAction waitFunding = _$waitFunding;
   @BuiltValueEnumConst(wireName: r'wait_order')
@@ -24,13 +24,11 @@ class TradeIntentNextAction extends EnumClass {
   @BuiltValueEnumConst(wireName: r'none')
   static const TradeIntentNextAction none = _$none;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentNextAction unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const TradeIntentNextAction unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<TradeIntentNextAction> get serializer =>
-      _$tradeIntentNextActionSerializer;
+  static Serializer<TradeIntentNextAction> get serializer => _$tradeIntentNextActionSerializer;
 
-  const TradeIntentNextAction._(String name) : super(name);
+  const TradeIntentNextAction._(String name): super(name);
 
   static BuiltSet<TradeIntentNextAction> get values => _$values;
   static TradeIntentNextAction valueOf(String name) => _$valueOf(name);
@@ -42,5 +40,5 @@ class TradeIntentNextAction extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class TradeIntentNextActionMixin = Object
-    with _$TradeIntentNextActionMixin;
+abstract class TradeIntentNextActionMixin = Object with _$TradeIntentNextActionMixin;
+

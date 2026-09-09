@@ -13,12 +13,9 @@ part 'update_position_leverage_request.g.dart';
 ///
 /// Properties:
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode]
+/// * [marginMode] 
 @BuiltValue()
-abstract class UpdatePositionLeverageRequest
-    implements
-        Built<UpdatePositionLeverageRequest,
-            UpdatePositionLeverageRequestBuilder> {
+abstract class UpdatePositionLeverageRequest implements Built<UpdatePositionLeverageRequest, UpdatePositionLeverageRequestBuilder> {
   /// Decimal string leverage; allowed range is 1 to 50.
   @BuiltValueField(wireName: r'leverage')
   String? get leverage;
@@ -29,25 +26,18 @@ abstract class UpdatePositionLeverageRequest
 
   UpdatePositionLeverageRequest._();
 
-  factory UpdatePositionLeverageRequest(
-          [void updates(UpdatePositionLeverageRequestBuilder b)]) =
-      _$UpdatePositionLeverageRequest;
+  factory UpdatePositionLeverageRequest([void updates(UpdatePositionLeverageRequestBuilder b)]) = _$UpdatePositionLeverageRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdatePositionLeverageRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdatePositionLeverageRequest> get serializer =>
-      _$UpdatePositionLeverageRequestSerializer();
+  static Serializer<UpdatePositionLeverageRequest> get serializer => _$UpdatePositionLeverageRequestSerializer();
 }
 
-class _$UpdatePositionLeverageRequestSerializer
-    implements PrimitiveSerializer<UpdatePositionLeverageRequest> {
+class _$UpdatePositionLeverageRequestSerializer implements PrimitiveSerializer<UpdatePositionLeverageRequest> {
   @override
-  final Iterable<Type> types = const [
-    UpdatePositionLeverageRequest,
-    _$UpdatePositionLeverageRequest
-  ];
+  final Iterable<Type> types = const [UpdatePositionLeverageRequest, _$UpdatePositionLeverageRequest];
 
   @override
   final String wireName = r'UpdatePositionLeverageRequest';
@@ -79,9 +69,7 @@ class _$UpdatePositionLeverageRequestSerializer
     UpdatePositionLeverageRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -140,3 +128,4 @@ class _$UpdatePositionLeverageRequestSerializer
     return result.build();
   }
 }
+

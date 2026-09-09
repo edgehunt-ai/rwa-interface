@@ -12,14 +12,13 @@ part 'token_balance.g.dart';
 /// TokenBalance
 ///
 /// Properties:
-/// * [symbol]
+/// * [symbol] 
 /// * [balance] - 十进制字符串，避免浮点误差
 /// * [valueUsd] - 十进制字符串，避免浮点误差
-/// * [decimals]
-/// * [chain]
+/// * [decimals] 
+/// * [chain] 
 @BuiltValue()
-abstract class TokenBalance
-    implements Built<TokenBalance, TokenBalanceBuilder> {
+abstract class TokenBalance implements Built<TokenBalance, TokenBalanceBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -100,9 +99,7 @@ class _$TokenBalanceSerializer implements PrimitiveSerializer<TokenBalance> {
     TokenBalance object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -183,3 +180,4 @@ class _$TokenBalanceSerializer implements PrimitiveSerializer<TokenBalance> {
     return result.build();
   }
 }
+

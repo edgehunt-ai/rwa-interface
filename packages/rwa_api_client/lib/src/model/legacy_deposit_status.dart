@@ -11,6 +11,7 @@ part 'legacy_deposit_status.g.dart';
 
 @Deprecated('LegacyDepositStatus has been deprecated')
 class LegacyDepositStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'awaiting')
   static const LegacyDepositStatus awaiting = _$awaiting;
   @BuiltValueEnumConst(wireName: r'confirming')
@@ -24,13 +25,11 @@ class LegacyDepositStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const LegacyDepositStatus manualReview = _$manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyDepositStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const LegacyDepositStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<LegacyDepositStatus> get serializer =>
-      _$legacyDepositStatusSerializer;
+  static Serializer<LegacyDepositStatus> get serializer => _$legacyDepositStatusSerializer;
 
-  const LegacyDepositStatus._(String name) : super(name);
+  const LegacyDepositStatus._(String name): super(name);
 
   static BuiltSet<LegacyDepositStatus> get values => _$values;
   static LegacyDepositStatus valueOf(String name) => _$valueOf(name);
@@ -42,5 +41,5 @@ class LegacyDepositStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class LegacyDepositStatusMixin = Object
-    with _$LegacyDepositStatusMixin;
+abstract class LegacyDepositStatusMixin = Object with _$LegacyDepositStatusMixin;
+

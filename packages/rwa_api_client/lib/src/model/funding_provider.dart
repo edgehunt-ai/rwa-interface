@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'funding_provider.g.dart';
 
 class FundingProvider extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'across')
   static const FundingProvider across = _$across;
   @BuiltValueEnumConst(wireName: r'relay')
@@ -19,10 +20,9 @@ class FundingProvider extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingProvider unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<FundingProvider> get serializer =>
-      _$fundingProviderSerializer;
+  static Serializer<FundingProvider> get serializer => _$fundingProviderSerializer;
 
-  const FundingProvider._(String name) : super(name);
+  const FundingProvider._(String name): super(name);
 
   static BuiltSet<FundingProvider> get values => _$values;
   static FundingProvider valueOf(String name) => _$valueOf(name);
@@ -35,3 +35,4 @@ class FundingProvider extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class FundingProviderMixin = Object with _$FundingProviderMixin;
+

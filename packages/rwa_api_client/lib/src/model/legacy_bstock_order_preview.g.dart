@@ -198,6 +198,8 @@ class _$LegacyBstockOrderPreview extends LegacyBstockOrderPreview {
   @override
   final LegacyBstockOrderPreviewNetworkEnum network;
   @override
+  final Hip3PreviewExecution? hip3Execution;
+  @override
   final String previewId;
   @override
   final String symbol;
@@ -254,6 +256,7 @@ class _$LegacyBstockOrderPreview extends LegacyBstockOrderPreview {
       {required this.settlementAsset,
       required this.kind,
       required this.network,
+      this.hip3Execution,
       required this.previewId,
       required this.symbol,
       required this.side,
@@ -295,6 +298,7 @@ class _$LegacyBstockOrderPreview extends LegacyBstockOrderPreview {
         settlementAsset == other.settlementAsset &&
         kind == other.kind &&
         network == other.network &&
+        hip3Execution == other.hip3Execution &&
         previewId == other.previewId &&
         symbol == other.symbol &&
         side == other.side &&
@@ -327,6 +331,7 @@ class _$LegacyBstockOrderPreview extends LegacyBstockOrderPreview {
     _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
+    _$hash = $jc(_$hash, hip3Execution.hashCode);
     _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, side.hashCode);
@@ -361,6 +366,7 @@ class _$LegacyBstockOrderPreview extends LegacyBstockOrderPreview {
           ..add('settlementAsset', settlementAsset)
           ..add('kind', kind)
           ..add('network', network)
+          ..add('hip3Execution', hip3Execution)
           ..add('previewId', previewId)
           ..add('symbol', symbol)
           ..add('side', side)
@@ -412,6 +418,12 @@ class LegacyBstockOrderPreviewBuilder
   LegacyBstockOrderPreviewNetworkEnum? get network => _$this._network;
   set network(covariant LegacyBstockOrderPreviewNetworkEnum? network) =>
       _$this._network = network;
+
+  Hip3PreviewExecutionBuilder? _hip3Execution;
+  Hip3PreviewExecutionBuilder get hip3Execution =>
+      _$this._hip3Execution ??= Hip3PreviewExecutionBuilder();
+  set hip3Execution(covariant Hip3PreviewExecutionBuilder? hip3Execution) =>
+      _$this._hip3Execution = hip3Execution;
 
   String? _previewId;
   String? get previewId => _$this._previewId;
@@ -536,6 +548,7 @@ class LegacyBstockOrderPreviewBuilder
       _settlementAsset = $v.settlementAsset;
       _kind = $v.kind;
       _network = $v.network;
+      _hip3Execution = $v.hip3Execution?.toBuilder();
       _previewId = $v.previewId;
       _symbol = $v.symbol;
       _side = $v.side;
@@ -591,6 +604,7 @@ class LegacyBstockOrderPreviewBuilder
                 kind, r'LegacyBstockOrderPreview', 'kind'),
             network: BuiltValueNullFieldError.checkNotNull(
                 network, r'LegacyBstockOrderPreview', 'network'),
+            hip3Execution: _hip3Execution?.build(),
             previewId: BuiltValueNullFieldError.checkNotNull(
                 previewId, r'LegacyBstockOrderPreview', 'previewId'),
             symbol: BuiltValueNullFieldError.checkNotNull(
@@ -624,6 +638,9 @@ class LegacyBstockOrderPreviewBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'hip3Execution';
+        _hip3Execution?.build();
+
         _$failedField = 'details';
         _details?.build();
       } catch (e) {

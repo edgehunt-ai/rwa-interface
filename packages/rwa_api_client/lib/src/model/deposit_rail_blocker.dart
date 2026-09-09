@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'deposit_rail_blocker.g.dart';
 
 class DepositRailBlocker extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'observer_disabled')
   static const DepositRailBlocker observerDisabled = _$observerDisabled;
   @BuiltValueEnumConst(wireName: r'rpc_unavailable')
@@ -17,24 +18,19 @@ class DepositRailBlocker extends EnumClass {
   @BuiltValueEnumConst(wireName: r'chain_id_mismatch')
   static const DepositRailBlocker chainIdMismatch = _$chainIdMismatch;
   @BuiltValueEnumConst(wireName: r'token_contract_unavailable')
-  static const DepositRailBlocker tokenContractUnavailable =
-      _$tokenContractUnavailable;
+  static const DepositRailBlocker tokenContractUnavailable = _$tokenContractUnavailable;
   @BuiltValueEnumConst(wireName: r'token_metadata_mismatch')
-  static const DepositRailBlocker tokenMetadataMismatch =
-      _$tokenMetadataMismatch;
+  static const DepositRailBlocker tokenMetadataMismatch = _$tokenMetadataMismatch;
   @BuiltValueEnumConst(wireName: r'wallet_unavailable')
   static const DepositRailBlocker walletUnavailable = _$walletUnavailable;
   @BuiltValueEnumConst(wireName: r'activity_pipeline_unavailable')
-  static const DepositRailBlocker activityPipelineUnavailable =
-      _$activityPipelineUnavailable;
+  static const DepositRailBlocker activityPipelineUnavailable = _$activityPipelineUnavailable;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositRailBlocker unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const DepositRailBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<DepositRailBlocker> get serializer =>
-      _$depositRailBlockerSerializer;
+  static Serializer<DepositRailBlocker> get serializer => _$depositRailBlockerSerializer;
 
-  const DepositRailBlocker._(String name) : super(name);
+  const DepositRailBlocker._(String name): super(name);
 
   static BuiltSet<DepositRailBlocker> get values => _$values;
   static DepositRailBlocker valueOf(String name) => _$valueOf(name);
@@ -47,3 +43,4 @@ class DepositRailBlocker extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class DepositRailBlockerMixin = Object with _$DepositRailBlockerMixin;
+

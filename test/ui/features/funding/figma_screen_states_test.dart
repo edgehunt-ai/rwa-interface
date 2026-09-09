@@ -1,32 +1,63 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/routing/app_router.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
+import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
 import 'package:rwa_interface/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
 import '../../../helpers/test_app.dart';
+import '../../../helpers/display_config.dart';
 
 void main() {
-  testWidgets('deposit asset selector renders the Figma empty state', (
+  testWidgets('deposit routes loading state fits a short viewport', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(415, 260));
+    final pendingRoutes = Completer<List<DepositRoute>>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositRoutesProvider.overrideWith((_) => pendingRoutes.future),
+        ],
+        child: buildTestApp(const DepositRoutesSheet()),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('deposit asset selector shows additional available routes', (
     tester,
   ) async {
     final router = AppRouter.create(initialLocation: '/funding/deposit/select');
     addTearDown(router.dispose);
 
-    await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositRoutesProvider.overrideWith((_) async => _depositRoutes),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(DepositScreen), findsOneWidget);
     expect(find.text('Deposit crypto'), findsOneWidget);
-    expect(find.text('Choose token'), findsOneWidget);
-    expect(find.text('Choose token first'), findsOneWidget);
-    expect(find.text('Choose a token and network'), findsOneWidget);
+    expect(find.text('USDC on BSC'), findsOneWidget);
+    expect(find.text('USDC on Arbitrum'), findsNothing);
   });
 
   testWidgets('withdrawal picker shows available assets', (tester) async {
@@ -75,6 +106,22 @@ void main() {
     expect(find.text('Authorization required'), findsOneWidget);
   });
 }
+
+final _depositRoutes = [
+  DepositRoute(
+    chain: 'Arbitrum',
+    token: 'USDC',
+    minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
+    confirmationsRequired: 20,
+    isRecommended: true,
+  ),
+  DepositRoute(
+    chain: 'BSC',
+    token: 'USDC',
+    minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
+    confirmationsRequired: 15,
+  ),
+];
 
 final class _Funding implements FundingRepository {
   @override

@@ -12,37 +12,27 @@ part 'non_completed_funding_transfer_state.g.dart';
 /// NonCompletedFundingTransferState
 ///
 /// Properties:
-/// * [status]
+/// * [status] 
 @BuiltValue()
-abstract class NonCompletedFundingTransferState
-    implements
-        Built<NonCompletedFundingTransferState,
-            NonCompletedFundingTransferStateBuilder> {
+abstract class NonCompletedFundingTransferState implements Built<NonCompletedFundingTransferState, NonCompletedFundingTransferStateBuilder> {
   @BuiltValueField(wireName: r'status')
   NonCompletedFundingTransferStateStatusEnum get status;
   // enum statusEnum {  awaiting_authorization,  awaiting_wallet,  origin_submitted,  origin_confirmed,  filling,  refund_pending,  refunded,  failed,  ambiguous,  manual_review,  };
 
   NonCompletedFundingTransferState._();
 
-  factory NonCompletedFundingTransferState(
-          [void updates(NonCompletedFundingTransferStateBuilder b)]) =
-      _$NonCompletedFundingTransferState;
+  factory NonCompletedFundingTransferState([void updates(NonCompletedFundingTransferStateBuilder b)]) = _$NonCompletedFundingTransferState;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(NonCompletedFundingTransferStateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<NonCompletedFundingTransferState> get serializer =>
-      _$NonCompletedFundingTransferStateSerializer();
+  static Serializer<NonCompletedFundingTransferState> get serializer => _$NonCompletedFundingTransferStateSerializer();
 }
 
-class _$NonCompletedFundingTransferStateSerializer
-    implements PrimitiveSerializer<NonCompletedFundingTransferState> {
+class _$NonCompletedFundingTransferStateSerializer implements PrimitiveSerializer<NonCompletedFundingTransferState> {
   @override
-  final Iterable<Type> types = const [
-    NonCompletedFundingTransferState,
-    _$NonCompletedFundingTransferState
-  ];
+  final Iterable<Type> types = const [NonCompletedFundingTransferState, _$NonCompletedFundingTransferState];
 
   @override
   final String wireName = r'NonCompletedFundingTransferState';
@@ -65,9 +55,7 @@ class _$NonCompletedFundingTransferStateSerializer
     NonCompletedFundingTransferState object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -85,8 +73,7 @@ class _$NonCompletedFundingTransferStateSerializer
         case r'status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(NonCompletedFundingTransferStateStatusEnum),
+            specifiedType: const FullType(NonCompletedFundingTransferStateStatusEnum),
           ) as NonCompletedFundingTransferStateStatusEnum;
           result.status = valueDes;
           break;
@@ -120,49 +107,35 @@ class _$NonCompletedFundingTransferStateSerializer
 }
 
 class NonCompletedFundingTransferStateStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'awaiting_authorization')
-  static const NonCompletedFundingTransferStateStatusEnum
-      awaitingAuthorization =
-      _$nonCompletedFundingTransferStateStatusEnum_awaitingAuthorization;
+  static const NonCompletedFundingTransferStateStatusEnum awaitingAuthorization = _$nonCompletedFundingTransferStateStatusEnum_awaitingAuthorization;
   @BuiltValueEnumConst(wireName: r'awaiting_wallet')
-  static const NonCompletedFundingTransferStateStatusEnum awaitingWallet =
-      _$nonCompletedFundingTransferStateStatusEnum_awaitingWallet;
+  static const NonCompletedFundingTransferStateStatusEnum awaitingWallet = _$nonCompletedFundingTransferStateStatusEnum_awaitingWallet;
   @BuiltValueEnumConst(wireName: r'origin_submitted')
-  static const NonCompletedFundingTransferStateStatusEnum originSubmitted =
-      _$nonCompletedFundingTransferStateStatusEnum_originSubmitted;
+  static const NonCompletedFundingTransferStateStatusEnum originSubmitted = _$nonCompletedFundingTransferStateStatusEnum_originSubmitted;
   @BuiltValueEnumConst(wireName: r'origin_confirmed')
-  static const NonCompletedFundingTransferStateStatusEnum originConfirmed =
-      _$nonCompletedFundingTransferStateStatusEnum_originConfirmed;
+  static const NonCompletedFundingTransferStateStatusEnum originConfirmed = _$nonCompletedFundingTransferStateStatusEnum_originConfirmed;
   @BuiltValueEnumConst(wireName: r'filling')
-  static const NonCompletedFundingTransferStateStatusEnum filling =
-      _$nonCompletedFundingTransferStateStatusEnum_filling;
+  static const NonCompletedFundingTransferStateStatusEnum filling = _$nonCompletedFundingTransferStateStatusEnum_filling;
   @BuiltValueEnumConst(wireName: r'refund_pending')
-  static const NonCompletedFundingTransferStateStatusEnum refundPending =
-      _$nonCompletedFundingTransferStateStatusEnum_refundPending;
+  static const NonCompletedFundingTransferStateStatusEnum refundPending = _$nonCompletedFundingTransferStateStatusEnum_refundPending;
   @BuiltValueEnumConst(wireName: r'refunded')
-  static const NonCompletedFundingTransferStateStatusEnum refunded =
-      _$nonCompletedFundingTransferStateStatusEnum_refunded;
+  static const NonCompletedFundingTransferStateStatusEnum refunded = _$nonCompletedFundingTransferStateStatusEnum_refunded;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const NonCompletedFundingTransferStateStatusEnum failed =
-      _$nonCompletedFundingTransferStateStatusEnum_failed;
+  static const NonCompletedFundingTransferStateStatusEnum failed = _$nonCompletedFundingTransferStateStatusEnum_failed;
   @BuiltValueEnumConst(wireName: r'ambiguous')
-  static const NonCompletedFundingTransferStateStatusEnum ambiguous =
-      _$nonCompletedFundingTransferStateStatusEnum_ambiguous;
+  static const NonCompletedFundingTransferStateStatusEnum ambiguous = _$nonCompletedFundingTransferStateStatusEnum_ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
-  static const NonCompletedFundingTransferStateStatusEnum manualReview =
-      _$nonCompletedFundingTransferStateStatusEnum_manualReview;
+  static const NonCompletedFundingTransferStateStatusEnum manualReview = _$nonCompletedFundingTransferStateStatusEnum_manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const NonCompletedFundingTransferStateStatusEnum
-      unknownDefaultOpenApi =
-      _$nonCompletedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
+  static const NonCompletedFundingTransferStateStatusEnum unknownDefaultOpenApi = _$nonCompletedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<NonCompletedFundingTransferStateStatusEnum>
-      get serializer => _$nonCompletedFundingTransferStateStatusEnumSerializer;
+  static Serializer<NonCompletedFundingTransferStateStatusEnum> get serializer => _$nonCompletedFundingTransferStateStatusEnumSerializer;
 
-  const NonCompletedFundingTransferStateStatusEnum._(String name) : super(name);
+  const NonCompletedFundingTransferStateStatusEnum._(String name): super(name);
 
-  static BuiltSet<NonCompletedFundingTransferStateStatusEnum> get values =>
-      _$nonCompletedFundingTransferStateStatusEnumValues;
-  static NonCompletedFundingTransferStateStatusEnum valueOf(String name) =>
-      _$nonCompletedFundingTransferStateStatusEnumValueOf(name);
+  static BuiltSet<NonCompletedFundingTransferStateStatusEnum> get values => _$nonCompletedFundingTransferStateStatusEnumValues;
+  static NonCompletedFundingTransferStateStatusEnum valueOf(String name) => _$nonCompletedFundingTransferStateStatusEnumValueOf(name);
 }
+

@@ -15,29 +15,25 @@ part 'withdrawal_page.g.dart';
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore]
-/// * [items]
+/// * [hasMore] 
+/// * [items] 
 @BuiltValue()
-abstract class WithdrawalPage
-    implements Page, Built<WithdrawalPage, WithdrawalPageBuilder> {
+abstract class WithdrawalPage implements Page, Built<WithdrawalPage, WithdrawalPageBuilder> {
   @BuiltValueField(wireName: r'items')
   BuiltList<Withdrawal> get items;
 
   WithdrawalPage._();
 
-  factory WithdrawalPage([void updates(WithdrawalPageBuilder b)]) =
-      _$WithdrawalPage;
+  factory WithdrawalPage([void updates(WithdrawalPageBuilder b)]) = _$WithdrawalPage;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WithdrawalPageBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WithdrawalPage> get serializer =>
-      _$WithdrawalPageSerializer();
+  static Serializer<WithdrawalPage> get serializer => _$WithdrawalPageSerializer();
 }
 
-class _$WithdrawalPageSerializer
-    implements PrimitiveSerializer<WithdrawalPage> {
+class _$WithdrawalPageSerializer implements PrimitiveSerializer<WithdrawalPage> {
   @override
   final Iterable<Type> types = const [WithdrawalPage, _$WithdrawalPage];
 
@@ -50,12 +46,10 @@ class _$WithdrawalPageSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null
-        ? null
-        : serializers.serialize(
-            object.nextCursor,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.nextCursor == null ? null : serializers.serialize(
+      object.nextCursor,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'has_more';
     yield serializers.serialize(
       object.hasMore,
@@ -74,9 +68,7 @@ class _$WithdrawalPageSerializer
     WithdrawalPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -141,3 +133,4 @@ class _$WithdrawalPageSerializer
     return result.build();
   }
 }
+

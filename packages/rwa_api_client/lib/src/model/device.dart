@@ -12,19 +12,19 @@ part 'device.g.dart';
 /// Device
 ///
 /// Properties:
-/// * [deviceId]
-/// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
+/// * [deviceId] 
+/// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。 
 /// * [appVersion] - 用于推送内容分流；客户端未上报过时为 null
-/// * [pushProvider]
+/// * [pushProvider] 
 /// * [pushTokenRegistered] - 出于安全考虑不回显令牌本身，只告知是否已登记
-/// * [lastSeenAt]
-/// * [createdAt]
+/// * [lastSeenAt] 
+/// * [createdAt] 
 @BuiltValue()
 abstract class Device implements Built<Device, DeviceBuilder> {
   @BuiltValueField(wireName: r'device_id')
   String get deviceId;
 
-  /// 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
+  /// 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。 
   @BuiltValueField(wireName: r'platform')
   String get platform;
 
@@ -122,9 +122,7 @@ class _$DeviceSerializer implements PrimitiveSerializer<Device> {
     Device object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -223,21 +221,19 @@ class _$DeviceSerializer implements PrimitiveSerializer<Device> {
 }
 
 class DevicePushProviderEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'apns')
   static const DevicePushProviderEnum apns = _$devicePushProviderEnum_apns;
   @BuiltValueEnumConst(wireName: r'fcm')
   static const DevicePushProviderEnum fcm = _$devicePushProviderEnum_fcm;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DevicePushProviderEnum unknownDefaultOpenApi =
-      _$devicePushProviderEnum_unknownDefaultOpenApi;
+  static const DevicePushProviderEnum unknownDefaultOpenApi = _$devicePushProviderEnum_unknownDefaultOpenApi;
 
-  static Serializer<DevicePushProviderEnum> get serializer =>
-      _$devicePushProviderEnumSerializer;
+  static Serializer<DevicePushProviderEnum> get serializer => _$devicePushProviderEnumSerializer;
 
-  const DevicePushProviderEnum._(String name) : super(name);
+  const DevicePushProviderEnum._(String name): super(name);
 
-  static BuiltSet<DevicePushProviderEnum> get values =>
-      _$devicePushProviderEnumValues;
-  static DevicePushProviderEnum valueOf(String name) =>
-      _$devicePushProviderEnumValueOf(name);
+  static BuiltSet<DevicePushProviderEnum> get values => _$devicePushProviderEnumValues;
+  static DevicePushProviderEnum valueOf(String name) => _$devicePushProviderEnumValueOf(name);
 }
+

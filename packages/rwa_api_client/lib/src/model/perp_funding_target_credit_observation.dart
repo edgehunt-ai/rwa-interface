@@ -13,18 +13,15 @@ part 'perp_funding_target_credit_observation.g.dart';
 /// PerpFundingTargetCreditObservation
 ///
 /// Properties:
-/// * [accountRef]
-/// * [asset]
+/// * [accountRef] 
+/// * [asset] 
 /// * [availableBefore] - 十进制字符串，避免浮点误差
 /// * [availableAfter] - 十进制字符串，避免浮点误差
 /// * [creditedAmount] - 十进制字符串，避免浮点误差
-/// * [source_]
-/// * [observedAt]
+/// * [source_] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class PerpFundingTargetCreditObservation
-    implements
-        Built<PerpFundingTargetCreditObservation,
-            PerpFundingTargetCreditObservationBuilder> {
+abstract class PerpFundingTargetCreditObservation implements Built<PerpFundingTargetCreditObservation, PerpFundingTargetCreditObservationBuilder> {
   @BuiltValueField(wireName: r'account_ref')
   String get accountRef;
 
@@ -52,25 +49,18 @@ abstract class PerpFundingTargetCreditObservation
 
   PerpFundingTargetCreditObservation._();
 
-  factory PerpFundingTargetCreditObservation(
-          [void updates(PerpFundingTargetCreditObservationBuilder b)]) =
-      _$PerpFundingTargetCreditObservation;
+  factory PerpFundingTargetCreditObservation([void updates(PerpFundingTargetCreditObservationBuilder b)]) = _$PerpFundingTargetCreditObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PerpFundingTargetCreditObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpFundingTargetCreditObservation> get serializer =>
-      _$PerpFundingTargetCreditObservationSerializer();
+  static Serializer<PerpFundingTargetCreditObservation> get serializer => _$PerpFundingTargetCreditObservationSerializer();
 }
 
-class _$PerpFundingTargetCreditObservationSerializer
-    implements PrimitiveSerializer<PerpFundingTargetCreditObservation> {
+class _$PerpFundingTargetCreditObservationSerializer implements PrimitiveSerializer<PerpFundingTargetCreditObservation> {
   @override
-  final Iterable<Type> types = const [
-    PerpFundingTargetCreditObservation,
-    _$PerpFundingTargetCreditObservation
-  ];
+  final Iterable<Type> types = const [PerpFundingTargetCreditObservation, _$PerpFundingTargetCreditObservation];
 
   @override
   final String wireName = r'PerpFundingTargetCreditObservation';
@@ -108,8 +98,7 @@ class _$PerpFundingTargetCreditObservationSerializer
     yield r'source';
     yield serializers.serialize(
       object.source_,
-      specifiedType:
-          const FullType(PerpFundingTargetCreditObservationSource_Enum),
+      specifiedType: const FullType(PerpFundingTargetCreditObservationSource_Enum),
     );
     yield r'observed_at';
     yield serializers.serialize(
@@ -124,9 +113,7 @@ class _$PerpFundingTargetCreditObservationSerializer
     PerpFundingTargetCreditObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -179,8 +166,7 @@ class _$PerpFundingTargetCreditObservationSerializer
         case r'source':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PerpFundingTargetCreditObservationSource_Enum),
+            specifiedType: const FullType(PerpFundingTargetCreditObservationSource_Enum),
           ) as PerpFundingTargetCreditObservationSource_Enum;
           result.source_ = valueDes;
           break;
@@ -221,23 +207,17 @@ class _$PerpFundingTargetCreditObservationSerializer
 }
 
 class PerpFundingTargetCreditObservationSource_Enum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'hyperliquid_info')
-  static const PerpFundingTargetCreditObservationSource_Enum hyperliquidInfo =
-      _$perpFundingTargetCreditObservationSourceEnum_hyperliquidInfo;
+  static const PerpFundingTargetCreditObservationSource_Enum hyperliquidInfo = _$perpFundingTargetCreditObservationSourceEnum_hyperliquidInfo;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetCreditObservationSource_Enum
-      unknownDefaultOpenApi =
-      _$perpFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
+  static const PerpFundingTargetCreditObservationSource_Enum unknownDefaultOpenApi = _$perpFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpFundingTargetCreditObservationSource_Enum>
-      get serializer =>
-          _$perpFundingTargetCreditObservationSourceEnumSerializer;
+  static Serializer<PerpFundingTargetCreditObservationSource_Enum> get serializer => _$perpFundingTargetCreditObservationSourceEnumSerializer;
 
-  const PerpFundingTargetCreditObservationSource_Enum._(String name)
-      : super(name);
+  const PerpFundingTargetCreditObservationSource_Enum._(String name): super(name);
 
-  static BuiltSet<PerpFundingTargetCreditObservationSource_Enum> get values =>
-      _$perpFundingTargetCreditObservationSourceEnumValues;
-  static PerpFundingTargetCreditObservationSource_Enum valueOf(String name) =>
-      _$perpFundingTargetCreditObservationSourceEnumValueOf(name);
+  static BuiltSet<PerpFundingTargetCreditObservationSource_Enum> get values => _$perpFundingTargetCreditObservationSourceEnumValues;
+  static PerpFundingTargetCreditObservationSource_Enum valueOf(String name) => _$perpFundingTargetCreditObservationSourceEnumValueOf(name);
 }
+

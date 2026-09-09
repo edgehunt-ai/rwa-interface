@@ -13,13 +13,11 @@ part 'funding_provider_observation.g.dart';
 /// FundingProviderObservation
 ///
 /// Properties:
-/// * [provider]
-/// * [status]
-/// * [observedAt]
+/// * [provider] 
+/// * [status] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class FundingProviderObservation
-    implements
-        Built<FundingProviderObservation, FundingProviderObservationBuilder> {
+abstract class FundingProviderObservation implements Built<FundingProviderObservation, FundingProviderObservationBuilder> {
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
   // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
@@ -33,25 +31,18 @@ abstract class FundingProviderObservation
 
   FundingProviderObservation._();
 
-  factory FundingProviderObservation(
-          [void updates(FundingProviderObservationBuilder b)]) =
-      _$FundingProviderObservation;
+  factory FundingProviderObservation([void updates(FundingProviderObservationBuilder b)]) = _$FundingProviderObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingProviderObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingProviderObservation> get serializer =>
-      _$FundingProviderObservationSerializer();
+  static Serializer<FundingProviderObservation> get serializer => _$FundingProviderObservationSerializer();
 }
 
-class _$FundingProviderObservationSerializer
-    implements PrimitiveSerializer<FundingProviderObservation> {
+class _$FundingProviderObservationSerializer implements PrimitiveSerializer<FundingProviderObservation> {
   @override
-  final Iterable<Type> types = const [
-    FundingProviderObservation,
-    _$FundingProviderObservation
-  ];
+  final Iterable<Type> types = const [FundingProviderObservation, _$FundingProviderObservation];
 
   @override
   final String wireName = r'FundingProviderObservation';
@@ -84,9 +75,7 @@ class _$FundingProviderObservationSerializer
     FundingProviderObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -150,3 +139,4 @@ class _$FundingProviderObservationSerializer
     return result.build();
   }
 }
+

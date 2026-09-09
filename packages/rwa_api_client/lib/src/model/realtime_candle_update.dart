@@ -14,13 +14,12 @@ part 'realtime_candle_update.g.dart';
 /// RealtimeCandleUpdate
 ///
 /// Properties:
-/// * [symbol]
-/// * [kind]
-/// * [interval]
-/// * [point]
+/// * [symbol] 
+/// * [kind] 
+/// * [interval] 
+/// * [point] 
 @BuiltValue()
-abstract class RealtimeCandleUpdate
-    implements Built<RealtimeCandleUpdate, RealtimeCandleUpdateBuilder> {
+abstract class RealtimeCandleUpdate implements Built<RealtimeCandleUpdate, RealtimeCandleUpdateBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -37,24 +36,18 @@ abstract class RealtimeCandleUpdate
 
   RealtimeCandleUpdate._();
 
-  factory RealtimeCandleUpdate([void updates(RealtimeCandleUpdateBuilder b)]) =
-      _$RealtimeCandleUpdate;
+  factory RealtimeCandleUpdate([void updates(RealtimeCandleUpdateBuilder b)]) = _$RealtimeCandleUpdate;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeCandleUpdateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeCandleUpdate> get serializer =>
-      _$RealtimeCandleUpdateSerializer();
+  static Serializer<RealtimeCandleUpdate> get serializer => _$RealtimeCandleUpdateSerializer();
 }
 
-class _$RealtimeCandleUpdateSerializer
-    implements PrimitiveSerializer<RealtimeCandleUpdate> {
+class _$RealtimeCandleUpdateSerializer implements PrimitiveSerializer<RealtimeCandleUpdate> {
   @override
-  final Iterable<Type> types = const [
-    RealtimeCandleUpdate,
-    _$RealtimeCandleUpdate
-  ];
+  final Iterable<Type> types = const [RealtimeCandleUpdate, _$RealtimeCandleUpdate];
 
   @override
   final String wireName = r'RealtimeCandleUpdate';
@@ -92,9 +85,7 @@ class _$RealtimeCandleUpdateSerializer
     RealtimeCandleUpdate object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -167,35 +158,27 @@ class _$RealtimeCandleUpdateSerializer
 }
 
 class RealtimeCandleUpdateIntervalEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'1m')
-  static const RealtimeCandleUpdateIntervalEnum n1m =
-      _$realtimeCandleUpdateIntervalEnum_n1m;
+  static const RealtimeCandleUpdateIntervalEnum n1m = _$realtimeCandleUpdateIntervalEnum_n1m;
   @BuiltValueEnumConst(wireName: r'5m')
-  static const RealtimeCandleUpdateIntervalEnum n5m =
-      _$realtimeCandleUpdateIntervalEnum_n5m;
+  static const RealtimeCandleUpdateIntervalEnum n5m = _$realtimeCandleUpdateIntervalEnum_n5m;
   @BuiltValueEnumConst(wireName: r'15m')
-  static const RealtimeCandleUpdateIntervalEnum n15m =
-      _$realtimeCandleUpdateIntervalEnum_n15m;
+  static const RealtimeCandleUpdateIntervalEnum n15m = _$realtimeCandleUpdateIntervalEnum_n15m;
   @BuiltValueEnumConst(wireName: r'1h')
-  static const RealtimeCandleUpdateIntervalEnum n1h =
-      _$realtimeCandleUpdateIntervalEnum_n1h;
+  static const RealtimeCandleUpdateIntervalEnum n1h = _$realtimeCandleUpdateIntervalEnum_n1h;
   @BuiltValueEnumConst(wireName: r'4h')
-  static const RealtimeCandleUpdateIntervalEnum n4h =
-      _$realtimeCandleUpdateIntervalEnum_n4h;
+  static const RealtimeCandleUpdateIntervalEnum n4h = _$realtimeCandleUpdateIntervalEnum_n4h;
   @BuiltValueEnumConst(wireName: r'1d')
-  static const RealtimeCandleUpdateIntervalEnum n1d =
-      _$realtimeCandleUpdateIntervalEnum_n1d;
+  static const RealtimeCandleUpdateIntervalEnum n1d = _$realtimeCandleUpdateIntervalEnum_n1d;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeCandleUpdateIntervalEnum unknownDefaultOpenApi =
-      _$realtimeCandleUpdateIntervalEnum_unknownDefaultOpenApi;
+  static const RealtimeCandleUpdateIntervalEnum unknownDefaultOpenApi = _$realtimeCandleUpdateIntervalEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeCandleUpdateIntervalEnum> get serializer =>
-      _$realtimeCandleUpdateIntervalEnumSerializer;
+  static Serializer<RealtimeCandleUpdateIntervalEnum> get serializer => _$realtimeCandleUpdateIntervalEnumSerializer;
 
-  const RealtimeCandleUpdateIntervalEnum._(String name) : super(name);
+  const RealtimeCandleUpdateIntervalEnum._(String name): super(name);
 
-  static BuiltSet<RealtimeCandleUpdateIntervalEnum> get values =>
-      _$realtimeCandleUpdateIntervalEnumValues;
-  static RealtimeCandleUpdateIntervalEnum valueOf(String name) =>
-      _$realtimeCandleUpdateIntervalEnumValueOf(name);
+  static BuiltSet<RealtimeCandleUpdateIntervalEnum> get values => _$realtimeCandleUpdateIntervalEnumValues;
+  static RealtimeCandleUpdateIntervalEnum valueOf(String name) => _$realtimeCandleUpdateIntervalEnumValueOf(name);
 }
+

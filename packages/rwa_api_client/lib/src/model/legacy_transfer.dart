@@ -13,20 +13,19 @@ part 'legacy_transfer.g.dart';
 /// Existing account-to-account transfer retained for Claim and historical activity compatibility.
 ///
 /// Properties:
-/// * [transferId]
-/// * [asset]
+/// * [transferId] 
+/// * [asset] 
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [fromAccount]
-/// * [toAccount]
-/// * [status]
-/// * [failureReason]
-/// * [txHash]
-/// * [activityId]
-/// * [createdAt]
-/// * [completedAt]
+/// * [fromAccount] 
+/// * [toAccount] 
+/// * [status] 
+/// * [failureReason] 
+/// * [txHash] 
+/// * [activityId] 
+/// * [createdAt] 
+/// * [completedAt] 
 @BuiltValue()
-abstract class LegacyTransfer
-    implements Built<LegacyTransfer, LegacyTransferBuilder> {
+abstract class LegacyTransfer implements Built<LegacyTransfer, LegacyTransferBuilder> {
   @BuiltValueField(wireName: r'transfer_id')
   String get transferId;
 
@@ -66,19 +65,16 @@ abstract class LegacyTransfer
 
   LegacyTransfer._();
 
-  factory LegacyTransfer([void updates(LegacyTransferBuilder b)]) =
-      _$LegacyTransfer;
+  factory LegacyTransfer([void updates(LegacyTransferBuilder b)]) = _$LegacyTransfer;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LegacyTransferBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LegacyTransfer> get serializer =>
-      _$LegacyTransferSerializer();
+  static Serializer<LegacyTransfer> get serializer => _$LegacyTransferSerializer();
 }
 
-class _$LegacyTransferSerializer
-    implements PrimitiveSerializer<LegacyTransfer> {
+class _$LegacyTransferSerializer implements PrimitiveSerializer<LegacyTransfer> {
   @override
   final Iterable<Type> types = const [LegacyTransfer, _$LegacyTransfer];
 
@@ -161,9 +157,7 @@ class _$LegacyTransferSerializer
     LegacyTransfer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -287,3 +281,4 @@ class _$LegacyTransferSerializer
     return result.build();
   }
 }
+

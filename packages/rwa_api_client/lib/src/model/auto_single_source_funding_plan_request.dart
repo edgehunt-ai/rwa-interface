@@ -14,13 +14,10 @@ part 'auto_single_source_funding_plan_request.g.dart';
 ///
 /// Properties:
 /// * [tradePreviewId] - Immutable trade preview from which purpose, target identity and required target amount are derived.
-/// * [mode]
+/// * [mode] 
 /// * [sourceAssetId] - Optional exact canonical source asset constraint. If supplied, planning must not quote or select any other source.
 @BuiltValue()
-abstract class AutoSingleSourceFundingPlanRequest
-    implements
-        Built<AutoSingleSourceFundingPlanRequest,
-            AutoSingleSourceFundingPlanRequestBuilder> {
+abstract class AutoSingleSourceFundingPlanRequest implements Built<AutoSingleSourceFundingPlanRequest, AutoSingleSourceFundingPlanRequestBuilder> {
   /// Immutable trade preview from which purpose, target identity and required target amount are derived.
   @BuiltValueField(wireName: r'trade_preview_id')
   String get tradePreviewId;
@@ -36,25 +33,18 @@ abstract class AutoSingleSourceFundingPlanRequest
 
   AutoSingleSourceFundingPlanRequest._();
 
-  factory AutoSingleSourceFundingPlanRequest(
-          [void updates(AutoSingleSourceFundingPlanRequestBuilder b)]) =
-      _$AutoSingleSourceFundingPlanRequest;
+  factory AutoSingleSourceFundingPlanRequest([void updates(AutoSingleSourceFundingPlanRequestBuilder b)]) = _$AutoSingleSourceFundingPlanRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AutoSingleSourceFundingPlanRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AutoSingleSourceFundingPlanRequest> get serializer =>
-      _$AutoSingleSourceFundingPlanRequestSerializer();
+  static Serializer<AutoSingleSourceFundingPlanRequest> get serializer => _$AutoSingleSourceFundingPlanRequestSerializer();
 }
 
-class _$AutoSingleSourceFundingPlanRequestSerializer
-    implements PrimitiveSerializer<AutoSingleSourceFundingPlanRequest> {
+class _$AutoSingleSourceFundingPlanRequestSerializer implements PrimitiveSerializer<AutoSingleSourceFundingPlanRequest> {
   @override
-  final Iterable<Type> types = const [
-    AutoSingleSourceFundingPlanRequest,
-    _$AutoSingleSourceFundingPlanRequest
-  ];
+  final Iterable<Type> types = const [AutoSingleSourceFundingPlanRequest, _$AutoSingleSourceFundingPlanRequest];
 
   @override
   final String wireName = r'AutoSingleSourceFundingPlanRequest';
@@ -89,9 +79,7 @@ class _$AutoSingleSourceFundingPlanRequestSerializer
     AutoSingleSourceFundingPlanRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -156,3 +144,4 @@ class _$AutoSingleSourceFundingPlanRequestSerializer
     return result.build();
   }
 }
+

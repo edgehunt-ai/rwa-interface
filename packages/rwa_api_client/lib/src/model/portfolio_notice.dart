@@ -13,13 +13,12 @@ part 'portfolio_notice.g.dart';
 /// PortfolioNotice
 ///
 /// Properties:
-/// * [code]
-/// * [severity]
-/// * [message]
-/// * [userAction]
+/// * [code] 
+/// * [severity] 
+/// * [message] 
+/// * [userAction] 
 @BuiltValue()
-abstract class PortfolioNotice
-    implements Built<PortfolioNotice, PortfolioNoticeBuilder> {
+abstract class PortfolioNotice implements Built<PortfolioNotice, PortfolioNoticeBuilder> {
   @BuiltValueField(wireName: r'code')
   PortfolioWarningCode get code;
   // enum codeEnum {  evm_rpc_unavailable,  hyperliquid_unavailable,  price_unavailable,  asset_unvalued,  using_last_good,  wallet_set_changed,  internal_ledger_stale,  internal_ledger_unreconciled,  };
@@ -36,19 +35,16 @@ abstract class PortfolioNotice
 
   PortfolioNotice._();
 
-  factory PortfolioNotice([void updates(PortfolioNoticeBuilder b)]) =
-      _$PortfolioNotice;
+  factory PortfolioNotice([void updates(PortfolioNoticeBuilder b)]) = _$PortfolioNotice;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PortfolioNoticeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PortfolioNotice> get serializer =>
-      _$PortfolioNoticeSerializer();
+  static Serializer<PortfolioNotice> get serializer => _$PortfolioNoticeSerializer();
 }
 
-class _$PortfolioNoticeSerializer
-    implements PrimitiveSerializer<PortfolioNotice> {
+class _$PortfolioNoticeSerializer implements PrimitiveSerializer<PortfolioNotice> {
   @override
   final Iterable<Type> types = const [PortfolioNotice, _$PortfolioNotice];
 
@@ -90,9 +86,7 @@ class _$PortfolioNoticeSerializer
     PortfolioNotice object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -164,3 +158,4 @@ class _$PortfolioNoticeSerializer
     return result.build();
   }
 }
+

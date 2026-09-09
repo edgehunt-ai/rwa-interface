@@ -14,52 +14,42 @@ part 'arbitrum_confirmed_deposit.g.dart';
 /// ArbitrumConfirmedDeposit
 ///
 /// Properties:
-/// * [depositId]
-/// * [chain]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
+/// * [depositId] 
+/// * [chain] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [amountRaw] - ERC-20 Transfer log 中的精确原始整数金额。
-/// * [status]
-/// * [confirmations]
-/// * [confirmationsRequired]
-/// * [txHash]
-/// * [logIndex]
-/// * [blockNumber]
-/// * [blockHash]
-/// * [sender]
-/// * [recipient]
-/// * [detectedAt]
-/// * [confirmedAt]
-/// * [updatedAt]
+/// * [status] 
+/// * [confirmations] 
+/// * [confirmationsRequired] 
+/// * [txHash] 
+/// * [logIndex] 
+/// * [blockNumber] 
+/// * [blockHash] 
+/// * [sender] 
+/// * [recipient] 
+/// * [detectedAt] 
+/// * [confirmedAt] 
+/// * [updatedAt] 
 @BuiltValue()
-abstract class ArbitrumConfirmedDeposit
-    implements
-        DepositBase,
-        Built<ArbitrumConfirmedDeposit, ArbitrumConfirmedDepositBuilder> {
+abstract class ArbitrumConfirmedDeposit implements DepositBase, Built<ArbitrumConfirmedDeposit, ArbitrumConfirmedDepositBuilder> {
   ArbitrumConfirmedDeposit._();
 
-  factory ArbitrumConfirmedDeposit(
-          [void updates(ArbitrumConfirmedDepositBuilder b)]) =
-      _$ArbitrumConfirmedDeposit;
+  factory ArbitrumConfirmedDeposit([void updates(ArbitrumConfirmedDepositBuilder b)]) = _$ArbitrumConfirmedDeposit;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ArbitrumConfirmedDepositBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ArbitrumConfirmedDeposit> get serializer =>
-      _$ArbitrumConfirmedDepositSerializer();
+  static Serializer<ArbitrumConfirmedDeposit> get serializer => _$ArbitrumConfirmedDepositSerializer();
 }
 
-class _$ArbitrumConfirmedDepositSerializer
-    implements PrimitiveSerializer<ArbitrumConfirmedDeposit> {
+class _$ArbitrumConfirmedDepositSerializer implements PrimitiveSerializer<ArbitrumConfirmedDeposit> {
   @override
-  final Iterable<Type> types = const [
-    ArbitrumConfirmedDeposit,
-    _$ArbitrumConfirmedDeposit
-  ];
+  final Iterable<Type> types = const [ArbitrumConfirmedDeposit, _$ArbitrumConfirmedDeposit];
 
   @override
   final String wireName = r'ArbitrumConfirmedDeposit';
@@ -177,9 +167,7 @@ class _$ArbitrumConfirmedDepositSerializer
     ArbitrumConfirmedDeposit object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -364,97 +352,77 @@ class _$ArbitrumConfirmedDepositSerializer
 }
 
 class ArbitrumConfirmedDepositChainEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const ArbitrumConfirmedDepositChainEnum arbitrum =
-      _$arbitrumConfirmedDepositChainEnum_arbitrum;
+  static const ArbitrumConfirmedDepositChainEnum arbitrum = _$arbitrumConfirmedDepositChainEnum_arbitrum;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumConfirmedDepositChainEnum unknownDefaultOpenApi =
-      _$arbitrumConfirmedDepositChainEnum_unknownDefaultOpenApi;
+  static const ArbitrumConfirmedDepositChainEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositChainEnum_unknownDefaultOpenApi;
 
-  static Serializer<ArbitrumConfirmedDepositChainEnum> get serializer =>
-      _$arbitrumConfirmedDepositChainEnumSerializer;
+  static Serializer<ArbitrumConfirmedDepositChainEnum> get serializer => _$arbitrumConfirmedDepositChainEnumSerializer;
 
-  const ArbitrumConfirmedDepositChainEnum._(String name) : super(name);
+  const ArbitrumConfirmedDepositChainEnum._(String name): super(name);
 
-  static BuiltSet<ArbitrumConfirmedDepositChainEnum> get values =>
-      _$arbitrumConfirmedDepositChainEnumValues;
-  static ArbitrumConfirmedDepositChainEnum valueOf(String name) =>
-      _$arbitrumConfirmedDepositChainEnumValueOf(name);
+  static BuiltSet<ArbitrumConfirmedDepositChainEnum> get values => _$arbitrumConfirmedDepositChainEnumValues;
+  static ArbitrumConfirmedDepositChainEnum valueOf(String name) => _$arbitrumConfirmedDepositChainEnumValueOf(name);
 }
 
 class ArbitrumConfirmedDepositChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 42161)
-  static const ArbitrumConfirmedDepositChainIdEnum number42161 =
-      _$arbitrumConfirmedDepositChainIdEnum_number42161;
+  static const ArbitrumConfirmedDepositChainIdEnum number42161 = _$arbitrumConfirmedDepositChainIdEnum_number42161;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const ArbitrumConfirmedDepositChainIdEnum unknownDefaultOpenApi =
-      _$arbitrumConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
+  static const ArbitrumConfirmedDepositChainIdEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<ArbitrumConfirmedDepositChainIdEnum> get serializer =>
-      _$arbitrumConfirmedDepositChainIdEnumSerializer;
+  static Serializer<ArbitrumConfirmedDepositChainIdEnum> get serializer => _$arbitrumConfirmedDepositChainIdEnumSerializer;
 
-  const ArbitrumConfirmedDepositChainIdEnum._(String name) : super(name);
+  const ArbitrumConfirmedDepositChainIdEnum._(String name): super(name);
 
-  static BuiltSet<ArbitrumConfirmedDepositChainIdEnum> get values =>
-      _$arbitrumConfirmedDepositChainIdEnumValues;
-  static ArbitrumConfirmedDepositChainIdEnum valueOf(String name) =>
-      _$arbitrumConfirmedDepositChainIdEnumValueOf(name);
+  static BuiltSet<ArbitrumConfirmedDepositChainIdEnum> get values => _$arbitrumConfirmedDepositChainIdEnumValues;
+  static ArbitrumConfirmedDepositChainIdEnum valueOf(String name) => _$arbitrumConfirmedDepositChainIdEnumValueOf(name);
 }
 
 class ArbitrumConfirmedDepositTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const ArbitrumConfirmedDepositTokenEnum USDC =
-      _$arbitrumConfirmedDepositTokenEnum_USDC;
+  static const ArbitrumConfirmedDepositTokenEnum USDC = _$arbitrumConfirmedDepositTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumConfirmedDepositTokenEnum unknownDefaultOpenApi =
-      _$arbitrumConfirmedDepositTokenEnum_unknownDefaultOpenApi;
+  static const ArbitrumConfirmedDepositTokenEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<ArbitrumConfirmedDepositTokenEnum> get serializer =>
-      _$arbitrumConfirmedDepositTokenEnumSerializer;
+  static Serializer<ArbitrumConfirmedDepositTokenEnum> get serializer => _$arbitrumConfirmedDepositTokenEnumSerializer;
 
-  const ArbitrumConfirmedDepositTokenEnum._(String name) : super(name);
+  const ArbitrumConfirmedDepositTokenEnum._(String name): super(name);
 
-  static BuiltSet<ArbitrumConfirmedDepositTokenEnum> get values =>
-      _$arbitrumConfirmedDepositTokenEnumValues;
-  static ArbitrumConfirmedDepositTokenEnum valueOf(String name) =>
-      _$arbitrumConfirmedDepositTokenEnumValueOf(name);
+  static BuiltSet<ArbitrumConfirmedDepositTokenEnum> get values => _$arbitrumConfirmedDepositTokenEnumValues;
+  static ArbitrumConfirmedDepositTokenEnum valueOf(String name) => _$arbitrumConfirmedDepositTokenEnumValueOf(name);
 }
 
 class ArbitrumConfirmedDepositTokenContractEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0xaf88d065e77c8cc2239327c5edb3a432268e5831')
-  static const ArbitrumConfirmedDepositTokenContractEnum
-      n0xaf88d065e77c8cc2239327c5edb3a432268e5831 =
-      _$arbitrumConfirmedDepositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
+  static const ArbitrumConfirmedDepositTokenContractEnum n0xaf88d065e77c8cc2239327c5edb3a432268e5831 = _$arbitrumConfirmedDepositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumConfirmedDepositTokenContractEnum unknownDefaultOpenApi =
-      _$arbitrumConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
+  static const ArbitrumConfirmedDepositTokenContractEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
 
-  static Serializer<ArbitrumConfirmedDepositTokenContractEnum> get serializer =>
-      _$arbitrumConfirmedDepositTokenContractEnumSerializer;
+  static Serializer<ArbitrumConfirmedDepositTokenContractEnum> get serializer => _$arbitrumConfirmedDepositTokenContractEnumSerializer;
 
-  const ArbitrumConfirmedDepositTokenContractEnum._(String name) : super(name);
+  const ArbitrumConfirmedDepositTokenContractEnum._(String name): super(name);
 
-  static BuiltSet<ArbitrumConfirmedDepositTokenContractEnum> get values =>
-      _$arbitrumConfirmedDepositTokenContractEnumValues;
-  static ArbitrumConfirmedDepositTokenContractEnum valueOf(String name) =>
-      _$arbitrumConfirmedDepositTokenContractEnumValueOf(name);
+  static BuiltSet<ArbitrumConfirmedDepositTokenContractEnum> get values => _$arbitrumConfirmedDepositTokenContractEnumValues;
+  static ArbitrumConfirmedDepositTokenContractEnum valueOf(String name) => _$arbitrumConfirmedDepositTokenContractEnumValueOf(name);
 }
 
 class ArbitrumConfirmedDepositTokenDecimalsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 6)
-  static const ArbitrumConfirmedDepositTokenDecimalsEnum number6 =
-      _$arbitrumConfirmedDepositTokenDecimalsEnum_number6;
+  static const ArbitrumConfirmedDepositTokenDecimalsEnum number6 = _$arbitrumConfirmedDepositTokenDecimalsEnum_number6;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const ArbitrumConfirmedDepositTokenDecimalsEnum unknownDefaultOpenApi =
-      _$arbitrumConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
+  static const ArbitrumConfirmedDepositTokenDecimalsEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
 
-  static Serializer<ArbitrumConfirmedDepositTokenDecimalsEnum> get serializer =>
-      _$arbitrumConfirmedDepositTokenDecimalsEnumSerializer;
+  static Serializer<ArbitrumConfirmedDepositTokenDecimalsEnum> get serializer => _$arbitrumConfirmedDepositTokenDecimalsEnumSerializer;
 
-  const ArbitrumConfirmedDepositTokenDecimalsEnum._(String name) : super(name);
+  const ArbitrumConfirmedDepositTokenDecimalsEnum._(String name): super(name);
 
-  static BuiltSet<ArbitrumConfirmedDepositTokenDecimalsEnum> get values =>
-      _$arbitrumConfirmedDepositTokenDecimalsEnumValues;
-  static ArbitrumConfirmedDepositTokenDecimalsEnum valueOf(String name) =>
-      _$arbitrumConfirmedDepositTokenDecimalsEnumValueOf(name);
+  static BuiltSet<ArbitrumConfirmedDepositTokenDecimalsEnum> get values => _$arbitrumConfirmedDepositTokenDecimalsEnumValues;
+  static ArbitrumConfirmedDepositTokenDecimalsEnum valueOf(String name) => _$arbitrumConfirmedDepositTokenDecimalsEnumValueOf(name);
 }
+

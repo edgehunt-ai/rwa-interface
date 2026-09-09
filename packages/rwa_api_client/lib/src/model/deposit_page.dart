@@ -15,11 +15,10 @@ part 'deposit_page.g.dart';
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore]
-/// * [items]
+/// * [hasMore] 
+/// * [items] 
 @BuiltValue()
-abstract class DepositPage
-    implements Page, Built<DepositPage, DepositPageBuilder> {
+abstract class DepositPage implements Page, Built<DepositPage, DepositPageBuilder> {
   @BuiltValueField(wireName: r'items')
   BuiltList<Deposit> get items;
 
@@ -47,12 +46,10 @@ class _$DepositPageSerializer implements PrimitiveSerializer<DepositPage> {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null
-        ? null
-        : serializers.serialize(
-            object.nextCursor,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.nextCursor == null ? null : serializers.serialize(
+      object.nextCursor,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'has_more';
     yield serializers.serialize(
       object.hasMore,
@@ -71,9 +68,7 @@ class _$DepositPageSerializer implements PrimitiveSerializer<DepositPage> {
     DepositPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -138,3 +133,4 @@ class _$DepositPageSerializer implements PrimitiveSerializer<DepositPage> {
     return result.build();
   }
 }
+

@@ -13,15 +13,12 @@ part 'locked_executable_action_transfer_state.g.dart';
 /// LockedExecutableActionTransferState
 ///
 /// Properties:
-/// * [status]
-/// * [nextAction]
-/// * [routeLockedAt]
-/// * [walletActionReleasedAt]
+/// * [status] 
+/// * [nextAction] 
+/// * [routeLockedAt] 
+/// * [walletActionReleasedAt] 
 @BuiltValue()
-abstract class LockedExecutableActionTransferState
-    implements
-        Built<LockedExecutableActionTransferState,
-            LockedExecutableActionTransferStateBuilder> {
+abstract class LockedExecutableActionTransferState implements Built<LockedExecutableActionTransferState, LockedExecutableActionTransferStateBuilder> {
   @BuiltValueField(wireName: r'status')
   LockedExecutableActionTransferStateStatusEnum get status;
   // enum statusEnum {  awaiting_wallet,  };
@@ -37,25 +34,18 @@ abstract class LockedExecutableActionTransferState
 
   LockedExecutableActionTransferState._();
 
-  factory LockedExecutableActionTransferState(
-          [void updates(LockedExecutableActionTransferStateBuilder b)]) =
-      _$LockedExecutableActionTransferState;
+  factory LockedExecutableActionTransferState([void updates(LockedExecutableActionTransferStateBuilder b)]) = _$LockedExecutableActionTransferState;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LockedExecutableActionTransferStateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LockedExecutableActionTransferState> get serializer =>
-      _$LockedExecutableActionTransferStateSerializer();
+  static Serializer<LockedExecutableActionTransferState> get serializer => _$LockedExecutableActionTransferStateSerializer();
 }
 
-class _$LockedExecutableActionTransferStateSerializer
-    implements PrimitiveSerializer<LockedExecutableActionTransferState> {
+class _$LockedExecutableActionTransferStateSerializer implements PrimitiveSerializer<LockedExecutableActionTransferState> {
   @override
-  final Iterable<Type> types = const [
-    LockedExecutableActionTransferState,
-    _$LockedExecutableActionTransferState
-  ];
+  final Iterable<Type> types = const [LockedExecutableActionTransferState, _$LockedExecutableActionTransferState];
 
   @override
   final String wireName = r'LockedExecutableActionTransferState';
@@ -68,8 +58,7 @@ class _$LockedExecutableActionTransferStateSerializer
     yield r'status';
     yield serializers.serialize(
       object.status,
-      specifiedType:
-          const FullType(LockedExecutableActionTransferStateStatusEnum),
+      specifiedType: const FullType(LockedExecutableActionTransferStateStatusEnum),
     );
     yield r'next_action';
     yield serializers.serialize(
@@ -94,9 +83,7 @@ class _$LockedExecutableActionTransferStateSerializer
     LockedExecutableActionTransferState object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -114,8 +101,7 @@ class _$LockedExecutableActionTransferStateSerializer
         case r'status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(LockedExecutableActionTransferStateStatusEnum),
+            specifiedType: const FullType(LockedExecutableActionTransferStateStatusEnum),
           ) as LockedExecutableActionTransferStateStatusEnum;
           result.status = valueDes;
           break;
@@ -170,23 +156,17 @@ class _$LockedExecutableActionTransferStateSerializer
 }
 
 class LockedExecutableActionTransferStateStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'awaiting_wallet')
-  static const LockedExecutableActionTransferStateStatusEnum awaitingWallet =
-      _$lockedExecutableActionTransferStateStatusEnum_awaitingWallet;
+  static const LockedExecutableActionTransferStateStatusEnum awaitingWallet = _$lockedExecutableActionTransferStateStatusEnum_awaitingWallet;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LockedExecutableActionTransferStateStatusEnum
-      unknownDefaultOpenApi =
-      _$lockedExecutableActionTransferStateStatusEnum_unknownDefaultOpenApi;
+  static const LockedExecutableActionTransferStateStatusEnum unknownDefaultOpenApi = _$lockedExecutableActionTransferStateStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<LockedExecutableActionTransferStateStatusEnum>
-      get serializer =>
-          _$lockedExecutableActionTransferStateStatusEnumSerializer;
+  static Serializer<LockedExecutableActionTransferStateStatusEnum> get serializer => _$lockedExecutableActionTransferStateStatusEnumSerializer;
 
-  const LockedExecutableActionTransferStateStatusEnum._(String name)
-      : super(name);
+  const LockedExecutableActionTransferStateStatusEnum._(String name): super(name);
 
-  static BuiltSet<LockedExecutableActionTransferStateStatusEnum> get values =>
-      _$lockedExecutableActionTransferStateStatusEnumValues;
-  static LockedExecutableActionTransferStateStatusEnum valueOf(String name) =>
-      _$lockedExecutableActionTransferStateStatusEnumValueOf(name);
+  static BuiltSet<LockedExecutableActionTransferStateStatusEnum> get values => _$lockedExecutableActionTransferStateStatusEnumValues;
+  static LockedExecutableActionTransferStateStatusEnum valueOf(String name) => _$lockedExecutableActionTransferStateStatusEnumValueOf(name);
 }
+

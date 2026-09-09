@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'portfolio_notice_severity.g.dart';
 
 class PortfolioNoticeSeverity extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'info')
   static const PortfolioNoticeSeverity info = _$info;
   @BuiltValueEnumConst(wireName: r'warning')
@@ -17,13 +18,11 @@ class PortfolioNoticeSeverity extends EnumClass {
   @BuiltValueEnumConst(wireName: r'error')
   static const PortfolioNoticeSeverity error = _$error;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioNoticeSeverity unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const PortfolioNoticeSeverity unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<PortfolioNoticeSeverity> get serializer =>
-      _$portfolioNoticeSeveritySerializer;
+  static Serializer<PortfolioNoticeSeverity> get serializer => _$portfolioNoticeSeveritySerializer;
 
-  const PortfolioNoticeSeverity._(String name) : super(name);
+  const PortfolioNoticeSeverity._(String name): super(name);
 
   static BuiltSet<PortfolioNoticeSeverity> get values => _$values;
   static PortfolioNoticeSeverity valueOf(String name) => _$valueOf(name);
@@ -35,5 +34,5 @@ class PortfolioNoticeSeverity extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class PortfolioNoticeSeverityMixin = Object
-    with _$PortfolioNoticeSeverityMixin;
+abstract class PortfolioNoticeSeverityMixin = Object with _$PortfolioNoticeSeverityMixin;
+

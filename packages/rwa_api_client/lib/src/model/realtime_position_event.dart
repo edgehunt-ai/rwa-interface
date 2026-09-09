@@ -15,14 +15,11 @@ part 'realtime_position_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt]
-/// * [event]
-/// * [data]
+/// * [emittedAt] 
+/// * [event] 
+/// * [data] 
 @BuiltValue()
-abstract class RealtimePositionEvent
-    implements
-        RealtimeEventBase,
-        Built<RealtimePositionEvent, RealtimePositionEventBuilder> {
+abstract class RealtimePositionEvent implements RealtimeEventBase, Built<RealtimePositionEvent, RealtimePositionEventBuilder> {
   @BuiltValueField(wireName: r'data')
   Position get data;
 
@@ -32,24 +29,18 @@ abstract class RealtimePositionEvent
 
   RealtimePositionEvent._();
 
-  factory RealtimePositionEvent(
-      [void updates(RealtimePositionEventBuilder b)]) = _$RealtimePositionEvent;
+  factory RealtimePositionEvent([void updates(RealtimePositionEventBuilder b)]) = _$RealtimePositionEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimePositionEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimePositionEvent> get serializer =>
-      _$RealtimePositionEventSerializer();
+  static Serializer<RealtimePositionEvent> get serializer => _$RealtimePositionEventSerializer();
 }
 
-class _$RealtimePositionEventSerializer
-    implements PrimitiveSerializer<RealtimePositionEvent> {
+class _$RealtimePositionEventSerializer implements PrimitiveSerializer<RealtimePositionEvent> {
   @override
-  final Iterable<Type> types = const [
-    RealtimePositionEvent,
-    _$RealtimePositionEvent
-  ];
+  final Iterable<Type> types = const [RealtimePositionEvent, _$RealtimePositionEvent];
 
   @override
   final String wireName = r'RealtimePositionEvent';
@@ -87,9 +78,7 @@ class _$RealtimePositionEventSerializer
     RealtimePositionEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -162,20 +151,17 @@ class _$RealtimePositionEventSerializer
 }
 
 class RealtimePositionEventEventEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'position')
-  static const RealtimePositionEventEventEnum position =
-      _$realtimePositionEventEventEnum_position;
+  static const RealtimePositionEventEventEnum position = _$realtimePositionEventEventEnum_position;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimePositionEventEventEnum unknownDefaultOpenApi =
-      _$realtimePositionEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimePositionEventEventEnum unknownDefaultOpenApi = _$realtimePositionEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimePositionEventEventEnum> get serializer =>
-      _$realtimePositionEventEventEnumSerializer;
+  static Serializer<RealtimePositionEventEventEnum> get serializer => _$realtimePositionEventEventEnumSerializer;
 
-  const RealtimePositionEventEventEnum._(String name) : super(name);
+  const RealtimePositionEventEventEnum._(String name): super(name);
 
-  static BuiltSet<RealtimePositionEventEventEnum> get values =>
-      _$realtimePositionEventEventEnumValues;
-  static RealtimePositionEventEventEnum valueOf(String name) =>
-      _$realtimePositionEventEventEnumValueOf(name);
+  static BuiltSet<RealtimePositionEventEventEnum> get values => _$realtimePositionEventEventEnumValues;
+  static RealtimePositionEventEventEnum valueOf(String name) => _$realtimePositionEventEventEnumValueOf(name);
 }
+

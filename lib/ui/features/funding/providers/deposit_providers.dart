@@ -14,6 +14,35 @@ final fundingCatalogProvider = FutureProvider.autoDispose<FundingCatalog>((
   ref.watch(sessionGenerationProvider);
   return ref.watch(fundingRepositoryProvider).getCatalog();
 });
+final depositInstructionProvider = FutureProvider.autoDispose
+    .family<DepositInstruction, ({String chain, String token})>((ref, route) {
+      ref.keepAlive();
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(fundingRepositoryProvider)
+          .getDepositInstruction(chain: route.chain, token: route.token);
+    });
+final depositRoutesProvider = FutureProvider.autoDispose<List<DepositRoute>>((
+  ref,
+) async {
+  final catalog = await ref.watch(fundingCatalogProvider.future);
+  return catalog.depositRoutes
+      .map(
+        (route) => DepositRoute(
+          chain: route.chain,
+          token: route.token,
+          minimumAmount: route.minimumAmount,
+          confirmationsRequired: route.confirmationsRequired,
+          isRecommended: _isRecommendedDepositRoute(route),
+        ),
+      )
+      .toList(growable: false);
+});
+
+bool _isRecommendedDepositRoute(DepositRoute route) =>
+    (route.chain == 'Arbitrum' && route.token == 'USDC') ||
+    (route.chain == 'BSC' && route.token == 'USDT');
+
 final depositsProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<Deposit>>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);

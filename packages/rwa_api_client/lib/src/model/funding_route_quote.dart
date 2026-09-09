@@ -14,20 +14,19 @@ part 'funding_route_quote.g.dart';
 /// The only selected, normalized and immutable Provider route exposed to the client.
 ///
 /// Properties:
-/// * [quoteId]
-/// * [provider]
+/// * [quoteId] 
+/// * [provider] 
 /// * [inputAmount] - 十进制字符串，避免浮点误差
 /// * [maximumInputAmount] - 十进制字符串，避免浮点误差
 /// * [minimumReceived] - 十进制字符串，避免浮点误差
-/// * [fees]
-/// * [etaSeconds]
-/// * [quotedAt]
-/// * [expiresAt]
-/// * [quoteHash]
-/// * [refund]
+/// * [fees] 
+/// * [etaSeconds] 
+/// * [quotedAt] 
+/// * [expiresAt] 
+/// * [quoteHash] 
+/// * [refund] 
 @BuiltValue()
-abstract class FundingRouteQuote
-    implements Built<FundingRouteQuote, FundingRouteQuoteBuilder> {
+abstract class FundingRouteQuote implements Built<FundingRouteQuote, FundingRouteQuoteBuilder> {
   @BuiltValueField(wireName: r'quote_id')
   String get quoteId;
 
@@ -67,19 +66,16 @@ abstract class FundingRouteQuote
 
   FundingRouteQuote._();
 
-  factory FundingRouteQuote([void updates(FundingRouteQuoteBuilder b)]) =
-      _$FundingRouteQuote;
+  factory FundingRouteQuote([void updates(FundingRouteQuoteBuilder b)]) = _$FundingRouteQuote;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRouteQuoteBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRouteQuote> get serializer =>
-      _$FundingRouteQuoteSerializer();
+  static Serializer<FundingRouteQuote> get serializer => _$FundingRouteQuoteSerializer();
 }
 
-class _$FundingRouteQuoteSerializer
-    implements PrimitiveSerializer<FundingRouteQuote> {
+class _$FundingRouteQuoteSerializer implements PrimitiveSerializer<FundingRouteQuote> {
   @override
   final Iterable<Type> types = const [FundingRouteQuote, _$FundingRouteQuote];
 
@@ -154,9 +150,7 @@ class _$FundingRouteQuoteSerializer
     FundingRouteQuote object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -276,3 +270,4 @@ class _$FundingRouteQuoteSerializer
     return result.build();
   }
 }
+

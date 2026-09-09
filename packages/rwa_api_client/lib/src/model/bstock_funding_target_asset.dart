@@ -12,18 +12,16 @@ part 'bstock_funding_target_asset.g.dart';
 /// BstockFundingTargetAsset
 ///
 /// Properties:
-/// * [assetId]
-/// * [namespace]
-/// * [network]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
-/// * [provenance]
+/// * [assetId] 
+/// * [namespace] 
+/// * [network] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
+/// * [provenance] 
 @BuiltValue()
-abstract class BstockFundingTargetAsset
-    implements
-        Built<BstockFundingTargetAsset, BstockFundingTargetAssetBuilder> {
+abstract class BstockFundingTargetAsset implements Built<BstockFundingTargetAsset, BstockFundingTargetAssetBuilder> {
   @BuiltValueField(wireName: r'asset_id')
   BstockFundingTargetAssetAssetIdEnum get assetId;
   // enum assetIdEnum {  eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955,  };
@@ -58,25 +56,18 @@ abstract class BstockFundingTargetAsset
 
   BstockFundingTargetAsset._();
 
-  factory BstockFundingTargetAsset(
-          [void updates(BstockFundingTargetAssetBuilder b)]) =
-      _$BstockFundingTargetAsset;
+  factory BstockFundingTargetAsset([void updates(BstockFundingTargetAssetBuilder b)]) = _$BstockFundingTargetAsset;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BstockFundingTargetAssetBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BstockFundingTargetAsset> get serializer =>
-      _$BstockFundingTargetAssetSerializer();
+  static Serializer<BstockFundingTargetAsset> get serializer => _$BstockFundingTargetAssetSerializer();
 }
 
-class _$BstockFundingTargetAssetSerializer
-    implements PrimitiveSerializer<BstockFundingTargetAsset> {
+class _$BstockFundingTargetAssetSerializer implements PrimitiveSerializer<BstockFundingTargetAsset> {
   @override
-  final Iterable<Type> types = const [
-    BstockFundingTargetAsset,
-    _$BstockFundingTargetAsset
-  ];
+  final Iterable<Type> types = const [BstockFundingTargetAsset, _$BstockFundingTargetAsset];
 
   @override
   final String wireName = r'BstockFundingTargetAsset';
@@ -134,9 +125,7 @@ class _$BstockFundingTargetAssetSerializer
     BstockFundingTargetAsset object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -161,8 +150,7 @@ class _$BstockFundingTargetAssetSerializer
         case r'namespace':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BstockFundingTargetAssetNamespaceEnum),
+            specifiedType: const FullType(BstockFundingTargetAssetNamespaceEnum),
           ) as BstockFundingTargetAssetNamespaceEnum;
           result.namespace = valueDes;
           break;
@@ -190,24 +178,21 @@ class _$BstockFundingTargetAssetSerializer
         case r'token_contract':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BstockFundingTargetAssetTokenContractEnum),
+            specifiedType: const FullType(BstockFundingTargetAssetTokenContractEnum),
           ) as BstockFundingTargetAssetTokenContractEnum;
           result.tokenContract = valueDes;
           break;
         case r'token_decimals':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BstockFundingTargetAssetTokenDecimalsEnum),
+            specifiedType: const FullType(BstockFundingTargetAssetTokenDecimalsEnum),
           ) as BstockFundingTargetAssetTokenDecimalsEnum;
           result.tokenDecimals = valueDes;
           break;
         case r'provenance':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BstockFundingTargetAssetProvenanceEnum),
+            specifiedType: const FullType(BstockFundingTargetAssetProvenanceEnum),
           ) as BstockFundingTargetAssetProvenanceEnum;
           result.provenance = valueDes;
           break;
@@ -241,156 +226,122 @@ class _$BstockFundingTargetAssetSerializer
 }
 
 class BstockFundingTargetAssetAssetIdEnum extends EnumClass {
-  @BuiltValueEnumConst(
-      wireName: r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955')
-  static const BstockFundingTargetAssetAssetIdEnum
-      eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 =
-      _$bstockFundingTargetAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
+
+  @BuiltValueEnumConst(wireName: r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955')
+  static const BstockFundingTargetAssetAssetIdEnum eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 = _$bstockFundingTargetAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetAssetIdEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetAssetIdEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetAssetIdEnum> get serializer =>
-      _$bstockFundingTargetAssetAssetIdEnumSerializer;
+  static Serializer<BstockFundingTargetAssetAssetIdEnum> get serializer => _$bstockFundingTargetAssetAssetIdEnumSerializer;
 
-  const BstockFundingTargetAssetAssetIdEnum._(String name) : super(name);
+  const BstockFundingTargetAssetAssetIdEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetAssetIdEnum> get values =>
-      _$bstockFundingTargetAssetAssetIdEnumValues;
-  static BstockFundingTargetAssetAssetIdEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetAssetIdEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetAssetIdEnum> get values => _$bstockFundingTargetAssetAssetIdEnumValues;
+  static BstockFundingTargetAssetAssetIdEnum valueOf(String name) => _$bstockFundingTargetAssetAssetIdEnumValueOf(name);
 }
 
 class BstockFundingTargetAssetNamespaceEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'eip155')
-  static const BstockFundingTargetAssetNamespaceEnum eip155 =
-      _$bstockFundingTargetAssetNamespaceEnum_eip155;
+  static const BstockFundingTargetAssetNamespaceEnum eip155 = _$bstockFundingTargetAssetNamespaceEnum_eip155;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetNamespaceEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetNamespaceEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetNamespaceEnum> get serializer =>
-      _$bstockFundingTargetAssetNamespaceEnumSerializer;
+  static Serializer<BstockFundingTargetAssetNamespaceEnum> get serializer => _$bstockFundingTargetAssetNamespaceEnumSerializer;
 
-  const BstockFundingTargetAssetNamespaceEnum._(String name) : super(name);
+  const BstockFundingTargetAssetNamespaceEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetNamespaceEnum> get values =>
-      _$bstockFundingTargetAssetNamespaceEnumValues;
-  static BstockFundingTargetAssetNamespaceEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetNamespaceEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetNamespaceEnum> get values => _$bstockFundingTargetAssetNamespaceEnumValues;
+  static BstockFundingTargetAssetNamespaceEnum valueOf(String name) => _$bstockFundingTargetAssetNamespaceEnumValueOf(name);
 }
 
 class BstockFundingTargetAssetNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const BstockFundingTargetAssetNetworkEnum BSC =
-      _$bstockFundingTargetAssetNetworkEnum_BSC;
+  static const BstockFundingTargetAssetNetworkEnum BSC = _$bstockFundingTargetAssetNetworkEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetNetworkEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetNetworkEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetNetworkEnum> get serializer =>
-      _$bstockFundingTargetAssetNetworkEnumSerializer;
+  static Serializer<BstockFundingTargetAssetNetworkEnum> get serializer => _$bstockFundingTargetAssetNetworkEnumSerializer;
 
-  const BstockFundingTargetAssetNetworkEnum._(String name) : super(name);
+  const BstockFundingTargetAssetNetworkEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetNetworkEnum> get values =>
-      _$bstockFundingTargetAssetNetworkEnumValues;
-  static BstockFundingTargetAssetNetworkEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetNetworkEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetNetworkEnum> get values => _$bstockFundingTargetAssetNetworkEnumValues;
+  static BstockFundingTargetAssetNetworkEnum valueOf(String name) => _$bstockFundingTargetAssetNetworkEnumValueOf(name);
 }
 
 class BstockFundingTargetAssetChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 56)
-  static const BstockFundingTargetAssetChainIdEnum number56 =
-      _$bstockFundingTargetAssetChainIdEnum_number56;
+  static const BstockFundingTargetAssetChainIdEnum number56 = _$bstockFundingTargetAssetChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockFundingTargetAssetChainIdEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetChainIdEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetChainIdEnum> get serializer =>
-      _$bstockFundingTargetAssetChainIdEnumSerializer;
+  static Serializer<BstockFundingTargetAssetChainIdEnum> get serializer => _$bstockFundingTargetAssetChainIdEnumSerializer;
 
-  const BstockFundingTargetAssetChainIdEnum._(String name) : super(name);
+  const BstockFundingTargetAssetChainIdEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetChainIdEnum> get values =>
-      _$bstockFundingTargetAssetChainIdEnumValues;
-  static BstockFundingTargetAssetChainIdEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetChainIdEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetChainIdEnum> get values => _$bstockFundingTargetAssetChainIdEnumValues;
+  static BstockFundingTargetAssetChainIdEnum valueOf(String name) => _$bstockFundingTargetAssetChainIdEnumValueOf(name);
 }
 
 class BstockFundingTargetAssetTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDT')
-  static const BstockFundingTargetAssetTokenEnum USDT =
-      _$bstockFundingTargetAssetTokenEnum_USDT;
+  static const BstockFundingTargetAssetTokenEnum USDT = _$bstockFundingTargetAssetTokenEnum_USDT;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetTokenEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetTokenEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetTokenEnum> get serializer =>
-      _$bstockFundingTargetAssetTokenEnumSerializer;
+  static Serializer<BstockFundingTargetAssetTokenEnum> get serializer => _$bstockFundingTargetAssetTokenEnumSerializer;
 
-  const BstockFundingTargetAssetTokenEnum._(String name) : super(name);
+  const BstockFundingTargetAssetTokenEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetTokenEnum> get values =>
-      _$bstockFundingTargetAssetTokenEnumValues;
-  static BstockFundingTargetAssetTokenEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetTokenEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetTokenEnum> get values => _$bstockFundingTargetAssetTokenEnumValues;
+  static BstockFundingTargetAssetTokenEnum valueOf(String name) => _$bstockFundingTargetAssetTokenEnumValueOf(name);
 }
 
 class BstockFundingTargetAssetTokenContractEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0x55d398326f99059ff775485246999027b3197955')
-  static const BstockFundingTargetAssetTokenContractEnum
-      n0x55d398326f99059ff775485246999027b3197955 =
-      _$bstockFundingTargetAssetTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
+  static const BstockFundingTargetAssetTokenContractEnum n0x55d398326f99059ff775485246999027b3197955 = _$bstockFundingTargetAssetTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetTokenContractEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetTokenContractEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetTokenContractEnum> get serializer =>
-      _$bstockFundingTargetAssetTokenContractEnumSerializer;
+  static Serializer<BstockFundingTargetAssetTokenContractEnum> get serializer => _$bstockFundingTargetAssetTokenContractEnumSerializer;
 
-  const BstockFundingTargetAssetTokenContractEnum._(String name) : super(name);
+  const BstockFundingTargetAssetTokenContractEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetTokenContractEnum> get values =>
-      _$bstockFundingTargetAssetTokenContractEnumValues;
-  static BstockFundingTargetAssetTokenContractEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetTokenContractEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetTokenContractEnum> get values => _$bstockFundingTargetAssetTokenContractEnumValues;
+  static BstockFundingTargetAssetTokenContractEnum valueOf(String name) => _$bstockFundingTargetAssetTokenContractEnumValueOf(name);
 }
 
 class BstockFundingTargetAssetTokenDecimalsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 18)
-  static const BstockFundingTargetAssetTokenDecimalsEnum number18 =
-      _$bstockFundingTargetAssetTokenDecimalsEnum_number18;
+  static const BstockFundingTargetAssetTokenDecimalsEnum number18 = _$bstockFundingTargetAssetTokenDecimalsEnum_number18;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockFundingTargetAssetTokenDecimalsEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetTokenDecimalsEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetTokenDecimalsEnum> get serializer =>
-      _$bstockFundingTargetAssetTokenDecimalsEnumSerializer;
+  static Serializer<BstockFundingTargetAssetTokenDecimalsEnum> get serializer => _$bstockFundingTargetAssetTokenDecimalsEnumSerializer;
 
-  const BstockFundingTargetAssetTokenDecimalsEnum._(String name) : super(name);
+  const BstockFundingTargetAssetTokenDecimalsEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetTokenDecimalsEnum> get values =>
-      _$bstockFundingTargetAssetTokenDecimalsEnumValues;
-  static BstockFundingTargetAssetTokenDecimalsEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetTokenDecimalsEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetTokenDecimalsEnum> get values => _$bstockFundingTargetAssetTokenDecimalsEnumValues;
+  static BstockFundingTargetAssetTokenDecimalsEnum valueOf(String name) => _$bstockFundingTargetAssetTokenDecimalsEnumValueOf(name);
 }
 
 class BstockFundingTargetAssetProvenanceEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'binance_peg')
-  static const BstockFundingTargetAssetProvenanceEnum binancePeg =
-      _$bstockFundingTargetAssetProvenanceEnum_binancePeg;
+  static const BstockFundingTargetAssetProvenanceEnum binancePeg = _$bstockFundingTargetAssetProvenanceEnum_binancePeg;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetProvenanceEnum unknownDefaultOpenApi =
-      _$bstockFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetAssetProvenanceEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetAssetProvenanceEnum> get serializer =>
-      _$bstockFundingTargetAssetProvenanceEnumSerializer;
+  static Serializer<BstockFundingTargetAssetProvenanceEnum> get serializer => _$bstockFundingTargetAssetProvenanceEnumSerializer;
 
-  const BstockFundingTargetAssetProvenanceEnum._(String name) : super(name);
+  const BstockFundingTargetAssetProvenanceEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetAssetProvenanceEnum> get values =>
-      _$bstockFundingTargetAssetProvenanceEnumValues;
-  static BstockFundingTargetAssetProvenanceEnum valueOf(String name) =>
-      _$bstockFundingTargetAssetProvenanceEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetAssetProvenanceEnum> get values => _$bstockFundingTargetAssetProvenanceEnumValues;
+  static BstockFundingTargetAssetProvenanceEnum valueOf(String name) => _$bstockFundingTargetAssetProvenanceEnumValueOf(name);
 }
+

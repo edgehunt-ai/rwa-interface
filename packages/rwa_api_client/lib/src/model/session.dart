@@ -11,7 +11,7 @@ part 'session.g.dart';
 /// Session
 ///
 /// Properties:
-/// * [sessionId]
+/// * [sessionId] 
 /// * [createdAt] - RFC 3339 UTC timestamp
 /// * [expiresAt] - RFC 3339 UTC timestamp
 @BuiltValue()
@@ -73,9 +73,7 @@ class _$SessionSerializer implements PrimitiveSerializer<Session> {
     Session object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -139,3 +137,4 @@ class _$SessionSerializer implements PrimitiveSerializer<Session> {
     return result.build();
   }
 }
+

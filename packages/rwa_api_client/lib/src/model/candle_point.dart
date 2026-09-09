@@ -112,9 +112,7 @@ class _$CandlePointSerializer implements PrimitiveSerializer<CandlePoint> {
     CandlePoint object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -203,3 +201,4 @@ class _$CandlePointSerializer implements PrimitiveSerializer<CandlePoint> {
     return result.build();
   }
 }
+

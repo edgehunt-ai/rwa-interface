@@ -2,12 +2,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:rwa_interface/app.dart';
+import 'package:rwa_interface/app/observability/http_timeline_logging.dart';
 import 'package:rwa_interface/app/observability/observability_config.dart';
 import 'package:rwa_interface/app/observability/sentry_bootstrap.dart';
 import 'package:rwa_interface/firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  enableHttpTimelineLogging();
   if (!kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS)) {

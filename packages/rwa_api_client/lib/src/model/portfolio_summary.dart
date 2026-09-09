@@ -19,20 +19,19 @@ part 'portfolio_summary.g.dart';
 /// * [totalValueUsd] - 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。
 /// * [todayPnlUsd] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
 /// * [todayPnlPercent] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
-/// * [availableToTradeUsd] - 可证明为 spendable/withdrawable 且没有 blocker 的余额子集；普通钱包余额 不会自动等于 available to trade。
+/// * [availableToTradeUsd] - 可证明为 spendable/withdrawable 且没有 blocker 的余额子集；普通钱包余额 不会自动等于 available to trade。 
 /// * [marginInUseUsd] - Hyperliquid 报告的 margin used。
 /// * [stocksValueUsd] - Legacy optional aggregate retained for older clients; new clients use source-aware assets.
-/// * [unvaluedAssetCount]
+/// * [unvaluedAssetCount] 
 /// * [dataStatus] - 当 `unvalued_asset_count > 0` 时必须为 `partial`。
-/// * [freshness]
-/// * [calculatedAt]
+/// * [freshness] 
+/// * [calculatedAt] 
 /// * [updatedAt] - Legacy optional alias retained for older clients; new clients use calculated_at.
-/// * [oldestObservationAt]
-/// * [warnings]
-/// * [sources]
+/// * [oldestObservationAt] 
+/// * [warnings] 
+/// * [sources] 
 @BuiltValue()
-abstract class PortfolioSummary
-    implements Built<PortfolioSummary, PortfolioSummaryBuilder> {
+abstract class PortfolioSummary implements Built<PortfolioSummary, PortfolioSummaryBuilder> {
   /// 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。
   @BuiltValueField(wireName: r'total_value_usd')
   String get totalValueUsd;
@@ -45,7 +44,7 @@ abstract class PortfolioSummary
   @BuiltValueField(wireName: r'today_pnl_percent')
   String? get todayPnlPercent;
 
-  /// 可证明为 spendable/withdrawable 且没有 blocker 的余额子集；普通钱包余额 不会自动等于 available to trade。
+  /// 可证明为 spendable/withdrawable 且没有 blocker 的余额子集；普通钱包余额 不会自动等于 available to trade。 
   @BuiltValueField(wireName: r'available_to_trade_usd')
   String get availableToTradeUsd;
 
@@ -89,19 +88,16 @@ abstract class PortfolioSummary
 
   PortfolioSummary._();
 
-  factory PortfolioSummary([void updates(PortfolioSummaryBuilder b)]) =
-      _$PortfolioSummary;
+  factory PortfolioSummary([void updates(PortfolioSummaryBuilder b)]) = _$PortfolioSummary;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PortfolioSummaryBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PortfolioSummary> get serializer =>
-      _$PortfolioSummarySerializer();
+  static Serializer<PortfolioSummary> get serializer => _$PortfolioSummarySerializer();
 }
 
-class _$PortfolioSummarySerializer
-    implements PrimitiveSerializer<PortfolioSummary> {
+class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSummary> {
   @override
   final Iterable<Type> types = const [PortfolioSummary, _$PortfolioSummary];
 
@@ -191,8 +187,7 @@ class _$PortfolioSummarySerializer
     yield r'sources';
     yield serializers.serialize(
       object.sources,
-      specifiedType:
-          const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+      specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
     );
   }
 
@@ -202,9 +197,7 @@ class _$PortfolioSummarySerializer
     PortfolioSummary object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -311,16 +304,14 @@ class _$PortfolioSummarySerializer
         case r'warnings':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioNotice)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioNotice)]),
           ) as BuiltList<PortfolioNotice>;
           result.warnings.replace(valueDes);
           break;
         case r'sources':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
           ) as BuiltList<PortfolioSourceSummary>;
           result.sources.replace(valueDes);
           break;
@@ -352,3 +343,4 @@ class _$PortfolioSummarySerializer
     return result.build();
   }
 }
+

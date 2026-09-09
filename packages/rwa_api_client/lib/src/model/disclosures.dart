@@ -15,9 +15,9 @@ part 'disclosures.g.dart';
 /// Disclosures
 ///
 /// Properties:
-/// * [alwaysOn]
+/// * [alwaysOn] 
 /// * [sessions] - 各交易时段的说明
-/// * [riskNotices]
+/// * [riskNotices] 
 @BuiltValue()
 abstract class Disclosures implements Built<Disclosures, DisclosuresBuilder> {
   @BuiltValueField(wireName: r'always_on')
@@ -64,8 +64,7 @@ class _$DisclosuresSerializer implements PrimitiveSerializer<Disclosures> {
       yield r'sessions';
       yield serializers.serialize(
         object.sessions,
-        specifiedType:
-            const FullType(BuiltList, [FullType(DisclosuresSessionsInner)]),
+        specifiedType: const FullType(BuiltList, [FullType(DisclosuresSessionsInner)]),
       );
     }
     if (object.riskNotices != null) {
@@ -83,9 +82,7 @@ class _$DisclosuresSerializer implements PrimitiveSerializer<Disclosures> {
     Disclosures object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -111,8 +108,7 @@ class _$DisclosuresSerializer implements PrimitiveSerializer<Disclosures> {
         case r'sessions':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(
-                BuiltList, [FullType(DisclosuresSessionsInner)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(DisclosuresSessionsInner)]),
           ) as BuiltList<DisclosuresSessionsInner>?;
           if (valueDes == null) continue;
           result.sessions.replace(valueDes);
@@ -120,8 +116,7 @@ class _$DisclosuresSerializer implements PrimitiveSerializer<Disclosures> {
         case r'risk_notices':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
           ) as BuiltList<KeyValue>?;
           if (valueDes == null) continue;
           result.riskNotices.replace(valueDes);
@@ -154,3 +149,4 @@ class _$DisclosuresSerializer implements PrimitiveSerializer<Disclosures> {
     return result.build();
   }
 }
+

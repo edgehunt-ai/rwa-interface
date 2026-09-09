@@ -12,15 +12,12 @@ part 'funding_route_capability_matrix.g.dart';
 /// Exact Across/Relay aggregator capability coverage for both settlement targets. The first-party Hyperliquid Bridge2 route is selected from frozen source and target identities and is not part of this third-party matrix.
 ///
 /// Properties:
-/// * [bstockAcross]
-/// * [bstockRelay]
-/// * [perpAcross]
-/// * [perpRelay]
+/// * [bstockAcross] 
+/// * [bstockRelay] 
+/// * [perpAcross] 
+/// * [perpRelay] 
 @BuiltValue()
-abstract class FundingRouteCapabilityMatrix
-    implements
-        Built<FundingRouteCapabilityMatrix,
-            FundingRouteCapabilityMatrixBuilder> {
+abstract class FundingRouteCapabilityMatrix implements Built<FundingRouteCapabilityMatrix, FundingRouteCapabilityMatrixBuilder> {
   @BuiltValueField(wireName: r'bstock_across')
   FundingRouteCapability get bstockAcross;
 
@@ -35,25 +32,18 @@ abstract class FundingRouteCapabilityMatrix
 
   FundingRouteCapabilityMatrix._();
 
-  factory FundingRouteCapabilityMatrix(
-          [void updates(FundingRouteCapabilityMatrixBuilder b)]) =
-      _$FundingRouteCapabilityMatrix;
+  factory FundingRouteCapabilityMatrix([void updates(FundingRouteCapabilityMatrixBuilder b)]) = _$FundingRouteCapabilityMatrix;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRouteCapabilityMatrixBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRouteCapabilityMatrix> get serializer =>
-      _$FundingRouteCapabilityMatrixSerializer();
+  static Serializer<FundingRouteCapabilityMatrix> get serializer => _$FundingRouteCapabilityMatrixSerializer();
 }
 
-class _$FundingRouteCapabilityMatrixSerializer
-    implements PrimitiveSerializer<FundingRouteCapabilityMatrix> {
+class _$FundingRouteCapabilityMatrixSerializer implements PrimitiveSerializer<FundingRouteCapabilityMatrix> {
   @override
-  final Iterable<Type> types = const [
-    FundingRouteCapabilityMatrix,
-    _$FundingRouteCapabilityMatrix
-  ];
+  final Iterable<Type> types = const [FundingRouteCapabilityMatrix, _$FundingRouteCapabilityMatrix];
 
   @override
   final String wireName = r'FundingRouteCapabilityMatrix';
@@ -91,9 +81,7 @@ class _$FundingRouteCapabilityMatrixSerializer
     FundingRouteCapabilityMatrix object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -164,3 +152,4 @@ class _$FundingRouteCapabilityMatrixSerializer
     return result.build();
   }
 }
+

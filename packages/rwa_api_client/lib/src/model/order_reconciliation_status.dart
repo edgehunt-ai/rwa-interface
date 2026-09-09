@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'order_reconciliation_status.g.dart';
 
 class OrderReconciliationStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'pending')
   static const OrderReconciliationStatus pending = _$pending;
   @BuiltValueEnumConst(wireName: r'matched')
@@ -19,13 +20,11 @@ class OrderReconciliationStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const OrderReconciliationStatus manualReview = _$manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderReconciliationStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const OrderReconciliationStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<OrderReconciliationStatus> get serializer =>
-      _$orderReconciliationStatusSerializer;
+  static Serializer<OrderReconciliationStatus> get serializer => _$orderReconciliationStatusSerializer;
 
-  const OrderReconciliationStatus._(String name) : super(name);
+  const OrderReconciliationStatus._(String name): super(name);
 
   static BuiltSet<OrderReconciliationStatus> get values => _$values;
   static OrderReconciliationStatus valueOf(String name) => _$valueOf(name);
@@ -37,5 +36,5 @@ class OrderReconciliationStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class OrderReconciliationStatusMixin = Object
-    with _$OrderReconciliationStatusMixin;
+abstract class OrderReconciliationStatusMixin = Object with _$OrderReconciliationStatusMixin;
+

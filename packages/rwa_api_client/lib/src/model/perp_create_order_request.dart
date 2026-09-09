@@ -6,31 +6,46 @@
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'perp_create_order_request.g.dart';
 
-/// PerpCreateOrderRequest
+/// protection 与旧版 tp_sl 不得同时传入。引用 preview 时必须匹配其冻结的规范化委托和 context； context 的 symbol 必须一致。不支持的能力返回 422，不得静默忽略或降低订单约束。 
 ///
 /// Properties:
-/// * [symbol]
-/// * [kind]
-/// * [side]
-/// * [type]
+/// * [contextId] - 必须与所引用 preview 的 context 相同；账户/环境不由客户端决定。
+/// * [timeInForce] 
+/// * [protection] 
+/// * [symbol] 
+/// * [kind] 
+/// * [side] 
+/// * [type] 
 /// * [amount] - 市价单的 USDC 名义价值
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode]
-/// * [reduceOnly]
+/// * [marginMode] 
+/// * [reduceOnly] 
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
-/// * [tpSl]
+/// * [tpSl] 
 /// * [previewId] - 传入预览返回的报价 id 可锁定价格；过期后需重新预览
 @BuiltValue()
-abstract class PerpCreateOrderRequest
-    implements Built<PerpCreateOrderRequest, PerpCreateOrderRequestBuilder> {
+abstract class PerpCreateOrderRequest implements Built<PerpCreateOrderRequest, PerpCreateOrderRequestBuilder> {
+  /// 必须与所引用 preview 的 context 相同；账户/环境不由客户端决定。
+  @BuiltValueField(wireName: r'context_id')
+  String? get contextId;
+
+  @BuiltValueField(wireName: r'time_in_force')
+  Hip3TimeInForce? get timeInForce;
+  // enum timeInForceEnum {  gtc,  ioc,  alo,  };
+
+  @BuiltValueField(wireName: r'protection')
+  Hip3ProtectionSpec? get protection;
+
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -82,26 +97,19 @@ abstract class PerpCreateOrderRequest
 
   PerpCreateOrderRequest._();
 
-  factory PerpCreateOrderRequest(
-          [void updates(PerpCreateOrderRequestBuilder b)]) =
-      _$PerpCreateOrderRequest;
+  factory PerpCreateOrderRequest([void updates(PerpCreateOrderRequestBuilder b)]) = _$PerpCreateOrderRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(PerpCreateOrderRequestBuilder b) =>
-      b..reduceOnly = false;
+  static void _defaults(PerpCreateOrderRequestBuilder b) => b
+      ..reduceOnly = false;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpCreateOrderRequest> get serializer =>
-      _$PerpCreateOrderRequestSerializer();
+  static Serializer<PerpCreateOrderRequest> get serializer => _$PerpCreateOrderRequestSerializer();
 }
 
-class _$PerpCreateOrderRequestSerializer
-    implements PrimitiveSerializer<PerpCreateOrderRequest> {
+class _$PerpCreateOrderRequestSerializer implements PrimitiveSerializer<PerpCreateOrderRequest> {
   @override
-  final Iterable<Type> types = const [
-    PerpCreateOrderRequest,
-    _$PerpCreateOrderRequest
-  ];
+  final Iterable<Type> types = const [PerpCreateOrderRequest, _$PerpCreateOrderRequest];
 
   @override
   final String wireName = r'PerpCreateOrderRequest';
@@ -111,6 +119,27 @@ class _$PerpCreateOrderRequestSerializer
     PerpCreateOrderRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.contextId != null) {
+      yield r'context_id';
+      yield serializers.serialize(
+        object.contextId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.timeInForce != null) {
+      yield r'time_in_force';
+      yield serializers.serialize(
+        object.timeInForce,
+        specifiedType: const FullType(Hip3TimeInForce),
+      );
+    }
+    if (object.protection != null) {
+      yield r'protection';
+      yield serializers.serialize(
+        object.protection,
+        specifiedType: const FullType(Hip3ProtectionSpec),
+      );
+    }
     yield r'symbol';
     yield serializers.serialize(
       object.symbol,
@@ -202,9 +231,7 @@ class _$PerpCreateOrderRequestSerializer
     PerpCreateOrderRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -219,6 +246,30 @@ class _$PerpCreateOrderRequestSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'context_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.contextId = valueDes;
+          break;
+        case r'time_in_force':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3TimeInForce),
+          ) as Hip3TimeInForce?;
+          if (valueDes == null) continue;
+          result.timeInForce = valueDes;
+          break;
+        case r'protection':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3ProtectionSpec),
+          ) as Hip3ProtectionSpec?;
+          if (valueDes == null) continue;
+          result.protection.replace(valueDes);
+          break;
         case r'symbol':
           final valueDes = serializers.deserialize(
             value,
@@ -349,42 +400,34 @@ class _$PerpCreateOrderRequestSerializer
 }
 
 class PerpCreateOrderRequestKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'perp')
-  static const PerpCreateOrderRequestKindEnum perp =
-      _$perpCreateOrderRequestKindEnum_perp;
+  static const PerpCreateOrderRequestKindEnum perp = _$perpCreateOrderRequestKindEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpCreateOrderRequestKindEnum unknownDefaultOpenApi =
-      _$perpCreateOrderRequestKindEnum_unknownDefaultOpenApi;
+  static const PerpCreateOrderRequestKindEnum unknownDefaultOpenApi = _$perpCreateOrderRequestKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpCreateOrderRequestKindEnum> get serializer =>
-      _$perpCreateOrderRequestKindEnumSerializer;
+  static Serializer<PerpCreateOrderRequestKindEnum> get serializer => _$perpCreateOrderRequestKindEnumSerializer;
 
-  const PerpCreateOrderRequestKindEnum._(String name) : super(name);
+  const PerpCreateOrderRequestKindEnum._(String name): super(name);
 
-  static BuiltSet<PerpCreateOrderRequestKindEnum> get values =>
-      _$perpCreateOrderRequestKindEnumValues;
-  static PerpCreateOrderRequestKindEnum valueOf(String name) =>
-      _$perpCreateOrderRequestKindEnumValueOf(name);
+  static BuiltSet<PerpCreateOrderRequestKindEnum> get values => _$perpCreateOrderRequestKindEnumValues;
+  static PerpCreateOrderRequestKindEnum valueOf(String name) => _$perpCreateOrderRequestKindEnumValueOf(name);
 }
 
 class PerpCreateOrderRequestSideEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'long')
-  static const PerpCreateOrderRequestSideEnum long =
-      _$perpCreateOrderRequestSideEnum_long;
+  static const PerpCreateOrderRequestSideEnum long = _$perpCreateOrderRequestSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
-  static const PerpCreateOrderRequestSideEnum short =
-      _$perpCreateOrderRequestSideEnum_short;
+  static const PerpCreateOrderRequestSideEnum short = _$perpCreateOrderRequestSideEnum_short;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpCreateOrderRequestSideEnum unknownDefaultOpenApi =
-      _$perpCreateOrderRequestSideEnum_unknownDefaultOpenApi;
+  static const PerpCreateOrderRequestSideEnum unknownDefaultOpenApi = _$perpCreateOrderRequestSideEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpCreateOrderRequestSideEnum> get serializer =>
-      _$perpCreateOrderRequestSideEnumSerializer;
+  static Serializer<PerpCreateOrderRequestSideEnum> get serializer => _$perpCreateOrderRequestSideEnumSerializer;
 
-  const PerpCreateOrderRequestSideEnum._(String name) : super(name);
+  const PerpCreateOrderRequestSideEnum._(String name): super(name);
 
-  static BuiltSet<PerpCreateOrderRequestSideEnum> get values =>
-      _$perpCreateOrderRequestSideEnumValues;
-  static PerpCreateOrderRequestSideEnum valueOf(String name) =>
-      _$perpCreateOrderRequestSideEnumValueOf(name);
+  static BuiltSet<PerpCreateOrderRequestSideEnum> get values => _$perpCreateOrderRequestSideEnumValues;
+  static PerpCreateOrderRequestSideEnum valueOf(String name) => _$perpCreateOrderRequestSideEnumValueOf(name);
 }
+

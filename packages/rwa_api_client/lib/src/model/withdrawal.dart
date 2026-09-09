@@ -14,20 +14,20 @@ part 'withdrawal.g.dart';
 /// Withdrawal
 ///
 /// Properties:
-/// * [withdrawalId]
-/// * [asset]
-/// * [chain]
+/// * [withdrawalId] 
+/// * [asset] 
+/// * [chain] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [receivedAmount] - 十进制字符串，避免浮点误差
 /// * [totalFee] - 十进制字符串，避免浮点误差
-/// * [address]
-/// * [memo]
-/// * [status]
-/// * [failureReason]
-/// * [txHash]
-/// * [activityId]
-/// * [createdAt]
-/// * [completedAt]
+/// * [address] 
+/// * [memo] 
+/// * [status] 
+/// * [failureReason] 
+/// * [txHash] 
+/// * [activityId] 
+/// * [createdAt] 
+/// * [completedAt] 
 @BuiltValue()
 abstract class Withdrawal implements Built<Withdrawal, WithdrawalBuilder> {
   @BuiltValueField(wireName: r'withdrawal_id')
@@ -197,9 +197,7 @@ class _$WithdrawalSerializer implements PrimitiveSerializer<Withdrawal> {
     Withdrawal object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -351,19 +349,17 @@ class _$WithdrawalSerializer implements PrimitiveSerializer<Withdrawal> {
 }
 
 class WithdrawalAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
   static const WithdrawalAssetEnum USDC = _$withdrawalAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WithdrawalAssetEnum unknownDefaultOpenApi =
-      _$withdrawalAssetEnum_unknownDefaultOpenApi;
+  static const WithdrawalAssetEnum unknownDefaultOpenApi = _$withdrawalAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<WithdrawalAssetEnum> get serializer =>
-      _$withdrawalAssetEnumSerializer;
+  static Serializer<WithdrawalAssetEnum> get serializer => _$withdrawalAssetEnumSerializer;
 
-  const WithdrawalAssetEnum._(String name) : super(name);
+  const WithdrawalAssetEnum._(String name): super(name);
 
-  static BuiltSet<WithdrawalAssetEnum> get values =>
-      _$withdrawalAssetEnumValues;
-  static WithdrawalAssetEnum valueOf(String name) =>
-      _$withdrawalAssetEnumValueOf(name);
+  static BuiltSet<WithdrawalAssetEnum> get values => _$withdrawalAssetEnumValues;
+  static WithdrawalAssetEnum valueOf(String name) => _$withdrawalAssetEnumValueOf(name);
 }
+

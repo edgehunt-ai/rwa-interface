@@ -13,18 +13,15 @@ part 'funding_target_credit_observation.g.dart';
 /// FundingTargetCreditObservation
 ///
 /// Properties:
-/// * [accountRef]
-/// * [asset]
+/// * [accountRef] 
+/// * [asset] 
 /// * [availableBefore] - 十进制字符串，避免浮点误差
 /// * [availableAfter] - 十进制字符串，避免浮点误差
 /// * [creditedAmount] - 十进制字符串，避免浮点误差
-/// * [source_]
-/// * [observedAt]
+/// * [source_] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class FundingTargetCreditObservation
-    implements
-        Built<FundingTargetCreditObservation,
-            FundingTargetCreditObservationBuilder> {
+abstract class FundingTargetCreditObservation implements Built<FundingTargetCreditObservation, FundingTargetCreditObservationBuilder> {
   @BuiltValueField(wireName: r'account_ref')
   String get accountRef;
 
@@ -52,25 +49,18 @@ abstract class FundingTargetCreditObservation
 
   FundingTargetCreditObservation._();
 
-  factory FundingTargetCreditObservation(
-          [void updates(FundingTargetCreditObservationBuilder b)]) =
-      _$FundingTargetCreditObservation;
+  factory FundingTargetCreditObservation([void updates(FundingTargetCreditObservationBuilder b)]) = _$FundingTargetCreditObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingTargetCreditObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingTargetCreditObservation> get serializer =>
-      _$FundingTargetCreditObservationSerializer();
+  static Serializer<FundingTargetCreditObservation> get serializer => _$FundingTargetCreditObservationSerializer();
 }
 
-class _$FundingTargetCreditObservationSerializer
-    implements PrimitiveSerializer<FundingTargetCreditObservation> {
+class _$FundingTargetCreditObservationSerializer implements PrimitiveSerializer<FundingTargetCreditObservation> {
   @override
-  final Iterable<Type> types = const [
-    FundingTargetCreditObservation,
-    _$FundingTargetCreditObservation
-  ];
+  final Iterable<Type> types = const [FundingTargetCreditObservation, _$FundingTargetCreditObservation];
 
   @override
   final String wireName = r'FundingTargetCreditObservation';
@@ -123,9 +113,7 @@ class _$FundingTargetCreditObservationSerializer
     FundingTargetCreditObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -217,3 +205,4 @@ class _$FundingTargetCreditObservationSerializer
     return result.build();
   }
 }
+

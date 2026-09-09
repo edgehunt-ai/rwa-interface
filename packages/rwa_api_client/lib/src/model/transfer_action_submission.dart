@@ -12,17 +12,15 @@ part 'transfer_action_submission.g.dart';
 /// TransferActionSubmission
 ///
 /// Properties:
-/// * [submissionId]
-/// * [transferId]
-/// * [actionId]
-/// * [txHash]
-/// * [status]
-/// * [reportedAt]
-/// * [verifiedAt]
+/// * [submissionId] 
+/// * [transferId] 
+/// * [actionId] 
+/// * [txHash] 
+/// * [status] 
+/// * [reportedAt] 
+/// * [verifiedAt] 
 @BuiltValue()
-abstract class TransferActionSubmission
-    implements
-        Built<TransferActionSubmission, TransferActionSubmissionBuilder> {
+abstract class TransferActionSubmission implements Built<TransferActionSubmission, TransferActionSubmissionBuilder> {
   @BuiltValueField(wireName: r'submission_id')
   String get submissionId;
 
@@ -47,25 +45,18 @@ abstract class TransferActionSubmission
 
   TransferActionSubmission._();
 
-  factory TransferActionSubmission(
-          [void updates(TransferActionSubmissionBuilder b)]) =
-      _$TransferActionSubmission;
+  factory TransferActionSubmission([void updates(TransferActionSubmissionBuilder b)]) = _$TransferActionSubmission;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TransferActionSubmissionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TransferActionSubmission> get serializer =>
-      _$TransferActionSubmissionSerializer();
+  static Serializer<TransferActionSubmission> get serializer => _$TransferActionSubmissionSerializer();
 }
 
-class _$TransferActionSubmissionSerializer
-    implements PrimitiveSerializer<TransferActionSubmission> {
+class _$TransferActionSubmissionSerializer implements PrimitiveSerializer<TransferActionSubmission> {
   @override
-  final Iterable<Type> types = const [
-    TransferActionSubmission,
-    _$TransferActionSubmission
-  ];
+  final Iterable<Type> types = const [TransferActionSubmission, _$TransferActionSubmission];
 
   @override
   final String wireName = r'TransferActionSubmission';
@@ -106,12 +97,10 @@ class _$TransferActionSubmissionSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'verified_at';
-    yield object.verifiedAt == null
-        ? null
-        : serializers.serialize(
-            object.verifiedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.verifiedAt == null ? null : serializers.serialize(
+      object.verifiedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
   }
 
   @override
@@ -120,9 +109,7 @@ class _$TransferActionSubmissionSerializer
     TransferActionSubmission object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -215,3 +202,4 @@ class _$TransferActionSubmissionSerializer
     return result.build();
   }
 }
+

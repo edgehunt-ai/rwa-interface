@@ -97,6 +97,14 @@ class _$Order extends Order {
   @override
   final OrderWalletActionBlockerEnum? walletActionBlocker;
   @override
+  final String? productId;
+  @override
+  final String? hip3ActionId;
+  @override
+  final Hip3TimeInForce? timeInForce;
+  @override
+  final Hip3ConditionalOrder? conditional;
+  @override
   final String orderId;
   @override
   final String? clientOrderId;
@@ -118,8 +126,6 @@ class _$Order extends Order {
   final OrderType type;
   @override
   final OrderStatus status;
-  @override
-  final Hip3OrderAction? hip3Action;
   @override
   final String? limitPrice;
   @override
@@ -160,6 +166,10 @@ class _$Order extends Order {
       {required this.kind,
       this.nextAction,
       this.walletActionBlocker,
+      this.productId,
+      this.hip3ActionId,
+      this.timeInForce,
+      this.conditional,
       required this.orderId,
       this.clientOrderId,
       this.providerOrderId,
@@ -171,7 +181,6 @@ class _$Order extends Order {
       required this.side,
       required this.type,
       required this.status,
-      this.hip3Action,
       this.limitPrice,
       this.quantity,
       this.filledQuantity,
@@ -203,6 +212,10 @@ class _$Order extends Order {
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
+        productId == other.productId &&
+        hip3ActionId == other.hip3ActionId &&
+        timeInForce == other.timeInForce &&
+        conditional == other.conditional &&
         orderId == other.orderId &&
         clientOrderId == other.clientOrderId &&
         providerOrderId == other.providerOrderId &&
@@ -214,7 +227,6 @@ class _$Order extends Order {
         side == other.side &&
         type == other.type &&
         status == other.status &&
-        hip3Action == other.hip3Action &&
         limitPrice == other.limitPrice &&
         quantity == other.quantity &&
         filledQuantity == other.filledQuantity &&
@@ -239,6 +251,10 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
+    _$hash = $jc(_$hash, productId.hashCode);
+    _$hash = $jc(_$hash, hip3ActionId.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, conditional.hashCode);
     _$hash = $jc(_$hash, orderId.hashCode);
     _$hash = $jc(_$hash, clientOrderId.hashCode);
     _$hash = $jc(_$hash, providerOrderId.hashCode);
@@ -250,7 +266,6 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, side.hashCode);
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
-    _$hash = $jc(_$hash, hip3Action.hashCode);
     _$hash = $jc(_$hash, limitPrice.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, filledQuantity.hashCode);
@@ -277,6 +292,10 @@ class _$Order extends Order {
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
+          ..add('productId', productId)
+          ..add('hip3ActionId', hip3ActionId)
+          ..add('timeInForce', timeInForce)
+          ..add('conditional', conditional)
           ..add('orderId', orderId)
           ..add('clientOrderId', clientOrderId)
           ..add('providerOrderId', providerOrderId)
@@ -288,7 +307,6 @@ class _$Order extends Order {
           ..add('side', side)
           ..add('type', type)
           ..add('status', status)
-          ..add('hip3Action', hip3Action)
           ..add('limitPrice', limitPrice)
           ..add('quantity', quantity)
           ..add('filledQuantity', filledQuantity)
@@ -325,6 +343,25 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _$this._walletActionBlocker;
   set walletActionBlocker(OrderWalletActionBlockerEnum? walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
+
+  String? _productId;
+  String? get productId => _$this._productId;
+  set productId(String? productId) => _$this._productId = productId;
+
+  String? _hip3ActionId;
+  String? get hip3ActionId => _$this._hip3ActionId;
+  set hip3ActionId(String? hip3ActionId) => _$this._hip3ActionId = hip3ActionId;
+
+  Hip3TimeInForce? _timeInForce;
+  Hip3TimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(Hip3TimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
+
+  Hip3ConditionalOrderBuilder? _conditional;
+  Hip3ConditionalOrderBuilder get conditional =>
+      _$this._conditional ??= Hip3ConditionalOrderBuilder();
+  set conditional(Hip3ConditionalOrderBuilder? conditional) =>
+      _$this._conditional = conditional;
 
   String? _orderId;
   String? get orderId => _$this._orderId;
@@ -376,12 +413,6 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   OrderStatus? _status;
   OrderStatus? get status => _$this._status;
   set status(OrderStatus? status) => _$this._status = status;
-
-  Hip3OrderActionBuilder? _hip3Action;
-  Hip3OrderActionBuilder get hip3Action =>
-      _$this._hip3Action ??= Hip3OrderActionBuilder();
-  set hip3Action(Hip3OrderActionBuilder? hip3Action) =>
-      _$this._hip3Action = hip3Action;
 
   String? _limitPrice;
   String? get limitPrice => _$this._limitPrice;
@@ -460,6 +491,10 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _kind = $v.kind;
       _nextAction = $v.nextAction;
       _walletActionBlocker = $v.walletActionBlocker;
+      _productId = $v.productId;
+      _hip3ActionId = $v.hip3ActionId;
+      _timeInForce = $v.timeInForce;
+      _conditional = $v.conditional?.toBuilder();
       _orderId = $v.orderId;
       _clientOrderId = $v.clientOrderId;
       _providerOrderId = $v.providerOrderId;
@@ -471,7 +506,6 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _side = $v.side;
       _type = $v.type;
       _status = $v.status;
-      _hip3Action = $v.hip3Action?.toBuilder();
       _limitPrice = $v.limitPrice;
       _quantity = $v.quantity;
       _filledQuantity = $v.filledQuantity;
@@ -514,6 +548,10 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
             nextAction: nextAction,
             walletActionBlocker: walletActionBlocker,
+            productId: productId,
+            hip3ActionId: hip3ActionId,
+            timeInForce: timeInForce,
+            conditional: _conditional?.build(),
             orderId: BuiltValueNullFieldError.checkNotNull(
                 orderId, r'Order', 'orderId'),
             clientOrderId: clientOrderId,
@@ -528,7 +566,6 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             type: BuiltValueNullFieldError.checkNotNull(type, r'Order', 'type'),
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'Order', 'status'),
-            hip3Action: _hip3Action?.build(),
             limitPrice: limitPrice,
             quantity: quantity,
             filledQuantity: filledQuantity,
@@ -550,11 +587,11 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'conditional';
+        _conditional?.build();
+
         _$failedField = 'fills';
         _fills?.build();
-
-        _$failedField = 'hip3Action';
-        _hip3Action?.build();
 
         _$failedField = 'tpSl';
         _tpSl?.build();

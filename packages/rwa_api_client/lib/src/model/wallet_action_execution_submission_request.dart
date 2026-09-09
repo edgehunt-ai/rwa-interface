@@ -11,40 +11,30 @@ import 'package:one_of/one_of.dart';
 
 part 'wallet_action_execution_submission_request.g.dart';
 
-/// The accepted variant is determined by the execution's server-stored mode. Supplying the other variant, both fields or any transaction/resource field is rejected fail-closed.
+/// The accepted variant is determined by the execution's server-stored mode. Supplying the other variant, both fields or any transaction/resource field is rejected fail-closed. 
 ///
 /// Properties:
-/// * [privyAuthorizationSignature]
-/// * [txHash]
+/// * [privyAuthorizationSignature] 
+/// * [txHash] 
 @BuiltValue()
-abstract class WalletActionExecutionSubmissionRequest
-    implements
-        Built<WalletActionExecutionSubmissionRequest,
-            WalletActionExecutionSubmissionRequestBuilder> {
+abstract class WalletActionExecutionSubmissionRequest implements Built<WalletActionExecutionSubmissionRequest, WalletActionExecutionSubmissionRequestBuilder> {
   /// One Of [SponsoredWalletActionExecutionSubmissionRequest], [UserPaidWalletActionExecutionSubmissionRequest]
   OneOf get oneOf;
 
   WalletActionExecutionSubmissionRequest._();
 
-  factory WalletActionExecutionSubmissionRequest(
-          [void updates(WalletActionExecutionSubmissionRequestBuilder b)]) =
-      _$WalletActionExecutionSubmissionRequest;
+  factory WalletActionExecutionSubmissionRequest([void updates(WalletActionExecutionSubmissionRequestBuilder b)]) = _$WalletActionExecutionSubmissionRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WalletActionExecutionSubmissionRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletActionExecutionSubmissionRequest> get serializer =>
-      _$WalletActionExecutionSubmissionRequestSerializer();
+  static Serializer<WalletActionExecutionSubmissionRequest> get serializer => _$WalletActionExecutionSubmissionRequestSerializer();
 }
 
-class _$WalletActionExecutionSubmissionRequestSerializer
-    implements PrimitiveSerializer<WalletActionExecutionSubmissionRequest> {
+class _$WalletActionExecutionSubmissionRequestSerializer implements PrimitiveSerializer<WalletActionExecutionSubmissionRequest> {
   @override
-  final Iterable<Type> types = const [
-    WalletActionExecutionSubmissionRequest,
-    _$WalletActionExecutionSubmissionRequest
-  ];
+  final Iterable<Type> types = const [WalletActionExecutionSubmissionRequest, _$WalletActionExecutionSubmissionRequest];
 
   @override
   final String wireName = r'WalletActionExecutionSubmissionRequest';
@@ -53,7 +43,8 @@ class _$WalletActionExecutionSubmissionRequestSerializer
     Serializers serializers,
     WalletActionExecutionSubmissionRequest object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+  }
 
   @override
   Object serialize(
@@ -62,8 +53,7 @@ class _$WalletActionExecutionSubmissionRequestSerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value,
-        specifiedType: FullType(oneOf.valueType))!;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -74,13 +64,10 @@ class _$WalletActionExecutionSubmissionRequestSerializer
   }) {
     final result = WalletActionExecutionSubmissionRequestBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [
-      FullType(SponsoredWalletActionExecutionSubmissionRequest),
-      FullType(UserPaidWalletActionExecutionSubmissionRequest),
-    ]);
+    final targetType = const FullType(OneOf, [FullType(SponsoredWalletActionExecutionSubmissionRequest), FullType(UserPaidWalletActionExecutionSubmissionRequest), ]);
     oneOfDataSrc = serialized;
-    result.oneOf = serializers.deserialize(oneOfDataSrc,
-        specifiedType: targetType) as OneOf;
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }
+

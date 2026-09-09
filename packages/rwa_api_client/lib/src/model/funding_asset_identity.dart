@@ -14,17 +14,16 @@ part 'funding_asset_identity.g.dart';
 /// Namespace, chain, contract and decimals form one immutable asset identity.
 ///
 /// Properties:
-/// * [assetId]
-/// * [namespace]
-/// * [network]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
-/// * [provenance]
+/// * [assetId] 
+/// * [namespace] 
+/// * [network] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
+/// * [provenance] 
 @BuiltValue()
-abstract class FundingAssetIdentity
-    implements Built<FundingAssetIdentity, FundingAssetIdentityBuilder> {
+abstract class FundingAssetIdentity implements Built<FundingAssetIdentity, FundingAssetIdentityBuilder> {
   @BuiltValueField(wireName: r'asset_id')
   String get assetId;
 
@@ -55,24 +54,18 @@ abstract class FundingAssetIdentity
 
   FundingAssetIdentity._();
 
-  factory FundingAssetIdentity([void updates(FundingAssetIdentityBuilder b)]) =
-      _$FundingAssetIdentity;
+  factory FundingAssetIdentity([void updates(FundingAssetIdentityBuilder b)]) = _$FundingAssetIdentity;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingAssetIdentityBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingAssetIdentity> get serializer =>
-      _$FundingAssetIdentitySerializer();
+  static Serializer<FundingAssetIdentity> get serializer => _$FundingAssetIdentitySerializer();
 }
 
-class _$FundingAssetIdentitySerializer
-    implements PrimitiveSerializer<FundingAssetIdentity> {
+class _$FundingAssetIdentitySerializer implements PrimitiveSerializer<FundingAssetIdentity> {
   @override
-  final Iterable<Type> types = const [
-    FundingAssetIdentity,
-    _$FundingAssetIdentity
-  ];
+  final Iterable<Type> types = const [FundingAssetIdentity, _$FundingAssetIdentity];
 
   @override
   final String wireName = r'FundingAssetIdentity';
@@ -130,9 +123,7 @@ class _$FundingAssetIdentitySerializer
     FundingAssetIdentity object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -233,54 +224,42 @@ class _$FundingAssetIdentitySerializer
 }
 
 class FundingAssetIdentityNamespaceEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'eip155')
-  static const FundingAssetIdentityNamespaceEnum eip155 =
-      _$fundingAssetIdentityNamespaceEnum_eip155;
+  static const FundingAssetIdentityNamespaceEnum eip155 = _$fundingAssetIdentityNamespaceEnum_eip155;
   @BuiltValueEnumConst(wireName: r'hyperliquid')
-  static const FundingAssetIdentityNamespaceEnum hyperliquid =
-      _$fundingAssetIdentityNamespaceEnum_hyperliquid;
+  static const FundingAssetIdentityNamespaceEnum hyperliquid = _$fundingAssetIdentityNamespaceEnum_hyperliquid;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingAssetIdentityNamespaceEnum unknownDefaultOpenApi =
-      _$fundingAssetIdentityNamespaceEnum_unknownDefaultOpenApi;
+  static const FundingAssetIdentityNamespaceEnum unknownDefaultOpenApi = _$fundingAssetIdentityNamespaceEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingAssetIdentityNamespaceEnum> get serializer =>
-      _$fundingAssetIdentityNamespaceEnumSerializer;
+  static Serializer<FundingAssetIdentityNamespaceEnum> get serializer => _$fundingAssetIdentityNamespaceEnumSerializer;
 
-  const FundingAssetIdentityNamespaceEnum._(String name) : super(name);
+  const FundingAssetIdentityNamespaceEnum._(String name): super(name);
 
-  static BuiltSet<FundingAssetIdentityNamespaceEnum> get values =>
-      _$fundingAssetIdentityNamespaceEnumValues;
-  static FundingAssetIdentityNamespaceEnum valueOf(String name) =>
-      _$fundingAssetIdentityNamespaceEnumValueOf(name);
+  static BuiltSet<FundingAssetIdentityNamespaceEnum> get values => _$fundingAssetIdentityNamespaceEnumValues;
+  static FundingAssetIdentityNamespaceEnum valueOf(String name) => _$fundingAssetIdentityNamespaceEnumValueOf(name);
 }
 
 class FundingAssetIdentityChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 1)
-  static const FundingAssetIdentityChainIdEnum number1 =
-      _$fundingAssetIdentityChainIdEnum_number1;
+  static const FundingAssetIdentityChainIdEnum number1 = _$fundingAssetIdentityChainIdEnum_number1;
   @BuiltValueEnumConst(wireNumber: 56)
-  static const FundingAssetIdentityChainIdEnum number56 =
-      _$fundingAssetIdentityChainIdEnum_number56;
+  static const FundingAssetIdentityChainIdEnum number56 = _$fundingAssetIdentityChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 1337)
-  static const FundingAssetIdentityChainIdEnum number1337 =
-      _$fundingAssetIdentityChainIdEnum_number1337;
+  static const FundingAssetIdentityChainIdEnum number1337 = _$fundingAssetIdentityChainIdEnum_number1337;
   @BuiltValueEnumConst(wireNumber: 8453)
-  static const FundingAssetIdentityChainIdEnum number8453 =
-      _$fundingAssetIdentityChainIdEnum_number8453;
+  static const FundingAssetIdentityChainIdEnum number8453 = _$fundingAssetIdentityChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
-  static const FundingAssetIdentityChainIdEnum number42161 =
-      _$fundingAssetIdentityChainIdEnum_number42161;
+  static const FundingAssetIdentityChainIdEnum number42161 = _$fundingAssetIdentityChainIdEnum_number42161;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const FundingAssetIdentityChainIdEnum unknownDefaultOpenApi =
-      _$fundingAssetIdentityChainIdEnum_unknownDefaultOpenApi;
+  static const FundingAssetIdentityChainIdEnum unknownDefaultOpenApi = _$fundingAssetIdentityChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingAssetIdentityChainIdEnum> get serializer =>
-      _$fundingAssetIdentityChainIdEnumSerializer;
+  static Serializer<FundingAssetIdentityChainIdEnum> get serializer => _$fundingAssetIdentityChainIdEnumSerializer;
 
-  const FundingAssetIdentityChainIdEnum._(String name) : super(name);
+  const FundingAssetIdentityChainIdEnum._(String name): super(name);
 
-  static BuiltSet<FundingAssetIdentityChainIdEnum> get values =>
-      _$fundingAssetIdentityChainIdEnumValues;
-  static FundingAssetIdentityChainIdEnum valueOf(String name) =>
-      _$fundingAssetIdentityChainIdEnumValueOf(name);
+  static BuiltSet<FundingAssetIdentityChainIdEnum> get values => _$fundingAssetIdentityChainIdEnumValues;
+  static FundingAssetIdentityChainIdEnum valueOf(String name) => _$fundingAssetIdentityChainIdEnumValueOf(name);
 }
+

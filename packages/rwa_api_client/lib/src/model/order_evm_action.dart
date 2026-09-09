@@ -10,23 +10,22 @@ import 'package:built_value/serializer.dart';
 
 part 'order_evm_action.g.dart';
 
-/// 服务端为 bStocks 订单冻结的单笔 EVM 钱包动作。`chain_id/from/to/data/value` 与 `payload_hash` 均为服务端权威值；客户端只能引用 `step_id` 创建 execution，不能回传 或覆盖交易内容。HIP-3 EIP-712 action 不属于此类型。
+/// 服务端为 bStocks 订单冻结的单笔 EVM 钱包动作。`chain_id/from/to/data/value` 与 `payload_hash` 均为服务端权威值；客户端只能引用 `step_id` 创建 execution，不能回传 或覆盖交易内容。HIP-3 EIP-712 action 不属于此类型。 
 ///
 /// Properties:
-/// * [stepId]
-/// * [ordinal]
-/// * [kind]
-/// * [chainId]
-/// * [from]
-/// * [to]
-/// * [data]
+/// * [stepId] 
+/// * [ordinal] 
+/// * [kind] 
+/// * [chainId] 
+/// * [from] 
+/// * [to] 
+/// * [data] 
 /// * [value] - Native-value transfer is forbidden; v1 only executes zero-value contract calls.
 /// * [payloadHash] - Versioned canonical wallet-action SHA-256 digest without a `0x` prefix.
-/// * [validUntil]
-/// * [gasPayment]
+/// * [validUntil] 
+/// * [gasPayment] 
 @BuiltValue()
-abstract class OrderEvmAction
-    implements Built<OrderEvmAction, OrderEvmActionBuilder> {
+abstract class OrderEvmAction implements Built<OrderEvmAction, OrderEvmActionBuilder> {
   @BuiltValueField(wireName: r'step_id')
   String get stepId;
 
@@ -67,19 +66,16 @@ abstract class OrderEvmAction
 
   OrderEvmAction._();
 
-  factory OrderEvmAction([void updates(OrderEvmActionBuilder b)]) =
-      _$OrderEvmAction;
+  factory OrderEvmAction([void updates(OrderEvmActionBuilder b)]) = _$OrderEvmAction;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(OrderEvmActionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<OrderEvmAction> get serializer =>
-      _$OrderEvmActionSerializer();
+  static Serializer<OrderEvmAction> get serializer => _$OrderEvmActionSerializer();
 }
 
-class _$OrderEvmActionSerializer
-    implements PrimitiveSerializer<OrderEvmAction> {
+class _$OrderEvmActionSerializer implements PrimitiveSerializer<OrderEvmAction> {
   @override
   final Iterable<Type> types = const [OrderEvmAction, _$OrderEvmAction];
 
@@ -154,9 +150,7 @@ class _$OrderEvmActionSerializer
     OrderEvmAction object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -278,63 +272,51 @@ class _$OrderEvmActionSerializer
 }
 
 class OrderEvmActionKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'erc20_approval')
-  static const OrderEvmActionKindEnum erc20Approval =
-      _$orderEvmActionKindEnum_erc20Approval;
+  static const OrderEvmActionKindEnum erc20Approval = _$orderEvmActionKindEnum_erc20Approval;
   @BuiltValueEnumConst(wireName: r'spot_swap')
-  static const OrderEvmActionKindEnum spotSwap =
-      _$orderEvmActionKindEnum_spotSwap;
+  static const OrderEvmActionKindEnum spotSwap = _$orderEvmActionKindEnum_spotSwap;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderEvmActionKindEnum unknownDefaultOpenApi =
-      _$orderEvmActionKindEnum_unknownDefaultOpenApi;
+  static const OrderEvmActionKindEnum unknownDefaultOpenApi = _$orderEvmActionKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<OrderEvmActionKindEnum> get serializer =>
-      _$orderEvmActionKindEnumSerializer;
+  static Serializer<OrderEvmActionKindEnum> get serializer => _$orderEvmActionKindEnumSerializer;
 
-  const OrderEvmActionKindEnum._(String name) : super(name);
+  const OrderEvmActionKindEnum._(String name): super(name);
 
-  static BuiltSet<OrderEvmActionKindEnum> get values =>
-      _$orderEvmActionKindEnumValues;
-  static OrderEvmActionKindEnum valueOf(String name) =>
-      _$orderEvmActionKindEnumValueOf(name);
+  static BuiltSet<OrderEvmActionKindEnum> get values => _$orderEvmActionKindEnumValues;
+  static OrderEvmActionKindEnum valueOf(String name) => _$orderEvmActionKindEnumValueOf(name);
 }
 
 class OrderEvmActionChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 56)
-  static const OrderEvmActionChainIdEnum number56 =
-      _$orderEvmActionChainIdEnum_number56;
+  static const OrderEvmActionChainIdEnum number56 = _$orderEvmActionChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const OrderEvmActionChainIdEnum unknownDefaultOpenApi =
-      _$orderEvmActionChainIdEnum_unknownDefaultOpenApi;
+  static const OrderEvmActionChainIdEnum unknownDefaultOpenApi = _$orderEvmActionChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<OrderEvmActionChainIdEnum> get serializer =>
-      _$orderEvmActionChainIdEnumSerializer;
+  static Serializer<OrderEvmActionChainIdEnum> get serializer => _$orderEvmActionChainIdEnumSerializer;
 
-  const OrderEvmActionChainIdEnum._(String name) : super(name);
+  const OrderEvmActionChainIdEnum._(String name): super(name);
 
-  static BuiltSet<OrderEvmActionChainIdEnum> get values =>
-      _$orderEvmActionChainIdEnumValues;
-  static OrderEvmActionChainIdEnum valueOf(String name) =>
-      _$orderEvmActionChainIdEnumValueOf(name);
+  static BuiltSet<OrderEvmActionChainIdEnum> get values => _$orderEvmActionChainIdEnumValues;
+  static OrderEvmActionChainIdEnum valueOf(String name) => _$orderEvmActionChainIdEnumValueOf(name);
 }
 
 class OrderEvmActionValueEnum extends EnumClass {
+
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'0x0')
   static const OrderEvmActionValueEnum n0x0 = _$orderEvmActionValueEnum_n0x0;
-
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderEvmActionValueEnum unknownDefaultOpenApi =
-      _$orderEvmActionValueEnum_unknownDefaultOpenApi;
+  static const OrderEvmActionValueEnum unknownDefaultOpenApi = _$orderEvmActionValueEnum_unknownDefaultOpenApi;
 
-  static Serializer<OrderEvmActionValueEnum> get serializer =>
-      _$orderEvmActionValueEnumSerializer;
+  static Serializer<OrderEvmActionValueEnum> get serializer => _$orderEvmActionValueEnumSerializer;
 
-  const OrderEvmActionValueEnum._(String name) : super(name);
+  const OrderEvmActionValueEnum._(String name): super(name);
 
-  static BuiltSet<OrderEvmActionValueEnum> get values =>
-      _$orderEvmActionValueEnumValues;
-  static OrderEvmActionValueEnum valueOf(String name) =>
-      _$orderEvmActionValueEnumValueOf(name);
+  static BuiltSet<OrderEvmActionValueEnum> get values => _$orderEvmActionValueEnumValues;
+  static OrderEvmActionValueEnum valueOf(String name) => _$orderEvmActionValueEnumValueOf(name);
 }
+

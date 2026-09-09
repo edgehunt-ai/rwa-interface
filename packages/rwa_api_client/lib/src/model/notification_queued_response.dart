@@ -12,12 +12,10 @@ part 'notification_queued_response.g.dart';
 /// NotificationQueuedResponse
 ///
 /// Properties:
-/// * [notificationId]
-/// * [status]
+/// * [notificationId] 
+/// * [status] 
 @BuiltValue()
-abstract class NotificationQueuedResponse
-    implements
-        Built<NotificationQueuedResponse, NotificationQueuedResponseBuilder> {
+abstract class NotificationQueuedResponse implements Built<NotificationQueuedResponse, NotificationQueuedResponseBuilder> {
   @BuiltValueField(wireName: r'notification_id')
   String get notificationId;
 
@@ -27,25 +25,18 @@ abstract class NotificationQueuedResponse
 
   NotificationQueuedResponse._();
 
-  factory NotificationQueuedResponse(
-          [void updates(NotificationQueuedResponseBuilder b)]) =
-      _$NotificationQueuedResponse;
+  factory NotificationQueuedResponse([void updates(NotificationQueuedResponseBuilder b)]) = _$NotificationQueuedResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(NotificationQueuedResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<NotificationQueuedResponse> get serializer =>
-      _$NotificationQueuedResponseSerializer();
+  static Serializer<NotificationQueuedResponse> get serializer => _$NotificationQueuedResponseSerializer();
 }
 
-class _$NotificationQueuedResponseSerializer
-    implements PrimitiveSerializer<NotificationQueuedResponse> {
+class _$NotificationQueuedResponseSerializer implements PrimitiveSerializer<NotificationQueuedResponse> {
   @override
-  final Iterable<Type> types = const [
-    NotificationQueuedResponse,
-    _$NotificationQueuedResponse
-  ];
+  final Iterable<Type> types = const [NotificationQueuedResponse, _$NotificationQueuedResponse];
 
   @override
   final String wireName = r'NotificationQueuedResponse';
@@ -73,9 +64,7 @@ class _$NotificationQueuedResponseSerializer
     NotificationQueuedResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -134,20 +123,17 @@ class _$NotificationQueuedResponseSerializer
 }
 
 class NotificationQueuedResponseStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'queued')
-  static const NotificationQueuedResponseStatusEnum queued =
-      _$notificationQueuedResponseStatusEnum_queued;
+  static const NotificationQueuedResponseStatusEnum queued = _$notificationQueuedResponseStatusEnum_queued;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const NotificationQueuedResponseStatusEnum unknownDefaultOpenApi =
-      _$notificationQueuedResponseStatusEnum_unknownDefaultOpenApi;
+  static const NotificationQueuedResponseStatusEnum unknownDefaultOpenApi = _$notificationQueuedResponseStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<NotificationQueuedResponseStatusEnum> get serializer =>
-      _$notificationQueuedResponseStatusEnumSerializer;
+  static Serializer<NotificationQueuedResponseStatusEnum> get serializer => _$notificationQueuedResponseStatusEnumSerializer;
 
-  const NotificationQueuedResponseStatusEnum._(String name) : super(name);
+  const NotificationQueuedResponseStatusEnum._(String name): super(name);
 
-  static BuiltSet<NotificationQueuedResponseStatusEnum> get values =>
-      _$notificationQueuedResponseStatusEnumValues;
-  static NotificationQueuedResponseStatusEnum valueOf(String name) =>
-      _$notificationQueuedResponseStatusEnumValueOf(name);
+  static BuiltSet<NotificationQueuedResponseStatusEnum> get values => _$notificationQueuedResponseStatusEnumValues;
+  static NotificationQueuedResponseStatusEnum valueOf(String name) => _$notificationQueuedResponseStatusEnumValueOf(name);
 }
+

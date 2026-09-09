@@ -12,9 +12,9 @@ part 'key_value.g.dart';
 /// KeyValue
 ///
 /// Properties:
-/// * [label]
-/// * [value]
-/// * [tone]
+/// * [label] 
+/// * [value] 
+/// * [tone] 
 @BuiltValue()
 abstract class KeyValue implements Built<KeyValue, KeyValueBuilder> {
   @BuiltValueField(wireName: r'label')
@@ -75,9 +75,7 @@ class _$KeyValueSerializer implements PrimitiveSerializer<KeyValue> {
     KeyValue object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -144,6 +142,7 @@ class _$KeyValueSerializer implements PrimitiveSerializer<KeyValue> {
 }
 
 class KeyValueToneEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'default')
   static const KeyValueToneEnum default_ = _$keyValueToneEnum_default_;
   @BuiltValueEnumConst(wireName: r'positive')
@@ -153,15 +152,13 @@ class KeyValueToneEnum extends EnumClass {
   @BuiltValueEnumConst(wireName: r'muted')
   static const KeyValueToneEnum muted = _$keyValueToneEnum_muted;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const KeyValueToneEnum unknownDefaultOpenApi =
-      _$keyValueToneEnum_unknownDefaultOpenApi;
+  static const KeyValueToneEnum unknownDefaultOpenApi = _$keyValueToneEnum_unknownDefaultOpenApi;
 
-  static Serializer<KeyValueToneEnum> get serializer =>
-      _$keyValueToneEnumSerializer;
+  static Serializer<KeyValueToneEnum> get serializer => _$keyValueToneEnumSerializer;
 
-  const KeyValueToneEnum._(String name) : super(name);
+  const KeyValueToneEnum._(String name): super(name);
 
   static BuiltSet<KeyValueToneEnum> get values => _$keyValueToneEnumValues;
-  static KeyValueToneEnum valueOf(String name) =>
-      _$keyValueToneEnumValueOf(name);
+  static KeyValueToneEnum valueOf(String name) => _$keyValueToneEnumValueOf(name);
 }
+

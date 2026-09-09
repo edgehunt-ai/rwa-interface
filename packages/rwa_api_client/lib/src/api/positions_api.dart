@@ -19,6 +19,7 @@ import 'package:rwa_api_client/src/model/tp_sl_update_request.dart';
 import 'package:rwa_api_client/src/model/update_position_leverage_request.dart';
 
 class PositionsApi {
+
   final Dio _dio;
 
   final Serializers _serializers;
@@ -26,10 +27,10 @@ class PositionsApi {
   const PositionsApi(this._dio, this._serializers);
 
   /// 清除止盈止损
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [positionId]
+  /// * [positionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -40,7 +41,7 @@ class PositionsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Position] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Position>> clearPositionTpSl({
+  Future<Response<Position>> clearPositionTpSl({ 
     required String positionId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -50,10 +51,7 @@ class PositionsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/positions/{position_id}/tpsl'.replaceAll(
-        '{' r'position_id' '}',
-        encodeQueryParameter(_serializers, positionId, const FullType(String))
-            .toString());
+    final _path = r'/v1/positions/{position_id}/tpsl'.replaceAll('{' r'position_id' '}', encodeQueryParameter(_serializers, positionId, const FullType(String)).toString());
     final _options = Options(
       method: r'DELETE',
       headers: <String, dynamic>{
@@ -85,12 +83,11 @@ class PositionsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Position),
-            ) as Position;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Position),
+      ) as Position;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -114,12 +111,12 @@ class PositionsApi {
   }
 
   /// 平仓（支持部分平仓）
-  /// HIP-3 仓位的市价 / 限价平仓，可指定数量或百分比。 bStocks 现货的「卖出」走 &#x60;POST /v1/orders&#x60;，本接口仅用于合约。
+  /// HIP-3 仓位的市价 / 限价平仓，可指定数量或百分比。 bStocks 现货的「卖出」走 &#x60;POST /v1/orders&#x60;，本接口仅用于合约。 
   ///
   /// Parameters:
-  /// * [positionId]
+  /// * [positionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [closePositionRequest]
+  /// * [closePositionRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -129,7 +126,7 @@ class PositionsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Order] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Order>> closePosition({
+  Future<Response<Order>> closePosition({ 
     required String positionId,
     required String idempotencyKey,
     required ClosePositionRequest closePositionRequest,
@@ -140,10 +137,7 @@ class PositionsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/positions/{position_id}/close'.replaceAll(
-        '{' r'position_id' '}',
-        encodeQueryParameter(_serializers, positionId, const FullType(String))
-            .toString());
+    final _path = r'/v1/positions/{position_id}/close'.replaceAll('{' r'position_id' '}', encodeQueryParameter(_serializers, positionId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -168,11 +162,11 @@ class PositionsApi {
 
     try {
       const _type = FullType(ClosePositionRequest);
-      _bodyData =
-          _serializers.serialize(closePositionRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(closePositionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -195,12 +189,11 @@ class PositionsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Order),
-            ) as Order;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Order),
+      ) as Order;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -224,10 +217,10 @@ class PositionsApi {
   }
 
   /// 仓位详情
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [positionId]
+  /// * [positionId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -237,7 +230,7 @@ class PositionsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Position] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Position>> getPosition({
+  Future<Response<Position>> getPosition({ 
     required String positionId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -246,10 +239,7 @@ class PositionsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/positions/{position_id}'.replaceAll(
-        '{' r'position_id' '}',
-        encodeQueryParameter(_serializers, positionId, const FullType(String))
-            .toString());
+    final _path = r'/v1/positions/{position_id}'.replaceAll('{' r'position_id' '}', encodeQueryParameter(_serializers, positionId, const FullType(String)).toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -280,12 +270,11 @@ class PositionsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Position),
-            ) as Position;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Position),
+      ) as Position;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -309,13 +298,13 @@ class PositionsApi {
   }
 
   /// 持仓列表
-  /// 同时返回 bStocks 现货持仓与 HIP-3 合约仓位。资产页按股票分组展示， 详情页按 &#x60;symbol&#x60; + &#x60;kind&#x60; 过滤后展示单个仓位。
+  /// 同时返回 bStocks 现货持仓与 HIP-3 合约仓位。资产页按股票分组展示， 详情页按 &#x60;symbol&#x60; + &#x60;kind&#x60; 过滤后展示单个仓位。 
   ///
   /// Parameters:
-  /// * [symbol]
-  /// * [kind]
+  /// * [symbol] 
+  /// * [kind] 
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit]
+  /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -325,7 +314,7 @@ class PositionsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [PositionPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<PositionPage>> listPositions({
+  Future<Response<PositionPage>> listPositions({ 
     String? symbol,
     ProductKind? kind,
     String? cursor,
@@ -357,18 +346,10 @@ class PositionsApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (symbol != null)
-        r'symbol':
-            encodeQueryParameter(_serializers, symbol, const FullType(String)),
-      if (kind != null)
-        r'kind': encodeQueryParameter(
-            _serializers, kind, const FullType(ProductKind)),
-      if (cursor != null)
-        r'cursor':
-            encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null)
-        r'limit':
-            encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (symbol != null) r'symbol': encodeQueryParameter(_serializers, symbol, const FullType(String)),
+      if (kind != null) r'kind': encodeQueryParameter(_serializers, kind, const FullType(ProductKind)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -384,12 +365,11 @@ class PositionsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(PositionPage),
-            ) as PositionPage;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(PositionPage),
+      ) as PositionPage;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -413,12 +393,12 @@ class PositionsApi {
   }
 
   /// 调整杠杆 / 保证金模式
-  ///
+  /// 
   ///
   /// Parameters:
-  /// * [positionId]
+  /// * [positionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [updatePositionLeverageRequest]
+  /// * [updatePositionLeverageRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -428,7 +408,7 @@ class PositionsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Position] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Position>> updatePositionLeverage({
+  Future<Response<Position>> updatePositionLeverage({ 
     required String positionId,
     required String idempotencyKey,
     required UpdatePositionLeverageRequest updatePositionLeverageRequest,
@@ -439,10 +419,7 @@ class PositionsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/positions/{position_id}/leverage'.replaceAll(
-        '{' r'position_id' '}',
-        encodeQueryParameter(_serializers, positionId, const FullType(String))
-            .toString());
+    final _path = r'/v1/positions/{position_id}/leverage'.replaceAll('{' r'position_id' '}', encodeQueryParameter(_serializers, positionId, const FullType(String)).toString());
     final _options = Options(
       method: r'PATCH',
       headers: <String, dynamic>{
@@ -467,11 +444,11 @@ class PositionsApi {
 
     try {
       const _type = FullType(UpdatePositionLeverageRequest);
-      _bodyData = _serializers.serialize(updatePositionLeverageRequest,
-          specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(updatePositionLeverageRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -494,12 +471,11 @@ class PositionsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Position),
-            ) as Position;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Position),
+      ) as Position;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -523,12 +499,12 @@ class PositionsApi {
   }
 
   /// 设置 / 修改止盈止损
-  /// 对应「编辑止盈止损」弹窗。校验规则： Long 时 TP 需高于入场价、SL 需低于入场价；Short 反之。 传 &#x60;null&#x60; 表示清除该条件单。
+  /// 对应「编辑止盈止损」弹窗。校验规则： Long 时 TP 需高于入场价、SL 需低于入场价；Short 反之。 传 &#x60;null&#x60; 表示清除该条件单。 
   ///
   /// Parameters:
-  /// * [positionId]
+  /// * [positionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [tpSlUpdateRequest]
+  /// * [tpSlUpdateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -538,7 +514,7 @@ class PositionsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Position] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Position>> updatePositionTpSl({
+  Future<Response<Position>> updatePositionTpSl({ 
     required String positionId,
     required String idempotencyKey,
     required TpSlUpdateRequest tpSlUpdateRequest,
@@ -549,10 +525,7 @@ class PositionsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/positions/{position_id}/tpsl'.replaceAll(
-        '{' r'position_id' '}',
-        encodeQueryParameter(_serializers, positionId, const FullType(String))
-            .toString());
+    final _path = r'/v1/positions/{position_id}/tpsl'.replaceAll('{' r'position_id' '}', encodeQueryParameter(_serializers, positionId, const FullType(String)).toString());
     final _options = Options(
       method: r'PUT',
       headers: <String, dynamic>{
@@ -577,11 +550,11 @@ class PositionsApi {
 
     try {
       const _type = FullType(TpSlUpdateRequest);
-      _bodyData =
-          _serializers.serialize(tpSlUpdateRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(tpSlUpdateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -604,12 +577,11 @@ class PositionsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Position),
-            ) as Position;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Position),
+      ) as Position;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -631,4 +603,5 @@ class PositionsApi {
       extra: _response.extra,
     );
   }
+
 }

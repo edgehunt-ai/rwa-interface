@@ -14,13 +14,11 @@ part 'perp_funding_transfer_target.g.dart';
 /// PerpFundingTransferTarget
 ///
 /// Properties:
-/// * [rail]
-/// * [target]
-/// * [targetCredit]
+/// * [rail] 
+/// * [target] 
+/// * [targetCredit] 
 @BuiltValue()
-abstract class PerpFundingTransferTarget
-    implements
-        Built<PerpFundingTransferTarget, PerpFundingTransferTargetBuilder> {
+abstract class PerpFundingTransferTarget implements Built<PerpFundingTransferTarget, PerpFundingTransferTargetBuilder> {
   @BuiltValueField(wireName: r'rail')
   PerpFundingTransferTargetRailEnum get rail;
   // enum railEnum {  perp,  };
@@ -33,25 +31,18 @@ abstract class PerpFundingTransferTarget
 
   PerpFundingTransferTarget._();
 
-  factory PerpFundingTransferTarget(
-          [void updates(PerpFundingTransferTargetBuilder b)]) =
-      _$PerpFundingTransferTarget;
+  factory PerpFundingTransferTarget([void updates(PerpFundingTransferTargetBuilder b)]) = _$PerpFundingTransferTarget;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PerpFundingTransferTargetBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpFundingTransferTarget> get serializer =>
-      _$PerpFundingTransferTargetSerializer();
+  static Serializer<PerpFundingTransferTarget> get serializer => _$PerpFundingTransferTargetSerializer();
 }
 
-class _$PerpFundingTransferTargetSerializer
-    implements PrimitiveSerializer<PerpFundingTransferTarget> {
+class _$PerpFundingTransferTargetSerializer implements PrimitiveSerializer<PerpFundingTransferTarget> {
   @override
-  final Iterable<Type> types = const [
-    PerpFundingTransferTarget,
-    _$PerpFundingTransferTarget
-  ];
+  final Iterable<Type> types = const [PerpFundingTransferTarget, _$PerpFundingTransferTarget];
 
   @override
   final String wireName = r'PerpFundingTransferTarget';
@@ -75,8 +66,7 @@ class _$PerpFundingTransferTargetSerializer
       yield r'target_credit';
       yield serializers.serialize(
         object.targetCredit,
-        specifiedType:
-            const FullType.nullable(PerpFundingTargetCreditObservation),
+        specifiedType: const FullType.nullable(PerpFundingTargetCreditObservation),
       );
     }
   }
@@ -87,9 +77,7 @@ class _$PerpFundingTransferTargetSerializer
     PerpFundingTransferTarget object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -121,8 +109,7 @@ class _$PerpFundingTransferTargetSerializer
         case r'target_credit':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(PerpFundingTargetCreditObservation),
+            specifiedType: const FullType.nullable(PerpFundingTargetCreditObservation),
           ) as PerpFundingTargetCreditObservation?;
           if (valueDes == null) continue;
           result.targetCredit.replace(valueDes);
@@ -157,20 +144,17 @@ class _$PerpFundingTransferTargetSerializer
 }
 
 class PerpFundingTransferTargetRailEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'perp')
-  static const PerpFundingTransferTargetRailEnum perp =
-      _$perpFundingTransferTargetRailEnum_perp;
+  static const PerpFundingTransferTargetRailEnum perp = _$perpFundingTransferTargetRailEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTransferTargetRailEnum unknownDefaultOpenApi =
-      _$perpFundingTransferTargetRailEnum_unknownDefaultOpenApi;
+  static const PerpFundingTransferTargetRailEnum unknownDefaultOpenApi = _$perpFundingTransferTargetRailEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpFundingTransferTargetRailEnum> get serializer =>
-      _$perpFundingTransferTargetRailEnumSerializer;
+  static Serializer<PerpFundingTransferTargetRailEnum> get serializer => _$perpFundingTransferTargetRailEnumSerializer;
 
-  const PerpFundingTransferTargetRailEnum._(String name) : super(name);
+  const PerpFundingTransferTargetRailEnum._(String name): super(name);
 
-  static BuiltSet<PerpFundingTransferTargetRailEnum> get values =>
-      _$perpFundingTransferTargetRailEnumValues;
-  static PerpFundingTransferTargetRailEnum valueOf(String name) =>
-      _$perpFundingTransferTargetRailEnumValueOf(name);
+  static BuiltSet<PerpFundingTransferTargetRailEnum> get values => _$perpFundingTransferTargetRailEnumValues;
+  static PerpFundingTransferTargetRailEnum valueOf(String name) => _$perpFundingTransferTargetRailEnumValueOf(name);
 }
+

@@ -41,7 +41,52 @@ final class FundingRepositoryImpl implements FundingRepository {
           minimumAmount: _money(perp.minimumAmount),
         );
       }).toList(),
+      depositRoutes: value.depositRails
+          .map((wire) => wire.oneOf.value)
+          .whereType<api.DepositRailBase>()
+          .where(
+            (rail) =>
+                rail.availability.oneOf.value
+                    is api.AvailableDepositRailAvailability,
+          )
+          .map(
+            (rail) => DepositRoute(
+              chain: rail.chain,
+              token: rail.token,
+              minimumAmount: _money(rail.minimumAmount)!,
+              confirmationsRequired: rail.confirmationsRequired,
+            ),
+          )
+          .toList(),
       updatedAt: value.updatedAt.toUtc(),
+    );
+  }
+
+  @override
+  Future<DepositInstruction> getDepositInstruction({
+    required String chain,
+    required String token,
+  }) async {
+    final wire = await _service.getDepositInstruction(
+      chain: chain,
+      token: token,
+    );
+    final value = wire.oneOf.value;
+    if (value is! api.DepositAddressBase) {
+      throw StateError('Unsupported deposit instruction response');
+    }
+    return DepositInstruction(
+      chain: value.chain,
+      token: value.token,
+      tokenContract: value.tokenContract,
+      tokenDecimals: value.tokenDecimals,
+      address: value.address,
+      memo: value.memo,
+      qrPayload: value.qrPayload,
+      minimumAmount: _money(value.minDeposit)!,
+      confirmationsRequired: value.confirmationsRequired,
+      estimatedArrivalSeconds: value.estimatedArrivalSeconds,
+      warning: value.warning,
     );
   }
 

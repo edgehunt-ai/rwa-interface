@@ -15,14 +15,11 @@ part 'realtime_order_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt]
-/// * [event]
-/// * [data]
+/// * [emittedAt] 
+/// * [event] 
+/// * [data] 
 @BuiltValue()
-abstract class RealtimeOrderEvent
-    implements
-        RealtimeEventBase,
-        Built<RealtimeOrderEvent, RealtimeOrderEventBuilder> {
+abstract class RealtimeOrderEvent implements RealtimeEventBase, Built<RealtimeOrderEvent, RealtimeOrderEventBuilder> {
   @BuiltValueField(wireName: r'data')
   Order get data;
 
@@ -32,19 +29,16 @@ abstract class RealtimeOrderEvent
 
   RealtimeOrderEvent._();
 
-  factory RealtimeOrderEvent([void updates(RealtimeOrderEventBuilder b)]) =
-      _$RealtimeOrderEvent;
+  factory RealtimeOrderEvent([void updates(RealtimeOrderEventBuilder b)]) = _$RealtimeOrderEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeOrderEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeOrderEvent> get serializer =>
-      _$RealtimeOrderEventSerializer();
+  static Serializer<RealtimeOrderEvent> get serializer => _$RealtimeOrderEventSerializer();
 }
 
-class _$RealtimeOrderEventSerializer
-    implements PrimitiveSerializer<RealtimeOrderEvent> {
+class _$RealtimeOrderEventSerializer implements PrimitiveSerializer<RealtimeOrderEvent> {
   @override
   final Iterable<Type> types = const [RealtimeOrderEvent, _$RealtimeOrderEvent];
 
@@ -84,9 +78,7 @@ class _$RealtimeOrderEventSerializer
     RealtimeOrderEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -159,20 +151,17 @@ class _$RealtimeOrderEventSerializer
 }
 
 class RealtimeOrderEventEventEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'order')
-  static const RealtimeOrderEventEventEnum order =
-      _$realtimeOrderEventEventEnum_order;
+  static const RealtimeOrderEventEventEnum order = _$realtimeOrderEventEventEnum_order;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeOrderEventEventEnum unknownDefaultOpenApi =
-      _$realtimeOrderEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeOrderEventEventEnum unknownDefaultOpenApi = _$realtimeOrderEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeOrderEventEventEnum> get serializer =>
-      _$realtimeOrderEventEventEnumSerializer;
+  static Serializer<RealtimeOrderEventEventEnum> get serializer => _$realtimeOrderEventEventEnumSerializer;
 
-  const RealtimeOrderEventEventEnum._(String name) : super(name);
+  const RealtimeOrderEventEventEnum._(String name): super(name);
 
-  static BuiltSet<RealtimeOrderEventEventEnum> get values =>
-      _$realtimeOrderEventEventEnumValues;
-  static RealtimeOrderEventEventEnum valueOf(String name) =>
-      _$realtimeOrderEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeOrderEventEventEnum> get values => _$realtimeOrderEventEventEnumValues;
+  static RealtimeOrderEventEventEnum valueOf(String name) => _$realtimeOrderEventEventEnumValueOf(name);
 }
+

@@ -16,18 +16,17 @@ part 'funding_catalog.g.dart';
 ///
 /// Properties:
 /// * [catalogVersion] - Immutable allowlist/config version frozen into every selected quote.
-/// * [sourceAssets] - Exactly the eight v1 Ethereum/Arbitrum/Base/BSC USDC/USDT source identities. Each identity includes dynamic Across/Relay capability freshness for both target rails.
+/// * [sourceAssets] - Exactly the eight v1 Ethereum/Arbitrum/Base/BSC USDC/USDT source identities. Each identity includes dynamic Across/Relay capability freshness for both target rails. 
 /// * [rails] - Backward-compatible target rail collection; each item has an exact settlement identity.
 /// * [depositRails] - 当前账号可查看的真实钱包入金 rail 及其只读 observer readiness。
-/// * [updatedAt]
+/// * [updatedAt] 
 @BuiltValue()
-abstract class FundingCatalog
-    implements Built<FundingCatalog, FundingCatalogBuilder> {
+abstract class FundingCatalog implements Built<FundingCatalog, FundingCatalogBuilder> {
   /// Immutable allowlist/config version frozen into every selected quote.
   @BuiltValueField(wireName: r'catalog_version')
   String get catalogVersion;
 
-  /// Exactly the eight v1 Ethereum/Arbitrum/Base/BSC USDC/USDT source identities. Each identity includes dynamic Across/Relay capability freshness for both target rails.
+  /// Exactly the eight v1 Ethereum/Arbitrum/Base/BSC USDC/USDT source identities. Each identity includes dynamic Across/Relay capability freshness for both target rails. 
   @BuiltValueField(wireName: r'source_assets')
   FundingSourceAssetCatalog get sourceAssets;
 
@@ -44,19 +43,16 @@ abstract class FundingCatalog
 
   FundingCatalog._();
 
-  factory FundingCatalog([void updates(FundingCatalogBuilder b)]) =
-      _$FundingCatalog;
+  factory FundingCatalog([void updates(FundingCatalogBuilder b)]) = _$FundingCatalog;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingCatalogBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingCatalog> get serializer =>
-      _$FundingCatalogSerializer();
+  static Serializer<FundingCatalog> get serializer => _$FundingCatalogSerializer();
 }
 
-class _$FundingCatalogSerializer
-    implements PrimitiveSerializer<FundingCatalog> {
+class _$FundingCatalogSerializer implements PrimitiveSerializer<FundingCatalog> {
   @override
   final Iterable<Type> types = const [FundingCatalog, _$FundingCatalog];
 
@@ -101,9 +97,7 @@ class _$FundingCatalogSerializer
     FundingCatalog object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -181,3 +175,4 @@ class _$FundingCatalogSerializer
     return result.build();
   }
 }
+

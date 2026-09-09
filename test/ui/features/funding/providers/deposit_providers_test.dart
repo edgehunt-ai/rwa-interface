@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
@@ -78,6 +79,44 @@ void main() {
     await pumpEventQueue();
     expect(errors.single, isA<NetworkFailure>());
   });
+
+  test('deposit instructions are cached per route and session', () async {
+    final repository = _FundingRepository();
+    final container = _container(repository);
+    final route = (chain: 'Arbitrum', token: 'USDC');
+
+    expect(
+      await container.read(depositInstructionProvider(route).future),
+      isA<DepositInstruction>(),
+    );
+    expect(
+      await container.read(depositInstructionProvider(route).future),
+      isA<DepositInstruction>(),
+    );
+    expect(repository.instructionCalls, 1);
+
+    container.read(sessionGenerationProvider.notifier).clearUserScope();
+    await container.read(depositInstructionProvider(route).future);
+    expect(repository.instructionCalls, 2);
+  });
+
+  test('deposit routes are derived from the funding catalog', () async {
+    final repository = _FundingRepository();
+    final container = _container(repository);
+
+    final routes = await container.read(depositRoutesProvider.future);
+
+    expect(repository.catalogCalls, 1);
+    expect(repository.instructionCalls, 0);
+    expect(routes.map((route) => '${route.chain}:${route.token}'), [
+      'Arbitrum:USDC',
+      'BSC:USDT',
+      'BSC:USDC',
+    ]);
+    expect(routes.first.isRecommended, isTrue);
+    expect(routes[1].isRecommended, isTrue);
+    expect(routes.last.isRecommended, isFalse);
+  });
 }
 
 ProviderContainer _container(_FundingRepository repository) {
@@ -99,6 +138,7 @@ final class _FundingRepository implements FundingRepository {
   int catalogCalls = 0;
   int listCalls = 0;
   int getCalls = 0;
+  int instructionCalls = 0;
   bool failCatalog = false;
 
   ResourceResult<Deposit> get _deposit => ResourceResult(
@@ -119,7 +159,50 @@ final class _FundingRepository implements FundingRepository {
   Future<FundingCatalog> getCatalog() async {
     catalogCalls++;
     if (failCatalog) throw const NetworkFailure();
-    return FundingCatalog(rails: const [], updatedAt: DateTime.utc(2026));
+    return FundingCatalog(
+      rails: const [],
+      depositRoutes: [
+        DepositRoute(
+          chain: 'Arbitrum',
+          token: 'USDC',
+          minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
+          confirmationsRequired: 20,
+        ),
+        DepositRoute(
+          chain: 'BSC',
+          token: 'USDT',
+          minimumAmount: DecimalValue('1', asset: 'USDT', unit: 'token'),
+          confirmationsRequired: 15,
+        ),
+        DepositRoute(
+          chain: 'BSC',
+          token: 'USDC',
+          minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
+          confirmationsRequired: 15,
+        ),
+      ],
+      updatedAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
+  Future<DepositInstruction> getDepositInstruction({
+    required String chain,
+    required String token,
+  }) async {
+    instructionCalls++;
+    return DepositInstruction(
+      chain: chain,
+      token: token,
+      tokenContract: '0xusdc',
+      tokenDecimals: 6,
+      address: '0x123',
+      qrPayload: 'ethereum:0xusdc@42161/transfer?address=0x123',
+      minimumAmount: DecimalValue('1', asset: token, unit: 'token'),
+      confirmationsRequired: 20,
+      estimatedArrivalSeconds: 60,
+      warning: 'Send $token only.',
+    );
   }
 
   @override

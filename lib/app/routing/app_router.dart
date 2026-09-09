@@ -61,7 +61,10 @@ abstract final class AppRouter {
         GoRoute(
           name: AppRoutes.depositName,
           path: AppRoutes.depositPath,
-          builder: (context, state) => const DepositScreen(),
+          builder: (context, state) => DepositScreen(
+            chain: state.uri.queryParameters['chain'],
+            token: state.uri.queryParameters['token'],
+          ),
         ),
         GoRoute(
           name: AppRoutes.depositSelectName,

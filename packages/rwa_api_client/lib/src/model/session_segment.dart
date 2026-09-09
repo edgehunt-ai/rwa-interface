@@ -12,13 +12,12 @@ part 'session_segment.g.dart';
 /// SessionSegment
 ///
 /// Properties:
-/// * [session]
-/// * [label]
-/// * [start]
-/// * [end]
+/// * [session] 
+/// * [label] 
+/// * [start] 
+/// * [end] 
 @BuiltValue()
-abstract class SessionSegment
-    implements Built<SessionSegment, SessionSegmentBuilder> {
+abstract class SessionSegment implements Built<SessionSegment, SessionSegmentBuilder> {
   @BuiltValueField(wireName: r'session')
   SessionKind get session;
   // enum sessionEnum {  premarket,  regular,  after,  overnight,  weekend,  holiday,  };
@@ -34,19 +33,16 @@ abstract class SessionSegment
 
   SessionSegment._();
 
-  factory SessionSegment([void updates(SessionSegmentBuilder b)]) =
-      _$SessionSegment;
+  factory SessionSegment([void updates(SessionSegmentBuilder b)]) = _$SessionSegment;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SessionSegmentBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SessionSegment> get serializer =>
-      _$SessionSegmentSerializer();
+  static Serializer<SessionSegment> get serializer => _$SessionSegmentSerializer();
 }
 
-class _$SessionSegmentSerializer
-    implements PrimitiveSerializer<SessionSegment> {
+class _$SessionSegmentSerializer implements PrimitiveSerializer<SessionSegment> {
   @override
   final Iterable<Type> types = const [SessionSegment, _$SessionSegment];
 
@@ -88,9 +84,7 @@ class _$SessionSegmentSerializer
     SessionSegment object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -162,3 +156,4 @@ class _$SessionSegmentSerializer
     return result.build();
   }
 }
+

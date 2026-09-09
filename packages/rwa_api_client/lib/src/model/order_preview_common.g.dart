@@ -9,6 +9,9 @@ part of 'order_preview_common.dart';
 abstract class OrderPreviewCommonBuilder {
   void replace(OrderPreviewCommon other);
   void update(void Function(OrderPreviewCommonBuilder) updates);
+  Hip3PreviewExecutionBuilder get hip3Execution;
+  set hip3Execution(Hip3PreviewExecutionBuilder? hip3Execution);
+
   String? get previewId;
   set previewId(String? previewId);
 
@@ -84,6 +87,8 @@ abstract class OrderPreviewCommonBuilder {
 
 class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
+  final Hip3PreviewExecution? hip3Execution;
+  @override
   final String previewId;
   @override
   final String symbol;
@@ -137,7 +142,8 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
       ($OrderPreviewCommonBuilder()..update(updates))._build();
 
   _$$OrderPreviewCommon._(
-      {required this.previewId,
+      {this.hip3Execution,
+      required this.previewId,
       required this.symbol,
       required this.side,
       required this.type,
@@ -175,6 +181,7 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is $OrderPreviewCommon &&
+        hip3Execution == other.hip3Execution &&
         previewId == other.previewId &&
         symbol == other.symbol &&
         side == other.side &&
@@ -204,6 +211,7 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, hip3Execution.hashCode);
     _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, side.hashCode);
@@ -235,6 +243,7 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'$OrderPreviewCommon')
+          ..add('hip3Execution', hip3Execution)
           ..add('previewId', previewId)
           ..add('symbol', symbol)
           ..add('side', side)
@@ -268,6 +277,12 @@ class $OrderPreviewCommonBuilder
         Builder<$OrderPreviewCommon, $OrderPreviewCommonBuilder>,
         OrderPreviewCommonBuilder {
   _$$OrderPreviewCommon? _$v;
+
+  Hip3PreviewExecutionBuilder? _hip3Execution;
+  Hip3PreviewExecutionBuilder get hip3Execution =>
+      _$this._hip3Execution ??= Hip3PreviewExecutionBuilder();
+  set hip3Execution(covariant Hip3PreviewExecutionBuilder? hip3Execution) =>
+      _$this._hip3Execution = hip3Execution;
 
   String? _previewId;
   String? get previewId => _$this._previewId;
@@ -389,6 +404,7 @@ class $OrderPreviewCommonBuilder
   $OrderPreviewCommonBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _hip3Execution = $v.hip3Execution?.toBuilder();
       _previewId = $v.previewId;
       _symbol = $v.symbol;
       _side = $v.side;
@@ -436,6 +452,7 @@ class $OrderPreviewCommonBuilder
     try {
       _$result = _$v ??
           _$$OrderPreviewCommon._(
+            hip3Execution: _hip3Execution?.build(),
             previewId: BuiltValueNullFieldError.checkNotNull(
                 previewId, r'$OrderPreviewCommon', 'previewId'),
             symbol: BuiltValueNullFieldError.checkNotNull(
@@ -469,6 +486,9 @@ class $OrderPreviewCommonBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'hip3Execution';
+        _hip3Execution?.build();
+
         _$failedField = 'details';
         _details?.build();
       } catch (e) {

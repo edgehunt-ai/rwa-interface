@@ -16,24 +16,23 @@ part 'legacy_deposit.g.dart';
 /// Legacy response shape used only by the side-effect-free deposit instruction adapter.
 ///
 /// Properties:
-/// * [depositId]
-/// * [chain]
-/// * [token]
+/// * [depositId] 
+/// * [chain] 
+/// * [token] 
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [status]
-/// * [confirmations]
-/// * [confirmationsRequired]
-/// * [creditedTo]
-/// * [requiresTransfer]
-/// * [txHash]
-/// * [activityId]
-/// * [createdAt]
-/// * [creditedAt]
-/// * [instructions]
+/// * [status] 
+/// * [confirmations] 
+/// * [confirmationsRequired] 
+/// * [creditedTo] 
+/// * [requiresTransfer] 
+/// * [txHash] 
+/// * [activityId] 
+/// * [createdAt] 
+/// * [creditedAt] 
+/// * [instructions] 
 @Deprecated('LegacyDeposit has been deprecated')
 @BuiltValue()
-abstract class LegacyDeposit
-    implements Built<LegacyDeposit, LegacyDepositBuilder> {
+abstract class LegacyDeposit implements Built<LegacyDeposit, LegacyDepositBuilder> {
   @BuiltValueField(wireName: r'deposit_id')
   String get depositId;
 
@@ -85,15 +84,13 @@ abstract class LegacyDeposit
 
   LegacyDeposit._();
 
-  factory LegacyDeposit([void updates(LegacyDepositBuilder b)]) =
-      _$LegacyDeposit;
+  factory LegacyDeposit([void updates(LegacyDepositBuilder b)]) = _$LegacyDeposit;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LegacyDepositBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LegacyDeposit> get serializer =>
-      _$LegacyDepositSerializer();
+  static Serializer<LegacyDeposit> get serializer => _$LegacyDepositSerializer();
 }
 
 class _$LegacyDepositSerializer implements PrimitiveSerializer<LegacyDeposit> {
@@ -204,9 +201,7 @@ class _$LegacyDepositSerializer implements PrimitiveSerializer<LegacyDeposit> {
     LegacyDeposit object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -359,19 +354,17 @@ class _$LegacyDepositSerializer implements PrimitiveSerializer<LegacyDeposit> {
 
 @Deprecated('LegacyDepositTokenEnum has been deprecated')
 class LegacyDepositTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyDepositTokenEnum USDC = _$legacyDepositTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyDepositTokenEnum unknownDefaultOpenApi =
-      _$legacyDepositTokenEnum_unknownDefaultOpenApi;
+  static const LegacyDepositTokenEnum unknownDefaultOpenApi = _$legacyDepositTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyDepositTokenEnum> get serializer =>
-      _$legacyDepositTokenEnumSerializer;
+  static Serializer<LegacyDepositTokenEnum> get serializer => _$legacyDepositTokenEnumSerializer;
 
-  const LegacyDepositTokenEnum._(String name) : super(name);
+  const LegacyDepositTokenEnum._(String name): super(name);
 
-  static BuiltSet<LegacyDepositTokenEnum> get values =>
-      _$legacyDepositTokenEnumValues;
-  static LegacyDepositTokenEnum valueOf(String name) =>
-      _$legacyDepositTokenEnumValueOf(name);
+  static BuiltSet<LegacyDepositTokenEnum> get values => _$legacyDepositTokenEnumValues;
+  static LegacyDepositTokenEnum valueOf(String name) => _$legacyDepositTokenEnumValueOf(name);
 }
+

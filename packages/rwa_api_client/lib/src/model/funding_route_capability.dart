@@ -16,15 +16,14 @@ part 'funding_route_capability.g.dart';
 /// FundingRouteCapability
 ///
 /// Properties:
-/// * [rail]
-/// * [provider]
-/// * [status]
-/// * [blockers]
-/// * [observedAt]
-/// * [expiresAt]
+/// * [rail] 
+/// * [provider] 
+/// * [status] 
+/// * [blockers] 
+/// * [observedAt] 
+/// * [expiresAt] 
 @BuiltValue()
-abstract class FundingRouteCapability
-    implements Built<FundingRouteCapability, FundingRouteCapabilityBuilder> {
+abstract class FundingRouteCapability implements Built<FundingRouteCapability, FundingRouteCapabilityBuilder> {
   @BuiltValueField(wireName: r'rail')
   ProductKind get rail;
   // enum railEnum {  bstock,  perp,  };
@@ -48,25 +47,18 @@ abstract class FundingRouteCapability
 
   FundingRouteCapability._();
 
-  factory FundingRouteCapability(
-          [void updates(FundingRouteCapabilityBuilder b)]) =
-      _$FundingRouteCapability;
+  factory FundingRouteCapability([void updates(FundingRouteCapabilityBuilder b)]) = _$FundingRouteCapability;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRouteCapabilityBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRouteCapability> get serializer =>
-      _$FundingRouteCapabilitySerializer();
+  static Serializer<FundingRouteCapability> get serializer => _$FundingRouteCapabilitySerializer();
 }
 
-class _$FundingRouteCapabilitySerializer
-    implements PrimitiveSerializer<FundingRouteCapability> {
+class _$FundingRouteCapabilitySerializer implements PrimitiveSerializer<FundingRouteCapability> {
   @override
-  final Iterable<Type> types = const [
-    FundingRouteCapability,
-    _$FundingRouteCapability
-  ];
+  final Iterable<Type> types = const [FundingRouteCapability, _$FundingRouteCapability];
 
   @override
   final String wireName = r'FundingRouteCapability';
@@ -114,9 +106,7 @@ class _$FundingRouteCapabilitySerializer
     FundingRouteCapability object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -155,8 +145,7 @@ class _$FundingRouteCapabilitySerializer
         case r'blockers':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(FundingRouteBlocker)]),
+            specifiedType: const FullType(BuiltList, [FullType(FundingRouteBlocker)]),
           ) as BuiltList<FundingRouteBlocker>;
           result.blockers.replace(valueDes);
           break;
@@ -202,3 +191,4 @@ class _$FundingRouteCapabilitySerializer
     return result.build();
   }
 }
+

@@ -15,7 +15,7 @@ part 'quote.g.dart';
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [change24h] - 十进制字符串，避免浮点误差
 /// * [change24hPercent] - 十进制字符串，避免浮点误差
-/// * [updatedAt]
+/// * [updatedAt] 
 @BuiltValue()
 abstract class Quote implements Built<Quote, QuoteBuilder> {
   /// 报价说明，如 `Last traded · NVDAB/USDC` 或 `Mark price · NVDA-PERP`
@@ -101,9 +101,7 @@ class _$QuoteSerializer implements PrimitiveSerializer<Quote> {
     Quote object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -185,3 +183,4 @@ class _$QuoteSerializer implements PrimitiveSerializer<Quote> {
     return result.build();
   }
 }
+

@@ -10,27 +10,23 @@ import 'package:built_value/serializer.dart';
 part 'portfolio_data_status.g.dart';
 
 class PortfolioDataStatus extends EnumClass {
-  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。
+
+  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。 
   @BuiltValueEnumConst(wireName: r'complete')
   static const PortfolioDataStatus complete = _$complete;
-
-  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。
+  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。 
   @BuiltValueEnumConst(wireName: r'partial')
   static const PortfolioDataStatus partial = _$partial;
-
-  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。
+  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。 
   @BuiltValueEnumConst(wireName: r'empty')
   static const PortfolioDataStatus empty = _$empty;
-
-  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。
+  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。 
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioDataStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const PortfolioDataStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<PortfolioDataStatus> get serializer =>
-      _$portfolioDataStatusSerializer;
+  static Serializer<PortfolioDataStatus> get serializer => _$portfolioDataStatusSerializer;
 
-  const PortfolioDataStatus._(String name) : super(name);
+  const PortfolioDataStatus._(String name): super(name);
 
   static BuiltSet<PortfolioDataStatus> get values => _$values;
   static PortfolioDataStatus valueOf(String name) => _$valueOf(name);
@@ -42,5 +38,5 @@ class PortfolioDataStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class PortfolioDataStatusMixin = Object
-    with _$PortfolioDataStatusMixin;
+abstract class PortfolioDataStatusMixin = Object with _$PortfolioDataStatusMixin;
+

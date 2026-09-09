@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'legacy_transfer_status.g.dart';
 
 class LegacyTransferStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'pending')
   static const LegacyTransferStatus pending = _$pending;
   @BuiltValueEnumConst(wireName: r'processing')
@@ -25,13 +26,11 @@ class LegacyTransferStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const LegacyTransferStatus manualReview = _$manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyTransferStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const LegacyTransferStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<LegacyTransferStatus> get serializer =>
-      _$legacyTransferStatusSerializer;
+  static Serializer<LegacyTransferStatus> get serializer => _$legacyTransferStatusSerializer;
 
-  const LegacyTransferStatus._(String name) : super(name);
+  const LegacyTransferStatus._(String name): super(name);
 
   static BuiltSet<LegacyTransferStatus> get values => _$values;
   static LegacyTransferStatus valueOf(String name) => _$valueOf(name);
@@ -43,5 +42,5 @@ class LegacyTransferStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class LegacyTransferStatusMixin = Object
-    with _$LegacyTransferStatusMixin;
+abstract class LegacyTransferStatusMixin = Object with _$LegacyTransferStatusMixin;
+

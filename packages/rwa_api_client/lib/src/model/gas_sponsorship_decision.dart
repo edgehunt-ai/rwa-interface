@@ -10,11 +10,11 @@ import 'package:built_value/serializer.dart';
 part 'gas_sponsorship_decision.g.dart';
 
 class GasSponsorshipDecision extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'eligible')
   static const GasSponsorshipDecision eligible = _$eligible;
   @BuiltValueEnumConst(wireName: r'user_gas_confirmation_required')
-  static const GasSponsorshipDecision userGasConfirmationRequired =
-      _$userGasConfirmationRequired;
+  static const GasSponsorshipDecision userGasConfirmationRequired = _$userGasConfirmationRequired;
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const GasSponsorshipDecision unavailable = _$unavailable;
   @BuiltValueEnumConst(wireName: r'limit_exceeded')
@@ -26,13 +26,11 @@ class GasSponsorshipDecision extends EnumClass {
   @BuiltValueEnumConst(wireName: r'provider_ambiguous')
   static const GasSponsorshipDecision providerAmbiguous = _$providerAmbiguous;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const GasSponsorshipDecision unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const GasSponsorshipDecision unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<GasSponsorshipDecision> get serializer =>
-      _$gasSponsorshipDecisionSerializer;
+  static Serializer<GasSponsorshipDecision> get serializer => _$gasSponsorshipDecisionSerializer;
 
-  const GasSponsorshipDecision._(String name) : super(name);
+  const GasSponsorshipDecision._(String name): super(name);
 
   static BuiltSet<GasSponsorshipDecision> get values => _$values;
   static GasSponsorshipDecision valueOf(String name) => _$valueOf(name);
@@ -44,5 +42,5 @@ class GasSponsorshipDecision extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class GasSponsorshipDecisionMixin = Object
-    with _$GasSponsorshipDecisionMixin;
+abstract class GasSponsorshipDecisionMixin = Object with _$GasSponsorshipDecisionMixin;
+

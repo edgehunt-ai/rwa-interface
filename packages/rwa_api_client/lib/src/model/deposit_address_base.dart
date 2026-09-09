@@ -13,21 +13,21 @@ part 'deposit_address_base.g.dart';
 /// DepositAddressBase
 ///
 /// Properties:
-/// * [chain]
-/// * [chainId]
-/// * [token]
+/// * [chain] 
+/// * [chainId] 
+/// * [token] 
 /// * [tokenContract] - 所选网络上经过后端 allowlist 和启动预检的 USDC 合约地址。
-/// * [tokenDecimals]
+/// * [tokenDecimals] 
 /// * [address] - 当前账号唯一、active 且已验证的 Privy EVM 钱包地址。
 /// * [memo] - 部分链需要的备注 / tag
-/// * [qrPayload] - 二维码内容，使用 `ethereum:<token_contract>@<chain_id>/transfer?address=<recipient>` 形式。recipient 必须与同一响应中的结构化 `address` 大小写不敏感地相等； 后端生成/解析测试与客户端展示前校验共同执行该不变量，不一致时 fail-closed。
+/// * [qrPayload] - 二维码内容，使用 `ethereum:<token_contract>@<chain_id>/transfer?address=<recipient>` 形式。recipient 必须与同一响应中的结构化 `address` 大小写不敏感地相等； 后端生成/解析测试与客户端展示前校验共同执行该不变量，不一致时 fail-closed。 
 /// * [minDeposit] - 必须大于零；服务端按精确十进制语义校验。
-/// * [confirmationsRequired]
+/// * [confirmationsRequired] 
 /// * [estimatedArrivalSeconds] - 达到当前 rail 确认门槛的保守预计时间；不是结算保证。
-/// * [creditedTo]
-/// * [warning]
+/// * [creditedTo] 
+/// * [warning] 
 @BuiltValue(instantiable: false)
-abstract class DepositAddressBase {
+abstract class DepositAddressBase  {
   @BuiltValueField(wireName: r'chain')
   String get chain;
 
@@ -53,7 +53,7 @@ abstract class DepositAddressBase {
   @BuiltValueField(wireName: r'memo')
   String? get memo;
 
-  /// 二维码内容，使用 `ethereum:<token_contract>@<chain_id>/transfer?address=<recipient>` 形式。recipient 必须与同一响应中的结构化 `address` 大小写不敏感地相等； 后端生成/解析测试与客户端展示前校验共同执行该不变量，不一致时 fail-closed。
+  /// 二维码内容，使用 `ethereum:<token_contract>@<chain_id>/transfer?address=<recipient>` 形式。recipient 必须与同一响应中的结构化 `address` 大小写不敏感地相等； 后端生成/解析测试与客户端展示前校验共同执行该不变量，不一致时 fail-closed。 
   @BuiltValueField(wireName: r'qr_payload')
   String get qrPayload;
 
@@ -76,12 +76,10 @@ abstract class DepositAddressBase {
   String get warning;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DepositAddressBase> get serializer =>
-      _$DepositAddressBaseSerializer();
+  static Serializer<DepositAddressBase> get serializer => _$DepositAddressBaseSerializer();
 }
 
-class _$DepositAddressBaseSerializer
-    implements PrimitiveSerializer<DepositAddressBase> {
+class _$DepositAddressBaseSerializer implements PrimitiveSerializer<DepositAddressBase> {
   @override
   final Iterable<Type> types = const [DepositAddressBase];
 
@@ -168,9 +166,7 @@ class _$DepositAddressBaseSerializer
     DepositAddressBase object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   @override
@@ -179,38 +175,27 @@ class _$DepositAddressBaseSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.deserialize(serialized,
-        specifiedType: FullType($DepositAddressBase)) as $DepositAddressBase;
+    return serializers.deserialize(serialized, specifiedType: FullType($DepositAddressBase)) as $DepositAddressBase;
   }
 }
 
 /// a concrete implementation of [DepositAddressBase], since [DepositAddressBase] is not instantiable
 @BuiltValue(instantiable: true)
-abstract class $DepositAddressBase
-    implements
-        DepositAddressBase,
-        Built<$DepositAddressBase, $DepositAddressBaseBuilder> {
+abstract class $DepositAddressBase implements DepositAddressBase, Built<$DepositAddressBase, $DepositAddressBaseBuilder> {
   $DepositAddressBase._();
 
-  factory $DepositAddressBase(
-          [void Function($DepositAddressBaseBuilder)? updates]) =
-      _$$DepositAddressBase;
+  factory $DepositAddressBase([void Function($DepositAddressBaseBuilder)? updates]) = _$$DepositAddressBase;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults($DepositAddressBaseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<$DepositAddressBase> get serializer =>
-      _$$DepositAddressBaseSerializer();
+  static Serializer<$DepositAddressBase> get serializer => _$$DepositAddressBaseSerializer();
 }
 
-class _$$DepositAddressBaseSerializer
-    implements PrimitiveSerializer<$DepositAddressBase> {
+class _$$DepositAddressBaseSerializer implements PrimitiveSerializer<$DepositAddressBase> {
   @override
-  final Iterable<Type> types = const [
-    $DepositAddressBase,
-    _$$DepositAddressBase
-  ];
+  final Iterable<Type> types = const [$DepositAddressBase, _$$DepositAddressBase];
 
   @override
   final String wireName = r'$DepositAddressBase';
@@ -221,8 +206,7 @@ class _$$DepositAddressBaseSerializer
     $DepositAddressBase object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.serialize(object,
-        specifiedType: FullType(DepositAddressBase))!;
+    return serializers.serialize(object, specifiedType: FullType(DepositAddressBase))!;
   }
 
   void _deserializeProperties(
@@ -359,29 +343,23 @@ class _$$DepositAddressBaseSerializer
 }
 
 class DepositAddressBaseChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 1)
-  static const DepositAddressBaseChainIdEnum number1 =
-      _$depositAddressBaseChainIdEnum_number1;
+  static const DepositAddressBaseChainIdEnum number1 = _$depositAddressBaseChainIdEnum_number1;
   @BuiltValueEnumConst(wireNumber: 56)
-  static const DepositAddressBaseChainIdEnum number56 =
-      _$depositAddressBaseChainIdEnum_number56;
+  static const DepositAddressBaseChainIdEnum number56 = _$depositAddressBaseChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 8453)
-  static const DepositAddressBaseChainIdEnum number8453 =
-      _$depositAddressBaseChainIdEnum_number8453;
+  static const DepositAddressBaseChainIdEnum number8453 = _$depositAddressBaseChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
-  static const DepositAddressBaseChainIdEnum number42161 =
-      _$depositAddressBaseChainIdEnum_number42161;
+  static const DepositAddressBaseChainIdEnum number42161 = _$depositAddressBaseChainIdEnum_number42161;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const DepositAddressBaseChainIdEnum unknownDefaultOpenApi =
-      _$depositAddressBaseChainIdEnum_unknownDefaultOpenApi;
+  static const DepositAddressBaseChainIdEnum unknownDefaultOpenApi = _$depositAddressBaseChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<DepositAddressBaseChainIdEnum> get serializer =>
-      _$depositAddressBaseChainIdEnumSerializer;
+  static Serializer<DepositAddressBaseChainIdEnum> get serializer => _$depositAddressBaseChainIdEnumSerializer;
 
-  const DepositAddressBaseChainIdEnum._(String name) : super(name);
+  const DepositAddressBaseChainIdEnum._(String name): super(name);
 
-  static BuiltSet<DepositAddressBaseChainIdEnum> get values =>
-      _$depositAddressBaseChainIdEnumValues;
-  static DepositAddressBaseChainIdEnum valueOf(String name) =>
-      _$depositAddressBaseChainIdEnumValueOf(name);
+  static BuiltSet<DepositAddressBaseChainIdEnum> get values => _$depositAddressBaseChainIdEnumValues;
+  static DepositAddressBaseChainIdEnum valueOf(String name) => _$depositAddressBaseChainIdEnumValueOf(name);
 }
+

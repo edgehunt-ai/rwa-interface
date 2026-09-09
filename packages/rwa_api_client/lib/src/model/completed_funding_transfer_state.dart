@@ -16,28 +16,24 @@ part 'completed_funding_transfer_state.g.dart';
 /// CompletedFundingTransferState
 ///
 /// Properties:
-/// * [status]
-/// * [sourceExecutionStatus]
-/// * [providerStatus]
-/// * [providerObservation]
-/// * [targetCreditStatus]
-/// * [sourceTransaction]
-/// * [targetCredit]
-/// * [recoveryStatus]
-/// * [completedAt]
-/// * [nextAction]
+/// * [status] 
+/// * [sourceExecutionStatus] 
+/// * [providerStatus] 
+/// * [providerObservation] 
+/// * [targetCreditStatus] 
+/// * [sourceTransaction] 
+/// * [targetCredit] 
+/// * [recoveryStatus] 
+/// * [completedAt] 
+/// * [nextAction] 
 @BuiltValue()
-abstract class CompletedFundingTransferState
-    implements
-        Built<CompletedFundingTransferState,
-            CompletedFundingTransferStateBuilder> {
+abstract class CompletedFundingTransferState implements Built<CompletedFundingTransferState, CompletedFundingTransferStateBuilder> {
   @BuiltValueField(wireName: r'status')
   CompletedFundingTransferStateStatusEnum get status;
   // enum statusEnum {  completed,  };
 
   @BuiltValueField(wireName: r'source_execution_status')
-  CompletedFundingTransferStateSourceExecutionStatusEnum
-      get sourceExecutionStatus;
+  CompletedFundingTransferStateSourceExecutionStatusEnum get sourceExecutionStatus;
   // enum sourceExecutionStatusEnum {  confirmed,  };
 
   @BuiltValueField(wireName: r'provider_status')
@@ -69,25 +65,18 @@ abstract class CompletedFundingTransferState
 
   CompletedFundingTransferState._();
 
-  factory CompletedFundingTransferState(
-          [void updates(CompletedFundingTransferStateBuilder b)]) =
-      _$CompletedFundingTransferState;
+  factory CompletedFundingTransferState([void updates(CompletedFundingTransferStateBuilder b)]) = _$CompletedFundingTransferState;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CompletedFundingTransferStateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CompletedFundingTransferState> get serializer =>
-      _$CompletedFundingTransferStateSerializer();
+  static Serializer<CompletedFundingTransferState> get serializer => _$CompletedFundingTransferStateSerializer();
 }
 
-class _$CompletedFundingTransferStateSerializer
-    implements PrimitiveSerializer<CompletedFundingTransferState> {
+class _$CompletedFundingTransferStateSerializer implements PrimitiveSerializer<CompletedFundingTransferState> {
   @override
-  final Iterable<Type> types = const [
-    CompletedFundingTransferState,
-    _$CompletedFundingTransferState
-  ];
+  final Iterable<Type> types = const [CompletedFundingTransferState, _$CompletedFundingTransferState];
 
   @override
   final String wireName = r'CompletedFundingTransferState';
@@ -105,14 +94,12 @@ class _$CompletedFundingTransferStateSerializer
     yield r'source_execution_status';
     yield serializers.serialize(
       object.sourceExecutionStatus,
-      specifiedType: const FullType(
-          CompletedFundingTransferStateSourceExecutionStatusEnum),
+      specifiedType: const FullType(CompletedFundingTransferStateSourceExecutionStatusEnum),
     );
     yield r'provider_status';
     yield serializers.serialize(
       object.providerStatus,
-      specifiedType:
-          const FullType(CompletedFundingTransferStateProviderStatusEnum),
+      specifiedType: const FullType(CompletedFundingTransferStateProviderStatusEnum),
     );
     yield r'provider_observation';
     yield serializers.serialize(
@@ -122,14 +109,12 @@ class _$CompletedFundingTransferStateSerializer
     yield r'target_credit_status';
     yield serializers.serialize(
       object.targetCreditStatus,
-      specifiedType:
-          const FullType(CompletedFundingTransferStateTargetCreditStatusEnum),
+      specifiedType: const FullType(CompletedFundingTransferStateTargetCreditStatusEnum),
     );
     yield r'source_transaction';
     yield serializers.serialize(
       object.sourceTransaction,
-      specifiedType:
-          const FullType(CompletedFundingSourceTransactionObservation),
+      specifiedType: const FullType(CompletedFundingSourceTransactionObservation),
     );
     yield r'target_credit';
     yield serializers.serialize(
@@ -139,8 +124,7 @@ class _$CompletedFundingTransferStateSerializer
     yield r'recovery_status';
     yield serializers.serialize(
       object.recoveryStatus,
-      specifiedType:
-          const FullType(CompletedFundingTransferStateRecoveryStatusEnum),
+      specifiedType: const FullType(CompletedFundingTransferStateRecoveryStatusEnum),
     );
     yield r'completed_at';
     yield serializers.serialize(
@@ -148,12 +132,10 @@ class _$CompletedFundingTransferStateSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'next_action';
-    yield object.nextAction == null
-        ? null
-        : serializers.serialize(
-            object.nextAction,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.nextAction == null ? null : serializers.serialize(
+      object.nextAction,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
   }
 
   @override
@@ -162,9 +144,7 @@ class _$CompletedFundingTransferStateSerializer
     CompletedFundingTransferState object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -182,24 +162,21 @@ class _$CompletedFundingTransferStateSerializer
         case r'status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(CompletedFundingTransferStateStatusEnum),
+            specifiedType: const FullType(CompletedFundingTransferStateStatusEnum),
           ) as CompletedFundingTransferStateStatusEnum;
           result.status = valueDes;
           break;
         case r'source_execution_status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(
-                CompletedFundingTransferStateSourceExecutionStatusEnum),
+            specifiedType: const FullType(CompletedFundingTransferStateSourceExecutionStatusEnum),
           ) as CompletedFundingTransferStateSourceExecutionStatusEnum;
           result.sourceExecutionStatus = valueDes;
           break;
         case r'provider_status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(CompletedFundingTransferStateProviderStatusEnum),
+            specifiedType: const FullType(CompletedFundingTransferStateProviderStatusEnum),
           ) as CompletedFundingTransferStateProviderStatusEnum;
           result.providerStatus = valueDes;
           break;
@@ -213,16 +190,14 @@ class _$CompletedFundingTransferStateSerializer
         case r'target_credit_status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(
-                CompletedFundingTransferStateTargetCreditStatusEnum),
+            specifiedType: const FullType(CompletedFundingTransferStateTargetCreditStatusEnum),
           ) as CompletedFundingTransferStateTargetCreditStatusEnum;
           result.targetCreditStatus = valueDes;
           break;
         case r'source_transaction':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(CompletedFundingSourceTransactionObservation),
+            specifiedType: const FullType(CompletedFundingSourceTransactionObservation),
           ) as CompletedFundingSourceTransactionObservation;
           result.sourceTransaction.replace(valueDes);
           break;
@@ -236,8 +211,7 @@ class _$CompletedFundingTransferStateSerializer
         case r'recovery_status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(CompletedFundingTransferStateRecoveryStatusEnum),
+            specifiedType: const FullType(CompletedFundingTransferStateRecoveryStatusEnum),
           ) as CompletedFundingTransferStateRecoveryStatusEnum;
           result.recoveryStatus = valueDes;
           break;
@@ -286,112 +260,77 @@ class _$CompletedFundingTransferStateSerializer
 }
 
 class CompletedFundingTransferStateStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'completed')
-  static const CompletedFundingTransferStateStatusEnum completed =
-      _$completedFundingTransferStateStatusEnum_completed;
+  static const CompletedFundingTransferStateStatusEnum completed = _$completedFundingTransferStateStatusEnum_completed;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateStatusEnum unknownDefaultOpenApi =
-      _$completedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
+  static const CompletedFundingTransferStateStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<CompletedFundingTransferStateStatusEnum> get serializer =>
-      _$completedFundingTransferStateStatusEnumSerializer;
+  static Serializer<CompletedFundingTransferStateStatusEnum> get serializer => _$completedFundingTransferStateStatusEnumSerializer;
 
-  const CompletedFundingTransferStateStatusEnum._(String name) : super(name);
+  const CompletedFundingTransferStateStatusEnum._(String name): super(name);
 
-  static BuiltSet<CompletedFundingTransferStateStatusEnum> get values =>
-      _$completedFundingTransferStateStatusEnumValues;
-  static CompletedFundingTransferStateStatusEnum valueOf(String name) =>
-      _$completedFundingTransferStateStatusEnumValueOf(name);
+  static BuiltSet<CompletedFundingTransferStateStatusEnum> get values => _$completedFundingTransferStateStatusEnumValues;
+  static CompletedFundingTransferStateStatusEnum valueOf(String name) => _$completedFundingTransferStateStatusEnumValueOf(name);
 }
 
 class CompletedFundingTransferStateSourceExecutionStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'confirmed')
-  static const CompletedFundingTransferStateSourceExecutionStatusEnum
-      confirmed =
-      _$completedFundingTransferStateSourceExecutionStatusEnum_confirmed;
+  static const CompletedFundingTransferStateSourceExecutionStatusEnum confirmed = _$completedFundingTransferStateSourceExecutionStatusEnum_confirmed;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateSourceExecutionStatusEnum
-      unknownDefaultOpenApi =
-      _$completedFundingTransferStateSourceExecutionStatusEnum_unknownDefaultOpenApi;
+  static const CompletedFundingTransferStateSourceExecutionStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateSourceExecutionStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<CompletedFundingTransferStateSourceExecutionStatusEnum>
-      get serializer =>
-          _$completedFundingTransferStateSourceExecutionStatusEnumSerializer;
+  static Serializer<CompletedFundingTransferStateSourceExecutionStatusEnum> get serializer => _$completedFundingTransferStateSourceExecutionStatusEnumSerializer;
 
-  const CompletedFundingTransferStateSourceExecutionStatusEnum._(String name)
-      : super(name);
+  const CompletedFundingTransferStateSourceExecutionStatusEnum._(String name): super(name);
 
-  static BuiltSet<CompletedFundingTransferStateSourceExecutionStatusEnum>
-      get values =>
-          _$completedFundingTransferStateSourceExecutionStatusEnumValues;
-  static CompletedFundingTransferStateSourceExecutionStatusEnum valueOf(
-          String name) =>
-      _$completedFundingTransferStateSourceExecutionStatusEnumValueOf(name);
+  static BuiltSet<CompletedFundingTransferStateSourceExecutionStatusEnum> get values => _$completedFundingTransferStateSourceExecutionStatusEnumValues;
+  static CompletedFundingTransferStateSourceExecutionStatusEnum valueOf(String name) => _$completedFundingTransferStateSourceExecutionStatusEnumValueOf(name);
 }
 
 class CompletedFundingTransferStateProviderStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'succeeded')
-  static const CompletedFundingTransferStateProviderStatusEnum succeeded =
-      _$completedFundingTransferStateProviderStatusEnum_succeeded;
+  static const CompletedFundingTransferStateProviderStatusEnum succeeded = _$completedFundingTransferStateProviderStatusEnum_succeeded;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateProviderStatusEnum
-      unknownDefaultOpenApi =
-      _$completedFundingTransferStateProviderStatusEnum_unknownDefaultOpenApi;
+  static const CompletedFundingTransferStateProviderStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateProviderStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<CompletedFundingTransferStateProviderStatusEnum>
-      get serializer =>
-          _$completedFundingTransferStateProviderStatusEnumSerializer;
+  static Serializer<CompletedFundingTransferStateProviderStatusEnum> get serializer => _$completedFundingTransferStateProviderStatusEnumSerializer;
 
-  const CompletedFundingTransferStateProviderStatusEnum._(String name)
-      : super(name);
+  const CompletedFundingTransferStateProviderStatusEnum._(String name): super(name);
 
-  static BuiltSet<CompletedFundingTransferStateProviderStatusEnum> get values =>
-      _$completedFundingTransferStateProviderStatusEnumValues;
-  static CompletedFundingTransferStateProviderStatusEnum valueOf(String name) =>
-      _$completedFundingTransferStateProviderStatusEnumValueOf(name);
+  static BuiltSet<CompletedFundingTransferStateProviderStatusEnum> get values => _$completedFundingTransferStateProviderStatusEnumValues;
+  static CompletedFundingTransferStateProviderStatusEnum valueOf(String name) => _$completedFundingTransferStateProviderStatusEnumValueOf(name);
 }
 
 class CompletedFundingTransferStateTargetCreditStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'confirmed')
-  static const CompletedFundingTransferStateTargetCreditStatusEnum confirmed =
-      _$completedFundingTransferStateTargetCreditStatusEnum_confirmed;
+  static const CompletedFundingTransferStateTargetCreditStatusEnum confirmed = _$completedFundingTransferStateTargetCreditStatusEnum_confirmed;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateTargetCreditStatusEnum
-      unknownDefaultOpenApi =
-      _$completedFundingTransferStateTargetCreditStatusEnum_unknownDefaultOpenApi;
+  static const CompletedFundingTransferStateTargetCreditStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateTargetCreditStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<CompletedFundingTransferStateTargetCreditStatusEnum>
-      get serializer =>
-          _$completedFundingTransferStateTargetCreditStatusEnumSerializer;
+  static Serializer<CompletedFundingTransferStateTargetCreditStatusEnum> get serializer => _$completedFundingTransferStateTargetCreditStatusEnumSerializer;
 
-  const CompletedFundingTransferStateTargetCreditStatusEnum._(String name)
-      : super(name);
+  const CompletedFundingTransferStateTargetCreditStatusEnum._(String name): super(name);
 
-  static BuiltSet<CompletedFundingTransferStateTargetCreditStatusEnum>
-      get values => _$completedFundingTransferStateTargetCreditStatusEnumValues;
-  static CompletedFundingTransferStateTargetCreditStatusEnum valueOf(
-          String name) =>
-      _$completedFundingTransferStateTargetCreditStatusEnumValueOf(name);
+  static BuiltSet<CompletedFundingTransferStateTargetCreditStatusEnum> get values => _$completedFundingTransferStateTargetCreditStatusEnumValues;
+  static CompletedFundingTransferStateTargetCreditStatusEnum valueOf(String name) => _$completedFundingTransferStateTargetCreditStatusEnumValueOf(name);
 }
 
 class CompletedFundingTransferStateRecoveryStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'none')
-  static const CompletedFundingTransferStateRecoveryStatusEnum none =
-      _$completedFundingTransferStateRecoveryStatusEnum_none;
+  static const CompletedFundingTransferStateRecoveryStatusEnum none = _$completedFundingTransferStateRecoveryStatusEnum_none;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateRecoveryStatusEnum
-      unknownDefaultOpenApi =
-      _$completedFundingTransferStateRecoveryStatusEnum_unknownDefaultOpenApi;
+  static const CompletedFundingTransferStateRecoveryStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateRecoveryStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<CompletedFundingTransferStateRecoveryStatusEnum>
-      get serializer =>
-          _$completedFundingTransferStateRecoveryStatusEnumSerializer;
+  static Serializer<CompletedFundingTransferStateRecoveryStatusEnum> get serializer => _$completedFundingTransferStateRecoveryStatusEnumSerializer;
 
-  const CompletedFundingTransferStateRecoveryStatusEnum._(String name)
-      : super(name);
+  const CompletedFundingTransferStateRecoveryStatusEnum._(String name): super(name);
 
-  static BuiltSet<CompletedFundingTransferStateRecoveryStatusEnum> get values =>
-      _$completedFundingTransferStateRecoveryStatusEnumValues;
-  static CompletedFundingTransferStateRecoveryStatusEnum valueOf(String name) =>
-      _$completedFundingTransferStateRecoveryStatusEnumValueOf(name);
+  static BuiltSet<CompletedFundingTransferStateRecoveryStatusEnum> get values => _$completedFundingTransferStateRecoveryStatusEnumValues;
+  static CompletedFundingTransferStateRecoveryStatusEnum valueOf(String name) => _$completedFundingTransferStateRecoveryStatusEnumValueOf(name);
 }
+

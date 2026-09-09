@@ -14,23 +14,22 @@ part 'origin_transaction_action.g.dart';
 /// OriginTransactionAction
 ///
 /// Properties:
-/// * [actionId]
-/// * [ordinal]
-/// * [kind]
-/// * [chainId]
-/// * [from]
-/// * [to]
-/// * [data]
+/// * [actionId] 
+/// * [ordinal] 
+/// * [kind] 
+/// * [chainId] 
+/// * [from] 
+/// * [to] 
+/// * [data] 
 /// * [value] - Native-value transfer is forbidden; v1 only executes zero-value contract calls.
-/// * [payloadHash]
-/// * [validUntil]
-/// * [status]
-/// * [gasPayment]
-/// * [recipient]
-/// * [refundAddress]
+/// * [payloadHash] 
+/// * [validUntil] 
+/// * [status] 
+/// * [gasPayment] 
+/// * [recipient] 
+/// * [refundAddress] 
 @BuiltValue()
-abstract class OriginTransactionAction
-    implements Built<OriginTransactionAction, OriginTransactionActionBuilder> {
+abstract class OriginTransactionAction implements Built<OriginTransactionAction, OriginTransactionActionBuilder> {
   @BuiltValueField(wireName: r'action_id')
   String get actionId;
 
@@ -80,25 +79,18 @@ abstract class OriginTransactionAction
 
   OriginTransactionAction._();
 
-  factory OriginTransactionAction(
-          [void updates(OriginTransactionActionBuilder b)]) =
-      _$OriginTransactionAction;
+  factory OriginTransactionAction([void updates(OriginTransactionActionBuilder b)]) = _$OriginTransactionAction;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(OriginTransactionActionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<OriginTransactionAction> get serializer =>
-      _$OriginTransactionActionSerializer();
+  static Serializer<OriginTransactionAction> get serializer => _$OriginTransactionActionSerializer();
 }
 
-class _$OriginTransactionActionSerializer
-    implements PrimitiveSerializer<OriginTransactionAction> {
+class _$OriginTransactionActionSerializer implements PrimitiveSerializer<OriginTransactionAction> {
   @override
-  final Iterable<Type> types = const [
-    OriginTransactionAction,
-    _$OriginTransactionAction
-  ];
+  final Iterable<Type> types = const [OriginTransactionAction, _$OriginTransactionAction];
 
   @override
   final String wireName = r'OriginTransactionAction';
@@ -186,9 +178,7 @@ class _$OriginTransactionActionSerializer
     OriginTransactionAction object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -331,70 +321,55 @@ class _$OriginTransactionActionSerializer
 }
 
 class OriginTransactionActionKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'origin_transaction')
-  static const OriginTransactionActionKindEnum originTransaction =
-      _$originTransactionActionKindEnum_originTransaction;
+  static const OriginTransactionActionKindEnum originTransaction = _$originTransactionActionKindEnum_originTransaction;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OriginTransactionActionKindEnum unknownDefaultOpenApi =
-      _$originTransactionActionKindEnum_unknownDefaultOpenApi;
+  static const OriginTransactionActionKindEnum unknownDefaultOpenApi = _$originTransactionActionKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<OriginTransactionActionKindEnum> get serializer =>
-      _$originTransactionActionKindEnumSerializer;
+  static Serializer<OriginTransactionActionKindEnum> get serializer => _$originTransactionActionKindEnumSerializer;
 
-  const OriginTransactionActionKindEnum._(String name) : super(name);
+  const OriginTransactionActionKindEnum._(String name): super(name);
 
-  static BuiltSet<OriginTransactionActionKindEnum> get values =>
-      _$originTransactionActionKindEnumValues;
-  static OriginTransactionActionKindEnum valueOf(String name) =>
-      _$originTransactionActionKindEnumValueOf(name);
+  static BuiltSet<OriginTransactionActionKindEnum> get values => _$originTransactionActionKindEnumValues;
+  static OriginTransactionActionKindEnum valueOf(String name) => _$originTransactionActionKindEnumValueOf(name);
 }
 
 class OriginTransactionActionChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 1)
-  static const OriginTransactionActionChainIdEnum number1 =
-      _$originTransactionActionChainIdEnum_number1;
+  static const OriginTransactionActionChainIdEnum number1 = _$originTransactionActionChainIdEnum_number1;
   @BuiltValueEnumConst(wireNumber: 56)
-  static const OriginTransactionActionChainIdEnum number56 =
-      _$originTransactionActionChainIdEnum_number56;
+  static const OriginTransactionActionChainIdEnum number56 = _$originTransactionActionChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 8453)
-  static const OriginTransactionActionChainIdEnum number8453 =
-      _$originTransactionActionChainIdEnum_number8453;
+  static const OriginTransactionActionChainIdEnum number8453 = _$originTransactionActionChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
-  static const OriginTransactionActionChainIdEnum number42161 =
-      _$originTransactionActionChainIdEnum_number42161;
+  static const OriginTransactionActionChainIdEnum number42161 = _$originTransactionActionChainIdEnum_number42161;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const OriginTransactionActionChainIdEnum unknownDefaultOpenApi =
-      _$originTransactionActionChainIdEnum_unknownDefaultOpenApi;
+  static const OriginTransactionActionChainIdEnum unknownDefaultOpenApi = _$originTransactionActionChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<OriginTransactionActionChainIdEnum> get serializer =>
-      _$originTransactionActionChainIdEnumSerializer;
+  static Serializer<OriginTransactionActionChainIdEnum> get serializer => _$originTransactionActionChainIdEnumSerializer;
 
-  const OriginTransactionActionChainIdEnum._(String name) : super(name);
+  const OriginTransactionActionChainIdEnum._(String name): super(name);
 
-  static BuiltSet<OriginTransactionActionChainIdEnum> get values =>
-      _$originTransactionActionChainIdEnumValues;
-  static OriginTransactionActionChainIdEnum valueOf(String name) =>
-      _$originTransactionActionChainIdEnumValueOf(name);
+  static BuiltSet<OriginTransactionActionChainIdEnum> get values => _$originTransactionActionChainIdEnumValues;
+  static OriginTransactionActionChainIdEnum valueOf(String name) => _$originTransactionActionChainIdEnumValueOf(name);
 }
 
 class OriginTransactionActionValueEnum extends EnumClass {
+
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'0x0')
-  static const OriginTransactionActionValueEnum n0x0 =
-      _$originTransactionActionValueEnum_n0x0;
-
+  static const OriginTransactionActionValueEnum n0x0 = _$originTransactionActionValueEnum_n0x0;
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OriginTransactionActionValueEnum unknownDefaultOpenApi =
-      _$originTransactionActionValueEnum_unknownDefaultOpenApi;
+  static const OriginTransactionActionValueEnum unknownDefaultOpenApi = _$originTransactionActionValueEnum_unknownDefaultOpenApi;
 
-  static Serializer<OriginTransactionActionValueEnum> get serializer =>
-      _$originTransactionActionValueEnumSerializer;
+  static Serializer<OriginTransactionActionValueEnum> get serializer => _$originTransactionActionValueEnumSerializer;
 
-  const OriginTransactionActionValueEnum._(String name) : super(name);
+  const OriginTransactionActionValueEnum._(String name): super(name);
 
-  static BuiltSet<OriginTransactionActionValueEnum> get values =>
-      _$originTransactionActionValueEnumValues;
-  static OriginTransactionActionValueEnum valueOf(String name) =>
-      _$originTransactionActionValueEnumValueOf(name);
+  static BuiltSet<OriginTransactionActionValueEnum> get values => _$originTransactionActionValueEnumValues;
+  static OriginTransactionActionValueEnum valueOf(String name) => _$originTransactionActionValueEnumValueOf(name);
 }
+

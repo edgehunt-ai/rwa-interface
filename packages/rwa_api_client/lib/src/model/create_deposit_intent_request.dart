@@ -13,15 +13,13 @@ part 'create_deposit_intent_request.g.dart';
 /// CreateDepositIntentRequest
 ///
 /// Properties:
-/// * [chain]
-/// * [token]
+/// * [chain] 
+/// * [token] 
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [mode]
+/// * [mode] 
 @Deprecated('CreateDepositIntentRequest has been deprecated')
 @BuiltValue()
-abstract class CreateDepositIntentRequest
-    implements
-        Built<CreateDepositIntentRequest, CreateDepositIntentRequestBuilder> {
+abstract class CreateDepositIntentRequest implements Built<CreateDepositIntentRequest, CreateDepositIntentRequestBuilder> {
   @BuiltValueField(wireName: r'chain')
   CreateDepositIntentRequestChainEnum get chain;
   // enum chainEnum {  BSC,  Arbitrum,  };
@@ -41,26 +39,19 @@ abstract class CreateDepositIntentRequest
 
   CreateDepositIntentRequest._();
 
-  factory CreateDepositIntentRequest(
-          [void updates(CreateDepositIntentRequestBuilder b)]) =
-      _$CreateDepositIntentRequest;
+  factory CreateDepositIntentRequest([void updates(CreateDepositIntentRequestBuilder b)]) = _$CreateDepositIntentRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(CreateDepositIntentRequestBuilder b) =>
-      b..mode = DepositMode.wallet;
+  static void _defaults(CreateDepositIntentRequestBuilder b) => b
+      ..mode = DepositMode.wallet;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateDepositIntentRequest> get serializer =>
-      _$CreateDepositIntentRequestSerializer();
+  static Serializer<CreateDepositIntentRequest> get serializer => _$CreateDepositIntentRequestSerializer();
 }
 
-class _$CreateDepositIntentRequestSerializer
-    implements PrimitiveSerializer<CreateDepositIntentRequest> {
+class _$CreateDepositIntentRequestSerializer implements PrimitiveSerializer<CreateDepositIntentRequest> {
   @override
-  final Iterable<Type> types = const [
-    CreateDepositIntentRequest,
-    _$CreateDepositIntentRequest
-  ];
+  final Iterable<Type> types = const [CreateDepositIntentRequest, _$CreateDepositIntentRequest];
 
   @override
   final String wireName = r'CreateDepositIntentRequest';
@@ -102,9 +93,7 @@ class _$CreateDepositIntentRequestSerializer
     CreateDepositIntentRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -180,43 +169,35 @@ class _$CreateDepositIntentRequestSerializer
 
 @Deprecated('CreateDepositIntentRequestChainEnum has been deprecated')
 class CreateDepositIntentRequestChainEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const CreateDepositIntentRequestChainEnum BSC =
-      _$createDepositIntentRequestChainEnum_BSC;
+  static const CreateDepositIntentRequestChainEnum BSC = _$createDepositIntentRequestChainEnum_BSC;
   @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const CreateDepositIntentRequestChainEnum arbitrum =
-      _$createDepositIntentRequestChainEnum_arbitrum;
+  static const CreateDepositIntentRequestChainEnum arbitrum = _$createDepositIntentRequestChainEnum_arbitrum;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CreateDepositIntentRequestChainEnum unknownDefaultOpenApi =
-      _$createDepositIntentRequestChainEnum_unknownDefaultOpenApi;
+  static const CreateDepositIntentRequestChainEnum unknownDefaultOpenApi = _$createDepositIntentRequestChainEnum_unknownDefaultOpenApi;
 
-  static Serializer<CreateDepositIntentRequestChainEnum> get serializer =>
-      _$createDepositIntentRequestChainEnumSerializer;
+  static Serializer<CreateDepositIntentRequestChainEnum> get serializer => _$createDepositIntentRequestChainEnumSerializer;
 
-  const CreateDepositIntentRequestChainEnum._(String name) : super(name);
+  const CreateDepositIntentRequestChainEnum._(String name): super(name);
 
-  static BuiltSet<CreateDepositIntentRequestChainEnum> get values =>
-      _$createDepositIntentRequestChainEnumValues;
-  static CreateDepositIntentRequestChainEnum valueOf(String name) =>
-      _$createDepositIntentRequestChainEnumValueOf(name);
+  static BuiltSet<CreateDepositIntentRequestChainEnum> get values => _$createDepositIntentRequestChainEnumValues;
+  static CreateDepositIntentRequestChainEnum valueOf(String name) => _$createDepositIntentRequestChainEnumValueOf(name);
 }
 
 @Deprecated('CreateDepositIntentRequestTokenEnum has been deprecated')
 class CreateDepositIntentRequestTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const CreateDepositIntentRequestTokenEnum USDC =
-      _$createDepositIntentRequestTokenEnum_USDC;
+  static const CreateDepositIntentRequestTokenEnum USDC = _$createDepositIntentRequestTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CreateDepositIntentRequestTokenEnum unknownDefaultOpenApi =
-      _$createDepositIntentRequestTokenEnum_unknownDefaultOpenApi;
+  static const CreateDepositIntentRequestTokenEnum unknownDefaultOpenApi = _$createDepositIntentRequestTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<CreateDepositIntentRequestTokenEnum> get serializer =>
-      _$createDepositIntentRequestTokenEnumSerializer;
+  static Serializer<CreateDepositIntentRequestTokenEnum> get serializer => _$createDepositIntentRequestTokenEnumSerializer;
 
-  const CreateDepositIntentRequestTokenEnum._(String name) : super(name);
+  const CreateDepositIntentRequestTokenEnum._(String name): super(name);
 
-  static BuiltSet<CreateDepositIntentRequestTokenEnum> get values =>
-      _$createDepositIntentRequestTokenEnumValues;
-  static CreateDepositIntentRequestTokenEnum valueOf(String name) =>
-      _$createDepositIntentRequestTokenEnumValueOf(name);
+  static BuiltSet<CreateDepositIntentRequestTokenEnum> get values => _$createDepositIntentRequestTokenEnumValues;
+  static CreateDepositIntentRequestTokenEnum valueOf(String name) => _$createDepositIntentRequestTokenEnumValueOf(name);
 }
+

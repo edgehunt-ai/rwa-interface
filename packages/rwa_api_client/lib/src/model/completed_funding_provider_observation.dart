@@ -13,14 +13,11 @@ part 'completed_funding_provider_observation.g.dart';
 /// CompletedFundingProviderObservation
 ///
 /// Properties:
-/// * [provider]
-/// * [status]
-/// * [observedAt]
+/// * [provider] 
+/// * [status] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class CompletedFundingProviderObservation
-    implements
-        Built<CompletedFundingProviderObservation,
-            CompletedFundingProviderObservationBuilder> {
+abstract class CompletedFundingProviderObservation implements Built<CompletedFundingProviderObservation, CompletedFundingProviderObservationBuilder> {
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
   // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
@@ -34,25 +31,18 @@ abstract class CompletedFundingProviderObservation
 
   CompletedFundingProviderObservation._();
 
-  factory CompletedFundingProviderObservation(
-          [void updates(CompletedFundingProviderObservationBuilder b)]) =
-      _$CompletedFundingProviderObservation;
+  factory CompletedFundingProviderObservation([void updates(CompletedFundingProviderObservationBuilder b)]) = _$CompletedFundingProviderObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CompletedFundingProviderObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CompletedFundingProviderObservation> get serializer =>
-      _$CompletedFundingProviderObservationSerializer();
+  static Serializer<CompletedFundingProviderObservation> get serializer => _$CompletedFundingProviderObservationSerializer();
 }
 
-class _$CompletedFundingProviderObservationSerializer
-    implements PrimitiveSerializer<CompletedFundingProviderObservation> {
+class _$CompletedFundingProviderObservationSerializer implements PrimitiveSerializer<CompletedFundingProviderObservation> {
   @override
-  final Iterable<Type> types = const [
-    CompletedFundingProviderObservation,
-    _$CompletedFundingProviderObservation
-  ];
+  final Iterable<Type> types = const [CompletedFundingProviderObservation, _$CompletedFundingProviderObservation];
 
   @override
   final String wireName = r'CompletedFundingProviderObservation';
@@ -70,8 +60,7 @@ class _$CompletedFundingProviderObservationSerializer
     yield r'status';
     yield serializers.serialize(
       object.status,
-      specifiedType:
-          const FullType(CompletedFundingProviderObservationStatusEnum),
+      specifiedType: const FullType(CompletedFundingProviderObservationStatusEnum),
     );
     yield r'observed_at';
     yield serializers.serialize(
@@ -86,9 +75,7 @@ class _$CompletedFundingProviderObservationSerializer
     CompletedFundingProviderObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -113,8 +100,7 @@ class _$CompletedFundingProviderObservationSerializer
         case r'status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(CompletedFundingProviderObservationStatusEnum),
+            specifiedType: const FullType(CompletedFundingProviderObservationStatusEnum),
           ) as CompletedFundingProviderObservationStatusEnum;
           result.status = valueDes;
           break;
@@ -155,23 +141,17 @@ class _$CompletedFundingProviderObservationSerializer
 }
 
 class CompletedFundingProviderObservationStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'succeeded')
-  static const CompletedFundingProviderObservationStatusEnum succeeded =
-      _$completedFundingProviderObservationStatusEnum_succeeded;
+  static const CompletedFundingProviderObservationStatusEnum succeeded = _$completedFundingProviderObservationStatusEnum_succeeded;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingProviderObservationStatusEnum
-      unknownDefaultOpenApi =
-      _$completedFundingProviderObservationStatusEnum_unknownDefaultOpenApi;
+  static const CompletedFundingProviderObservationStatusEnum unknownDefaultOpenApi = _$completedFundingProviderObservationStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<CompletedFundingProviderObservationStatusEnum>
-      get serializer =>
-          _$completedFundingProviderObservationStatusEnumSerializer;
+  static Serializer<CompletedFundingProviderObservationStatusEnum> get serializer => _$completedFundingProviderObservationStatusEnumSerializer;
 
-  const CompletedFundingProviderObservationStatusEnum._(String name)
-      : super(name);
+  const CompletedFundingProviderObservationStatusEnum._(String name): super(name);
 
-  static BuiltSet<CompletedFundingProviderObservationStatusEnum> get values =>
-      _$completedFundingProviderObservationStatusEnumValues;
-  static CompletedFundingProviderObservationStatusEnum valueOf(String name) =>
-      _$completedFundingProviderObservationStatusEnumValueOf(name);
+  static BuiltSet<CompletedFundingProviderObservationStatusEnum> get values => _$completedFundingProviderObservationStatusEnumValues;
+  static CompletedFundingProviderObservationStatusEnum valueOf(String name) => _$completedFundingProviderObservationStatusEnumValueOf(name);
 }
+

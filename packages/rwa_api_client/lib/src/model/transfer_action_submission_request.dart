@@ -13,35 +13,25 @@ part 'transfer_action_submission_request.g.dart';
 /// Properties:
 /// * [txHash] - Untrusted transaction locator; it cannot directly confirm action success.
 @BuiltValue()
-abstract class TransferActionSubmissionRequest
-    implements
-        Built<TransferActionSubmissionRequest,
-            TransferActionSubmissionRequestBuilder> {
+abstract class TransferActionSubmissionRequest implements Built<TransferActionSubmissionRequest, TransferActionSubmissionRequestBuilder> {
   /// Untrusted transaction locator; it cannot directly confirm action success.
   @BuiltValueField(wireName: r'tx_hash')
   String get txHash;
 
   TransferActionSubmissionRequest._();
 
-  factory TransferActionSubmissionRequest(
-          [void updates(TransferActionSubmissionRequestBuilder b)]) =
-      _$TransferActionSubmissionRequest;
+  factory TransferActionSubmissionRequest([void updates(TransferActionSubmissionRequestBuilder b)]) = _$TransferActionSubmissionRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TransferActionSubmissionRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TransferActionSubmissionRequest> get serializer =>
-      _$TransferActionSubmissionRequestSerializer();
+  static Serializer<TransferActionSubmissionRequest> get serializer => _$TransferActionSubmissionRequestSerializer();
 }
 
-class _$TransferActionSubmissionRequestSerializer
-    implements PrimitiveSerializer<TransferActionSubmissionRequest> {
+class _$TransferActionSubmissionRequestSerializer implements PrimitiveSerializer<TransferActionSubmissionRequest> {
   @override
-  final Iterable<Type> types = const [
-    TransferActionSubmissionRequest,
-    _$TransferActionSubmissionRequest
-  ];
+  final Iterable<Type> types = const [TransferActionSubmissionRequest, _$TransferActionSubmissionRequest];
 
   @override
   final String wireName = r'TransferActionSubmissionRequest';
@@ -64,9 +54,7 @@ class _$TransferActionSubmissionRequestSerializer
     TransferActionSubmissionRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -116,3 +104,4 @@ class _$TransferActionSubmissionRequestSerializer
     return result.build();
   }
 }
+

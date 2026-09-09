@@ -11,44 +11,35 @@ part 'privy_authorization_headers.g.dart';
 /// PrivyAuthorizationHeaders
 ///
 /// Properties:
-/// * [privyAppId]
-/// * [privyIdempotencyKey]
-/// * [privyRequestExpiry] - Unix timestamp in milliseconds. It expires no later than 60 seconds after issuance and never later than the frozen business action's `valid_until`.
+/// * [privyAppId] 
+/// * [privyIdempotencyKey] 
+/// * [privyRequestExpiry] - Unix timestamp in milliseconds. It expires no later than 60 seconds after issuance and never later than the frozen business action's `valid_until`. 
 @BuiltValue()
-abstract class PrivyAuthorizationHeaders
-    implements
-        Built<PrivyAuthorizationHeaders, PrivyAuthorizationHeadersBuilder> {
+abstract class PrivyAuthorizationHeaders implements Built<PrivyAuthorizationHeaders, PrivyAuthorizationHeadersBuilder> {
   @BuiltValueField(wireName: r'privy-app-id')
   String get privyAppId;
 
   @BuiltValueField(wireName: r'privy-idempotency-key')
   String get privyIdempotencyKey;
 
-  /// Unix timestamp in milliseconds. It expires no later than 60 seconds after issuance and never later than the frozen business action's `valid_until`.
+  /// Unix timestamp in milliseconds. It expires no later than 60 seconds after issuance and never later than the frozen business action's `valid_until`. 
   @BuiltValueField(wireName: r'privy-request-expiry')
   String get privyRequestExpiry;
 
   PrivyAuthorizationHeaders._();
 
-  factory PrivyAuthorizationHeaders(
-          [void updates(PrivyAuthorizationHeadersBuilder b)]) =
-      _$PrivyAuthorizationHeaders;
+  factory PrivyAuthorizationHeaders([void updates(PrivyAuthorizationHeadersBuilder b)]) = _$PrivyAuthorizationHeaders;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PrivyAuthorizationHeadersBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PrivyAuthorizationHeaders> get serializer =>
-      _$PrivyAuthorizationHeadersSerializer();
+  static Serializer<PrivyAuthorizationHeaders> get serializer => _$PrivyAuthorizationHeadersSerializer();
 }
 
-class _$PrivyAuthorizationHeadersSerializer
-    implements PrimitiveSerializer<PrivyAuthorizationHeaders> {
+class _$PrivyAuthorizationHeadersSerializer implements PrimitiveSerializer<PrivyAuthorizationHeaders> {
   @override
-  final Iterable<Type> types = const [
-    PrivyAuthorizationHeaders,
-    _$PrivyAuthorizationHeaders
-  ];
+  final Iterable<Type> types = const [PrivyAuthorizationHeaders, _$PrivyAuthorizationHeaders];
 
   @override
   final String wireName = r'PrivyAuthorizationHeaders';
@@ -81,9 +72,7 @@ class _$PrivyAuthorizationHeadersSerializer
     PrivyAuthorizationHeaders object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -147,3 +136,4 @@ class _$PrivyAuthorizationHeadersSerializer
     return result.build();
   }
 }
+

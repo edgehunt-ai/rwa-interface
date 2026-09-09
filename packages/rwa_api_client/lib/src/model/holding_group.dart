@@ -14,12 +14,11 @@ part 'holding_group.g.dart';
 /// 资产页中一支股票下的所有产品持仓
 ///
 /// Properties:
-/// * [stock]
+/// * [stock] 
 /// * [totalValueUsd] - 十进制字符串，避免浮点误差
-/// * [positions]
+/// * [positions] 
 @BuiltValue()
-abstract class HoldingGroup
-    implements Built<HoldingGroup, HoldingGroupBuilder> {
+abstract class HoldingGroup implements Built<HoldingGroup, HoldingGroupBuilder> {
   @BuiltValueField(wireName: r'stock')
   Stock get stock;
 
@@ -76,9 +75,7 @@ class _$HoldingGroupSerializer implements PrimitiveSerializer<HoldingGroup> {
     HoldingGroup object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -142,3 +139,4 @@ class _$HoldingGroupSerializer implements PrimitiveSerializer<HoldingGroup> {
     return result.build();
   }
 }
+

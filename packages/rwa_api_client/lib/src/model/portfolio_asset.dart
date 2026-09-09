@@ -14,31 +14,30 @@ import 'package:built_value/serializer.dart';
 
 part 'portfolio_asset.g.dart';
 
-/// 只读余额事实。EVM 资产的 network 仅使用 BSC、Arbitrum、Base、Ethereum 四链 allowlist；venue 资产使用 Hyperliquid。任何标识都由服务端已验证的 用户钱包集合或 venue account 派生，客户端不能覆盖所有权输入。
+/// 只读余额事实。EVM 资产的 network 仅使用 BSC、Arbitrum、Base、Ethereum 四链 allowlist；venue 资产使用 Hyperliquid。任何标识都由服务端已验证的 用户钱包集合或 venue account 派生，客户端不能覆盖所有权输入。 
 ///
 /// Properties:
-/// * [assetId]
-/// * [source_]
-/// * [network]
-/// * [walletId]
+/// * [assetId] 
+/// * [source_] 
+/// * [network] 
+/// * [walletId] 
 /// * [accountRef] - Server-issued opaque account reference; clients cannot override it.
-/// * [contractAddress]
-/// * [native_]
-/// * [symbol]
-/// * [decimals]
+/// * [contractAddress] 
+/// * [native_] 
+/// * [symbol] 
+/// * [decimals] 
 /// * [balanceRaw] - 无符号十进制整数形式的最小单位余额，不允许小数点或负号。
 /// * [balance] - 十进制字符串，避免浮点误差
 /// * [priceUsd] - 十进制字符串，避免浮点误差
 /// * [pricingSource] - USD 估值来源；不代表余额或钱包所有权来源。
 /// * [valueUsd] - 十进制字符串，避免浮点误差
-/// * [observedAt]
-/// * [blockNumber]
-/// * [blockHash]
-/// * [freshness]
-/// * [warnings]
+/// * [observedAt] 
+/// * [blockNumber] 
+/// * [blockHash] 
+/// * [freshness] 
+/// * [warnings] 
 @BuiltValue()
-abstract class PortfolioAsset
-    implements Built<PortfolioAsset, PortfolioAssetBuilder> {
+abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBuilder> {
   @BuiltValueField(wireName: r'asset_id')
   String get assetId;
 
@@ -108,19 +107,16 @@ abstract class PortfolioAsset
 
   PortfolioAsset._();
 
-  factory PortfolioAsset([void updates(PortfolioAssetBuilder b)]) =
-      _$PortfolioAsset;
+  factory PortfolioAsset([void updates(PortfolioAssetBuilder b)]) = _$PortfolioAsset;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PortfolioAssetBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PortfolioAsset> get serializer =>
-      _$PortfolioAssetSerializer();
+  static Serializer<PortfolioAsset> get serializer => _$PortfolioAssetSerializer();
 }
 
-class _$PortfolioAssetSerializer
-    implements PrimitiveSerializer<PortfolioAsset> {
+class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> {
   @override
   final Iterable<Type> types = const [PortfolioAsset, _$PortfolioAsset];
 
@@ -239,8 +235,7 @@ class _$PortfolioAssetSerializer
     yield r'warnings';
     yield serializers.serialize(
       object.warnings,
-      specifiedType:
-          const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
+      specifiedType: const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
     );
   }
 
@@ -250,9 +245,7 @@ class _$PortfolioAssetSerializer
     PortfolioAsset object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -403,8 +396,7 @@ class _$PortfolioAssetSerializer
         case r'warnings':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
           ) as BuiltList<PortfolioWarningCode>;
           result.warnings.replace(valueDes);
           break;
@@ -436,3 +428,4 @@ class _$PortfolioAssetSerializer
     return result.build();
   }
 }
+

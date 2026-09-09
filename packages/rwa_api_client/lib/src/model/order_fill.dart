@@ -11,14 +11,14 @@ part 'order_fill.g.dart';
 /// OrderFill
 ///
 /// Properties:
-/// * [fillId]
-/// * [providerTradeId]
+/// * [fillId] 
+/// * [providerTradeId] 
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [quantity] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
-/// * [feeAsset]
-/// * [providerHash]
-/// * [executedAt]
+/// * [feeAsset] 
+/// * [providerHash] 
+/// * [executedAt] 
 @BuiltValue()
 abstract class OrderFill implements Built<OrderFill, OrderFillBuilder> {
   @BuiltValueField(wireName: r'fill_id')
@@ -121,9 +121,7 @@ class _$OrderFillSerializer implements PrimitiveSerializer<OrderFill> {
     OrderFill object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -223,3 +221,4 @@ class _$OrderFillSerializer implements PrimitiveSerializer<OrderFill> {
     return result.build();
   }
 }
+

@@ -12,23 +12,22 @@ part 'hip3_challenge.g.dart';
 /// Hip3Challenge
 ///
 /// Properties:
-/// * [challengeId]
+/// * [challengeId] 
 /// * [network] - Legacy master-wallet chain label retained for the v1 compatibility window.
-/// * [environment]
-/// * [purpose]
-/// * [ownerAddress]
-/// * [agentAddress]
+/// * [environment] 
+/// * [purpose] 
+/// * [ownerAddress] 
+/// * [agentAddress] 
 /// * [typedDataJson] - Canonical JSON for the exact Hyperliquid approveAgent typed-data payload.
-/// * [payloadHash]
+/// * [payloadHash] 
 /// * [validUntil] - The registered Agent expires after at most 30 days and must then be rotated to a fresh address.
-/// * [settlementAsset]
+/// * [settlementAsset] 
 /// * [status] - `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
-/// * [message]
-/// * [createdAt]
+/// * [message] 
+/// * [createdAt] 
 /// * [expiresAt] - Signature challenge expiry; always earlier than valid_until.
 @BuiltValue()
-abstract class Hip3Challenge
-    implements Built<Hip3Challenge, Hip3ChallengeBuilder> {
+abstract class Hip3Challenge implements Built<Hip3Challenge, Hip3ChallengeBuilder> {
   @BuiltValueField(wireName: r'challenge_id')
   String get challengeId;
 
@@ -84,15 +83,13 @@ abstract class Hip3Challenge
 
   Hip3Challenge._();
 
-  factory Hip3Challenge([void updates(Hip3ChallengeBuilder b)]) =
-      _$Hip3Challenge;
+  factory Hip3Challenge([void updates(Hip3ChallengeBuilder b)]) = _$Hip3Challenge;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3ChallengeBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3Challenge> get serializer =>
-      _$Hip3ChallengeSerializer();
+  static Serializer<Hip3Challenge> get serializer => _$Hip3ChallengeSerializer();
 }
 
 class _$Hip3ChallengeSerializer implements PrimitiveSerializer<Hip3Challenge> {
@@ -187,9 +184,7 @@ class _$Hip3ChallengeSerializer implements PrimitiveSerializer<Hip3Challenge> {
     Hip3Challenge object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -270,8 +265,7 @@ class _$Hip3ChallengeSerializer implements PrimitiveSerializer<Hip3Challenge> {
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(Hip3ChallengeSettlementAssetEnum),
+            specifiedType: const FullType.nullable(Hip3ChallengeSettlementAssetEnum),
           ) as Hip3ChallengeSettlementAssetEnum?;
           if (valueDes == null) continue;
           result.settlementAsset = valueDes;
@@ -334,135 +328,101 @@ class _$Hip3ChallengeSerializer implements PrimitiveSerializer<Hip3Challenge> {
 }
 
 class Hip3ChallengeNetworkEnum extends EnumClass {
+
   /// Legacy master-wallet chain label retained for the v1 compatibility window.
   @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const Hip3ChallengeNetworkEnum arbitrum =
-      _$hip3ChallengeNetworkEnum_arbitrum;
-
+  static const Hip3ChallengeNetworkEnum arbitrum = _$hip3ChallengeNetworkEnum_arbitrum;
   /// Legacy master-wallet chain label retained for the v1 compatibility window.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeNetworkEnum unknownDefaultOpenApi =
-      _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi;
+  static const Hip3ChallengeNetworkEnum unknownDefaultOpenApi = _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3ChallengeNetworkEnum> get serializer =>
-      _$hip3ChallengeNetworkEnumSerializer;
+  static Serializer<Hip3ChallengeNetworkEnum> get serializer => _$hip3ChallengeNetworkEnumSerializer;
 
-  const Hip3ChallengeNetworkEnum._(String name) : super(name);
+  const Hip3ChallengeNetworkEnum._(String name): super(name);
 
-  static BuiltSet<Hip3ChallengeNetworkEnum> get values =>
-      _$hip3ChallengeNetworkEnumValues;
-  static Hip3ChallengeNetworkEnum valueOf(String name) =>
-      _$hip3ChallengeNetworkEnumValueOf(name);
+  static BuiltSet<Hip3ChallengeNetworkEnum> get values => _$hip3ChallengeNetworkEnumValues;
+  static Hip3ChallengeNetworkEnum valueOf(String name) => _$hip3ChallengeNetworkEnumValueOf(name);
 }
 
 class Hip3ChallengeEnvironmentEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'mainnet')
-  static const Hip3ChallengeEnvironmentEnum mainnet =
-      _$hip3ChallengeEnvironmentEnum_mainnet;
+  static const Hip3ChallengeEnvironmentEnum mainnet = _$hip3ChallengeEnvironmentEnum_mainnet;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeEnvironmentEnum unknownDefaultOpenApi =
-      _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi;
+  static const Hip3ChallengeEnvironmentEnum unknownDefaultOpenApi = _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3ChallengeEnvironmentEnum> get serializer =>
-      _$hip3ChallengeEnvironmentEnumSerializer;
+  static Serializer<Hip3ChallengeEnvironmentEnum> get serializer => _$hip3ChallengeEnvironmentEnumSerializer;
 
-  const Hip3ChallengeEnvironmentEnum._(String name) : super(name);
+  const Hip3ChallengeEnvironmentEnum._(String name): super(name);
 
-  static BuiltSet<Hip3ChallengeEnvironmentEnum> get values =>
-      _$hip3ChallengeEnvironmentEnumValues;
-  static Hip3ChallengeEnvironmentEnum valueOf(String name) =>
-      _$hip3ChallengeEnvironmentEnumValueOf(name);
+  static BuiltSet<Hip3ChallengeEnvironmentEnum> get values => _$hip3ChallengeEnvironmentEnumValues;
+  static Hip3ChallengeEnvironmentEnum valueOf(String name) => _$hip3ChallengeEnvironmentEnumValueOf(name);
 }
 
 class Hip3ChallengePurposeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'register')
-  static const Hip3ChallengePurposeEnum register =
-      _$hip3ChallengePurposeEnum_register;
+  static const Hip3ChallengePurposeEnum register = _$hip3ChallengePurposeEnum_register;
   @BuiltValueEnumConst(wireName: r'rotate')
-  static const Hip3ChallengePurposeEnum rotate =
-      _$hip3ChallengePurposeEnum_rotate;
+  static const Hip3ChallengePurposeEnum rotate = _$hip3ChallengePurposeEnum_rotate;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengePurposeEnum unknownDefaultOpenApi =
-      _$hip3ChallengePurposeEnum_unknownDefaultOpenApi;
+  static const Hip3ChallengePurposeEnum unknownDefaultOpenApi = _$hip3ChallengePurposeEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3ChallengePurposeEnum> get serializer =>
-      _$hip3ChallengePurposeEnumSerializer;
+  static Serializer<Hip3ChallengePurposeEnum> get serializer => _$hip3ChallengePurposeEnumSerializer;
 
-  const Hip3ChallengePurposeEnum._(String name) : super(name);
+  const Hip3ChallengePurposeEnum._(String name): super(name);
 
-  static BuiltSet<Hip3ChallengePurposeEnum> get values =>
-      _$hip3ChallengePurposeEnumValues;
-  static Hip3ChallengePurposeEnum valueOf(String name) =>
-      _$hip3ChallengePurposeEnumValueOf(name);
+  static BuiltSet<Hip3ChallengePurposeEnum> get values => _$hip3ChallengePurposeEnumValues;
+  static Hip3ChallengePurposeEnum valueOf(String name) => _$hip3ChallengePurposeEnumValueOf(name);
 }
 
 class Hip3ChallengeSettlementAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const Hip3ChallengeSettlementAssetEnum USDC =
-      _$hip3ChallengeSettlementAssetEnum_USDC;
+  static const Hip3ChallengeSettlementAssetEnum USDC = _$hip3ChallengeSettlementAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeSettlementAssetEnum unknownDefaultOpenApi =
-      _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi;
+  static const Hip3ChallengeSettlementAssetEnum unknownDefaultOpenApi = _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3ChallengeSettlementAssetEnum> get serializer =>
-      _$hip3ChallengeSettlementAssetEnumSerializer;
+  static Serializer<Hip3ChallengeSettlementAssetEnum> get serializer => _$hip3ChallengeSettlementAssetEnumSerializer;
 
-  const Hip3ChallengeSettlementAssetEnum._(String name) : super(name);
+  const Hip3ChallengeSettlementAssetEnum._(String name): super(name);
 
-  static BuiltSet<Hip3ChallengeSettlementAssetEnum> get values =>
-      _$hip3ChallengeSettlementAssetEnumValues;
-  static Hip3ChallengeSettlementAssetEnum valueOf(String name) =>
-      _$hip3ChallengeSettlementAssetEnumValueOf(name);
+  static BuiltSet<Hip3ChallengeSettlementAssetEnum> get values => _$hip3ChallengeSettlementAssetEnumValues;
+  static Hip3ChallengeSettlementAssetEnum valueOf(String name) => _$hip3ChallengeSettlementAssetEnumValueOf(name);
 }
 
 class Hip3ChallengeStatusEnum extends EnumClass {
+
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'issued')
-  static const Hip3ChallengeStatusEnum issued =
-      _$hip3ChallengeStatusEnum_issued;
-
+  static const Hip3ChallengeStatusEnum issued = _$hip3ChallengeStatusEnum_issued;
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'pending_signature')
-  static const Hip3ChallengeStatusEnum pendingSignature =
-      _$hip3ChallengeStatusEnum_pendingSignature;
-
+  static const Hip3ChallengeStatusEnum pendingSignature = _$hip3ChallengeStatusEnum_pendingSignature;
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'submitting')
-  static const Hip3ChallengeStatusEnum submitting =
-      _$hip3ChallengeStatusEnum_submitting;
-
+  static const Hip3ChallengeStatusEnum submitting = _$hip3ChallengeStatusEnum_submitting;
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'completed')
-  static const Hip3ChallengeStatusEnum completed =
-      _$hip3ChallengeStatusEnum_completed;
-
+  static const Hip3ChallengeStatusEnum completed = _$hip3ChallengeStatusEnum_completed;
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'expired')
-  static const Hip3ChallengeStatusEnum expired =
-      _$hip3ChallengeStatusEnum_expired;
-
+  static const Hip3ChallengeStatusEnum expired = _$hip3ChallengeStatusEnum_expired;
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'failed')
-  static const Hip3ChallengeStatusEnum failed =
-      _$hip3ChallengeStatusEnum_failed;
-
+  static const Hip3ChallengeStatusEnum failed = _$hip3ChallengeStatusEnum_failed;
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'manual_review')
-  static const Hip3ChallengeStatusEnum manualReview =
-      _$hip3ChallengeStatusEnum_manualReview;
-
+  static const Hip3ChallengeStatusEnum manualReview = _$hip3ChallengeStatusEnum_manualReview;
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeStatusEnum unknownDefaultOpenApi =
-      _$hip3ChallengeStatusEnum_unknownDefaultOpenApi;
+  static const Hip3ChallengeStatusEnum unknownDefaultOpenApi = _$hip3ChallengeStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3ChallengeStatusEnum> get serializer =>
-      _$hip3ChallengeStatusEnumSerializer;
+  static Serializer<Hip3ChallengeStatusEnum> get serializer => _$hip3ChallengeStatusEnumSerializer;
 
-  const Hip3ChallengeStatusEnum._(String name) : super(name);
+  const Hip3ChallengeStatusEnum._(String name): super(name);
 
-  static BuiltSet<Hip3ChallengeStatusEnum> get values =>
-      _$hip3ChallengeStatusEnumValues;
-  static Hip3ChallengeStatusEnum valueOf(String name) =>
-      _$hip3ChallengeStatusEnumValueOf(name);
+  static BuiltSet<Hip3ChallengeStatusEnum> get values => _$hip3ChallengeStatusEnumValues;
+  static Hip3ChallengeStatusEnum valueOf(String name) => _$hip3ChallengeStatusEnumValueOf(name);
 }
+

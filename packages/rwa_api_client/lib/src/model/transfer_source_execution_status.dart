@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'transfer_source_execution_status.g.dart';
 
 class TransferSourceExecutionStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'awaiting_wallet')
   static const TransferSourceExecutionStatus awaitingWallet = _$awaitingWallet;
   @BuiltValueEnumConst(wireName: r'submitted')
@@ -23,13 +24,11 @@ class TransferSourceExecutionStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferSourceExecutionStatus manualReview = _$manualReview;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TransferSourceExecutionStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const TransferSourceExecutionStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<TransferSourceExecutionStatus> get serializer =>
-      _$transferSourceExecutionStatusSerializer;
+  static Serializer<TransferSourceExecutionStatus> get serializer => _$transferSourceExecutionStatusSerializer;
 
-  const TransferSourceExecutionStatus._(String name) : super(name);
+  const TransferSourceExecutionStatus._(String name): super(name);
 
   static BuiltSet<TransferSourceExecutionStatus> get values => _$values;
   static TransferSourceExecutionStatus valueOf(String name) => _$valueOf(name);
@@ -41,5 +40,5 @@ class TransferSourceExecutionStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class TransferSourceExecutionStatusMixin = Object
-    with _$TransferSourceExecutionStatusMixin;
+abstract class TransferSourceExecutionStatusMixin = Object with _$TransferSourceExecutionStatusMixin;
+

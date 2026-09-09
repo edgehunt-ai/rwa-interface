@@ -12,15 +12,14 @@ part 'wallet_authorization.g.dart';
 /// WalletAuthorization
 ///
 /// Properties:
-/// * [authorizationId]
-/// * [walletId]
-/// * [purpose]
-/// * [status]
-/// * [createdAt]
-/// * [expiresAt]
+/// * [authorizationId] 
+/// * [walletId] 
+/// * [purpose] 
+/// * [status] 
+/// * [createdAt] 
+/// * [expiresAt] 
 @BuiltValue()
-abstract class WalletAuthorization
-    implements Built<WalletAuthorization, WalletAuthorizationBuilder> {
+abstract class WalletAuthorization implements Built<WalletAuthorization, WalletAuthorizationBuilder> {
   @BuiltValueField(wireName: r'authorization_id')
   String get authorizationId;
 
@@ -43,24 +42,18 @@ abstract class WalletAuthorization
 
   WalletAuthorization._();
 
-  factory WalletAuthorization([void updates(WalletAuthorizationBuilder b)]) =
-      _$WalletAuthorization;
+  factory WalletAuthorization([void updates(WalletAuthorizationBuilder b)]) = _$WalletAuthorization;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WalletAuthorizationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletAuthorization> get serializer =>
-      _$WalletAuthorizationSerializer();
+  static Serializer<WalletAuthorization> get serializer => _$WalletAuthorizationSerializer();
 }
 
-class _$WalletAuthorizationSerializer
-    implements PrimitiveSerializer<WalletAuthorization> {
+class _$WalletAuthorizationSerializer implements PrimitiveSerializer<WalletAuthorization> {
   @override
-  final Iterable<Type> types = const [
-    WalletAuthorization,
-    _$WalletAuthorization
-  ];
+  final Iterable<Type> types = const [WalletAuthorization, _$WalletAuthorization];
 
   @override
   final String wireName = r'WalletAuthorization';
@@ -108,9 +101,7 @@ class _$WalletAuthorizationSerializer
     WalletAuthorization object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -197,60 +188,46 @@ class _$WalletAuthorizationSerializer
 }
 
 class WalletAuthorizationPurposeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'order')
-  static const WalletAuthorizationPurposeEnum order =
-      _$walletAuthorizationPurposeEnum_order;
+  static const WalletAuthorizationPurposeEnum order = _$walletAuthorizationPurposeEnum_order;
   @BuiltValueEnumConst(wireName: r'transfer')
-  static const WalletAuthorizationPurposeEnum transfer =
-      _$walletAuthorizationPurposeEnum_transfer;
+  static const WalletAuthorizationPurposeEnum transfer = _$walletAuthorizationPurposeEnum_transfer;
   @BuiltValueEnumConst(wireName: r'withdrawal')
-  static const WalletAuthorizationPurposeEnum withdrawal =
-      _$walletAuthorizationPurposeEnum_withdrawal;
+  static const WalletAuthorizationPurposeEnum withdrawal = _$walletAuthorizationPurposeEnum_withdrawal;
   @BuiltValueEnumConst(wireName: r'claim')
-  static const WalletAuthorizationPurposeEnum claim =
-      _$walletAuthorizationPurposeEnum_claim;
+  static const WalletAuthorizationPurposeEnum claim = _$walletAuthorizationPurposeEnum_claim;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletAuthorizationPurposeEnum unknownDefaultOpenApi =
-      _$walletAuthorizationPurposeEnum_unknownDefaultOpenApi;
+  static const WalletAuthorizationPurposeEnum unknownDefaultOpenApi = _$walletAuthorizationPurposeEnum_unknownDefaultOpenApi;
 
-  static Serializer<WalletAuthorizationPurposeEnum> get serializer =>
-      _$walletAuthorizationPurposeEnumSerializer;
+  static Serializer<WalletAuthorizationPurposeEnum> get serializer => _$walletAuthorizationPurposeEnumSerializer;
 
-  const WalletAuthorizationPurposeEnum._(String name) : super(name);
+  const WalletAuthorizationPurposeEnum._(String name): super(name);
 
-  static BuiltSet<WalletAuthorizationPurposeEnum> get values =>
-      _$walletAuthorizationPurposeEnumValues;
-  static WalletAuthorizationPurposeEnum valueOf(String name) =>
-      _$walletAuthorizationPurposeEnumValueOf(name);
+  static BuiltSet<WalletAuthorizationPurposeEnum> get values => _$walletAuthorizationPurposeEnumValues;
+  static WalletAuthorizationPurposeEnum valueOf(String name) => _$walletAuthorizationPurposeEnumValueOf(name);
 }
 
 class WalletAuthorizationStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'pending')
-  static const WalletAuthorizationStatusEnum pending =
-      _$walletAuthorizationStatusEnum_pending;
+  static const WalletAuthorizationStatusEnum pending = _$walletAuthorizationStatusEnum_pending;
   @BuiltValueEnumConst(wireName: r'authorized')
-  static const WalletAuthorizationStatusEnum authorized =
-      _$walletAuthorizationStatusEnum_authorized;
+  static const WalletAuthorizationStatusEnum authorized = _$walletAuthorizationStatusEnum_authorized;
   @BuiltValueEnumConst(wireName: r'consumed')
-  static const WalletAuthorizationStatusEnum consumed =
-      _$walletAuthorizationStatusEnum_consumed;
+  static const WalletAuthorizationStatusEnum consumed = _$walletAuthorizationStatusEnum_consumed;
   @BuiltValueEnumConst(wireName: r'expired')
-  static const WalletAuthorizationStatusEnum expired =
-      _$walletAuthorizationStatusEnum_expired;
+  static const WalletAuthorizationStatusEnum expired = _$walletAuthorizationStatusEnum_expired;
   @BuiltValueEnumConst(wireName: r'failed')
-  static const WalletAuthorizationStatusEnum failed =
-      _$walletAuthorizationStatusEnum_failed;
+  static const WalletAuthorizationStatusEnum failed = _$walletAuthorizationStatusEnum_failed;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletAuthorizationStatusEnum unknownDefaultOpenApi =
-      _$walletAuthorizationStatusEnum_unknownDefaultOpenApi;
+  static const WalletAuthorizationStatusEnum unknownDefaultOpenApi = _$walletAuthorizationStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<WalletAuthorizationStatusEnum> get serializer =>
-      _$walletAuthorizationStatusEnumSerializer;
+  static Serializer<WalletAuthorizationStatusEnum> get serializer => _$walletAuthorizationStatusEnumSerializer;
 
-  const WalletAuthorizationStatusEnum._(String name) : super(name);
+  const WalletAuthorizationStatusEnum._(String name): super(name);
 
-  static BuiltSet<WalletAuthorizationStatusEnum> get values =>
-      _$walletAuthorizationStatusEnumValues;
-  static WalletAuthorizationStatusEnum valueOf(String name) =>
-      _$walletAuthorizationStatusEnumValueOf(name);
+  static BuiltSet<WalletAuthorizationStatusEnum> get values => _$walletAuthorizationStatusEnumValues;
+  static WalletAuthorizationStatusEnum valueOf(String name) => _$walletAuthorizationStatusEnumValueOf(name);
 }
+

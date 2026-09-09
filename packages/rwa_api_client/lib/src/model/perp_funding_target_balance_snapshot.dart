@@ -13,18 +13,15 @@ part 'perp_funding_target_balance_snapshot.g.dart';
 /// PerpFundingTargetBalanceSnapshot
 ///
 /// Properties:
-/// * [account]
-/// * [accountRef]
-/// * [asset]
+/// * [account] 
+/// * [accountRef] 
+/// * [asset] 
 /// * [availableAmount] - 十进制字符串，避免浮点误差
-/// * [source_]
-/// * [observedAt]
-/// * [validUntil]
+/// * [source_] 
+/// * [observedAt] 
+/// * [validUntil] 
 @BuiltValue()
-abstract class PerpFundingTargetBalanceSnapshot
-    implements
-        Built<PerpFundingTargetBalanceSnapshot,
-            PerpFundingTargetBalanceSnapshotBuilder> {
+abstract class PerpFundingTargetBalanceSnapshot implements Built<PerpFundingTargetBalanceSnapshot, PerpFundingTargetBalanceSnapshotBuilder> {
   @BuiltValueField(wireName: r'account')
   PerpFundingTargetBalanceSnapshotAccountEnum get account;
   // enum accountEnum {  hip3,  };
@@ -51,25 +48,18 @@ abstract class PerpFundingTargetBalanceSnapshot
 
   PerpFundingTargetBalanceSnapshot._();
 
-  factory PerpFundingTargetBalanceSnapshot(
-          [void updates(PerpFundingTargetBalanceSnapshotBuilder b)]) =
-      _$PerpFundingTargetBalanceSnapshot;
+  factory PerpFundingTargetBalanceSnapshot([void updates(PerpFundingTargetBalanceSnapshotBuilder b)]) = _$PerpFundingTargetBalanceSnapshot;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PerpFundingTargetBalanceSnapshotBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpFundingTargetBalanceSnapshot> get serializer =>
-      _$PerpFundingTargetBalanceSnapshotSerializer();
+  static Serializer<PerpFundingTargetBalanceSnapshot> get serializer => _$PerpFundingTargetBalanceSnapshotSerializer();
 }
 
-class _$PerpFundingTargetBalanceSnapshotSerializer
-    implements PrimitiveSerializer<PerpFundingTargetBalanceSnapshot> {
+class _$PerpFundingTargetBalanceSnapshotSerializer implements PrimitiveSerializer<PerpFundingTargetBalanceSnapshot> {
   @override
-  final Iterable<Type> types = const [
-    PerpFundingTargetBalanceSnapshot,
-    _$PerpFundingTargetBalanceSnapshot
-  ];
+  final Iterable<Type> types = const [PerpFundingTargetBalanceSnapshot, _$PerpFundingTargetBalanceSnapshot];
 
   @override
   final String wireName = r'PerpFundingTargetBalanceSnapshot';
@@ -82,8 +72,7 @@ class _$PerpFundingTargetBalanceSnapshotSerializer
     yield r'account';
     yield serializers.serialize(
       object.account,
-      specifiedType:
-          const FullType(PerpFundingTargetBalanceSnapshotAccountEnum),
+      specifiedType: const FullType(PerpFundingTargetBalanceSnapshotAccountEnum),
     );
     yield r'account_ref';
     yield serializers.serialize(
@@ -103,8 +92,7 @@ class _$PerpFundingTargetBalanceSnapshotSerializer
     yield r'source';
     yield serializers.serialize(
       object.source_,
-      specifiedType:
-          const FullType(PerpFundingTargetBalanceSnapshotSource_Enum),
+      specifiedType: const FullType(PerpFundingTargetBalanceSnapshotSource_Enum),
     );
     yield r'observed_at';
     yield serializers.serialize(
@@ -124,9 +112,7 @@ class _$PerpFundingTargetBalanceSnapshotSerializer
     PerpFundingTargetBalanceSnapshot object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -144,8 +130,7 @@ class _$PerpFundingTargetBalanceSnapshotSerializer
         case r'account':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PerpFundingTargetBalanceSnapshotAccountEnum),
+            specifiedType: const FullType(PerpFundingTargetBalanceSnapshotAccountEnum),
           ) as PerpFundingTargetBalanceSnapshotAccountEnum;
           result.account = valueDes;
           break;
@@ -173,8 +158,7 @@ class _$PerpFundingTargetBalanceSnapshotSerializer
         case r'source':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PerpFundingTargetBalanceSnapshotSource_Enum),
+            specifiedType: const FullType(PerpFundingTargetBalanceSnapshotSource_Enum),
           ) as PerpFundingTargetBalanceSnapshotSource_Enum;
           result.source_ = valueDes;
           break;
@@ -222,43 +206,32 @@ class _$PerpFundingTargetBalanceSnapshotSerializer
 }
 
 class PerpFundingTargetBalanceSnapshotAccountEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'hip3')
-  static const PerpFundingTargetBalanceSnapshotAccountEnum hip3 =
-      _$perpFundingTargetBalanceSnapshotAccountEnum_hip3;
+  static const PerpFundingTargetBalanceSnapshotAccountEnum hip3 = _$perpFundingTargetBalanceSnapshotAccountEnum_hip3;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetBalanceSnapshotAccountEnum
-      unknownDefaultOpenApi =
-      _$perpFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
+  static const PerpFundingTargetBalanceSnapshotAccountEnum unknownDefaultOpenApi = _$perpFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpFundingTargetBalanceSnapshotAccountEnum>
-      get serializer => _$perpFundingTargetBalanceSnapshotAccountEnumSerializer;
+  static Serializer<PerpFundingTargetBalanceSnapshotAccountEnum> get serializer => _$perpFundingTargetBalanceSnapshotAccountEnumSerializer;
 
-  const PerpFundingTargetBalanceSnapshotAccountEnum._(String name)
-      : super(name);
+  const PerpFundingTargetBalanceSnapshotAccountEnum._(String name): super(name);
 
-  static BuiltSet<PerpFundingTargetBalanceSnapshotAccountEnum> get values =>
-      _$perpFundingTargetBalanceSnapshotAccountEnumValues;
-  static PerpFundingTargetBalanceSnapshotAccountEnum valueOf(String name) =>
-      _$perpFundingTargetBalanceSnapshotAccountEnumValueOf(name);
+  static BuiltSet<PerpFundingTargetBalanceSnapshotAccountEnum> get values => _$perpFundingTargetBalanceSnapshotAccountEnumValues;
+  static PerpFundingTargetBalanceSnapshotAccountEnum valueOf(String name) => _$perpFundingTargetBalanceSnapshotAccountEnumValueOf(name);
 }
 
 class PerpFundingTargetBalanceSnapshotSource_Enum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'hyperliquid_info')
-  static const PerpFundingTargetBalanceSnapshotSource_Enum hyperliquidInfo =
-      _$perpFundingTargetBalanceSnapshotSourceEnum_hyperliquidInfo;
+  static const PerpFundingTargetBalanceSnapshotSource_Enum hyperliquidInfo = _$perpFundingTargetBalanceSnapshotSourceEnum_hyperliquidInfo;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetBalanceSnapshotSource_Enum
-      unknownDefaultOpenApi =
-      _$perpFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
+  static const PerpFundingTargetBalanceSnapshotSource_Enum unknownDefaultOpenApi = _$perpFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpFundingTargetBalanceSnapshotSource_Enum>
-      get serializer => _$perpFundingTargetBalanceSnapshotSourceEnumSerializer;
+  static Serializer<PerpFundingTargetBalanceSnapshotSource_Enum> get serializer => _$perpFundingTargetBalanceSnapshotSourceEnumSerializer;
 
-  const PerpFundingTargetBalanceSnapshotSource_Enum._(String name)
-      : super(name);
+  const PerpFundingTargetBalanceSnapshotSource_Enum._(String name): super(name);
 
-  static BuiltSet<PerpFundingTargetBalanceSnapshotSource_Enum> get values =>
-      _$perpFundingTargetBalanceSnapshotSourceEnumValues;
-  static PerpFundingTargetBalanceSnapshotSource_Enum valueOf(String name) =>
-      _$perpFundingTargetBalanceSnapshotSourceEnumValueOf(name);
+  static BuiltSet<PerpFundingTargetBalanceSnapshotSource_Enum> get values => _$perpFundingTargetBalanceSnapshotSourceEnumValues;
+  static PerpFundingTargetBalanceSnapshotSource_Enum valueOf(String name) => _$perpFundingTargetBalanceSnapshotSourceEnumValueOf(name);
 }
+

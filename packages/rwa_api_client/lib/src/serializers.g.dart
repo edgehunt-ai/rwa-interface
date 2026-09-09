@@ -257,10 +257,19 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(GasPaymentMode.serializer)
       ..add(GasPaymentQuote.serializer)
       ..add(GasSponsorshipDecision.serializer)
+      ..add(Hip3Action.serializer)
+      ..add(Hip3ActionCreateRequest.serializer)
+      ..add(Hip3ActionPage.serializer)
+      ..add(Hip3ActionStatus.serializer)
+      ..add(Hip3ActionStep.serializer)
+      ..add(Hip3ActionStepKindEnum.serializer)
+      ..add(Hip3ActionStepStatusEnum.serializer)
       ..add(Hip3ActionSubmissionRequest.serializer)
       ..add(Hip3Agent.serializer)
       ..add(Hip3AgentEnvironmentEnum.serializer)
       ..add(Hip3AgentStatus.serializer)
+      ..add(Hip3CancelOrderActionRequest.serializer)
+      ..add(Hip3CancelOrderActionRequestOperationEnum.serializer)
       ..add(Hip3Challenge.serializer)
       ..add(Hip3ChallengeCompleteRequest.serializer)
       ..add(Hip3ChallengeEnvironmentEnum.serializer)
@@ -270,6 +279,22 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3ChallengeRequestPurposeEnum.serializer)
       ..add(Hip3ChallengeSettlementAssetEnum.serializer)
       ..add(Hip3ChallengeStatusEnum.serializer)
+      ..add(Hip3ClearTpSlActionRequest.serializer)
+      ..add(Hip3ClearTpSlActionRequestOperationEnum.serializer)
+      ..add(Hip3ClearTpSlActionRequestScopeEnum.serializer)
+      ..add(Hip3CloseActionRequest.serializer)
+      ..add(Hip3CloseActionRequestOperationEnum.serializer)
+      ..add(Hip3ClosePreview.serializer)
+      ..add(Hip3ClosePreviewRequest.serializer)
+      ..add(Hip3ClosePreviewRequestTypeEnum.serializer)
+      ..add(Hip3ClosePreviewSideEnum.serializer)
+      ..add(Hip3ClosePreviewTypeEnum.serializer)
+      ..add(Hip3ConditionalOrder.serializer)
+      ..add(Hip3ConditionalOrderExecutionTypeEnum.serializer)
+      ..add(Hip3ConditionalOrderRoleEnum.serializer)
+      ..add(Hip3ConditionalOrderSizeModeEnum.serializer)
+      ..add(Hip3ConditionalOrderTriggerReferenceEnum.serializer)
+      ..add(Hip3ConditionalOrderTriggerStatusEnum.serializer)
       ..add(Hip3Eip712Domain.serializer)
       ..add(Hip3Eip712DomainChainIdEnum.serializer)
       ..add(Hip3Eip712DomainNameEnum.serializer)
@@ -283,12 +308,31 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3Eip712TypedData.serializer)
       ..add(Hip3Eip712TypedDataPrimaryTypeEnum.serializer)
       ..add(Hip3Eip712Types.serializer)
+      ..add(Hip3Environment.serializer)
       ..add(Hip3MainnetProduct.serializer)
-      ..add(Hip3OrderAction.serializer)
-      ..add(Hip3OrderActionEnvironmentEnum.serializer)
-      ..add(Hip3OrderActionOperationEnum.serializer)
-      ..add(Hip3OrderActionSignatureFormatEnum.serializer)
-      ..add(Hip3OrderActionSigningMethodEnum.serializer)
+      ..add(Hip3Operation.serializer)
+      ..add(Hip3PlaceOrderActionRequest.serializer)
+      ..add(Hip3PlaceOrderActionRequestOperationEnum.serializer)
+      ..add(Hip3PreviewExecution.serializer)
+      ..add(Hip3PreviewExecutionTypeEnum.serializer)
+      ..add(Hip3ProtectionSpec.serializer)
+      ..add(Hip3ProtectionSpecSizeModeEnum.serializer)
+      ..add(Hip3SetLeverageActionRequest.serializer)
+      ..add(Hip3SetLeverageActionRequestOperationEnum.serializer)
+      ..add(Hip3SetTpSlActionRequest.serializer)
+      ..add(Hip3SetTpSlActionRequestOperationEnum.serializer)
+      ..add(Hip3StepSigningPayload.serializer)
+      ..add(Hip3StepSigningPayloadSignatureFormatEnum.serializer)
+      ..add(Hip3StepSigningPayloadSigningMethodEnum.serializer)
+      ..add(Hip3TimeInForce.serializer)
+      ..add(Hip3TradingContext.serializer)
+      ..add(Hip3TradingContextSettlementAssetEnum.serializer)
+      ..add(Hip3TradingRules.serializer)
+      ..add(Hip3TradingRulesOrderTypesEnum.serializer)
+      ..add(Hip3TradingRulesTriggerReferencesEnum.serializer)
+      ..add(Hip3TriggerSpec.serializer)
+      ..add(Hip3TriggerSpecExecutionTypeEnum.serializer)
+      ..add(Hip3TriggerSpecTriggerReferenceEnum.serializer)
       ..add(HoldingGroup.serializer)
       ..add(HyperliquidSignature.serializer)
       ..add(HyperliquidSignatureVEnum.serializer)
@@ -607,11 +651,20 @@ Serializers _$serializers = (Serializers().toBuilder()
               BuiltList, const [const FullType(FundingWalletActionSummary)]),
           () => ListBuilder<FundingWalletActionSummary>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3Action)]),
+          () => ListBuilder<Hip3Action>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3ActionStep)]),
+          () => ListBuilder<Hip3ActionStep>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => ListBuilder<String>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Hip3Eip712Field)]),
           () => ListBuilder<Hip3Eip712Field>())
       ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(KeyValue)]),
-          () => ListBuilder<KeyValue>())
+          const FullType(BuiltList, const [const FullType(Hip3Operation)]),
+          () => ListBuilder<Hip3Operation>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(KeyValue)]),
           () => ListBuilder<KeyValue>())
@@ -633,6 +686,23 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(KeyValue)]),
           () => ListBuilder<KeyValue>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(KeyValue)]),
+          () => ListBuilder<KeyValue>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(MarginMode)]),
+          () => ListBuilder<MarginMode>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(Hip3TradingRulesOrderTypesEnum)]),
+          () => ListBuilder<Hip3TradingRulesOrderTypesEnum>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3TimeInForce)]),
+          () => ListBuilder<Hip3TimeInForce>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(Hip3TradingRulesTriggerReferencesEnum)]),
+          () => ListBuilder<Hip3TradingRulesTriggerReferencesEnum>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Order)]),
           () => ListBuilder<Order>())
@@ -701,6 +771,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(StockGroup)]),
           () => ListBuilder<StockGroup>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(String)]),
+          () => ListBuilder<String>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(String)]),
           () => ListBuilder<String>())

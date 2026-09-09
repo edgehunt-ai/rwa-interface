@@ -16,19 +16,18 @@ part 'product_detail.g.dart';
 /// ProductDetail
 ///
 /// Properties:
-/// * [symbol]
-/// * [name]
-/// * [kind]
+/// * [symbol] 
+/// * [name] 
+/// * [kind] 
 /// * [title] - 产品标题，如 `BSC bStocks Token` / `HIP-3 Perpetual`
 /// * [badge] - 角标，如 `Spot · BSC` / `Isolated margin`
 /// * [description] - 产品说明长文案
-/// * [quote]
-/// * [stats]
-/// * [assetInfo]
+/// * [quote] 
+/// * [stats] 
+/// * [assetInfo] 
 /// * [tradingHours] - 交易时间说明
 @BuiltValue()
-abstract class ProductDetail
-    implements Built<ProductDetail, ProductDetailBuilder> {
+abstract class ProductDetail implements Built<ProductDetail, ProductDetailBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -67,16 +66,14 @@ abstract class ProductDetail
 
   ProductDetail._();
 
-  factory ProductDetail([void updates(ProductDetailBuilder b)]) =
-      _$ProductDetail;
+  factory ProductDetail([void updates(ProductDetailBuilder b)]) = _$ProductDetail;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(ProductDetailBuilder b) =>
-      b..tradingHours = ProductDetailTradingHoursEnum.valueOf('24x7');
+  static void _defaults(ProductDetailBuilder b) => b
+      ..tradingHours = ProductDetailTradingHoursEnum.valueOf('24x7');
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ProductDetail> get serializer =>
-      _$ProductDetailSerializer();
+  static Serializer<ProductDetail> get serializer => _$ProductDetailSerializer();
 }
 
 class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
@@ -161,9 +158,7 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
     ProductDetail object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -249,8 +244,7 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
         case r'trading_hours':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(ProductDetailTradingHoursEnum),
+            specifiedType: const FullType.nullable(ProductDetailTradingHoursEnum),
           ) as ProductDetailTradingHoursEnum?;
           if (valueDes == null) continue;
           result.tradingHours = valueDes;
@@ -285,28 +279,22 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
 }
 
 class ProductDetailTradingHoursEnum extends EnumClass {
+
   /// 交易时间说明
   @BuiltValueEnumConst(wireName: r'24x7')
-  static const ProductDetailTradingHoursEnum n24x7 =
-      _$productDetailTradingHoursEnum_n24x7;
-
+  static const ProductDetailTradingHoursEnum n24x7 = _$productDetailTradingHoursEnum_n24x7;
   /// 交易时间说明
   @BuiltValueEnumConst(wireName: r'us_market_hours')
-  static const ProductDetailTradingHoursEnum usMarketHours =
-      _$productDetailTradingHoursEnum_usMarketHours;
-
+  static const ProductDetailTradingHoursEnum usMarketHours = _$productDetailTradingHoursEnum_usMarketHours;
   /// 交易时间说明
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductDetailTradingHoursEnum unknownDefaultOpenApi =
-      _$productDetailTradingHoursEnum_unknownDefaultOpenApi;
+  static const ProductDetailTradingHoursEnum unknownDefaultOpenApi = _$productDetailTradingHoursEnum_unknownDefaultOpenApi;
 
-  static Serializer<ProductDetailTradingHoursEnum> get serializer =>
-      _$productDetailTradingHoursEnumSerializer;
+  static Serializer<ProductDetailTradingHoursEnum> get serializer => _$productDetailTradingHoursEnumSerializer;
 
-  const ProductDetailTradingHoursEnum._(String name) : super(name);
+  const ProductDetailTradingHoursEnum._(String name): super(name);
 
-  static BuiltSet<ProductDetailTradingHoursEnum> get values =>
-      _$productDetailTradingHoursEnumValues;
-  static ProductDetailTradingHoursEnum valueOf(String name) =>
-      _$productDetailTradingHoursEnumValueOf(name);
+  static BuiltSet<ProductDetailTradingHoursEnum> get values => _$productDetailTradingHoursEnumValues;
+  static ProductDetailTradingHoursEnum valueOf(String name) => _$productDetailTradingHoursEnumValueOf(name);
 }
+

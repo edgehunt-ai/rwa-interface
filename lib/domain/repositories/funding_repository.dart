@@ -7,6 +7,10 @@ import '../models/withdrawal.dart';
 
 abstract interface class FundingRepository {
   Future<FundingCatalog> getCatalog();
+  Future<DepositInstruction> getDepositInstruction({
+    required String chain,
+    required String token,
+  });
   Future<FundingPlan> createFundingPlan({
     required String tradePreviewId,
     String? sourceAssetId,

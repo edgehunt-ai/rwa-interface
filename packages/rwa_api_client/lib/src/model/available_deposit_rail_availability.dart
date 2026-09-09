@@ -13,13 +13,10 @@ part 'available_deposit_rail_availability.g.dart';
 /// AvailableDepositRailAvailability
 ///
 /// Properties:
-/// * [status]
-/// * [blockers]
+/// * [status] 
+/// * [blockers] 
 @BuiltValue()
-abstract class AvailableDepositRailAvailability
-    implements
-        Built<AvailableDepositRailAvailability,
-            AvailableDepositRailAvailabilityBuilder> {
+abstract class AvailableDepositRailAvailability implements Built<AvailableDepositRailAvailability, AvailableDepositRailAvailabilityBuilder> {
   @BuiltValueField(wireName: r'status')
   AvailableDepositRailAvailabilityStatusEnum get status;
   // enum statusEnum {  available,  };
@@ -29,25 +26,18 @@ abstract class AvailableDepositRailAvailability
 
   AvailableDepositRailAvailability._();
 
-  factory AvailableDepositRailAvailability(
-          [void updates(AvailableDepositRailAvailabilityBuilder b)]) =
-      _$AvailableDepositRailAvailability;
+  factory AvailableDepositRailAvailability([void updates(AvailableDepositRailAvailabilityBuilder b)]) = _$AvailableDepositRailAvailability;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AvailableDepositRailAvailabilityBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AvailableDepositRailAvailability> get serializer =>
-      _$AvailableDepositRailAvailabilitySerializer();
+  static Serializer<AvailableDepositRailAvailability> get serializer => _$AvailableDepositRailAvailabilitySerializer();
 }
 
-class _$AvailableDepositRailAvailabilitySerializer
-    implements PrimitiveSerializer<AvailableDepositRailAvailability> {
+class _$AvailableDepositRailAvailabilitySerializer implements PrimitiveSerializer<AvailableDepositRailAvailability> {
   @override
-  final Iterable<Type> types = const [
-    AvailableDepositRailAvailability,
-    _$AvailableDepositRailAvailability
-  ];
+  final Iterable<Type> types = const [AvailableDepositRailAvailability, _$AvailableDepositRailAvailability];
 
   @override
   final String wireName = r'AvailableDepositRailAvailability';
@@ -75,9 +65,7 @@ class _$AvailableDepositRailAvailabilitySerializer
     AvailableDepositRailAvailability object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -95,16 +83,14 @@ class _$AvailableDepositRailAvailabilitySerializer
         case r'status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(AvailableDepositRailAvailabilityStatusEnum),
+            specifiedType: const FullType(AvailableDepositRailAvailabilityStatusEnum),
           ) as AvailableDepositRailAvailabilityStatusEnum;
           result.status = valueDes;
           break;
         case r'blockers':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(DepositRailBlocker)]),
+            specifiedType: const FullType(BuiltList, [FullType(DepositRailBlocker)]),
           ) as BuiltList<DepositRailBlocker>;
           result.blockers.replace(valueDes);
           break;
@@ -138,21 +124,17 @@ class _$AvailableDepositRailAvailabilitySerializer
 }
 
 class AvailableDepositRailAvailabilityStatusEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'available')
-  static const AvailableDepositRailAvailabilityStatusEnum available =
-      _$availableDepositRailAvailabilityStatusEnum_available;
+  static const AvailableDepositRailAvailabilityStatusEnum available = _$availableDepositRailAvailabilityStatusEnum_available;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const AvailableDepositRailAvailabilityStatusEnum
-      unknownDefaultOpenApi =
-      _$availableDepositRailAvailabilityStatusEnum_unknownDefaultOpenApi;
+  static const AvailableDepositRailAvailabilityStatusEnum unknownDefaultOpenApi = _$availableDepositRailAvailabilityStatusEnum_unknownDefaultOpenApi;
 
-  static Serializer<AvailableDepositRailAvailabilityStatusEnum>
-      get serializer => _$availableDepositRailAvailabilityStatusEnumSerializer;
+  static Serializer<AvailableDepositRailAvailabilityStatusEnum> get serializer => _$availableDepositRailAvailabilityStatusEnumSerializer;
 
-  const AvailableDepositRailAvailabilityStatusEnum._(String name) : super(name);
+  const AvailableDepositRailAvailabilityStatusEnum._(String name): super(name);
 
-  static BuiltSet<AvailableDepositRailAvailabilityStatusEnum> get values =>
-      _$availableDepositRailAvailabilityStatusEnumValues;
-  static AvailableDepositRailAvailabilityStatusEnum valueOf(String name) =>
-      _$availableDepositRailAvailabilityStatusEnumValueOf(name);
+  static BuiltSet<AvailableDepositRailAvailabilityStatusEnum> get values => _$availableDepositRailAvailabilityStatusEnumValues;
+  static AvailableDepositRailAvailabilityStatusEnum valueOf(String name) => _$availableDepositRailAvailabilityStatusEnumValueOf(name);
 }
+

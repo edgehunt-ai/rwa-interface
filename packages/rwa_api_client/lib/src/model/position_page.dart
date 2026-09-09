@@ -15,12 +15,11 @@ part 'position_page.g.dart';
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore]
-/// * [items]
+/// * [hasMore] 
+/// * [items] 
 /// * [totalValueUsd] - 十进制字符串，避免浮点误差
 @BuiltValue()
-abstract class PositionPage
-    implements Page, Built<PositionPage, PositionPageBuilder> {
+abstract class PositionPage implements Page, Built<PositionPage, PositionPageBuilder> {
   @BuiltValueField(wireName: r'items')
   BuiltList<Position> get items;
 
@@ -52,12 +51,10 @@ class _$PositionPageSerializer implements PrimitiveSerializer<PositionPage> {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null
-        ? null
-        : serializers.serialize(
-            object.nextCursor,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.nextCursor == null ? null : serializers.serialize(
+      object.nextCursor,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'has_more';
     yield serializers.serialize(
       object.hasMore,
@@ -83,9 +80,7 @@ class _$PositionPageSerializer implements PrimitiveSerializer<PositionPage> {
     PositionPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -158,3 +153,4 @@ class _$PositionPageSerializer implements PrimitiveSerializer<PositionPage> {
     return result.build();
   }
 }
+

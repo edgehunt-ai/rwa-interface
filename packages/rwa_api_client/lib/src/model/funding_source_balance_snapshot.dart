@@ -12,19 +12,16 @@ part 'funding_source_balance_snapshot.g.dart';
 /// FundingSourceBalanceSnapshot
 ///
 /// Properties:
-/// * [walletId]
-/// * [walletAddress]
-/// * [asset]
+/// * [walletId] 
+/// * [walletAddress] 
+/// * [asset] 
 /// * [availableAmount] - 十进制字符串，避免浮点误差
-/// * [gasAsset]
+/// * [gasAsset] 
 /// * [gasBalance] - 十进制字符串，避免浮点误差
-/// * [observedAt]
-/// * [validUntil]
+/// * [observedAt] 
+/// * [validUntil] 
 @BuiltValue()
-abstract class FundingSourceBalanceSnapshot
-    implements
-        Built<FundingSourceBalanceSnapshot,
-            FundingSourceBalanceSnapshotBuilder> {
+abstract class FundingSourceBalanceSnapshot implements Built<FundingSourceBalanceSnapshot, FundingSourceBalanceSnapshotBuilder> {
   @BuiltValueField(wireName: r'wallet_id')
   String get walletId;
 
@@ -53,25 +50,18 @@ abstract class FundingSourceBalanceSnapshot
 
   FundingSourceBalanceSnapshot._();
 
-  factory FundingSourceBalanceSnapshot(
-          [void updates(FundingSourceBalanceSnapshotBuilder b)]) =
-      _$FundingSourceBalanceSnapshot;
+  factory FundingSourceBalanceSnapshot([void updates(FundingSourceBalanceSnapshotBuilder b)]) = _$FundingSourceBalanceSnapshot;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingSourceBalanceSnapshotBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingSourceBalanceSnapshot> get serializer =>
-      _$FundingSourceBalanceSnapshotSerializer();
+  static Serializer<FundingSourceBalanceSnapshot> get serializer => _$FundingSourceBalanceSnapshotSerializer();
 }
 
-class _$FundingSourceBalanceSnapshotSerializer
-    implements PrimitiveSerializer<FundingSourceBalanceSnapshot> {
+class _$FundingSourceBalanceSnapshotSerializer implements PrimitiveSerializer<FundingSourceBalanceSnapshot> {
   @override
-  final Iterable<Type> types = const [
-    FundingSourceBalanceSnapshot,
-    _$FundingSourceBalanceSnapshot
-  ];
+  final Iterable<Type> types = const [FundingSourceBalanceSnapshot, _$FundingSourceBalanceSnapshot];
 
   @override
   final String wireName = r'FundingSourceBalanceSnapshot';
@@ -129,9 +119,7 @@ class _$FundingSourceBalanceSnapshotSerializer
     FundingSourceBalanceSnapshot object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -230,3 +218,4 @@ class _$FundingSourceBalanceSnapshotSerializer
     return result.build();
   }
 }
+

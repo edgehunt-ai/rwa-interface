@@ -10,15 +10,15 @@ import 'package:built_value/serializer.dart';
 part 'funding_plan_mode.g.dart';
 
 class FundingPlanMode extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'auto_single_source')
   static const FundingPlanMode autoSingleSource = _$autoSingleSource;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingPlanMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<FundingPlanMode> get serializer =>
-      _$fundingPlanModeSerializer;
+  static Serializer<FundingPlanMode> get serializer => _$fundingPlanModeSerializer;
 
-  const FundingPlanMode._(String name) : super(name);
+  const FundingPlanMode._(String name): super(name);
 
   static BuiltSet<FundingPlanMode> get values => _$values;
   static FundingPlanMode valueOf(String name) => _$valueOf(name);
@@ -31,3 +31,4 @@ class FundingPlanMode extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class FundingPlanModeMixin = Object with _$FundingPlanModeMixin;
+

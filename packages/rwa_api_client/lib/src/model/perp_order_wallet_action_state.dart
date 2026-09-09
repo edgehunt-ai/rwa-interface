@@ -13,13 +13,11 @@ part 'perp_order_wallet_action_state.g.dart';
 /// PerpOrderWalletActionState
 ///
 /// Properties:
-/// * [kind]
-/// * [nextAction]
-/// * [walletActionBlocker]
+/// * [kind] 
+/// * [nextAction] 
+/// * [walletActionBlocker] 
 @BuiltValue()
-abstract class PerpOrderWalletActionState
-    implements
-        Built<PerpOrderWalletActionState, PerpOrderWalletActionStateBuilder> {
+abstract class PerpOrderWalletActionState implements Built<PerpOrderWalletActionState, PerpOrderWalletActionStateBuilder> {
   @BuiltValueField(wireName: r'kind')
   PerpOrderWalletActionStateKindEnum get kind;
   // enum kindEnum {  perp,  };
@@ -33,25 +31,18 @@ abstract class PerpOrderWalletActionState
 
   PerpOrderWalletActionState._();
 
-  factory PerpOrderWalletActionState(
-          [void updates(PerpOrderWalletActionStateBuilder b)]) =
-      _$PerpOrderWalletActionState;
+  factory PerpOrderWalletActionState([void updates(PerpOrderWalletActionStateBuilder b)]) = _$PerpOrderWalletActionState;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PerpOrderWalletActionStateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpOrderWalletActionState> get serializer =>
-      _$PerpOrderWalletActionStateSerializer();
+  static Serializer<PerpOrderWalletActionState> get serializer => _$PerpOrderWalletActionStateSerializer();
 }
 
-class _$PerpOrderWalletActionStateSerializer
-    implements PrimitiveSerializer<PerpOrderWalletActionState> {
+class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<PerpOrderWalletActionState> {
   @override
-  final Iterable<Type> types = const [
-    PerpOrderWalletActionState,
-    _$PerpOrderWalletActionState
-  ];
+  final Iterable<Type> types = const [PerpOrderWalletActionState, _$PerpOrderWalletActionState];
 
   @override
   final String wireName = r'PerpOrderWalletActionState';
@@ -67,17 +58,14 @@ class _$PerpOrderWalletActionStateSerializer
       specifiedType: const FullType(PerpOrderWalletActionStateKindEnum),
     );
     yield r'next_action';
-    yield object.nextAction == null
-        ? null
-        : serializers.serialize(
-            object.nextAction,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.nextAction == null ? null : serializers.serialize(
+      object.nextAction,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'wallet_action_blocker';
     yield serializers.serialize(
       object.walletActionBlocker,
-      specifiedType:
-          const FullType(PerpOrderWalletActionStateWalletActionBlockerEnum),
+      specifiedType: const FullType(PerpOrderWalletActionStateWalletActionBlockerEnum),
     );
   }
 
@@ -87,9 +75,7 @@ class _$PerpOrderWalletActionStateSerializer
     PerpOrderWalletActionState object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -122,8 +108,7 @@ class _$PerpOrderWalletActionStateSerializer
         case r'wallet_action_blocker':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(
-                PerpOrderWalletActionStateWalletActionBlockerEnum),
+            specifiedType: const FullType(PerpOrderWalletActionStateWalletActionBlockerEnum),
           ) as PerpOrderWalletActionStateWalletActionBlockerEnum;
           result.walletActionBlocker = valueDes;
           break;
@@ -157,43 +142,32 @@ class _$PerpOrderWalletActionStateSerializer
 }
 
 class PerpOrderWalletActionStateKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'perp')
-  static const PerpOrderWalletActionStateKindEnum perp =
-      _$perpOrderWalletActionStateKindEnum_perp;
+  static const PerpOrderWalletActionStateKindEnum perp = _$perpOrderWalletActionStateKindEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderWalletActionStateKindEnum unknownDefaultOpenApi =
-      _$perpOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
+  static const PerpOrderWalletActionStateKindEnum unknownDefaultOpenApi = _$perpOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderWalletActionStateKindEnum> get serializer =>
-      _$perpOrderWalletActionStateKindEnumSerializer;
+  static Serializer<PerpOrderWalletActionStateKindEnum> get serializer => _$perpOrderWalletActionStateKindEnumSerializer;
 
-  const PerpOrderWalletActionStateKindEnum._(String name) : super(name);
+  const PerpOrderWalletActionStateKindEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderWalletActionStateKindEnum> get values =>
-      _$perpOrderWalletActionStateKindEnumValues;
-  static PerpOrderWalletActionStateKindEnum valueOf(String name) =>
-      _$perpOrderWalletActionStateKindEnumValueOf(name);
+  static BuiltSet<PerpOrderWalletActionStateKindEnum> get values => _$perpOrderWalletActionStateKindEnumValues;
+  static PerpOrderWalletActionStateKindEnum valueOf(String name) => _$perpOrderWalletActionStateKindEnumValueOf(name);
 }
 
 class PerpOrderWalletActionStateWalletActionBlockerEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'not_applicable')
-  static const PerpOrderWalletActionStateWalletActionBlockerEnum notApplicable =
-      _$perpOrderWalletActionStateWalletActionBlockerEnum_notApplicable;
+  static const PerpOrderWalletActionStateWalletActionBlockerEnum notApplicable = _$perpOrderWalletActionStateWalletActionBlockerEnum_notApplicable;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderWalletActionStateWalletActionBlockerEnum
-      unknownDefaultOpenApi =
-      _$perpOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
+  static const PerpOrderWalletActionStateWalletActionBlockerEnum unknownDefaultOpenApi = _$perpOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderWalletActionStateWalletActionBlockerEnum>
-      get serializer =>
-          _$perpOrderWalletActionStateWalletActionBlockerEnumSerializer;
+  static Serializer<PerpOrderWalletActionStateWalletActionBlockerEnum> get serializer => _$perpOrderWalletActionStateWalletActionBlockerEnumSerializer;
 
-  const PerpOrderWalletActionStateWalletActionBlockerEnum._(String name)
-      : super(name);
+  const PerpOrderWalletActionStateWalletActionBlockerEnum._(String name): super(name);
 
-  static BuiltSet<PerpOrderWalletActionStateWalletActionBlockerEnum>
-      get values => _$perpOrderWalletActionStateWalletActionBlockerEnumValues;
-  static PerpOrderWalletActionStateWalletActionBlockerEnum valueOf(
-          String name) =>
-      _$perpOrderWalletActionStateWalletActionBlockerEnumValueOf(name);
+  static BuiltSet<PerpOrderWalletActionStateWalletActionBlockerEnum> get values => _$perpOrderWalletActionStateWalletActionBlockerEnumValues;
+  static PerpOrderWalletActionStateWalletActionBlockerEnum valueOf(String name) => _$perpOrderWalletActionStateWalletActionBlockerEnumValueOf(name);
 }
+

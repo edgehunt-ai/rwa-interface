@@ -12,13 +12,11 @@ part 'disclosures_sessions_inner.g.dart';
 /// DisclosuresSessionsInner
 ///
 /// Properties:
-/// * [session]
-/// * [title]
-/// * [body]
+/// * [session] 
+/// * [title] 
+/// * [body] 
 @BuiltValue()
-abstract class DisclosuresSessionsInner
-    implements
-        Built<DisclosuresSessionsInner, DisclosuresSessionsInnerBuilder> {
+abstract class DisclosuresSessionsInner implements Built<DisclosuresSessionsInner, DisclosuresSessionsInnerBuilder> {
   @BuiltValueField(wireName: r'session')
   SessionKind? get session;
   // enum sessionEnum {  premarket,  regular,  after,  overnight,  weekend,  holiday,  };
@@ -31,25 +29,18 @@ abstract class DisclosuresSessionsInner
 
   DisclosuresSessionsInner._();
 
-  factory DisclosuresSessionsInner(
-          [void updates(DisclosuresSessionsInnerBuilder b)]) =
-      _$DisclosuresSessionsInner;
+  factory DisclosuresSessionsInner([void updates(DisclosuresSessionsInnerBuilder b)]) = _$DisclosuresSessionsInner;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DisclosuresSessionsInnerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DisclosuresSessionsInner> get serializer =>
-      _$DisclosuresSessionsInnerSerializer();
+  static Serializer<DisclosuresSessionsInner> get serializer => _$DisclosuresSessionsInnerSerializer();
 }
 
-class _$DisclosuresSessionsInnerSerializer
-    implements PrimitiveSerializer<DisclosuresSessionsInner> {
+class _$DisclosuresSessionsInnerSerializer implements PrimitiveSerializer<DisclosuresSessionsInner> {
   @override
-  final Iterable<Type> types = const [
-    DisclosuresSessionsInner,
-    _$DisclosuresSessionsInner
-  ];
+  final Iterable<Type> types = const [DisclosuresSessionsInner, _$DisclosuresSessionsInner];
 
   @override
   final String wireName = r'DisclosuresSessionsInner';
@@ -88,9 +79,7 @@ class _$DisclosuresSessionsInnerSerializer
     DisclosuresSessionsInner object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -157,3 +146,4 @@ class _$DisclosuresSessionsInnerSerializer
     return result.build();
   }
 }
+

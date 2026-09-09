@@ -13,18 +13,15 @@ part 'bstock_funding_target_balance_snapshot.g.dart';
 /// BstockFundingTargetBalanceSnapshot
 ///
 /// Properties:
-/// * [account]
-/// * [accountRef]
-/// * [asset]
+/// * [account] 
+/// * [accountRef] 
+/// * [asset] 
 /// * [availableAmount] - 十进制字符串，避免浮点误差
-/// * [source_]
-/// * [observedAt]
-/// * [validUntil]
+/// * [source_] 
+/// * [observedAt] 
+/// * [validUntil] 
 @BuiltValue()
-abstract class BstockFundingTargetBalanceSnapshot
-    implements
-        Built<BstockFundingTargetBalanceSnapshot,
-            BstockFundingTargetBalanceSnapshotBuilder> {
+abstract class BstockFundingTargetBalanceSnapshot implements Built<BstockFundingTargetBalanceSnapshot, BstockFundingTargetBalanceSnapshotBuilder> {
   @BuiltValueField(wireName: r'account')
   BstockFundingTargetBalanceSnapshotAccountEnum get account;
   // enum accountEnum {  bstocks,  };
@@ -51,25 +48,18 @@ abstract class BstockFundingTargetBalanceSnapshot
 
   BstockFundingTargetBalanceSnapshot._();
 
-  factory BstockFundingTargetBalanceSnapshot(
-          [void updates(BstockFundingTargetBalanceSnapshotBuilder b)]) =
-      _$BstockFundingTargetBalanceSnapshot;
+  factory BstockFundingTargetBalanceSnapshot([void updates(BstockFundingTargetBalanceSnapshotBuilder b)]) = _$BstockFundingTargetBalanceSnapshot;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BstockFundingTargetBalanceSnapshotBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BstockFundingTargetBalanceSnapshot> get serializer =>
-      _$BstockFundingTargetBalanceSnapshotSerializer();
+  static Serializer<BstockFundingTargetBalanceSnapshot> get serializer => _$BstockFundingTargetBalanceSnapshotSerializer();
 }
 
-class _$BstockFundingTargetBalanceSnapshotSerializer
-    implements PrimitiveSerializer<BstockFundingTargetBalanceSnapshot> {
+class _$BstockFundingTargetBalanceSnapshotSerializer implements PrimitiveSerializer<BstockFundingTargetBalanceSnapshot> {
   @override
-  final Iterable<Type> types = const [
-    BstockFundingTargetBalanceSnapshot,
-    _$BstockFundingTargetBalanceSnapshot
-  ];
+  final Iterable<Type> types = const [BstockFundingTargetBalanceSnapshot, _$BstockFundingTargetBalanceSnapshot];
 
   @override
   final String wireName = r'BstockFundingTargetBalanceSnapshot';
@@ -82,8 +72,7 @@ class _$BstockFundingTargetBalanceSnapshotSerializer
     yield r'account';
     yield serializers.serialize(
       object.account,
-      specifiedType:
-          const FullType(BstockFundingTargetBalanceSnapshotAccountEnum),
+      specifiedType: const FullType(BstockFundingTargetBalanceSnapshotAccountEnum),
     );
     yield r'account_ref';
     yield serializers.serialize(
@@ -103,8 +92,7 @@ class _$BstockFundingTargetBalanceSnapshotSerializer
     yield r'source';
     yield serializers.serialize(
       object.source_,
-      specifiedType:
-          const FullType(BstockFundingTargetBalanceSnapshotSource_Enum),
+      specifiedType: const FullType(BstockFundingTargetBalanceSnapshotSource_Enum),
     );
     yield r'observed_at';
     yield serializers.serialize(
@@ -124,9 +112,7 @@ class _$BstockFundingTargetBalanceSnapshotSerializer
     BstockFundingTargetBalanceSnapshot object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -144,8 +130,7 @@ class _$BstockFundingTargetBalanceSnapshotSerializer
         case r'account':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BstockFundingTargetBalanceSnapshotAccountEnum),
+            specifiedType: const FullType(BstockFundingTargetBalanceSnapshotAccountEnum),
           ) as BstockFundingTargetBalanceSnapshotAccountEnum;
           result.account = valueDes;
           break;
@@ -173,8 +158,7 @@ class _$BstockFundingTargetBalanceSnapshotSerializer
         case r'source':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BstockFundingTargetBalanceSnapshotSource_Enum),
+            specifiedType: const FullType(BstockFundingTargetBalanceSnapshotSource_Enum),
           ) as BstockFundingTargetBalanceSnapshotSource_Enum;
           result.source_ = valueDes;
           break;
@@ -222,45 +206,32 @@ class _$BstockFundingTargetBalanceSnapshotSerializer
 }
 
 class BstockFundingTargetBalanceSnapshotAccountEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bstocks')
-  static const BstockFundingTargetBalanceSnapshotAccountEnum bstocks =
-      _$bstockFundingTargetBalanceSnapshotAccountEnum_bstocks;
+  static const BstockFundingTargetBalanceSnapshotAccountEnum bstocks = _$bstockFundingTargetBalanceSnapshotAccountEnum_bstocks;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetBalanceSnapshotAccountEnum
-      unknownDefaultOpenApi =
-      _$bstockFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetBalanceSnapshotAccountEnum unknownDefaultOpenApi = _$bstockFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetBalanceSnapshotAccountEnum>
-      get serializer =>
-          _$bstockFundingTargetBalanceSnapshotAccountEnumSerializer;
+  static Serializer<BstockFundingTargetBalanceSnapshotAccountEnum> get serializer => _$bstockFundingTargetBalanceSnapshotAccountEnumSerializer;
 
-  const BstockFundingTargetBalanceSnapshotAccountEnum._(String name)
-      : super(name);
+  const BstockFundingTargetBalanceSnapshotAccountEnum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetBalanceSnapshotAccountEnum> get values =>
-      _$bstockFundingTargetBalanceSnapshotAccountEnumValues;
-  static BstockFundingTargetBalanceSnapshotAccountEnum valueOf(String name) =>
-      _$bstockFundingTargetBalanceSnapshotAccountEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetBalanceSnapshotAccountEnum> get values => _$bstockFundingTargetBalanceSnapshotAccountEnumValues;
+  static BstockFundingTargetBalanceSnapshotAccountEnum valueOf(String name) => _$bstockFundingTargetBalanceSnapshotAccountEnumValueOf(name);
 }
 
 class BstockFundingTargetBalanceSnapshotSource_Enum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bsc_rpc')
-  static const BstockFundingTargetBalanceSnapshotSource_Enum bscRpc =
-      _$bstockFundingTargetBalanceSnapshotSourceEnum_bscRpc;
+  static const BstockFundingTargetBalanceSnapshotSource_Enum bscRpc = _$bstockFundingTargetBalanceSnapshotSourceEnum_bscRpc;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetBalanceSnapshotSource_Enum
-      unknownDefaultOpenApi =
-      _$bstockFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
+  static const BstockFundingTargetBalanceSnapshotSource_Enum unknownDefaultOpenApi = _$bstockFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockFundingTargetBalanceSnapshotSource_Enum>
-      get serializer =>
-          _$bstockFundingTargetBalanceSnapshotSourceEnumSerializer;
+  static Serializer<BstockFundingTargetBalanceSnapshotSource_Enum> get serializer => _$bstockFundingTargetBalanceSnapshotSourceEnumSerializer;
 
-  const BstockFundingTargetBalanceSnapshotSource_Enum._(String name)
-      : super(name);
+  const BstockFundingTargetBalanceSnapshotSource_Enum._(String name): super(name);
 
-  static BuiltSet<BstockFundingTargetBalanceSnapshotSource_Enum> get values =>
-      _$bstockFundingTargetBalanceSnapshotSourceEnumValues;
-  static BstockFundingTargetBalanceSnapshotSource_Enum valueOf(String name) =>
-      _$bstockFundingTargetBalanceSnapshotSourceEnumValueOf(name);
+  static BuiltSet<BstockFundingTargetBalanceSnapshotSource_Enum> get values => _$bstockFundingTargetBalanceSnapshotSourceEnumValues;
+  static BstockFundingTargetBalanceSnapshotSource_Enum valueOf(String name) => _$bstockFundingTargetBalanceSnapshotSourceEnumValueOf(name);
 }
+

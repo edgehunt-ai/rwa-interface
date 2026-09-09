@@ -14,8 +14,8 @@ part 'stock_group.g.dart';
 /// 市场页「股票」Tab 的一张卡片
 ///
 /// Properties:
-/// * [stock]
-/// * [products]
+/// * [stock] 
+/// * [products] 
 @BuiltValue()
 abstract class StockGroup implements Built<StockGroup, StockGroupBuilder> {
   @BuiltValueField(wireName: r'stock')
@@ -65,9 +65,7 @@ class _$StockGroupSerializer implements PrimitiveSerializer<StockGroup> {
     StockGroup object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -92,8 +90,7 @@ class _$StockGroupSerializer implements PrimitiveSerializer<StockGroup> {
         case r'products':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(ProductListing)]),
+            specifiedType: const FullType(BuiltList, [FullType(ProductListing)]),
           ) as BuiltList<ProductListing>;
           result.products.replace(valueDes);
           break;
@@ -125,3 +122,4 @@ class _$StockGroupSerializer implements PrimitiveSerializer<StockGroup> {
     return result.build();
   }
 }
+

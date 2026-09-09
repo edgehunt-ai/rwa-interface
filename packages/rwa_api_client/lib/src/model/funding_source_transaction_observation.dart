@@ -12,17 +12,14 @@ part 'funding_source_transaction_observation.g.dart';
 /// FundingSourceTransactionObservation
 ///
 /// Properties:
-/// * [chainId]
-/// * [txHash]
-/// * [status]
-/// * [receiptSuccess]
-/// * [confirmations]
-/// * [observedAt]
+/// * [chainId] 
+/// * [txHash] 
+/// * [status] 
+/// * [receiptSuccess] 
+/// * [confirmations] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class FundingSourceTransactionObservation
-    implements
-        Built<FundingSourceTransactionObservation,
-            FundingSourceTransactionObservationBuilder> {
+abstract class FundingSourceTransactionObservation implements Built<FundingSourceTransactionObservation, FundingSourceTransactionObservationBuilder> {
   @BuiltValueField(wireName: r'chain_id')
   int get chainId;
 
@@ -44,25 +41,18 @@ abstract class FundingSourceTransactionObservation
 
   FundingSourceTransactionObservation._();
 
-  factory FundingSourceTransactionObservation(
-          [void updates(FundingSourceTransactionObservationBuilder b)]) =
-      _$FundingSourceTransactionObservation;
+  factory FundingSourceTransactionObservation([void updates(FundingSourceTransactionObservationBuilder b)]) = _$FundingSourceTransactionObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingSourceTransactionObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingSourceTransactionObservation> get serializer =>
-      _$FundingSourceTransactionObservationSerializer();
+  static Serializer<FundingSourceTransactionObservation> get serializer => _$FundingSourceTransactionObservationSerializer();
 }
 
-class _$FundingSourceTransactionObservationSerializer
-    implements PrimitiveSerializer<FundingSourceTransactionObservation> {
+class _$FundingSourceTransactionObservationSerializer implements PrimitiveSerializer<FundingSourceTransactionObservation> {
   @override
-  final Iterable<Type> types = const [
-    FundingSourceTransactionObservation,
-    _$FundingSourceTransactionObservation
-  ];
+  final Iterable<Type> types = const [FundingSourceTransactionObservation, _$FundingSourceTransactionObservation];
 
   @override
   final String wireName = r'FundingSourceTransactionObservation';
@@ -110,9 +100,7 @@ class _$FundingSourceTransactionObservationSerializer
     FundingSourceTransactionObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -197,3 +185,4 @@ class _$FundingSourceTransactionObservationSerializer
     return result.build();
   }
 }
+

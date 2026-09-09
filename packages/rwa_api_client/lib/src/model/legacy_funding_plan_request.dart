@@ -13,14 +13,12 @@ part 'legacy_funding_plan_request.g.dart';
 /// LegacyFundingPlanRequest
 ///
 /// Properties:
-/// * [rail]
-/// * [asset]
+/// * [rail] 
+/// * [asset] 
 /// * [amount] - 十进制字符串，避免浮点误差
 @Deprecated('LegacyFundingPlanRequest has been deprecated')
 @BuiltValue()
-abstract class LegacyFundingPlanRequest
-    implements
-        Built<LegacyFundingPlanRequest, LegacyFundingPlanRequestBuilder> {
+abstract class LegacyFundingPlanRequest implements Built<LegacyFundingPlanRequest, LegacyFundingPlanRequestBuilder> {
   @BuiltValueField(wireName: r'rail')
   ProductKind get rail;
   // enum railEnum {  bstock,  perp,  };
@@ -35,25 +33,18 @@ abstract class LegacyFundingPlanRequest
 
   LegacyFundingPlanRequest._();
 
-  factory LegacyFundingPlanRequest(
-          [void updates(LegacyFundingPlanRequestBuilder b)]) =
-      _$LegacyFundingPlanRequest;
+  factory LegacyFundingPlanRequest([void updates(LegacyFundingPlanRequestBuilder b)]) = _$LegacyFundingPlanRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LegacyFundingPlanRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LegacyFundingPlanRequest> get serializer =>
-      _$LegacyFundingPlanRequestSerializer();
+  static Serializer<LegacyFundingPlanRequest> get serializer => _$LegacyFundingPlanRequestSerializer();
 }
 
-class _$LegacyFundingPlanRequestSerializer
-    implements PrimitiveSerializer<LegacyFundingPlanRequest> {
+class _$LegacyFundingPlanRequestSerializer implements PrimitiveSerializer<LegacyFundingPlanRequest> {
   @override
-  final Iterable<Type> types = const [
-    LegacyFundingPlanRequest,
-    _$LegacyFundingPlanRequest
-  ];
+  final Iterable<Type> types = const [LegacyFundingPlanRequest, _$LegacyFundingPlanRequest];
 
   @override
   final String wireName = r'LegacyFundingPlanRequest';
@@ -86,9 +77,7 @@ class _$LegacyFundingPlanRequestSerializer
     LegacyFundingPlanRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -155,20 +144,17 @@ class _$LegacyFundingPlanRequestSerializer
 
 @Deprecated('LegacyFundingPlanRequestAssetEnum has been deprecated')
 class LegacyFundingPlanRequestAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const LegacyFundingPlanRequestAssetEnum USDC =
-      _$legacyFundingPlanRequestAssetEnum_USDC;
+  static const LegacyFundingPlanRequestAssetEnum USDC = _$legacyFundingPlanRequestAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyFundingPlanRequestAssetEnum unknownDefaultOpenApi =
-      _$legacyFundingPlanRequestAssetEnum_unknownDefaultOpenApi;
+  static const LegacyFundingPlanRequestAssetEnum unknownDefaultOpenApi = _$legacyFundingPlanRequestAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyFundingPlanRequestAssetEnum> get serializer =>
-      _$legacyFundingPlanRequestAssetEnumSerializer;
+  static Serializer<LegacyFundingPlanRequestAssetEnum> get serializer => _$legacyFundingPlanRequestAssetEnumSerializer;
 
-  const LegacyFundingPlanRequestAssetEnum._(String name) : super(name);
+  const LegacyFundingPlanRequestAssetEnum._(String name): super(name);
 
-  static BuiltSet<LegacyFundingPlanRequestAssetEnum> get values =>
-      _$legacyFundingPlanRequestAssetEnumValues;
-  static LegacyFundingPlanRequestAssetEnum valueOf(String name) =>
-      _$legacyFundingPlanRequestAssetEnumValueOf(name);
+  static BuiltSet<LegacyFundingPlanRequestAssetEnum> get values => _$legacyFundingPlanRequestAssetEnumValues;
+  static LegacyFundingPlanRequestAssetEnum valueOf(String name) => _$legacyFundingPlanRequestAssetEnumValueOf(name);
 }
+

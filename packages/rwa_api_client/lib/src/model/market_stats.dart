@@ -15,7 +15,7 @@ part 'market_stats.g.dart';
 /// * [low24h] - 十进制字符串，避免浮点误差
 /// * [turnover24hUsd] - 十进制字符串，避免浮点误差
 /// * [volume24h] - 十进制字符串，避免浮点误差
-/// * [volume24hUnit]
+/// * [volume24hUnit] 
 /// * [referenceLabel] - bStocks 为 `US Stock Reference`；HIP-3 为 `Spot / Reference Price`
 /// * [referencePrice] - 十进制字符串，避免浮点误差
 /// * [relativeLabel] - bStocks 为 `Premium`；HIP-3 为 `Basis`
@@ -24,7 +24,7 @@ part 'market_stats.g.dart';
 /// * [bestBid] - 十进制字符串，避免浮点误差
 /// * [bestAsk] - 十进制字符串，避免浮点误差
 /// * [fundingRate] - 仅 HIP-3。正费率多头付空头，负费率反向。
-/// * [nextFundingAt]
+/// * [nextFundingAt] 
 /// * [openInterestUsd] - 仅 HIP-3
 @BuiltValue()
 abstract class MarketStats implements Built<MarketStats, MarketStatsBuilder> {
@@ -222,9 +222,7 @@ class _$MarketStatsSerializer implements PrimitiveSerializer<MarketStats> {
     MarketStats object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -387,3 +385,4 @@ class _$MarketStatsSerializer implements PrimitiveSerializer<MarketStats> {
     return result.build();
   }
 }
+

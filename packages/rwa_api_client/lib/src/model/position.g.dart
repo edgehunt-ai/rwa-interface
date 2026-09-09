@@ -68,6 +68,14 @@ class _$PositionSideEnumSerializer
 
 class _$Position extends Position {
   @override
+  final String? productId;
+  @override
+  final String? positionVersion;
+  @override
+  final String? hip3ActionId;
+  @override
+  final BuiltList<String>? protectionOrderIds;
+  @override
   final String positionId;
   @override
   final String symbol;
@@ -120,7 +128,11 @@ class _$Position extends Position {
       (PositionBuilder()..update(updates))._build();
 
   _$Position._(
-      {required this.positionId,
+      {this.productId,
+      this.positionVersion,
+      this.hip3ActionId,
+      this.protectionOrderIds,
+      required this.positionId,
       required this.symbol,
       this.name,
       required this.kind,
@@ -156,6 +168,10 @@ class _$Position extends Position {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Position &&
+        productId == other.productId &&
+        positionVersion == other.positionVersion &&
+        hip3ActionId == other.hip3ActionId &&
+        protectionOrderIds == other.protectionOrderIds &&
         positionId == other.positionId &&
         symbol == other.symbol &&
         name == other.name &&
@@ -185,6 +201,10 @@ class _$Position extends Position {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, productId.hashCode);
+    _$hash = $jc(_$hash, positionVersion.hashCode);
+    _$hash = $jc(_$hash, hip3ActionId.hashCode);
+    _$hash = $jc(_$hash, protectionOrderIds.hashCode);
     _$hash = $jc(_$hash, positionId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
@@ -216,6 +236,10 @@ class _$Position extends Position {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Position')
+          ..add('productId', productId)
+          ..add('positionVersion', positionVersion)
+          ..add('hip3ActionId', hip3ActionId)
+          ..add('protectionOrderIds', protectionOrderIds)
           ..add('positionId', positionId)
           ..add('symbol', symbol)
           ..add('name', name)
@@ -246,6 +270,25 @@ class _$Position extends Position {
 
 class PositionBuilder implements Builder<Position, PositionBuilder> {
   _$Position? _$v;
+
+  String? _productId;
+  String? get productId => _$this._productId;
+  set productId(String? productId) => _$this._productId = productId;
+
+  String? _positionVersion;
+  String? get positionVersion => _$this._positionVersion;
+  set positionVersion(String? positionVersion) =>
+      _$this._positionVersion = positionVersion;
+
+  String? _hip3ActionId;
+  String? get hip3ActionId => _$this._hip3ActionId;
+  set hip3ActionId(String? hip3ActionId) => _$this._hip3ActionId = hip3ActionId;
+
+  ListBuilder<String>? _protectionOrderIds;
+  ListBuilder<String> get protectionOrderIds =>
+      _$this._protectionOrderIds ??= ListBuilder<String>();
+  set protectionOrderIds(ListBuilder<String>? protectionOrderIds) =>
+      _$this._protectionOrderIds = protectionOrderIds;
 
   String? _positionId;
   String? get positionId => _$this._positionId;
@@ -356,6 +399,10 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
   PositionBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _productId = $v.productId;
+      _positionVersion = $v.positionVersion;
+      _hip3ActionId = $v.hip3ActionId;
+      _protectionOrderIds = $v.protectionOrderIds?.toBuilder();
       _positionId = $v.positionId;
       _symbol = $v.symbol;
       _name = $v.name;
@@ -399,38 +446,55 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
   Position build() => _build();
 
   _$Position _build() {
-    final _$result = _$v ??
-        _$Position._(
-          positionId: BuiltValueNullFieldError.checkNotNull(
-              positionId, r'Position', 'positionId'),
-          symbol: BuiltValueNullFieldError.checkNotNull(
-              symbol, r'Position', 'symbol'),
-          name: name,
-          kind:
-              BuiltValueNullFieldError.checkNotNull(kind, r'Position', 'kind'),
-          side: side,
-          quantity: BuiltValueNullFieldError.checkNotNull(
-              quantity, r'Position', 'quantity'),
-          quantityUnit: quantityUnit,
-          valueUsd: BuiltValueNullFieldError.checkNotNull(
-              valueUsd, r'Position', 'valueUsd'),
-          entryPrice: entryPrice,
-          markPrice: markPrice,
-          unrealizedPnl: unrealizedPnl,
-          unrealizedPnlPercent: unrealizedPnlPercent,
-          realizedPnl: realizedPnl,
-          costBasis: costBasis,
-          leverage: leverage,
-          marginMode: marginMode,
-          margin: margin,
-          liquidationPrice: liquidationPrice,
-          fundingPaid: fundingPaid,
-          takeProfitPrice: takeProfitPrice,
-          stopLossPrice: stopLossPrice,
-          stopLimitPrice: stopLimitPrice,
-          openedAt: openedAt,
-          updatedAt: updatedAt,
-        );
+    _$Position _$result;
+    try {
+      _$result = _$v ??
+          _$Position._(
+            productId: productId,
+            positionVersion: positionVersion,
+            hip3ActionId: hip3ActionId,
+            protectionOrderIds: _protectionOrderIds?.build(),
+            positionId: BuiltValueNullFieldError.checkNotNull(
+                positionId, r'Position', 'positionId'),
+            symbol: BuiltValueNullFieldError.checkNotNull(
+                symbol, r'Position', 'symbol'),
+            name: name,
+            kind: BuiltValueNullFieldError.checkNotNull(
+                kind, r'Position', 'kind'),
+            side: side,
+            quantity: BuiltValueNullFieldError.checkNotNull(
+                quantity, r'Position', 'quantity'),
+            quantityUnit: quantityUnit,
+            valueUsd: BuiltValueNullFieldError.checkNotNull(
+                valueUsd, r'Position', 'valueUsd'),
+            entryPrice: entryPrice,
+            markPrice: markPrice,
+            unrealizedPnl: unrealizedPnl,
+            unrealizedPnlPercent: unrealizedPnlPercent,
+            realizedPnl: realizedPnl,
+            costBasis: costBasis,
+            leverage: leverage,
+            marginMode: marginMode,
+            margin: margin,
+            liquidationPrice: liquidationPrice,
+            fundingPaid: fundingPaid,
+            takeProfitPrice: takeProfitPrice,
+            stopLossPrice: stopLossPrice,
+            stopLimitPrice: stopLimitPrice,
+            openedAt: openedAt,
+            updatedAt: updatedAt,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'protectionOrderIds';
+        _protectionOrderIds?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'Position', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

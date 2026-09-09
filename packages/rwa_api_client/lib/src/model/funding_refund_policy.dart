@@ -12,13 +12,12 @@ part 'funding_refund_policy.g.dart';
 /// FundingRefundPolicy
 ///
 /// Properties:
-/// * [address]
-/// * [addressRole]
-/// * [mayDeductGas]
+/// * [address] 
+/// * [addressRole] 
+/// * [mayDeductGas] 
 /// * [timingNote] - Must not promise an instant or full refund.
 @BuiltValue()
-abstract class FundingRefundPolicy
-    implements Built<FundingRefundPolicy, FundingRefundPolicyBuilder> {
+abstract class FundingRefundPolicy implements Built<FundingRefundPolicy, FundingRefundPolicyBuilder> {
   @BuiltValueField(wireName: r'address')
   String get address;
 
@@ -35,24 +34,18 @@ abstract class FundingRefundPolicy
 
   FundingRefundPolicy._();
 
-  factory FundingRefundPolicy([void updates(FundingRefundPolicyBuilder b)]) =
-      _$FundingRefundPolicy;
+  factory FundingRefundPolicy([void updates(FundingRefundPolicyBuilder b)]) = _$FundingRefundPolicy;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRefundPolicyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRefundPolicy> get serializer =>
-      _$FundingRefundPolicySerializer();
+  static Serializer<FundingRefundPolicy> get serializer => _$FundingRefundPolicySerializer();
 }
 
-class _$FundingRefundPolicySerializer
-    implements PrimitiveSerializer<FundingRefundPolicy> {
+class _$FundingRefundPolicySerializer implements PrimitiveSerializer<FundingRefundPolicy> {
   @override
-  final Iterable<Type> types = const [
-    FundingRefundPolicy,
-    _$FundingRefundPolicy
-  ];
+  final Iterable<Type> types = const [FundingRefundPolicy, _$FundingRefundPolicy];
 
   @override
   final String wireName = r'FundingRefundPolicy';
@@ -90,9 +83,7 @@ class _$FundingRefundPolicySerializer
     FundingRefundPolicy object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -165,20 +156,17 @@ class _$FundingRefundPolicySerializer
 }
 
 class FundingRefundPolicyAddressRoleEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'source_wallet')
-  static const FundingRefundPolicyAddressRoleEnum sourceWallet =
-      _$fundingRefundPolicyAddressRoleEnum_sourceWallet;
+  static const FundingRefundPolicyAddressRoleEnum sourceWallet = _$fundingRefundPolicyAddressRoleEnum_sourceWallet;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRefundPolicyAddressRoleEnum unknownDefaultOpenApi =
-      _$fundingRefundPolicyAddressRoleEnum_unknownDefaultOpenApi;
+  static const FundingRefundPolicyAddressRoleEnum unknownDefaultOpenApi = _$fundingRefundPolicyAddressRoleEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingRefundPolicyAddressRoleEnum> get serializer =>
-      _$fundingRefundPolicyAddressRoleEnumSerializer;
+  static Serializer<FundingRefundPolicyAddressRoleEnum> get serializer => _$fundingRefundPolicyAddressRoleEnumSerializer;
 
-  const FundingRefundPolicyAddressRoleEnum._(String name) : super(name);
+  const FundingRefundPolicyAddressRoleEnum._(String name): super(name);
 
-  static BuiltSet<FundingRefundPolicyAddressRoleEnum> get values =>
-      _$fundingRefundPolicyAddressRoleEnumValues;
-  static FundingRefundPolicyAddressRoleEnum valueOf(String name) =>
-      _$fundingRefundPolicyAddressRoleEnumValueOf(name);
+  static BuiltSet<FundingRefundPolicyAddressRoleEnum> get values => _$fundingRefundPolicyAddressRoleEnumValues;
+  static FundingRefundPolicyAddressRoleEnum valueOf(String name) => _$fundingRefundPolicyAddressRoleEnumValueOf(name);
 }
+

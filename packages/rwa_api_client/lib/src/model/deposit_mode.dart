@@ -11,25 +11,23 @@ part 'deposit_mode.g.dart';
 
 @Deprecated('DepositMode has been deprecated')
 class DepositMode extends EnumClass {
+
   /// Legacy input retained only for the side-effect-free POST compatibility adapter.
   @BuiltValueEnumConst(wireName: r'wallet')
   static const DepositMode wallet = _$wallet;
-
   /// Legacy input retained only for the side-effect-free POST compatibility adapter.
   @BuiltValueEnumConst(wireName: r'trade')
   static const DepositMode trade = _$trade;
-
   /// Legacy input retained only for the side-effect-free POST compatibility adapter.
   @BuiltValueEnumConst(wireName: r'external_import')
   static const DepositMode externalImport = _$externalImport;
-
   /// Legacy input retained only for the side-effect-free POST compatibility adapter.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const DepositMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<DepositMode> get serializer => _$depositModeSerializer;
 
-  const DepositMode._(String name) : super(name);
+  const DepositMode._(String name): super(name);
 
   static BuiltSet<DepositMode> get values => _$values;
   static DepositMode valueOf(String name) => _$valueOf(name);
@@ -42,3 +40,4 @@ class DepositMode extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class DepositModeMixin = Object with _$DepositModeMixin;
+

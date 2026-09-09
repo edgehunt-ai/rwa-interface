@@ -13,14 +13,11 @@ part 'bstock_order_wallet_action_state.g.dart';
 /// BstockOrderWalletActionState
 ///
 /// Properties:
-/// * [kind]
-/// * [nextAction]
+/// * [kind] 
+/// * [nextAction] 
 /// * [walletActionBlocker] - Must be null when `next_action` is present; enforced by server validation.
 @BuiltValue()
-abstract class BstockOrderWalletActionState
-    implements
-        Built<BstockOrderWalletActionState,
-            BstockOrderWalletActionStateBuilder> {
+abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletActionState, BstockOrderWalletActionStateBuilder> {
   @BuiltValueField(wireName: r'kind')
   BstockOrderWalletActionStateKindEnum get kind;
   // enum kindEnum {  bstock,  };
@@ -35,25 +32,18 @@ abstract class BstockOrderWalletActionState
 
   BstockOrderWalletActionState._();
 
-  factory BstockOrderWalletActionState(
-          [void updates(BstockOrderWalletActionStateBuilder b)]) =
-      _$BstockOrderWalletActionState;
+  factory BstockOrderWalletActionState([void updates(BstockOrderWalletActionStateBuilder b)]) = _$BstockOrderWalletActionState;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BstockOrderWalletActionStateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BstockOrderWalletActionState> get serializer =>
-      _$BstockOrderWalletActionStateSerializer();
+  static Serializer<BstockOrderWalletActionState> get serializer => _$BstockOrderWalletActionStateSerializer();
 }
 
-class _$BstockOrderWalletActionStateSerializer
-    implements PrimitiveSerializer<BstockOrderWalletActionState> {
+class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<BstockOrderWalletActionState> {
   @override
-  final Iterable<Type> types = const [
-    BstockOrderWalletActionState,
-    _$BstockOrderWalletActionState
-  ];
+  final Iterable<Type> types = const [BstockOrderWalletActionState, _$BstockOrderWalletActionState];
 
   @override
   final String wireName = r'BstockOrderWalletActionState';
@@ -69,20 +59,15 @@ class _$BstockOrderWalletActionStateSerializer
       specifiedType: const FullType(BstockOrderWalletActionStateKindEnum),
     );
     yield r'next_action';
-    yield object.nextAction == null
-        ? null
-        : serializers.serialize(
-            object.nextAction,
-            specifiedType: const FullType.nullable(OrderEvmAction),
-          );
+    yield object.nextAction == null ? null : serializers.serialize(
+      object.nextAction,
+      specifiedType: const FullType.nullable(OrderEvmAction),
+    );
     yield r'wallet_action_blocker';
-    yield object.walletActionBlocker == null
-        ? null
-        : serializers.serialize(
-            object.walletActionBlocker,
-            specifiedType: const FullType.nullable(
-                BstockOrderWalletActionStateWalletActionBlockerEnum),
-          );
+    yield object.walletActionBlocker == null ? null : serializers.serialize(
+      object.walletActionBlocker,
+      specifiedType: const FullType.nullable(BstockOrderWalletActionStateWalletActionBlockerEnum),
+    );
   }
 
   @override
@@ -91,9 +76,7 @@ class _$BstockOrderWalletActionStateSerializer
     BstockOrderWalletActionState object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -126,8 +109,7 @@ class _$BstockOrderWalletActionStateSerializer
         case r'wallet_action_blocker':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(
-                BstockOrderWalletActionStateWalletActionBlockerEnum),
+            specifiedType: const FullType.nullable(BstockOrderWalletActionStateWalletActionBlockerEnum),
           ) as BstockOrderWalletActionStateWalletActionBlockerEnum?;
           if (valueDes == null) continue;
           result.walletActionBlocker = valueDes;
@@ -162,59 +144,40 @@ class _$BstockOrderWalletActionStateSerializer
 }
 
 class BstockOrderWalletActionStateKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bstock')
-  static const BstockOrderWalletActionStateKindEnum bstock =
-      _$bstockOrderWalletActionStateKindEnum_bstock;
+  static const BstockOrderWalletActionStateKindEnum bstock = _$bstockOrderWalletActionStateKindEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderWalletActionStateKindEnum unknownDefaultOpenApi =
-      _$bstockOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
+  static const BstockOrderWalletActionStateKindEnum unknownDefaultOpenApi = _$bstockOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockOrderWalletActionStateKindEnum> get serializer =>
-      _$bstockOrderWalletActionStateKindEnumSerializer;
+  static Serializer<BstockOrderWalletActionStateKindEnum> get serializer => _$bstockOrderWalletActionStateKindEnumSerializer;
 
-  const BstockOrderWalletActionStateKindEnum._(String name) : super(name);
+  const BstockOrderWalletActionStateKindEnum._(String name): super(name);
 
-  static BuiltSet<BstockOrderWalletActionStateKindEnum> get values =>
-      _$bstockOrderWalletActionStateKindEnumValues;
-  static BstockOrderWalletActionStateKindEnum valueOf(String name) =>
-      _$bstockOrderWalletActionStateKindEnumValueOf(name);
+  static BuiltSet<BstockOrderWalletActionStateKindEnum> get values => _$bstockOrderWalletActionStateKindEnumValues;
+  static BstockOrderWalletActionStateKindEnum valueOf(String name) => _$bstockOrderWalletActionStateKindEnumValueOf(name);
 }
 
 class BstockOrderWalletActionStateWalletActionBlockerEnum extends EnumClass {
+
   /// Must be null when `next_action` is present; enforced by server validation.
   @BuiltValueEnumConst(wireName: r'provider_unavailable')
-  static const BstockOrderWalletActionStateWalletActionBlockerEnum
-      providerUnavailable =
-      _$bstockOrderWalletActionStateWalletActionBlockerEnum_providerUnavailable;
-
+  static const BstockOrderWalletActionStateWalletActionBlockerEnum providerUnavailable = _$bstockOrderWalletActionStateWalletActionBlockerEnum_providerUnavailable;
   /// Must be null when `next_action` is present; enforced by server validation.
   @BuiltValueEnumConst(wireName: r'action_not_ready')
-  static const BstockOrderWalletActionStateWalletActionBlockerEnum
-      actionNotReady =
-      _$bstockOrderWalletActionStateWalletActionBlockerEnum_actionNotReady;
-
+  static const BstockOrderWalletActionStateWalletActionBlockerEnum actionNotReady = _$bstockOrderWalletActionStateWalletActionBlockerEnum_actionNotReady;
   /// Must be null when `next_action` is present; enforced by server validation.
   @BuiltValueEnumConst(wireName: r'capability_disabled')
-  static const BstockOrderWalletActionStateWalletActionBlockerEnum
-      capabilityDisabled =
-      _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled;
-
+  static const BstockOrderWalletActionStateWalletActionBlockerEnum capabilityDisabled = _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled;
   /// Must be null when `next_action` is present; enforced by server validation.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderWalletActionStateWalletActionBlockerEnum
-      unknownDefaultOpenApi =
-      _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
+  static const BstockOrderWalletActionStateWalletActionBlockerEnum unknownDefaultOpenApi = _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockOrderWalletActionStateWalletActionBlockerEnum>
-      get serializer =>
-          _$bstockOrderWalletActionStateWalletActionBlockerEnumSerializer;
+  static Serializer<BstockOrderWalletActionStateWalletActionBlockerEnum> get serializer => _$bstockOrderWalletActionStateWalletActionBlockerEnumSerializer;
 
-  const BstockOrderWalletActionStateWalletActionBlockerEnum._(String name)
-      : super(name);
+  const BstockOrderWalletActionStateWalletActionBlockerEnum._(String name): super(name);
 
-  static BuiltSet<BstockOrderWalletActionStateWalletActionBlockerEnum>
-      get values => _$bstockOrderWalletActionStateWalletActionBlockerEnumValues;
-  static BstockOrderWalletActionStateWalletActionBlockerEnum valueOf(
-          String name) =>
-      _$bstockOrderWalletActionStateWalletActionBlockerEnumValueOf(name);
+  static BuiltSet<BstockOrderWalletActionStateWalletActionBlockerEnum> get values => _$bstockOrderWalletActionStateWalletActionBlockerEnumValues;
+  static BstockOrderWalletActionStateWalletActionBlockerEnum valueOf(String name) => _$bstockOrderWalletActionStateWalletActionBlockerEnumValueOf(name);
 }
+

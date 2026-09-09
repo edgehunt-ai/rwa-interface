@@ -15,23 +15,22 @@ import 'package:built_value/serializer.dart';
 
 part 'portfolio_holding_page.g.dart';
 
-/// 分页 HIP-3 position 展示。position notional 只用于展示，不再累加进 summary； total equity 采用 Hyperliquid account equity，避免对同一 venue 资产双计。
+/// 分页 HIP-3 position 展示。position notional 只用于展示，不再累加进 summary； total equity 采用 Hyperliquid account equity，避免对同一 venue 资产双计。 
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore]
-/// * [items]
+/// * [hasMore] 
+/// * [items] 
 /// * [totalEquityUsd] - Hyperliquid account equity；不以 position notional 求和。
 /// * [totalValueUsd] - Legacy optional alias retained for clients pinned to v1.0.0.
-/// * [dataStatus]
-/// * [freshness]
-/// * [calculatedAt]
-/// * [oldestObservationAt]
-/// * [warnings]
-/// * [sources]
+/// * [dataStatus] 
+/// * [freshness] 
+/// * [calculatedAt] 
+/// * [oldestObservationAt] 
+/// * [warnings] 
+/// * [sources] 
 @BuiltValue()
-abstract class PortfolioHoldingPage
-    implements Page, Built<PortfolioHoldingPage, PortfolioHoldingPageBuilder> {
+abstract class PortfolioHoldingPage implements Page, Built<PortfolioHoldingPage, PortfolioHoldingPageBuilder> {
   /// Hyperliquid account equity；不以 position notional 求和。
   @BuiltValueField(wireName: r'total_equity_usd')
   String get totalEquityUsd;
@@ -66,24 +65,18 @@ abstract class PortfolioHoldingPage
 
   PortfolioHoldingPage._();
 
-  factory PortfolioHoldingPage([void updates(PortfolioHoldingPageBuilder b)]) =
-      _$PortfolioHoldingPage;
+  factory PortfolioHoldingPage([void updates(PortfolioHoldingPageBuilder b)]) = _$PortfolioHoldingPage;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PortfolioHoldingPageBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PortfolioHoldingPage> get serializer =>
-      _$PortfolioHoldingPageSerializer();
+  static Serializer<PortfolioHoldingPage> get serializer => _$PortfolioHoldingPageSerializer();
 }
 
-class _$PortfolioHoldingPageSerializer
-    implements PrimitiveSerializer<PortfolioHoldingPage> {
+class _$PortfolioHoldingPageSerializer implements PrimitiveSerializer<PortfolioHoldingPage> {
   @override
-  final Iterable<Type> types = const [
-    PortfolioHoldingPage,
-    _$PortfolioHoldingPage
-  ];
+  final Iterable<Type> types = const [PortfolioHoldingPage, _$PortfolioHoldingPage];
 
   @override
   final String wireName = r'PortfolioHoldingPage';
@@ -94,12 +87,10 @@ class _$PortfolioHoldingPageSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null
-        ? null
-        : serializers.serialize(
-            object.nextCursor,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.nextCursor == null ? null : serializers.serialize(
+      object.nextCursor,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'total_equity_usd';
     yield serializers.serialize(
       object.totalEquityUsd,
@@ -108,8 +99,7 @@ class _$PortfolioHoldingPageSerializer
     yield r'sources';
     yield serializers.serialize(
       object.sources,
-      specifiedType:
-          const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+      specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
     );
     if (object.oldestObservationAt != null) {
       yield r'oldest_observation_at';
@@ -163,9 +153,7 @@ class _$PortfolioHoldingPageSerializer
     PortfolioHoldingPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -198,8 +186,7 @@ class _$PortfolioHoldingPageSerializer
         case r'sources':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
           ) as BuiltList<PortfolioSourceSummary>;
           result.sources.replace(valueDes);
           break;
@@ -214,8 +201,7 @@ class _$PortfolioHoldingPageSerializer
         case r'warnings':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioNotice)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioNotice)]),
           ) as BuiltList<PortfolioNotice>;
           result.warnings.replace(valueDes);
           break;
@@ -290,3 +276,4 @@ class _$PortfolioHoldingPageSerializer
     return result.build();
   }
 }
+

@@ -13,13 +13,12 @@ part 'withdrawal_quote_request.g.dart';
 /// WithdrawalQuoteRequest
 ///
 /// Properties:
-/// * [asset]
-/// * [chain]
+/// * [asset] 
+/// * [chain] 
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [address]
+/// * [address] 
 @BuiltValue()
-abstract class WithdrawalQuoteRequest
-    implements Built<WithdrawalQuoteRequest, WithdrawalQuoteRequestBuilder> {
+abstract class WithdrawalQuoteRequest implements Built<WithdrawalQuoteRequest, WithdrawalQuoteRequestBuilder> {
   @BuiltValueField(wireName: r'asset')
   WithdrawalQuoteRequestAssetEnum get asset;
   // enum assetEnum {  USDC,  };
@@ -37,25 +36,18 @@ abstract class WithdrawalQuoteRequest
 
   WithdrawalQuoteRequest._();
 
-  factory WithdrawalQuoteRequest(
-          [void updates(WithdrawalQuoteRequestBuilder b)]) =
-      _$WithdrawalQuoteRequest;
+  factory WithdrawalQuoteRequest([void updates(WithdrawalQuoteRequestBuilder b)]) = _$WithdrawalQuoteRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WithdrawalQuoteRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WithdrawalQuoteRequest> get serializer =>
-      _$WithdrawalQuoteRequestSerializer();
+  static Serializer<WithdrawalQuoteRequest> get serializer => _$WithdrawalQuoteRequestSerializer();
 }
 
-class _$WithdrawalQuoteRequestSerializer
-    implements PrimitiveSerializer<WithdrawalQuoteRequest> {
+class _$WithdrawalQuoteRequestSerializer implements PrimitiveSerializer<WithdrawalQuoteRequest> {
   @override
-  final Iterable<Type> types = const [
-    WithdrawalQuoteRequest,
-    _$WithdrawalQuoteRequest
-  ];
+  final Iterable<Type> types = const [WithdrawalQuoteRequest, _$WithdrawalQuoteRequest];
 
   @override
   final String wireName = r'WithdrawalQuoteRequest';
@@ -93,9 +85,7 @@ class _$WithdrawalQuoteRequestSerializer
     WithdrawalQuoteRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -168,20 +158,17 @@ class _$WithdrawalQuoteRequestSerializer
 }
 
 class WithdrawalQuoteRequestAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const WithdrawalQuoteRequestAssetEnum USDC =
-      _$withdrawalQuoteRequestAssetEnum_USDC;
+  static const WithdrawalQuoteRequestAssetEnum USDC = _$withdrawalQuoteRequestAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WithdrawalQuoteRequestAssetEnum unknownDefaultOpenApi =
-      _$withdrawalQuoteRequestAssetEnum_unknownDefaultOpenApi;
+  static const WithdrawalQuoteRequestAssetEnum unknownDefaultOpenApi = _$withdrawalQuoteRequestAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<WithdrawalQuoteRequestAssetEnum> get serializer =>
-      _$withdrawalQuoteRequestAssetEnumSerializer;
+  static Serializer<WithdrawalQuoteRequestAssetEnum> get serializer => _$withdrawalQuoteRequestAssetEnumSerializer;
 
-  const WithdrawalQuoteRequestAssetEnum._(String name) : super(name);
+  const WithdrawalQuoteRequestAssetEnum._(String name): super(name);
 
-  static BuiltSet<WithdrawalQuoteRequestAssetEnum> get values =>
-      _$withdrawalQuoteRequestAssetEnumValues;
-  static WithdrawalQuoteRequestAssetEnum valueOf(String name) =>
-      _$withdrawalQuoteRequestAssetEnumValueOf(name);
+  static BuiltSet<WithdrawalQuoteRequestAssetEnum> get values => _$withdrawalQuoteRequestAssetEnumValues;
+  static WithdrawalQuoteRequestAssetEnum valueOf(String name) => _$withdrawalQuoteRequestAssetEnumValueOf(name);
 }
+

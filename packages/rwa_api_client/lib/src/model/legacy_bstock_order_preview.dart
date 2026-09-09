@@ -7,6 +7,7 @@ import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_preview_common.dart';
 import 'package:built_value/built_value.dart';
@@ -17,16 +18,17 @@ part 'legacy_bstock_order_preview.g.dart';
 /// LegacyBstockOrderPreview
 ///
 /// Properties:
-/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。
-/// * [symbol]
-/// * [side]
-/// * [type]
+/// * [hip3Execution] 
+/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
+/// * [symbol] 
+/// * [side] 
+/// * [type] 
 /// * [marketPrice] - 十进制字符串，避免浮点误差
 /// * [estimatedPrice] - 预计成交价；与 `market_price` 不同时前端提示「价格已更新」
 /// * [priceUpdated] - 报价较用户上次看到的价格是否已变化
 /// * [estimatedQuantity] - 十进制字符串，避免浮点误差
 /// * [estimatedReceive] - 预计获得数量（扣除滑点后）
-/// * [estimatedReceiveUnit]
+/// * [estimatedReceiveUnit] 
 /// * [orderValue] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
 /// * [feeRate] - 十进制字符串，避免浮点误差
@@ -34,22 +36,19 @@ part 'legacy_bstock_order_preview.g.dart';
 /// * [orderBookImpactPercent] - 十进制字符串，避免浮点误差
 /// * [networkFee] - Network fee as a decimal string. The asset is carried separately in fee_asset.
 /// * [settlementAccount] - 成交后资产的到账账户
-/// * [settlementAccountLabel]
+/// * [settlementAccountLabel] 
 /// * [marginRequired] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 仅 HIP-3
-/// * [quoteExpiresAt]
+/// * [quoteExpiresAt] 
 /// * [details] - 「查看详情」中逐行展示的键值对
 /// * [feeAsset] - Asset used to denominate network_fee, for example BNB or USDC.
 /// * [feeNote] - Optional localized display note, for example Included.
-/// * [kind]
-/// * [network]
-/// * [settlementAsset]
+/// * [kind] 
+/// * [network] 
+/// * [settlementAsset] 
 @Deprecated('LegacyBstockOrderPreview has been deprecated')
 @BuiltValue()
-abstract class LegacyBstockOrderPreview
-    implements
-        OrderPreviewCommon,
-        Built<LegacyBstockOrderPreview, LegacyBstockOrderPreviewBuilder> {
+abstract class LegacyBstockOrderPreview implements OrderPreviewCommon, Built<LegacyBstockOrderPreview, LegacyBstockOrderPreviewBuilder> {
   @BuiltValueField(wireName: r'settlement_asset')
   LegacyBstockOrderPreviewSettlementAssetEnum get settlementAsset;
   // enum settlementAssetEnum {  USDC,  };
@@ -64,25 +63,18 @@ abstract class LegacyBstockOrderPreview
 
   LegacyBstockOrderPreview._();
 
-  factory LegacyBstockOrderPreview(
-          [void updates(LegacyBstockOrderPreviewBuilder b)]) =
-      _$LegacyBstockOrderPreview;
+  factory LegacyBstockOrderPreview([void updates(LegacyBstockOrderPreviewBuilder b)]) = _$LegacyBstockOrderPreview;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LegacyBstockOrderPreviewBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LegacyBstockOrderPreview> get serializer =>
-      _$LegacyBstockOrderPreviewSerializer();
+  static Serializer<LegacyBstockOrderPreview> get serializer => _$LegacyBstockOrderPreviewSerializer();
 }
 
-class _$LegacyBstockOrderPreviewSerializer
-    implements PrimitiveSerializer<LegacyBstockOrderPreview> {
+class _$LegacyBstockOrderPreviewSerializer implements PrimitiveSerializer<LegacyBstockOrderPreview> {
   @override
-  final Iterable<Type> types = const [
-    LegacyBstockOrderPreview,
-    _$LegacyBstockOrderPreview
-  ];
+  final Iterable<Type> types = const [LegacyBstockOrderPreview, _$LegacyBstockOrderPreview];
 
   @override
   final String wireName = r'LegacyBstockOrderPreview';
@@ -95,8 +87,7 @@ class _$LegacyBstockOrderPreviewSerializer
     yield r'settlement_asset';
     yield serializers.serialize(
       object.settlementAsset,
-      specifiedType:
-          const FullType(LegacyBstockOrderPreviewSettlementAssetEnum),
+      specifiedType: const FullType(LegacyBstockOrderPreviewSettlementAssetEnum),
     );
     yield r'symbol';
     yield serializers.serialize(
@@ -108,6 +99,13 @@ class _$LegacyBstockOrderPreviewSerializer
       yield serializers.serialize(
         object.marketPrice,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.hip3Execution != null) {
+      yield r'hip3_execution';
+      yield serializers.serialize(
+        object.hip3Execution,
+        specifiedType: const FullType(Hip3PreviewExecution),
       );
     }
     if (object.estimatedQuantity != null) {
@@ -274,9 +272,7 @@ class _$LegacyBstockOrderPreviewSerializer
     LegacyBstockOrderPreview object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -294,8 +290,7 @@ class _$LegacyBstockOrderPreviewSerializer
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(LegacyBstockOrderPreviewSettlementAssetEnum),
+            specifiedType: const FullType(LegacyBstockOrderPreviewSettlementAssetEnum),
           ) as LegacyBstockOrderPreviewSettlementAssetEnum;
           result.settlementAsset = valueDes;
           break;
@@ -313,6 +308,14 @@ class _$LegacyBstockOrderPreviewSerializer
           ) as String?;
           if (valueDes == null) continue;
           result.marketPrice = valueDes;
+          break;
+        case r'hip3_execution':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3PreviewExecution),
+          ) as Hip3PreviewExecution?;
+          if (valueDes == null) continue;
+          result.hip3Execution.replace(valueDes);
           break;
         case r'estimated_quantity':
           final valueDes = serializers.deserialize(
@@ -426,8 +429,7 @@ class _$LegacyBstockOrderPreviewSerializer
         case r'details':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(BuiltList, [FullType(KeyValue)]),
+            specifiedType: const FullType.nullable(BuiltList, [FullType(KeyValue)]),
           ) as BuiltList<KeyValue>?;
           if (valueDes == null) continue;
           result.details.replace(valueDes);
@@ -532,62 +534,49 @@ class _$LegacyBstockOrderPreviewSerializer
 
 @Deprecated('LegacyBstockOrderPreviewKindEnum has been deprecated')
 class LegacyBstockOrderPreviewKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bstock')
-  static const LegacyBstockOrderPreviewKindEnum bstock =
-      _$legacyBstockOrderPreviewKindEnum_bstock;
+  static const LegacyBstockOrderPreviewKindEnum bstock = _$legacyBstockOrderPreviewKindEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewKindEnum unknownDefaultOpenApi =
-      _$legacyBstockOrderPreviewKindEnum_unknownDefaultOpenApi;
+  static const LegacyBstockOrderPreviewKindEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockOrderPreviewKindEnum> get serializer =>
-      _$legacyBstockOrderPreviewKindEnumSerializer;
+  static Serializer<LegacyBstockOrderPreviewKindEnum> get serializer => _$legacyBstockOrderPreviewKindEnumSerializer;
 
-  const LegacyBstockOrderPreviewKindEnum._(String name) : super(name);
+  const LegacyBstockOrderPreviewKindEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockOrderPreviewKindEnum> get values =>
-      _$legacyBstockOrderPreviewKindEnumValues;
-  static LegacyBstockOrderPreviewKindEnum valueOf(String name) =>
-      _$legacyBstockOrderPreviewKindEnumValueOf(name);
+  static BuiltSet<LegacyBstockOrderPreviewKindEnum> get values => _$legacyBstockOrderPreviewKindEnumValues;
+  static LegacyBstockOrderPreviewKindEnum valueOf(String name) => _$legacyBstockOrderPreviewKindEnumValueOf(name);
 }
 
 @Deprecated('LegacyBstockOrderPreviewNetworkEnum has been deprecated')
 class LegacyBstockOrderPreviewNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const LegacyBstockOrderPreviewNetworkEnum BSC =
-      _$legacyBstockOrderPreviewNetworkEnum_BSC;
+  static const LegacyBstockOrderPreviewNetworkEnum BSC = _$legacyBstockOrderPreviewNetworkEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewNetworkEnum unknownDefaultOpenApi =
-      _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+  static const LegacyBstockOrderPreviewNetworkEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockOrderPreviewNetworkEnum> get serializer =>
-      _$legacyBstockOrderPreviewNetworkEnumSerializer;
+  static Serializer<LegacyBstockOrderPreviewNetworkEnum> get serializer => _$legacyBstockOrderPreviewNetworkEnumSerializer;
 
-  const LegacyBstockOrderPreviewNetworkEnum._(String name) : super(name);
+  const LegacyBstockOrderPreviewNetworkEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockOrderPreviewNetworkEnum> get values =>
-      _$legacyBstockOrderPreviewNetworkEnumValues;
-  static LegacyBstockOrderPreviewNetworkEnum valueOf(String name) =>
-      _$legacyBstockOrderPreviewNetworkEnumValueOf(name);
+  static BuiltSet<LegacyBstockOrderPreviewNetworkEnum> get values => _$legacyBstockOrderPreviewNetworkEnumValues;
+  static LegacyBstockOrderPreviewNetworkEnum valueOf(String name) => _$legacyBstockOrderPreviewNetworkEnumValueOf(name);
 }
 
 @Deprecated('LegacyBstockOrderPreviewSettlementAssetEnum has been deprecated')
 class LegacyBstockOrderPreviewSettlementAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const LegacyBstockOrderPreviewSettlementAssetEnum USDC =
-      _$legacyBstockOrderPreviewSettlementAssetEnum_USDC;
+  static const LegacyBstockOrderPreviewSettlementAssetEnum USDC = _$legacyBstockOrderPreviewSettlementAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewSettlementAssetEnum
-      unknownDefaultOpenApi =
-      _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+  static const LegacyBstockOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockOrderPreviewSettlementAssetEnum>
-      get serializer => _$legacyBstockOrderPreviewSettlementAssetEnumSerializer;
+  static Serializer<LegacyBstockOrderPreviewSettlementAssetEnum> get serializer => _$legacyBstockOrderPreviewSettlementAssetEnumSerializer;
 
-  const LegacyBstockOrderPreviewSettlementAssetEnum._(String name)
-      : super(name);
+  const LegacyBstockOrderPreviewSettlementAssetEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockOrderPreviewSettlementAssetEnum> get values =>
-      _$legacyBstockOrderPreviewSettlementAssetEnumValues;
-  static LegacyBstockOrderPreviewSettlementAssetEnum valueOf(String name) =>
-      _$legacyBstockOrderPreviewSettlementAssetEnumValueOf(name);
+  static BuiltSet<LegacyBstockOrderPreviewSettlementAssetEnum> get values => _$legacyBstockOrderPreviewSettlementAssetEnumValues;
+  static LegacyBstockOrderPreviewSettlementAssetEnum valueOf(String name) => _$legacyBstockOrderPreviewSettlementAssetEnumValueOf(name);
 }
+

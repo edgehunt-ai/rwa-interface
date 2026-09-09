@@ -10,18 +10,17 @@ import 'package:built_value/serializer.dart';
 part 'funding_route_capability_status.g.dart';
 
 class FundingRouteCapabilityStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'available')
   static const FundingRouteCapabilityStatus available = _$available;
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const FundingRouteCapabilityStatus unavailable = _$unavailable;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRouteCapabilityStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const FundingRouteCapabilityStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<FundingRouteCapabilityStatus> get serializer =>
-      _$fundingRouteCapabilityStatusSerializer;
+  static Serializer<FundingRouteCapabilityStatus> get serializer => _$fundingRouteCapabilityStatusSerializer;
 
-  const FundingRouteCapabilityStatus._(String name) : super(name);
+  const FundingRouteCapabilityStatus._(String name): super(name);
 
   static BuiltSet<FundingRouteCapabilityStatus> get values => _$values;
   static FundingRouteCapabilityStatus valueOf(String name) => _$valueOf(name);
@@ -33,5 +32,5 @@ class FundingRouteCapabilityStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class FundingRouteCapabilityStatusMixin = Object
-    with _$FundingRouteCapabilityStatusMixin;
+abstract class FundingRouteCapabilityStatusMixin = Object with _$FundingRouteCapabilityStatusMixin;
+

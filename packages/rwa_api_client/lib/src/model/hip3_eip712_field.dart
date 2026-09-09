@@ -12,11 +12,10 @@ part 'hip3_eip712_field.g.dart';
 /// Hip3Eip712Field
 ///
 /// Properties:
-/// * [name]
-/// * [type]
+/// * [name] 
+/// * [type] 
 @BuiltValue()
-abstract class Hip3Eip712Field
-    implements Built<Hip3Eip712Field, Hip3Eip712FieldBuilder> {
+abstract class Hip3Eip712Field implements Built<Hip3Eip712Field, Hip3Eip712FieldBuilder> {
   @BuiltValueField(wireName: r'name')
   Hip3Eip712FieldNameEnum get name;
   // enum nameEnum {  source,  connectionId,  };
@@ -27,19 +26,16 @@ abstract class Hip3Eip712Field
 
   Hip3Eip712Field._();
 
-  factory Hip3Eip712Field([void updates(Hip3Eip712FieldBuilder b)]) =
-      _$Hip3Eip712Field;
+  factory Hip3Eip712Field([void updates(Hip3Eip712FieldBuilder b)]) = _$Hip3Eip712Field;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3Eip712FieldBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3Eip712Field> get serializer =>
-      _$Hip3Eip712FieldSerializer();
+  static Serializer<Hip3Eip712Field> get serializer => _$Hip3Eip712FieldSerializer();
 }
 
-class _$Hip3Eip712FieldSerializer
-    implements PrimitiveSerializer<Hip3Eip712Field> {
+class _$Hip3Eip712FieldSerializer implements PrimitiveSerializer<Hip3Eip712Field> {
   @override
   final Iterable<Type> types = const [Hip3Eip712Field, _$Hip3Eip712Field];
 
@@ -69,9 +65,7 @@ class _$Hip3Eip712FieldSerializer
     Hip3Eip712Field object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -130,45 +124,36 @@ class _$Hip3Eip712FieldSerializer
 }
 
 class Hip3Eip712FieldNameEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'source')
-  static const Hip3Eip712FieldNameEnum source_ =
-      _$hip3Eip712FieldNameEnum_source_;
+  static const Hip3Eip712FieldNameEnum source_ = _$hip3Eip712FieldNameEnum_source_;
   @BuiltValueEnumConst(wireName: r'connectionId')
-  static const Hip3Eip712FieldNameEnum connectionId =
-      _$hip3Eip712FieldNameEnum_connectionId;
+  static const Hip3Eip712FieldNameEnum connectionId = _$hip3Eip712FieldNameEnum_connectionId;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712FieldNameEnum unknownDefaultOpenApi =
-      _$hip3Eip712FieldNameEnum_unknownDefaultOpenApi;
+  static const Hip3Eip712FieldNameEnum unknownDefaultOpenApi = _$hip3Eip712FieldNameEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3Eip712FieldNameEnum> get serializer =>
-      _$hip3Eip712FieldNameEnumSerializer;
+  static Serializer<Hip3Eip712FieldNameEnum> get serializer => _$hip3Eip712FieldNameEnumSerializer;
 
-  const Hip3Eip712FieldNameEnum._(String name) : super(name);
+  const Hip3Eip712FieldNameEnum._(String name): super(name);
 
-  static BuiltSet<Hip3Eip712FieldNameEnum> get values =>
-      _$hip3Eip712FieldNameEnumValues;
-  static Hip3Eip712FieldNameEnum valueOf(String name) =>
-      _$hip3Eip712FieldNameEnumValueOf(name);
+  static BuiltSet<Hip3Eip712FieldNameEnum> get values => _$hip3Eip712FieldNameEnumValues;
+  static Hip3Eip712FieldNameEnum valueOf(String name) => _$hip3Eip712FieldNameEnumValueOf(name);
 }
 
 class Hip3Eip712FieldTypeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'string')
-  static const Hip3Eip712FieldTypeEnum string =
-      _$hip3Eip712FieldTypeEnum_string;
+  static const Hip3Eip712FieldTypeEnum string = _$hip3Eip712FieldTypeEnum_string;
   @BuiltValueEnumConst(wireName: r'bytes32')
-  static const Hip3Eip712FieldTypeEnum bytes32 =
-      _$hip3Eip712FieldTypeEnum_bytes32;
+  static const Hip3Eip712FieldTypeEnum bytes32 = _$hip3Eip712FieldTypeEnum_bytes32;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712FieldTypeEnum unknownDefaultOpenApi =
-      _$hip3Eip712FieldTypeEnum_unknownDefaultOpenApi;
+  static const Hip3Eip712FieldTypeEnum unknownDefaultOpenApi = _$hip3Eip712FieldTypeEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3Eip712FieldTypeEnum> get serializer =>
-      _$hip3Eip712FieldTypeEnumSerializer;
+  static Serializer<Hip3Eip712FieldTypeEnum> get serializer => _$hip3Eip712FieldTypeEnumSerializer;
 
-  const Hip3Eip712FieldTypeEnum._(String name) : super(name);
+  const Hip3Eip712FieldTypeEnum._(String name): super(name);
 
-  static BuiltSet<Hip3Eip712FieldTypeEnum> get values =>
-      _$hip3Eip712FieldTypeEnumValues;
-  static Hip3Eip712FieldTypeEnum valueOf(String name) =>
-      _$hip3Eip712FieldTypeEnumValueOf(name);
+  static BuiltSet<Hip3Eip712FieldTypeEnum> get values => _$hip3Eip712FieldTypeEnumValues;
+  static Hip3Eip712FieldTypeEnum valueOf(String name) => _$hip3Eip712FieldTypeEnumValueOf(name);
 }
+

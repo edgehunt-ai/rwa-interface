@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'portfolio_source_kind.g.dart';
 
 class PortfolioSourceKind extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'evm_rpc')
   static const PortfolioSourceKind evmRpc = _$evmRpc;
   @BuiltValueEnumConst(wireName: r'hyperliquid_info')
@@ -21,13 +22,11 @@ class PortfolioSourceKind extends EnumClass {
   @BuiltValueEnumConst(wireName: r'internal_ledger')
   static const PortfolioSourceKind internalLedger = _$internalLedger;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioSourceKind unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const PortfolioSourceKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<PortfolioSourceKind> get serializer =>
-      _$portfolioSourceKindSerializer;
+  static Serializer<PortfolioSourceKind> get serializer => _$portfolioSourceKindSerializer;
 
-  const PortfolioSourceKind._(String name) : super(name);
+  const PortfolioSourceKind._(String name): super(name);
 
   static BuiltSet<PortfolioSourceKind> get values => _$values;
   static PortfolioSourceKind valueOf(String name) => _$valueOf(name);
@@ -39,5 +38,5 @@ class PortfolioSourceKind extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class PortfolioSourceKindMixin = Object
-    with _$PortfolioSourceKindMixin;
+abstract class PortfolioSourceKindMixin = Object with _$PortfolioSourceKindMixin;
+

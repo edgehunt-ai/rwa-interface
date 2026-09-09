@@ -13,28 +13,28 @@ part 'deposit_base.g.dart';
 /// DepositBase
 ///
 /// Properties:
-/// * [depositId]
-/// * [chain]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
+/// * [depositId] 
+/// * [chain] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [amountRaw] - ERC-20 Transfer log 中的精确原始整数金额。
-/// * [status]
-/// * [confirmations]
-/// * [confirmationsRequired]
-/// * [txHash]
-/// * [logIndex]
-/// * [blockNumber]
-/// * [blockHash]
-/// * [sender]
-/// * [recipient]
-/// * [detectedAt]
-/// * [confirmedAt]
-/// * [updatedAt]
+/// * [status] 
+/// * [confirmations] 
+/// * [confirmationsRequired] 
+/// * [txHash] 
+/// * [logIndex] 
+/// * [blockNumber] 
+/// * [blockHash] 
+/// * [sender] 
+/// * [recipient] 
+/// * [detectedAt] 
+/// * [confirmedAt] 
+/// * [updatedAt] 
 @BuiltValue(instantiable: false)
-abstract class DepositBase {
+abstract class DepositBase  {
   @BuiltValueField(wireName: r'deposit_id')
   String get depositId;
 
@@ -223,9 +223,7 @@ class _$DepositBaseSerializer implements PrimitiveSerializer<DepositBase> {
     DepositBase object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   @override
@@ -234,19 +232,16 @@ class _$DepositBaseSerializer implements PrimitiveSerializer<DepositBase> {
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.deserialize(serialized,
-        specifiedType: FullType($DepositBase)) as $DepositBase;
+    return serializers.deserialize(serialized, specifiedType: FullType($DepositBase)) as $DepositBase;
   }
 }
 
 /// a concrete implementation of [DepositBase], since [DepositBase] is not instantiable
 @BuiltValue(instantiable: true)
-abstract class $DepositBase
-    implements DepositBase, Built<$DepositBase, $DepositBaseBuilder> {
+abstract class $DepositBase implements DepositBase, Built<$DepositBase, $DepositBaseBuilder> {
   $DepositBase._();
 
-  factory $DepositBase([void Function($DepositBaseBuilder)? updates]) =
-      _$$DepositBase;
+  factory $DepositBase([void Function($DepositBaseBuilder)? updates]) = _$$DepositBase;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults($DepositBaseBuilder b) => b;
@@ -453,19 +448,17 @@ class _$$DepositBaseSerializer implements PrimitiveSerializer<$DepositBase> {
 }
 
 class DepositBaseTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
   static const DepositBaseTokenEnum USDC = _$depositBaseTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositBaseTokenEnum unknownDefaultOpenApi =
-      _$depositBaseTokenEnum_unknownDefaultOpenApi;
+  static const DepositBaseTokenEnum unknownDefaultOpenApi = _$depositBaseTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<DepositBaseTokenEnum> get serializer =>
-      _$depositBaseTokenEnumSerializer;
+  static Serializer<DepositBaseTokenEnum> get serializer => _$depositBaseTokenEnumSerializer;
 
-  const DepositBaseTokenEnum._(String name) : super(name);
+  const DepositBaseTokenEnum._(String name): super(name);
 
-  static BuiltSet<DepositBaseTokenEnum> get values =>
-      _$depositBaseTokenEnumValues;
-  static DepositBaseTokenEnum valueOf(String name) =>
-      _$depositBaseTokenEnumValueOf(name);
+  static BuiltSet<DepositBaseTokenEnum> get values => _$depositBaseTokenEnumValues;
+  static DepositBaseTokenEnum valueOf(String name) => _$depositBaseTokenEnumValueOf(name);
 }
+

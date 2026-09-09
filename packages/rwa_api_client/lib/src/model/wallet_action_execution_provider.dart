@@ -10,18 +10,17 @@ import 'package:built_value/serializer.dart';
 part 'wallet_action_execution_provider.g.dart';
 
 class WalletActionExecutionProvider extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'privy')
   static const WalletActionExecutionProvider privy = _$privy;
   @BuiltValueEnumConst(wireName: r'user_wallet')
   static const WalletActionExecutionProvider userWallet = _$userWallet;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionExecutionProvider unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const WalletActionExecutionProvider unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<WalletActionExecutionProvider> get serializer =>
-      _$walletActionExecutionProviderSerializer;
+  static Serializer<WalletActionExecutionProvider> get serializer => _$walletActionExecutionProviderSerializer;
 
-  const WalletActionExecutionProvider._(String name) : super(name);
+  const WalletActionExecutionProvider._(String name): super(name);
 
   static BuiltSet<WalletActionExecutionProvider> get values => _$values;
   static WalletActionExecutionProvider valueOf(String name) => _$valueOf(name);
@@ -33,5 +32,5 @@ class WalletActionExecutionProvider extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class WalletActionExecutionProviderMixin = Object
-    with _$WalletActionExecutionProviderMixin;
+abstract class WalletActionExecutionProviderMixin = Object with _$WalletActionExecutionProviderMixin;
+

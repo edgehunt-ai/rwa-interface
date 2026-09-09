@@ -19,6 +19,7 @@ import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
 
 class AccountApi {
+
   final Dio _dio;
 
   final Serializers _serializers;
@@ -29,7 +30,7 @@ class AccountApi {
   /// 退出登录时调用，避免继续向该设备推送已登出账户的消息。
   ///
   /// Parameters:
-  /// * [deviceId]
+  /// * [deviceId] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -39,7 +40,7 @@ class AccountApi {
   ///
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> deleteDevice({
+  Future<Response<void>> deleteDevice({ 
     required String deviceId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -48,10 +49,7 @@ class AccountApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/me/devices/{device_id}'.replaceAll(
-        '{' r'device_id' '}',
-        encodeQueryParameter(_serializers, deviceId, const FullType(String))
-            .toString());
+    final _path = r'/v1/me/devices/{device_id}'.replaceAll('{' r'device_id' '}', encodeQueryParameter(_serializers, deviceId, const FullType(String)).toString());
     final _options = Options(
       method: r'DELETE',
       headers: <String, dynamic>{
@@ -94,7 +92,7 @@ class AccountApi {
   ///
   /// Returns a [Future] containing a [Response] with a [User] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<User>> getMe({
+  Future<Response<User>> getMe({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -133,12 +131,11 @@ class AccountApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(User),
-            ) as User;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(User),
+      ) as User;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -162,11 +159,11 @@ class AccountApi {
   }
 
   /// 已注册的推送设备
-  ///
+  /// 
   ///
   /// Parameters:
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit]
+  /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -176,7 +173,7 @@ class AccountApi {
   ///
   /// Returns a [Future] containing a [Response] with a [DevicePage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DevicePage>> listDevices({
+  Future<Response<DevicePage>> listDevices({ 
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -206,12 +203,8 @@ class AccountApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (cursor != null)
-        r'cursor':
-            encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null)
-        r'limit':
-            encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -227,12 +220,11 @@ class AccountApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(DevicePage),
-            ) as DevicePage;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(DevicePage),
+      ) as DevicePage;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -256,10 +248,10 @@ class AccountApi {
   }
 
   /// 注册 / 更新当前设备的推送令牌
-  /// 按 &#x60;device_id&#x60; upsert。APNs / FCM 令牌会在重装、系统升级、长期未启动后轮换， 因此客户端应在 **每次启动拿到令牌时** 都调一次，而不只在登录时提交一次。  登录时 &#x60;SessionRequest.device&#x60; 里带的信息等价于调用一次本接口， 两者可任选其一；令牌轮换只能靠本接口。
+  /// 按 &#x60;device_id&#x60; upsert。APNs / FCM 令牌会在重装、系统升级、长期未启动后轮换， 因此客户端应在 **每次启动拿到令牌时** 都调一次，而不只在登录时提交一次。  登录时 &#x60;SessionRequest.device&#x60; 里带的信息等价于调用一次本接口， 两者可任选其一；令牌轮换只能靠本接口。 
   ///
   /// Parameters:
-  /// * [deviceRegisterRequest]
+  /// * [deviceRegisterRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -269,7 +261,7 @@ class AccountApi {
   ///
   /// Returns a [Future] containing a [Response] with a [Device] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<Device>> registerDevice({
+  Future<Response<Device>> registerDevice({ 
     required DeviceRegisterRequest deviceRegisterRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -302,11 +294,11 @@ class AccountApi {
 
     try {
       const _type = FullType(DeviceRegisterRequest);
-      _bodyData =
-          _serializers.serialize(deviceRegisterRequest, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(deviceRegisterRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -329,12 +321,11 @@ class AccountApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(Device),
-            ) as Device;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Device),
+      ) as Device;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -358,10 +349,10 @@ class AccountApi {
   }
 
   /// 向当前设备发送 Staging 自测通知
-  /// 仅在服务端显式开启自测功能时可用。每个设备 60 秒内最多创建一条自测通知； 相同 &#x60;Idempotency-Key&#x60; 重放时返回同一个通知资源，不重复排队。  本接口只接受当前账户名下、未注销且未过期的设备。推送总开关关闭时返回 409； 功能未开启或设备的 push provider 未配置时返回 503。
+  /// 仅在服务端显式开启自测功能时可用。每个设备 60 秒内最多创建一条自测通知； 相同 &#x60;Idempotency-Key&#x60; 重放时返回同一个通知资源，不重复排队。  本接口只接受当前账户名下、未注销且未过期的设备。推送总开关关闭时返回 409； 功能未开启或设备的 push provider 未配置时返回 503。 
   ///
   /// Parameters:
-  /// * [deviceId]
+  /// * [deviceId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -372,7 +363,7 @@ class AccountApi {
   ///
   /// Returns a [Future] containing a [Response] with a [NotificationQueuedResponse] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<NotificationQueuedResponse>> testDeviceNotification({
+  Future<Response<NotificationQueuedResponse>> testDeviceNotification({ 
     required String deviceId,
     required String idempotencyKey,
     CancelToken? cancelToken,
@@ -382,10 +373,7 @@ class AccountApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/me/devices/{device_id}/test-notification'.replaceAll(
-        '{' r'device_id' '}',
-        encodeQueryParameter(_serializers, deviceId, const FullType(String))
-            .toString());
+    final _path = r'/v1/me/devices/{device_id}/test-notification'.replaceAll('{' r'device_id' '}', encodeQueryParameter(_serializers, deviceId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -417,12 +405,11 @@ class AccountApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(NotificationQueuedResponse),
-            ) as NotificationQueuedResponse;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(NotificationQueuedResponse),
+      ) as NotificationQueuedResponse;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -446,10 +433,10 @@ class AccountApi {
   }
 
   /// 更新当前用户的设置
-  /// 部分更新：**所有字段都是可选的，传什么改什么，未传的字段保持不变**。  **没有对应的 &#x60;GET&#x60;** —— 设置作为 &#x60;User.settings&#x60; 子对象随 &#x60;GET /v1/me&#x60; 一起返回， 只存在一份定义，不会出现两个来源不一致的情况。
+  /// 部分更新：**所有字段都是可选的，传什么改什么，未传的字段保持不变**。  **没有对应的 &#x60;GET&#x60;** —— 设置作为 &#x60;User.settings&#x60; 子对象随 &#x60;GET /v1/me&#x60; 一起返回， 只存在一份定义，不会出现两个来源不一致的情况。 
   ///
   /// Parameters:
-  /// * [userSettingsUpdate]
+  /// * [userSettingsUpdate] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -459,7 +446,7 @@ class AccountApi {
   ///
   /// Returns a [Future] containing a [Response] with a [UserSettings] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<UserSettings>> updateSettings({
+  Future<Response<UserSettings>> updateSettings({ 
     required UserSettingsUpdate userSettingsUpdate,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -492,11 +479,11 @@ class AccountApi {
 
     try {
       const _type = FullType(UserSettingsUpdate);
-      _bodyData =
-          _serializers.serialize(userSettingsUpdate, specifiedType: _type);
-    } catch (error, stackTrace) {
+      _bodyData = _serializers.serialize(userSettingsUpdate, specifiedType: _type);
+
+    } catch(error, stackTrace) {
       throw DioException(
-        requestOptions: _options.compose(
+         requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -519,12 +506,11 @@ class AccountApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null
-          ? null
-          : _serializers.deserialize(
-              rawResponse,
-              specifiedType: const FullType(UserSettings),
-            ) as UserSettings;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(UserSettings),
+      ) as UserSettings;
+
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -546,4 +532,5 @@ class AccountApi {
       extra: _response.extra,
     );
   }
+
 }

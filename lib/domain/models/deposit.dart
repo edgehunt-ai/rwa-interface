@@ -16,6 +16,34 @@ final class DepositInstructions {
   final String? memo;
 }
 
+final class DepositInstruction {
+  const DepositInstruction({
+    required this.chain,
+    required this.token,
+    required this.tokenContract,
+    required this.tokenDecimals,
+    required this.address,
+    required this.qrPayload,
+    required this.minimumAmount,
+    required this.confirmationsRequired,
+    required this.estimatedArrivalSeconds,
+    required this.warning,
+    this.memo,
+  });
+
+  final String chain;
+  final String token;
+  final String tokenContract;
+  final int tokenDecimals;
+  final String address;
+  final String? memo;
+  final String qrPayload;
+  final DecimalValue minimumAmount;
+  final int confirmationsRequired;
+  final int estimatedArrivalSeconds;
+  final String warning;
+}
+
 final class Deposit {
   const Deposit({
     required this.depositId,

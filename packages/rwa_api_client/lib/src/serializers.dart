@@ -127,19 +127,41 @@ import 'package:rwa_api_client/src/model/funding_wallet_action_summary.dart';
 import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
 import 'package:rwa_api_client/src/model/gas_payment_quote.dart';
 import 'package:rwa_api_client/src/model/gas_sponsorship_decision.dart';
+import 'package:rwa_api_client/src/model/hip3_action.dart';
+import 'package:rwa_api_client/src/model/hip3_action_create_request.dart';
+import 'package:rwa_api_client/src/model/hip3_action_page.dart';
+import 'package:rwa_api_client/src/model/hip3_action_status.dart';
+import 'package:rwa_api_client/src/model/hip3_action_step.dart';
 import 'package:rwa_api_client/src/model/hip3_action_submission_request.dart';
 import 'package:rwa_api_client/src/model/hip3_agent.dart';
 import 'package:rwa_api_client/src/model/hip3_agent_status.dart';
+import 'package:rwa_api_client/src/model/hip3_cancel_order_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
+import 'package:rwa_api_client/src/model/hip3_clear_tp_sl_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_close_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_close_preview.dart';
+import 'package:rwa_api_client/src/model/hip3_close_preview_request.dart';
+import 'package:rwa_api_client/src/model/hip3_conditional_order.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_domain.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_field.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_message.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_typed_data.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_types.dart';
+import 'package:rwa_api_client/src/model/hip3_environment.dart';
 import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
-import 'package:rwa_api_client/src/model/hip3_order_action.dart';
+import 'package:rwa_api_client/src/model/hip3_operation.dart';
+import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
+import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_set_leverage_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_set_tp_sl_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_step_signing_payload.dart';
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
+import 'package:rwa_api_client/src/model/hip3_trading_context.dart';
+import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
+import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
 import 'package:rwa_api_client/src/model/holding_group.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
@@ -352,18 +374,15 @@ part 'serializers.g.dart';
   CrossChainFundingTransfer,
   Deposit,
   DepositAddress,
-  DepositAddressBase,
-  $DepositAddressBase,
-  DepositBase,
-  $DepositBase,
+  DepositAddressBase,$DepositAddressBase,
+  DepositBase,$DepositBase,
   DepositCreditTarget,
   DepositInstruction,
   DepositMode,
   DepositPage,
   DepositRail,
   DepositRailAvailability,
-  DepositRailBase,
-  $DepositRailBase,
+  DepositRailBase,$DepositRailBase,
   DepositRailBlocker,
   DepositStatus,
   Device,
@@ -417,19 +436,41 @@ part 'serializers.g.dart';
   GasPaymentMode,
   GasPaymentQuote,
   GasSponsorshipDecision,
+  Hip3Action,
+  Hip3ActionCreateRequest,
+  Hip3ActionPage,
+  Hip3ActionStatus,
+  Hip3ActionStep,
   Hip3ActionSubmissionRequest,
   Hip3Agent,
   Hip3AgentStatus,
+  Hip3CancelOrderActionRequest,
   Hip3Challenge,
   Hip3ChallengeCompleteRequest,
   Hip3ChallengeRequest,
+  Hip3ClearTpSlActionRequest,
+  Hip3CloseActionRequest,
+  Hip3ClosePreview,
+  Hip3ClosePreviewRequest,
+  Hip3ConditionalOrder,
   Hip3Eip712Domain,
   Hip3Eip712Field,
   Hip3Eip712Message,
   Hip3Eip712TypedData,
   Hip3Eip712Types,
+  Hip3Environment,
   Hip3MainnetProduct,
-  Hip3OrderAction,
+  Hip3Operation,
+  Hip3PlaceOrderActionRequest,
+  Hip3PreviewExecution,
+  Hip3ProtectionSpec,
+  Hip3SetLeverageActionRequest,
+  Hip3SetTpSlActionRequest,
+  Hip3StepSigningPayload,
+  Hip3TimeInForce,
+  Hip3TradingContext,
+  Hip3TradingRules,
+  Hip3TriggerSpec,
   HoldingGroup,
   HyperliquidSignature,
   KeyValue,
@@ -460,16 +501,14 @@ part 'serializers.g.dart';
   OrderFill,
   OrderPage,
   OrderPreview,
-  OrderPreviewCommon,
-  $OrderPreviewCommon,
+  OrderPreviewCommon,$OrderPreviewCommon,
   OrderPreviewRequest,
   OrderReconciliationStatus,
   OrderSide,
   OrderStatus,
   OrderType,
   OriginTransactionAction,
-  Page,
-  $Page,
+  Page,$Page,
   PerpCreateOrderRequest,
   PerpFundingPlan,
   PerpFundingRail,
@@ -520,8 +559,7 @@ part 'serializers.g.dart';
   RealtimeClaimEvent,
   RealtimeDepositEvent,
   RealtimeEvent,
-  RealtimeEventBase,
-  $RealtimeEventBase,
+  RealtimeEventBase,$RealtimeEventBase,
   RealtimeOrderEvent,
   RealtimePositionEvent,
   RealtimePriceEvent,
@@ -625,6 +663,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<OrderBookLevel>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Operation)]),
+        () => ListBuilder<Hip3Operation>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Order)]),
         () => ListBuilder<Order>(),
       )
@@ -649,6 +691,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<FundingWalletActionSummary>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3TimeInForce)]),
+        () => ListBuilder<Hip3TimeInForce>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingRouteBlocker)]),
         () => ListBuilder<FundingRouteBlocker>(),
       )
@@ -661,12 +707,20 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<DepositRail>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(MarginMode)]),
+        () => ListBuilder<MarginMode>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(KeyValue)]),
         () => ListBuilder<KeyValue>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Chain)]),
         () => ListBuilder<Chain>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3ActionStep)]),
+        () => ListBuilder<Hip3ActionStep>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioAsset)]),
@@ -693,8 +747,7 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<DisclosuresSessionsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(
-            BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+        const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
         () => MapBuilder<String, JsonObject?>(),
       )
       ..addBuilderFactory(
@@ -725,6 +778,10 @@ Serializers serializers = (_$serializers.toBuilder()
         const FullType(BuiltList, [FullType(AccountBalance)]),
         () => ListBuilder<AccountBalance>(),
       )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Action)]),
+        () => ListBuilder<Hip3Action>(),
+      )
       ..add(DepositAddressBase.serializer)
       ..add(DepositBase.serializer)
       ..add(DepositRailBase.serializer)
@@ -734,8 +791,8 @@ Serializers serializers = (_$serializers.toBuilder()
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())
       ..add(const DateSerializer())
-      ..add(Iso8601DateTimeSerializer()))
-    .build();
+      ..add(Iso8601DateTimeSerializer())
+    ).build();
 
 Serializers standardSerializers =
     (serializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();

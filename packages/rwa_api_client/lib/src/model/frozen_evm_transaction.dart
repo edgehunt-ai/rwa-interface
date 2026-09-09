@@ -9,15 +9,14 @@ import 'package:built_value/serializer.dart';
 
 part 'frozen_evm_transaction.g.dart';
 
-/// Exact server-frozen EVM call; clients cannot submit or override any field. In v1 `value` is always the canonical zero quantity `0x0`; calldata is non-empty, lowercased by the server before hashing, and represents complete bytes rather than odd-length nibbles.
+/// Exact server-frozen EVM call; clients cannot submit or override any field. In v1 `value` is always the canonical zero quantity `0x0`; calldata is non-empty, lowercased by the server before hashing, and represents complete bytes rather than odd-length nibbles. 
 ///
 /// Properties:
-/// * [to]
-/// * [data]
+/// * [to] 
+/// * [data] 
 /// * [value] - Exact canonical EVM zero quantity; native-value transfers are not supported in v1.
 @BuiltValue()
-abstract class FrozenEvmTransaction
-    implements Built<FrozenEvmTransaction, FrozenEvmTransactionBuilder> {
+abstract class FrozenEvmTransaction implements Built<FrozenEvmTransaction, FrozenEvmTransactionBuilder> {
   @BuiltValueField(wireName: r'to')
   String get to;
 
@@ -31,24 +30,18 @@ abstract class FrozenEvmTransaction
 
   FrozenEvmTransaction._();
 
-  factory FrozenEvmTransaction([void updates(FrozenEvmTransactionBuilder b)]) =
-      _$FrozenEvmTransaction;
+  factory FrozenEvmTransaction([void updates(FrozenEvmTransactionBuilder b)]) = _$FrozenEvmTransaction;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FrozenEvmTransactionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FrozenEvmTransaction> get serializer =>
-      _$FrozenEvmTransactionSerializer();
+  static Serializer<FrozenEvmTransaction> get serializer => _$FrozenEvmTransactionSerializer();
 }
 
-class _$FrozenEvmTransactionSerializer
-    implements PrimitiveSerializer<FrozenEvmTransaction> {
+class _$FrozenEvmTransactionSerializer implements PrimitiveSerializer<FrozenEvmTransaction> {
   @override
-  final Iterable<Type> types = const [
-    FrozenEvmTransaction,
-    _$FrozenEvmTransaction
-  ];
+  final Iterable<Type> types = const [FrozenEvmTransaction, _$FrozenEvmTransaction];
 
   @override
   final String wireName = r'FrozenEvmTransaction';
@@ -81,9 +74,7 @@ class _$FrozenEvmTransactionSerializer
     FrozenEvmTransaction object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -149,23 +140,19 @@ class _$FrozenEvmTransactionSerializer
 }
 
 class FrozenEvmTransactionValueEnum extends EnumClass {
+
   /// Exact canonical EVM zero quantity; native-value transfers are not supported in v1.
   @BuiltValueEnumConst(wireName: r'0x0')
-  static const FrozenEvmTransactionValueEnum n0x0 =
-      _$frozenEvmTransactionValueEnum_n0x0;
-
+  static const FrozenEvmTransactionValueEnum n0x0 = _$frozenEvmTransactionValueEnum_n0x0;
   /// Exact canonical EVM zero quantity; native-value transfers are not supported in v1.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FrozenEvmTransactionValueEnum unknownDefaultOpenApi =
-      _$frozenEvmTransactionValueEnum_unknownDefaultOpenApi;
+  static const FrozenEvmTransactionValueEnum unknownDefaultOpenApi = _$frozenEvmTransactionValueEnum_unknownDefaultOpenApi;
 
-  static Serializer<FrozenEvmTransactionValueEnum> get serializer =>
-      _$frozenEvmTransactionValueEnumSerializer;
+  static Serializer<FrozenEvmTransactionValueEnum> get serializer => _$frozenEvmTransactionValueEnumSerializer;
 
-  const FrozenEvmTransactionValueEnum._(String name) : super(name);
+  const FrozenEvmTransactionValueEnum._(String name): super(name);
 
-  static BuiltSet<FrozenEvmTransactionValueEnum> get values =>
-      _$frozenEvmTransactionValueEnumValues;
-  static FrozenEvmTransactionValueEnum valueOf(String name) =>
-      _$frozenEvmTransactionValueEnumValueOf(name);
+  static BuiltSet<FrozenEvmTransactionValueEnum> get values => _$frozenEvmTransactionValueEnumValues;
+  static FrozenEvmTransactionValueEnum valueOf(String name) => _$frozenEvmTransactionValueEnumValueOf(name);
 }
+

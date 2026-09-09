@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'wallet_action_provider_status.g.dart';
 
 class WalletActionProviderStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'not_submitted')
   static const WalletActionProviderStatus notSubmitted = _$notSubmitted;
   @BuiltValueEnumConst(wireName: r'submitted')
@@ -25,13 +26,11 @@ class WalletActionProviderStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown')
   static const WalletActionProviderStatus unknown = _$unknown;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionProviderStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const WalletActionProviderStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<WalletActionProviderStatus> get serializer =>
-      _$walletActionProviderStatusSerializer;
+  static Serializer<WalletActionProviderStatus> get serializer => _$walletActionProviderStatusSerializer;
 
-  const WalletActionProviderStatus._(String name) : super(name);
+  const WalletActionProviderStatus._(String name): super(name);
 
   static BuiltSet<WalletActionProviderStatus> get values => _$values;
   static WalletActionProviderStatus valueOf(String name) => _$valueOf(name);
@@ -43,5 +42,5 @@ class WalletActionProviderStatus extends EnumClass {
 /// corresponding Angular template.
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
-abstract class WalletActionProviderStatusMixin = Object
-    with _$WalletActionProviderStatusMixin;
+abstract class WalletActionProviderStatusMixin = Object with _$WalletActionProviderStatusMixin;
+

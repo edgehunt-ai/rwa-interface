@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'wallet_status.g.dart';
 
 class WalletStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'active')
   static const WalletStatus active = _$active;
   @BuiltValueEnumConst(wireName: r'verification_required')
@@ -21,7 +22,7 @@ class WalletStatus extends EnumClass {
 
   static Serializer<WalletStatus> get serializer => _$walletStatusSerializer;
 
-  const WalletStatus._(String name) : super(name);
+  const WalletStatus._(String name): super(name);
 
   static BuiltSet<WalletStatus> get values => _$values;
   static WalletStatus valueOf(String name) => _$valueOf(name);
@@ -34,3 +35,4 @@ class WalletStatus extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class WalletStatusMixin = Object with _$WalletStatusMixin;
+

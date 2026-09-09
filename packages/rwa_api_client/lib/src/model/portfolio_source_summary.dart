@@ -13,18 +13,17 @@ import 'package:built_value/serializer.dart';
 
 part 'portfolio_source_summary.g.dart';
 
-/// 单个只读余额、价格或内部账本来源的可用性与缓存新鲜度。`status=available` 时 freshness 必须非 null；`status=unavailable` 且没有可用 last-good 时 freshness 必须为 null；使用 last-good 时必须返回 `status=available`、 `freshness=stale`，并附带 `using_last_good` warning。
+/// 单个只读余额、价格或内部账本来源的可用性与缓存新鲜度。`status=available` 时 freshness 必须非 null；`status=unavailable` 且没有可用 last-good 时 freshness 必须为 null；使用 last-good 时必须返回 `status=available`、 `freshness=stale`，并附带 `using_last_good` warning。 
 ///
 /// Properties:
-/// * [source_]
-/// * [network]
-/// * [status]
-/// * [freshness]
-/// * [observedAt]
-/// * [warningCode]
+/// * [source_] 
+/// * [network] 
+/// * [status] 
+/// * [freshness] 
+/// * [observedAt] 
+/// * [warningCode] 
 @BuiltValue()
-abstract class PortfolioSourceSummary
-    implements Built<PortfolioSourceSummary, PortfolioSourceSummaryBuilder> {
+abstract class PortfolioSourceSummary implements Built<PortfolioSourceSummary, PortfolioSourceSummaryBuilder> {
   @BuiltValueField(wireName: r'source')
   PortfolioSourceKind get source_;
   // enum source_Enum {  evm_rpc,  hyperliquid_info,  dodoex_price,  fixed_peg,  internal_ledger,  };
@@ -50,25 +49,18 @@ abstract class PortfolioSourceSummary
 
   PortfolioSourceSummary._();
 
-  factory PortfolioSourceSummary(
-          [void updates(PortfolioSourceSummaryBuilder b)]) =
-      _$PortfolioSourceSummary;
+  factory PortfolioSourceSummary([void updates(PortfolioSourceSummaryBuilder b)]) = _$PortfolioSourceSummary;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PortfolioSourceSummaryBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PortfolioSourceSummary> get serializer =>
-      _$PortfolioSourceSummarySerializer();
+  static Serializer<PortfolioSourceSummary> get serializer => _$PortfolioSourceSummarySerializer();
 }
 
-class _$PortfolioSourceSummarySerializer
-    implements PrimitiveSerializer<PortfolioSourceSummary> {
+class _$PortfolioSourceSummarySerializer implements PrimitiveSerializer<PortfolioSourceSummary> {
   @override
-  final Iterable<Type> types = const [
-    PortfolioSourceSummary,
-    _$PortfolioSourceSummary
-  ];
+  final Iterable<Type> types = const [PortfolioSourceSummary, _$PortfolioSourceSummary];
 
   @override
   final String wireName = r'PortfolioSourceSummary';
@@ -96,12 +88,10 @@ class _$PortfolioSourceSummarySerializer
       specifiedType: const FullType(PortfolioSourceState),
     );
     yield r'freshness';
-    yield object.freshness == null
-        ? null
-        : serializers.serialize(
-            object.freshness,
-            specifiedType: const FullType.nullable(PortfolioFreshness),
-          );
+    yield object.freshness == null ? null : serializers.serialize(
+      object.freshness,
+      specifiedType: const FullType.nullable(PortfolioFreshness),
+    );
     if (object.observedAt != null) {
       yield r'observed_at';
       yield serializers.serialize(
@@ -124,9 +114,7 @@ class _$PortfolioSourceSummarySerializer
     PortfolioSourceSummary object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -215,3 +203,4 @@ class _$PortfolioSourceSummarySerializer
     return result.build();
   }
 }
+

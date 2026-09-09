@@ -13,14 +13,14 @@ part 'hip3_agent.g.dart';
 /// Hip3Agent
 ///
 /// Properties:
-/// * [agentId]
-/// * [ownerAddress]
-/// * [agentAddress]
-/// * [environment]
-/// * [status]
-/// * [validUntil]
-/// * [createdAt]
-/// * [updatedAt]
+/// * [agentId] 
+/// * [ownerAddress] 
+/// * [agentAddress] 
+/// * [environment] 
+/// * [status] 
+/// * [validUntil] 
+/// * [createdAt] 
+/// * [updatedAt] 
 @BuiltValue()
 abstract class Hip3Agent implements Built<Hip3Agent, Hip3AgentBuilder> {
   @BuiltValueField(wireName: r'agent_id')
@@ -120,9 +120,7 @@ class _$Hip3AgentSerializer implements PrimitiveSerializer<Hip3Agent> {
     Hip3Agent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -223,20 +221,17 @@ class _$Hip3AgentSerializer implements PrimitiveSerializer<Hip3Agent> {
 }
 
 class Hip3AgentEnvironmentEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'mainnet')
-  static const Hip3AgentEnvironmentEnum mainnet =
-      _$hip3AgentEnvironmentEnum_mainnet;
+  static const Hip3AgentEnvironmentEnum mainnet = _$hip3AgentEnvironmentEnum_mainnet;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3AgentEnvironmentEnum unknownDefaultOpenApi =
-      _$hip3AgentEnvironmentEnum_unknownDefaultOpenApi;
+  static const Hip3AgentEnvironmentEnum unknownDefaultOpenApi = _$hip3AgentEnvironmentEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3AgentEnvironmentEnum> get serializer =>
-      _$hip3AgentEnvironmentEnumSerializer;
+  static Serializer<Hip3AgentEnvironmentEnum> get serializer => _$hip3AgentEnvironmentEnumSerializer;
 
-  const Hip3AgentEnvironmentEnum._(String name) : super(name);
+  const Hip3AgentEnvironmentEnum._(String name): super(name);
 
-  static BuiltSet<Hip3AgentEnvironmentEnum> get values =>
-      _$hip3AgentEnvironmentEnumValues;
-  static Hip3AgentEnvironmentEnum valueOf(String name) =>
-      _$hip3AgentEnvironmentEnumValueOf(name);
+  static BuiltSet<Hip3AgentEnvironmentEnum> get values => _$hip3AgentEnvironmentEnumValues;
+  static Hip3AgentEnvironmentEnum valueOf(String name) => _$hip3AgentEnvironmentEnumValueOf(name);
 }
+

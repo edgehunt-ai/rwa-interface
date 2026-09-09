@@ -14,39 +14,33 @@ part 'bsc_deposit_address.g.dart';
 /// BscDepositAddress
 ///
 /// Properties:
-/// * [chain]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
+/// * [chain] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
 /// * [address] - 当前账号唯一、active 且已验证的 Privy EVM 钱包地址。
 /// * [memo] - 部分链需要的备注 / tag
-/// * [qrPayload]
+/// * [qrPayload] 
 /// * [minDeposit] - 必须大于零；服务端按精确十进制语义校验。
-/// * [confirmationsRequired]
+/// * [confirmationsRequired] 
 /// * [estimatedArrivalSeconds] - 达到当前 rail 确认门槛的保守预计时间；不是结算保证。
-/// * [creditedTo]
-/// * [warning]
+/// * [creditedTo] 
+/// * [warning] 
 @BuiltValue()
-abstract class BscDepositAddress
-    implements
-        DepositAddressBase,
-        Built<BscDepositAddress, BscDepositAddressBuilder> {
+abstract class BscDepositAddress implements DepositAddressBase, Built<BscDepositAddress, BscDepositAddressBuilder> {
   BscDepositAddress._();
 
-  factory BscDepositAddress([void updates(BscDepositAddressBuilder b)]) =
-      _$BscDepositAddress;
+  factory BscDepositAddress([void updates(BscDepositAddressBuilder b)]) = _$BscDepositAddress;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BscDepositAddressBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BscDepositAddress> get serializer =>
-      _$BscDepositAddressSerializer();
+  static Serializer<BscDepositAddress> get serializer => _$BscDepositAddressSerializer();
 }
 
-class _$BscDepositAddressSerializer
-    implements PrimitiveSerializer<BscDepositAddress> {
+class _$BscDepositAddressSerializer implements PrimitiveSerializer<BscDepositAddress> {
   @override
   final Iterable<Type> types = const [BscDepositAddress, _$BscDepositAddress];
 
@@ -133,9 +127,7 @@ class _$BscDepositAddressSerializer
     BscDepositAddress object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -272,117 +264,92 @@ class _$BscDepositAddressSerializer
 }
 
 class BscDepositAddressChainEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const BscDepositAddressChainEnum BSC =
-      _$bscDepositAddressChainEnum_BSC;
+  static const BscDepositAddressChainEnum BSC = _$bscDepositAddressChainEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscDepositAddressChainEnum unknownDefaultOpenApi =
-      _$bscDepositAddressChainEnum_unknownDefaultOpenApi;
+  static const BscDepositAddressChainEnum unknownDefaultOpenApi = _$bscDepositAddressChainEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscDepositAddressChainEnum> get serializer =>
-      _$bscDepositAddressChainEnumSerializer;
+  static Serializer<BscDepositAddressChainEnum> get serializer => _$bscDepositAddressChainEnumSerializer;
 
-  const BscDepositAddressChainEnum._(String name) : super(name);
+  const BscDepositAddressChainEnum._(String name): super(name);
 
-  static BuiltSet<BscDepositAddressChainEnum> get values =>
-      _$bscDepositAddressChainEnumValues;
-  static BscDepositAddressChainEnum valueOf(String name) =>
-      _$bscDepositAddressChainEnumValueOf(name);
+  static BuiltSet<BscDepositAddressChainEnum> get values => _$bscDepositAddressChainEnumValues;
+  static BscDepositAddressChainEnum valueOf(String name) => _$bscDepositAddressChainEnumValueOf(name);
 }
 
 class BscDepositAddressChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 56)
-  static const BscDepositAddressChainIdEnum number56 =
-      _$bscDepositAddressChainIdEnum_number56;
+  static const BscDepositAddressChainIdEnum number56 = _$bscDepositAddressChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscDepositAddressChainIdEnum unknownDefaultOpenApi =
-      _$bscDepositAddressChainIdEnum_unknownDefaultOpenApi;
+  static const BscDepositAddressChainIdEnum unknownDefaultOpenApi = _$bscDepositAddressChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscDepositAddressChainIdEnum> get serializer =>
-      _$bscDepositAddressChainIdEnumSerializer;
+  static Serializer<BscDepositAddressChainIdEnum> get serializer => _$bscDepositAddressChainIdEnumSerializer;
 
-  const BscDepositAddressChainIdEnum._(String name) : super(name);
+  const BscDepositAddressChainIdEnum._(String name): super(name);
 
-  static BuiltSet<BscDepositAddressChainIdEnum> get values =>
-      _$bscDepositAddressChainIdEnumValues;
-  static BscDepositAddressChainIdEnum valueOf(String name) =>
-      _$bscDepositAddressChainIdEnumValueOf(name);
+  static BuiltSet<BscDepositAddressChainIdEnum> get values => _$bscDepositAddressChainIdEnumValues;
+  static BscDepositAddressChainIdEnum valueOf(String name) => _$bscDepositAddressChainIdEnumValueOf(name);
 }
 
 class BscDepositAddressTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const BscDepositAddressTokenEnum USDC =
-      _$bscDepositAddressTokenEnum_USDC;
+  static const BscDepositAddressTokenEnum USDC = _$bscDepositAddressTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscDepositAddressTokenEnum unknownDefaultOpenApi =
-      _$bscDepositAddressTokenEnum_unknownDefaultOpenApi;
+  static const BscDepositAddressTokenEnum unknownDefaultOpenApi = _$bscDepositAddressTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscDepositAddressTokenEnum> get serializer =>
-      _$bscDepositAddressTokenEnumSerializer;
+  static Serializer<BscDepositAddressTokenEnum> get serializer => _$bscDepositAddressTokenEnumSerializer;
 
-  const BscDepositAddressTokenEnum._(String name) : super(name);
+  const BscDepositAddressTokenEnum._(String name): super(name);
 
-  static BuiltSet<BscDepositAddressTokenEnum> get values =>
-      _$bscDepositAddressTokenEnumValues;
-  static BscDepositAddressTokenEnum valueOf(String name) =>
-      _$bscDepositAddressTokenEnumValueOf(name);
+  static BuiltSet<BscDepositAddressTokenEnum> get values => _$bscDepositAddressTokenEnumValues;
+  static BscDepositAddressTokenEnum valueOf(String name) => _$bscDepositAddressTokenEnumValueOf(name);
 }
 
 class BscDepositAddressTokenContractEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')
-  static const BscDepositAddressTokenContractEnum
-      n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d =
-      _$bscDepositAddressTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
+  static const BscDepositAddressTokenContractEnum n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d = _$bscDepositAddressTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscDepositAddressTokenContractEnum unknownDefaultOpenApi =
-      _$bscDepositAddressTokenContractEnum_unknownDefaultOpenApi;
+  static const BscDepositAddressTokenContractEnum unknownDefaultOpenApi = _$bscDepositAddressTokenContractEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscDepositAddressTokenContractEnum> get serializer =>
-      _$bscDepositAddressTokenContractEnumSerializer;
+  static Serializer<BscDepositAddressTokenContractEnum> get serializer => _$bscDepositAddressTokenContractEnumSerializer;
 
-  const BscDepositAddressTokenContractEnum._(String name) : super(name);
+  const BscDepositAddressTokenContractEnum._(String name): super(name);
 
-  static BuiltSet<BscDepositAddressTokenContractEnum> get values =>
-      _$bscDepositAddressTokenContractEnumValues;
-  static BscDepositAddressTokenContractEnum valueOf(String name) =>
-      _$bscDepositAddressTokenContractEnumValueOf(name);
+  static BuiltSet<BscDepositAddressTokenContractEnum> get values => _$bscDepositAddressTokenContractEnumValues;
+  static BscDepositAddressTokenContractEnum valueOf(String name) => _$bscDepositAddressTokenContractEnumValueOf(name);
 }
 
 class BscDepositAddressTokenDecimalsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 18)
-  static const BscDepositAddressTokenDecimalsEnum number18 =
-      _$bscDepositAddressTokenDecimalsEnum_number18;
+  static const BscDepositAddressTokenDecimalsEnum number18 = _$bscDepositAddressTokenDecimalsEnum_number18;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscDepositAddressTokenDecimalsEnum unknownDefaultOpenApi =
-      _$bscDepositAddressTokenDecimalsEnum_unknownDefaultOpenApi;
+  static const BscDepositAddressTokenDecimalsEnum unknownDefaultOpenApi = _$bscDepositAddressTokenDecimalsEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscDepositAddressTokenDecimalsEnum> get serializer =>
-      _$bscDepositAddressTokenDecimalsEnumSerializer;
+  static Serializer<BscDepositAddressTokenDecimalsEnum> get serializer => _$bscDepositAddressTokenDecimalsEnumSerializer;
 
-  const BscDepositAddressTokenDecimalsEnum._(String name) : super(name);
+  const BscDepositAddressTokenDecimalsEnum._(String name): super(name);
 
-  static BuiltSet<BscDepositAddressTokenDecimalsEnum> get values =>
-      _$bscDepositAddressTokenDecimalsEnumValues;
-  static BscDepositAddressTokenDecimalsEnum valueOf(String name) =>
-      _$bscDepositAddressTokenDecimalsEnumValueOf(name);
+  static BuiltSet<BscDepositAddressTokenDecimalsEnum> get values => _$bscDepositAddressTokenDecimalsEnumValues;
+  static BscDepositAddressTokenDecimalsEnum valueOf(String name) => _$bscDepositAddressTokenDecimalsEnumValueOf(name);
 }
 
 class BscDepositAddressConfirmationsRequiredEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 15)
-  static const BscDepositAddressConfirmationsRequiredEnum number15 =
-      _$bscDepositAddressConfirmationsRequiredEnum_number15;
+  static const BscDepositAddressConfirmationsRequiredEnum number15 = _$bscDepositAddressConfirmationsRequiredEnum_number15;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscDepositAddressConfirmationsRequiredEnum
-      unknownDefaultOpenApi =
-      _$bscDepositAddressConfirmationsRequiredEnum_unknownDefaultOpenApi;
+  static const BscDepositAddressConfirmationsRequiredEnum unknownDefaultOpenApi = _$bscDepositAddressConfirmationsRequiredEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscDepositAddressConfirmationsRequiredEnum>
-      get serializer => _$bscDepositAddressConfirmationsRequiredEnumSerializer;
+  static Serializer<BscDepositAddressConfirmationsRequiredEnum> get serializer => _$bscDepositAddressConfirmationsRequiredEnumSerializer;
 
-  const BscDepositAddressConfirmationsRequiredEnum._(String name) : super(name);
+  const BscDepositAddressConfirmationsRequiredEnum._(String name): super(name);
 
-  static BuiltSet<BscDepositAddressConfirmationsRequiredEnum> get values =>
-      _$bscDepositAddressConfirmationsRequiredEnumValues;
-  static BscDepositAddressConfirmationsRequiredEnum valueOf(String name) =>
-      _$bscDepositAddressConfirmationsRequiredEnumValueOf(name);
+  static BuiltSet<BscDepositAddressConfirmationsRequiredEnum> get values => _$bscDepositAddressConfirmationsRequiredEnumValues;
+  static BscDepositAddressConfirmationsRequiredEnum valueOf(String name) => _$bscDepositAddressConfirmationsRequiredEnumValueOf(name);
 }
+

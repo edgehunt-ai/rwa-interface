@@ -13,16 +13,14 @@ part 'funding_wallet_action_summary.g.dart';
 /// Frozen action metadata without executable to/data/value; executable payload is released only as Transfer.next_action after route lock.
 ///
 /// Properties:
-/// * [actionId]
-/// * [ordinal]
-/// * [kind]
-/// * [payloadHash]
-/// * [validUntil]
-/// * [status]
+/// * [actionId] 
+/// * [ordinal] 
+/// * [kind] 
+/// * [payloadHash] 
+/// * [validUntil] 
+/// * [status] 
 @BuiltValue()
-abstract class FundingWalletActionSummary
-    implements
-        Built<FundingWalletActionSummary, FundingWalletActionSummaryBuilder> {
+abstract class FundingWalletActionSummary implements Built<FundingWalletActionSummary, FundingWalletActionSummaryBuilder> {
   @BuiltValueField(wireName: r'action_id')
   String get actionId;
 
@@ -45,25 +43,18 @@ abstract class FundingWalletActionSummary
 
   FundingWalletActionSummary._();
 
-  factory FundingWalletActionSummary(
-          [void updates(FundingWalletActionSummaryBuilder b)]) =
-      _$FundingWalletActionSummary;
+  factory FundingWalletActionSummary([void updates(FundingWalletActionSummaryBuilder b)]) = _$FundingWalletActionSummary;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingWalletActionSummaryBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingWalletActionSummary> get serializer =>
-      _$FundingWalletActionSummarySerializer();
+  static Serializer<FundingWalletActionSummary> get serializer => _$FundingWalletActionSummarySerializer();
 }
 
-class _$FundingWalletActionSummarySerializer
-    implements PrimitiveSerializer<FundingWalletActionSummary> {
+class _$FundingWalletActionSummarySerializer implements PrimitiveSerializer<FundingWalletActionSummary> {
   @override
-  final Iterable<Type> types = const [
-    FundingWalletActionSummary,
-    _$FundingWalletActionSummary
-  ];
+  final Iterable<Type> types = const [FundingWalletActionSummary, _$FundingWalletActionSummary];
 
   @override
   final String wireName = r'FundingWalletActionSummary';
@@ -111,9 +102,7 @@ class _$FundingWalletActionSummarySerializer
     FundingWalletActionSummary object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -200,23 +189,19 @@ class _$FundingWalletActionSummarySerializer
 }
 
 class FundingWalletActionSummaryKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'erc20_approval')
-  static const FundingWalletActionSummaryKindEnum erc20Approval =
-      _$fundingWalletActionSummaryKindEnum_erc20Approval;
+  static const FundingWalletActionSummaryKindEnum erc20Approval = _$fundingWalletActionSummaryKindEnum_erc20Approval;
   @BuiltValueEnumConst(wireName: r'origin_transaction')
-  static const FundingWalletActionSummaryKindEnum originTransaction =
-      _$fundingWalletActionSummaryKindEnum_originTransaction;
+  static const FundingWalletActionSummaryKindEnum originTransaction = _$fundingWalletActionSummaryKindEnum_originTransaction;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingWalletActionSummaryKindEnum unknownDefaultOpenApi =
-      _$fundingWalletActionSummaryKindEnum_unknownDefaultOpenApi;
+  static const FundingWalletActionSummaryKindEnum unknownDefaultOpenApi = _$fundingWalletActionSummaryKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingWalletActionSummaryKindEnum> get serializer =>
-      _$fundingWalletActionSummaryKindEnumSerializer;
+  static Serializer<FundingWalletActionSummaryKindEnum> get serializer => _$fundingWalletActionSummaryKindEnumSerializer;
 
-  const FundingWalletActionSummaryKindEnum._(String name) : super(name);
+  const FundingWalletActionSummaryKindEnum._(String name): super(name);
 
-  static BuiltSet<FundingWalletActionSummaryKindEnum> get values =>
-      _$fundingWalletActionSummaryKindEnumValues;
-  static FundingWalletActionSummaryKindEnum valueOf(String name) =>
-      _$fundingWalletActionSummaryKindEnumValueOf(name);
+  static BuiltSet<FundingWalletActionSummaryKindEnum> get values => _$fundingWalletActionSummaryKindEnumValues;
+  static FundingWalletActionSummaryKindEnum valueOf(String name) => _$fundingWalletActionSummaryKindEnumValueOf(name);
 }
+

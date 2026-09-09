@@ -11,11 +11,10 @@ part 'activity_record_explorer.g.dart';
 /// 区块链浏览器链接
 ///
 /// Properties:
-/// * [name]
-/// * [url]
+/// * [name] 
+/// * [url] 
 @BuiltValue()
-abstract class ActivityRecordExplorer
-    implements Built<ActivityRecordExplorer, ActivityRecordExplorerBuilder> {
+abstract class ActivityRecordExplorer implements Built<ActivityRecordExplorer, ActivityRecordExplorerBuilder> {
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -24,25 +23,18 @@ abstract class ActivityRecordExplorer
 
   ActivityRecordExplorer._();
 
-  factory ActivityRecordExplorer(
-          [void updates(ActivityRecordExplorerBuilder b)]) =
-      _$ActivityRecordExplorer;
+  factory ActivityRecordExplorer([void updates(ActivityRecordExplorerBuilder b)]) = _$ActivityRecordExplorer;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ActivityRecordExplorerBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ActivityRecordExplorer> get serializer =>
-      _$ActivityRecordExplorerSerializer();
+  static Serializer<ActivityRecordExplorer> get serializer => _$ActivityRecordExplorerSerializer();
 }
 
-class _$ActivityRecordExplorerSerializer
-    implements PrimitiveSerializer<ActivityRecordExplorer> {
+class _$ActivityRecordExplorerSerializer implements PrimitiveSerializer<ActivityRecordExplorer> {
   @override
-  final Iterable<Type> types = const [
-    ActivityRecordExplorer,
-    _$ActivityRecordExplorer
-  ];
+  final Iterable<Type> types = const [ActivityRecordExplorer, _$ActivityRecordExplorer];
 
   @override
   final String wireName = r'ActivityRecordExplorer';
@@ -70,9 +62,7 @@ class _$ActivityRecordExplorerSerializer
     ActivityRecordExplorer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -129,3 +119,4 @@ class _$ActivityRecordExplorerSerializer
     return result.build();
   }
 }
+

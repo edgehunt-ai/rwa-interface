@@ -12,11 +12,10 @@ part 'hip3_challenge_request.g.dart';
 /// Hip3ChallengeRequest
 ///
 /// Properties:
-/// * [purpose]
-/// * [label]
+/// * [purpose] 
+/// * [label] 
 @BuiltValue()
-abstract class Hip3ChallengeRequest
-    implements Built<Hip3ChallengeRequest, Hip3ChallengeRequestBuilder> {
+abstract class Hip3ChallengeRequest implements Built<Hip3ChallengeRequest, Hip3ChallengeRequestBuilder> {
   @BuiltValueField(wireName: r'purpose')
   Hip3ChallengeRequestPurposeEnum? get purpose;
   // enum purposeEnum {  register,  rotate,  };
@@ -26,25 +25,19 @@ abstract class Hip3ChallengeRequest
 
   Hip3ChallengeRequest._();
 
-  factory Hip3ChallengeRequest([void updates(Hip3ChallengeRequestBuilder b)]) =
-      _$Hip3ChallengeRequest;
+  factory Hip3ChallengeRequest([void updates(Hip3ChallengeRequestBuilder b)]) = _$Hip3ChallengeRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(Hip3ChallengeRequestBuilder b) =>
-      b..purpose = Hip3ChallengeRequestPurposeEnum.valueOf('register');
+  static void _defaults(Hip3ChallengeRequestBuilder b) => b
+      ..purpose = Hip3ChallengeRequestPurposeEnum.valueOf('register');
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3ChallengeRequest> get serializer =>
-      _$Hip3ChallengeRequestSerializer();
+  static Serializer<Hip3ChallengeRequest> get serializer => _$Hip3ChallengeRequestSerializer();
 }
 
-class _$Hip3ChallengeRequestSerializer
-    implements PrimitiveSerializer<Hip3ChallengeRequest> {
+class _$Hip3ChallengeRequestSerializer implements PrimitiveSerializer<Hip3ChallengeRequest> {
   @override
-  final Iterable<Type> types = const [
-    Hip3ChallengeRequest,
-    _$Hip3ChallengeRequest
-  ];
+  final Iterable<Type> types = const [Hip3ChallengeRequest, _$Hip3ChallengeRequest];
 
   @override
   final String wireName = r'Hip3ChallengeRequest';
@@ -76,9 +69,7 @@ class _$Hip3ChallengeRequestSerializer
     Hip3ChallengeRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -96,8 +87,7 @@ class _$Hip3ChallengeRequestSerializer
         case r'purpose':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(Hip3ChallengeRequestPurposeEnum),
+            specifiedType: const FullType.nullable(Hip3ChallengeRequestPurposeEnum),
           ) as Hip3ChallengeRequestPurposeEnum?;
           if (valueDes == null) continue;
           result.purpose = valueDes;
@@ -140,23 +130,19 @@ class _$Hip3ChallengeRequestSerializer
 }
 
 class Hip3ChallengeRequestPurposeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'register')
-  static const Hip3ChallengeRequestPurposeEnum register =
-      _$hip3ChallengeRequestPurposeEnum_register;
+  static const Hip3ChallengeRequestPurposeEnum register = _$hip3ChallengeRequestPurposeEnum_register;
   @BuiltValueEnumConst(wireName: r'rotate')
-  static const Hip3ChallengeRequestPurposeEnum rotate =
-      _$hip3ChallengeRequestPurposeEnum_rotate;
+  static const Hip3ChallengeRequestPurposeEnum rotate = _$hip3ChallengeRequestPurposeEnum_rotate;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeRequestPurposeEnum unknownDefaultOpenApi =
-      _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi;
+  static const Hip3ChallengeRequestPurposeEnum unknownDefaultOpenApi = _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi;
 
-  static Serializer<Hip3ChallengeRequestPurposeEnum> get serializer =>
-      _$hip3ChallengeRequestPurposeEnumSerializer;
+  static Serializer<Hip3ChallengeRequestPurposeEnum> get serializer => _$hip3ChallengeRequestPurposeEnumSerializer;
 
-  const Hip3ChallengeRequestPurposeEnum._(String name) : super(name);
+  const Hip3ChallengeRequestPurposeEnum._(String name): super(name);
 
-  static BuiltSet<Hip3ChallengeRequestPurposeEnum> get values =>
-      _$hip3ChallengeRequestPurposeEnumValues;
-  static Hip3ChallengeRequestPurposeEnum valueOf(String name) =>
-      _$hip3ChallengeRequestPurposeEnumValueOf(name);
+  static BuiltSet<Hip3ChallengeRequestPurposeEnum> get values => _$hip3ChallengeRequestPurposeEnumValues;
+  static Hip3ChallengeRequestPurposeEnum valueOf(String name) => _$hip3ChallengeRequestPurposeEnumValueOf(name);
 }
+

@@ -13,11 +13,10 @@ part 'funding_source_asset.g.dart';
 /// FundingSourceAsset
 ///
 /// Properties:
-/// * [identity]
-/// * [routeCapabilities]
+/// * [identity] 
+/// * [routeCapabilities] 
 @BuiltValue()
-abstract class FundingSourceAsset
-    implements Built<FundingSourceAsset, FundingSourceAssetBuilder> {
+abstract class FundingSourceAsset implements Built<FundingSourceAsset, FundingSourceAssetBuilder> {
   @BuiltValueField(wireName: r'identity')
   FundingSourceAssetIdentity get identity;
 
@@ -26,19 +25,16 @@ abstract class FundingSourceAsset
 
   FundingSourceAsset._();
 
-  factory FundingSourceAsset([void updates(FundingSourceAssetBuilder b)]) =
-      _$FundingSourceAsset;
+  factory FundingSourceAsset([void updates(FundingSourceAssetBuilder b)]) = _$FundingSourceAsset;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingSourceAssetBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingSourceAsset> get serializer =>
-      _$FundingSourceAssetSerializer();
+  static Serializer<FundingSourceAsset> get serializer => _$FundingSourceAssetSerializer();
 }
 
-class _$FundingSourceAssetSerializer
-    implements PrimitiveSerializer<FundingSourceAsset> {
+class _$FundingSourceAssetSerializer implements PrimitiveSerializer<FundingSourceAsset> {
   @override
   final Iterable<Type> types = const [FundingSourceAsset, _$FundingSourceAsset];
 
@@ -68,9 +64,7 @@ class _$FundingSourceAssetSerializer
     FundingSourceAsset object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -127,3 +121,4 @@ class _$FundingSourceAssetSerializer
     return result.build();
   }
 }
+

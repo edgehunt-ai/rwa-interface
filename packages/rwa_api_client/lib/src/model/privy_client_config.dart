@@ -13,15 +13,14 @@ part 'privy_client_config.g.dart';
 /// PrivyClientConfig
 ///
 /// Properties:
-/// * [privyAppId]
+/// * [privyAppId] 
 /// * [privyClientId] - Privy 移动端 client ID（iOS / Android 分别配置时使用）
-/// * [loginMethods]
-/// * [embeddedWallet]
-/// * [termsUrl]
-/// * [privacyUrl]
+/// * [loginMethods] 
+/// * [embeddedWallet] 
+/// * [termsUrl] 
+/// * [privacyUrl] 
 @BuiltValue()
-abstract class PrivyClientConfig
-    implements Built<PrivyClientConfig, PrivyClientConfigBuilder> {
+abstract class PrivyClientConfig implements Built<PrivyClientConfig, PrivyClientConfigBuilder> {
   @BuiltValueField(wireName: r'privy_app_id')
   String get privyAppId;
 
@@ -44,19 +43,16 @@ abstract class PrivyClientConfig
 
   PrivyClientConfig._();
 
-  factory PrivyClientConfig([void updates(PrivyClientConfigBuilder b)]) =
-      _$PrivyClientConfig;
+  factory PrivyClientConfig([void updates(PrivyClientConfigBuilder b)]) = _$PrivyClientConfig;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PrivyClientConfigBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PrivyClientConfig> get serializer =>
-      _$PrivyClientConfigSerializer();
+  static Serializer<PrivyClientConfig> get serializer => _$PrivyClientConfigSerializer();
 }
 
-class _$PrivyClientConfigSerializer
-    implements PrimitiveSerializer<PrivyClientConfig> {
+class _$PrivyClientConfigSerializer implements PrimitiveSerializer<PrivyClientConfig> {
   @override
   final Iterable<Type> types = const [PrivyClientConfig, _$PrivyClientConfig];
 
@@ -83,8 +79,7 @@ class _$PrivyClientConfigSerializer
     yield r'login_methods';
     yield serializers.serialize(
       object.loginMethods,
-      specifiedType: const FullType(
-          BuiltList, [FullType(PrivyClientConfigLoginMethodsEnum)]),
+      specifiedType: const FullType(BuiltList, [FullType(PrivyClientConfigLoginMethodsEnum)]),
     );
     if (object.embeddedWallet != null) {
       yield r'embedded_wallet';
@@ -115,9 +110,7 @@ class _$PrivyClientConfigSerializer
     PrivyClientConfig object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -150,16 +143,14 @@ class _$PrivyClientConfigSerializer
         case r'login_methods':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(
-                BuiltList, [FullType(PrivyClientConfigLoginMethodsEnum)]),
+            specifiedType: const FullType(BuiltList, [FullType(PrivyClientConfigLoginMethodsEnum)]),
           ) as BuiltList<PrivyClientConfigLoginMethodsEnum>;
           result.loginMethods.replace(valueDes);
           break;
         case r'embedded_wallet':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(PrivyClientConfigEmbeddedWallet),
+            specifiedType: const FullType.nullable(PrivyClientConfigEmbeddedWallet),
           ) as PrivyClientConfigEmbeddedWallet?;
           if (valueDes == null) continue;
           result.embeddedWallet.replace(valueDes);
@@ -210,26 +201,21 @@ class _$PrivyClientConfigSerializer
 }
 
 class PrivyClientConfigLoginMethodsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'email')
-  static const PrivyClientConfigLoginMethodsEnum email =
-      _$privyClientConfigLoginMethodsEnum_email;
+  static const PrivyClientConfigLoginMethodsEnum email = _$privyClientConfigLoginMethodsEnum_email;
   @BuiltValueEnumConst(wireName: r'apple')
-  static const PrivyClientConfigLoginMethodsEnum apple =
-      _$privyClientConfigLoginMethodsEnum_apple;
+  static const PrivyClientConfigLoginMethodsEnum apple = _$privyClientConfigLoginMethodsEnum_apple;
   @BuiltValueEnumConst(wireName: r'google')
-  static const PrivyClientConfigLoginMethodsEnum google =
-      _$privyClientConfigLoginMethodsEnum_google;
+  static const PrivyClientConfigLoginMethodsEnum google = _$privyClientConfigLoginMethodsEnum_google;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyClientConfigLoginMethodsEnum unknownDefaultOpenApi =
-      _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi;
+  static const PrivyClientConfigLoginMethodsEnum unknownDefaultOpenApi = _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyClientConfigLoginMethodsEnum> get serializer =>
-      _$privyClientConfigLoginMethodsEnumSerializer;
+  static Serializer<PrivyClientConfigLoginMethodsEnum> get serializer => _$privyClientConfigLoginMethodsEnumSerializer;
 
-  const PrivyClientConfigLoginMethodsEnum._(String name) : super(name);
+  const PrivyClientConfigLoginMethodsEnum._(String name): super(name);
 
-  static BuiltSet<PrivyClientConfigLoginMethodsEnum> get values =>
-      _$privyClientConfigLoginMethodsEnumValues;
-  static PrivyClientConfigLoginMethodsEnum valueOf(String name) =>
-      _$privyClientConfigLoginMethodsEnumValueOf(name);
+  static BuiltSet<PrivyClientConfigLoginMethodsEnum> get values => _$privyClientConfigLoginMethodsEnumValues;
+  static PrivyClientConfigLoginMethodsEnum valueOf(String name) => _$privyClientConfigLoginMethodsEnumValueOf(name);
 }
+

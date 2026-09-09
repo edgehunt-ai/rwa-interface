@@ -9,19 +9,19 @@ import 'package:built_value/serializer.dart';
 
 part 'deposit_rail_base.g.dart';
 
-/// `unavailable` rail 只用于解释阻塞原因；API 必须拒绝返回该 rail 的入金指引。
+/// `unavailable` rail 只用于解释阻塞原因；API 必须拒绝返回该 rail 的入金指引。 
 ///
 /// Properties:
-/// * [chain]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
+/// * [chain] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
 /// * [minimumAmount] - 必须大于零；服务端按精确十进制语义校验。
-/// * [confirmationsRequired]
-/// * [availability]
+/// * [confirmationsRequired] 
+/// * [availability] 
 @BuiltValue(instantiable: false)
-abstract class DepositRailBase {
+abstract class DepositRailBase  {
   @BuiltValueField(wireName: r'chain')
   String get chain;
 
@@ -48,12 +48,10 @@ abstract class DepositRailBase {
   DepositRailAvailability get availability;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DepositRailBase> get serializer =>
-      _$DepositRailBaseSerializer();
+  static Serializer<DepositRailBase> get serializer => _$DepositRailBaseSerializer();
 }
 
-class _$DepositRailBaseSerializer
-    implements PrimitiveSerializer<DepositRailBase> {
+class _$DepositRailBaseSerializer implements PrimitiveSerializer<DepositRailBase> {
   @override
   final Iterable<Type> types = const [DepositRailBase];
 
@@ -113,9 +111,7 @@ class _$DepositRailBaseSerializer
     DepositRailBase object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   @override
@@ -124,32 +120,25 @@ class _$DepositRailBaseSerializer
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.deserialize(serialized,
-        specifiedType: FullType($DepositRailBase)) as $DepositRailBase;
+    return serializers.deserialize(serialized, specifiedType: FullType($DepositRailBase)) as $DepositRailBase;
   }
 }
 
 /// a concrete implementation of [DepositRailBase], since [DepositRailBase] is not instantiable
 @BuiltValue(instantiable: true)
-abstract class $DepositRailBase
-    implements
-        DepositRailBase,
-        Built<$DepositRailBase, $DepositRailBaseBuilder> {
+abstract class $DepositRailBase implements DepositRailBase, Built<$DepositRailBase, $DepositRailBaseBuilder> {
   $DepositRailBase._();
 
-  factory $DepositRailBase([void Function($DepositRailBaseBuilder)? updates]) =
-      _$$DepositRailBase;
+  factory $DepositRailBase([void Function($DepositRailBaseBuilder)? updates]) = _$$DepositRailBase;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults($DepositRailBaseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<$DepositRailBase> get serializer =>
-      _$$DepositRailBaseSerializer();
+  static Serializer<$DepositRailBase> get serializer => _$$DepositRailBaseSerializer();
 }
 
-class _$$DepositRailBaseSerializer
-    implements PrimitiveSerializer<$DepositRailBase> {
+class _$$DepositRailBaseSerializer implements PrimitiveSerializer<$DepositRailBase> {
   @override
   final Iterable<Type> types = const [$DepositRailBase, _$$DepositRailBase];
 
@@ -162,8 +151,7 @@ class _$$DepositRailBaseSerializer
     $DepositRailBase object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.serialize(object,
-        specifiedType: FullType(DepositRailBase))!;
+    return serializers.serialize(object, specifiedType: FullType(DepositRailBase))!;
   }
 
   void _deserializeProperties(
@@ -262,3 +250,4 @@ class _$$DepositRailBaseSerializer
     return result.build();
   }
 }
+

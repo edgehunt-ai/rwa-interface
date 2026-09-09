@@ -13,34 +13,25 @@ part 'wallet_action_complete_request.g.dart';
 /// Properties:
 /// * [signature] - Privy-produced signature for the exact server-frozen legacy order action.
 @BuiltValue()
-abstract class WalletActionCompleteRequest
-    implements
-        Built<WalletActionCompleteRequest, WalletActionCompleteRequestBuilder> {
+abstract class WalletActionCompleteRequest implements Built<WalletActionCompleteRequest, WalletActionCompleteRequestBuilder> {
   /// Privy-produced signature for the exact server-frozen legacy order action.
   @BuiltValueField(wireName: r'signature')
   String get signature;
 
   WalletActionCompleteRequest._();
 
-  factory WalletActionCompleteRequest(
-          [void updates(WalletActionCompleteRequestBuilder b)]) =
-      _$WalletActionCompleteRequest;
+  factory WalletActionCompleteRequest([void updates(WalletActionCompleteRequestBuilder b)]) = _$WalletActionCompleteRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WalletActionCompleteRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletActionCompleteRequest> get serializer =>
-      _$WalletActionCompleteRequestSerializer();
+  static Serializer<WalletActionCompleteRequest> get serializer => _$WalletActionCompleteRequestSerializer();
 }
 
-class _$WalletActionCompleteRequestSerializer
-    implements PrimitiveSerializer<WalletActionCompleteRequest> {
+class _$WalletActionCompleteRequestSerializer implements PrimitiveSerializer<WalletActionCompleteRequest> {
   @override
-  final Iterable<Type> types = const [
-    WalletActionCompleteRequest,
-    _$WalletActionCompleteRequest
-  ];
+  final Iterable<Type> types = const [WalletActionCompleteRequest, _$WalletActionCompleteRequest];
 
   @override
   final String wireName = r'WalletActionCompleteRequest';
@@ -63,9 +54,7 @@ class _$WalletActionCompleteRequestSerializer
     WalletActionCompleteRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -115,3 +104,4 @@ class _$WalletActionCompleteRequestSerializer
     return result.build();
   }
 }
+

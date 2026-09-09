@@ -12,18 +12,16 @@ part 'bsc_usdc_funding_source_asset.g.dart';
 /// BscUsdcFundingSourceAsset
 ///
 /// Properties:
-/// * [assetId]
-/// * [namespace]
-/// * [network]
-/// * [chainId]
-/// * [token]
-/// * [tokenContract]
-/// * [tokenDecimals]
-/// * [provenance]
+/// * [assetId] 
+/// * [namespace] 
+/// * [network] 
+/// * [chainId] 
+/// * [token] 
+/// * [tokenContract] 
+/// * [tokenDecimals] 
+/// * [provenance] 
 @BuiltValue()
-abstract class BscUsdcFundingSourceAsset
-    implements
-        Built<BscUsdcFundingSourceAsset, BscUsdcFundingSourceAssetBuilder> {
+abstract class BscUsdcFundingSourceAsset implements Built<BscUsdcFundingSourceAsset, BscUsdcFundingSourceAssetBuilder> {
   @BuiltValueField(wireName: r'asset_id')
   BscUsdcFundingSourceAssetAssetIdEnum get assetId;
   // enum assetIdEnum {  eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d,  };
@@ -58,25 +56,18 @@ abstract class BscUsdcFundingSourceAsset
 
   BscUsdcFundingSourceAsset._();
 
-  factory BscUsdcFundingSourceAsset(
-          [void updates(BscUsdcFundingSourceAssetBuilder b)]) =
-      _$BscUsdcFundingSourceAsset;
+  factory BscUsdcFundingSourceAsset([void updates(BscUsdcFundingSourceAssetBuilder b)]) = _$BscUsdcFundingSourceAsset;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BscUsdcFundingSourceAssetBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BscUsdcFundingSourceAsset> get serializer =>
-      _$BscUsdcFundingSourceAssetSerializer();
+  static Serializer<BscUsdcFundingSourceAsset> get serializer => _$BscUsdcFundingSourceAssetSerializer();
 }
 
-class _$BscUsdcFundingSourceAssetSerializer
-    implements PrimitiveSerializer<BscUsdcFundingSourceAsset> {
+class _$BscUsdcFundingSourceAssetSerializer implements PrimitiveSerializer<BscUsdcFundingSourceAsset> {
   @override
-  final Iterable<Type> types = const [
-    BscUsdcFundingSourceAsset,
-    _$BscUsdcFundingSourceAsset
-  ];
+  final Iterable<Type> types = const [BscUsdcFundingSourceAsset, _$BscUsdcFundingSourceAsset];
 
   @override
   final String wireName = r'BscUsdcFundingSourceAsset';
@@ -134,9 +125,7 @@ class _$BscUsdcFundingSourceAssetSerializer
     BscUsdcFundingSourceAsset object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -161,8 +150,7 @@ class _$BscUsdcFundingSourceAssetSerializer
         case r'namespace':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BscUsdcFundingSourceAssetNamespaceEnum),
+            specifiedType: const FullType(BscUsdcFundingSourceAssetNamespaceEnum),
           ) as BscUsdcFundingSourceAssetNamespaceEnum;
           result.namespace = valueDes;
           break;
@@ -190,24 +178,21 @@ class _$BscUsdcFundingSourceAssetSerializer
         case r'token_contract':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BscUsdcFundingSourceAssetTokenContractEnum),
+            specifiedType: const FullType(BscUsdcFundingSourceAssetTokenContractEnum),
           ) as BscUsdcFundingSourceAssetTokenContractEnum;
           result.tokenContract = valueDes;
           break;
         case r'token_decimals':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BscUsdcFundingSourceAssetTokenDecimalsEnum),
+            specifiedType: const FullType(BscUsdcFundingSourceAssetTokenDecimalsEnum),
           ) as BscUsdcFundingSourceAssetTokenDecimalsEnum;
           result.tokenDecimals = valueDes;
           break;
         case r'provenance':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BscUsdcFundingSourceAssetProvenanceEnum),
+            specifiedType: const FullType(BscUsdcFundingSourceAssetProvenanceEnum),
           ) as BscUsdcFundingSourceAssetProvenanceEnum;
           result.provenance = valueDes;
           break;
@@ -241,158 +226,122 @@ class _$BscUsdcFundingSourceAssetSerializer
 }
 
 class BscUsdcFundingSourceAssetAssetIdEnum extends EnumClass {
-  @BuiltValueEnumConst(
-      wireName: r'eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')
-  static const BscUsdcFundingSourceAssetAssetIdEnum
-      eip155Colon56SlashErc20Colon0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d =
-      _$bscUsdcFundingSourceAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
+
+  @BuiltValueEnumConst(wireName: r'eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')
+  static const BscUsdcFundingSourceAssetAssetIdEnum eip155Colon56SlashErc20Colon0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d = _$bscUsdcFundingSourceAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscUsdcFundingSourceAssetAssetIdEnum unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetAssetIdEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetAssetIdEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetAssetIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetAssetIdEnum> get serializer =>
-      _$bscUsdcFundingSourceAssetAssetIdEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetAssetIdEnum> get serializer => _$bscUsdcFundingSourceAssetAssetIdEnumSerializer;
 
-  const BscUsdcFundingSourceAssetAssetIdEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetAssetIdEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetAssetIdEnum> get values =>
-      _$bscUsdcFundingSourceAssetAssetIdEnumValues;
-  static BscUsdcFundingSourceAssetAssetIdEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetAssetIdEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetAssetIdEnum> get values => _$bscUsdcFundingSourceAssetAssetIdEnumValues;
+  static BscUsdcFundingSourceAssetAssetIdEnum valueOf(String name) => _$bscUsdcFundingSourceAssetAssetIdEnumValueOf(name);
 }
 
 class BscUsdcFundingSourceAssetNamespaceEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'eip155')
-  static const BscUsdcFundingSourceAssetNamespaceEnum eip155 =
-      _$bscUsdcFundingSourceAssetNamespaceEnum_eip155;
+  static const BscUsdcFundingSourceAssetNamespaceEnum eip155 = _$bscUsdcFundingSourceAssetNamespaceEnum_eip155;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscUsdcFundingSourceAssetNamespaceEnum unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetNamespaceEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetNamespaceEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetNamespaceEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetNamespaceEnum> get serializer =>
-      _$bscUsdcFundingSourceAssetNamespaceEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetNamespaceEnum> get serializer => _$bscUsdcFundingSourceAssetNamespaceEnumSerializer;
 
-  const BscUsdcFundingSourceAssetNamespaceEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetNamespaceEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetNamespaceEnum> get values =>
-      _$bscUsdcFundingSourceAssetNamespaceEnumValues;
-  static BscUsdcFundingSourceAssetNamespaceEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetNamespaceEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetNamespaceEnum> get values => _$bscUsdcFundingSourceAssetNamespaceEnumValues;
+  static BscUsdcFundingSourceAssetNamespaceEnum valueOf(String name) => _$bscUsdcFundingSourceAssetNamespaceEnumValueOf(name);
 }
 
 class BscUsdcFundingSourceAssetNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const BscUsdcFundingSourceAssetNetworkEnum BSC =
-      _$bscUsdcFundingSourceAssetNetworkEnum_BSC;
+  static const BscUsdcFundingSourceAssetNetworkEnum BSC = _$bscUsdcFundingSourceAssetNetworkEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscUsdcFundingSourceAssetNetworkEnum unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetNetworkEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetNetworkEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetNetworkEnum> get serializer =>
-      _$bscUsdcFundingSourceAssetNetworkEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetNetworkEnum> get serializer => _$bscUsdcFundingSourceAssetNetworkEnumSerializer;
 
-  const BscUsdcFundingSourceAssetNetworkEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetNetworkEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetNetworkEnum> get values =>
-      _$bscUsdcFundingSourceAssetNetworkEnumValues;
-  static BscUsdcFundingSourceAssetNetworkEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetNetworkEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetNetworkEnum> get values => _$bscUsdcFundingSourceAssetNetworkEnumValues;
+  static BscUsdcFundingSourceAssetNetworkEnum valueOf(String name) => _$bscUsdcFundingSourceAssetNetworkEnumValueOf(name);
 }
 
 class BscUsdcFundingSourceAssetChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 56)
-  static const BscUsdcFundingSourceAssetChainIdEnum number56 =
-      _$bscUsdcFundingSourceAssetChainIdEnum_number56;
+  static const BscUsdcFundingSourceAssetChainIdEnum number56 = _$bscUsdcFundingSourceAssetChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscUsdcFundingSourceAssetChainIdEnum unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetChainIdEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetChainIdEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetChainIdEnum> get serializer =>
-      _$bscUsdcFundingSourceAssetChainIdEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetChainIdEnum> get serializer => _$bscUsdcFundingSourceAssetChainIdEnumSerializer;
 
-  const BscUsdcFundingSourceAssetChainIdEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetChainIdEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetChainIdEnum> get values =>
-      _$bscUsdcFundingSourceAssetChainIdEnumValues;
-  static BscUsdcFundingSourceAssetChainIdEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetChainIdEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetChainIdEnum> get values => _$bscUsdcFundingSourceAssetChainIdEnumValues;
+  static BscUsdcFundingSourceAssetChainIdEnum valueOf(String name) => _$bscUsdcFundingSourceAssetChainIdEnumValueOf(name);
 }
 
 class BscUsdcFundingSourceAssetTokenEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const BscUsdcFundingSourceAssetTokenEnum USDC =
-      _$bscUsdcFundingSourceAssetTokenEnum_USDC;
+  static const BscUsdcFundingSourceAssetTokenEnum USDC = _$bscUsdcFundingSourceAssetTokenEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscUsdcFundingSourceAssetTokenEnum unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetTokenEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetTokenEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetTokenEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetTokenEnum> get serializer =>
-      _$bscUsdcFundingSourceAssetTokenEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetTokenEnum> get serializer => _$bscUsdcFundingSourceAssetTokenEnumSerializer;
 
-  const BscUsdcFundingSourceAssetTokenEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetTokenEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetTokenEnum> get values =>
-      _$bscUsdcFundingSourceAssetTokenEnumValues;
-  static BscUsdcFundingSourceAssetTokenEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetTokenEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetTokenEnum> get values => _$bscUsdcFundingSourceAssetTokenEnumValues;
+  static BscUsdcFundingSourceAssetTokenEnum valueOf(String name) => _$bscUsdcFundingSourceAssetTokenEnumValueOf(name);
 }
 
 class BscUsdcFundingSourceAssetTokenContractEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')
-  static const BscUsdcFundingSourceAssetTokenContractEnum
-      n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d =
-      _$bscUsdcFundingSourceAssetTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
+  static const BscUsdcFundingSourceAssetTokenContractEnum n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d = _$bscUsdcFundingSourceAssetTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscUsdcFundingSourceAssetTokenContractEnum
-      unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetTokenContractEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetTokenContractEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetTokenContractEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetTokenContractEnum>
-      get serializer => _$bscUsdcFundingSourceAssetTokenContractEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetTokenContractEnum> get serializer => _$bscUsdcFundingSourceAssetTokenContractEnumSerializer;
 
-  const BscUsdcFundingSourceAssetTokenContractEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetTokenContractEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetTokenContractEnum> get values =>
-      _$bscUsdcFundingSourceAssetTokenContractEnumValues;
-  static BscUsdcFundingSourceAssetTokenContractEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetTokenContractEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetTokenContractEnum> get values => _$bscUsdcFundingSourceAssetTokenContractEnumValues;
+  static BscUsdcFundingSourceAssetTokenContractEnum valueOf(String name) => _$bscUsdcFundingSourceAssetTokenContractEnumValueOf(name);
 }
 
 class BscUsdcFundingSourceAssetTokenDecimalsEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 18)
-  static const BscUsdcFundingSourceAssetTokenDecimalsEnum number18 =
-      _$bscUsdcFundingSourceAssetTokenDecimalsEnum_number18;
+  static const BscUsdcFundingSourceAssetTokenDecimalsEnum number18 = _$bscUsdcFundingSourceAssetTokenDecimalsEnum_number18;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscUsdcFundingSourceAssetTokenDecimalsEnum
-      unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetTokenDecimalsEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetTokenDecimalsEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetTokenDecimalsEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetTokenDecimalsEnum>
-      get serializer => _$bscUsdcFundingSourceAssetTokenDecimalsEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetTokenDecimalsEnum> get serializer => _$bscUsdcFundingSourceAssetTokenDecimalsEnumSerializer;
 
-  const BscUsdcFundingSourceAssetTokenDecimalsEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetTokenDecimalsEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetTokenDecimalsEnum> get values =>
-      _$bscUsdcFundingSourceAssetTokenDecimalsEnumValues;
-  static BscUsdcFundingSourceAssetTokenDecimalsEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetTokenDecimalsEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetTokenDecimalsEnum> get values => _$bscUsdcFundingSourceAssetTokenDecimalsEnumValues;
+  static BscUsdcFundingSourceAssetTokenDecimalsEnum valueOf(String name) => _$bscUsdcFundingSourceAssetTokenDecimalsEnumValueOf(name);
 }
 
 class BscUsdcFundingSourceAssetProvenanceEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'binance_peg')
-  static const BscUsdcFundingSourceAssetProvenanceEnum binancePeg =
-      _$bscUsdcFundingSourceAssetProvenanceEnum_binancePeg;
+  static const BscUsdcFundingSourceAssetProvenanceEnum binancePeg = _$bscUsdcFundingSourceAssetProvenanceEnum_binancePeg;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscUsdcFundingSourceAssetProvenanceEnum unknownDefaultOpenApi =
-      _$bscUsdcFundingSourceAssetProvenanceEnum_unknownDefaultOpenApi;
+  static const BscUsdcFundingSourceAssetProvenanceEnum unknownDefaultOpenApi = _$bscUsdcFundingSourceAssetProvenanceEnum_unknownDefaultOpenApi;
 
-  static Serializer<BscUsdcFundingSourceAssetProvenanceEnum> get serializer =>
-      _$bscUsdcFundingSourceAssetProvenanceEnumSerializer;
+  static Serializer<BscUsdcFundingSourceAssetProvenanceEnum> get serializer => _$bscUsdcFundingSourceAssetProvenanceEnumSerializer;
 
-  const BscUsdcFundingSourceAssetProvenanceEnum._(String name) : super(name);
+  const BscUsdcFundingSourceAssetProvenanceEnum._(String name): super(name);
 
-  static BuiltSet<BscUsdcFundingSourceAssetProvenanceEnum> get values =>
-      _$bscUsdcFundingSourceAssetProvenanceEnumValues;
-  static BscUsdcFundingSourceAssetProvenanceEnum valueOf(String name) =>
-      _$bscUsdcFundingSourceAssetProvenanceEnumValueOf(name);
+  static BuiltSet<BscUsdcFundingSourceAssetProvenanceEnum> get values => _$bscUsdcFundingSourceAssetProvenanceEnumValues;
+  static BscUsdcFundingSourceAssetProvenanceEnum valueOf(String name) => _$bscUsdcFundingSourceAssetProvenanceEnumValueOf(name);
 }
+

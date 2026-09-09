@@ -14,24 +14,23 @@ part 'erc20_approval_action.g.dart';
 /// Erc20ApprovalAction
 ///
 /// Properties:
-/// * [actionId]
-/// * [ordinal]
-/// * [kind]
-/// * [chainId]
-/// * [from]
-/// * [to]
-/// * [data]
+/// * [actionId] 
+/// * [ordinal] 
+/// * [kind] 
+/// * [chainId] 
+/// * [from] 
+/// * [to] 
+/// * [data] 
 /// * [value] - Native-value transfer is forbidden; v1 only executes zero-value contract calls.
-/// * [payloadHash]
-/// * [validUntil]
-/// * [status]
-/// * [gasPayment]
-/// * [tokenContract]
-/// * [spender]
+/// * [payloadHash] 
+/// * [validUntil] 
+/// * [status] 
+/// * [gasPayment] 
+/// * [tokenContract] 
+/// * [spender] 
 /// * [approvalAmount] - 十进制字符串，避免浮点误差
 @BuiltValue()
-abstract class Erc20ApprovalAction
-    implements Built<Erc20ApprovalAction, Erc20ApprovalActionBuilder> {
+abstract class Erc20ApprovalAction implements Built<Erc20ApprovalAction, Erc20ApprovalActionBuilder> {
   @BuiltValueField(wireName: r'action_id')
   String get actionId;
 
@@ -85,24 +84,18 @@ abstract class Erc20ApprovalAction
 
   Erc20ApprovalAction._();
 
-  factory Erc20ApprovalAction([void updates(Erc20ApprovalActionBuilder b)]) =
-      _$Erc20ApprovalAction;
+  factory Erc20ApprovalAction([void updates(Erc20ApprovalActionBuilder b)]) = _$Erc20ApprovalAction;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Erc20ApprovalActionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Erc20ApprovalAction> get serializer =>
-      _$Erc20ApprovalActionSerializer();
+  static Serializer<Erc20ApprovalAction> get serializer => _$Erc20ApprovalActionSerializer();
 }
 
-class _$Erc20ApprovalActionSerializer
-    implements PrimitiveSerializer<Erc20ApprovalAction> {
+class _$Erc20ApprovalActionSerializer implements PrimitiveSerializer<Erc20ApprovalAction> {
   @override
-  final Iterable<Type> types = const [
-    Erc20ApprovalAction,
-    _$Erc20ApprovalAction
-  ];
+  final Iterable<Type> types = const [Erc20ApprovalAction, _$Erc20ApprovalAction];
 
   @override
   final String wireName = r'Erc20ApprovalAction';
@@ -195,9 +188,7 @@ class _$Erc20ApprovalActionSerializer
     Erc20ApprovalAction object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -347,70 +338,55 @@ class _$Erc20ApprovalActionSerializer
 }
 
 class Erc20ApprovalActionKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'erc20_approval')
-  static const Erc20ApprovalActionKindEnum erc20Approval =
-      _$erc20ApprovalActionKindEnum_erc20Approval;
+  static const Erc20ApprovalActionKindEnum erc20Approval = _$erc20ApprovalActionKindEnum_erc20Approval;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Erc20ApprovalActionKindEnum unknownDefaultOpenApi =
-      _$erc20ApprovalActionKindEnum_unknownDefaultOpenApi;
+  static const Erc20ApprovalActionKindEnum unknownDefaultOpenApi = _$erc20ApprovalActionKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<Erc20ApprovalActionKindEnum> get serializer =>
-      _$erc20ApprovalActionKindEnumSerializer;
+  static Serializer<Erc20ApprovalActionKindEnum> get serializer => _$erc20ApprovalActionKindEnumSerializer;
 
-  const Erc20ApprovalActionKindEnum._(String name) : super(name);
+  const Erc20ApprovalActionKindEnum._(String name): super(name);
 
-  static BuiltSet<Erc20ApprovalActionKindEnum> get values =>
-      _$erc20ApprovalActionKindEnumValues;
-  static Erc20ApprovalActionKindEnum valueOf(String name) =>
-      _$erc20ApprovalActionKindEnumValueOf(name);
+  static BuiltSet<Erc20ApprovalActionKindEnum> get values => _$erc20ApprovalActionKindEnumValues;
+  static Erc20ApprovalActionKindEnum valueOf(String name) => _$erc20ApprovalActionKindEnumValueOf(name);
 }
 
 class Erc20ApprovalActionChainIdEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 1)
-  static const Erc20ApprovalActionChainIdEnum number1 =
-      _$erc20ApprovalActionChainIdEnum_number1;
+  static const Erc20ApprovalActionChainIdEnum number1 = _$erc20ApprovalActionChainIdEnum_number1;
   @BuiltValueEnumConst(wireNumber: 56)
-  static const Erc20ApprovalActionChainIdEnum number56 =
-      _$erc20ApprovalActionChainIdEnum_number56;
+  static const Erc20ApprovalActionChainIdEnum number56 = _$erc20ApprovalActionChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 8453)
-  static const Erc20ApprovalActionChainIdEnum number8453 =
-      _$erc20ApprovalActionChainIdEnum_number8453;
+  static const Erc20ApprovalActionChainIdEnum number8453 = _$erc20ApprovalActionChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
-  static const Erc20ApprovalActionChainIdEnum number42161 =
-      _$erc20ApprovalActionChainIdEnum_number42161;
+  static const Erc20ApprovalActionChainIdEnum number42161 = _$erc20ApprovalActionChainIdEnum_number42161;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const Erc20ApprovalActionChainIdEnum unknownDefaultOpenApi =
-      _$erc20ApprovalActionChainIdEnum_unknownDefaultOpenApi;
+  static const Erc20ApprovalActionChainIdEnum unknownDefaultOpenApi = _$erc20ApprovalActionChainIdEnum_unknownDefaultOpenApi;
 
-  static Serializer<Erc20ApprovalActionChainIdEnum> get serializer =>
-      _$erc20ApprovalActionChainIdEnumSerializer;
+  static Serializer<Erc20ApprovalActionChainIdEnum> get serializer => _$erc20ApprovalActionChainIdEnumSerializer;
 
-  const Erc20ApprovalActionChainIdEnum._(String name) : super(name);
+  const Erc20ApprovalActionChainIdEnum._(String name): super(name);
 
-  static BuiltSet<Erc20ApprovalActionChainIdEnum> get values =>
-      _$erc20ApprovalActionChainIdEnumValues;
-  static Erc20ApprovalActionChainIdEnum valueOf(String name) =>
-      _$erc20ApprovalActionChainIdEnumValueOf(name);
+  static BuiltSet<Erc20ApprovalActionChainIdEnum> get values => _$erc20ApprovalActionChainIdEnumValues;
+  static Erc20ApprovalActionChainIdEnum valueOf(String name) => _$erc20ApprovalActionChainIdEnumValueOf(name);
 }
 
 class Erc20ApprovalActionValueEnum extends EnumClass {
+
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'0x0')
-  static const Erc20ApprovalActionValueEnum n0x0 =
-      _$erc20ApprovalActionValueEnum_n0x0;
-
+  static const Erc20ApprovalActionValueEnum n0x0 = _$erc20ApprovalActionValueEnum_n0x0;
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Erc20ApprovalActionValueEnum unknownDefaultOpenApi =
-      _$erc20ApprovalActionValueEnum_unknownDefaultOpenApi;
+  static const Erc20ApprovalActionValueEnum unknownDefaultOpenApi = _$erc20ApprovalActionValueEnum_unknownDefaultOpenApi;
 
-  static Serializer<Erc20ApprovalActionValueEnum> get serializer =>
-      _$erc20ApprovalActionValueEnumSerializer;
+  static Serializer<Erc20ApprovalActionValueEnum> get serializer => _$erc20ApprovalActionValueEnumSerializer;
 
-  const Erc20ApprovalActionValueEnum._(String name) : super(name);
+  const Erc20ApprovalActionValueEnum._(String name): super(name);
 
-  static BuiltSet<Erc20ApprovalActionValueEnum> get values =>
-      _$erc20ApprovalActionValueEnumValues;
-  static Erc20ApprovalActionValueEnum valueOf(String name) =>
-      _$erc20ApprovalActionValueEnumValueOf(name);
+  static BuiltSet<Erc20ApprovalActionValueEnum> get values => _$erc20ApprovalActionValueEnumValues;
+  static Erc20ApprovalActionValueEnum valueOf(String name) => _$erc20ApprovalActionValueEnumValueOf(name);
 }
+

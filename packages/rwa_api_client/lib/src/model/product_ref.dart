@@ -12,8 +12,8 @@ part 'product_ref.g.dart';
 /// ProductRef
 ///
 /// Properties:
-/// * [symbol]
-/// * [kind]
+/// * [symbol] 
+/// * [kind] 
 @BuiltValue()
 abstract class ProductRef implements Built<ProductRef, ProductRefBuilder> {
   @BuiltValueField(wireName: r'symbol')
@@ -64,9 +64,7 @@ class _$ProductRefSerializer implements PrimitiveSerializer<ProductRef> {
     ProductRef object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -123,3 +121,4 @@ class _$ProductRefSerializer implements PrimitiveSerializer<ProductRef> {
     return result.build();
   }
 }
+

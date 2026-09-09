@@ -15,8 +15,30 @@ final class FundingRail {
   final DecimalValue? minimumAmount;
 }
 
+final class DepositRoute {
+  const DepositRoute({
+    required this.chain,
+    required this.token,
+    required this.minimumAmount,
+    required this.confirmationsRequired,
+    this.isRecommended = false,
+  });
+
+  final String chain;
+  final String token;
+  final DecimalValue minimumAmount;
+  final int confirmationsRequired;
+  final bool isRecommended;
+}
+
 final class FundingCatalog {
-  const FundingCatalog({required this.rails, required this.updatedAt});
+  const FundingCatalog({
+    required this.rails,
+    this.depositRoutes = const [],
+    required this.updatedAt,
+  });
+
   final List<FundingRail> rails;
+  final List<DepositRoute> depositRoutes;
   final DateTime updatedAt;
 }

@@ -12,14 +12,13 @@ part 'close_position_request.g.dart';
 /// ClosePositionRequest
 ///
 /// Properties:
-/// * [type]
+/// * [type] 
 /// * [quantity] - 与 `percent` 二选一；均不传表示全部平仓
 /// * [percent] - 十进制字符串，避免浮点误差
 /// * [limitPrice] - 十进制字符串，避免浮点误差
 /// * [slippagePercent] - 十进制字符串，避免浮点误差
 @BuiltValue()
-abstract class ClosePositionRequest
-    implements Built<ClosePositionRequest, ClosePositionRequestBuilder> {
+abstract class ClosePositionRequest implements Built<ClosePositionRequest, ClosePositionRequestBuilder> {
   @BuiltValueField(wireName: r'type')
   OrderType? get type;
   // enum typeEnum {  market,  limit,  };
@@ -42,25 +41,19 @@ abstract class ClosePositionRequest
 
   ClosePositionRequest._();
 
-  factory ClosePositionRequest([void updates(ClosePositionRequestBuilder b)]) =
-      _$ClosePositionRequest;
+  factory ClosePositionRequest([void updates(ClosePositionRequestBuilder b)]) = _$ClosePositionRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(ClosePositionRequestBuilder b) =>
-      b..type = OrderType.market;
+  static void _defaults(ClosePositionRequestBuilder b) => b
+      ..type = OrderType.market;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ClosePositionRequest> get serializer =>
-      _$ClosePositionRequestSerializer();
+  static Serializer<ClosePositionRequest> get serializer => _$ClosePositionRequestSerializer();
 }
 
-class _$ClosePositionRequestSerializer
-    implements PrimitiveSerializer<ClosePositionRequest> {
+class _$ClosePositionRequestSerializer implements PrimitiveSerializer<ClosePositionRequest> {
   @override
-  final Iterable<Type> types = const [
-    ClosePositionRequest,
-    _$ClosePositionRequest
-  ];
+  final Iterable<Type> types = const [ClosePositionRequest, _$ClosePositionRequest];
 
   @override
   final String wireName = r'ClosePositionRequest';
@@ -113,9 +106,7 @@ class _$ClosePositionRequestSerializer
     ClosePositionRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -198,3 +189,4 @@ class _$ClosePositionRequestSerializer
     return result.build();
   }
 }
+

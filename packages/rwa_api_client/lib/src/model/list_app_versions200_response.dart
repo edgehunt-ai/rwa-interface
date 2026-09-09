@@ -13,35 +13,26 @@ part 'list_app_versions200_response.g.dart';
 /// ListAppVersions200Response
 ///
 /// Properties:
-/// * [platforms]
+/// * [platforms] 
 @BuiltValue()
-abstract class ListAppVersions200Response
-    implements
-        Built<ListAppVersions200Response, ListAppVersions200ResponseBuilder> {
+abstract class ListAppVersions200Response implements Built<ListAppVersions200Response, ListAppVersions200ResponseBuilder> {
   @BuiltValueField(wireName: r'platforms')
   BuiltList<AppVersionInfo> get platforms;
 
   ListAppVersions200Response._();
 
-  factory ListAppVersions200Response(
-          [void updates(ListAppVersions200ResponseBuilder b)]) =
-      _$ListAppVersions200Response;
+  factory ListAppVersions200Response([void updates(ListAppVersions200ResponseBuilder b)]) = _$ListAppVersions200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ListAppVersions200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ListAppVersions200Response> get serializer =>
-      _$ListAppVersions200ResponseSerializer();
+  static Serializer<ListAppVersions200Response> get serializer => _$ListAppVersions200ResponseSerializer();
 }
 
-class _$ListAppVersions200ResponseSerializer
-    implements PrimitiveSerializer<ListAppVersions200Response> {
+class _$ListAppVersions200ResponseSerializer implements PrimitiveSerializer<ListAppVersions200Response> {
   @override
-  final Iterable<Type> types = const [
-    ListAppVersions200Response,
-    _$ListAppVersions200Response
-  ];
+  final Iterable<Type> types = const [ListAppVersions200Response, _$ListAppVersions200Response];
 
   @override
   final String wireName = r'ListAppVersions200Response';
@@ -64,9 +55,7 @@ class _$ListAppVersions200ResponseSerializer
     ListAppVersions200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -84,8 +73,7 @@ class _$ListAppVersions200ResponseSerializer
         case r'platforms':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(AppVersionInfo)]),
+            specifiedType: const FullType(BuiltList, [FullType(AppVersionInfo)]),
           ) as BuiltList<AppVersionInfo>;
           result.platforms.replace(valueDes);
           break;
@@ -117,3 +105,4 @@ class _$ListAppVersions200ResponseSerializer
     return result.build();
   }
 }
+

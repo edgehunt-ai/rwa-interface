@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'transfer_status.g.dart';
 
 class TransferStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'awaiting_authorization')
   static const TransferStatus awaitingAuthorization = _$awaitingAuthorization;
   @BuiltValueEnumConst(wireName: r'awaiting_wallet')
@@ -35,10 +36,9 @@ class TransferStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const TransferStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<TransferStatus> get serializer =>
-      _$transferStatusSerializer;
+  static Serializer<TransferStatus> get serializer => _$transferStatusSerializer;
 
-  const TransferStatus._(String name) : super(name);
+  const TransferStatus._(String name): super(name);
 
   static BuiltSet<TransferStatus> get values => _$values;
   static TransferStatus valueOf(String name) => _$valueOf(name);
@@ -51,3 +51,4 @@ class TransferStatus extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class TransferStatusMixin = Object with _$TransferStatusMixin;
+

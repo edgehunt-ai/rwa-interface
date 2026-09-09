@@ -15,24 +15,23 @@ import 'package:built_value/serializer.dart';
 
 part 'portfolio_asset_page.g.dart';
 
-/// 分页资产余额及其已估值小计、未估值数量、来源状态和缓存时间。 `valued_total_usd` 与 `unvalued_asset_count` 是同一 immutable snapshot 下对 完整资产集合计算的全局聚合值，会在每一页重复；客户端不得跨页累加。
+/// 分页资产余额及其已估值小计、未估值数量、来源状态和缓存时间。 `valued_total_usd` 与 `unvalued_asset_count` 是同一 immutable snapshot 下对 完整资产集合计算的全局聚合值，会在每一页重复；客户端不得跨页累加。 
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore]
-/// * [items]
-/// * [valuedTotalUsd] - 同一 immutable snapshot 范围内全部已成功估值资产的全局 subtotal， 不代表全部资产价值；该值会在每页重复，客户端不得跨页累加。
-/// * [unvaluedAssetCount] - 同一 immutable snapshot 范围内完整资产集合的全局未估值数量；该值会 在每页重复，客户端不得跨页累加。
+/// * [hasMore] 
+/// * [items] 
+/// * [valuedTotalUsd] - 同一 immutable snapshot 范围内全部已成功估值资产的全局 subtotal， 不代表全部资产价值；该值会在每页重复，客户端不得跨页累加。 
+/// * [unvaluedAssetCount] - 同一 immutable snapshot 范围内完整资产集合的全局未估值数量；该值会 在每页重复，客户端不得跨页累加。 
 /// * [dataStatus] - 当 `unvalued_asset_count > 0` 时必须为 `partial`。
-/// * [freshness]
-/// * [calculatedAt]
-/// * [oldestObservationAt]
-/// * [warnings]
-/// * [sources]
+/// * [freshness] 
+/// * [calculatedAt] 
+/// * [oldestObservationAt] 
+/// * [warnings] 
+/// * [sources] 
 @BuiltValue()
-abstract class PortfolioAssetPage
-    implements Page, Built<PortfolioAssetPage, PortfolioAssetPageBuilder> {
-  /// 同一 immutable snapshot 范围内完整资产集合的全局未估值数量；该值会 在每页重复，客户端不得跨页累加。
+abstract class PortfolioAssetPage implements Page, Built<PortfolioAssetPage, PortfolioAssetPageBuilder> {
+  /// 同一 immutable snapshot 范围内完整资产集合的全局未估值数量；该值会 在每页重复，客户端不得跨页累加。 
   @BuiltValueField(wireName: r'unvalued_asset_count')
   int get unvaluedAssetCount;
 
@@ -50,7 +49,7 @@ abstract class PortfolioAssetPage
   PortfolioDataStatus get dataStatus;
   // enum dataStatusEnum {  complete,  partial,  empty,  };
 
-  /// 同一 immutable snapshot 范围内全部已成功估值资产的全局 subtotal， 不代表全部资产价值；该值会在每页重复，客户端不得跨页累加。
+  /// 同一 immutable snapshot 范围内全部已成功估值资产的全局 subtotal， 不代表全部资产价值；该值会在每页重复，客户端不得跨页累加。 
   @BuiltValueField(wireName: r'valued_total_usd')
   String get valuedTotalUsd;
 
@@ -66,19 +65,16 @@ abstract class PortfolioAssetPage
 
   PortfolioAssetPage._();
 
-  factory PortfolioAssetPage([void updates(PortfolioAssetPageBuilder b)]) =
-      _$PortfolioAssetPage;
+  factory PortfolioAssetPage([void updates(PortfolioAssetPageBuilder b)]) = _$PortfolioAssetPage;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PortfolioAssetPageBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PortfolioAssetPage> get serializer =>
-      _$PortfolioAssetPageSerializer();
+  static Serializer<PortfolioAssetPage> get serializer => _$PortfolioAssetPageSerializer();
 }
 
-class _$PortfolioAssetPageSerializer
-    implements PrimitiveSerializer<PortfolioAssetPage> {
+class _$PortfolioAssetPageSerializer implements PrimitiveSerializer<PortfolioAssetPage> {
   @override
   final Iterable<Type> types = const [PortfolioAssetPage, _$PortfolioAssetPage];
 
@@ -91,12 +87,10 @@ class _$PortfolioAssetPageSerializer
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null
-        ? null
-        : serializers.serialize(
-            object.nextCursor,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.nextCursor == null ? null : serializers.serialize(
+      object.nextCursor,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'unvalued_asset_count';
     yield serializers.serialize(
       object.unvaluedAssetCount,
@@ -105,8 +99,7 @@ class _$PortfolioAssetPageSerializer
     yield r'sources';
     yield serializers.serialize(
       object.sources,
-      specifiedType:
-          const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+      specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
     );
     if (object.oldestObservationAt != null) {
       yield r'oldest_observation_at';
@@ -158,9 +151,7 @@ class _$PortfolioAssetPageSerializer
     PortfolioAssetPage object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -193,8 +184,7 @@ class _$PortfolioAssetPageSerializer
         case r'sources':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
           ) as BuiltList<PortfolioSourceSummary>;
           result.sources.replace(valueDes);
           break;
@@ -209,8 +199,7 @@ class _$PortfolioAssetPageSerializer
         case r'warnings':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioNotice)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioNotice)]),
           ) as BuiltList<PortfolioNotice>;
           result.warnings.replace(valueDes);
           break;
@@ -245,8 +234,7 @@ class _$PortfolioAssetPageSerializer
         case r'items':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(BuiltList, [FullType(PortfolioAsset)]),
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioAsset)]),
           ) as BuiltList<PortfolioAsset>;
           result.items.replace(valueDes);
           break;
@@ -285,3 +273,4 @@ class _$PortfolioAssetPageSerializer
     return result.build();
   }
 }
+

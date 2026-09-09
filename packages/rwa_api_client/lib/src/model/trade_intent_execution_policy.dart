@@ -12,13 +12,11 @@ part 'trade_intent_execution_policy.g.dart';
 /// TradeIntentExecutionPolicy
 ///
 /// Properties:
-/// * [orderType]
+/// * [orderType] 
 /// * [limitPrice] - For long orders this is the maximum price; for short orders it is the minimum price.
 /// * [executeBefore] - Must be no more than 2 hours after intent creation.
 @BuiltValue()
-abstract class TradeIntentExecutionPolicy
-    implements
-        Built<TradeIntentExecutionPolicy, TradeIntentExecutionPolicyBuilder> {
+abstract class TradeIntentExecutionPolicy implements Built<TradeIntentExecutionPolicy, TradeIntentExecutionPolicyBuilder> {
   @BuiltValueField(wireName: r'order_type')
   TradeIntentExecutionPolicyOrderTypeEnum get orderType;
   // enum orderTypeEnum {  ioc,  };
@@ -33,25 +31,18 @@ abstract class TradeIntentExecutionPolicy
 
   TradeIntentExecutionPolicy._();
 
-  factory TradeIntentExecutionPolicy(
-          [void updates(TradeIntentExecutionPolicyBuilder b)]) =
-      _$TradeIntentExecutionPolicy;
+  factory TradeIntentExecutionPolicy([void updates(TradeIntentExecutionPolicyBuilder b)]) = _$TradeIntentExecutionPolicy;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TradeIntentExecutionPolicyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TradeIntentExecutionPolicy> get serializer =>
-      _$TradeIntentExecutionPolicySerializer();
+  static Serializer<TradeIntentExecutionPolicy> get serializer => _$TradeIntentExecutionPolicySerializer();
 }
 
-class _$TradeIntentExecutionPolicySerializer
-    implements PrimitiveSerializer<TradeIntentExecutionPolicy> {
+class _$TradeIntentExecutionPolicySerializer implements PrimitiveSerializer<TradeIntentExecutionPolicy> {
   @override
-  final Iterable<Type> types = const [
-    TradeIntentExecutionPolicy,
-    _$TradeIntentExecutionPolicy
-  ];
+  final Iterable<Type> types = const [TradeIntentExecutionPolicy, _$TradeIntentExecutionPolicy];
 
   @override
   final String wireName = r'TradeIntentExecutionPolicy';
@@ -84,9 +75,7 @@ class _$TradeIntentExecutionPolicySerializer
     TradeIntentExecutionPolicy object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -104,8 +93,7 @@ class _$TradeIntentExecutionPolicySerializer
         case r'order_type':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(TradeIntentExecutionPolicyOrderTypeEnum),
+            specifiedType: const FullType(TradeIntentExecutionPolicyOrderTypeEnum),
           ) as TradeIntentExecutionPolicyOrderTypeEnum;
           result.orderType = valueDes;
           break;
@@ -153,20 +141,17 @@ class _$TradeIntentExecutionPolicySerializer
 }
 
 class TradeIntentExecutionPolicyOrderTypeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'ioc')
-  static const TradeIntentExecutionPolicyOrderTypeEnum ioc =
-      _$tradeIntentExecutionPolicyOrderTypeEnum_ioc;
+  static const TradeIntentExecutionPolicyOrderTypeEnum ioc = _$tradeIntentExecutionPolicyOrderTypeEnum_ioc;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentExecutionPolicyOrderTypeEnum unknownDefaultOpenApi =
-      _$tradeIntentExecutionPolicyOrderTypeEnum_unknownDefaultOpenApi;
+  static const TradeIntentExecutionPolicyOrderTypeEnum unknownDefaultOpenApi = _$tradeIntentExecutionPolicyOrderTypeEnum_unknownDefaultOpenApi;
 
-  static Serializer<TradeIntentExecutionPolicyOrderTypeEnum> get serializer =>
-      _$tradeIntentExecutionPolicyOrderTypeEnumSerializer;
+  static Serializer<TradeIntentExecutionPolicyOrderTypeEnum> get serializer => _$tradeIntentExecutionPolicyOrderTypeEnumSerializer;
 
-  const TradeIntentExecutionPolicyOrderTypeEnum._(String name) : super(name);
+  const TradeIntentExecutionPolicyOrderTypeEnum._(String name): super(name);
 
-  static BuiltSet<TradeIntentExecutionPolicyOrderTypeEnum> get values =>
-      _$tradeIntentExecutionPolicyOrderTypeEnumValues;
-  static TradeIntentExecutionPolicyOrderTypeEnum valueOf(String name) =>
-      _$tradeIntentExecutionPolicyOrderTypeEnumValueOf(name);
+  static BuiltSet<TradeIntentExecutionPolicyOrderTypeEnum> get values => _$tradeIntentExecutionPolicyOrderTypeEnumValues;
+  static TradeIntentExecutionPolicyOrderTypeEnum valueOf(String name) => _$tradeIntentExecutionPolicyOrderTypeEnumValueOf(name);
 }
+

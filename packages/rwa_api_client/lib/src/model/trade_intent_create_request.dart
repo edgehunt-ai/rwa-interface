@@ -14,15 +14,13 @@ part 'trade_intent_create_request.g.dart';
 /// TradeIntentCreateRequest
 ///
 /// Properties:
-/// * [previewId]
-/// * [authorizationId]
-/// * [fundingMode]
-/// * [sourceAssetId]
-/// * [executionPolicy]
+/// * [previewId] 
+/// * [authorizationId] 
+/// * [fundingMode] 
+/// * [sourceAssetId] 
+/// * [executionPolicy] 
 @BuiltValue()
-abstract class TradeIntentCreateRequest
-    implements
-        Built<TradeIntentCreateRequest, TradeIntentCreateRequestBuilder> {
+abstract class TradeIntentCreateRequest implements Built<TradeIntentCreateRequest, TradeIntentCreateRequestBuilder> {
   @BuiltValueField(wireName: r'preview_id')
   String get previewId;
 
@@ -42,25 +40,18 @@ abstract class TradeIntentCreateRequest
 
   TradeIntentCreateRequest._();
 
-  factory TradeIntentCreateRequest(
-          [void updates(TradeIntentCreateRequestBuilder b)]) =
-      _$TradeIntentCreateRequest;
+  factory TradeIntentCreateRequest([void updates(TradeIntentCreateRequestBuilder b)]) = _$TradeIntentCreateRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TradeIntentCreateRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TradeIntentCreateRequest> get serializer =>
-      _$TradeIntentCreateRequestSerializer();
+  static Serializer<TradeIntentCreateRequest> get serializer => _$TradeIntentCreateRequestSerializer();
 }
 
-class _$TradeIntentCreateRequestSerializer
-    implements PrimitiveSerializer<TradeIntentCreateRequest> {
+class _$TradeIntentCreateRequestSerializer implements PrimitiveSerializer<TradeIntentCreateRequest> {
   @override
-  final Iterable<Type> types = const [
-    TradeIntentCreateRequest,
-    _$TradeIntentCreateRequest
-  ];
+  final Iterable<Type> types = const [TradeIntentCreateRequest, _$TradeIntentCreateRequest];
 
   @override
   final String wireName = r'TradeIntentCreateRequest';
@@ -105,9 +96,7 @@ class _$TradeIntentCreateRequestSerializer
     TradeIntentCreateRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -139,8 +128,7 @@ class _$TradeIntentCreateRequestSerializer
         case r'funding_mode':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(TradeIntentCreateRequestFundingModeEnum),
+            specifiedType: const FullType(TradeIntentCreateRequestFundingModeEnum),
           ) as TradeIntentCreateRequestFundingModeEnum;
           result.fundingMode = valueDes;
           break;
@@ -189,20 +177,17 @@ class _$TradeIntentCreateRequestSerializer
 }
 
 class TradeIntentCreateRequestFundingModeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'auto_single_source')
-  static const TradeIntentCreateRequestFundingModeEnum autoSingleSource =
-      _$tradeIntentCreateRequestFundingModeEnum_autoSingleSource;
+  static const TradeIntentCreateRequestFundingModeEnum autoSingleSource = _$tradeIntentCreateRequestFundingModeEnum_autoSingleSource;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentCreateRequestFundingModeEnum unknownDefaultOpenApi =
-      _$tradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
+  static const TradeIntentCreateRequestFundingModeEnum unknownDefaultOpenApi = _$tradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
 
-  static Serializer<TradeIntentCreateRequestFundingModeEnum> get serializer =>
-      _$tradeIntentCreateRequestFundingModeEnumSerializer;
+  static Serializer<TradeIntentCreateRequestFundingModeEnum> get serializer => _$tradeIntentCreateRequestFundingModeEnumSerializer;
 
-  const TradeIntentCreateRequestFundingModeEnum._(String name) : super(name);
+  const TradeIntentCreateRequestFundingModeEnum._(String name): super(name);
 
-  static BuiltSet<TradeIntentCreateRequestFundingModeEnum> get values =>
-      _$tradeIntentCreateRequestFundingModeEnumValues;
-  static TradeIntentCreateRequestFundingModeEnum valueOf(String name) =>
-      _$tradeIntentCreateRequestFundingModeEnumValueOf(name);
+  static BuiltSet<TradeIntentCreateRequestFundingModeEnum> get values => _$tradeIntentCreateRequestFundingModeEnumValues;
+  static TradeIntentCreateRequestFundingModeEnum valueOf(String name) => _$tradeIntentCreateRequestFundingModeEnumValueOf(name);
 }
+

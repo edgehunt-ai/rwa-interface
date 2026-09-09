@@ -12,35 +12,26 @@ part 'privy_authorization_params.g.dart';
 /// PrivyAuthorizationParams
 ///
 /// Properties:
-/// * [transaction]
+/// * [transaction] 
 @BuiltValue()
-abstract class PrivyAuthorizationParams
-    implements
-        Built<PrivyAuthorizationParams, PrivyAuthorizationParamsBuilder> {
+abstract class PrivyAuthorizationParams implements Built<PrivyAuthorizationParams, PrivyAuthorizationParamsBuilder> {
   @BuiltValueField(wireName: r'transaction')
   PrivyAuthorizationTransaction get transaction;
 
   PrivyAuthorizationParams._();
 
-  factory PrivyAuthorizationParams(
-          [void updates(PrivyAuthorizationParamsBuilder b)]) =
-      _$PrivyAuthorizationParams;
+  factory PrivyAuthorizationParams([void updates(PrivyAuthorizationParamsBuilder b)]) = _$PrivyAuthorizationParams;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PrivyAuthorizationParamsBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PrivyAuthorizationParams> get serializer =>
-      _$PrivyAuthorizationParamsSerializer();
+  static Serializer<PrivyAuthorizationParams> get serializer => _$PrivyAuthorizationParamsSerializer();
 }
 
-class _$PrivyAuthorizationParamsSerializer
-    implements PrimitiveSerializer<PrivyAuthorizationParams> {
+class _$PrivyAuthorizationParamsSerializer implements PrimitiveSerializer<PrivyAuthorizationParams> {
   @override
-  final Iterable<Type> types = const [
-    PrivyAuthorizationParams,
-    _$PrivyAuthorizationParams
-  ];
+  final Iterable<Type> types = const [PrivyAuthorizationParams, _$PrivyAuthorizationParams];
 
   @override
   final String wireName = r'PrivyAuthorizationParams';
@@ -63,9 +54,7 @@ class _$PrivyAuthorizationParamsSerializer
     PrivyAuthorizationParams object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -115,3 +104,4 @@ class _$PrivyAuthorizationParamsSerializer
     return result.build();
   }
 }
+

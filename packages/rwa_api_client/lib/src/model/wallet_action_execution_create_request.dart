@@ -12,37 +12,27 @@ part 'wallet_action_execution_create_request.g.dart';
 /// WalletActionExecutionCreateRequest
 ///
 /// Properties:
-/// * [mode]
+/// * [mode] 
 @BuiltValue()
-abstract class WalletActionExecutionCreateRequest
-    implements
-        Built<WalletActionExecutionCreateRequest,
-            WalletActionExecutionCreateRequestBuilder> {
+abstract class WalletActionExecutionCreateRequest implements Built<WalletActionExecutionCreateRequest, WalletActionExecutionCreateRequestBuilder> {
   @BuiltValueField(wireName: r'mode')
   GasPaymentMode get mode;
   // enum modeEnum {  app_sponsored,  user_paid_native,  };
 
   WalletActionExecutionCreateRequest._();
 
-  factory WalletActionExecutionCreateRequest(
-          [void updates(WalletActionExecutionCreateRequestBuilder b)]) =
-      _$WalletActionExecutionCreateRequest;
+  factory WalletActionExecutionCreateRequest([void updates(WalletActionExecutionCreateRequestBuilder b)]) = _$WalletActionExecutionCreateRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WalletActionExecutionCreateRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletActionExecutionCreateRequest> get serializer =>
-      _$WalletActionExecutionCreateRequestSerializer();
+  static Serializer<WalletActionExecutionCreateRequest> get serializer => _$WalletActionExecutionCreateRequestSerializer();
 }
 
-class _$WalletActionExecutionCreateRequestSerializer
-    implements PrimitiveSerializer<WalletActionExecutionCreateRequest> {
+class _$WalletActionExecutionCreateRequestSerializer implements PrimitiveSerializer<WalletActionExecutionCreateRequest> {
   @override
-  final Iterable<Type> types = const [
-    WalletActionExecutionCreateRequest,
-    _$WalletActionExecutionCreateRequest
-  ];
+  final Iterable<Type> types = const [WalletActionExecutionCreateRequest, _$WalletActionExecutionCreateRequest];
 
   @override
   final String wireName = r'WalletActionExecutionCreateRequest';
@@ -65,9 +55,7 @@ class _$WalletActionExecutionCreateRequestSerializer
     WalletActionExecutionCreateRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -117,3 +105,4 @@ class _$WalletActionExecutionCreateRequestSerializer
     return result.build();
   }
 }
+

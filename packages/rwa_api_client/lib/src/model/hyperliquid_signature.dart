@@ -12,12 +12,11 @@ part 'hyperliquid_signature.g.dart';
 /// HyperliquidSignature
 ///
 /// Properties:
-/// * [r]
-/// * [s]
-/// * [v]
+/// * [r] 
+/// * [s] 
+/// * [v] 
 @BuiltValue()
-abstract class HyperliquidSignature
-    implements Built<HyperliquidSignature, HyperliquidSignatureBuilder> {
+abstract class HyperliquidSignature implements Built<HyperliquidSignature, HyperliquidSignatureBuilder> {
   @BuiltValueField(wireName: r'r')
   String get r;
 
@@ -30,24 +29,18 @@ abstract class HyperliquidSignature
 
   HyperliquidSignature._();
 
-  factory HyperliquidSignature([void updates(HyperliquidSignatureBuilder b)]) =
-      _$HyperliquidSignature;
+  factory HyperliquidSignature([void updates(HyperliquidSignatureBuilder b)]) = _$HyperliquidSignature;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(HyperliquidSignatureBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<HyperliquidSignature> get serializer =>
-      _$HyperliquidSignatureSerializer();
+  static Serializer<HyperliquidSignature> get serializer => _$HyperliquidSignatureSerializer();
 }
 
-class _$HyperliquidSignatureSerializer
-    implements PrimitiveSerializer<HyperliquidSignature> {
+class _$HyperliquidSignatureSerializer implements PrimitiveSerializer<HyperliquidSignature> {
   @override
-  final Iterable<Type> types = const [
-    HyperliquidSignature,
-    _$HyperliquidSignature
-  ];
+  final Iterable<Type> types = const [HyperliquidSignature, _$HyperliquidSignature];
 
   @override
   final String wireName = r'HyperliquidSignature';
@@ -80,9 +73,7 @@ class _$HyperliquidSignatureSerializer
     HyperliquidSignature object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -148,23 +139,19 @@ class _$HyperliquidSignatureSerializer
 }
 
 class HyperliquidSignatureVEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireNumber: 27)
-  static const HyperliquidSignatureVEnum number27 =
-      _$hyperliquidSignatureVEnum_number27;
+  static const HyperliquidSignatureVEnum number27 = _$hyperliquidSignatureVEnum_number27;
   @BuiltValueEnumConst(wireNumber: 28)
-  static const HyperliquidSignatureVEnum number28 =
-      _$hyperliquidSignatureVEnum_number28;
+  static const HyperliquidSignatureVEnum number28 = _$hyperliquidSignatureVEnum_number28;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const HyperliquidSignatureVEnum unknownDefaultOpenApi =
-      _$hyperliquidSignatureVEnum_unknownDefaultOpenApi;
+  static const HyperliquidSignatureVEnum unknownDefaultOpenApi = _$hyperliquidSignatureVEnum_unknownDefaultOpenApi;
 
-  static Serializer<HyperliquidSignatureVEnum> get serializer =>
-      _$hyperliquidSignatureVEnumSerializer;
+  static Serializer<HyperliquidSignatureVEnum> get serializer => _$hyperliquidSignatureVEnumSerializer;
 
-  const HyperliquidSignatureVEnum._(String name) : super(name);
+  const HyperliquidSignatureVEnum._(String name): super(name);
 
-  static BuiltSet<HyperliquidSignatureVEnum> get values =>
-      _$hyperliquidSignatureVEnumValues;
-  static HyperliquidSignatureVEnum valueOf(String name) =>
-      _$hyperliquidSignatureVEnumValueOf(name);
+  static BuiltSet<HyperliquidSignatureVEnum> get values => _$hyperliquidSignatureVEnumValues;
+  static HyperliquidSignatureVEnum valueOf(String name) => _$hyperliquidSignatureVEnumValueOf(name);
 }
+

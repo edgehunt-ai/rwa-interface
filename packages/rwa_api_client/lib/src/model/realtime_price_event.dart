@@ -15,14 +15,11 @@ part 'realtime_price_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt]
-/// * [event]
-/// * [data]
+/// * [emittedAt] 
+/// * [event] 
+/// * [data] 
 @BuiltValue()
-abstract class RealtimePriceEvent
-    implements
-        RealtimeEventBase,
-        Built<RealtimePriceEvent, RealtimePriceEventBuilder> {
+abstract class RealtimePriceEvent implements RealtimeEventBase, Built<RealtimePriceEvent, RealtimePriceEventBuilder> {
   @BuiltValueField(wireName: r'data')
   RealtimePriceUpdate get data;
 
@@ -32,19 +29,16 @@ abstract class RealtimePriceEvent
 
   RealtimePriceEvent._();
 
-  factory RealtimePriceEvent([void updates(RealtimePriceEventBuilder b)]) =
-      _$RealtimePriceEvent;
+  factory RealtimePriceEvent([void updates(RealtimePriceEventBuilder b)]) = _$RealtimePriceEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimePriceEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimePriceEvent> get serializer =>
-      _$RealtimePriceEventSerializer();
+  static Serializer<RealtimePriceEvent> get serializer => _$RealtimePriceEventSerializer();
 }
 
-class _$RealtimePriceEventSerializer
-    implements PrimitiveSerializer<RealtimePriceEvent> {
+class _$RealtimePriceEventSerializer implements PrimitiveSerializer<RealtimePriceEvent> {
   @override
   final Iterable<Type> types = const [RealtimePriceEvent, _$RealtimePriceEvent];
 
@@ -84,9 +78,7 @@ class _$RealtimePriceEventSerializer
     RealtimePriceEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -159,20 +151,17 @@ class _$RealtimePriceEventSerializer
 }
 
 class RealtimePriceEventEventEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'price')
-  static const RealtimePriceEventEventEnum price =
-      _$realtimePriceEventEventEnum_price;
+  static const RealtimePriceEventEventEnum price = _$realtimePriceEventEventEnum_price;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimePriceEventEventEnum unknownDefaultOpenApi =
-      _$realtimePriceEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimePriceEventEventEnum unknownDefaultOpenApi = _$realtimePriceEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimePriceEventEventEnum> get serializer =>
-      _$realtimePriceEventEventEnumSerializer;
+  static Serializer<RealtimePriceEventEventEnum> get serializer => _$realtimePriceEventEventEnumSerializer;
 
-  const RealtimePriceEventEventEnum._(String name) : super(name);
+  const RealtimePriceEventEventEnum._(String name): super(name);
 
-  static BuiltSet<RealtimePriceEventEventEnum> get values =>
-      _$realtimePriceEventEventEnumValues;
-  static RealtimePriceEventEventEnum valueOf(String name) =>
-      _$realtimePriceEventEventEnumValueOf(name);
+  static BuiltSet<RealtimePriceEventEventEnum> get values => _$realtimePriceEventEventEnumValues;
+  static RealtimePriceEventEventEnum valueOf(String name) => _$realtimePriceEventEventEnumValueOf(name);
 }
+

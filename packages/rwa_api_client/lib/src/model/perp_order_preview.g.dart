@@ -448,6 +448,8 @@ class _$PerpOrderPreview extends PerpOrderPreview {
   @override
   final PerpOrderPreviewNetworkEnum network;
   @override
+  final Hip3PreviewExecution? hip3Execution;
+  @override
   final String previewId;
   @override
   final String symbol;
@@ -508,6 +510,7 @@ class _$PerpOrderPreview extends PerpOrderPreview {
       required this.settlementAssetId,
       required this.settlementChainId,
       required this.network,
+      this.hip3Execution,
       required this.previewId,
       required this.symbol,
       required this.side,
@@ -552,6 +555,7 @@ class _$PerpOrderPreview extends PerpOrderPreview {
         settlementAssetId == other.settlementAssetId &&
         settlementChainId == other.settlementChainId &&
         network == other.network &&
+        hip3Execution == other.hip3Execution &&
         previewId == other.previewId &&
         symbol == other.symbol &&
         side == other.side &&
@@ -588,6 +592,7 @@ class _$PerpOrderPreview extends PerpOrderPreview {
     _$hash = $jc(_$hash, settlementAssetId.hashCode);
     _$hash = $jc(_$hash, settlementChainId.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
+    _$hash = $jc(_$hash, hip3Execution.hashCode);
     _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, side.hashCode);
@@ -626,6 +631,7 @@ class _$PerpOrderPreview extends PerpOrderPreview {
           ..add('settlementAssetId', settlementAssetId)
           ..add('settlementChainId', settlementChainId)
           ..add('network', network)
+          ..add('hip3Execution', hip3Execution)
           ..add('previewId', previewId)
           ..add('symbol', symbol)
           ..add('side', side)
@@ -705,6 +711,12 @@ class PerpOrderPreviewBuilder
   PerpOrderPreviewNetworkEnum? get network => _$this._network;
   set network(covariant PerpOrderPreviewNetworkEnum? network) =>
       _$this._network = network;
+
+  Hip3PreviewExecutionBuilder? _hip3Execution;
+  Hip3PreviewExecutionBuilder get hip3Execution =>
+      _$this._hip3Execution ??= Hip3PreviewExecutionBuilder();
+  set hip3Execution(covariant Hip3PreviewExecutionBuilder? hip3Execution) =>
+      _$this._hip3Execution = hip3Execution;
 
   String? _previewId;
   String? get previewId => _$this._previewId;
@@ -833,6 +845,7 @@ class PerpOrderPreviewBuilder
       _settlementAssetId = $v.settlementAssetId;
       _settlementChainId = $v.settlementChainId;
       _network = $v.network;
+      _hip3Execution = $v.hip3Execution?.toBuilder();
       _previewId = $v.previewId;
       _symbol = $v.symbol;
       _side = $v.side;
@@ -898,6 +911,7 @@ class PerpOrderPreviewBuilder
                 settlementChainId, r'PerpOrderPreview', 'settlementChainId'),
             network: BuiltValueNullFieldError.checkNotNull(
                 network, r'PerpOrderPreview', 'network'),
+            hip3Execution: _hip3Execution?.build(),
             previewId: BuiltValueNullFieldError.checkNotNull(
                 previewId, r'PerpOrderPreview', 'previewId'),
             symbol: BuiltValueNullFieldError.checkNotNull(
@@ -931,6 +945,9 @@ class PerpOrderPreviewBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'hip3Execution';
+        _hip3Execution?.build();
+
         _$failedField = 'details';
         _details?.build();
       } catch (e) {

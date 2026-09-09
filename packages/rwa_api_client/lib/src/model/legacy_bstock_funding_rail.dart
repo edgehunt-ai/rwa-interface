@@ -12,14 +12,13 @@ part 'legacy_bstock_funding_rail.g.dart';
 /// LegacyBstockFundingRail
 ///
 /// Properties:
-/// * [rail]
-/// * [network]
-/// * [settlementAsset]
+/// * [rail] 
+/// * [network] 
+/// * [settlementAsset] 
 /// * [minimumAmount] - 十进制字符串，避免浮点误差
 @Deprecated('LegacyBstockFundingRail has been deprecated')
 @BuiltValue()
-abstract class LegacyBstockFundingRail
-    implements Built<LegacyBstockFundingRail, LegacyBstockFundingRailBuilder> {
+abstract class LegacyBstockFundingRail implements Built<LegacyBstockFundingRail, LegacyBstockFundingRailBuilder> {
   @BuiltValueField(wireName: r'rail')
   LegacyBstockFundingRailRailEnum get rail;
   // enum railEnum {  bstock,  };
@@ -38,25 +37,18 @@ abstract class LegacyBstockFundingRail
 
   LegacyBstockFundingRail._();
 
-  factory LegacyBstockFundingRail(
-          [void updates(LegacyBstockFundingRailBuilder b)]) =
-      _$LegacyBstockFundingRail;
+  factory LegacyBstockFundingRail([void updates(LegacyBstockFundingRailBuilder b)]) = _$LegacyBstockFundingRail;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(LegacyBstockFundingRailBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<LegacyBstockFundingRail> get serializer =>
-      _$LegacyBstockFundingRailSerializer();
+  static Serializer<LegacyBstockFundingRail> get serializer => _$LegacyBstockFundingRailSerializer();
 }
 
-class _$LegacyBstockFundingRailSerializer
-    implements PrimitiveSerializer<LegacyBstockFundingRail> {
+class _$LegacyBstockFundingRailSerializer implements PrimitiveSerializer<LegacyBstockFundingRail> {
   @override
-  final Iterable<Type> types = const [
-    LegacyBstockFundingRail,
-    _$LegacyBstockFundingRail
-  ];
+  final Iterable<Type> types = const [LegacyBstockFundingRail, _$LegacyBstockFundingRail];
 
   @override
   final String wireName = r'LegacyBstockFundingRail';
@@ -96,9 +88,7 @@ class _$LegacyBstockFundingRailSerializer
     LegacyBstockFundingRail object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -130,8 +120,7 @@ class _$LegacyBstockFundingRailSerializer
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(LegacyBstockFundingRailSettlementAssetEnum),
+            specifiedType: const FullType(LegacyBstockFundingRailSettlementAssetEnum),
           ) as LegacyBstockFundingRailSettlementAssetEnum;
           result.settlementAsset = valueDes;
           break;
@@ -174,61 +163,49 @@ class _$LegacyBstockFundingRailSerializer
 
 @Deprecated('LegacyBstockFundingRailRailEnum has been deprecated')
 class LegacyBstockFundingRailRailEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bstock')
-  static const LegacyBstockFundingRailRailEnum bstock =
-      _$legacyBstockFundingRailRailEnum_bstock;
+  static const LegacyBstockFundingRailRailEnum bstock = _$legacyBstockFundingRailRailEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingRailRailEnum unknownDefaultOpenApi =
-      _$legacyBstockFundingRailRailEnum_unknownDefaultOpenApi;
+  static const LegacyBstockFundingRailRailEnum unknownDefaultOpenApi = _$legacyBstockFundingRailRailEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockFundingRailRailEnum> get serializer =>
-      _$legacyBstockFundingRailRailEnumSerializer;
+  static Serializer<LegacyBstockFundingRailRailEnum> get serializer => _$legacyBstockFundingRailRailEnumSerializer;
 
-  const LegacyBstockFundingRailRailEnum._(String name) : super(name);
+  const LegacyBstockFundingRailRailEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockFundingRailRailEnum> get values =>
-      _$legacyBstockFundingRailRailEnumValues;
-  static LegacyBstockFundingRailRailEnum valueOf(String name) =>
-      _$legacyBstockFundingRailRailEnumValueOf(name);
+  static BuiltSet<LegacyBstockFundingRailRailEnum> get values => _$legacyBstockFundingRailRailEnumValues;
+  static LegacyBstockFundingRailRailEnum valueOf(String name) => _$legacyBstockFundingRailRailEnumValueOf(name);
 }
 
 @Deprecated('LegacyBstockFundingRailNetworkEnum has been deprecated')
 class LegacyBstockFundingRailNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
-  static const LegacyBstockFundingRailNetworkEnum BSC =
-      _$legacyBstockFundingRailNetworkEnum_BSC;
+  static const LegacyBstockFundingRailNetworkEnum BSC = _$legacyBstockFundingRailNetworkEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingRailNetworkEnum unknownDefaultOpenApi =
-      _$legacyBstockFundingRailNetworkEnum_unknownDefaultOpenApi;
+  static const LegacyBstockFundingRailNetworkEnum unknownDefaultOpenApi = _$legacyBstockFundingRailNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockFundingRailNetworkEnum> get serializer =>
-      _$legacyBstockFundingRailNetworkEnumSerializer;
+  static Serializer<LegacyBstockFundingRailNetworkEnum> get serializer => _$legacyBstockFundingRailNetworkEnumSerializer;
 
-  const LegacyBstockFundingRailNetworkEnum._(String name) : super(name);
+  const LegacyBstockFundingRailNetworkEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockFundingRailNetworkEnum> get values =>
-      _$legacyBstockFundingRailNetworkEnumValues;
-  static LegacyBstockFundingRailNetworkEnum valueOf(String name) =>
-      _$legacyBstockFundingRailNetworkEnumValueOf(name);
+  static BuiltSet<LegacyBstockFundingRailNetworkEnum> get values => _$legacyBstockFundingRailNetworkEnumValues;
+  static LegacyBstockFundingRailNetworkEnum valueOf(String name) => _$legacyBstockFundingRailNetworkEnumValueOf(name);
 }
 
 @Deprecated('LegacyBstockFundingRailSettlementAssetEnum has been deprecated')
 class LegacyBstockFundingRailSettlementAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const LegacyBstockFundingRailSettlementAssetEnum USDC =
-      _$legacyBstockFundingRailSettlementAssetEnum_USDC;
+  static const LegacyBstockFundingRailSettlementAssetEnum USDC = _$legacyBstockFundingRailSettlementAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingRailSettlementAssetEnum
-      unknownDefaultOpenApi =
-      _$legacyBstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
+  static const LegacyBstockFundingRailSettlementAssetEnum unknownDefaultOpenApi = _$legacyBstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<LegacyBstockFundingRailSettlementAssetEnum>
-      get serializer => _$legacyBstockFundingRailSettlementAssetEnumSerializer;
+  static Serializer<LegacyBstockFundingRailSettlementAssetEnum> get serializer => _$legacyBstockFundingRailSettlementAssetEnumSerializer;
 
-  const LegacyBstockFundingRailSettlementAssetEnum._(String name) : super(name);
+  const LegacyBstockFundingRailSettlementAssetEnum._(String name): super(name);
 
-  static BuiltSet<LegacyBstockFundingRailSettlementAssetEnum> get values =>
-      _$legacyBstockFundingRailSettlementAssetEnumValues;
-  static LegacyBstockFundingRailSettlementAssetEnum valueOf(String name) =>
-      _$legacyBstockFundingRailSettlementAssetEnumValueOf(name);
+  static BuiltSet<LegacyBstockFundingRailSettlementAssetEnum> get values => _$legacyBstockFundingRailSettlementAssetEnumValues;
+  static LegacyBstockFundingRailSettlementAssetEnum valueOf(String name) => _$legacyBstockFundingRailSettlementAssetEnumValueOf(name);
 }
+

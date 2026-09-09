@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'chain.g.dart';
 
 class Chain extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'BSC')
   static const Chain BSC = _$BSC;
   @BuiltValueEnumConst(wireName: r'Arbitrum')
@@ -29,7 +30,7 @@ class Chain extends EnumClass {
 
   static Serializer<Chain> get serializer => _$chainSerializer;
 
-  const Chain._(String name) : super(name);
+  const Chain._(String name): super(name);
 
   static BuiltSet<Chain> get values => _$values;
   static Chain valueOf(String name) => _$valueOf(name);
@@ -42,3 +43,4 @@ class Chain extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class ChainMixin = Object with _$ChainMixin;
+

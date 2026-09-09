@@ -11,22 +11,20 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_order_preview_request.g.dart';
 
-/// bStocks 现货订单。只接受 `buy` / `sell`：市价买入传 `amount`，市价卖出传 `quantity`，限价买卖均须传 `limit_price` 和 `quantity`。
+/// bStocks 现货订单。只接受 `buy` / `sell`：市价买入传 `amount`，市价卖出传 `quantity`，限价买卖均须传 `limit_price` 和 `quantity`。 
 ///
 /// Properties:
-/// * [symbol]
-/// * [kind]
-/// * [side]
-/// * [type]
+/// * [symbol] 
+/// * [kind] 
+/// * [side] 
+/// * [type] 
 /// * [amount] - 市价买入时的 USDC 金额
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
-/// * [tpSl]
+/// * [tpSl] 
 @BuiltValue()
-abstract class BstockOrderPreviewRequest
-    implements
-        Built<BstockOrderPreviewRequest, BstockOrderPreviewRequestBuilder> {
+abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequest, BstockOrderPreviewRequestBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -63,25 +61,18 @@ abstract class BstockOrderPreviewRequest
 
   BstockOrderPreviewRequest._();
 
-  factory BstockOrderPreviewRequest(
-          [void updates(BstockOrderPreviewRequestBuilder b)]) =
-      _$BstockOrderPreviewRequest;
+  factory BstockOrderPreviewRequest([void updates(BstockOrderPreviewRequestBuilder b)]) = _$BstockOrderPreviewRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BstockOrderPreviewRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BstockOrderPreviewRequest> get serializer =>
-      _$BstockOrderPreviewRequestSerializer();
+  static Serializer<BstockOrderPreviewRequest> get serializer => _$BstockOrderPreviewRequestSerializer();
 }
 
-class _$BstockOrderPreviewRequestSerializer
-    implements PrimitiveSerializer<BstockOrderPreviewRequest> {
+class _$BstockOrderPreviewRequestSerializer implements PrimitiveSerializer<BstockOrderPreviewRequest> {
   @override
-  final Iterable<Type> types = const [
-    BstockOrderPreviewRequest,
-    _$BstockOrderPreviewRequest
-  ];
+  final Iterable<Type> types = const [BstockOrderPreviewRequest, _$BstockOrderPreviewRequest];
 
   @override
   final String wireName = r'BstockOrderPreviewRequest';
@@ -154,9 +145,7 @@ class _$BstockOrderPreviewRequestSerializer
     BstockOrderPreviewRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -269,42 +258,34 @@ class _$BstockOrderPreviewRequestSerializer
 }
 
 class BstockOrderPreviewRequestKindEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'bstock')
-  static const BstockOrderPreviewRequestKindEnum bstock =
-      _$bstockOrderPreviewRequestKindEnum_bstock;
+  static const BstockOrderPreviewRequestKindEnum bstock = _$bstockOrderPreviewRequestKindEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewRequestKindEnum unknownDefaultOpenApi =
-      _$bstockOrderPreviewRequestKindEnum_unknownDefaultOpenApi;
+  static const BstockOrderPreviewRequestKindEnum unknownDefaultOpenApi = _$bstockOrderPreviewRequestKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockOrderPreviewRequestKindEnum> get serializer =>
-      _$bstockOrderPreviewRequestKindEnumSerializer;
+  static Serializer<BstockOrderPreviewRequestKindEnum> get serializer => _$bstockOrderPreviewRequestKindEnumSerializer;
 
-  const BstockOrderPreviewRequestKindEnum._(String name) : super(name);
+  const BstockOrderPreviewRequestKindEnum._(String name): super(name);
 
-  static BuiltSet<BstockOrderPreviewRequestKindEnum> get values =>
-      _$bstockOrderPreviewRequestKindEnumValues;
-  static BstockOrderPreviewRequestKindEnum valueOf(String name) =>
-      _$bstockOrderPreviewRequestKindEnumValueOf(name);
+  static BuiltSet<BstockOrderPreviewRequestKindEnum> get values => _$bstockOrderPreviewRequestKindEnumValues;
+  static BstockOrderPreviewRequestKindEnum valueOf(String name) => _$bstockOrderPreviewRequestKindEnumValueOf(name);
 }
 
 class BstockOrderPreviewRequestSideEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'buy')
-  static const BstockOrderPreviewRequestSideEnum buy =
-      _$bstockOrderPreviewRequestSideEnum_buy;
+  static const BstockOrderPreviewRequestSideEnum buy = _$bstockOrderPreviewRequestSideEnum_buy;
   @BuiltValueEnumConst(wireName: r'sell')
-  static const BstockOrderPreviewRequestSideEnum sell =
-      _$bstockOrderPreviewRequestSideEnum_sell;
+  static const BstockOrderPreviewRequestSideEnum sell = _$bstockOrderPreviewRequestSideEnum_sell;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewRequestSideEnum unknownDefaultOpenApi =
-      _$bstockOrderPreviewRequestSideEnum_unknownDefaultOpenApi;
+  static const BstockOrderPreviewRequestSideEnum unknownDefaultOpenApi = _$bstockOrderPreviewRequestSideEnum_unknownDefaultOpenApi;
 
-  static Serializer<BstockOrderPreviewRequestSideEnum> get serializer =>
-      _$bstockOrderPreviewRequestSideEnumSerializer;
+  static Serializer<BstockOrderPreviewRequestSideEnum> get serializer => _$bstockOrderPreviewRequestSideEnumSerializer;
 
-  const BstockOrderPreviewRequestSideEnum._(String name) : super(name);
+  const BstockOrderPreviewRequestSideEnum._(String name): super(name);
 
-  static BuiltSet<BstockOrderPreviewRequestSideEnum> get values =>
-      _$bstockOrderPreviewRequestSideEnumValues;
-  static BstockOrderPreviewRequestSideEnum valueOf(String name) =>
-      _$bstockOrderPreviewRequestSideEnumValueOf(name);
+  static BuiltSet<BstockOrderPreviewRequestSideEnum> get values => _$bstockOrderPreviewRequestSideEnumValues;
+  static BstockOrderPreviewRequestSideEnum valueOf(String name) => _$bstockOrderPreviewRequestSideEnumValueOf(name);
 }
+

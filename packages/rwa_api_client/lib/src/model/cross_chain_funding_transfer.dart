@@ -22,37 +22,35 @@ part 'cross_chain_funding_transfer.g.dart';
 /// CrossChainFundingTransfer
 ///
 /// Properties:
-/// * [status]
-/// * [sourceExecutionStatus]
-/// * [providerStatus]
-/// * [providerObservation]
-/// * [targetCreditStatus]
-/// * [sourceTransaction]
-/// * [targetCredit]
-/// * [recoveryStatus]
-/// * [completedAt]
-/// * [nextAction] - 仅返回已冻结 route 中当前可执行的下一个动作；前序 receipt 未权威确认时为 null。 服务端必须先在同一事务持久化 `route_locked_at` 和 `wallet_action_released_at`， 才能返回含 `to/data/value` 的 next_action。
-/// * [rail]
-/// * [target]
-/// * [routeLockedAt]
-/// * [walletActionReleasedAt]
-/// * [transferId]
-/// * [planId]
+/// * [status] 
+/// * [sourceExecutionStatus] 
+/// * [providerStatus] 
+/// * [providerObservation] 
+/// * [targetCreditStatus] 
+/// * [sourceTransaction] 
+/// * [targetCredit] 
+/// * [recoveryStatus] 
+/// * [completedAt] 
+/// * [nextAction] - 仅返回已冻结 route 中当前可执行的下一个动作；前序 receipt 未权威确认时为 null。 服务端必须先在同一事务持久化 `route_locked_at` 和 `wallet_action_released_at`， 才能返回含 `to/data/value` 的 next_action。 
+/// * [rail] 
+/// * [target] 
+/// * [routeLockedAt] 
+/// * [walletActionReleasedAt] 
+/// * [transferId] 
+/// * [planId] 
 /// * [amount] - Frozen target shortfall covered by this Transfer.
-/// * [source_]
-/// * [provider]
-/// * [refundStatus]
-/// * [refund]
-/// * [failureReason]
-/// * [ambiguousReason]
-/// * [manualReviewReason]
-/// * [activityId]
-/// * [createdAt]
-/// * [updatedAt]
+/// * [source_] 
+/// * [provider] 
+/// * [refundStatus] 
+/// * [refund] 
+/// * [failureReason] 
+/// * [ambiguousReason] 
+/// * [manualReviewReason] 
+/// * [activityId] 
+/// * [createdAt] 
+/// * [updatedAt] 
 @BuiltValue()
-abstract class CrossChainFundingTransfer
-    implements
-        Built<CrossChainFundingTransfer, CrossChainFundingTransferBuilder> {
+abstract class CrossChainFundingTransfer implements Built<CrossChainFundingTransfer, CrossChainFundingTransferBuilder> {
   @BuiltValueField(wireName: r'status')
   TransferStatus get status;
   // enum statusEnum {  awaiting_authorization,  awaiting_wallet,  origin_submitted,  origin_confirmed,  filling,  completed,  refund_pending,  refunded,  failed,  ambiguous,  manual_review,  };
@@ -85,7 +83,7 @@ abstract class CrossChainFundingTransfer
   @BuiltValueField(wireName: r'completed_at')
   DateTime? get completedAt;
 
-  /// 仅返回已冻结 route 中当前可执行的下一个动作；前序 receipt 未权威确认时为 null。 服务端必须先在同一事务持久化 `route_locked_at` 和 `wallet_action_released_at`， 才能返回含 `to/data/value` 的 next_action。
+  /// 仅返回已冻结 route 中当前可执行的下一个动作；前序 receipt 未权威确认时为 null。 服务端必须先在同一事务持久化 `route_locked_at` 和 `wallet_action_released_at`， 才能返回含 `to/data/value` 的 next_action。 
   @BuiltValueField(wireName: r'next_action')
   JsonObject? get nextAction;
 
@@ -146,25 +144,18 @@ abstract class CrossChainFundingTransfer
 
   CrossChainFundingTransfer._();
 
-  factory CrossChainFundingTransfer(
-          [void updates(CrossChainFundingTransferBuilder b)]) =
-      _$CrossChainFundingTransfer;
+  factory CrossChainFundingTransfer([void updates(CrossChainFundingTransferBuilder b)]) = _$CrossChainFundingTransfer;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CrossChainFundingTransferBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CrossChainFundingTransfer> get serializer =>
-      _$CrossChainFundingTransferSerializer();
+  static Serializer<CrossChainFundingTransfer> get serializer => _$CrossChainFundingTransferSerializer();
 }
 
-class _$CrossChainFundingTransferSerializer
-    implements PrimitiveSerializer<CrossChainFundingTransfer> {
+class _$CrossChainFundingTransferSerializer implements PrimitiveSerializer<CrossChainFundingTransfer> {
   @override
-  final Iterable<Type> types = const [
-    CrossChainFundingTransfer,
-    _$CrossChainFundingTransfer
-  ];
+  final Iterable<Type> types = const [CrossChainFundingTransfer, _$CrossChainFundingTransfer];
 
   @override
   final String wireName = r'CrossChainFundingTransfer';
@@ -190,50 +181,40 @@ class _$CrossChainFundingTransferSerializer
       specifiedType: const FullType(TransferProviderStatus),
     );
     yield r'provider_observation';
-    yield object.providerObservation == null
-        ? null
-        : serializers.serialize(
-            object.providerObservation,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.providerObservation == null ? null : serializers.serialize(
+      object.providerObservation,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'target_credit_status';
     yield serializers.serialize(
       object.targetCreditStatus,
       specifiedType: const FullType(TransferTargetCreditStatus),
     );
     yield r'source_transaction';
-    yield object.sourceTransaction == null
-        ? null
-        : serializers.serialize(
-            object.sourceTransaction,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.sourceTransaction == null ? null : serializers.serialize(
+      object.sourceTransaction,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'target_credit';
-    yield object.targetCredit == null
-        ? null
-        : serializers.serialize(
-            object.targetCredit,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.targetCredit == null ? null : serializers.serialize(
+      object.targetCredit,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'recovery_status';
     yield serializers.serialize(
       object.recoveryStatus,
       specifiedType: const FullType(TransferRecoveryStatus),
     );
     yield r'completed_at';
-    yield object.completedAt == null
-        ? null
-        : serializers.serialize(
-            object.completedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.completedAt == null ? null : serializers.serialize(
+      object.completedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'next_action';
-    yield object.nextAction == null
-        ? null
-        : serializers.serialize(
-            object.nextAction,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.nextAction == null ? null : serializers.serialize(
+      object.nextAction,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'rail';
     yield serializers.serialize(
       object.rail,
@@ -245,19 +226,15 @@ class _$CrossChainFundingTransferSerializer
       specifiedType: const FullType(FundingTargetBalanceSnapshot),
     );
     yield r'route_locked_at';
-    yield object.routeLockedAt == null
-        ? null
-        : serializers.serialize(
-            object.routeLockedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.routeLockedAt == null ? null : serializers.serialize(
+      object.routeLockedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'wallet_action_released_at';
-    yield object.walletActionReleasedAt == null
-        ? null
-        : serializers.serialize(
-            object.walletActionReleasedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.walletActionReleasedAt == null ? null : serializers.serialize(
+      object.walletActionReleasedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'transfer_id';
     yield serializers.serialize(
       object.transferId,
@@ -289,40 +266,30 @@ class _$CrossChainFundingTransferSerializer
       specifiedType: const FullType(TransferRefundStatus),
     );
     yield r'refund';
-    yield object.refund == null
-        ? null
-        : serializers.serialize(
-            object.refund,
-            specifiedType: const FullType.nullable(JsonObject),
-          );
+    yield object.refund == null ? null : serializers.serialize(
+      object.refund,
+      specifiedType: const FullType.nullable(JsonObject),
+    );
     yield r'failure_reason';
-    yield object.failureReason == null
-        ? null
-        : serializers.serialize(
-            object.failureReason,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.failureReason == null ? null : serializers.serialize(
+      object.failureReason,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'ambiguous_reason';
-    yield object.ambiguousReason == null
-        ? null
-        : serializers.serialize(
-            object.ambiguousReason,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.ambiguousReason == null ? null : serializers.serialize(
+      object.ambiguousReason,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'manual_review_reason';
-    yield object.manualReviewReason == null
-        ? null
-        : serializers.serialize(
-            object.manualReviewReason,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.manualReviewReason == null ? null : serializers.serialize(
+      object.manualReviewReason,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'activity_id';
-    yield object.activityId == null
-        ? null
-        : serializers.serialize(
-            object.activityId,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.activityId == null ? null : serializers.serialize(
+      object.activityId,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'created_at';
     yield serializers.serialize(
       object.createdAt,
@@ -341,9 +308,7 @@ class _$CrossChainFundingTransferSerializer
     CrossChainFundingTransfer object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -587,3 +552,4 @@ class _$CrossChainFundingTransferSerializer
     return result.build();
   }
 }
+

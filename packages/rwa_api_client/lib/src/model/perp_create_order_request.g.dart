@@ -132,6 +132,12 @@ class _$PerpCreateOrderRequestSideEnumSerializer
 
 class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
   @override
+  final String? contextId;
+  @override
+  final Hip3TimeInForce? timeInForce;
+  @override
+  final Hip3ProtectionSpec? protection;
+  @override
   final String symbol;
   @override
   final PerpCreateOrderRequestKindEnum kind;
@@ -163,7 +169,10 @@ class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
       (PerpCreateOrderRequestBuilder()..update(updates))._build();
 
   _$PerpCreateOrderRequest._(
-      {required this.symbol,
+      {this.contextId,
+      this.timeInForce,
+      this.protection,
+      required this.symbol,
       required this.kind,
       required this.side,
       required this.type,
@@ -190,6 +199,9 @@ class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is PerpCreateOrderRequest &&
+        contextId == other.contextId &&
+        timeInForce == other.timeInForce &&
+        protection == other.protection &&
         symbol == other.symbol &&
         kind == other.kind &&
         side == other.side &&
@@ -208,6 +220,9 @@ class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, contextId.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, protection.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, side.hashCode);
@@ -228,6 +243,9 @@ class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'PerpCreateOrderRequest')
+          ..add('contextId', contextId)
+          ..add('timeInForce', timeInForce)
+          ..add('protection', protection)
           ..add('symbol', symbol)
           ..add('kind', kind)
           ..add('side', side)
@@ -248,6 +266,21 @@ class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
 class PerpCreateOrderRequestBuilder
     implements Builder<PerpCreateOrderRequest, PerpCreateOrderRequestBuilder> {
   _$PerpCreateOrderRequest? _$v;
+
+  String? _contextId;
+  String? get contextId => _$this._contextId;
+  set contextId(String? contextId) => _$this._contextId = contextId;
+
+  Hip3TimeInForce? _timeInForce;
+  Hip3TimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(Hip3TimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
+
+  Hip3ProtectionSpecBuilder? _protection;
+  Hip3ProtectionSpecBuilder get protection =>
+      _$this._protection ??= Hip3ProtectionSpecBuilder();
+  set protection(Hip3ProtectionSpecBuilder? protection) =>
+      _$this._protection = protection;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
@@ -309,6 +342,9 @@ class PerpCreateOrderRequestBuilder
   PerpCreateOrderRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _contextId = $v.contextId;
+      _timeInForce = $v.timeInForce;
+      _protection = $v.protection?.toBuilder();
       _symbol = $v.symbol;
       _kind = $v.kind;
       _side = $v.side;
@@ -345,6 +381,9 @@ class PerpCreateOrderRequestBuilder
     try {
       _$result = _$v ??
           _$PerpCreateOrderRequest._(
+            contextId: contextId,
+            timeInForce: timeInForce,
+            protection: _protection?.build(),
             symbol: BuiltValueNullFieldError.checkNotNull(
                 symbol, r'PerpCreateOrderRequest', 'symbol'),
             kind: BuiltValueNullFieldError.checkNotNull(
@@ -366,6 +405,9 @@ class PerpCreateOrderRequestBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'protection';
+        _protection?.build();
+
         _$failedField = 'tpSl';
         _tpSl?.build();
       } catch (e) {

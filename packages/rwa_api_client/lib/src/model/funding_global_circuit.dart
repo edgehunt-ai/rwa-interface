@@ -15,14 +15,13 @@ part 'funding_global_circuit.g.dart';
 /// FundingGlobalCircuit
 ///
 /// Properties:
-/// * [scope]
-/// * [state]
-/// * [generation]
-/// * [reason]
-/// * [trippedAt]
+/// * [scope] 
+/// * [state] 
+/// * [generation] 
+/// * [reason] 
+/// * [trippedAt] 
 @BuiltValue()
-abstract class FundingGlobalCircuit
-    implements Built<FundingGlobalCircuit, FundingGlobalCircuitBuilder> {
+abstract class FundingGlobalCircuit implements Built<FundingGlobalCircuit, FundingGlobalCircuitBuilder> {
   /// One Of [FundingGlobalCircuitClosed], [FundingGlobalCircuitOpen]
   OneOf get oneOf;
 
@@ -35,49 +34,41 @@ abstract class FundingGlobalCircuit
 
   FundingGlobalCircuit._();
 
-  factory FundingGlobalCircuit([void updates(FundingGlobalCircuitBuilder b)]) =
-      _$FundingGlobalCircuit;
+  factory FundingGlobalCircuit([void updates(FundingGlobalCircuitBuilder b)]) = _$FundingGlobalCircuit;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingGlobalCircuitBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingGlobalCircuit> get serializer =>
-      _$FundingGlobalCircuitSerializer();
+  static Serializer<FundingGlobalCircuit> get serializer => _$FundingGlobalCircuitSerializer();
 }
 
 extension FundingGlobalCircuitDiscriminatorExt on FundingGlobalCircuit {
-  String? get discriminatorValue {
-    if (this is FundingGlobalCircuitClosed) {
-      return r'closed';
+    String? get discriminatorValue {
+        if (this is FundingGlobalCircuitClosed) {
+            return r'closed';
+        }
+        if (this is FundingGlobalCircuitOpen) {
+            return r'open';
+        }
+        return null;
     }
-    if (this is FundingGlobalCircuitOpen) {
-      return r'open';
+}
+extension FundingGlobalCircuitBuilderDiscriminatorExt on FundingGlobalCircuitBuilder {
+    String? get discriminatorValue {
+        if (this is FundingGlobalCircuitClosedBuilder) {
+            return r'closed';
+        }
+        if (this is FundingGlobalCircuitOpenBuilder) {
+            return r'open';
+        }
+        return null;
     }
-    return null;
-  }
 }
 
-extension FundingGlobalCircuitBuilderDiscriminatorExt
-    on FundingGlobalCircuitBuilder {
-  String? get discriminatorValue {
-    if (this is FundingGlobalCircuitClosedBuilder) {
-      return r'closed';
-    }
-    if (this is FundingGlobalCircuitOpenBuilder) {
-      return r'open';
-    }
-    return null;
-  }
-}
-
-class _$FundingGlobalCircuitSerializer
-    implements PrimitiveSerializer<FundingGlobalCircuit> {
+class _$FundingGlobalCircuitSerializer implements PrimitiveSerializer<FundingGlobalCircuit> {
   @override
-  final Iterable<Type> types = const [
-    FundingGlobalCircuit,
-    _$FundingGlobalCircuit
-  ];
+  final Iterable<Type> types = const [FundingGlobalCircuit, _$FundingGlobalCircuit];
 
   @override
   final String wireName = r'FundingGlobalCircuit';
@@ -86,7 +77,8 @@ class _$FundingGlobalCircuitSerializer
     Serializers serializers,
     FundingGlobalCircuit object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {}
+  }) sync* {
+  }
 
   @override
   Object serialize(
@@ -95,8 +87,7 @@ class _$FundingGlobalCircuitSerializer
     FullType specifiedType = FullType.unspecified,
   }) {
     final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value,
-        specifiedType: FullType(oneOf.valueType))!;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -108,15 +99,10 @@ class _$FundingGlobalCircuitSerializer
     final result = FundingGlobalCircuitBuilder();
     Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex =
-        serializedList.indexOf(FundingGlobalCircuit.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex],
-        specifiedType: FullType(String)) as String;
+    final discIndex = serializedList.indexOf(FundingGlobalCircuit.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [
-      FundingGlobalCircuitClosed,
-      FundingGlobalCircuitOpen,
-    ];
+    final oneOfTypes = [FundingGlobalCircuitClosed, FundingGlobalCircuitOpen, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
@@ -135,51 +121,40 @@ class _$FundingGlobalCircuitSerializer
         oneOfType = FundingGlobalCircuitOpen;
         break;
       default:
-        throw UnsupportedError(
-            "Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
     }
-    result.oneOf = OneOfDynamic(
-        typeIndex: oneOfTypes.indexOf(oneOfType),
-        types: oneOfTypes,
-        value: oneOfResult);
+    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
 }
 
 class FundingGlobalCircuitScopeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'global')
-  static const FundingGlobalCircuitScopeEnum global =
-      _$fundingGlobalCircuitScopeEnum_global;
+  static const FundingGlobalCircuitScopeEnum global = _$fundingGlobalCircuitScopeEnum_global;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitScopeEnum unknownDefaultOpenApi =
-      _$fundingGlobalCircuitScopeEnum_unknownDefaultOpenApi;
+  static const FundingGlobalCircuitScopeEnum unknownDefaultOpenApi = _$fundingGlobalCircuitScopeEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingGlobalCircuitScopeEnum> get serializer =>
-      _$fundingGlobalCircuitScopeEnumSerializer;
+  static Serializer<FundingGlobalCircuitScopeEnum> get serializer => _$fundingGlobalCircuitScopeEnumSerializer;
 
-  const FundingGlobalCircuitScopeEnum._(String name) : super(name);
+  const FundingGlobalCircuitScopeEnum._(String name): super(name);
 
-  static BuiltSet<FundingGlobalCircuitScopeEnum> get values =>
-      _$fundingGlobalCircuitScopeEnumValues;
-  static FundingGlobalCircuitScopeEnum valueOf(String name) =>
-      _$fundingGlobalCircuitScopeEnumValueOf(name);
+  static BuiltSet<FundingGlobalCircuitScopeEnum> get values => _$fundingGlobalCircuitScopeEnumValues;
+  static FundingGlobalCircuitScopeEnum valueOf(String name) => _$fundingGlobalCircuitScopeEnumValueOf(name);
 }
 
 class FundingGlobalCircuitStateEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'open')
-  static const FundingGlobalCircuitStateEnum open =
-      _$fundingGlobalCircuitStateEnum_open;
+  static const FundingGlobalCircuitStateEnum open = _$fundingGlobalCircuitStateEnum_open;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitStateEnum unknownDefaultOpenApi =
-      _$fundingGlobalCircuitStateEnum_unknownDefaultOpenApi;
+  static const FundingGlobalCircuitStateEnum unknownDefaultOpenApi = _$fundingGlobalCircuitStateEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingGlobalCircuitStateEnum> get serializer =>
-      _$fundingGlobalCircuitStateEnumSerializer;
+  static Serializer<FundingGlobalCircuitStateEnum> get serializer => _$fundingGlobalCircuitStateEnumSerializer;
 
-  const FundingGlobalCircuitStateEnum._(String name) : super(name);
+  const FundingGlobalCircuitStateEnum._(String name): super(name);
 
-  static BuiltSet<FundingGlobalCircuitStateEnum> get values =>
-      _$fundingGlobalCircuitStateEnumValues;
-  static FundingGlobalCircuitStateEnum valueOf(String name) =>
-      _$fundingGlobalCircuitStateEnumValueOf(name);
+  static BuiltSet<FundingGlobalCircuitStateEnum> get values => _$fundingGlobalCircuitStateEnumValues;
+  static FundingGlobalCircuitStateEnum valueOf(String name) => _$fundingGlobalCircuitStateEnumValueOf(name);
 }
+

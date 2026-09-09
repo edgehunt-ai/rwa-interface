@@ -12,14 +12,13 @@ part 'funding_rail_circuit_open.g.dart';
 /// FundingRailCircuitOpen
 ///
 /// Properties:
-/// * [scope]
-/// * [state]
-/// * [generation]
-/// * [reason]
-/// * [trippedAt]
+/// * [scope] 
+/// * [state] 
+/// * [generation] 
+/// * [reason] 
+/// * [trippedAt] 
 @BuiltValue()
-abstract class FundingRailCircuitOpen
-    implements Built<FundingRailCircuitOpen, FundingRailCircuitOpenBuilder> {
+abstract class FundingRailCircuitOpen implements Built<FundingRailCircuitOpen, FundingRailCircuitOpenBuilder> {
   @BuiltValueField(wireName: r'scope')
   FundingRailCircuitOpenScopeEnum get scope;
   // enum scopeEnum {  hip3,  bstocks,  };
@@ -39,25 +38,18 @@ abstract class FundingRailCircuitOpen
 
   FundingRailCircuitOpen._();
 
-  factory FundingRailCircuitOpen(
-          [void updates(FundingRailCircuitOpenBuilder b)]) =
-      _$FundingRailCircuitOpen;
+  factory FundingRailCircuitOpen([void updates(FundingRailCircuitOpenBuilder b)]) = _$FundingRailCircuitOpen;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRailCircuitOpenBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRailCircuitOpen> get serializer =>
-      _$FundingRailCircuitOpenSerializer();
+  static Serializer<FundingRailCircuitOpen> get serializer => _$FundingRailCircuitOpenSerializer();
 }
 
-class _$FundingRailCircuitOpenSerializer
-    implements PrimitiveSerializer<FundingRailCircuitOpen> {
+class _$FundingRailCircuitOpenSerializer implements PrimitiveSerializer<FundingRailCircuitOpen> {
   @override
-  final Iterable<Type> types = const [
-    FundingRailCircuitOpen,
-    _$FundingRailCircuitOpen
-  ];
+  final Iterable<Type> types = const [FundingRailCircuitOpen, _$FundingRailCircuitOpen];
 
   @override
   final String wireName = r'FundingRailCircuitOpen';
@@ -100,9 +92,7 @@ class _$FundingRailCircuitOpenSerializer
     FundingRailCircuitOpen object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -182,42 +172,34 @@ class _$FundingRailCircuitOpenSerializer
 }
 
 class FundingRailCircuitOpenScopeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'hip3')
-  static const FundingRailCircuitOpenScopeEnum hip3 =
-      _$fundingRailCircuitOpenScopeEnum_hip3;
+  static const FundingRailCircuitOpenScopeEnum hip3 = _$fundingRailCircuitOpenScopeEnum_hip3;
   @BuiltValueEnumConst(wireName: r'bstocks')
-  static const FundingRailCircuitOpenScopeEnum bstocks =
-      _$fundingRailCircuitOpenScopeEnum_bstocks;
+  static const FundingRailCircuitOpenScopeEnum bstocks = _$fundingRailCircuitOpenScopeEnum_bstocks;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRailCircuitOpenScopeEnum unknownDefaultOpenApi =
-      _$fundingRailCircuitOpenScopeEnum_unknownDefaultOpenApi;
+  static const FundingRailCircuitOpenScopeEnum unknownDefaultOpenApi = _$fundingRailCircuitOpenScopeEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingRailCircuitOpenScopeEnum> get serializer =>
-      _$fundingRailCircuitOpenScopeEnumSerializer;
+  static Serializer<FundingRailCircuitOpenScopeEnum> get serializer => _$fundingRailCircuitOpenScopeEnumSerializer;
 
-  const FundingRailCircuitOpenScopeEnum._(String name) : super(name);
+  const FundingRailCircuitOpenScopeEnum._(String name): super(name);
 
-  static BuiltSet<FundingRailCircuitOpenScopeEnum> get values =>
-      _$fundingRailCircuitOpenScopeEnumValues;
-  static FundingRailCircuitOpenScopeEnum valueOf(String name) =>
-      _$fundingRailCircuitOpenScopeEnumValueOf(name);
+  static BuiltSet<FundingRailCircuitOpenScopeEnum> get values => _$fundingRailCircuitOpenScopeEnumValues;
+  static FundingRailCircuitOpenScopeEnum valueOf(String name) => _$fundingRailCircuitOpenScopeEnumValueOf(name);
 }
 
 class FundingRailCircuitOpenStateEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'open')
-  static const FundingRailCircuitOpenStateEnum open =
-      _$fundingRailCircuitOpenStateEnum_open;
+  static const FundingRailCircuitOpenStateEnum open = _$fundingRailCircuitOpenStateEnum_open;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRailCircuitOpenStateEnum unknownDefaultOpenApi =
-      _$fundingRailCircuitOpenStateEnum_unknownDefaultOpenApi;
+  static const FundingRailCircuitOpenStateEnum unknownDefaultOpenApi = _$fundingRailCircuitOpenStateEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingRailCircuitOpenStateEnum> get serializer =>
-      _$fundingRailCircuitOpenStateEnumSerializer;
+  static Serializer<FundingRailCircuitOpenStateEnum> get serializer => _$fundingRailCircuitOpenStateEnumSerializer;
 
-  const FundingRailCircuitOpenStateEnum._(String name) : super(name);
+  const FundingRailCircuitOpenStateEnum._(String name): super(name);
 
-  static BuiltSet<FundingRailCircuitOpenStateEnum> get values =>
-      _$fundingRailCircuitOpenStateEnumValues;
-  static FundingRailCircuitOpenStateEnum valueOf(String name) =>
-      _$fundingRailCircuitOpenStateEnumValueOf(name);
+  static BuiltSet<FundingRailCircuitOpenStateEnum> get values => _$fundingRailCircuitOpenStateEnumValues;
+  static FundingRailCircuitOpenStateEnum valueOf(String name) => _$fundingRailCircuitOpenStateEnumValueOf(name);
 }
+

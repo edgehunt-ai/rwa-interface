@@ -13,15 +13,14 @@ part 'privy_authorization_body.g.dart';
 /// PrivyAuthorizationBody
 ///
 /// Properties:
-/// * [method]
-/// * [caip2]
-/// * [chainType]
-/// * [sponsor]
-/// * [referenceId] - Stable server-generated execution correlation identifier. It is included in Privy transaction Webhooks and is never supplied or overridden by the client.
-/// * [params]
+/// * [method] 
+/// * [caip2] 
+/// * [chainType] 
+/// * [sponsor] 
+/// * [referenceId] - Stable server-generated execution correlation identifier. It is included in Privy transaction Webhooks and is never supplied or overridden by the client. 
+/// * [params] 
 @BuiltValue()
-abstract class PrivyAuthorizationBody
-    implements Built<PrivyAuthorizationBody, PrivyAuthorizationBodyBuilder> {
+abstract class PrivyAuthorizationBody implements Built<PrivyAuthorizationBody, PrivyAuthorizationBodyBuilder> {
   @BuiltValueField(wireName: r'method')
   PrivyAuthorizationBodyMethodEnum get method;
   // enum methodEnum {  eth_sendTransaction,  };
@@ -37,7 +36,7 @@ abstract class PrivyAuthorizationBody
   @BuiltValueField(wireName: r'sponsor')
   bool get sponsor;
 
-  /// Stable server-generated execution correlation identifier. It is included in Privy transaction Webhooks and is never supplied or overridden by the client.
+  /// Stable server-generated execution correlation identifier. It is included in Privy transaction Webhooks and is never supplied or overridden by the client. 
   @BuiltValueField(wireName: r'reference_id')
   String get referenceId;
 
@@ -46,25 +45,18 @@ abstract class PrivyAuthorizationBody
 
   PrivyAuthorizationBody._();
 
-  factory PrivyAuthorizationBody(
-          [void updates(PrivyAuthorizationBodyBuilder b)]) =
-      _$PrivyAuthorizationBody;
+  factory PrivyAuthorizationBody([void updates(PrivyAuthorizationBodyBuilder b)]) = _$PrivyAuthorizationBody;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PrivyAuthorizationBodyBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PrivyAuthorizationBody> get serializer =>
-      _$PrivyAuthorizationBodySerializer();
+  static Serializer<PrivyAuthorizationBody> get serializer => _$PrivyAuthorizationBodySerializer();
 }
 
-class _$PrivyAuthorizationBodySerializer
-    implements PrimitiveSerializer<PrivyAuthorizationBody> {
+class _$PrivyAuthorizationBodySerializer implements PrimitiveSerializer<PrivyAuthorizationBody> {
   @override
-  final Iterable<Type> types = const [
-    PrivyAuthorizationBody,
-    _$PrivyAuthorizationBody
-  ];
+  final Iterable<Type> types = const [PrivyAuthorizationBody, _$PrivyAuthorizationBody];
 
   @override
   final String wireName = r'PrivyAuthorizationBody';
@@ -112,9 +104,7 @@ class _$PrivyAuthorizationBodySerializer
     PrivyAuthorizationBody object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -201,67 +191,53 @@ class _$PrivyAuthorizationBodySerializer
 }
 
 class PrivyAuthorizationBodyMethodEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'eth_sendTransaction')
-  static const PrivyAuthorizationBodyMethodEnum ethSendTransaction =
-      _$privyAuthorizationBodyMethodEnum_ethSendTransaction;
+  static const PrivyAuthorizationBodyMethodEnum ethSendTransaction = _$privyAuthorizationBodyMethodEnum_ethSendTransaction;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationBodyMethodEnum unknownDefaultOpenApi =
-      _$privyAuthorizationBodyMethodEnum_unknownDefaultOpenApi;
+  static const PrivyAuthorizationBodyMethodEnum unknownDefaultOpenApi = _$privyAuthorizationBodyMethodEnum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyAuthorizationBodyMethodEnum> get serializer =>
-      _$privyAuthorizationBodyMethodEnumSerializer;
+  static Serializer<PrivyAuthorizationBodyMethodEnum> get serializer => _$privyAuthorizationBodyMethodEnumSerializer;
 
-  const PrivyAuthorizationBodyMethodEnum._(String name) : super(name);
+  const PrivyAuthorizationBodyMethodEnum._(String name): super(name);
 
-  static BuiltSet<PrivyAuthorizationBodyMethodEnum> get values =>
-      _$privyAuthorizationBodyMethodEnumValues;
-  static PrivyAuthorizationBodyMethodEnum valueOf(String name) =>
-      _$privyAuthorizationBodyMethodEnumValueOf(name);
+  static BuiltSet<PrivyAuthorizationBodyMethodEnum> get values => _$privyAuthorizationBodyMethodEnumValues;
+  static PrivyAuthorizationBodyMethodEnum valueOf(String name) => _$privyAuthorizationBodyMethodEnumValueOf(name);
 }
 
 class PrivyAuthorizationBodyCaip2Enum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'eip155:1')
-  static const PrivyAuthorizationBodyCaip2Enum eip155Colon1 =
-      _$privyAuthorizationBodyCaip2Enum_eip155Colon1;
+  static const PrivyAuthorizationBodyCaip2Enum eip155Colon1 = _$privyAuthorizationBodyCaip2Enum_eip155Colon1;
   @BuiltValueEnumConst(wireName: r'eip155:56')
-  static const PrivyAuthorizationBodyCaip2Enum eip155Colon56 =
-      _$privyAuthorizationBodyCaip2Enum_eip155Colon56;
+  static const PrivyAuthorizationBodyCaip2Enum eip155Colon56 = _$privyAuthorizationBodyCaip2Enum_eip155Colon56;
   @BuiltValueEnumConst(wireName: r'eip155:8453')
-  static const PrivyAuthorizationBodyCaip2Enum eip155Colon8453 =
-      _$privyAuthorizationBodyCaip2Enum_eip155Colon8453;
+  static const PrivyAuthorizationBodyCaip2Enum eip155Colon8453 = _$privyAuthorizationBodyCaip2Enum_eip155Colon8453;
   @BuiltValueEnumConst(wireName: r'eip155:42161')
-  static const PrivyAuthorizationBodyCaip2Enum eip155Colon42161 =
-      _$privyAuthorizationBodyCaip2Enum_eip155Colon42161;
+  static const PrivyAuthorizationBodyCaip2Enum eip155Colon42161 = _$privyAuthorizationBodyCaip2Enum_eip155Colon42161;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationBodyCaip2Enum unknownDefaultOpenApi =
-      _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi;
+  static const PrivyAuthorizationBodyCaip2Enum unknownDefaultOpenApi = _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyAuthorizationBodyCaip2Enum> get serializer =>
-      _$privyAuthorizationBodyCaip2EnumSerializer;
+  static Serializer<PrivyAuthorizationBodyCaip2Enum> get serializer => _$privyAuthorizationBodyCaip2EnumSerializer;
 
-  const PrivyAuthorizationBodyCaip2Enum._(String name) : super(name);
+  const PrivyAuthorizationBodyCaip2Enum._(String name): super(name);
 
-  static BuiltSet<PrivyAuthorizationBodyCaip2Enum> get values =>
-      _$privyAuthorizationBodyCaip2EnumValues;
-  static PrivyAuthorizationBodyCaip2Enum valueOf(String name) =>
-      _$privyAuthorizationBodyCaip2EnumValueOf(name);
+  static BuiltSet<PrivyAuthorizationBodyCaip2Enum> get values => _$privyAuthorizationBodyCaip2EnumValues;
+  static PrivyAuthorizationBodyCaip2Enum valueOf(String name) => _$privyAuthorizationBodyCaip2EnumValueOf(name);
 }
 
 class PrivyAuthorizationBodyChainTypeEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'ethereum')
-  static const PrivyAuthorizationBodyChainTypeEnum ethereum =
-      _$privyAuthorizationBodyChainTypeEnum_ethereum;
+  static const PrivyAuthorizationBodyChainTypeEnum ethereum = _$privyAuthorizationBodyChainTypeEnum_ethereum;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationBodyChainTypeEnum unknownDefaultOpenApi =
-      _$privyAuthorizationBodyChainTypeEnum_unknownDefaultOpenApi;
+  static const PrivyAuthorizationBodyChainTypeEnum unknownDefaultOpenApi = _$privyAuthorizationBodyChainTypeEnum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyAuthorizationBodyChainTypeEnum> get serializer =>
-      _$privyAuthorizationBodyChainTypeEnumSerializer;
+  static Serializer<PrivyAuthorizationBodyChainTypeEnum> get serializer => _$privyAuthorizationBodyChainTypeEnumSerializer;
 
-  const PrivyAuthorizationBodyChainTypeEnum._(String name) : super(name);
+  const PrivyAuthorizationBodyChainTypeEnum._(String name): super(name);
 
-  static BuiltSet<PrivyAuthorizationBodyChainTypeEnum> get values =>
-      _$privyAuthorizationBodyChainTypeEnumValues;
-  static PrivyAuthorizationBodyChainTypeEnum valueOf(String name) =>
-      _$privyAuthorizationBodyChainTypeEnumValueOf(name);
+  static BuiltSet<PrivyAuthorizationBodyChainTypeEnum> get values => _$privyAuthorizationBodyChainTypeEnumValues;
+  static PrivyAuthorizationBodyChainTypeEnum valueOf(String name) => _$privyAuthorizationBodyChainTypeEnumValueOf(name);
 }
+

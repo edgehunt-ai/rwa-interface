@@ -13,14 +13,11 @@ part 'privy_authorization_transaction.g.dart';
 ///
 /// Properties:
 /// * [from] - Exact server-bound Privy wallet address; the client cannot override it.
-/// * [to]
-/// * [data]
-/// * [value]
+/// * [to] 
+/// * [data] 
+/// * [value] 
 @BuiltValue()
-abstract class PrivyAuthorizationTransaction
-    implements
-        Built<PrivyAuthorizationTransaction,
-            PrivyAuthorizationTransactionBuilder> {
+abstract class PrivyAuthorizationTransaction implements Built<PrivyAuthorizationTransaction, PrivyAuthorizationTransactionBuilder> {
   /// Exact server-bound Privy wallet address; the client cannot override it.
   @BuiltValueField(wireName: r'from')
   String get from;
@@ -37,25 +34,18 @@ abstract class PrivyAuthorizationTransaction
 
   PrivyAuthorizationTransaction._();
 
-  factory PrivyAuthorizationTransaction(
-          [void updates(PrivyAuthorizationTransactionBuilder b)]) =
-      _$PrivyAuthorizationTransaction;
+  factory PrivyAuthorizationTransaction([void updates(PrivyAuthorizationTransactionBuilder b)]) = _$PrivyAuthorizationTransaction;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PrivyAuthorizationTransactionBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PrivyAuthorizationTransaction> get serializer =>
-      _$PrivyAuthorizationTransactionSerializer();
+  static Serializer<PrivyAuthorizationTransaction> get serializer => _$PrivyAuthorizationTransactionSerializer();
 }
 
-class _$PrivyAuthorizationTransactionSerializer
-    implements PrimitiveSerializer<PrivyAuthorizationTransaction> {
+class _$PrivyAuthorizationTransactionSerializer implements PrimitiveSerializer<PrivyAuthorizationTransaction> {
   @override
-  final Iterable<Type> types = const [
-    PrivyAuthorizationTransaction,
-    _$PrivyAuthorizationTransaction
-  ];
+  final Iterable<Type> types = const [PrivyAuthorizationTransaction, _$PrivyAuthorizationTransaction];
 
   @override
   final String wireName = r'PrivyAuthorizationTransaction';
@@ -93,9 +83,7 @@ class _$PrivyAuthorizationTransactionSerializer
     PrivyAuthorizationTransaction object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -134,8 +122,7 @@ class _$PrivyAuthorizationTransactionSerializer
         case r'value':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType(PrivyAuthorizationTransactionValueEnum),
+            specifiedType: const FullType(PrivyAuthorizationTransactionValueEnum),
           ) as PrivyAuthorizationTransactionValueEnum;
           result.value = valueDes;
           break;
@@ -169,20 +156,17 @@ class _$PrivyAuthorizationTransactionSerializer
 }
 
 class PrivyAuthorizationTransactionValueEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'0x0')
-  static const PrivyAuthorizationTransactionValueEnum n0x0 =
-      _$privyAuthorizationTransactionValueEnum_n0x0;
+  static const PrivyAuthorizationTransactionValueEnum n0x0 = _$privyAuthorizationTransactionValueEnum_n0x0;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationTransactionValueEnum unknownDefaultOpenApi =
-      _$privyAuthorizationTransactionValueEnum_unknownDefaultOpenApi;
+  static const PrivyAuthorizationTransactionValueEnum unknownDefaultOpenApi = _$privyAuthorizationTransactionValueEnum_unknownDefaultOpenApi;
 
-  static Serializer<PrivyAuthorizationTransactionValueEnum> get serializer =>
-      _$privyAuthorizationTransactionValueEnumSerializer;
+  static Serializer<PrivyAuthorizationTransactionValueEnum> get serializer => _$privyAuthorizationTransactionValueEnumSerializer;
 
-  const PrivyAuthorizationTransactionValueEnum._(String name) : super(name);
+  const PrivyAuthorizationTransactionValueEnum._(String name): super(name);
 
-  static BuiltSet<PrivyAuthorizationTransactionValueEnum> get values =>
-      _$privyAuthorizationTransactionValueEnumValues;
-  static PrivyAuthorizationTransactionValueEnum valueOf(String name) =>
-      _$privyAuthorizationTransactionValueEnumValueOf(name);
+  static BuiltSet<PrivyAuthorizationTransactionValueEnum> get values => _$privyAuthorizationTransactionValueEnumValues;
+  static PrivyAuthorizationTransactionValueEnum valueOf(String name) => _$privyAuthorizationTransactionValueEnumValueOf(name);
 }
+

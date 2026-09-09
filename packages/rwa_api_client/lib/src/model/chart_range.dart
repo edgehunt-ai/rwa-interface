@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'chart_range.g.dart';
 
 class ChartRange extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'15m')
   static const ChartRange n15m = _$n15m;
   @BuiltValueEnumConst(wireName: r'4h')
@@ -23,7 +24,7 @@ class ChartRange extends EnumClass {
 
   static Serializer<ChartRange> get serializer => _$chartRangeSerializer;
 
-  const ChartRange._(String name) : super(name);
+  const ChartRange._(String name): super(name);
 
   static BuiltSet<ChartRange> get values => _$values;
   static ChartRange valueOf(String name) => _$valueOf(name);
@@ -36,3 +37,4 @@ class ChartRange extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class ChartRangeMixin = Object with _$ChartRangeMixin;
+

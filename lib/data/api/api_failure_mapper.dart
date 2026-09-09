@@ -26,6 +26,10 @@ final class ApiFailureMapper {
         userAction: 'reauthenticate',
       );
     }
+    if (error.type == DioExceptionType.unknown && response != null ||
+        error.error is FormatException) {
+      return DecodingFailure(requestId: requestId);
+    }
     if (status != null) {
       final body = response?.data;
       final json = body is Map<String, dynamic>
@@ -39,10 +43,6 @@ final class ApiFailureMapper {
         userAction: json['user_action']?.toString(),
         details: _safeDetails(json['details']),
       );
-    }
-    if (error.error is FormatException ||
-        error.type == DioExceptionType.unknown && error.response != null) {
-      return DecodingFailure(requestId: requestId);
     }
     return const UnknownFailure();
   }

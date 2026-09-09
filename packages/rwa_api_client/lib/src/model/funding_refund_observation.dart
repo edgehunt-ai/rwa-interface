@@ -13,16 +13,14 @@ part 'funding_refund_observation.g.dart';
 /// FundingRefundObservation
 ///
 /// Properties:
-/// * [status]
-/// * [asset]
-/// * [address]
+/// * [status] 
+/// * [asset] 
+/// * [address] 
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [txHash]
-/// * [observedAt]
+/// * [txHash] 
+/// * [observedAt] 
 @BuiltValue()
-abstract class FundingRefundObservation
-    implements
-        Built<FundingRefundObservation, FundingRefundObservationBuilder> {
+abstract class FundingRefundObservation implements Built<FundingRefundObservation, FundingRefundObservationBuilder> {
   @BuiltValueField(wireName: r'status')
   TransferRefundStatus get status;
   // enum statusEnum {  not_applicable,  eligible,  pending,  confirmed,  failed,  ambiguous,  manual_review,  };
@@ -45,25 +43,18 @@ abstract class FundingRefundObservation
 
   FundingRefundObservation._();
 
-  factory FundingRefundObservation(
-          [void updates(FundingRefundObservationBuilder b)]) =
-      _$FundingRefundObservation;
+  factory FundingRefundObservation([void updates(FundingRefundObservationBuilder b)]) = _$FundingRefundObservation;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingRefundObservationBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingRefundObservation> get serializer =>
-      _$FundingRefundObservationSerializer();
+  static Serializer<FundingRefundObservation> get serializer => _$FundingRefundObservationSerializer();
 }
 
-class _$FundingRefundObservationSerializer
-    implements PrimitiveSerializer<FundingRefundObservation> {
+class _$FundingRefundObservationSerializer implements PrimitiveSerializer<FundingRefundObservation> {
   @override
-  final Iterable<Type> types = const [
-    FundingRefundObservation,
-    _$FundingRefundObservation
-  ];
+  final Iterable<Type> types = const [FundingRefundObservation, _$FundingRefundObservation];
 
   @override
   final String wireName = r'FundingRefundObservation';
@@ -79,40 +70,30 @@ class _$FundingRefundObservationSerializer
       specifiedType: const FullType(TransferRefundStatus),
     );
     yield r'asset';
-    yield object.asset == null
-        ? null
-        : serializers.serialize(
-            object.asset,
-            specifiedType: const FullType.nullable(FundingAssetIdentity),
-          );
+    yield object.asset == null ? null : serializers.serialize(
+      object.asset,
+      specifiedType: const FullType.nullable(FundingAssetIdentity),
+    );
     yield r'address';
-    yield object.address == null
-        ? null
-        : serializers.serialize(
-            object.address,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.address == null ? null : serializers.serialize(
+      object.address,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'amount';
-    yield object.amount == null
-        ? null
-        : serializers.serialize(
-            object.amount,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.amount == null ? null : serializers.serialize(
+      object.amount,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'tx_hash';
-    yield object.txHash == null
-        ? null
-        : serializers.serialize(
-            object.txHash,
-            specifiedType: const FullType.nullable(String),
-          );
+    yield object.txHash == null ? null : serializers.serialize(
+      object.txHash,
+      specifiedType: const FullType.nullable(String),
+    );
     yield r'observed_at';
-    yield object.observedAt == null
-        ? null
-        : serializers.serialize(
-            object.observedAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.observedAt == null ? null : serializers.serialize(
+      object.observedAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
   }
 
   @override
@@ -121,9 +102,7 @@ class _$FundingRefundObservationSerializer
     FundingRefundObservation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -213,3 +192,4 @@ class _$FundingRefundObservationSerializer
     return result.build();
   }
 }
+

@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'funding_plan_status.g.dart';
 
 class FundingPlanStatus extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'ready')
   static const FundingPlanStatus ready = _$ready;
   @BuiltValueEnumConst(wireName: r'already_funded')
@@ -23,13 +24,11 @@ class FundingPlanStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'cancelled')
   static const FundingPlanStatus cancelled = _$cancelled;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanStatus unknownDefaultOpenApi =
-      _$unknownDefaultOpenApi;
+  static const FundingPlanStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<FundingPlanStatus> get serializer =>
-      _$fundingPlanStatusSerializer;
+  static Serializer<FundingPlanStatus> get serializer => _$fundingPlanStatusSerializer;
 
-  const FundingPlanStatus._(String name) : super(name);
+  const FundingPlanStatus._(String name): super(name);
 
   static BuiltSet<FundingPlanStatus> get values => _$values;
   static FundingPlanStatus valueOf(String name) => _$valueOf(name);
@@ -42,3 +41,4 @@ class FundingPlanStatus extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class FundingPlanStatusMixin = Object with _$FundingPlanStatusMixin;
+

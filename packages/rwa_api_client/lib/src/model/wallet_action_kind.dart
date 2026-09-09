@@ -10,6 +10,7 @@ import 'package:built_value/serializer.dart';
 part 'wallet_action_kind.g.dart';
 
 class WalletActionKind extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'erc20_approval')
   static const WalletActionKind erc20Approval = _$erc20Approval;
   @BuiltValueEnumConst(wireName: r'origin_transaction')
@@ -19,10 +20,9 @@ class WalletActionKind extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const WalletActionKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<WalletActionKind> get serializer =>
-      _$walletActionKindSerializer;
+  static Serializer<WalletActionKind> get serializer => _$walletActionKindSerializer;
 
-  const WalletActionKind._(String name) : super(name);
+  const WalletActionKind._(String name): super(name);
 
   static BuiltSet<WalletActionKind> get values => _$values;
   static WalletActionKind valueOf(String name) => _$valueOf(name);
@@ -35,3 +35,4 @@ class WalletActionKind extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class WalletActionKindMixin = Object with _$WalletActionKindMixin;
+

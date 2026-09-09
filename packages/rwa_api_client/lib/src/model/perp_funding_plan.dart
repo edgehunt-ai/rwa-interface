@@ -20,26 +20,25 @@ part 'perp_funding_plan.g.dart';
 /// Cross-field status/nullability invariants are enforced by server validation.
 ///
 /// Properties:
-/// * [planId]
-/// * [tradePreviewId]
-/// * [mode]
+/// * [planId] 
+/// * [tradePreviewId] 
+/// * [mode] 
 /// * [requiredTargetAmount] - 十进制字符串，避免浮点误差
-/// * [targetSnapshot]
+/// * [targetSnapshot] 
 /// * [shortfall] - 十进制字符串，避免浮点误差
-/// * [status]
-/// * [blocker]
-/// * [source_]
-/// * [selectedRoute]
-/// * [walletActions]
-/// * [circuitSnapshot]
-/// * [createdAt]
-/// * [expiresAt]
-/// * [rail]
-/// * [network]
-/// * [asset]
+/// * [status] 
+/// * [blocker] 
+/// * [source_] 
+/// * [selectedRoute] 
+/// * [walletActions] 
+/// * [circuitSnapshot] 
+/// * [createdAt] 
+/// * [expiresAt] 
+/// * [rail] 
+/// * [network] 
+/// * [asset] 
 @BuiltValue()
-abstract class PerpFundingPlan
-    implements Built<PerpFundingPlan, PerpFundingPlanBuilder> {
+abstract class PerpFundingPlan implements Built<PerpFundingPlan, PerpFundingPlanBuilder> {
   @BuiltValueField(wireName: r'plan_id')
   String get planId;
 
@@ -101,19 +100,16 @@ abstract class PerpFundingPlan
 
   PerpFundingPlan._();
 
-  factory PerpFundingPlan([void updates(PerpFundingPlanBuilder b)]) =
-      _$PerpFundingPlan;
+  factory PerpFundingPlan([void updates(PerpFundingPlanBuilder b)]) = _$PerpFundingPlan;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(PerpFundingPlanBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpFundingPlan> get serializer =>
-      _$PerpFundingPlanSerializer();
+  static Serializer<PerpFundingPlan> get serializer => _$PerpFundingPlanSerializer();
 }
 
-class _$PerpFundingPlanSerializer
-    implements PrimitiveSerializer<PerpFundingPlan> {
+class _$PerpFundingPlanSerializer implements PrimitiveSerializer<PerpFundingPlan> {
   @override
   final Iterable<Type> types = const [PerpFundingPlan, _$PerpFundingPlan];
 
@@ -161,32 +157,24 @@ class _$PerpFundingPlanSerializer
       specifiedType: const FullType(FundingPlanStatus),
     );
     yield r'blocker';
-    yield object.blocker == null
-        ? null
-        : serializers.serialize(
-            object.blocker,
-            specifiedType: const FullType.nullable(FundingPlanBlocker),
-          );
+    yield object.blocker == null ? null : serializers.serialize(
+      object.blocker,
+      specifiedType: const FullType.nullable(FundingPlanBlocker),
+    );
     yield r'source';
-    yield object.source_ == null
-        ? null
-        : serializers.serialize(
-            object.source_,
-            specifiedType:
-                const FullType.nullable(FundingSourceBalanceSnapshot),
-          );
+    yield object.source_ == null ? null : serializers.serialize(
+      object.source_,
+      specifiedType: const FullType.nullable(FundingSourceBalanceSnapshot),
+    );
     yield r'selected_route';
-    yield object.selectedRoute == null
-        ? null
-        : serializers.serialize(
-            object.selectedRoute,
-            specifiedType: const FullType.nullable(FundingRouteQuote),
-          );
+    yield object.selectedRoute == null ? null : serializers.serialize(
+      object.selectedRoute,
+      specifiedType: const FullType.nullable(FundingRouteQuote),
+    );
     yield r'wallet_actions';
     yield serializers.serialize(
       object.walletActions,
-      specifiedType:
-          const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
+      specifiedType: const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
     );
     if (object.circuitSnapshot != null) {
       yield r'circuit_snapshot';
@@ -201,12 +189,10 @@ class _$PerpFundingPlanSerializer
       specifiedType: const FullType(DateTime),
     );
     yield r'expires_at';
-    yield object.expiresAt == null
-        ? null
-        : serializers.serialize(
-            object.expiresAt,
-            specifiedType: const FullType.nullable(DateTime),
-          );
+    yield object.expiresAt == null ? null : serializers.serialize(
+      object.expiresAt,
+      specifiedType: const FullType.nullable(DateTime),
+    );
     yield r'rail';
     yield serializers.serialize(
       object.rail,
@@ -230,9 +216,7 @@ class _$PerpFundingPlanSerializer
     PerpFundingPlan object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -307,8 +291,7 @@ class _$PerpFundingPlanSerializer
         case r'source':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType:
-                const FullType.nullable(FundingSourceBalanceSnapshot),
+            specifiedType: const FullType.nullable(FundingSourceBalanceSnapshot),
           ) as FundingSourceBalanceSnapshot?;
           if (valueDes == null) continue;
           result.source_.replace(valueDes);
@@ -324,8 +307,7 @@ class _$PerpFundingPlanSerializer
         case r'wallet_actions':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(
-                BuiltList, [FullType(FundingWalletActionSummary)]),
+            specifiedType: const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
           ) as BuiltList<FundingWalletActionSummary>;
           result.walletActions.replace(valueDes);
           break;
@@ -403,56 +385,47 @@ class _$PerpFundingPlanSerializer
 }
 
 class PerpFundingPlanRailEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'perp')
   static const PerpFundingPlanRailEnum perp = _$perpFundingPlanRailEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingPlanRailEnum unknownDefaultOpenApi =
-      _$perpFundingPlanRailEnum_unknownDefaultOpenApi;
+  static const PerpFundingPlanRailEnum unknownDefaultOpenApi = _$perpFundingPlanRailEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpFundingPlanRailEnum> get serializer =>
-      _$perpFundingPlanRailEnumSerializer;
+  static Serializer<PerpFundingPlanRailEnum> get serializer => _$perpFundingPlanRailEnumSerializer;
 
-  const PerpFundingPlanRailEnum._(String name) : super(name);
+  const PerpFundingPlanRailEnum._(String name): super(name);
 
-  static BuiltSet<PerpFundingPlanRailEnum> get values =>
-      _$perpFundingPlanRailEnumValues;
-  static PerpFundingPlanRailEnum valueOf(String name) =>
-      _$perpFundingPlanRailEnumValueOf(name);
+  static BuiltSet<PerpFundingPlanRailEnum> get values => _$perpFundingPlanRailEnumValues;
+  static PerpFundingPlanRailEnum valueOf(String name) => _$perpFundingPlanRailEnumValueOf(name);
 }
 
 class PerpFundingPlanNetworkEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
-  static const PerpFundingPlanNetworkEnum hyperliquid =
-      _$perpFundingPlanNetworkEnum_hyperliquid;
+  static const PerpFundingPlanNetworkEnum hyperliquid = _$perpFundingPlanNetworkEnum_hyperliquid;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingPlanNetworkEnum unknownDefaultOpenApi =
-      _$perpFundingPlanNetworkEnum_unknownDefaultOpenApi;
+  static const PerpFundingPlanNetworkEnum unknownDefaultOpenApi = _$perpFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpFundingPlanNetworkEnum> get serializer =>
-      _$perpFundingPlanNetworkEnumSerializer;
+  static Serializer<PerpFundingPlanNetworkEnum> get serializer => _$perpFundingPlanNetworkEnumSerializer;
 
-  const PerpFundingPlanNetworkEnum._(String name) : super(name);
+  const PerpFundingPlanNetworkEnum._(String name): super(name);
 
-  static BuiltSet<PerpFundingPlanNetworkEnum> get values =>
-      _$perpFundingPlanNetworkEnumValues;
-  static PerpFundingPlanNetworkEnum valueOf(String name) =>
-      _$perpFundingPlanNetworkEnumValueOf(name);
+  static BuiltSet<PerpFundingPlanNetworkEnum> get values => _$perpFundingPlanNetworkEnumValues;
+  static PerpFundingPlanNetworkEnum valueOf(String name) => _$perpFundingPlanNetworkEnumValueOf(name);
 }
 
 class PerpFundingPlanAssetEnum extends EnumClass {
+
   @BuiltValueEnumConst(wireName: r'USDC')
   static const PerpFundingPlanAssetEnum USDC = _$perpFundingPlanAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingPlanAssetEnum unknownDefaultOpenApi =
-      _$perpFundingPlanAssetEnum_unknownDefaultOpenApi;
+  static const PerpFundingPlanAssetEnum unknownDefaultOpenApi = _$perpFundingPlanAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpFundingPlanAssetEnum> get serializer =>
-      _$perpFundingPlanAssetEnumSerializer;
+  static Serializer<PerpFundingPlanAssetEnum> get serializer => _$perpFundingPlanAssetEnumSerializer;
 
-  const PerpFundingPlanAssetEnum._(String name) : super(name);
+  const PerpFundingPlanAssetEnum._(String name): super(name);
 
-  static BuiltSet<PerpFundingPlanAssetEnum> get values =>
-      _$perpFundingPlanAssetEnumValues;
-  static PerpFundingPlanAssetEnum valueOf(String name) =>
-      _$perpFundingPlanAssetEnumValueOf(name);
+  static BuiltSet<PerpFundingPlanAssetEnum> get values => _$perpFundingPlanAssetEnumValues;
+  static PerpFundingPlanAssetEnum valueOf(String name) => _$perpFundingPlanAssetEnumValueOf(name);
 }
+

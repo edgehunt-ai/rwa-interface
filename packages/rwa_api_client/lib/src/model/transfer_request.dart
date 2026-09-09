@@ -11,11 +11,10 @@ part 'transfer_request.g.dart';
 /// TransferRequest
 ///
 /// Properties:
-/// * [planId]
+/// * [planId] 
 /// * [authorizationId] - 已绑定同一 frozen plan 且尚未消费的一次性钱包授权 ID。
 @BuiltValue()
-abstract class TransferRequest
-    implements Built<TransferRequest, TransferRequestBuilder> {
+abstract class TransferRequest implements Built<TransferRequest, TransferRequestBuilder> {
   @BuiltValueField(wireName: r'plan_id')
   String get planId;
 
@@ -25,19 +24,16 @@ abstract class TransferRequest
 
   TransferRequest._();
 
-  factory TransferRequest([void updates(TransferRequestBuilder b)]) =
-      _$TransferRequest;
+  factory TransferRequest([void updates(TransferRequestBuilder b)]) = _$TransferRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TransferRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TransferRequest> get serializer =>
-      _$TransferRequestSerializer();
+  static Serializer<TransferRequest> get serializer => _$TransferRequestSerializer();
 }
 
-class _$TransferRequestSerializer
-    implements PrimitiveSerializer<TransferRequest> {
+class _$TransferRequestSerializer implements PrimitiveSerializer<TransferRequest> {
   @override
   final Iterable<Type> types = const [TransferRequest, _$TransferRequest];
 
@@ -67,9 +63,7 @@ class _$TransferRequestSerializer
     TransferRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -126,3 +120,4 @@ class _$TransferRequestSerializer
     return result.build();
   }
 }
+

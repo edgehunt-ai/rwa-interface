@@ -14,8 +14,7 @@ part 'order_book_level.g.dart';
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [size] - 十进制字符串，避免浮点误差
 @BuiltValue()
-abstract class OrderBookLevel
-    implements Built<OrderBookLevel, OrderBookLevelBuilder> {
+abstract class OrderBookLevel implements Built<OrderBookLevel, OrderBookLevelBuilder> {
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'price')
   String get price;
@@ -26,19 +25,16 @@ abstract class OrderBookLevel
 
   OrderBookLevel._();
 
-  factory OrderBookLevel([void updates(OrderBookLevelBuilder b)]) =
-      _$OrderBookLevel;
+  factory OrderBookLevel([void updates(OrderBookLevelBuilder b)]) = _$OrderBookLevel;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(OrderBookLevelBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<OrderBookLevel> get serializer =>
-      _$OrderBookLevelSerializer();
+  static Serializer<OrderBookLevel> get serializer => _$OrderBookLevelSerializer();
 }
 
-class _$OrderBookLevelSerializer
-    implements PrimitiveSerializer<OrderBookLevel> {
+class _$OrderBookLevelSerializer implements PrimitiveSerializer<OrderBookLevel> {
   @override
   final Iterable<Type> types = const [OrderBookLevel, _$OrderBookLevel];
 
@@ -68,9 +64,7 @@ class _$OrderBookLevelSerializer
     OrderBookLevel object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object,
-            specifiedType: specifiedType)
-        .toList();
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
   void _deserializeProperties(
@@ -127,3 +121,4 @@ class _$OrderBookLevelSerializer
     return result.build();
   }
 }
+
