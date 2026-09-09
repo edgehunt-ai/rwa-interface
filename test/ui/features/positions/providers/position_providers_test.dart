@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
+import 'package:rwa_interface/domain/models/hip3_action_summary.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -12,6 +14,43 @@ import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
 void main() {
+  for (final requiresReview in [false, true]) {
+    test(
+      'pending action refreshes recovery list (review=$requiresReview)',
+      () async {
+        final repository = _PositionsRepository()
+          ..pending = Hip3ActionPending(
+            'action-1',
+            requiresReview: requiresReview,
+          );
+        final container = ProviderContainer(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(repository),
+          ],
+        );
+        addTearDown(container.dispose);
+        final actions = container.listen(
+          activeHip3ActionsProvider(null),
+          (_, _) {},
+        );
+        final commands = container.listen(positionCommandProvider, (_, _) {});
+        addTearDown(actions.close);
+        addTearDown(commands.close);
+        await container.read(activeHip3ActionsProvider(null).future);
+        expect(repository.activeCalls, 1);
+
+        await expectLater(
+          container
+              .read(positionCommandProvider)
+              .updateLeverage(_position(), '2'),
+          throwsA(same(repository.pending)),
+        );
+        await container.read(activeHip3ActionsProvider(null).future);
+        expect(repository.activeCalls, 2);
+      },
+    );
+  }
+
   test('position list forwards filters through repository boundary', () async {
     final repository = _PositionsRepository();
     final container = ProviderContainer(
@@ -152,6 +191,17 @@ final class _PositionsRepository implements PositionsRepository {
   final Map<String, int> getCalls = {};
   int listCalls = 0;
   bool failUpdates = false;
+  Hip3ActionPending? pending;
+  int activeCalls = 0;
+
+  @override
+  Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({
+    String? cursor,
+  }) async {
+    activeCalls++;
+    return const DomainPage(items: []);
+  }
+
   @override
   Future<DomainPage<Position>> list({
     String? symbol,
@@ -185,6 +235,7 @@ final class _PositionsRepository implements PositionsRepository {
     leverageKeys.add(idempotencyKey);
     await Future<void>.delayed(const Duration(milliseconds: 2));
     if (failUpdates) throw const NetworkFailure();
+    if (pending != null) throw pending!;
     return position;
   }
 
