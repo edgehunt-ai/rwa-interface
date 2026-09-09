@@ -49,19 +49,22 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Close NVDA'), findsOneWidget);
   });
 
-  testWidgets('HIP-3 limit orders block a missing limit price', (tester) async {
+  testWidgets('HIP-3 order value uses the preview settlement asset', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const Hip3OrderPanel())),
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(_CapturingHip3Orders()),
+        ],
+        child: buildTestApp(const Hip3OrderPanel()),
+      ),
     );
 
-    await tester.tap(find.text('Limit'));
-    await tester.pump();
-    final submit = find.widgetWithText(FilledButton, 'Long NVDA');
-    await tester.ensureVisible(submit);
-    await tester.tap(submit);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Enter a valid limit price.'), findsOneWidget);
+    expect(find.text('USDT'), findsOneWidget);
   });
 
   testWidgets('HIP-3 leverage sheet retains a confirmed selection', (
@@ -177,6 +180,7 @@ final class _CapturingHip3Orders implements OrdersRepository {
       previewId: 'hip3-preview',
       intent: value,
       orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+      settlementAsset: 'USDT',
     );
   }
 

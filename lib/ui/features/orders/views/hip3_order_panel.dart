@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
@@ -41,35 +43,38 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _submitting = false;
   String? _error;
   OrderPreview? _preview;
+  OrderPreview? _quotePreview;
   TradingOrder? _submitted;
+  Timer? _quoteDebounce;
+  var _quoteGeneration = 0;
 
   @override
   void initState() {
     super.initState();
     _side = widget.initialSide;
     _reduceOnly = widget.initialReduceOnly;
+    _amount.addListener(_scheduleQuote);
+    _limitPrice.addListener(_scheduleQuote);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleQuote());
   }
 
   @override
   void dispose() {
+    _quoteDebounce?.cancel();
+    _amount.removeListener(_scheduleQuote);
+    _limitPrice.removeListener(_scheduleQuote);
     _amount.dispose();
     _limitPrice.dispose();
     super.dispose();
   }
 
-  Future<void> _review() async {
+  OrderIntent? _intentFromFields() {
     final rawAmount = _amount.text.trim();
-    if (rawAmount.isEmpty) {
-      setState(() => _error = 'Enter an order value.');
-      return;
-    }
+    if (rawAmount.isEmpty) return null;
     final rawLimitPrice = _limitPrice.text.trim();
-    if (_type == TradingOrderType.limit && rawLimitPrice.isEmpty) {
-      setState(() => _error = 'Enter a valid limit price.');
-      return;
-    }
+    if (_type == TradingOrderType.limit && rawLimitPrice.isEmpty) return null;
     try {
-      final intent = OrderIntent(
+      return OrderIntent(
         symbol: widget.symbol,
         kind: MarketProductKind.perp,
         side: _side,
@@ -87,11 +92,54 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         marginMode: _marginMode,
         reduceOnly: _reduceOnly,
       );
+    } on FormatException {
+      return null;
+    }
+  }
+
+  void _scheduleQuote() {
+    _quoteDebounce?.cancel();
+    final generation = ++_quoteGeneration;
+    final intent = _intentFromFields();
+    if (intent == null) {
+      if (_quotePreview != null) setState(() => _quotePreview = null);
+      return;
+    }
+    _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final quote = await ref.read(orderPreviewProvider(intent).future);
+        if (mounted && generation == _quoteGeneration) {
+          setState(() => _quotePreview = quote);
+        }
+      } on Object {
+        if (mounted && generation == _quoteGeneration) {
+          setState(() => _quotePreview = null);
+        }
+      }
+    });
+  }
+
+  Future<void> _review() async {
+    final rawAmount = _amount.text.trim();
+    if (rawAmount.isEmpty) {
+      setState(() => _error = 'Enter an order value.');
+      return;
+    }
+    final rawLimitPrice = _limitPrice.text.trim();
+    if (_type == TradingOrderType.limit && rawLimitPrice.isEmpty) {
+      setState(() => _error = 'Enter a valid limit price.');
+      return;
+    }
+    try {
+      final intent = _intentFromFields()!;
       setState(() {
         _error = null;
         _submitting = true;
       });
-      final preview = await ref.read(orderPreviewProvider(intent).future);
+      final cachedQuote = _quotePreview;
+      final preview = cachedQuote?.intent.fingerprint == intent.fingerprint
+          ? cachedQuote
+          : await ref.read(orderPreviewProvider(intent).future);
       if (mounted) {
         setState(() => _preview = preview);
       }
@@ -179,30 +227,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              SegmentedButton<TradingSide>(
-                segments: const [
-                  ButtonSegment(value: TradingSide.long, label: Text('Long')),
-                  ButtonSegment(value: TradingSide.short, label: Text('Short')),
-                ],
-                selected: {_side},
-                onSelectionChanged: (next) =>
-                    setState(() => _side = next.first),
-              ),
-              const SizedBox(height: 8),
-              SegmentedButton<TradingOrderType>(
-                segments: const [
-                  ButtonSegment(
-                    value: TradingOrderType.market,
-                    label: Text('Market'),
-                  ),
-                  ButtonSegment(
-                    value: TradingOrderType.limit,
-                    label: Text('Limit'),
-                  ),
-                ],
-                selected: {_type},
-                onSelectionChanged: (next) =>
-                    setState(() => _type = next.first),
+              _Hip3SegmentedControl<TradingSide>(
+                values: const [TradingSide.long, TradingSide.short],
+                selected: _side,
+                label: (value) => value == TradingSide.long ? 'Long' : 'Short',
+                onChanged: (value) {
+                  setState(() => _side = value);
+                  _scheduleQuote();
+                },
               ),
               const SizedBox(height: 12),
               TextField(
@@ -210,9 +242,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Order Value',
-                  suffixText: 'USDC',
+                  suffixText: _quotePreview?.settlementAsset ?? 'USDC',
                 ),
               ),
               if (_type == TradingOrderType.limit) ...[
@@ -245,26 +277,27 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   }
                 },
               ),
-              SegmentedButton<TradingMarginMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: TradingMarginMode.cross,
-                    label: Text('Cross'),
-                  ),
-                  ButtonSegment(
-                    value: TradingMarginMode.isolated,
-                    label: Text('Isolated'),
-                  ),
+              _Hip3SegmentedControl<TradingMarginMode>(
+                values: const [
+                  TradingMarginMode.cross,
+                  TradingMarginMode.isolated,
                 ],
-                selected: {_marginMode},
-                onSelectionChanged: (next) =>
-                    setState(() => _marginMode = next.first),
+                selected: _marginMode,
+                label: (value) =>
+                    value == TradingMarginMode.cross ? 'Cross' : 'Isolated',
+                onChanged: (value) {
+                  setState(() => _marginMode = value);
+                  _scheduleQuote();
+                },
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Reduce only'),
                 value: _reduceOnly,
-                onChanged: (value) => setState(() => _reduceOnly = value),
+                onChanged: (value) {
+                  setState(() => _reduceOnly = value);
+                  _scheduleQuote();
+                },
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
@@ -316,12 +349,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Order value: ${TokenAmountFormatter.format(_preview!.orderValue, symbol: 'USDC')}',
+            'Order value: ${TokenAmountFormatter.format(_preview!.orderValue, symbol: _preview!.orderValue.asset ?? _preview!.settlementAsset ?? 'USDC')}',
           ),
           Text('Leverage: ${_leverage}x · ${_marginMode.name}'),
           if (_preview!.fee case final fee?)
             Text(
-              'Estimated fee: ${TokenAmountFormatter.format(fee, symbol: 'USDC')}',
+              'Estimated fee: ${TokenAmountFormatter.format(fee, symbol: fee.asset ?? _preview!.settlementAsset ?? 'USDC')}',
             ),
           const SizedBox(height: 16),
           Row(
@@ -388,6 +421,92 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       ),
     ),
   );
+}
+
+class _Hip3SegmentedControl<T> extends StatelessWidget {
+  const _Hip3SegmentedControl({
+    required this.values,
+    required this.selected,
+    required this.label,
+    required this.onChanged,
+  });
+
+  final List<T> values;
+  final T selected;
+  final String Function(T value) label;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final selectedIndex = values.indexOf(selected);
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: colors.subtleSurface,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Stack(
+          children: [
+            AnimatedAlign(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              alignment: selectedIndex == 0
+                  ? Alignment.centerLeft
+                  : Alignment.centerRight,
+              child: FractionallySizedBox(
+                widthFactor: 0.5,
+                heightFactor: 1,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.surface,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                for (final value in values)
+                  Expanded(
+                    child: Semantics(
+                      button: true,
+                      inMutuallyExclusiveGroup: true,
+                      selected: selected == value,
+                      label: label(value),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(6),
+                        onTap: () => onChanged(value),
+                        child: Center(
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOutCubic,
+                            style: Theme.of(context).textTheme.labelLarge!
+                                .copyWith(
+                                  color: selected == value
+                                      ? colors.primaryText
+                                      : colors.secondaryText,
+                                  fontWeight: selected == value
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                ),
+                            child: Text(label(value)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _Hip3RiskSummary extends StatelessWidget {

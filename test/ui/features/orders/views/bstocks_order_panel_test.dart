@@ -15,15 +15,96 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
+import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
+import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets('bStocks order form follows tab sizing and continuous slider', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
+    );
+
+    expect(
+      tester.getSize(find.byKey(const Key('bstocks-side-tabs'))),
+      const Size(123, 44),
+    );
+    final sliderFinder = find.byKey(const Key('bstocks-percentage-slider'));
+    expect(tester.widget<Slider>(sliderFinder).divisions, isNull);
+    await tester.drag(sliderFinder, const Offset(37, 0));
+    await tester.pump();
+    expect(tester.widget<Slider>(sliderFinder).value % 20, isNot(0));
+  });
+
+  testWidgets('bStocks order form renders account balance and live quote', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioSummaryProvider.overrideWith(
+            (ref) async => Portfolio(
+              totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
+              availableToTradeUsd: DecimalValue(
+                '456.78',
+                asset: 'USD',
+                unit: 'fiat',
+              ),
+            ),
+          ),
+          ordersRepositoryProvider.overrideWithValue(_QuotedOrdersRepository()),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Balance: '), findsOneWidget);
+    expect(find.text(r'$456.78'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(find.text('0.54 NVDAB'), findsOneWidget);
+    expect(find.text('0.02 NVDAB'), findsOneWidget);
+    expect(find.text('USDC'), findsOneWidget);
+  });
+
+  testWidgets('bStocks order form shows a skeleton while the balance loads', (
+    tester,
+  ) async {
+    final portfolio = Completer<Portfolio>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioSummaryProvider.overrideWith((_) => portfolio.future),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+
+    expect(find.byKey(const Key('bstocks-balance-skeleton')), findsOneWidget);
+    expect(find.text('—'), findsNothing);
+
+    portfolio.complete(
+      Portfolio(
+        totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
+        availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('bstocks-balance-skeleton')), findsNothing);
+    expect(find.text(r'$0'), findsOneWidget);
+  });
+
   testWidgets('bStocks order panel validates an empty order value', (
     tester,
   ) async {
@@ -32,22 +113,12 @@ void main() {
     );
 
     expect(find.text('Buy NVDAB'), findsWidgets);
-    await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
     await tester.pump();
     expect(find.text('Enter a valid order value.'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Limit'));
-    await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel('Drag to set'), findsOneWidget);
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Back'));
-    await tester.pumpAndSettle();
-    expect(find.text('Limit Price'), findsOneWidget);
-    await tester.tap(find.text('Take profit/stop loss · Add'));
-    await tester.pump();
-    expect(
-      find.text('TP/SL is not available for bStocks orders.'),
-      findsOneWidget,
-    );
+    expect(find.text('Market'), findsNothing);
+    expect(find.text('Limit'), findsNothing);
   });
 
   testWidgets(
@@ -63,12 +134,11 @@ void main() {
 
       expect(find.text('Sell NVDAB'), findsWidgets);
       expect(find.text('Amount'), findsOneWidget);
-      expect(find.text('Balance: 400'), findsOneWidget);
       expect(find.text('NVDAB'), findsWidgets);
     },
   );
 
-  testWidgets('limit order preserves its price and quantity for preview', (
+  testWidgets('slippage can be edited before requesting an order preview', (
     tester,
   ) async {
     final repository = _CapturingOrdersRepository();
@@ -79,20 +149,43 @@ void main() {
       ),
     );
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Limit'));
+    await tester.tap(find.byKey(const Key('bstocks-edit-slippage')));
     await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-slippage-input')),
+      '0.5',
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(0), '0.88');
-    await tester.enterText(find.byType(TextField).at(1), '180');
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Buy NVDAB'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
+
+    expect(find.text('0.5%'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
     await tester.pumpAndSettle();
 
-    expect(repository.previewIntent?.type, TradingOrderType.limit);
-    expect(repository.previewIntent?.quantity?.value, '0.88');
-    expect(repository.previewIntent?.limitPrice?.value, '180');
-    expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsOneWidget);
+    expect(repository.previewIntent?.slippage?.value, '0.5');
+  });
+
+  testWidgets('slippage editor restricts malformed and out-of-range values', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
+    );
+
+    await tester.tap(find.byKey(const Key('bstocks-edit-slippage')));
+    await tester.pumpAndSettle();
+    final input = find.byKey(const Key('bstocks-slippage-input'));
+    await tester.enterText(input, '0.123');
+    expect(tester.widget<TextField>(input).controller!.text, '0.12');
+
+    await tester.enterText(input, '100.01');
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pump();
+    expect(
+      find.text('Enter a slippage percentage from 0% to 100%.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('confirmation first shows the submitting-order state', (
@@ -107,7 +200,7 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextField).first, '100');
-    await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
     await tester.pump();
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
@@ -142,81 +235,32 @@ void main() {
   });
 
   testWidgets(
-    'market orders over the displayed balance open funding recovery',
+    'transfer flow renders the server-selected source through review',
     (tester) async {
       await tester.pumpWidget(
-        ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
-      );
-
-      await tester.enterText(find.byType(TextField).first, '1001');
-      await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Amount Needed'), findsOneWidget);
-      expect(find.text('In-App Transfer'), findsOneWidget);
-      expect(find.text('External Deposit'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'insufficient funds external deposit returns to its trade sheet',
-    (tester) async {
-      final router = GoRouter(
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (_, _) => const Scaffold(body: BstocksOrderPanel()),
-          ),
-          GoRoute(
-            name: AppRoutes.depositName,
-            path: AppRoutes.depositPath,
-            builder: (_, _) =>
-                const Scaffold(body: Text('Deposit destination')),
-          ),
-        ],
-      );
-      addTearDown(router.dispose);
-      await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
-
-      await tester.enterText(find.byType(TextField).first, '1001');
-      await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('External Deposit'));
-      await tester.pumpAndSettle();
-      expect(find.text('Deposit destination'), findsOneWidget);
-
-      router.pop();
-      await tester.pumpAndSettle();
-      expect(find.text('Buy NVDAB'), findsWidgets);
-    },
-  );
-
-  testWidgets('transfer flow preserves selected sources through review', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: buildTestApp(
-          BstocksTransferFlowSheet(
-            amountNeeded: DecimalValue('100', asset: 'USDT', unit: 'token'),
+        ProviderScope(
+          child: buildTestApp(
+            BstocksTransferFlowSheet(
+              amountNeeded: DecimalValue('100', asset: 'USDT', unit: 'token'),
+              plan: _readyFundingPlan,
+              orderPreview: _fundedPreview,
+              symbol: 'NVDAB',
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(find.text('In-App transfer'), findsOneWidget);
-    expect(find.text('USDC (Arbitrum)'), findsOneWidget);
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
-    await tester.pump();
-    expect(find.text('Buy NVDAB · Market'), findsOneWidget);
-    await tester.ensureVisible(
-      find.widgetWithText(FilledButton, 'Confirm Buy'),
-    );
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
-    await tester.pump();
-    expect(find.text('Submitting Order...'), findsOneWidget);
-  });
+      expect(find.text('In-App transfer'), findsOneWidget);
+      expect(find.text('USDC (server selected)'), findsOneWidget);
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.pump();
+      expect(find.text('Buy NVDAB · Market'), findsOneWidget);
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Confirm Buy'),
+      );
+    },
+  );
 
   testWidgets('funding pending state is independently reachable', (
     tester,
@@ -227,6 +271,9 @@ void main() {
           BstocksTransferFlowSheet(
             amountNeeded: DecimalValue('100', asset: 'USDT', unit: 'token'),
             initialStage: BstocksTransferFlowStage.fundingPending,
+            plan: _readyFundingPlan,
+            orderPreview: _fundedPreview,
+            symbol: 'NVDAB',
           ),
         ),
       ),
@@ -266,6 +313,7 @@ void main() {
               amountNeeded: DecimalValue('100', asset: 'USDT', unit: 'token'),
               plan: _readyFundingPlan,
               orderPreview: preview,
+              symbol: 'NVDAB',
               onClose: () => closed = true,
             ),
           ),
@@ -327,7 +375,7 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextField).first, '100');
-    await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
     await tester.pumpAndSettle();
@@ -357,7 +405,7 @@ void main() {
       );
 
       await tester.enterText(find.byType(TextField).first, '100');
-      await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
       await tester.pump();
@@ -441,6 +489,21 @@ final class _FilledOrdersRepository extends _DelayedOrdersRepository {
   );
 }
 
+final class _QuotedOrdersRepository extends _DelayedOrdersRepository {
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async => OrderPreview(
+    previewId: 'live-quote',
+    intent: intent,
+    orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+    estimatedQuantity: DecimalValue('0.54', asset: 'NVDAB', unit: 'token'),
+    fee: DecimalValue('0.02', asset: 'NVDAB', unit: 'token'),
+    settlementAsset: 'USDC',
+  );
+}
+
 final class _CapturingOrdersRepository extends _DelayedOrdersRepository {
   OrderIntent? previewIntent;
 
@@ -475,6 +538,18 @@ final _readyFundingPlan = FundingPlan(
   sourceWalletId: 'wallet-1',
   sourceAsset: 'USDC',
   sourceMaximum: DecimalValue('150', asset: 'USDC', unit: 'token'),
+);
+
+final _fundedPreview = OrderPreview(
+  previewId: 'funded-preview',
+  intent: OrderIntent(
+    symbol: 'NVDAB',
+    kind: MarketProductKind.bstock,
+    side: TradingSide.buy,
+    type: TradingOrderType.market,
+    amount: DecimalValue('100', asset: 'USDT', unit: 'token'),
+  ),
+  orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
 );
 
 final class _PreviewCapturingOrdersRepository extends _DelayedOrdersRepository {

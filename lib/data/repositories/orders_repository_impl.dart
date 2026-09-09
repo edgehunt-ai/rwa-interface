@@ -25,7 +25,8 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       _previewRequest(intent),
       idempotencyKey: idempotencyKey,
     );
-    final common = wire.oneOf.value as api.OrderPreviewCommon;
+    final value = wire.oneOf.value;
+    final common = value as api.OrderPreviewCommon;
     return OrderPreview(
       previewId: common.previewId,
       intent: intent,
@@ -40,6 +41,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       fee: _optional(common.fee, 'fee'),
       marginRequired: _optional(common.marginRequired, 'margin'),
       liquidationPrice: _optional(common.liquidationPrice, 'price'),
+      settlementAsset: switch (value) {
+        api.BstockOrderPreview(:final settlementAsset) => settlementAsset.name,
+        api.PerpOrderPreview(:final settlementAsset) => settlementAsset.name,
+        _ => null,
+      },
       priceUpdated: common.priceUpdated ?? false,
       expiresAt: common.quoteExpiresAt?.toUtc(),
     );

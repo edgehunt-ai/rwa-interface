@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/application_state.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -17,6 +14,7 @@ import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
+import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
@@ -35,20 +33,16 @@ enum TradeChartStyle { line, candle, reference }
 class TradeScreen extends ConsumerStatefulWidget {
   const TradeScreen({
     super.key,
-    this.hasFundingInProgress = false,
     this.symbol,
     this.initialKind = MarketProductKind.bstock,
   });
 
-  final bool hasFundingInProgress;
   final String? symbol;
   final MarketProductKind initialKind;
 
   @override
   ConsumerState<TradeScreen> createState() => _TradeScreenState();
 }
-
-enum _TradeOrderOutcome { success, failure }
 
 class _TradeScreenState extends ConsumerState<TradeScreen> {
   TradeChartStyle chartStyle = TradeChartStyle.line;
@@ -57,19 +51,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   late MarketProductKind productKind;
   late String symbol;
   var _orderPanelOpen = false;
-  _TradeOrderOutcome? _orderOutcome;
-  Timer? _orderOutcomeTimer;
-
-  void _showOrderOutcome(_TradeOrderOutcome outcome) {
-    _orderOutcomeTimer?.cancel();
-    setState(() => _orderOutcome = outcome);
-    _orderOutcomeTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && _orderOutcome == outcome) {
-        setState(() => _orderOutcome = null);
-      }
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -82,17 +63,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   static String _defaultSymbolFor(MarketProductKind kind) =>
       kind == MarketProductKind.perp ? 'NVDA' : 'NVDAB';
 
-  void _changeProductKind(MarketProductKind kind) {
+  void _changeProduct(MarketProduct product) {
     setState(() {
-      if (productKind != kind) symbol = _defaultSymbolFor(kind);
-      productKind = kind;
+      symbol = product.symbol;
+      productKind = product.kind;
     });
-  }
-
-  @override
-  void dispose() {
-    _orderOutcomeTimer?.cancel();
-    super.dispose();
   }
 
   Future<void> _openOrderPanel(TradingSide side) async {
@@ -114,11 +89,31 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final productQuery = (query: _underlyingSymbol(symbol), cursor: null);
+    final productsState = ref.watch(marketProductsProvider(productQuery));
+    final availableProducts = productsState.value?.items
+        .where(
+          (product) => _underlyingSymbol(product.symbol) == productQuery.query,
+        )
+        .toList(growable: false);
+    if (availableProducts case final products? when products.isNotEmpty) {
+      final activeProduct = products.where(
+        (product) => product.kind == productKind && product.symbol == symbol,
+      );
+      if (activeProduct.isEmpty) {
+        final fallback = products.first;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _changeProduct(fallback);
+        });
+      }
+    }
     final productRef = MarketProductRef(symbol: symbol, kind: productKind);
-    final snapshot = ref.watch(marketSnapshotProvider(productRef)).value;
-    final candles = ref
-        .watch(marketCandlesProvider((product: productRef, interval: '1d')))
-        .value;
+    final snapshotState = ref.watch(marketSnapshotProvider(productRef));
+    final candlesState = ref.watch(
+      marketCandlesProvider((product: productRef, interval: '1d')),
+    );
+    final snapshot = snapshotState.value;
+    final candles = candlesState.value;
     ref.listen<CommandState<OrderIntent, ResourceResult<TradingOrder>>>(
       orderCommandProvider,
       (_, next) {
@@ -126,10 +121,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         switch (next) {
           case CommandAccepted(intent: final intent)
               when intent.kind == MarketProductKind.bstock:
-            _showOrderOutcome(_TradeOrderOutcome.success);
+            AppToast.showSuccess(context, '$symbol Buy Successful!');
           case CommandFailure(intent: final intent)
               when intent.kind == MarketProductKind.bstock:
-            _showOrderOutcome(_TradeOrderOutcome.failure);
+            AppToast.showFailure(context, '$symbol Buy Failed!');
           default:
             break;
         }
@@ -147,25 +142,12 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   onMarketHours: () => setState(() => marketHoursOpen = true),
                 ),
                 const SizedBox(height: 16),
-                _ProductSwitch(
-                  kind: productKind,
-                  onChanged: _changeProductKind,
-                ),
-                const SizedBox(height: 16),
-                if (widget.hasFundingInProgress && detailTab == 'Details') ...[
-                  _FundingInProgressBanner(
-                    onDetails: () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (_) => BstocksTransferFlowSheet(
-                        amountNeeded: DecimalValue(
-                          '100',
-                          asset: 'USDT',
-                          unit: 'token',
-                        ),
-                        initialStage: BstocksTransferFlowStage.fundingPending,
-                      ),
-                    ),
+                if (availableProducts case final products?
+                    when products.length > 1) ...[
+                  _ProductSwitch(
+                    products: products,
+                    kind: productKind,
+                    onChanged: _changeProduct,
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -174,6 +156,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   kind: productKind,
                   chartStyle: chartStyle,
                   snapshot: snapshot,
+                  loading: snapshotState.isLoading,
                   onMarketHours: () => setState(() => marketHoursOpen = true),
                 ),
                 const SizedBox(height: 12),
@@ -183,7 +166,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   onStyleChanged: (next) => setState(() => chartStyle = next),
                 ),
                 const SizedBox(height: 16),
-                _Statistics(candles: candles),
+                _Statistics(candles: candles, loading: candlesState.isLoading),
                 const SizedBox(height: 16),
                 _Details(
                   activeTab: detailTab,
@@ -207,105 +190,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
               _MarketHoursSheet(
                 onClose: () => setState(() => marketHoursOpen = false),
               ),
-            if (_orderOutcome case final outcome?)
-              Positioned(
-                top: 2,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: _TradeOrderToast(symbol: symbol, outcome: outcome),
-                ),
-              ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _TradeOrderToast extends StatelessWidget {
-  const _TradeOrderToast({required this.symbol, required this.outcome});
-
-  final String symbol;
-  final _TradeOrderOutcome outcome;
-
-  @override
-  Widget build(BuildContext context) {
-    final isSuccess = outcome == _TradeOrderOutcome.success;
-    final message = isSuccess
-        ? '$symbol Buy Successful!'
-        : '$symbol Buy Failed!';
-    return Semantics(
-      liveRegion: true,
-      label: message,
-      child: Container(
-        width: 313,
-        constraints: const BoxConstraints(minHeight: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xCC1D1D24),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              isSuccess
-                  ? 'assets/figma/trade/order_success_toast.svg'
-                  : 'assets/figma/trade/order_failed.svg',
-              width: 20,
-              height: 20,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FundingInProgressBanner extends StatelessWidget {
-  const _FundingInProgressBanner({required this.onDetails});
-
-  final VoidCallback onDetails;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colors.selectedSoft,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.sync, size: 20),
-          const SizedBox(width: 8),
-          const Expanded(
-            child: Text(
-              '1 funding in progress',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: onDetails,
-            iconAlignment: IconAlignment.end,
-            icon: const Icon(Icons.chevron_right, size: 16),
-            label: const Text('Details'),
-          ),
-        ],
       ),
     );
   }
@@ -355,16 +241,16 @@ class _NavigationBar extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE7F1FB),
+                            color: const Color(0xFFDCEBFA),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              SvgPicture.asset(
-                                'assets/figma/trade/session_overnight.svg',
-                                width: 16,
-                                height: 16,
+                              const Icon(
+                                Icons.nightlight_round,
+                                size: 16,
+                                color: Color(0xFF2690E6),
                               ),
                               const SizedBox(width: 4),
                               const Text(
@@ -390,10 +276,15 @@ class _NavigationBar extends StatelessWidget {
 }
 
 class _ProductSwitch extends StatelessWidget {
-  const _ProductSwitch({required this.kind, required this.onChanged});
+  const _ProductSwitch({
+    required this.products,
+    required this.kind,
+    required this.onChanged,
+  });
 
+  final List<MarketProduct> products;
   final MarketProductKind kind;
-  final ValueChanged<MarketProductKind> onChanged;
+  final ValueChanged<MarketProduct> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -407,22 +298,19 @@ class _ProductSwitch extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: _Segment(
-              label: 'bStocks',
-              asset: 'assets/figma/home_markets/venue_bnb.svg',
-              selected: kind == MarketProductKind.bstock,
-              onTap: () => onChanged(MarketProductKind.bstock),
+          for (final product in products)
+            Expanded(
+              child: _Segment(
+                label: product.kind == MarketProductKind.bstock
+                    ? 'bStocks'
+                    : 'HIP-3 Perp',
+                asset: product.kind == MarketProductKind.bstock
+                    ? 'assets/figma/home_markets/venue_bnb.svg'
+                    : 'assets/figma/home_markets/venue_hyperliquid.svg',
+                selected: kind == product.kind,
+                onTap: () => onChanged(product),
+              ),
             ),
-          ),
-          Expanded(
-            child: _Segment(
-              label: 'HIP-3 Perp',
-              asset: 'assets/figma/home_markets/venue_hyperliquid.svg',
-              selected: kind == MarketProductKind.perp,
-              onTap: () => onChanged(MarketProductKind.perp),
-            ),
-          ),
         ],
       ),
     );
@@ -478,12 +366,14 @@ class _ProductHeader extends StatelessWidget {
     required this.kind,
     required this.chartStyle,
     required this.snapshot,
+    required this.loading,
     required this.onMarketHours,
   });
   final String symbol;
   final MarketProductKind kind;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
+  final bool loading;
   final VoidCallback onMarketHours;
 
   @override
@@ -510,11 +400,7 @@ class _ProductHeader extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SvgPicture.asset(
-              'assets/figma/trade/favorite.svg',
-              width: 18,
-              height: 18,
-            ),
+            const Icon(Icons.arrow_drop_down, size: 20),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: onMarketHours,
@@ -532,10 +418,10 @@ class _ProductHeader extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    SvgPicture.asset(
-                      'assets/figma/trade/availability_247.svg',
-                      width: 14,
-                      height: 14,
+                    const Icon(
+                      Icons.storefront,
+                      size: 15,
+                      color: Color(0xFFFF9654),
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -557,17 +443,27 @@ class _ProductHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            Text(
-              price == null ? '—' : TokenAmountFormatter.formatUsd(price),
-              style: TextStyle(
-                color: price == null ? null : semantic.success,
-                fontWeight: FontWeight.w700,
-                fontSize: 24,
-                height: 30 / 24,
+            if (loading)
+              const SkeletonBlock(
+                key: Key('trade-price-skeleton'),
+                width: 108,
+                height: 24,
+                radius: 4,
+              )
+            else
+              Text(
+                price == null ? '—' : TokenAmountFormatter.formatUsd(price),
+                style: TextStyle(
+                  color: price == null ? null : semantic.success,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  height: 30 / 24,
+                ),
               ),
-            ),
             const SizedBox(width: 4),
-            if (change != null)
+            if (loading)
+              const SkeletonBlock(width: 44, height: 20, radius: 6)
+            else if (change != null)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -868,8 +764,9 @@ class _DashedLinePainter extends CustomPainter {
 }
 
 class _Statistics extends StatelessWidget {
-  const _Statistics({required this.candles});
+  const _Statistics({required this.candles, required this.loading});
   final CandleChart? candles;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -883,10 +780,10 @@ class _Statistics extends StatelessWidget {
       runSpacing: 8,
       alignment: WrapAlignment.spaceBetween,
       children: [
-        _Metric('24h High', _high),
-        _Metric('24h Low', _low),
-        _Metric('24h Turnover', '—'),
-        _Metric('24h Volume', _volume),
+        _Metric('24h High', _high, loading: loading),
+        _Metric('24h Low', _low, loading: loading),
+        _Metric('24h Turnover', '—', loading: loading),
+        _Metric('24h Volume', _volume, loading: loading),
       ],
     ),
   );
@@ -973,23 +870,27 @@ class _ProductMark extends StatelessWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric(this.label, this.value);
+  const _Metric(this.label, this.value, {this.loading = false});
   final String label;
   final String value;
+  final bool loading;
   @override
   Widget build(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(label, style: const TextStyle(fontSize: 11, height: 14 / 11)),
-      Text(
-        value,
-        style: const TextStyle(
-          fontSize: 12,
-          height: 16 / 12,
-          fontWeight: FontWeight.w600,
+      if (loading)
+        const SkeletonBlock(width: 58, height: 12, radius: 4)
+      else
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            height: 16 / 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-      ),
     ],
   );
 }

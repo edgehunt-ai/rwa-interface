@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,9 +42,8 @@ void main() {
   testWidgets('Trade switches chart states and exposes market hours', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const TradeScreen())),
-    );
+    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpAndSettle();
 
     expect(find.text('NVDAB'), findsOneWidget);
     expect(find.text('Details'), findsOneWidget);
@@ -84,23 +85,32 @@ void main() {
     },
   );
 
-  testWidgets('Trade remains usable at enlarged text with safe references', (
+  testWidgets('Trade shows field skeletons while market data loads', (
     tester,
   ) async {
+    const product = MarketProductRef(
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+    );
+    final snapshot = Completer<MarketSnapshot>();
     await tester.pumpWidget(
       ProviderScope(
-        child: buildTestApp(
-          MediaQuery(
-            data: const MediaQueryData(textScaler: TextScaler.linear(1.5)),
-            child: const TradeScreen(hasFundingInProgress: true),
-          ),
-        ),
+        overrides: [
+          marketSnapshotProvider(product).overrideWith((_) => snapshot.future),
+        ],
+        child: buildTestApp(const TradeScreen()),
       ),
     );
-    await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-    expect(find.text('1 funding in progress'), findsOneWidget);
+    expect(find.byKey(const Key('trade-price-skeleton')), findsOneWidget);
+    expect(
+      find.byKey(const Key('trade-details-price-skeleton')),
+      findsOneWidget,
+    );
+
+    snapshot.complete(MarketSnapshot(price: DecimalValue('191.25')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
   });
 
   testWidgets(
@@ -183,9 +193,8 @@ void main() {
   testWidgets('Trade routes HIP-3 actions to the perpetual order panel', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const TradeScreen())),
-    );
+    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
@@ -199,9 +208,8 @@ void main() {
   testWidgets('Trade preserves the HIP-3 short side when opening its panel', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const TradeScreen())),
-    );
+    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
@@ -222,16 +230,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Buy NVDAB'), findsWidgets);
-    expect(find.text('Market'), findsOneWidget);
-    expect(find.text('Limit'), findsOneWidget);
+    expect(find.text('Limit'), findsNothing);
   });
 
   testWidgets('Trade preserves the bStocks sell side when opening its panel', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const TradeScreen())),
-    );
+    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(FilledButton, 'Sell'));
     await tester.pumpAndSettle();
@@ -239,37 +245,33 @@ void main() {
     expect(find.text('Sell NVDAB'), findsWidgets);
   });
 
-  testWidgets(
-    'Trade bStocks funding recovery starts from the buy entry point',
-    (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(child: buildTestApp(const TradeScreen())),
-      );
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Buy'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField).first, '1001');
-      await tester.tap(find.widgetWithText(FilledButton, 'Buy NVDAB'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Amount Needed'), findsOneWidget);
-      expect(find.text('In-App Transfer'), findsOneWidget);
-      expect(find.text('External Deposit'), findsOneWidget);
-    },
-  );
-
   testWidgets('Trade renders HIP-3-specific price and rights disclosures', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const TradeScreen())),
-    );
+    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpAndSettle();
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
 
     expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
     expect(find.text('Price Exposure Only'), findsOneWidget);
   });
+
+  testWidgets(
+    'Trade hides the market switch when only one market is available',
+    (tester) async {
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          products: [_marketProduct('NVDA', MarketProductKind.perp)],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('bStocks'), findsNothing);
+      expect(find.text('HIP-3 Perp'), findsNothing);
+      expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
+    },
+  );
 
   testWidgets('TP/SL editor submits position updates through the provider', (
     tester,
@@ -346,32 +348,6 @@ void main() {
       expect(repository.cancelledOrderId, 'open-order');
     },
   );
-
-  testWidgets('funding-in-progress banner opens its recoverable status sheet', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        child: buildTestApp(const TradeScreen(hasFundingInProgress: true)),
-      ),
-    );
-
-    expect(find.text('1 funding in progress'), findsOneWidget);
-    await tester.tap(
-      find.descendant(
-        of: find
-            .ancestor(
-              of: find.text('1 funding in progress'),
-              matching: find.byType(Container),
-            )
-            .first,
-        matching: find.widgetWithText(TextButton, 'Details'),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Preparing Trading Funds...'), findsOneWidget);
-  });
 }
 
 Position _position(MarketProductKind kind) => Position(
@@ -383,6 +359,34 @@ Position _position(MarketProductKind kind) => Position(
   valueUsd: DecimalValue('100', asset: 'USDC', unit: 'token'),
   entryPrice: DecimalValue('175', asset: 'USDC', unit: 'price'),
 );
+
+Widget _tradeWithMarkets({List<MarketProduct>? products}) => ProviderScope(
+  overrides: [
+    marketProductsProvider((query: 'NVDA', cursor: null)).overrideWith(
+      (_) async => DomainPage(
+        items:
+            products ??
+            [
+              _marketProduct('NVDAB', MarketProductKind.bstock),
+              _marketProduct('NVDA', MarketProductKind.perp),
+            ],
+        hasMore: false,
+      ),
+    ),
+  ],
+  child: buildTestApp(const TradeScreen()),
+);
+
+MarketProduct _marketProduct(String symbol, MarketProductKind kind) =>
+    MarketProduct(
+      symbol: symbol,
+      name: symbol,
+      kind: kind,
+      price: DecimalValue('100', asset: 'USD', unit: 'price'),
+      settlementAsset: kind == MarketProductKind.bstock ? 'USDT' : 'USDC',
+      network: kind == MarketProductKind.bstock ? 'BSC' : 'Hyperliquid',
+      tradable: true,
+    );
 
 final _bstockIntent = OrderIntent(
   symbol: 'NVDAB',

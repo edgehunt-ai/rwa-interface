@@ -92,6 +92,7 @@ void main() {
       final preview = await container.read(orderPreviewProvider(intent).future);
       expect(preview.previewId, 'preview-1');
       expect(preview.fee?.value, '0.1');
+      expect(preview.settlementAsset, 'USDT');
 
       final notifier = container.read(orderCommandProvider.notifier);
       final submitted = await Future.wait([

@@ -13,6 +13,7 @@ final class OrderPreview {
     this.fee,
     this.marginRequired,
     this.liquidationPrice,
+    this.settlementAsset,
     this.priceUpdated = false,
     this.expiresAt,
   });
@@ -26,6 +27,7 @@ final class OrderPreview {
   final DecimalValue? fee;
   final DecimalValue? marginRequired;
   final DecimalValue? liquidationPrice;
+  final String? settlementAsset;
   final bool priceUpdated;
   final DateTime? expiresAt;
   bool get isExpired => expiresAt?.isBefore(DateTime.now().toUtc()) ?? false;

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -9,32 +12,17 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
+import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
+import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
+import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 part 'bstocks_funding_required.dart';
 part 'bstocks_transfer_flow.dart';
-
-DecimalValue _decimalFromCents(int cents) {
-  final negative = cents.isNegative;
-  final digits = cents.abs().toString().padLeft(3, '0');
-  final value =
-      '${digits.substring(0, digits.length - 2)}.'
-      '${digits.substring(digits.length - 2)}';
-  return DecimalValue(negative ? '-$value' : value, asset: 'USD', unit: 'fiat');
-}
-
-int? _centsFromPrice(String input) {
-  final match = RegExp(r'^(\d+)(?:\.(\d{1,2}))?$').firstMatch(input.trim());
-  if (match == null) return null;
-  final whole = int.tryParse(match.group(1)!);
-  if (whole == null) return null;
-  final fraction = (match.group(2) ?? '').padRight(2, '0');
-  return whole * 100 + int.parse(fraction);
-}
 
 class BstocksOrderPanel extends ConsumerStatefulWidget {
   const BstocksOrderPanel({
@@ -50,25 +38,73 @@ class BstocksOrderPanel extends ConsumerStatefulWidget {
 }
 
 class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
-  static const _marketPriceCents = 18800;
   final amount = TextEditingController();
   final limitPrice = TextEditingController();
   late TradingSide side;
   var type = TradingOrderType.market;
-  var percentage = 20;
+  var percentage = 0.0;
+  var slippage = 0.12;
   OrderPreview? preview;
+  OrderPreview? quotePreview;
   TradingOrder? submittedOrder;
   String? error;
   bool reviewing = false;
+  Timer? _quoteDebounce;
+  var _quoteGeneration = 0;
+  var _quoting = false;
 
   @override
   void initState() {
     super.initState();
     side = widget.initialSide;
+    amount.addListener(_refreshAmount);
+    limitPrice.addListener(_scheduleQuote);
+  }
+
+  void _refreshAmount() {
+    setState(() {});
+    _scheduleQuote();
+  }
+
+  void _scheduleQuote() {
+    _quoteDebounce?.cancel();
+    final generation = ++_quoteGeneration;
+    final intent = _intentFromFields();
+    if (intent == null) {
+      if (quotePreview != null || _quoting) {
+        setState(() {
+          quotePreview = null;
+          _quoting = false;
+        });
+      }
+      return;
+    }
+    if (!_quoting) setState(() => _quoting = true);
+    _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final quote = await ref.read(orderPreviewProvider(intent).future);
+        if (mounted && generation == _quoteGeneration) {
+          setState(() {
+            quotePreview = quote;
+            _quoting = false;
+          });
+        }
+      } on Object {
+        if (mounted && generation == _quoteGeneration) {
+          setState(() {
+            quotePreview = null;
+            _quoting = false;
+          });
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
+    _quoteDebounce?.cancel();
+    amount.removeListener(_refreshAmount);
+    limitPrice.removeListener(_scheduleQuote);
     amount.dispose();
     limitPrice.dispose();
     super.dispose();
@@ -80,80 +116,19 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       setState(() => error = 'Enter a valid order value.');
       return;
     }
-    DecimalValue? price;
-    if (type == TradingOrderType.limit) {
-      final rawPrice = limitPrice.text.trim();
-      if (rawPrice.isEmpty || !_isDecimal(rawPrice)) {
-        setState(() => error = 'Enter a valid limit price.');
-        return;
-      }
-      price = DecimalValue(rawPrice, asset: 'USD', unit: 'fiat');
+    if (type == TradingOrderType.limit &&
+        (limitPrice.text.trim().isEmpty ||
+            !_isDecimal(limitPrice.text.trim()))) {
+      setState(() => error = 'Enter a valid limit price.');
+      return;
     }
-    final sellsBstocks = side == TradingSide.sell;
-    final intent = OrderIntent(
-      symbol: widget.symbol,
-      kind: MarketProductKind.bstock,
-      side: side,
-      type: type,
-      amount: type == TradingOrderType.market && !sellsBstocks
-          ? DecimalValue(amountValue, asset: 'USDT', unit: 'token')
-          : null,
-      quantity: type == TradingOrderType.limit || sellsBstocks
-          ? DecimalValue(amountValue, asset: widget.symbol, unit: 'token')
-          : null,
-      limitPrice: price,
-    );
-    final requestedAmount = DecimalValue(
-      amountValue,
-      asset: 'USDT',
-      unit: 'token',
-    );
-    final availableBalance = DecimalValue('1000', asset: 'USDT', unit: 'token');
-    if (type == TradingOrderType.market &&
-        requestedAmount.compareTo(availableBalance) > 0) {
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (sheetContext) => BstocksFundingRequiredSheet(
-          amountNeeded: requestedAmount,
-          onInAppTransfer: () async {
-            Navigator.of(sheetContext).pop();
-            setState(() {
-              error = null;
-              reviewing = true;
-            });
-            try {
-              final plannedOrder = await ref.read(
-                orderPreviewProvider(intent).future,
-              );
-              final plan = await ref
-                  .read(fundingTransferCommandsProvider)
-                  .plan(tradePreviewId: plannedOrder.previewId);
-              if (!mounted) return;
-              await showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => BstocksTransferFlowSheet(
-                  amountNeeded: requestedAmount,
-                  plan: plan,
-                  orderPreview: plannedOrder,
-                  symbol: widget.symbol,
-                ),
-              );
-            } on Object {
-              if (mounted) {
-                setState(() => error = 'Unable to prepare funding. Try again.');
-              }
-            } finally {
-              if (mounted) setState(() => reviewing = false);
-            }
-          },
-          onExternalDeposit: () {
-            Navigator.of(sheetContext).pop();
-            context.pushNamed(AppRoutes.depositName);
-          },
-        ),
-      );
+    final intent = _intentFromFields()!;
+    final cachedQuote = quotePreview;
+    if (cachedQuote?.intent.fingerprint == intent.fingerprint) {
+      setState(() {
+        error = null;
+        preview = cachedQuote;
+      });
       return;
     }
     setState(() {
@@ -174,6 +149,33 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         setState(() => reviewing = false);
       }
     }
+  }
+
+  OrderIntent? _intentFromFields() {
+    final amountValue = amount.text.trim();
+    if (amountValue.isEmpty || !_isDecimal(amountValue)) return null;
+    final rawPrice = limitPrice.text.trim();
+    if (type == TradingOrderType.limit &&
+        (rawPrice.isEmpty || !_isDecimal(rawPrice))) {
+      return null;
+    }
+    final sellsBstocks = side == TradingSide.sell;
+    return OrderIntent(
+      symbol: widget.symbol,
+      kind: MarketProductKind.bstock,
+      side: side,
+      type: type,
+      amount: type == TradingOrderType.market && !sellsBstocks
+          ? DecimalValue(amountValue, asset: 'USDT', unit: 'token')
+          : null,
+      quantity: type == TradingOrderType.limit || sellsBstocks
+          ? DecimalValue(amountValue, asset: widget.symbol, unit: 'token')
+          : null,
+      limitPrice: type == TradingOrderType.limit
+          ? DecimalValue(rawPrice, asset: 'USD', unit: 'fiat')
+          : null,
+      slippage: DecimalValue(slippage.toString(), unit: 'percent'),
+    );
   }
 
   Future<void> _submit() async {
@@ -197,32 +199,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     });
   }
 
-  Future<void> _selectOrderType(TradingOrderType nextType) async {
-    if (nextType == type) return;
-    if (nextType == TradingOrderType.market) {
-      setState(() => type = nextType);
-      return;
-    }
-
-    final selectedPrice = await showModalBottomSheet<int>(
+  Future<void> _editSlippage() async {
+    final next = await showModalBottomSheet<double>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => BstocksLimitPriceSheet(
-        marketPriceCents: _marketPriceCents,
-        initialPriceCents:
-            _centsFromPrice(limitPrice.text) ?? _marketPriceCents,
-      ),
+      builder: (_) => _SlippageSheet(initialValue: slippage),
     );
-    if (!mounted) return;
-    setState(() {
-      type = TradingOrderType.limit;
-      // Back deliberately discards slider changes and uses the current market
-      // price, as annotated in the Figma limit-price sheet.
-      limitPrice.text = TokenAmountFormatter.formatFixed(
-        _decimalFromCents(selectedPrice ?? _marketPriceCents),
-        decimals: 2,
-      );
-    });
+    if (next == null || !mounted) return;
+    setState(() => slippage = next);
+    _scheduleQuote();
   }
 
   @override
@@ -245,106 +230,228 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     ),
   );
 
-  Widget _form(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
+  Widget _form(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final success = Theme.of(context).extension<AppSemanticColors>()!.success;
+    final isBuy = side == TradingSide.buy;
+    final amountAsset = type == TradingOrderType.market && isBuy
+        ? quotePreview?.settlementAsset ?? 'USDT'
+        : widget.symbol;
+    final enteredAmount = amount.text.trim();
+    final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
+    final portfolio = ref.watch(portfolioSummaryProvider);
+    final balance = _availableBalance(portfolio.value);
+    final receive =
+        quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
+    final fee = quotePreview?.fee;
+    final formHeight =
+        490.0 +
+        (type == TradingOrderType.limit ? 64 : 0) +
+        (error != null ? 52 : 0);
+    return SizedBox(
+      height: formHeight,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .extension<AppSemanticColors>()!
+                      .success,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${side == TradingSide.buy ? 'Buy' : 'Sell'} ${widget.symbol}',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.keyboard_double_arrow_down, size: 24),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _ChoiceRow<TradingSide>(
+                key: const Key('bstocks-side-tabs'),
+                width: 123,
+                values: const [TradingSide.buy, TradingSide.sell],
+                selected: side,
+                selectedColor: success,
+                selectedForeground: Colors.white,
+                label: (value) => value == TradingSide.buy ? 'Buy' : 'Sell',
+                onChanged: (value) {
+                  setState(() => side = value);
+                  _scheduleQuote();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           Container(
-            width: 8,
-            height: 8,
+            height: 93,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).extension<AppSemanticColors>()!.success,
-              shape: BoxShape.circle,
+              color: colors.subtleSurface,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      type == TradingOrderType.market && isBuy
+                          ? 'Order Value'
+                          : type == TradingOrderType.limit
+                          ? 'Quantity'
+                          : 'Amount',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: colors.secondaryText,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Balance: ',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        if (portfolio.isLoading)
+                          const SkeletonBlock(
+                            key: Key('bstocks-balance-skeleton'),
+                            width: 56,
+                            height: 12,
+                            radius: 4,
+                          )
+                        else
+                          Text(
+                            balance ?? '—',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 36,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: amount,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          style: Theme.of(context).textTheme.titleLarge,
+                          decoration: const InputDecoration(
+                            hintText: '0.0',
+                            filled: false,
+                            contentPadding: EdgeInsets.zero,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        amountAsset,
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                _PercentageSlider(
+                  value: percentage,
+                  onChanged: (value) => setState(() => percentage = value),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            '${side == TradingSide.buy ? 'Buy' : 'Sell'} ${widget.symbol}',
-            style: Theme.of(context).textTheme.titleLarge,
+          if (type == TradingOrderType.limit) ...[
+            const SizedBox(height: 8),
+            TextField(
+              controller: limitPrice,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Limit Price',
+                prefixText: r'$',
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          _OutlinedSummaryRow(
+            label: 'will receive',
+            value: _quoting
+                ? const SkeletonBlock(width: 76, height: 14, radius: 4)
+                : Text(
+                    receive == null
+                        ? '- ${widget.symbol}'
+                        : TokenAmountFormatter.format(
+                            receive,
+                            symbol: widget.symbol,
+                          ),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
           ),
+          if (error case final error?) ...[
+            const SizedBox(height: 8),
+            _OrderFailureNotice(message: error),
+          ],
+          const SizedBox(height: 16),
+          Divider(color: colors.subtleSurface),
+          const SizedBox(height: 14),
+          _SlippageRow(value: slippage, onEdit: _editSlippage),
+          if (_quoting)
+            const _LoadingSummaryRow(label: 'Estimated Fee')
+          else
+            _SummaryRow(
+              label: 'Estimated Fee',
+              value: fee == null
+                  ? '-'
+                  : TokenAmountFormatter.format(
+                      fee,
+                      symbol: fee.asset ?? widget.symbol,
+                    ),
+            ),
           const Spacer(),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              key: const Key('bstocks-primary-order-action'),
+              style: FilledButton.styleFrom(backgroundColor: success),
+              onPressed: reviewing ? null : _review,
+              child: Text(
+                reviewing
+                    ? 'Preparing order…'
+                    : '${isBuy ? 'Buy' : 'Sell'} ${widget.symbol} · \$$buttonAmount',
+              ),
+            ),
           ),
         ],
       ),
-      const SizedBox(height: 16),
-      _ChoiceRow<TradingSide>(
-        values: const [TradingSide.buy, TradingSide.sell],
-        selected: side,
-        label: (value) => value == TradingSide.buy ? 'Buy' : 'Sell',
-        onChanged: (value) => setState(() => side = value),
-      ),
-      const SizedBox(height: 8),
-      _ChoiceRow<TradingOrderType>(
-        values: const [TradingOrderType.market, TradingOrderType.limit],
-        selected: type,
-        label: (value) => value == TradingOrderType.market ? 'Market' : 'Limit',
-        onChanged: _selectOrderType,
-      ),
-      const SizedBox(height: 12),
-      TextField(
-        controller: amount,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(
-          labelText: type == TradingOrderType.market
-              ? side == TradingSide.sell
-                    ? 'Amount'
-                    : 'Order Value'
-              : 'Quantity',
-          suffixText: type == TradingOrderType.market && side == TradingSide.buy
-              ? 'USDT'
-              : widget.symbol,
-          helperText: side == TradingSide.sell
-              ? 'Balance: 400'
-              : 'Balance: 1,000',
-        ),
-      ),
-      Slider(
-        value: percentage.toDouble(),
-        max: 100,
-        divisions: 5,
-        label: '$percentage%',
-        onChanged: (value) => setState(() => percentage = value.round()),
-      ),
-      if (type == TradingOrderType.limit) ...[
-        TextField(
-          controller: limitPrice,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Limit Price',
-            prefixText: r'$',
-          ),
-        ),
-      ],
-      _BstocksTpSlUnavailable(
-        onTap: () => setState(
-          () => error = AppLocalizations.of(context).bstocksTpSlUnavailable,
-        ),
-      ),
-      const SizedBox(height: 8),
-      _SummaryRow(label: 'You will receive', value: '— ${widget.symbol}'),
-      const Divider(),
-      const _SummaryRow(label: 'Slippage', value: '0.12%'),
-      _SummaryRow(label: 'Estimated Fee', value: '0.5 ${widget.symbol}'),
-      if (error case final error?) ...[
-        const SizedBox(height: 12),
-        _OrderFailureNotice(message: error),
-      ],
-      const SizedBox(height: 16),
-      FilledButton(
-        onPressed: reviewing ? null : _review,
-        child: Text(
-          reviewing
-              ? 'Preparing order…'
-              : '${side == TradingSide.buy ? 'Buy' : 'Sell'} ${widget.symbol}',
-        ),
-      ),
-    ],
-  );
+    );
+  }
 
   Widget _preview(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
@@ -361,7 +468,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       ),
       _SummaryRow(
         label: 'Order value',
-        value: TokenAmountFormatter.format(preview!.orderValue, symbol: 'USDT'),
+        value: TokenAmountFormatter.format(
+          preview!.orderValue,
+          symbol:
+              preview!.orderValue.asset ?? preview!.settlementAsset ?? 'USDT',
+        ),
       ),
       if (preview!.estimatedQuantity case final quantity?)
         _SummaryRow(
@@ -483,145 +594,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   );
 }
 
-class BstocksLimitPriceSheet extends StatefulWidget {
-  const BstocksLimitPriceSheet({
-    super.key,
-    required this.marketPriceCents,
-    required this.initialPriceCents,
-  });
-
-  final int marketPriceCents;
-  final int initialPriceCents;
-
-  @override
-  State<BstocksLimitPriceSheet> createState() => _BstocksLimitPriceSheetState();
-}
-
-class _BstocksLimitPriceSheetState extends State<BstocksLimitPriceSheet> {
-  static const _minimumPriceCents = 15000;
-  static const _maximumPriceCents = 22600;
-  late int priceCents;
-
-  @override
-  void initState() {
-    super.initState();
-    priceCents = widget.initialPriceCents.clamp(
-      _minimumPriceCents,
-      _maximumPriceCents,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final deviationBasisPoints =
-        ((priceCents - widget.marketPriceCents) * 10000) ~/
-        widget.marketPriceCents;
-    return Material(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.chevron_left),
-                    tooltip: l10n.back,
-                  ),
-                  Text(
-                    l10n.limitPrice,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              Text(l10n.limitPrice, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text(
-                TokenAmountFormatter.formatUsd(_decimalFromCents(priceCents)),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 8),
-              Center(child: Chip(label: Text(l10n.market))),
-              const SizedBox(height: 20),
-              Semantics(
-                label: l10n.dragToSet,
-                child: Slider(
-                  value: priceCents.toDouble(),
-                  min: _minimumPriceCents.toDouble(),
-                  max: _maximumPriceCents.toDouble(),
-                  divisions: 76 * 100,
-                  label: TokenAmountFormatter.formatUsd(
-                    _decimalFromCents(priceCents),
-                  ),
-                  onChanged: (value) =>
-                      setState(() => priceCents = value.round()),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${l10n.market} ${TokenAmountFormatter.formatUsd(_decimalFromCents(widget.marketPriceCents))}',
-                  ),
-                  Text(
-                    '${l10n.priceDeviation} ${TokenAmountFormatter.formatPercent(DecimalValue((deviationBasisPoints ~/ 100).toString(), asset: '%', unit: 'percent'))}',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(l10n.back),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () => Navigator.of(context).pop(priceCents),
-                      child: Text(l10n.confirm),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BstocksTpSlUnavailable extends StatelessWidget {
-  const _BstocksTpSlUnavailable({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Semantics(
-      button: true,
-      label: l10n.takeProfitStopLoss,
-      child: TextButton.icon(
-        onPressed: onTap,
-        icon: const Icon(Icons.add_circle_outline, size: 20),
-        label: Text('${l10n.takeProfitStopLoss} · ${l10n.add}'),
-      ),
-    );
-  }
-}
-
 bool _isDecimal(String value) {
   try {
     DecimalValue(value);
@@ -631,32 +603,386 @@ bool _isDecimal(String value) {
   }
 }
 
+String? _availableBalance(Portfolio? portfolio) => portfolio == null
+    ? null
+    : TokenAmountFormatter.formatUsd(portfolio.availableToTradeUsd);
+
 class _ChoiceRow<T> extends StatelessWidget {
   const _ChoiceRow({
+    super.key,
+    required this.width,
     required this.values,
     required this.selected,
     required this.label,
     required this.onChanged,
+    this.selectedColor,
+    this.selectedForeground,
   });
+  final double width;
   final List<T> values;
   final T selected;
   final String Function(T value) label;
   final ValueChanged<T> onChanged;
+  final Color? selectedColor;
+  final Color? selectedForeground;
+
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      for (final value in values)
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: ChoiceChip(
-              label: Text(label(value)),
-              selected: selected == value,
-              onSelected: (_) => onChanged(value),
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final widths = width < 140 ? const [56.0, 55.0] : const [77.0, 63.0];
+    final selectedIndex = values.indexOf(selected);
+    final selectionLeft = selectedIndex == 0 ? 0.0 : widths.first + 4.0;
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      child: Container(
+        width: width,
+        height: 44,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: colors.subtleSurface,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Stack(
+          children: [
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              left: selectionLeft,
+              top: 0,
+              width: widths[selectedIndex],
+              height: 36,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: selectedColor ?? colors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                for (var index = 0; index < values.length; index++)
+                  SizedBox(
+                    width: widths[index],
+                    height: 36,
+                    child: Semantics(
+                      button: true,
+                      inMutuallyExclusiveGroup: true,
+                      selected: selected == values[index],
+                      label: label(values[index]),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => onChanged(values[index]),
+                          child: Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 180),
+                              curve: Curves.easeOutCubic,
+                              style: Theme.of(context).textTheme.labelMedium!
+                                  .copyWith(
+                                    color: selected == values[index]
+                                        ? selectedForeground ??
+                                              colors.primaryText
+                                        : colors.secondaryText,
+                                    fontWeight: selected == values[index]
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                  ),
+                              child: Text(
+                                label(values[index]),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PercentageSlider extends StatelessWidget {
+  const _PercentageSlider({required this.value, required this.onChanged});
+
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const badgeWidth = 36.0;
+        final badgeLeft = (constraints.maxWidth - badgeWidth) * (value / 100);
+        return SizedBox(
+          height: 20,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: colors.primaryAction,
+                  inactiveTrackColor: colors.surface,
+                  trackHeight: 8,
+                  thumbColor: colors.primaryAction,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 0,
+                  ),
+                  overlayShape: SliderComponentShape.noOverlay,
+                ),
+                child: Slider(
+                  key: const Key('bstocks-percentage-slider'),
+                  value: value.toDouble(),
+                  max: 100,
+                  onChanged: onChanged,
+                ),
+              ),
+              for (final stop in const [25.0, 50.0, 75.0])
+                Positioned(
+                  left: (constraints.maxWidth - 6) * (stop / 100),
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: colors.subtleSurface,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ),
+              Positioned(
+                left: badgeLeft,
+                child: IgnorePointer(
+                  child: Container(
+                    width: badgeWidth,
+                    height: 18,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: colors.primaryAction,
+                      border: Border.all(color: colors.surface, width: 2),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Text(
+                      '${value.round()}%',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        height: 1,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _OutlinedSummaryRow extends StatelessWidget {
+  const _OutlinedSummaryRow({required this.label, required this.value});
+
+  final String label;
+  final Widget value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: colors.secondaryText)),
+          value,
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingSummaryRow extends StatelessWidget {
+  const _LoadingSummaryRow({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(child: Text(label)),
+        const SkeletonBlock(width: 52, height: 14, radius: 4),
+      ],
+    ),
+  );
+}
+
+class _SlippageRow extends StatelessWidget {
+  const _SlippageRow({required this.value, required this.onEdit});
+
+  final double value;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Slippage',
+              style: TextStyle(color: colors.secondaryText),
             ),
           ),
+          Text('$value%', style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(width: 2),
+          IconButton(
+            key: const Key('bstocks-edit-slippage'),
+            tooltip: 'Edit slippage',
+            onPressed: onEdit,
+            icon: const Icon(Icons.edit_outlined, size: 16),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SlippageSheet extends StatefulWidget {
+  const _SlippageSheet({required this.initialValue});
+
+  final double initialValue;
+
+  @override
+  State<_SlippageSheet> createState() => _SlippageSheetState();
+}
+
+class _SlippageSheetState extends State<_SlippageSheet> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue.toString(),
+  );
+  String? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _confirm() {
+    final value = double.tryParse(_controller.text.trim());
+    if (value == null || !value.isFinite || value < 0 || value > 100) {
+      setState(() => _error = 'Enter a slippage percentage from 0% to 100%.');
+      return;
+    }
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) => Material(
+    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          24 + MediaQuery.viewInsetsOf(context).bottom,
         ),
-    ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Slippage tolerance',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              key: const Key('bstocks-slippage-input'),
+              controller: _controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                TextInputFormatter.withFunction((oldValue, newValue) {
+                  return RegExp(r'^(?:|0|[1-9]\d{0,2})(?:\.\d{0,2})?$')
+                          .hasMatch(newValue.text)
+                      ? newValue
+                      : oldValue;
+                }),
+              ],
+              decoration: InputDecoration(
+                labelText: 'Maximum slippage',
+                suffixText: '%',
+                errorText: _error,
+              ),
+              onChanged: (_) {
+                if (_error != null) setState(() => _error = null);
+              },
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final option in const [0.1, 0.5, 1.0])
+                  ChoiceChip(
+                    label: Text('$option%'),
+                    selected: _controller.text == option.toString(),
+                    onSelected: (_) => setState(() {
+                      _controller.text = option.toString();
+                      _error = null;
+                    }),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _confirm,
+                    child: const Text('Confirm'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
   );
 }
 
