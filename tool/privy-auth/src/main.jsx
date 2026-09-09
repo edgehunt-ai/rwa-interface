@@ -100,7 +100,10 @@ function mount() {
   document.body.append(host);
   root = createRoot(host);
   root.render(
-    <PrivyProvider appId={state.appId} clientId={state.clientId}>
+    // Browser authentication is configured by the Privy App ID. Passing the
+    // mobile native client ID causes Privy to reject OAuth initialization with
+    // `invalid_native_app_id`.
+    <PrivyProvider appId={state.appId}>
       <PrivyBridge />
     </PrivyProvider>,
   );

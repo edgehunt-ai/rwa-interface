@@ -137,7 +137,8 @@ API 生成层和 data/domain 层不保存翻译后的 UI 文案，只传递稳�
   Privy Core 的 AndroidX metadata；最低安装版本仍为 API 28。
 - App ID、移动端 Client ID 和 OAuth 回跳 scheme 通过编译期环境变量 `PRIVY_APP_ID`、`PRIVY_CLIENT_ID`、
   `PRIVY_APP_URL_SCHEME` 提供；`make run` 会将 scheme 同步到 Android 和 iOS 原生回调配置，修改时只需更新
-  环境文件。允许的
+  环境文件。Web bridge 只将 `PRIVY_APP_ID` 传给 React SDK，不能传入移动端 `PRIVY_CLIENT_ID`，否则 Privy 会在
+  OAuth 初始化时返回 `invalid_native_app_id`。允许的
   登录方式集中定义在 `lib/app/config/privy_configuration.dart`，当前包含 email、Google OAuth 和
   passkey。OAuth 回跳使用 `PRIVY_APP_URL_SCHEME`，passkey 需要
   `PRIVY_RELYING_PARTY`（默认 `https://rwa.dxd.ink`）。这些都是公开
@@ -180,7 +181,7 @@ flutter build web --dart-define-from-file=.env
 ```
 
 在 Privy Dashboard 的 Allowed origins 中登记 Web 的生产、staging 和本地开发地址；Web 使用的
-`PRIVY_APP_ID` 与 `PRIVY_CLIENT_ID` 必须对应启用了所需登录方式的 Web app client。
+`PRIVY_APP_ID` 必须启用所需登录方式。移动端 `PRIVY_CLIENT_ID` 仅供原生 SDK 使用。
 
 Vercel 自动部署使用 GitHub Actions，不依赖 Vercel 的 Git 集成。请在仓库 Secrets 中配置
 `VERCEL_TOKEN`、`VERCEL_ORG_ID` 和 `VERCEL_PROJECT_ID`；其中 ID 可通过 `vercel link` 生成的
