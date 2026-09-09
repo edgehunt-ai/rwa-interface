@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -15,6 +16,7 @@ part 'device_info.g.dart';
 /// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
 /// * [appVersion]
 /// * [pushToken]
+/// * [pushProvider] - Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
 @BuiltValue()
 abstract class DeviceInfo implements Built<DeviceInfo, DeviceInfoBuilder> {
   /// 客户端生成并持久化的设备标识，用于 upsert
@@ -30,6 +32,11 @@ abstract class DeviceInfo implements Built<DeviceInfo, DeviceInfoBuilder> {
 
   @BuiltValueField(wireName: r'push_token')
   String? get pushToken;
+
+  /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
+  @BuiltValueField(wireName: r'push_provider')
+  DeviceInfoPushProviderEnum? get pushProvider;
+  // enum pushProviderEnum {  apns,  fcm,  };
 
   DeviceInfo._();
 
@@ -80,6 +87,13 @@ class _$DeviceInfoSerializer implements PrimitiveSerializer<DeviceInfo> {
       yield serializers.serialize(
         object.pushToken,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.pushProvider != null) {
+      yield r'push_provider';
+      yield serializers.serialize(
+        object.pushProvider,
+        specifiedType: const FullType.nullable(DeviceInfoPushProviderEnum),
       );
     }
   }
@@ -139,6 +153,14 @@ class _$DeviceInfoSerializer implements PrimitiveSerializer<DeviceInfo> {
           if (valueDes == null) continue;
           result.pushToken = valueDes;
           break;
+        case r'push_provider':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DeviceInfoPushProviderEnum),
+          ) as DeviceInfoPushProviderEnum?;
+          if (valueDes == null) continue;
+          result.pushProvider = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -166,4 +188,31 @@ class _$DeviceInfoSerializer implements PrimitiveSerializer<DeviceInfo> {
     );
     return result.build();
   }
+}
+
+class DeviceInfoPushProviderEnum extends EnumClass {
+  /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
+  @BuiltValueEnumConst(wireName: r'apns')
+  static const DeviceInfoPushProviderEnum apns =
+      _$deviceInfoPushProviderEnum_apns;
+
+  /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
+  @BuiltValueEnumConst(wireName: r'fcm')
+  static const DeviceInfoPushProviderEnum fcm =
+      _$deviceInfoPushProviderEnum_fcm;
+
+  /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const DeviceInfoPushProviderEnum unknownDefaultOpenApi =
+      _$deviceInfoPushProviderEnum_unknownDefaultOpenApi;
+
+  static Serializer<DeviceInfoPushProviderEnum> get serializer =>
+      _$deviceInfoPushProviderEnumSerializer;
+
+  const DeviceInfoPushProviderEnum._(String name) : super(name);
+
+  static BuiltSet<DeviceInfoPushProviderEnum> get values =>
+      _$deviceInfoPushProviderEnumValues;
+  static DeviceInfoPushProviderEnum valueOf(String name) =>
+      _$deviceInfoPushProviderEnumValueOf(name);
 }

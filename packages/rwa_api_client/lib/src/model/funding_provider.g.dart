@@ -8,6 +8,8 @@ part of 'funding_provider.dart';
 
 const FundingProvider _$across = const FundingProvider._('across');
 const FundingProvider _$relay = const FundingProvider._('relay');
+const FundingProvider _$hyperliquidBridge2 =
+    const FundingProvider._('hyperliquidBridge2');
 const FundingProvider _$unknownDefaultOpenApi =
     const FundingProvider._('unknownDefaultOpenApi');
 
@@ -17,6 +19,8 @@ FundingProvider _$valueOf(String name) {
       return _$across;
     case 'relay':
       return _$relay;
+    case 'hyperliquidBridge2':
+      return _$hyperliquidBridge2;
     case 'unknownDefaultOpenApi':
       return _$unknownDefaultOpenApi;
     default:
@@ -28,6 +32,7 @@ final BuiltSet<FundingProvider> _$values =
     BuiltSet<FundingProvider>(const <FundingProvider>[
   _$across,
   _$relay,
+  _$hyperliquidBridge2,
   _$unknownDefaultOpenApi,
 ]);
 
@@ -35,6 +40,7 @@ class _$FundingProviderMeta {
   const _$FundingProviderMeta();
   FundingProvider get across => _$across;
   FundingProvider get relay => _$relay;
+  FundingProvider get hyperliquidBridge2 => _$hyperliquidBridge2;
   FundingProvider get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingProvider valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingProvider> get values => _$values;
@@ -53,11 +59,13 @@ class _$FundingProviderSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'across': 'across',
     'relay': 'relay',
+    'hyperliquidBridge2': 'hyperliquid_bridge2',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'across': 'across',
     'relay': 'relay',
+    'hyperliquid_bridge2': 'hyperliquidBridge2',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

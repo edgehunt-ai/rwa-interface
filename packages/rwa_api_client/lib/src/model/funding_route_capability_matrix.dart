@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_route_capability_matrix.g.dart';
 
-/// Exact Across/Relay capability coverage for both settlement targets.
+/// Exact Across/Relay aggregator capability coverage for both settlement targets. The first-party Hyperliquid Bridge2 route is selected from frozen source and target identities and is not part of this third-party matrix.
 ///
 /// Properties:
 /// * [bstockAcross]

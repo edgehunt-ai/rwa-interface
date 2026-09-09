@@ -13,6 +13,7 @@ import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/device.dart';
 import 'package:rwa_api_client/src/model/device_page.dart';
 import 'package:rwa_api_client/src/model/device_register_request.dart';
+import 'package:rwa_api_client/src/model/notification_queued_response.dart';
 import 'package:rwa_api_client/src/model/user.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
@@ -345,6 +346,94 @@ class AccountApi {
     }
 
     return Response<Device>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 向当前设备发送 Staging 自测通知
+  /// 仅在服务端显式开启自测功能时可用。每个设备 60 秒内最多创建一条自测通知； 相同 &#x60;Idempotency-Key&#x60; 重放时返回同一个通知资源，不重复排队。  本接口只接受当前账户名下、未注销且未过期的设备。推送总开关关闭时返回 409； 功能未开启或设备的 push provider 未配置时返回 503。
+  ///
+  /// Parameters:
+  /// * [deviceId]
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [NotificationQueuedResponse] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<NotificationQueuedResponse>> testDeviceNotification({
+    required String deviceId,
+    required String idempotencyKey,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/me/devices/{device_id}/test-notification'.replaceAll(
+        '{' r'device_id' '}',
+        encodeQueryParameter(_serializers, deviceId, const FullType(String))
+            .toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    NotificationQueuedResponse? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(NotificationQueuedResponse),
+            ) as NotificationQueuedResponse;
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<NotificationQueuedResponse>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

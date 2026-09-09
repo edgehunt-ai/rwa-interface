@@ -16,7 +16,7 @@ part 'device_register_request.g.dart';
 /// * [platform] - 客户端平台。当前为 `ios` / `android`，**后续可能新增**（如 `harmony`、`web`）。  这里刻意用开放字符串而不是枚举：服务端新增平台时，老客户端反序列化 不会因为遇到未知枚举值而崩溃。客户端只需认得自己那个值。
 /// * [appVersion] - 当前安装的版本号，可选。**用途是推送内容分流，不是设备统计**—— 比如老版本不支持富通知（图片 / 按钮）或某种深链格式时， 后端据此回退成纯文本推送，避免老版本收到解析不了的 payload。  与令牌一样会过期：客户端每次上报令牌时应一并带上当前版本号， 不需要单独维护更新时机。
 /// * [pushToken] - APNs / FCM 推送令牌
-/// * [pushProvider] - 不传则由后端按 `platform` 推断
+/// * [pushProvider] - 不传时服务端可按平台兼容推断。Firebase-only 环境只接受 `fcm`； 收到 `apns` 时返回 503 `push_provider_unconfigured`，且不保存令牌。
 @BuiltValue()
 abstract class DeviceRegisterRequest
     implements Built<DeviceRegisterRequest, DeviceRegisterRequestBuilder> {
@@ -35,7 +35,7 @@ abstract class DeviceRegisterRequest
   @BuiltValueField(wireName: r'push_token')
   String get pushToken;
 
-  /// 不传则由后端按 `platform` 推断
+  /// 不传时服务端可按平台兼容推断。Firebase-only 环境只接受 `fcm`； 收到 `apns` 时返回 503 `push_provider_unconfigured`，且不保存令牌。
   @BuiltValueField(wireName: r'push_provider')
   DeviceRegisterRequestPushProviderEnum? get pushProvider;
   // enum pushProviderEnum {  apns,  fcm,  };
@@ -191,17 +191,17 @@ class _$DeviceRegisterRequestSerializer
 }
 
 class DeviceRegisterRequestPushProviderEnum extends EnumClass {
-  /// 不传则由后端按 `platform` 推断
+  /// 不传时服务端可按平台兼容推断。Firebase-only 环境只接受 `fcm`； 收到 `apns` 时返回 503 `push_provider_unconfigured`，且不保存令牌。
   @BuiltValueEnumConst(wireName: r'apns')
   static const DeviceRegisterRequestPushProviderEnum apns =
       _$deviceRegisterRequestPushProviderEnum_apns;
 
-  /// 不传则由后端按 `platform` 推断
+  /// 不传时服务端可按平台兼容推断。Firebase-only 环境只接受 `fcm`； 收到 `apns` 时返回 503 `push_provider_unconfigured`，且不保存令牌。
   @BuiltValueEnumConst(wireName: r'fcm')
   static const DeviceRegisterRequestPushProviderEnum fcm =
       _$deviceRegisterRequestPushProviderEnum_fcm;
 
-  /// 不传则由后端按 `platform` 推断
+  /// 不传时服务端可按平台兼容推断。Firebase-only 环境只接受 `fcm`； 收到 `apns` 时返回 503 `push_provider_unconfigured`，且不保存令牌。
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const DeviceRegisterRequestPushProviderEnum unknownDefaultOpenApi =
       _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi;

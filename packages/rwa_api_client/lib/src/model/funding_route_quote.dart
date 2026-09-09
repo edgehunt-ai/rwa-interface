@@ -33,7 +33,7 @@ abstract class FundingRouteQuote
 
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
-  // enum providerEnum {  across,  relay,  };
+  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'input_amount')

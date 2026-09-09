@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -11,10 +12,15 @@ part 'hip3_challenge_request.g.dart';
 /// Hip3ChallengeRequest
 ///
 /// Properties:
+/// * [purpose]
 /// * [label]
 @BuiltValue()
 abstract class Hip3ChallengeRequest
     implements Built<Hip3ChallengeRequest, Hip3ChallengeRequestBuilder> {
+  @BuiltValueField(wireName: r'purpose')
+  Hip3ChallengeRequestPurposeEnum? get purpose;
+  // enum purposeEnum {  register,  rotate,  };
+
   @BuiltValueField(wireName: r'label')
   String? get label;
 
@@ -24,7 +30,8 @@ abstract class Hip3ChallengeRequest
       _$Hip3ChallengeRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(Hip3ChallengeRequestBuilder b) => b;
+  static void _defaults(Hip3ChallengeRequestBuilder b) =>
+      b..purpose = Hip3ChallengeRequestPurposeEnum.valueOf('register');
 
   @BuiltValueSerializer(custom: true)
   static Serializer<Hip3ChallengeRequest> get serializer =>
@@ -47,6 +54,13 @@ class _$Hip3ChallengeRequestSerializer
     Hip3ChallengeRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.purpose != null) {
+      yield r'purpose';
+      yield serializers.serialize(
+        object.purpose,
+        specifiedType: const FullType(Hip3ChallengeRequestPurposeEnum),
+      );
+    }
     if (object.label != null) {
       yield r'label';
       yield serializers.serialize(
@@ -79,6 +93,15 @@ class _$Hip3ChallengeRequestSerializer
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'purpose':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType:
+                const FullType.nullable(Hip3ChallengeRequestPurposeEnum),
+          ) as Hip3ChallengeRequestPurposeEnum?;
+          if (valueDes == null) continue;
+          result.purpose = valueDes;
+          break;
         case r'label':
           final valueDes = serializers.deserialize(
             value,
@@ -114,4 +137,26 @@ class _$Hip3ChallengeRequestSerializer
     );
     return result.build();
   }
+}
+
+class Hip3ChallengeRequestPurposeEnum extends EnumClass {
+  @BuiltValueEnumConst(wireName: r'register')
+  static const Hip3ChallengeRequestPurposeEnum register =
+      _$hip3ChallengeRequestPurposeEnum_register;
+  @BuiltValueEnumConst(wireName: r'rotate')
+  static const Hip3ChallengeRequestPurposeEnum rotate =
+      _$hip3ChallengeRequestPurposeEnum_rotate;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const Hip3ChallengeRequestPurposeEnum unknownDefaultOpenApi =
+      _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi;
+
+  static Serializer<Hip3ChallengeRequestPurposeEnum> get serializer =>
+      _$hip3ChallengeRequestPurposeEnumSerializer;
+
+  const Hip3ChallengeRequestPurposeEnum._(String name) : super(name);
+
+  static BuiltSet<Hip3ChallengeRequestPurposeEnum> get values =>
+      _$hip3ChallengeRequestPurposeEnumValues;
+  static Hip3ChallengeRequestPurposeEnum valueOf(String name) =>
+      _$hip3ChallengeRequestPurposeEnumValueOf(name);
 }

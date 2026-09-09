@@ -3,13 +3,16 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/order_fill.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/order_status.dart';
+import 'package:rwa_api_client/src/model/hip3_order_action.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
+import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -24,10 +27,16 @@ part 'order.g.dart';
 /// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API.
 /// * [orderId]
 /// * [clientOrderId]
+/// * [providerOrderId]
+/// * [providerStatus] - Provider-native status retained for support and reconciliation.
+/// * [providerObservedAt]
+/// * [reconciliationStatus]
+/// * [fills]
 /// * [symbol]
 /// * [side]
 /// * [type]
 /// * [status]
+/// * [hip3Action]
 /// * [limitPrice] - 十进制字符串，避免浮点误差
 /// * [quantity] - 十进制字符串，避免浮点误差
 /// * [filledQuantity] - 十进制字符串，避免浮点误差
@@ -65,6 +74,23 @@ abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'client_order_id')
   String? get clientOrderId;
 
+  @BuiltValueField(wireName: r'provider_order_id')
+  String? get providerOrderId;
+
+  /// Provider-native status retained for support and reconciliation.
+  @BuiltValueField(wireName: r'provider_status')
+  String? get providerStatus;
+
+  @BuiltValueField(wireName: r'provider_observed_at')
+  DateTime? get providerObservedAt;
+
+  @BuiltValueField(wireName: r'reconciliation_status')
+  OrderReconciliationStatus? get reconciliationStatus;
+  // enum reconciliationStatusEnum {  pending,  matched,  conflicting,  manual_review,  };
+
+  @BuiltValueField(wireName: r'fills')
+  BuiltList<OrderFill>? get fills;
+
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -79,6 +105,9 @@ abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'status')
   OrderStatus get status;
   // enum statusEnum {  pending_signature,  submitted,  open,  partially_filled,  filled,  cancelled,  failed,  ambiguous,  manual_review,  };
+
+  @BuiltValueField(wireName: r'hip3_action')
+  Hip3OrderAction? get hip3Action;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'limit_price')
@@ -192,6 +221,41 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
         specifiedType: const FullType.nullable(String),
       );
     }
+    if (object.providerOrderId != null) {
+      yield r'provider_order_id';
+      yield serializers.serialize(
+        object.providerOrderId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.providerStatus != null) {
+      yield r'provider_status';
+      yield serializers.serialize(
+        object.providerStatus,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.providerObservedAt != null) {
+      yield r'provider_observed_at';
+      yield serializers.serialize(
+        object.providerObservedAt,
+        specifiedType: const FullType.nullable(DateTime),
+      );
+    }
+    if (object.reconciliationStatus != null) {
+      yield r'reconciliation_status';
+      yield serializers.serialize(
+        object.reconciliationStatus,
+        specifiedType: const FullType(OrderReconciliationStatus),
+      );
+    }
+    if (object.fills != null) {
+      yield r'fills';
+      yield serializers.serialize(
+        object.fills,
+        specifiedType: const FullType(BuiltList, [FullType(OrderFill)]),
+      );
+    }
     yield r'symbol';
     yield serializers.serialize(
       object.symbol,
@@ -212,6 +276,13 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       object.status,
       specifiedType: const FullType(OrderStatus),
     );
+    if (object.hip3Action != null) {
+      yield r'hip3_action';
+      yield serializers.serialize(
+        object.hip3Action,
+        specifiedType: const FullType(Hip3OrderAction),
+      );
+    }
     if (object.limitPrice != null) {
       yield r'limit_price';
       yield serializers.serialize(
@@ -386,6 +457,47 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           if (valueDes == null) continue;
           result.clientOrderId = valueDes;
           break;
+        case r'provider_order_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.providerOrderId = valueDes;
+          break;
+        case r'provider_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.providerStatus = valueDes;
+          break;
+        case r'provider_observed_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.providerObservedAt = valueDes;
+          break;
+        case r'reconciliation_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(OrderReconciliationStatus),
+          ) as OrderReconciliationStatus?;
+          if (valueDes == null) continue;
+          result.reconciliationStatus = valueDes;
+          break;
+        case r'fills':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType:
+                const FullType.nullable(BuiltList, [FullType(OrderFill)]),
+          ) as BuiltList<OrderFill>?;
+          if (valueDes == null) continue;
+          result.fills.replace(valueDes);
+          break;
         case r'symbol':
           final valueDes = serializers.deserialize(
             value,
@@ -413,6 +525,14 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
             specifiedType: const FullType(OrderStatus),
           ) as OrderStatus;
           result.status = valueDes;
+          break;
+        case r'hip3_action':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3OrderAction),
+          ) as Hip3OrderAction?;
+          if (valueDes == null) continue;
+          result.hip3Action.replace(valueDes);
           break;
         case r'limit_price':
           final valueDes = serializers.deserialize(

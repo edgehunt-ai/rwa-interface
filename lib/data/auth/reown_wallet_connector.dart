@@ -31,7 +31,7 @@ final class ReownWalletConnector implements WalletConnector {
       optionalNamespaces: const {
         'eip155': RequiredNamespace(
           chains: ['eip155:1', 'eip155:56', 'eip155:42161', 'eip155:8453'],
-          methods: ['personal_sign'],
+          methods: ['personal_sign', 'eth_signTypedData_v4'],
           events: ['accountsChanged', 'chainChanged'],
         ),
       },
@@ -96,6 +96,23 @@ final class _ReownWalletConnection implements WalletConnection {
       request: SessionRequestParams(
         method: 'personal_sign',
         params: [_hexEncode(message), address],
+      ),
+    );
+    if (signature is String && signature.isNotEmpty) return signature;
+    throw const IdentityFailure(
+      AuthenticationFailureCode.provider,
+      retryable: true,
+    );
+  }
+
+  @override
+  Future<String> signTypedDataV4(Map<String, Object?> typedData) async {
+    final signature = await modal.request(
+      topic: modal.session!.topic,
+      chainId: 'eip155:$chainId',
+      request: SessionRequestParams(
+        method: 'eth_signTypedData_v4',
+        params: [address, jsonEncode(typedData)],
       ),
     );
     if (signature is String && signature.isNotEmpty) return signature;

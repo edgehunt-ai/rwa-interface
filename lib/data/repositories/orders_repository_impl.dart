@@ -183,7 +183,9 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     final order = mapOrder(value);
     return ResourceResult(
       resource: order,
-      capability: order.status == TradingOrderStatus.pendingSignature
+      capability:
+          order.status == TradingOrderStatus.pendingSignature &&
+              order.kind != MarketProductKind.perp
           ? UnsupportedCapability.orderSignature(resourceId: order.orderId)
           : null,
     );

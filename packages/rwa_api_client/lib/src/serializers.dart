@@ -127,10 +127,21 @@ import 'package:rwa_api_client/src/model/funding_wallet_action_summary.dart';
 import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
 import 'package:rwa_api_client/src/model/gas_payment_quote.dart';
 import 'package:rwa_api_client/src/model/gas_sponsorship_decision.dart';
+import 'package:rwa_api_client/src/model/hip3_action_submission_request.dart';
+import 'package:rwa_api_client/src/model/hip3_agent.dart';
+import 'package:rwa_api_client/src/model/hip3_agent_status.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
+import 'package:rwa_api_client/src/model/hip3_eip712_domain.dart';
+import 'package:rwa_api_client/src/model/hip3_eip712_field.dart';
+import 'package:rwa_api_client/src/model/hip3_eip712_message.dart';
+import 'package:rwa_api_client/src/model/hip3_eip712_typed_data.dart';
+import 'package:rwa_api_client/src/model/hip3_eip712_types.dart';
+import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
+import 'package:rwa_api_client/src/model/hip3_order_action.dart';
 import 'package:rwa_api_client/src/model/holding_group.dart';
+import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_rail.dart';
@@ -151,14 +162,17 @@ import 'package:rwa_api_client/src/model/market_session_info.dart';
 import 'package:rwa_api_client/src/model/market_stats.dart';
 import 'package:rwa_api_client/src/model/no_executable_action_transfer_state.dart';
 import 'package:rwa_api_client/src/model/non_completed_funding_transfer_state.dart';
+import 'package:rwa_api_client/src/model/notification_queued_response.dart';
 import 'package:rwa_api_client/src/model/order.dart';
 import 'package:rwa_api_client/src/model/order_book.dart';
 import 'package:rwa_api_client/src/model/order_book_level.dart';
 import 'package:rwa_api_client/src/model/order_evm_action.dart';
+import 'package:rwa_api_client/src/model/order_fill.dart';
 import 'package:rwa_api_client/src/model/order_page.dart';
 import 'package:rwa_api_client/src/model/order_preview.dart';
 import 'package:rwa_api_client/src/model/order_preview_common.dart';
 import 'package:rwa_api_client/src/model/order_preview_request.dart';
+import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_status.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
@@ -238,6 +252,12 @@ import 'package:rwa_api_client/src/model/stock_page.dart';
 import 'package:rwa_api_client/src/model/token_balance.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/tp_sl_update_request.dart';
+import 'package:rwa_api_client/src/model/trade_intent.dart';
+import 'package:rwa_api_client/src/model/trade_intent_blocker.dart';
+import 'package:rwa_api_client/src/model/trade_intent_create_request.dart';
+import 'package:rwa_api_client/src/model/trade_intent_execution_policy.dart';
+import 'package:rwa_api_client/src/model/trade_intent_next_action.dart';
+import 'package:rwa_api_client/src/model/trade_intent_status.dart';
 import 'package:rwa_api_client/src/model/transfer.dart';
 import 'package:rwa_api_client/src/model/transfer_action_status.dart';
 import 'package:rwa_api_client/src/model/transfer_action_submission.dart';
@@ -397,10 +417,21 @@ part 'serializers.g.dart';
   GasPaymentMode,
   GasPaymentQuote,
   GasSponsorshipDecision,
+  Hip3ActionSubmissionRequest,
+  Hip3Agent,
+  Hip3AgentStatus,
   Hip3Challenge,
   Hip3ChallengeCompleteRequest,
   Hip3ChallengeRequest,
+  Hip3Eip712Domain,
+  Hip3Eip712Field,
+  Hip3Eip712Message,
+  Hip3Eip712TypedData,
+  Hip3Eip712Types,
+  Hip3MainnetProduct,
+  Hip3OrderAction,
   HoldingGroup,
+  HyperliquidSignature,
   KeyValue,
   LegacyBstockFundingPlan,
   LegacyBstockFundingRail,
@@ -421,15 +452,18 @@ part 'serializers.g.dart';
   MarketStats,
   NoExecutableActionTransferState,
   NonCompletedFundingTransferState,
+  NotificationQueuedResponse,
   Order,
   OrderBook,
   OrderBookLevel,
   OrderEvmAction,
+  OrderFill,
   OrderPage,
   OrderPreview,
   OrderPreviewCommon,
   $OrderPreviewCommon,
   OrderPreviewRequest,
+  OrderReconciliationStatus,
   OrderSide,
   OrderStatus,
   OrderType,
@@ -511,6 +545,12 @@ part 'serializers.g.dart';
   TokenBalance,
   TpSlSpec,
   TpSlUpdateRequest,
+  TradeIntent,
+  TradeIntentBlocker,
+  TradeIntentCreateRequest,
+  TradeIntentExecutionPolicy,
+  TradeIntentNextAction,
+  TradeIntentStatus,
   Transfer,
   TransferActionStatus,
   TransferActionSubmission,
@@ -559,6 +599,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Withdrawal)]),
         () => ListBuilder<Withdrawal>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Eip712Field)]),
+        () => ListBuilder<Hip3Eip712Field>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(FundingRail)]),
@@ -656,6 +700,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TokenBalance)]),
         () => ListBuilder<TokenBalance>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(OrderFill)]),
+        () => ListBuilder<OrderFill>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioNotice)]),

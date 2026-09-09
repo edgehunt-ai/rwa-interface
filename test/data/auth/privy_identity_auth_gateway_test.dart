@@ -6,6 +6,7 @@ import 'package:privy_flutter/src/modules/oauth/login_with_oauth.dart';
 import 'package:rwa_interface/data/auth/privy_identity_auth_gateway.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
+import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
   const configuration = IdentityConfiguration(
@@ -176,6 +177,100 @@ void main() {
     expect(siwe.submittedSignature, '0xsignature');
     expect(await gateway.getAccessToken(), 'wallet-token');
   });
+
+  test('uses the authenticated external wallet for HIP-3 typed data', () async {
+    final user = _FakeUser(id: 'did:privy:wallet', token: 'wallet-token');
+    final gateway = PrivyIdentityAuthGateway(
+      createPrivy: (_) => _FakePrivy(
+        authState: const Unauthenticated(),
+        siwe: _FakeSiwe(loginResult: Success(user)),
+      ),
+    );
+    await gateway.initialize(configuration);
+    final wallet = _WalletConnection();
+    await gateway.loginWithWallet(wallet);
+    final typedData = <String, Object?>{
+      'primaryType': 'Agent',
+      'message': <String, Object?>{'source': 'b'},
+    };
+
+    final signature = await gateway.signTypedDataV4(
+      expectedSigner: wallet.address,
+      typedData: typedData,
+    );
+
+    expect(signature, '0x${List.filled(64, '11').join()}1b');
+    expect(wallet.signedTypedData, same(typedData));
+  });
+
+  test(
+    'selects the exact Privy embedded wallet requested by backend',
+    () async {
+      final expected = EmbeddedEthereumWallet(
+        address: '0x0000000000000000000000000000000000000002',
+        hdWalletIndex: 1,
+      );
+      final user = _FakeUser(
+        id: 'did:privy:1',
+        token: 'token',
+        ethereumWallets: [
+          EmbeddedEthereumWallet(
+            address: '0x0000000000000000000000000000000000000001',
+            hdWalletIndex: 0,
+          ),
+          expected,
+        ],
+      );
+      EthereumRpcRequest? captured;
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(authState: Authenticated(user)),
+        requestTypedData: (wallet, request) async {
+          expect(wallet.address, expected.address);
+          captured = request;
+          return Success(
+            EthereumRpcResponse(
+              method: request.method,
+              data: '0x${List.filled(64, '22').join()}1c',
+            ),
+          );
+        },
+      );
+      await gateway.initialize(configuration);
+
+      final signature = await gateway.signTypedDataV4(
+        expectedSigner: expected.address.toUpperCase().replaceFirst('0X', '0x'),
+        typedData: const {'primaryType': 'Agent'},
+      );
+
+      expect(signature, '0x${List.filled(64, '22').join()}1c');
+      expect(captured?.method, 'eth_signTypedData_v4');
+      expect(captured?.params.first, expected.address);
+      expect(captured?.params.last, '{"primaryType":"Agent"}');
+    },
+  );
+
+  test('fails closed when expected signer is not an owned wallet', () async {
+    final gateway = PrivyIdentityAuthGateway(
+      createPrivy: (_) => _FakePrivy(
+        authState: Authenticated(_FakeUser(id: 'user', token: 'token')),
+      ),
+    );
+    await gateway.initialize(configuration);
+
+    await expectLater(
+      gateway.signTypedDataV4(
+        expectedSigner: '0x0000000000000000000000000000000000000009',
+        typedData: const {'primaryType': 'Agent'},
+      ),
+      throwsA(
+        isA<Hip3SigningFailure>().having(
+          (failure) => failure.code,
+          'code',
+          Hip3SigningFailureCode.walletMismatch,
+        ),
+      ),
+    );
+  });
 }
 
 final class _FakePrivy implements Privy {
@@ -259,12 +354,20 @@ final class _FakeOAuth implements LoginWithOAuth {
 }
 
 final class _FakeUser implements PrivyUser {
-  _FakeUser({required this.id, required this.token});
+  _FakeUser({
+    required this.id,
+    required this.token,
+    this.ethereumWallets = const [],
+  });
 
   @override
   final String id;
   final String token;
+  final List<EmbeddedEthereumWallet> ethereumWallets;
   int refreshCalls = 0;
+
+  @override
+  List<EmbeddedEthereumWallet> get embeddedEthereumWallets => ethereumWallets;
 
   @override
   Future<Result<String>> getAccessToken() async => Success(token);
@@ -312,6 +415,7 @@ final class _FakeSiwe implements LoginWithSiwe {
 
 final class _WalletConnection implements WalletConnection {
   String? signedMessage;
+  Map<String, Object?>? signedTypedData;
 
   @override
   String get address => '0x0000000000000000000000000000000000000001';
@@ -329,5 +433,11 @@ final class _WalletConnection implements WalletConnection {
   Future<String> signPersonalMessage(String message) async {
     signedMessage = message;
     return '0xsignature';
+  }
+
+  @override
+  Future<String> signTypedDataV4(Map<String, Object?> typedData) async {
+    signedTypedData = typedData;
+    return '0x${List.filled(64, '11').join()}1b';
   }
 }

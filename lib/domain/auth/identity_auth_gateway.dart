@@ -9,6 +9,8 @@ abstract interface class WalletConnection {
 
   Future<String> signPersonalMessage(String message);
 
+  Future<String> signTypedDataV4(Map<String, Object?> typedData);
+
   Future<void> disconnect();
 }
 

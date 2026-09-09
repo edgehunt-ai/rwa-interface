@@ -4,6 +4,7 @@ import '../../data/api/api_environment.dart';
 import '../../data/api/privy_access_token_provider.dart';
 import '../../data/api/rwa_api_data_source.dart';
 import '../../data/repositories/markets_repository_impl.dart';
+import '../../data/repositories/hip3_order_execution_repository_impl.dart';
 import '../../data/repositories/funding_repository_impl.dart';
 import '../../data/repositories/orders_repository_impl.dart';
 import '../../data/repositories/portfolio_repository_impl.dart';
@@ -23,9 +24,11 @@ import '../../data/services/generated_portfolio_service.dart';
 import '../../data/services/generated_positions_service.dart';
 import '../../data/services/generated_session_service.dart';
 import '../../data/services/generated_wallets_service.dart';
+import '../../data/services/hip3_order_action_service.dart';
 import '../../data/services/dio_realtime_service.dart';
 import '../../data/services/realtime_service.dart';
 import '../../domain/repositories/markets_repository.dart';
+import '../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../../domain/repositories/orders_repository.dart';
 import '../../domain/repositories/portfolio_repository.dart';
@@ -35,7 +38,9 @@ import '../../domain/repositories/activity_repository.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/wallets_repository.dart';
 import '../../domain/repositories/realtime_repository.dart';
+import '../../domain/services/hip3_typed_data_signer.dart';
 import 'auth_providers.dart';
+import 'session_scope.dart';
 
 final apiEnvironmentProvider = Provider<ApiEnvironment>(
   (ref) => ApiEnvironment.fromEnvironment(),
@@ -92,6 +97,23 @@ final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
     GeneratedOrdersService(source.client.getOrdersApi()),
   );
 });
+final hip3TypedDataSignerProvider = Provider<Hip3TypedDataSigner>((ref) {
+  final gateway = ref.watch(identityAuthGatewayProvider);
+  if (gateway case final Hip3TypedDataSigner signer) return signer;
+  throw const Hip3SigningFailure(
+    Hip3SigningFailureCode.walletUnavailable,
+    retryable: true,
+  );
+});
+final hip3OrderExecutionRepositoryProvider =
+    Provider<Hip3OrderExecutionRepository>((ref) {
+      ref.watch(sessionGenerationProvider);
+      final source = ref.watch(apiDataSourceProvider);
+      return Hip3OrderExecutionRepositoryImpl(
+        ref.watch(hip3TypedDataSignerProvider),
+        GeneratedHip3OrderActionService(source.client.getOrdersApi()),
+      );
+    });
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return PositionsRepositoryImpl(

@@ -22,7 +22,7 @@ abstract class FundingProviderObservation
         Built<FundingProviderObservation, FundingProviderObservationBuilder> {
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
-  // enum providerEnum {  across,  relay,  };
+  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
 
   @BuiltValueField(wireName: r'status')
   TransferProviderStatus get status;

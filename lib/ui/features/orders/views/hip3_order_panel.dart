@@ -5,6 +5,8 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
+import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
@@ -112,16 +114,46 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final preview = _preview;
     if (preview == null) return;
     setState(() => _submitting = true);
-    final submitted = await ref
-        .read(orderCommandProvider.notifier)
-        .submit(preview.intent, previewId: preview.previewId);
-    if (!mounted) return;
-    setState(() {
-      _submitting = false;
-      _submitted = submitted?.resource;
-      _error = submitted == null ? 'Order was not submitted. Try again.' : null;
-    });
+    try {
+      var submitted = await ref
+          .read(orderCommandProvider.notifier)
+          .submit(preview.intent, previewId: preview.previewId);
+      if (submitted?.resource.status == TradingOrderStatus.pendingSignature) {
+        submitted = await ref
+            .read(hip3OrderExecutionRepositoryProvider)
+            .awaitActionAndSubmit(submitted!.resource.orderId);
+      }
+      if (!mounted) return;
+      setState(() {
+        _submitted = submitted?.resource;
+        _error = submitted == null
+            ? 'Order was not submitted. Try again.'
+            : null;
+      });
+    } on Hip3SigningFailure catch (failure) {
+      if (!mounted) return;
+      setState(() => _error = _signingError(failure));
+    } on Object {
+      if (!mounted) return;
+      setState(() => _error = 'Unable to sign this order. Try again.');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
+
+  String _signingError(Hip3SigningFailure failure) => switch (failure.code) {
+    Hip3SigningFailureCode.walletMismatch =>
+      'Connect the wallet requested for this order.',
+    Hip3SigningFailureCode.actionExpired =>
+      'This signing request expired. Prepare the order again.',
+    Hip3SigningFailureCode.rejected => 'Signature request was cancelled.',
+    Hip3SigningFailureCode.actionNotReady =>
+      'The order is still being prepared. Try again.',
+    Hip3SigningFailureCode.walletUnavailable =>
+      'The signing wallet is unavailable. Reconnect and try again.',
+    Hip3SigningFailureCode.invalidPayload =>
+      'The signing request is invalid. Prepare the order again.',
+  };
 
   @override
   Widget build(BuildContext context) {

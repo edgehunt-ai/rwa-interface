@@ -14,6 +14,8 @@ class FundingProvider extends EnumClass {
   static const FundingProvider across = _$across;
   @BuiltValueEnumConst(wireName: r'relay')
   static const FundingProvider relay = _$relay;
+  @BuiltValueEnumConst(wireName: r'hyperliquid_bridge2')
+  static const FundingProvider hyperliquidBridge2 = _$hyperliquidBridge2;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingProvider unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 

@@ -29,6 +29,59 @@ final BuiltSet<Hip3ChallengeNetworkEnum> _$hip3ChallengeNetworkEnumValues =
   _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi,
 ]);
 
+const Hip3ChallengeEnvironmentEnum _$hip3ChallengeEnvironmentEnum_mainnet =
+    const Hip3ChallengeEnvironmentEnum._('mainnet');
+const Hip3ChallengeEnvironmentEnum
+    _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi =
+    const Hip3ChallengeEnvironmentEnum._('unknownDefaultOpenApi');
+
+Hip3ChallengeEnvironmentEnum _$hip3ChallengeEnvironmentEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'mainnet':
+      return _$hip3ChallengeEnvironmentEnum_mainnet;
+    case 'unknownDefaultOpenApi':
+      return _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi;
+    default:
+      return _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<Hip3ChallengeEnvironmentEnum>
+    _$hip3ChallengeEnvironmentEnumValues =
+    BuiltSet<Hip3ChallengeEnvironmentEnum>(const <Hip3ChallengeEnvironmentEnum>[
+  _$hip3ChallengeEnvironmentEnum_mainnet,
+  _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi,
+]);
+
+const Hip3ChallengePurposeEnum _$hip3ChallengePurposeEnum_register =
+    const Hip3ChallengePurposeEnum._('register');
+const Hip3ChallengePurposeEnum _$hip3ChallengePurposeEnum_rotate =
+    const Hip3ChallengePurposeEnum._('rotate');
+const Hip3ChallengePurposeEnum
+    _$hip3ChallengePurposeEnum_unknownDefaultOpenApi =
+    const Hip3ChallengePurposeEnum._('unknownDefaultOpenApi');
+
+Hip3ChallengePurposeEnum _$hip3ChallengePurposeEnumValueOf(String name) {
+  switch (name) {
+    case 'register':
+      return _$hip3ChallengePurposeEnum_register;
+    case 'rotate':
+      return _$hip3ChallengePurposeEnum_rotate;
+    case 'unknownDefaultOpenApi':
+      return _$hip3ChallengePurposeEnum_unknownDefaultOpenApi;
+    default:
+      return _$hip3ChallengePurposeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<Hip3ChallengePurposeEnum> _$hip3ChallengePurposeEnumValues =
+    BuiltSet<Hip3ChallengePurposeEnum>(const <Hip3ChallengePurposeEnum>[
+  _$hip3ChallengePurposeEnum_register,
+  _$hip3ChallengePurposeEnum_rotate,
+  _$hip3ChallengePurposeEnum_unknownDefaultOpenApi,
+]);
+
 const Hip3ChallengeSettlementAssetEnum _$hip3ChallengeSettlementAssetEnum_USDC =
     const Hip3ChallengeSettlementAssetEnum._('USDC');
 const Hip3ChallengeSettlementAssetEnum
@@ -54,27 +107,39 @@ final BuiltSet<Hip3ChallengeSettlementAssetEnum>
   _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
+const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_issued =
+    const Hip3ChallengeStatusEnum._('issued');
 const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_pendingSignature =
     const Hip3ChallengeStatusEnum._('pendingSignature');
+const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_submitting =
+    const Hip3ChallengeStatusEnum._('submitting');
 const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_completed =
     const Hip3ChallengeStatusEnum._('completed');
 const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_expired =
     const Hip3ChallengeStatusEnum._('expired');
 const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_failed =
     const Hip3ChallengeStatusEnum._('failed');
+const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_manualReview =
+    const Hip3ChallengeStatusEnum._('manualReview');
 const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_unknownDefaultOpenApi =
     const Hip3ChallengeStatusEnum._('unknownDefaultOpenApi');
 
 Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnumValueOf(String name) {
   switch (name) {
+    case 'issued':
+      return _$hip3ChallengeStatusEnum_issued;
     case 'pendingSignature':
       return _$hip3ChallengeStatusEnum_pendingSignature;
+    case 'submitting':
+      return _$hip3ChallengeStatusEnum_submitting;
     case 'completed':
       return _$hip3ChallengeStatusEnum_completed;
     case 'expired':
       return _$hip3ChallengeStatusEnum_expired;
     case 'failed':
       return _$hip3ChallengeStatusEnum_failed;
+    case 'manualReview':
+      return _$hip3ChallengeStatusEnum_manualReview;
     case 'unknownDefaultOpenApi':
       return _$hip3ChallengeStatusEnum_unknownDefaultOpenApi;
     default:
@@ -84,15 +149,23 @@ Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnumValueOf(String name) {
 
 final BuiltSet<Hip3ChallengeStatusEnum> _$hip3ChallengeStatusEnumValues =
     BuiltSet<Hip3ChallengeStatusEnum>(const <Hip3ChallengeStatusEnum>[
+  _$hip3ChallengeStatusEnum_issued,
   _$hip3ChallengeStatusEnum_pendingSignature,
+  _$hip3ChallengeStatusEnum_submitting,
   _$hip3ChallengeStatusEnum_completed,
   _$hip3ChallengeStatusEnum_expired,
   _$hip3ChallengeStatusEnum_failed,
+  _$hip3ChallengeStatusEnum_manualReview,
   _$hip3ChallengeStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ChallengeNetworkEnum> _$hip3ChallengeNetworkEnumSerializer =
     _$Hip3ChallengeNetworkEnumSerializer();
+Serializer<Hip3ChallengeEnvironmentEnum>
+    _$hip3ChallengeEnvironmentEnumSerializer =
+    _$Hip3ChallengeEnvironmentEnumSerializer();
+Serializer<Hip3ChallengePurposeEnum> _$hip3ChallengePurposeEnumSerializer =
+    _$Hip3ChallengePurposeEnumSerializer();
 Serializer<Hip3ChallengeSettlementAssetEnum>
     _$hip3ChallengeSettlementAssetEnumSerializer =
     _$Hip3ChallengeSettlementAssetEnumSerializer();
@@ -125,6 +198,66 @@ class _$Hip3ChallengeNetworkEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       Hip3ChallengeNetworkEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$Hip3ChallengeEnvironmentEnumSerializer
+    implements PrimitiveSerializer<Hip3ChallengeEnvironmentEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'mainnet': 'mainnet',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'mainnet': 'mainnet',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[Hip3ChallengeEnvironmentEnum];
+  @override
+  final String wireName = 'Hip3ChallengeEnvironmentEnum';
+
+  @override
+  Object serialize(Serializers serializers, Hip3ChallengeEnvironmentEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  Hip3ChallengeEnvironmentEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Hip3ChallengeEnvironmentEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$Hip3ChallengePurposeEnumSerializer
+    implements PrimitiveSerializer<Hip3ChallengePurposeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'register': 'register',
+    'rotate': 'rotate',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'register': 'register',
+    'rotate': 'rotate',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[Hip3ChallengePurposeEnum];
+  @override
+  final String wireName = 'Hip3ChallengePurposeEnum';
+
+  @override
+  Object serialize(Serializers serializers, Hip3ChallengePurposeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  Hip3ChallengePurposeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Hip3ChallengePurposeEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
@@ -161,17 +294,23 @@ class _$Hip3ChallengeSettlementAssetEnumSerializer
 class _$Hip3ChallengeStatusEnumSerializer
     implements PrimitiveSerializer<Hip3ChallengeStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'issued': 'issued',
     'pendingSignature': 'pending_signature',
+    'submitting': 'submitting',
     'completed': 'completed',
     'expired': 'expired',
     'failed': 'failed',
+    'manualReview': 'manual_review',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'issued': 'issued',
     'pending_signature': 'pendingSignature',
+    'submitting': 'submitting',
     'completed': 'completed',
     'expired': 'expired',
     'failed': 'failed',
+    'manual_review': 'manualReview',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
@@ -199,6 +338,20 @@ class _$Hip3Challenge extends Hip3Challenge {
   @override
   final Hip3ChallengeNetworkEnum network;
   @override
+  final Hip3ChallengeEnvironmentEnum environment;
+  @override
+  final Hip3ChallengePurposeEnum purpose;
+  @override
+  final String ownerAddress;
+  @override
+  final String agentAddress;
+  @override
+  final String typedDataJson;
+  @override
+  final String payloadHash;
+  @override
+  final DateTime validUntil;
+  @override
   final Hip3ChallengeSettlementAssetEnum? settlementAsset;
   @override
   final Hip3ChallengeStatusEnum status;
@@ -215,6 +368,13 @@ class _$Hip3Challenge extends Hip3Challenge {
   _$Hip3Challenge._(
       {required this.challengeId,
       required this.network,
+      required this.environment,
+      required this.purpose,
+      required this.ownerAddress,
+      required this.agentAddress,
+      required this.typedDataJson,
+      required this.payloadHash,
+      required this.validUntil,
       this.settlementAsset,
       required this.status,
       required this.message,
@@ -234,6 +394,13 @@ class _$Hip3Challenge extends Hip3Challenge {
     return other is Hip3Challenge &&
         challengeId == other.challengeId &&
         network == other.network &&
+        environment == other.environment &&
+        purpose == other.purpose &&
+        ownerAddress == other.ownerAddress &&
+        agentAddress == other.agentAddress &&
+        typedDataJson == other.typedDataJson &&
+        payloadHash == other.payloadHash &&
+        validUntil == other.validUntil &&
         settlementAsset == other.settlementAsset &&
         status == other.status &&
         message == other.message &&
@@ -246,6 +413,13 @@ class _$Hip3Challenge extends Hip3Challenge {
     var _$hash = 0;
     _$hash = $jc(_$hash, challengeId.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
+    _$hash = $jc(_$hash, environment.hashCode);
+    _$hash = $jc(_$hash, purpose.hashCode);
+    _$hash = $jc(_$hash, ownerAddress.hashCode);
+    _$hash = $jc(_$hash, agentAddress.hashCode);
+    _$hash = $jc(_$hash, typedDataJson.hashCode);
+    _$hash = $jc(_$hash, payloadHash.hashCode);
+    _$hash = $jc(_$hash, validUntil.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, message.hashCode);
@@ -260,6 +434,13 @@ class _$Hip3Challenge extends Hip3Challenge {
     return (newBuiltValueToStringHelper(r'Hip3Challenge')
           ..add('challengeId', challengeId)
           ..add('network', network)
+          ..add('environment', environment)
+          ..add('purpose', purpose)
+          ..add('ownerAddress', ownerAddress)
+          ..add('agentAddress', agentAddress)
+          ..add('typedDataJson', typedDataJson)
+          ..add('payloadHash', payloadHash)
+          ..add('validUntil', validUntil)
           ..add('settlementAsset', settlementAsset)
           ..add('status', status)
           ..add('message', message)
@@ -280,6 +461,36 @@ class Hip3ChallengeBuilder
   Hip3ChallengeNetworkEnum? _network;
   Hip3ChallengeNetworkEnum? get network => _$this._network;
   set network(Hip3ChallengeNetworkEnum? network) => _$this._network = network;
+
+  Hip3ChallengeEnvironmentEnum? _environment;
+  Hip3ChallengeEnvironmentEnum? get environment => _$this._environment;
+  set environment(Hip3ChallengeEnvironmentEnum? environment) =>
+      _$this._environment = environment;
+
+  Hip3ChallengePurposeEnum? _purpose;
+  Hip3ChallengePurposeEnum? get purpose => _$this._purpose;
+  set purpose(Hip3ChallengePurposeEnum? purpose) => _$this._purpose = purpose;
+
+  String? _ownerAddress;
+  String? get ownerAddress => _$this._ownerAddress;
+  set ownerAddress(String? ownerAddress) => _$this._ownerAddress = ownerAddress;
+
+  String? _agentAddress;
+  String? get agentAddress => _$this._agentAddress;
+  set agentAddress(String? agentAddress) => _$this._agentAddress = agentAddress;
+
+  String? _typedDataJson;
+  String? get typedDataJson => _$this._typedDataJson;
+  set typedDataJson(String? typedDataJson) =>
+      _$this._typedDataJson = typedDataJson;
+
+  String? _payloadHash;
+  String? get payloadHash => _$this._payloadHash;
+  set payloadHash(String? payloadHash) => _$this._payloadHash = payloadHash;
+
+  DateTime? _validUntil;
+  DateTime? get validUntil => _$this._validUntil;
+  set validUntil(DateTime? validUntil) => _$this._validUntil = validUntil;
 
   Hip3ChallengeSettlementAssetEnum? _settlementAsset;
   Hip3ChallengeSettlementAssetEnum? get settlementAsset =>
@@ -312,6 +523,13 @@ class Hip3ChallengeBuilder
     if ($v != null) {
       _challengeId = $v.challengeId;
       _network = $v.network;
+      _environment = $v.environment;
+      _purpose = $v.purpose;
+      _ownerAddress = $v.ownerAddress;
+      _agentAddress = $v.agentAddress;
+      _typedDataJson = $v.typedDataJson;
+      _payloadHash = $v.payloadHash;
+      _validUntil = $v.validUntil;
       _settlementAsset = $v.settlementAsset;
       _status = $v.status;
       _message = $v.message;
@@ -342,6 +560,20 @@ class Hip3ChallengeBuilder
               challengeId, r'Hip3Challenge', 'challengeId'),
           network: BuiltValueNullFieldError.checkNotNull(
               network, r'Hip3Challenge', 'network'),
+          environment: BuiltValueNullFieldError.checkNotNull(
+              environment, r'Hip3Challenge', 'environment'),
+          purpose: BuiltValueNullFieldError.checkNotNull(
+              purpose, r'Hip3Challenge', 'purpose'),
+          ownerAddress: BuiltValueNullFieldError.checkNotNull(
+              ownerAddress, r'Hip3Challenge', 'ownerAddress'),
+          agentAddress: BuiltValueNullFieldError.checkNotNull(
+              agentAddress, r'Hip3Challenge', 'agentAddress'),
+          typedDataJson: BuiltValueNullFieldError.checkNotNull(
+              typedDataJson, r'Hip3Challenge', 'typedDataJson'),
+          payloadHash: BuiltValueNullFieldError.checkNotNull(
+              payloadHash, r'Hip3Challenge', 'payloadHash'),
+          validUntil: BuiltValueNullFieldError.checkNotNull(
+              validUntil, r'Hip3Challenge', 'validUntil'),
           settlementAsset: settlementAsset,
           status: BuiltValueNullFieldError.checkNotNull(
               status, r'Hip3Challenge', 'status'),

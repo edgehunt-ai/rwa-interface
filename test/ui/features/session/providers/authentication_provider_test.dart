@@ -352,4 +352,8 @@ final class _WalletConnection implements WalletConnection {
 
   @override
   Future<String> signPersonalMessage(String message) async => '0xsignature';
+
+  @override
+  Future<String> signTypedDataV4(Map<String, Object?> typedData) async =>
+      '0xsignature';
 }

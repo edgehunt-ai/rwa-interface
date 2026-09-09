@@ -31,7 +31,7 @@ abstract class FundingRouteCapability
 
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
-  // enum providerEnum {  across,  relay,  };
+  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
 
   @BuiltValueField(wireName: r'status')
   FundingRouteCapabilityStatus get status;

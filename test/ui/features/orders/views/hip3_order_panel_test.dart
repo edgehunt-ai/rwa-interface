@@ -3,8 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
+import 'package:rwa_interface/domain/models/resource_result.dart';
+import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 
@@ -133,6 +137,31 @@ void main() {
     expect(find.text('Leverage: 20x'), findsOneWidget);
     expect(find.text('TP/SL will be set during order review.'), findsOneWidget);
   });
+
+  testWidgets('pending HIP-3 order is signed and submitted before success', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    final execution = _Hip3Execution();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(orders),
+          hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+        ],
+        child: buildTestApp(const Hip3OrderPanel()),
+      ),
+    );
+
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Long NVDA'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Long NVDA'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm Long'));
+    await tester.pumpAndSettle();
+
+    expect(execution.orderId, 'order-1');
+    expect(find.text('Order submitted'), findsOneWidget);
+  });
 }
 
 final class _CapturingHip3Orders implements OrdersRepository {
@@ -153,4 +182,58 @@ final class _CapturingHip3Orders implements OrdersRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _ExecutableHip3Orders implements OrdersRepository {
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async => OrderPreview(
+    previewId: 'hip3-preview',
+    intent: intent,
+    orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+  );
+
+  @override
+  Future<ResourceResult<TradingOrder>> create(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) async => ResourceResult(
+    resource: TradingOrder(
+      orderId: 'order-1',
+      symbol: intent.symbol,
+      kind: MarketProductKind.perp,
+      side: intent.side,
+      type: intent.type,
+      status: TradingOrderStatus.pendingSignature,
+      createdAt: DateTime.utc(2026),
+    ),
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _Hip3Execution implements Hip3OrderExecutionRepository {
+  String? orderId;
+
+  @override
+  Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(
+    String orderId,
+  ) async {
+    this.orderId = orderId;
+    return ResourceResult(
+      resource: TradingOrder(
+        orderId: orderId,
+        symbol: 'NVDA',
+        kind: MarketProductKind.perp,
+        side: TradingSide.long,
+        type: TradingOrderType.market,
+        status: TradingOrderStatus.open,
+        createdAt: DateTime.utc(2026),
+      ),
+    );
+  }
 }

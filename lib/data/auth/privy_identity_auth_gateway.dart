@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:privy_flutter/privy_flutter.dart';
@@ -6,6 +7,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../domain/auth/authentication.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
+import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../app/config/privy_configuration.dart';
 
 typedef PrivyFactory = Privy Function(PrivyConfig configuration);
@@ -13,18 +15,29 @@ typedef PrivyDiagnosticReporter = void Function({
   required String operation,
   required String message,
 });
+typedef PrivyTypedDataRequester = Future<Result<EthereumRpcResponse>> Function(
+  EmbeddedEthereumWallet wallet,
+  EthereumRpcRequest request,
+);
 
-final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
+final class PrivyIdentityAuthGateway
+    implements IdentityAuthGateway, Hip3TypedDataSigner {
   PrivyIdentityAuthGateway({
     PrivyFactory? createPrivy,
     PrivyDiagnosticReporter? reportDiagnostic,
+    PrivyTypedDataRequester? requestTypedData,
   }) : _createPrivy = createPrivy ?? ((config) => Privy.init(config: config)),
-       _reportDiagnostic = reportDiagnostic ?? _reportToSentry;
+       _reportDiagnostic = reportDiagnostic ?? _reportToSentry,
+       _requestTypedData =
+           requestTypedData ??
+           ((wallet, request) => wallet.provider.request(request));
 
   final PrivyFactory _createPrivy;
   final PrivyDiagnosticReporter _reportDiagnostic;
+  final PrivyTypedDataRequester _requestTypedData;
   Privy? _privy;
   PrivyUser? _user;
+  WalletConnection? _externalWallet;
   bool _sessionUsable = false;
 
   @override
@@ -58,14 +71,17 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
       switch (authState) {
         case Authenticated(:final user):
           _user = user;
+          _externalWallet = null;
           _sessionUsable = true;
           return IdentityPrincipal(user.id);
         case Unauthenticated():
           _user = null;
+          _externalWallet = null;
           _sessionUsable = false;
           return null;
         case NotReady() || AuthenticatedUnverified():
           _user = null;
+          _externalWallet = null;
           _sessionUsable = false;
           throw const IdentityFailure(
             AuthenticationFailureCode.provider,
@@ -113,6 +129,7 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
       switch (result) {
         case Success<PrivyUser>(:final value):
           _user = value;
+          _externalWallet = null;
           _sessionUsable = true;
           return IdentityPrincipal(value.id);
         case Failure<PrivyUser>(:final error):
@@ -126,6 +143,67 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
       rethrow;
     } catch (error) {
       throw _mapUnexpectedFailure(operation: 'verify_email_code', error: error);
+    }
+  }
+
+  @override
+  Future<String> signTypedDataV4({
+    required String expectedSigner,
+    required Map<String, Object?> typedData,
+  }) async {
+    final normalized = expectedSigner.toLowerCase();
+    if (!RegExp(r'^0x[0-9a-f]{40}$').hasMatch(normalized) ||
+        typedData.isEmpty) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+    }
+    if (!_sessionUsable) {
+      throw const Hip3SigningFailure(
+        Hip3SigningFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+
+    final external = _externalWallet;
+    if (external != null && external.address.toLowerCase() == normalized) {
+      try {
+        return await external.signTypedDataV4(typedData);
+      } catch (_) {
+        throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected);
+      }
+    }
+
+    final user = _user ?? await _privy?.getUser();
+    if (user == null) {
+      throw const Hip3SigningFailure(
+        Hip3SigningFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+    _user = user;
+    final matches = user.embeddedEthereumWallets
+        .where((wallet) => wallet.address.toLowerCase() == normalized)
+        .toList(growable: false);
+    if (matches.length != 1) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.walletMismatch);
+    }
+
+    final request = EthereumRpcRequest.ethSignTypedDataV4(
+      matches.single.address,
+      _encodeTypedData(typedData),
+    );
+    try {
+      return switch (await _requestTypedData(matches.single, request)) {
+        Success<EthereumRpcResponse>(:final value) when value.data.isNotEmpty =>
+          value.data,
+        _ => throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected),
+      };
+    } on Hip3SigningFailure {
+      rethrow;
+    } catch (_) {
+      throw const Hip3SigningFailure(
+        Hip3SigningFailureCode.walletUnavailable,
+        retryable: true,
+      );
     }
   }
 
@@ -150,6 +228,7 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
       switch (result) {
         case Success<PrivyUser>(:final value):
           _user = value;
+          _externalWallet = null;
           _sessionUsable = true;
           return IdentityPrincipal(value.id);
         case Failure<PrivyUser>(:final error):
@@ -175,6 +254,7 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
       switch (result) {
         case Success<PrivyUser>(:final value):
           _user = value;
+          _externalWallet = null;
           _sessionUsable = true;
           return IdentityPrincipal(value.id);
         case Failure<PrivyUser>(:final error):
@@ -227,6 +307,7 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
       switch (result) {
         case Success<PrivyUser>(:final value):
           _user = value;
+          _externalWallet = connection;
           _sessionUsable = true;
           return IdentityPrincipal(value.id);
         case Failure<PrivyUser>(:final error):
@@ -278,6 +359,7 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
   Future<void> logout() async {
     final privy = _privy;
     _user = null;
+    _externalWallet = null;
     _sessionUsable = false;
     if (privy == null) return;
     try {
@@ -287,6 +369,14 @@ final class PrivyIdentityAuthGateway implements IdentityAuthGateway {
         AuthenticationFailureCode.provider,
         retryable: true,
       );
+    }
+  }
+
+  static String _encodeTypedData(Map<String, Object?> typedData) {
+    try {
+      return jsonEncode(typedData);
+    } catch (_) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
     }
   }
 
