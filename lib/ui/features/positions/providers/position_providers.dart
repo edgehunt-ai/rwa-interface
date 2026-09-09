@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order.dart';
@@ -43,9 +44,10 @@ final positionProvider = FutureProvider.autoDispose.family<Position, String>((
   return ref.watch(positionsRepositoryProvider).get(positionId);
 });
 
-final positionCommandProvider = Provider.autoDispose(
-  (ref) => PositionCommands(ref),
-);
+final positionCommandProvider = Provider.autoDispose((ref) {
+  ref.watch(sessionGenerationProvider);
+  return PositionCommands(ref);
+});
 
 final class PositionCommands {
   PositionCommands(this._ref);
@@ -57,13 +59,18 @@ final class PositionCommands {
     required String fingerprint,
     required Future<T> Function(String) command,
   }) async {
+    if (!_ref.mounted) throw const CancelledFailure();
     final generation = _ref.read(sessionGenerationProvider);
     try {
-      return await _commands.run(
+      final result = await _commands.run(
         operation: operation,
         fingerprint: fingerprint,
         command: command,
       );
+      if (!_ref.mounted || _ref.read(sessionGenerationProvider) != generation) {
+        throw const CancelledFailure();
+      }
+      return result;
     } finally {
       // A failed/paused call can still have created a recoverable server action.
       // Never refresh a different user's session after an in-flight command.
