@@ -25,25 +25,56 @@ import 'package:rwa_api_client/src/model/activity_status.dart';
 import 'package:rwa_api_client/src/model/activity_type.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/app_version_info.dart';
+import 'package:rwa_api_client/src/model/arbitrum_confirmed_deposit.dart';
+import 'package:rwa_api_client/src/model/arbitrum_deposit_address.dart';
+import 'package:rwa_api_client/src/model/arbitrum_deposit_rail.dart';
+import 'package:rwa_api_client/src/model/arbitrum_usdc_funding_source_asset.dart';
+import 'package:rwa_api_client/src/model/arbitrum_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/asset_info.dart';
+import 'package:rwa_api_client/src/model/auto_single_source_funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/available_deposit_rail_availability.dart';
+import 'package:rwa_api_client/src/model/base_usdc_funding_source_asset.dart';
+import 'package:rwa_api_client/src/model/base_usdt_funding_source_asset.dart';
+import 'package:rwa_api_client/src/model/bsc_confirmed_deposit.dart';
+import 'package:rwa_api_client/src/model/bsc_deposit_address.dart';
+import 'package:rwa_api_client/src/model/bsc_deposit_rail.dart';
+import 'package:rwa_api_client/src/model/bsc_usdc_funding_source_asset.dart';
+import 'package:rwa_api_client/src/model/bsc_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/bstock_create_order_request.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_rail.dart';
+import 'package:rwa_api_client/src/model/bstock_funding_target_asset.dart';
+import 'package:rwa_api_client/src/model/bstock_funding_target_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/bstock_funding_target_credit_observation.dart';
+import 'package:rwa_api_client/src/model/bstock_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
+import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
 import 'package:rwa_api_client/src/model/candle_point.dart';
 import 'package:rwa_api_client/src/model/candle_series.dart';
 import 'package:rwa_api_client/src/model/chain.dart';
 import 'package:rwa_api_client/src/model/chart_range.dart';
 import 'package:rwa_api_client/src/model/claim.dart';
 import 'package:rwa_api_client/src/model/close_position_request.dart';
+import 'package:rwa_api_client/src/model/completed_funding_provider_observation.dart';
+import 'package:rwa_api_client/src/model/completed_funding_source_transaction_observation.dart';
+import 'package:rwa_api_client/src/model/completed_funding_transfer_state.dart';
 import 'package:rwa_api_client/src/model/create_deposit_intent_request.dart';
 import 'package:rwa_api_client/src/model/create_order_request.dart';
 import 'package:rwa_api_client/src/model/create_withdrawal_request.dart';
+import 'package:rwa_api_client/src/model/cross_chain_funding_transfer.dart';
 import 'package:rwa_api_client/src/model/deposit.dart';
 import 'package:rwa_api_client/src/model/deposit_address.dart';
+import 'package:rwa_api_client/src/model/deposit_address_base.dart';
+import 'package:rwa_api_client/src/model/deposit_base.dart';
+import 'package:rwa_api_client/src/model/deposit_credit_target.dart';
+import 'package:rwa_api_client/src/model/deposit_instruction.dart';
 import 'package:rwa_api_client/src/model/deposit_mode.dart';
 import 'package:rwa_api_client/src/model/deposit_page.dart';
+import 'package:rwa_api_client/src/model/deposit_rail.dart';
+import 'package:rwa_api_client/src/model/deposit_rail_availability.dart';
+import 'package:rwa_api_client/src/model/deposit_rail_base.dart';
+import 'package:rwa_api_client/src/model/deposit_rail_blocker.dart';
 import 'package:rwa_api_client/src/model/deposit_status.dart';
 import 'package:rwa_api_client/src/model/device.dart';
 import 'package:rwa_api_client/src/model/device_info.dart';
@@ -52,25 +83,78 @@ import 'package:rwa_api_client/src/model/device_register_request.dart';
 import 'package:rwa_api_client/src/model/disclosures.dart';
 import 'package:rwa_api_client/src/model/disclosures_always_on.dart';
 import 'package:rwa_api_client/src/model/disclosures_sessions_inner.dart';
+import 'package:rwa_api_client/src/model/erc20_approval_action.dart';
+import 'package:rwa_api_client/src/model/ethereum_usdc_funding_source_asset.dart';
+import 'package:rwa_api_client/src/model/ethereum_usdt_funding_source_asset.dart';
+import 'package:rwa_api_client/src/model/frozen_evm_transaction.dart';
+import 'package:rwa_api_client/src/model/funding_asset_identity.dart';
+import 'package:rwa_api_client/src/model/funding_asset_provenance.dart';
 import 'package:rwa_api_client/src/model/funding_catalog.dart';
+import 'package:rwa_api_client/src/model/funding_circuit_snapshot.dart';
+import 'package:rwa_api_client/src/model/funding_fee_breakdown.dart';
+import 'package:rwa_api_client/src/model/funding_global_circuit.dart';
+import 'package:rwa_api_client/src/model/funding_global_circuit_closed.dart';
+import 'package:rwa_api_client/src/model/funding_global_circuit_open.dart';
 import 'package:rwa_api_client/src/model/funding_plan.dart';
+import 'package:rwa_api_client/src/model/funding_plan_blocker.dart';
+import 'package:rwa_api_client/src/model/funding_plan_mode.dart';
 import 'package:rwa_api_client/src/model/funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/funding_plan_status.dart';
+import 'package:rwa_api_client/src/model/funding_provider.dart';
+import 'package:rwa_api_client/src/model/funding_provider_observation.dart';
 import 'package:rwa_api_client/src/model/funding_rail.dart';
+import 'package:rwa_api_client/src/model/funding_rail_circuit.dart';
+import 'package:rwa_api_client/src/model/funding_rail_circuit_closed.dart';
+import 'package:rwa_api_client/src/model/funding_rail_circuit_open.dart';
+import 'package:rwa_api_client/src/model/funding_refund_observation.dart';
+import 'package:rwa_api_client/src/model/funding_refund_policy.dart';
+import 'package:rwa_api_client/src/model/funding_route_blocker.dart';
+import 'package:rwa_api_client/src/model/funding_route_capability.dart';
+import 'package:rwa_api_client/src/model/funding_route_capability_matrix.dart';
+import 'package:rwa_api_client/src/model/funding_route_capability_status.dart';
+import 'package:rwa_api_client/src/model/funding_route_quote.dart';
+import 'package:rwa_api_client/src/model/funding_source_asset.dart';
+import 'package:rwa_api_client/src/model/funding_source_asset_catalog.dart';
+import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
+import 'package:rwa_api_client/src/model/funding_source_asset_identity.dart';
+import 'package:rwa_api_client/src/model/funding_source_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/funding_source_transaction_observation.dart';
+import 'package:rwa_api_client/src/model/funding_target_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/funding_target_balance_source.dart';
+import 'package:rwa_api_client/src/model/funding_target_credit_observation.dart';
+import 'package:rwa_api_client/src/model/funding_wallet_action.dart';
+import 'package:rwa_api_client/src/model/funding_wallet_action_summary.dart';
+import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
+import 'package:rwa_api_client/src/model/gas_payment_quote.dart';
+import 'package:rwa_api_client/src/model/gas_sponsorship_decision.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
 import 'package:rwa_api_client/src/model/holding_group.dart';
-import 'package:rwa_api_client/src/model/holding_page.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
-import 'package:rwa_api_client/src/model/list_accounts200_response.dart';
+import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/legacy_bstock_funding_rail.dart';
+import 'package:rwa_api_client/src/model/legacy_bstock_order_preview.dart';
+import 'package:rwa_api_client/src/model/legacy_deposit.dart';
+import 'package:rwa_api_client/src/model/legacy_deposit_status.dart';
+import 'package:rwa_api_client/src/model/legacy_funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/legacy_perp_funding_plan.dart';
+import 'package:rwa_api_client/src/model/legacy_perp_funding_rail.dart';
+import 'package:rwa_api_client/src/model/legacy_perp_order_preview.dart';
+import 'package:rwa_api_client/src/model/legacy_transfer.dart';
+import 'package:rwa_api_client/src/model/legacy_transfer_status.dart';
 import 'package:rwa_api_client/src/model/list_app_versions200_response.dart';
+import 'package:rwa_api_client/src/model/locked_executable_action_transfer_state.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/market_product_group.dart';
 import 'package:rwa_api_client/src/model/market_session_info.dart';
 import 'package:rwa_api_client/src/model/market_stats.dart';
+import 'package:rwa_api_client/src/model/no_executable_action_transfer_state.dart';
+import 'package:rwa_api_client/src/model/non_completed_funding_transfer_state.dart';
 import 'package:rwa_api_client/src/model/order.dart';
 import 'package:rwa_api_client/src/model/order_book.dart';
 import 'package:rwa_api_client/src/model/order_book_level.dart';
+import 'package:rwa_api_client/src/model/order_evm_action.dart';
 import 'package:rwa_api_client/src/model/order_page.dart';
 import 'package:rwa_api_client/src/model/order_preview.dart';
 import 'package:rwa_api_client/src/model/order_preview_common.dart';
@@ -78,15 +162,41 @@ import 'package:rwa_api_client/src/model/order_preview_request.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_status.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
+import 'package:rwa_api_client/src/model/origin_transaction_action.dart';
 import 'package:rwa_api_client/src/model/page.dart';
 import 'package:rwa_api_client/src/model/perp_create_order_request.dart';
 import 'package:rwa_api_client/src/model/perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/perp_funding_rail.dart';
+import 'package:rwa_api_client/src/model/perp_funding_target_asset.dart';
+import 'package:rwa_api_client/src/model/perp_funding_target_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/perp_funding_target_credit_observation.dart';
+import 'package:rwa_api_client/src/model/perp_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview_request.dart';
+import 'package:rwa_api_client/src/model/perp_order_wallet_action_state.dart';
+import 'package:rwa_api_client/src/model/portfolio_account_page.dart';
+import 'package:rwa_api_client/src/model/portfolio_asset.dart';
+import 'package:rwa_api_client/src/model/portfolio_asset_network.dart';
+import 'package:rwa_api_client/src/model/portfolio_asset_page.dart';
+import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
+import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
+import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
+import 'package:rwa_api_client/src/model/portfolio_holding_page.dart';
+import 'package:rwa_api_client/src/model/portfolio_notice.dart';
+import 'package:rwa_api_client/src/model/portfolio_notice_severity.dart';
+import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
+import 'package:rwa_api_client/src/model/portfolio_source_kind.dart';
+import 'package:rwa_api_client/src/model/portfolio_source_state.dart';
+import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
 import 'package:rwa_api_client/src/model/portfolio_summary.dart';
+import 'package:rwa_api_client/src/model/portfolio_warning_code.dart';
 import 'package:rwa_api_client/src/model/position.dart';
 import 'package:rwa_api_client/src/model/position_page.dart';
+import 'package:rwa_api_client/src/model/privy_authorization_body.dart';
+import 'package:rwa_api_client/src/model/privy_authorization_headers.dart';
+import 'package:rwa_api_client/src/model/privy_authorization_params.dart';
+import 'package:rwa_api_client/src/model/privy_authorization_payload.dart';
+import 'package:rwa_api_client/src/model/privy_authorization_transaction.dart';
 import 'package:rwa_api_client/src/model/privy_client_config.dart';
 import 'package:rwa_api_client/src/model/privy_client_config_embedded_wallet.dart';
 import 'package:rwa_api_client/src/model/product_detail.dart';
@@ -96,6 +206,7 @@ import 'package:rwa_api_client/src/model/product_page.dart';
 import 'package:rwa_api_client/src/model/product_ref.dart';
 import 'package:rwa_api_client/src/model/product_type.dart';
 import 'package:rwa_api_client/src/model/quote.dart';
+import 'package:rwa_api_client/src/model/ready_funding_wallet_action.dart';
 import 'package:rwa_api_client/src/model/realtime_activity_event.dart';
 import 'package:rwa_api_client/src/model/realtime_balance_event.dart';
 import 'package:rwa_api_client/src/model/realtime_candle_event.dart';
@@ -120,6 +231,7 @@ import 'package:rwa_api_client/src/model/session_kind.dart';
 import 'package:rwa_api_client/src/model/session_request.dart';
 import 'package:rwa_api_client/src/model/session_response.dart';
 import 'package:rwa_api_client/src/model/session_segment.dart';
+import 'package:rwa_api_client/src/model/sponsored_wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/stock.dart';
 import 'package:rwa_api_client/src/model/stock_group.dart';
 import 'package:rwa_api_client/src/model/stock_page.dart';
@@ -127,15 +239,35 @@ import 'package:rwa_api_client/src/model/token_balance.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/tp_sl_update_request.dart';
 import 'package:rwa_api_client/src/model/transfer.dart';
+import 'package:rwa_api_client/src/model/transfer_action_status.dart';
+import 'package:rwa_api_client/src/model/transfer_action_submission.dart';
+import 'package:rwa_api_client/src/model/transfer_action_submission_request.dart';
+import 'package:rwa_api_client/src/model/transfer_action_submission_status.dart';
 import 'package:rwa_api_client/src/model/transfer_claim_request.dart';
+import 'package:rwa_api_client/src/model/transfer_provider_status.dart';
+import 'package:rwa_api_client/src/model/transfer_recovery_status.dart';
+import 'package:rwa_api_client/src/model/transfer_refund_status.dart';
 import 'package:rwa_api_client/src/model/transfer_request.dart';
+import 'package:rwa_api_client/src/model/transfer_source_execution_status.dart';
 import 'package:rwa_api_client/src/model/transfer_status.dart';
+import 'package:rwa_api_client/src/model/transfer_target_credit_status.dart';
+import 'package:rwa_api_client/src/model/unavailable_deposit_rail_availability.dart';
 import 'package:rwa_api_client/src/model/update_position_leverage_request.dart';
 import 'package:rwa_api_client/src/model/user.dart';
+import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
 import 'package:rwa_api_client/src/model/wallet.dart';
+import 'package:rwa_api_client/src/model/wallet_action_chain_observation.dart';
 import 'package:rwa_api_client/src/model/wallet_action_complete_request.dart';
+import 'package:rwa_api_client/src/model/wallet_action_execution.dart';
+import 'package:rwa_api_client/src/model/wallet_action_execution_create_request.dart';
+import 'package:rwa_api_client/src/model/wallet_action_execution_provider.dart';
+import 'package:rwa_api_client/src/model/wallet_action_execution_status.dart';
+import 'package:rwa_api_client/src/model/wallet_action_execution_submission_request.dart';
+import 'package:rwa_api_client/src/model/wallet_action_kind.dart';
+import 'package:rwa_api_client/src/model/wallet_action_provider_status.dart';
+import 'package:rwa_api_client/src/model/wallet_action_resource_type.dart';
 import 'package:rwa_api_client/src/model/wallet_authorization.dart';
 import 'package:rwa_api_client/src/model/wallet_authorization_request.dart';
 import 'package:rwa_api_client/src/model/wallet_page.dart';
@@ -160,25 +292,59 @@ part 'serializers.g.dart';
   ActivityType,
   ApiError,
   AppVersionInfo,
+  ArbitrumConfirmedDeposit,
+  ArbitrumDepositAddress,
+  ArbitrumDepositRail,
+  ArbitrumUsdcFundingSourceAsset,
+  ArbitrumUsdtFundingSourceAsset,
   AssetInfo,
+  AutoSingleSourceFundingPlanRequest,
+  AvailableDepositRailAvailability,
+  BaseUsdcFundingSourceAsset,
+  BaseUsdtFundingSourceAsset,
+  BscConfirmedDeposit,
+  BscDepositAddress,
+  BscDepositRail,
+  BscUsdcFundingSourceAsset,
+  BscUsdtFundingSourceAsset,
   BstockCreateOrderRequest,
   BstockFundingPlan,
   BstockFundingRail,
+  BstockFundingTargetAsset,
+  BstockFundingTargetBalanceSnapshot,
+  BstockFundingTargetCreditObservation,
+  BstockFundingTransferTarget,
   BstockOrderPreview,
   BstockOrderPreviewRequest,
+  BstockOrderWalletActionState,
   CandlePoint,
   CandleSeries,
   Chain,
   ChartRange,
   Claim,
   ClosePositionRequest,
+  CompletedFundingProviderObservation,
+  CompletedFundingSourceTransactionObservation,
+  CompletedFundingTransferState,
   CreateDepositIntentRequest,
   CreateOrderRequest,
   CreateWithdrawalRequest,
+  CrossChainFundingTransfer,
   Deposit,
   DepositAddress,
+  DepositAddressBase,
+  $DepositAddressBase,
+  DepositBase,
+  $DepositBase,
+  DepositCreditTarget,
+  DepositInstruction,
   DepositMode,
   DepositPage,
+  DepositRail,
+  DepositRailAvailability,
+  DepositRailBase,
+  $DepositRailBase,
+  DepositRailBlocker,
   DepositStatus,
   Device,
   DeviceInfo,
@@ -187,41 +353,122 @@ part 'serializers.g.dart';
   Disclosures,
   DisclosuresAlwaysOn,
   DisclosuresSessionsInner,
+  Erc20ApprovalAction,
+  EthereumUsdcFundingSourceAsset,
+  EthereumUsdtFundingSourceAsset,
+  FrozenEvmTransaction,
+  FundingAssetIdentity,
+  FundingAssetProvenance,
   FundingCatalog,
+  FundingCircuitSnapshot,
+  FundingFeeBreakdown,
+  FundingGlobalCircuit,
+  FundingGlobalCircuitClosed,
+  FundingGlobalCircuitOpen,
   FundingPlan,
+  FundingPlanBlocker,
+  FundingPlanMode,
   FundingPlanRequest,
+  FundingPlanStatus,
+  FundingProvider,
+  FundingProviderObservation,
   FundingRail,
+  FundingRailCircuit,
+  FundingRailCircuitClosed,
+  FundingRailCircuitOpen,
+  FundingRefundObservation,
+  FundingRefundPolicy,
+  FundingRouteBlocker,
+  FundingRouteCapability,
+  FundingRouteCapabilityMatrix,
+  FundingRouteCapabilityStatus,
+  FundingRouteQuote,
+  FundingSourceAsset,
+  FundingSourceAssetCatalog,
+  FundingSourceAssetId,
+  FundingSourceAssetIdentity,
+  FundingSourceBalanceSnapshot,
+  FundingSourceTransactionObservation,
+  FundingTargetBalanceSnapshot,
+  FundingTargetBalanceSource,
+  FundingTargetCreditObservation,
+  FundingWalletAction,
+  FundingWalletActionSummary,
+  GasPaymentMode,
+  GasPaymentQuote,
+  GasSponsorshipDecision,
   Hip3Challenge,
   Hip3ChallengeCompleteRequest,
   Hip3ChallengeRequest,
   HoldingGroup,
-  HoldingPage,
   KeyValue,
-  ListAccounts200Response,
+  LegacyBstockFundingPlan,
+  LegacyBstockFundingRail,
+  LegacyBstockOrderPreview,
+  LegacyDeposit,
+  LegacyDepositStatus,
+  LegacyFundingPlanRequest,
+  LegacyPerpFundingPlan,
+  LegacyPerpFundingRail,
+  LegacyPerpOrderPreview,
+  LegacyTransfer,
+  LegacyTransferStatus,
   ListAppVersions200Response,
+  LockedExecutableActionTransferState,
   MarginMode,
   MarketProductGroup,
   MarketSessionInfo,
   MarketStats,
+  NoExecutableActionTransferState,
+  NonCompletedFundingTransferState,
   Order,
   OrderBook,
   OrderBookLevel,
+  OrderEvmAction,
   OrderPage,
   OrderPreview,
-  OrderPreviewCommon,$OrderPreviewCommon,
+  OrderPreviewCommon,
+  $OrderPreviewCommon,
   OrderPreviewRequest,
   OrderSide,
   OrderStatus,
   OrderType,
-  Page,$Page,
+  OriginTransactionAction,
+  Page,
+  $Page,
   PerpCreateOrderRequest,
   PerpFundingPlan,
   PerpFundingRail,
+  PerpFundingTargetAsset,
+  PerpFundingTargetBalanceSnapshot,
+  PerpFundingTargetCreditObservation,
+  PerpFundingTransferTarget,
   PerpOrderPreview,
   PerpOrderPreviewRequest,
+  PerpOrderWalletActionState,
+  PortfolioAccountPage,
+  PortfolioAsset,
+  PortfolioAssetNetwork,
+  PortfolioAssetPage,
+  PortfolioAssetSourceKind,
+  PortfolioDataStatus,
+  PortfolioFreshness,
+  PortfolioHoldingPage,
+  PortfolioNotice,
+  PortfolioNoticeSeverity,
+  PortfolioPriceSource,
+  PortfolioSourceKind,
+  PortfolioSourceState,
+  PortfolioSourceSummary,
   PortfolioSummary,
+  PortfolioWarningCode,
   Position,
   PositionPage,
+  PrivyAuthorizationBody,
+  PrivyAuthorizationHeaders,
+  PrivyAuthorizationParams,
+  PrivyAuthorizationPayload,
+  PrivyAuthorizationTransaction,
   PrivyClientConfig,
   PrivyClientConfigEmbeddedWallet,
   ProductDetail,
@@ -231,6 +478,7 @@ part 'serializers.g.dart';
   ProductRef,
   ProductType,
   Quote,
+  ReadyFundingWalletAction,
   RealtimeActivityEvent,
   RealtimeBalanceEvent,
   RealtimeCandleEvent,
@@ -238,7 +486,8 @@ part 'serializers.g.dart';
   RealtimeClaimEvent,
   RealtimeDepositEvent,
   RealtimeEvent,
-  RealtimeEventBase,$RealtimeEventBase,
+  RealtimeEventBase,
+  $RealtimeEventBase,
   RealtimeOrderEvent,
   RealtimePositionEvent,
   RealtimePriceEvent,
@@ -255,6 +504,7 @@ part 'serializers.g.dart';
   SessionRequest,
   SessionResponse,
   SessionSegment,
+  SponsoredWalletActionExecutionSubmissionRequest,
   Stock,
   StockGroup,
   StockPage,
@@ -262,15 +512,35 @@ part 'serializers.g.dart';
   TpSlSpec,
   TpSlUpdateRequest,
   Transfer,
+  TransferActionStatus,
+  TransferActionSubmission,
+  TransferActionSubmissionRequest,
+  TransferActionSubmissionStatus,
   TransferClaimRequest,
+  TransferProviderStatus,
+  TransferRecoveryStatus,
+  TransferRefundStatus,
   TransferRequest,
+  TransferSourceExecutionStatus,
   TransferStatus,
+  TransferTargetCreditStatus,
+  UnavailableDepositRailAvailability,
   UpdatePositionLeverageRequest,
   User,
+  UserPaidWalletActionExecutionSubmissionRequest,
   UserSettings,
   UserSettingsUpdate,
   Wallet,
+  WalletActionChainObservation,
   WalletActionCompleteRequest,
+  WalletActionExecution,
+  WalletActionExecutionCreateRequest,
+  WalletActionExecutionProvider,
+  WalletActionExecutionStatus,
+  WalletActionExecutionSubmissionRequest,
+  WalletActionKind,
+  WalletActionProviderStatus,
+  WalletActionResourceType,
   WalletAuthorization,
   WalletAuthorizationRequest,
   WalletPage,
@@ -283,14 +553,6 @@ part 'serializers.g.dart';
 ])
 Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FundingRail)]),
-        () => ListBuilder<FundingRail>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(CandlePoint)]),
-        () => ListBuilder<CandlePoint>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Device)]),
         () => ListBuilder<Device>(),
       )
@@ -299,12 +561,8 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<Withdrawal>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(KeyValue)]),
-        () => ListBuilder<KeyValue>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Chain)]),
-        () => ListBuilder<Chain>(),
+        const FullType(BuiltSet, [FullType(FundingRail)]),
+        () => SetBuilder<FundingRail>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Position)]),
@@ -319,16 +577,8 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<Deposit>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ProductListing)]),
-        () => ListBuilder<ProductListing>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(OrderBookLevel)]),
         () => ListBuilder<OrderBookLevel>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(StockGroup)]),
-        () => ListBuilder<StockGroup>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Order)]),
@@ -343,24 +593,73 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<ActivityRecord>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(AppVersionInfo)]),
-        () => ListBuilder<AppVersionInfo>(),
+        const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
+        () => ListBuilder<PortfolioWarningCode>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProductRef)]),
         () => ListBuilder<ProductRef>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
+        () => ListBuilder<FundingWalletActionSummary>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingRouteBlocker)]),
+        () => ListBuilder<FundingRouteBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(CandlePoint)]),
+        () => ListBuilder<CandlePoint>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DepositRail)]),
+        () => ListBuilder<DepositRail>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(KeyValue)]),
+        () => ListBuilder<KeyValue>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Chain)]),
+        () => ListBuilder<Chain>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioAsset)]),
+        () => ListBuilder<PortfolioAsset>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DepositRailBlocker)]),
+        () => ListBuilder<DepositRailBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ProductListing)]),
+        () => ListBuilder<ProductListing>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(StockGroup)]),
+        () => ListBuilder<StockGroup>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(AppVersionInfo)]),
+        () => ListBuilder<AppVersionInfo>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(DisclosuresSessionsInner)]),
         () => ListBuilder<DisclosuresSessionsInner>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+        const FullType(
+            BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
         () => MapBuilder<String, JsonObject?>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TokenBalance)]),
         () => ListBuilder<TokenBalance>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioNotice)]),
+        () => ListBuilder<PortfolioNotice>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(SessionSegment)]),
@@ -371,17 +670,24 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<String>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+        () => ListBuilder<PortfolioSourceSummary>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AccountBalance)]),
         () => ListBuilder<AccountBalance>(),
       )
+      ..add(DepositAddressBase.serializer)
+      ..add(DepositBase.serializer)
+      ..add(DepositRailBase.serializer)
       ..add(OrderPreviewCommon.serializer)
       ..add(Page.serializer)
       ..add(RealtimeEventBase.serializer)
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())
       ..add(const DateSerializer())
-      ..add(Iso8601DateTimeSerializer())
-    ).build();
+      ..add(Iso8601DateTimeSerializer()))
+    .build();
 
 Serializers standardSerializers =
     (serializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();

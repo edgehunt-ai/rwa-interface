@@ -17,7 +17,7 @@ part 'api_error.g.dart';
 /// * [message] - Localized user-facing message
 /// * [retryable] - Whether retrying the same request can succeed
 /// * [userAction] - Stable client action hint, or null
-/// * [details] 
+/// * [details]
 /// * [requestId] - Matches the X-Request-ID response header
 @BuiltValue()
 abstract class ApiError implements Built<ApiError, ApiErrorBuilder> {
@@ -83,15 +83,20 @@ class _$ApiErrorSerializer implements PrimitiveSerializer<ApiError> {
       specifiedType: const FullType(bool),
     );
     yield r'user_action';
-    yield object.userAction == null ? null : serializers.serialize(
-      object.userAction,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.userAction == null
+        ? null
+        : serializers.serialize(
+            object.userAction,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'details';
-    yield object.details == null ? null : serializers.serialize(
-      object.details,
-      specifiedType: const FullType.nullable(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
-    );
+    yield object.details == null
+        ? null
+        : serializers.serialize(
+            object.details,
+            specifiedType: const FullType.nullable(
+                BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+          );
     yield r'request_id';
     yield serializers.serialize(
       object.requestId,
@@ -105,7 +110,9 @@ class _$ApiErrorSerializer implements PrimitiveSerializer<ApiError> {
     ApiError object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -152,7 +159,8 @@ class _$ApiErrorSerializer implements PrimitiveSerializer<ApiError> {
         case r'details':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+            specifiedType: const FullType.nullable(
+                BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
           ) as BuiltMap<String, JsonObject?>?;
           if (valueDes == null) continue;
           result.details.replace(valueDes);
@@ -192,4 +200,3 @@ class _$ApiErrorSerializer implements PrimitiveSerializer<ApiError> {
     return result.build();
   }
 }
-

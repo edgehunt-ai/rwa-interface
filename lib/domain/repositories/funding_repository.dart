@@ -1,11 +1,24 @@
 import '../models/deposit.dart';
 import '../models/domain_page.dart';
 import '../models/funding_catalog.dart';
+import '../models/funding_transfer.dart';
 import '../models/resource_result.dart';
 import '../models/withdrawal.dart';
 
 abstract interface class FundingRepository {
   Future<FundingCatalog> getCatalog();
+  Future<FundingPlan> createFundingPlan({
+    required String tradePreviewId,
+    String? sourceAssetId,
+    required String idempotencyKey,
+  });
+  Future<FundingPlan> getFundingPlan(String id);
+  Future<FundingTransfer> createFundingTransfer({
+    required String planId,
+    required String authorizationId,
+    required String idempotencyKey,
+  });
+  Future<FundingTransfer> getFundingTransfer(String id);
   Future<ResourceResult<Deposit>> createDeposit({
     required String chain,
     String? amount,

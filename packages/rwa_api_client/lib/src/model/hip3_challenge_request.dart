@@ -11,26 +11,33 @@ part 'hip3_challenge_request.g.dart';
 /// Hip3ChallengeRequest
 ///
 /// Properties:
-/// * [label] 
+/// * [label]
 @BuiltValue()
-abstract class Hip3ChallengeRequest implements Built<Hip3ChallengeRequest, Hip3ChallengeRequestBuilder> {
+abstract class Hip3ChallengeRequest
+    implements Built<Hip3ChallengeRequest, Hip3ChallengeRequestBuilder> {
   @BuiltValueField(wireName: r'label')
   String? get label;
 
   Hip3ChallengeRequest._();
 
-  factory Hip3ChallengeRequest([void updates(Hip3ChallengeRequestBuilder b)]) = _$Hip3ChallengeRequest;
+  factory Hip3ChallengeRequest([void updates(Hip3ChallengeRequestBuilder b)]) =
+      _$Hip3ChallengeRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3ChallengeRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3ChallengeRequest> get serializer => _$Hip3ChallengeRequestSerializer();
+  static Serializer<Hip3ChallengeRequest> get serializer =>
+      _$Hip3ChallengeRequestSerializer();
 }
 
-class _$Hip3ChallengeRequestSerializer implements PrimitiveSerializer<Hip3ChallengeRequest> {
+class _$Hip3ChallengeRequestSerializer
+    implements PrimitiveSerializer<Hip3ChallengeRequest> {
   @override
-  final Iterable<Type> types = const [Hip3ChallengeRequest, _$Hip3ChallengeRequest];
+  final Iterable<Type> types = const [
+    Hip3ChallengeRequest,
+    _$Hip3ChallengeRequest
+  ];
 
   @override
   final String wireName = r'Hip3ChallengeRequest';
@@ -55,7 +62,9 @@ class _$Hip3ChallengeRequestSerializer implements PrimitiveSerializer<Hip3Challe
     Hip3ChallengeRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -106,4 +115,3 @@ class _$Hip3ChallengeRequestSerializer implements PrimitiveSerializer<Hip3Challe
     return result.build();
   }
 }
-

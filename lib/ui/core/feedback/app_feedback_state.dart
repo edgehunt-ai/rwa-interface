@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'empty_state.dart';
+
 enum AppFeedbackKind { loading, empty, error }
 
 class AppFeedbackState extends StatelessWidget {
@@ -50,10 +52,18 @@ class AppFeedbackState extends StatelessWidget {
   Widget build(BuildContext context) {
     final icon = switch (kind) {
       AppFeedbackKind.loading => const CircularProgressIndicator.adaptive(),
-      AppFeedbackKind.empty => const Icon(Icons.inbox_outlined),
+      AppFeedbackKind.empty => const SizedBox.shrink(),
       AppFeedbackKind.error => const Icon(Icons.error_outline),
     };
 
+    if (kind == AppFeedbackKind.empty) {
+      return EmptyState(
+        title: title,
+        description: message,
+        buttonLabel: actionLabel,
+        onPressed: onAction,
+      );
+    }
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

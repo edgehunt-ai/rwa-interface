@@ -18,20 +18,21 @@ part 'order_preview_request.g.dart';
 /// 根据 `kind` 分派为 bStocks 现货或 HIP-3 永续订单。
 ///
 /// Properties:
-/// * [symbol] 
-/// * [kind] 
-/// * [side] 
-/// * [type] 
+/// * [symbol]
+/// * [kind]
+/// * [side]
+/// * [type]
 /// * [amount] - 市价单的 USDC 名义价值
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
-/// * [tpSl] 
+/// * [tpSl]
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode] 
-/// * [reduceOnly] 
+/// * [marginMode]
+/// * [reduceOnly]
 @BuiltValue()
-abstract class OrderPreviewRequest implements Built<OrderPreviewRequest, OrderPreviewRequestBuilder> {
+abstract class OrderPreviewRequest
+    implements Built<OrderPreviewRequest, OrderPreviewRequestBuilder> {
   /// One Of [BstockOrderPreviewRequest], [PerpOrderPreviewRequest]
   OneOf get oneOf;
 
@@ -44,41 +45,49 @@ abstract class OrderPreviewRequest implements Built<OrderPreviewRequest, OrderPr
 
   OrderPreviewRequest._();
 
-  factory OrderPreviewRequest([void updates(OrderPreviewRequestBuilder b)]) = _$OrderPreviewRequest;
+  factory OrderPreviewRequest([void updates(OrderPreviewRequestBuilder b)]) =
+      _$OrderPreviewRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(OrderPreviewRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<OrderPreviewRequest> get serializer => _$OrderPreviewRequestSerializer();
+  static Serializer<OrderPreviewRequest> get serializer =>
+      _$OrderPreviewRequestSerializer();
 }
 
 extension OrderPreviewRequestDiscriminatorExt on OrderPreviewRequest {
-    String? get discriminatorValue {
-        if (this is BstockOrderPreviewRequest) {
-            return r'bstock';
-        }
-        if (this is PerpOrderPreviewRequest) {
-            return r'perp';
-        }
-        return null;
+  String? get discriminatorValue {
+    if (this is BstockOrderPreviewRequest) {
+      return r'bstock';
     }
-}
-extension OrderPreviewRequestBuilderDiscriminatorExt on OrderPreviewRequestBuilder {
-    String? get discriminatorValue {
-        if (this is BstockOrderPreviewRequestBuilder) {
-            return r'bstock';
-        }
-        if (this is PerpOrderPreviewRequestBuilder) {
-            return r'perp';
-        }
-        return null;
+    if (this is PerpOrderPreviewRequest) {
+      return r'perp';
     }
+    return null;
+  }
 }
 
-class _$OrderPreviewRequestSerializer implements PrimitiveSerializer<OrderPreviewRequest> {
+extension OrderPreviewRequestBuilderDiscriminatorExt
+    on OrderPreviewRequestBuilder {
+  String? get discriminatorValue {
+    if (this is BstockOrderPreviewRequestBuilder) {
+      return r'bstock';
+    }
+    if (this is PerpOrderPreviewRequestBuilder) {
+      return r'perp';
+    }
+    return null;
+  }
+}
+
+class _$OrderPreviewRequestSerializer
+    implements PrimitiveSerializer<OrderPreviewRequest> {
   @override
-  final Iterable<Type> types = const [OrderPreviewRequest, _$OrderPreviewRequest];
+  final Iterable<Type> types = const [
+    OrderPreviewRequest,
+    _$OrderPreviewRequest
+  ];
 
   @override
   final String wireName = r'OrderPreviewRequest';
@@ -87,8 +96,7 @@ class _$OrderPreviewRequestSerializer implements PrimitiveSerializer<OrderPrevie
     Serializers serializers,
     OrderPreviewRequest object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {
-  }
+  }) sync* {}
 
   @override
   Object serialize(
@@ -97,7 +105,8 @@ class _$OrderPreviewRequestSerializer implements PrimitiveSerializer<OrderPrevie
     FullType specifiedType = FullType.unspecified,
   }) {
     final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
+    return serializers.serialize(oneOf.value,
+        specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -109,10 +118,15 @@ class _$OrderPreviewRequestSerializer implements PrimitiveSerializer<OrderPrevie
     final result = OrderPreviewRequestBuilder();
     Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex = serializedList.indexOf(OrderPreviewRequest.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    final discIndex =
+        serializedList.indexOf(OrderPreviewRequest.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex],
+        specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [BstockOrderPreviewRequest, PerpOrderPreviewRequest, ];
+    final oneOfTypes = [
+      BstockOrderPreviewRequest,
+      PerpOrderPreviewRequest,
+    ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
@@ -131,42 +145,54 @@ class _$OrderPreviewRequestSerializer implements PrimitiveSerializer<OrderPrevie
         oneOfType = PerpOrderPreviewRequest;
         break;
       default:
-        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+        throw UnsupportedError(
+            "Couldn't deserialize oneOf for the discriminator value: ${discValue}");
     }
-    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
+    result.oneOf = OneOfDynamic(
+        typeIndex: oneOfTypes.indexOf(oneOfType),
+        types: oneOfTypes,
+        value: oneOfResult);
     return result.build();
   }
 }
 
 class OrderPreviewRequestKindEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'perp')
-  static const OrderPreviewRequestKindEnum perp = _$orderPreviewRequestKindEnum_perp;
+  static const OrderPreviewRequestKindEnum perp =
+      _$orderPreviewRequestKindEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewRequestKindEnum unknownDefaultOpenApi = _$orderPreviewRequestKindEnum_unknownDefaultOpenApi;
+  static const OrderPreviewRequestKindEnum unknownDefaultOpenApi =
+      _$orderPreviewRequestKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<OrderPreviewRequestKindEnum> get serializer => _$orderPreviewRequestKindEnumSerializer;
+  static Serializer<OrderPreviewRequestKindEnum> get serializer =>
+      _$orderPreviewRequestKindEnumSerializer;
 
-  const OrderPreviewRequestKindEnum._(String name): super(name);
+  const OrderPreviewRequestKindEnum._(String name) : super(name);
 
-  static BuiltSet<OrderPreviewRequestKindEnum> get values => _$orderPreviewRequestKindEnumValues;
-  static OrderPreviewRequestKindEnum valueOf(String name) => _$orderPreviewRequestKindEnumValueOf(name);
+  static BuiltSet<OrderPreviewRequestKindEnum> get values =>
+      _$orderPreviewRequestKindEnumValues;
+  static OrderPreviewRequestKindEnum valueOf(String name) =>
+      _$orderPreviewRequestKindEnumValueOf(name);
 }
 
 class OrderPreviewRequestSideEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'long')
-  static const OrderPreviewRequestSideEnum long = _$orderPreviewRequestSideEnum_long;
+  static const OrderPreviewRequestSideEnum long =
+      _$orderPreviewRequestSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
-  static const OrderPreviewRequestSideEnum short = _$orderPreviewRequestSideEnum_short;
+  static const OrderPreviewRequestSideEnum short =
+      _$orderPreviewRequestSideEnum_short;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewRequestSideEnum unknownDefaultOpenApi = _$orderPreviewRequestSideEnum_unknownDefaultOpenApi;
+  static const OrderPreviewRequestSideEnum unknownDefaultOpenApi =
+      _$orderPreviewRequestSideEnum_unknownDefaultOpenApi;
 
-  static Serializer<OrderPreviewRequestSideEnum> get serializer => _$orderPreviewRequestSideEnumSerializer;
+  static Serializer<OrderPreviewRequestSideEnum> get serializer =>
+      _$orderPreviewRequestSideEnumSerializer;
 
-  const OrderPreviewRequestSideEnum._(String name): super(name);
+  const OrderPreviewRequestSideEnum._(String name) : super(name);
 
-  static BuiltSet<OrderPreviewRequestSideEnum> get values => _$orderPreviewRequestSideEnumValues;
-  static OrderPreviewRequestSideEnum valueOf(String name) => _$orderPreviewRequestSideEnumValueOf(name);
+  static BuiltSet<OrderPreviewRequestSideEnum> get values =>
+      _$orderPreviewRequestSideEnumValues;
+  static OrderPreviewRequestSideEnum valueOf(String name) =>
+      _$orderPreviewRequestSideEnumValueOf(name);
 }
-

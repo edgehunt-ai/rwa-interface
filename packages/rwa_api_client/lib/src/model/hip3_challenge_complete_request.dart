@@ -13,25 +13,35 @@ part 'hip3_challenge_complete_request.g.dart';
 /// Properties:
 /// * [signature] - Privy-produced signature over the server challenge
 @BuiltValue()
-abstract class Hip3ChallengeCompleteRequest implements Built<Hip3ChallengeCompleteRequest, Hip3ChallengeCompleteRequestBuilder> {
+abstract class Hip3ChallengeCompleteRequest
+    implements
+        Built<Hip3ChallengeCompleteRequest,
+            Hip3ChallengeCompleteRequestBuilder> {
   /// Privy-produced signature over the server challenge
   @BuiltValueField(wireName: r'signature')
   String get signature;
 
   Hip3ChallengeCompleteRequest._();
 
-  factory Hip3ChallengeCompleteRequest([void updates(Hip3ChallengeCompleteRequestBuilder b)]) = _$Hip3ChallengeCompleteRequest;
+  factory Hip3ChallengeCompleteRequest(
+          [void updates(Hip3ChallengeCompleteRequestBuilder b)]) =
+      _$Hip3ChallengeCompleteRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(Hip3ChallengeCompleteRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<Hip3ChallengeCompleteRequest> get serializer => _$Hip3ChallengeCompleteRequestSerializer();
+  static Serializer<Hip3ChallengeCompleteRequest> get serializer =>
+      _$Hip3ChallengeCompleteRequestSerializer();
 }
 
-class _$Hip3ChallengeCompleteRequestSerializer implements PrimitiveSerializer<Hip3ChallengeCompleteRequest> {
+class _$Hip3ChallengeCompleteRequestSerializer
+    implements PrimitiveSerializer<Hip3ChallengeCompleteRequest> {
   @override
-  final Iterable<Type> types = const [Hip3ChallengeCompleteRequest, _$Hip3ChallengeCompleteRequest];
+  final Iterable<Type> types = const [
+    Hip3ChallengeCompleteRequest,
+    _$Hip3ChallengeCompleteRequest
+  ];
 
   @override
   final String wireName = r'Hip3ChallengeCompleteRequest';
@@ -54,7 +64,9 @@ class _$Hip3ChallengeCompleteRequestSerializer implements PrimitiveSerializer<Hi
     Hip3ChallengeCompleteRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -104,4 +116,3 @@ class _$Hip3ChallengeCompleteRequestSerializer implements PrimitiveSerializer<Hi
     return result.build();
   }
 }
-

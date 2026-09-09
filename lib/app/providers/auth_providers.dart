@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/privy_configuration.dart';
 import '../../data/api/privy_access_token_provider.dart';
 import '../../data/auth/identity_auth_gateway_factory.dart';
+import '../../data/auth/reown_wallet_connector.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
 import 'session_scope.dart';
 
@@ -12,6 +13,14 @@ final identityAuthGatewayProvider = Provider<IdentityAuthGateway>(
 
 final privyConfigurationProvider = Provider<PrivyConfiguration>(
   (ref) => PrivyConfiguration.fromEnvironment(),
+);
+
+final reownConfigurationProvider = Provider<ReownConfiguration>(
+  (ref) => ReownConfiguration.fromEnvironment(),
+);
+
+final reownWalletConnectorProvider = Provider<WalletConnector>(
+  (ref) => ReownWalletConnector(ref.watch(reownConfigurationProvider)),
 );
 
 final identityAccessTokenProvider = Provider<PrivyAccessTokenProvider>((ref) {

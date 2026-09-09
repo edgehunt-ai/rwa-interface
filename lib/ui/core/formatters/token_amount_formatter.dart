@@ -4,6 +4,64 @@ enum TokenAmountDisplay { exact, normalized }
 
 /// Formats token amounts without converting them to binary floating point.
 abstract final class TokenAmountFormatter {
+  static String formatUsd(DecimalValue amount) =>
+      '\$${_groupIntegerDigits(_trimInsignificantZeros(amount.value))}';
+
+  static String formatPercent(DecimalValue amount, {bool signed = true}) {
+    final normalized = _groupIntegerDigits(
+      _trimInsignificantZeros(amount.value),
+    );
+    if (!signed || normalized.startsWith('-') || normalized == '0') {
+      return '$normalized%';
+    }
+    return '+$normalized%';
+  }
+
+  /// Formats a decimal for an editable financial field without adding a
+  /// currency or token symbol. This keeps feature widgets from implementing
+  /// their own rounding or zero-padding rules.
+  static String formatFixed(DecimalValue amount, {required int decimals}) {
+    _validateDecimals(decimals);
+    final value = _enforceDecimals(amount.value, decimals);
+    final negative = value.startsWith('-');
+    final unsigned = negative ? value.substring(1) : value;
+    final parts = unsigned.split('.');
+    final integer = parts.first;
+    final fraction = parts.length == 1 ? '' : parts.last;
+    final fixed = decimals == 0
+        ? integer
+        : '$integer.${fraction.padRight(decimals, '0')}';
+    return '${negative ? '-' : ''}$fixed';
+  }
+
+  /// Adds USD decimal values without passing through binary floating point.
+  static String sumUsd(Iterable<DecimalValue?> amounts) {
+    final values = amounts.whereType<DecimalValue>().toList(growable: false);
+    if (values.isEmpty) return '—';
+    final scale = values.fold<int>(
+      0,
+      (current, value) => current > value.scale ? current : value.scale,
+    );
+    var sum = BigInt.zero;
+    for (final value in values) {
+      final negative = value.value.startsWith('-');
+      final raw = negative ? value.value.substring(1) : value.value;
+      final parts = raw.split('.');
+      final digits = '${parts.first}${parts.length == 1 ? '' : parts.last}'
+          .padRight(parts.first.length + scale, '0');
+      final parsed = BigInt.parse(digits);
+      sum += negative ? -parsed : parsed;
+    }
+    final negative = sum.isNegative;
+    final digits = sum.abs().toString().padLeft(scale + 1, '0');
+    final value = scale == 0
+        ? '${negative ? '-' : ''}$digits'
+        : '${negative ? '-' : ''}'
+              '${digits.substring(0, digits.length - scale)}.'
+              '${digits.substring(digits.length - scale)}';
+    return formatUsd(DecimalValue(value));
+  }
+
   static String format(
     DecimalValue amount, {
     required String symbol,

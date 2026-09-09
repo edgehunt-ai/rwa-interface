@@ -6,6 +6,38 @@ part of 'funding_plan.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const FundingPlanStatusEnum _$fundingPlanStatusEnum_ready =
+    const FundingPlanStatusEnum._('ready');
+const FundingPlanStatusEnum _$fundingPlanStatusEnum_expired =
+    const FundingPlanStatusEnum._('expired');
+const FundingPlanStatusEnum _$fundingPlanStatusEnum_consumed =
+    const FundingPlanStatusEnum._('consumed');
+const FundingPlanStatusEnum _$fundingPlanStatusEnum_unknownDefaultOpenApi =
+    const FundingPlanStatusEnum._('unknownDefaultOpenApi');
+
+FundingPlanStatusEnum _$fundingPlanStatusEnumValueOf(String name) {
+  switch (name) {
+    case 'ready':
+      return _$fundingPlanStatusEnum_ready;
+    case 'expired':
+      return _$fundingPlanStatusEnum_expired;
+    case 'consumed':
+      return _$fundingPlanStatusEnum_consumed;
+    case 'unknownDefaultOpenApi':
+      return _$fundingPlanStatusEnum_unknownDefaultOpenApi;
+    default:
+      return _$fundingPlanStatusEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<FundingPlanStatusEnum> _$fundingPlanStatusEnumValues =
+    BuiltSet<FundingPlanStatusEnum>(const <FundingPlanStatusEnum>[
+  _$fundingPlanStatusEnum_ready,
+  _$fundingPlanStatusEnum_expired,
+  _$fundingPlanStatusEnum_consumed,
+  _$fundingPlanStatusEnum_unknownDefaultOpenApi,
+]);
+
 const FundingPlanRailEnum _$fundingPlanRailEnum_perp =
     const FundingPlanRailEnum._('perp');
 const FundingPlanRailEnum _$fundingPlanRailEnum_unknownDefaultOpenApi =
@@ -72,46 +104,46 @@ final BuiltSet<FundingPlanAssetEnum> _$fundingPlanAssetEnumValues =
   _$fundingPlanAssetEnum_unknownDefaultOpenApi,
 ]);
 
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_ready =
-    const FundingPlanStatusEnum._('ready');
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_expired =
-    const FundingPlanStatusEnum._('expired');
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_consumed =
-    const FundingPlanStatusEnum._('consumed');
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_unknownDefaultOpenApi =
-    const FundingPlanStatusEnum._('unknownDefaultOpenApi');
-
-FundingPlanStatusEnum _$fundingPlanStatusEnumValueOf(String name) {
-  switch (name) {
-    case 'ready':
-      return _$fundingPlanStatusEnum_ready;
-    case 'expired':
-      return _$fundingPlanStatusEnum_expired;
-    case 'consumed':
-      return _$fundingPlanStatusEnum_consumed;
-    case 'unknownDefaultOpenApi':
-      return _$fundingPlanStatusEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingPlanStatusEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingPlanStatusEnum> _$fundingPlanStatusEnumValues =
-    BuiltSet<FundingPlanStatusEnum>(const <FundingPlanStatusEnum>[
-  _$fundingPlanStatusEnum_ready,
-  _$fundingPlanStatusEnum_expired,
-  _$fundingPlanStatusEnum_consumed,
-  _$fundingPlanStatusEnum_unknownDefaultOpenApi,
-]);
-
+Serializer<FundingPlanStatusEnum> _$fundingPlanStatusEnumSerializer =
+    _$FundingPlanStatusEnumSerializer();
 Serializer<FundingPlanRailEnum> _$fundingPlanRailEnumSerializer =
     _$FundingPlanRailEnumSerializer();
 Serializer<FundingPlanNetworkEnum> _$fundingPlanNetworkEnumSerializer =
     _$FundingPlanNetworkEnumSerializer();
 Serializer<FundingPlanAssetEnum> _$fundingPlanAssetEnumSerializer =
     _$FundingPlanAssetEnumSerializer();
-Serializer<FundingPlanStatusEnum> _$fundingPlanStatusEnumSerializer =
-    _$FundingPlanStatusEnumSerializer();
+
+class _$FundingPlanStatusEnumSerializer
+    implements PrimitiveSerializer<FundingPlanStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'ready': 'ready',
+    'expired': 'expired',
+    'consumed': 'consumed',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'ready': 'ready',
+    'expired': 'expired',
+    'consumed': 'consumed',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[FundingPlanStatusEnum];
+  @override
+  final String wireName = 'FundingPlanStatusEnum';
+
+  @override
+  Object serialize(Serializers serializers, FundingPlanStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  FundingPlanStatusEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      FundingPlanStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$FundingPlanRailEnumSerializer
     implements PrimitiveSerializer<FundingPlanRailEnum> {
@@ -194,38 +226,6 @@ class _$FundingPlanAssetEnumSerializer
   FundingPlanAssetEnum deserialize(Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       FundingPlanAssetEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingPlanStatusEnumSerializer
-    implements PrimitiveSerializer<FundingPlanStatusEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'ready': 'ready',
-    'expired': 'expired',
-    'consumed': 'consumed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'ready': 'ready',
-    'expired': 'expired',
-    'consumed': 'consumed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[FundingPlanStatusEnum];
-  @override
-  final String wireName = 'FundingPlanStatusEnum';
-
-  @override
-  Object serialize(Serializers serializers, FundingPlanStatusEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingPlanStatusEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingPlanStatusEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 

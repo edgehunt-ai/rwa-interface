@@ -5,17 +5,21 @@ enum AuthenticationFailureCode {
   methodUnavailable,
   invalidCode,
   network,
+  browserUnavailable,
   configuration,
   expired,
+  backendSession,
+  walletSync,
   provider,
   unsupportedPlatform,
 }
 
 final class IdentityFailure implements Exception {
-  const IdentityFailure(this.code, {required this.retryable});
+  const IdentityFailure(this.code, {required this.retryable, this.requestId});
 
   final AuthenticationFailureCode code;
   final bool retryable;
+  final String? requestId;
 }
 
 final class IdentityConfiguration {

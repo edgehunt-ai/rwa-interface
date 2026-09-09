@@ -13,10 +13,10 @@ part 'asset_info.g.dart';
 /// 资产详情与权益
 ///
 /// Properties:
-/// * [title] 
-/// * [badge] 
-/// * [description] 
-/// * [rows] - 权益明细。bStocks 典型项：发行方 / 资产支持 / 公司行动 / 股息再投资 / 股息形式 / 投票权 / 资产结果。HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
+/// * [title]
+/// * [badge]
+/// * [description]
+/// * [rows] - 权益明细。bStocks 典型项：发行方 / 资产支持 / 公司行动 / 股息再投资 / 股息形式 / 投票权 / 资产结果。HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。
 @BuiltValue()
 abstract class AssetInfo implements Built<AssetInfo, AssetInfoBuilder> {
   @BuiltValueField(wireName: r'title')
@@ -28,7 +28,7 @@ abstract class AssetInfo implements Built<AssetInfo, AssetInfoBuilder> {
   @BuiltValueField(wireName: r'description')
   String get description;
 
-  /// 权益明细。bStocks 典型项：发行方 / 资产支持 / 公司行动 / 股息再投资 / 股息形式 / 投票权 / 资产结果。HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
+  /// 权益明细。bStocks 典型项：发行方 / 资产支持 / 公司行动 / 股息再投资 / 股息形式 / 投票权 / 资产结果。HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。
   @BuiltValueField(wireName: r'rows')
   BuiltList<KeyValue> get rows;
 
@@ -83,7 +83,9 @@ class _$AssetInfoSerializer implements PrimitiveSerializer<AssetInfo> {
     AssetInfo object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -154,4 +156,3 @@ class _$AssetInfoSerializer implements PrimitiveSerializer<AssetInfo> {
     return result.build();
   }
 }
-

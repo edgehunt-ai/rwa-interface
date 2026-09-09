@@ -10,7 +10,6 @@ import 'package:built_value/serializer.dart';
 part 'margin_mode.g.dart';
 
 class MarginMode extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'isolated')
   static const MarginMode isolated = _$isolated;
   @BuiltValueEnumConst(wireName: r'cross')
@@ -20,7 +19,7 @@ class MarginMode extends EnumClass {
 
   static Serializer<MarginMode> get serializer => _$marginModeSerializer;
 
-  const MarginMode._(String name): super(name);
+  const MarginMode._(String name) : super(name);
 
   static BuiltSet<MarginMode> get values => _$values;
   static MarginMode valueOf(String name) => _$valueOf(name);
@@ -33,4 +32,3 @@ class MarginMode extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class MarginModeMixin = Object with _$MarginModeMixin;
-

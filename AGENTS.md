@@ -10,6 +10,7 @@
 
 ## Generated client
 
-- Treat `openapi/main.yaml` as the contract source of truth.
+- Treat `contracts/rwa-api-contract/openapi/main.yaml` as a read-only submodule input.
+- `git@github.com:edgehunt-ai/rwa-api-contract.git` is the contract source of truth; do not modify its contents from this repository.
 - Do not hand-edit generated files under `packages/rwa_api_client`.
-- After contract changes, run `npm run client:regenerate`; use `npm run quality:check` for validation without replacing the checked-in client.
+- Use `npm run api:update` or `npm run api:update:branch -- <branch>` to update the submodule and refresh the checked-in client.

@@ -20,6 +20,8 @@ env:
   API_BASE_URL: ${{ vars.API_BASE_URL }}
   PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
   PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
+  PRIVY_APP_URL_SCHEME: ${{ vars.PRIVY_APP_URL_SCHEME }}
+  REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
   SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'flutter' }}
@@ -125,17 +127,13 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-      - name: Install pinned contract tools
-        run: npm ci --ignore-scripts
       - name: Resolve dependencies
         run: flutter pub get
       - name: Run release-equivalent verification
-        run: npm run release:verify
+        run: >-
+          dart format --output=none --set-exit-if-changed lib test
+          && dart analyze --fatal-infos
+          && flutter test
 
   android-release:
     name: Android Release APK
@@ -165,7 +163,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID; do
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
             if [[ -z "${!key:-}" ]]; then
               echo "Missing required GitHub Actions variable: $key" >&2
               exit 1
@@ -174,8 +172,10 @@ jobs:
           printf '%s\n' \
             "API_BASE_URL=$API_BASE_URL" \
             "PRIVY_APP_ID=$PRIVY_APP_ID" \
-            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" > .env.ci
-          make env-check ENV_FILE=.env.ci
+            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" \
+            "PRIVY_APP_URL_SCHEME=$PRIVY_APP_URL_SCHEME" \
+            "REOWN_PROJECT_ID=$REOWN_PROJECT_ID" > .env.ci
+          make sync-privy-config ENV_FILE=.env.ci
       - name: Build Android release APK
         shell: bash
         run: >-
@@ -256,7 +256,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID; do
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
             if [[ -z "${!key:-}" ]]; then
               echo "Missing required GitHub Actions variable: $key" >&2
               exit 1
@@ -265,8 +265,10 @@ jobs:
           printf '%s\n' \
             "API_BASE_URL=$API_BASE_URL" \
             "PRIVY_APP_ID=$PRIVY_APP_ID" \
-            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" > .env.ci
-          make env-check ENV_FILE=.env.ci
+            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" \
+            "PRIVY_APP_URL_SCHEME=$PRIVY_APP_URL_SCHEME" \
+            "REOWN_PROJECT_ID=$REOWN_PROJECT_ID" > .env.ci
+          make sync-privy-config ENV_FILE=.env.ci
       - name: Build unsigned iOS release app
         shell: bash
         run: >-

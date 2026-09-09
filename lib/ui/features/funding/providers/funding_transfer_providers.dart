@@ -1,0 +1,93 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/idempotent_command_guard.dart';
+import '../../../../domain/models/funding_transfer.dart';
+import '../../../../domain/models/withdrawal.dart';
+
+final fundingPlanProvider = FutureProvider.autoDispose
+    .family<FundingPlan, String>(
+      (ref, id) => ref.watch(fundingRepositoryProvider).getFundingPlan(id),
+    );
+
+final fundingTransferProvider = FutureProvider.autoDispose
+    .family<FundingTransfer, String>(
+      (ref, id) => ref.watch(fundingRepositoryProvider).getFundingTransfer(id),
+    );
+
+// A transfer command spans wallet authorization and transfer creation. It is
+// intentionally retained for the provider scope so its Ref remains valid
+// across those asynchronous steps even when the initiating sheet rebuilds.
+final fundingTransferCommandsProvider = Provider(
+  (ref) => FundingTransferCommands(ref),
+);
+
+/// Keeps plan, wallet authorization, and transfer submission in the normal
+/// presentation boundary. Callers never fabricate an authorization ID.
+final class FundingTransferCommands {
+  FundingTransferCommands(this._ref);
+  final Ref _ref;
+  final IdempotentCommandGuard _commands = IdempotentCommandGuard();
+
+  Future<FundingPlan> plan({
+    required String tradePreviewId,
+    String? sourceAssetId,
+  }) async {
+    final result = await _commands.run(
+      operation: 'funding-plan',
+      fingerprint: '$tradePreviewId|$sourceAssetId',
+      command: (key) => _ref
+          .read(fundingRepositoryProvider)
+          .createFundingPlan(
+            tradePreviewId: tradePreviewId,
+            sourceAssetId: sourceAssetId,
+            idempotencyKey: key,
+          ),
+    );
+    _ref.invalidate(fundingPlanProvider(result.planId));
+    return result;
+  }
+
+  Future<WalletAuthorization> authorize(FundingPlan plan) {
+    final walletId = plan.sourceWalletId;
+    final asset = plan.sourceAsset;
+    final maximum = plan.sourceMaximum;
+    if (!plan.isActionable ||
+        walletId == null ||
+        asset == null ||
+        maximum == null) {
+      throw StateError('Funding plan has no actionable server-selected source');
+    }
+    return _ref
+        .read(walletsRepositoryProvider)
+        .authorizeFundingTransfer(
+          walletId: walletId,
+          planId: plan.planId,
+          asset: asset,
+          maximumAmount: maximum.value,
+          idempotencyKey: 'transfer-authorization-${plan.planId}',
+        );
+  }
+
+  Future<FundingTransfer> create({
+    required FundingPlan plan,
+    required WalletAuthorization authorization,
+  }) async {
+    if (!authorization.isUsable) {
+      throw StateError('Funding transfer authorization is not usable');
+    }
+    final result = await _commands.run(
+      operation: 'funding-transfer',
+      fingerprint: '${plan.planId}|${authorization.authorizationId}',
+      command: (key) => _ref
+          .read(fundingRepositoryProvider)
+          .createFundingTransfer(
+            planId: plan.planId,
+            authorizationId: authorization.authorizationId,
+            idempotencyKey: key,
+          ),
+    );
+    _ref.invalidate(fundingTransferProvider(result.transferId));
+    return result;
+  }
+}

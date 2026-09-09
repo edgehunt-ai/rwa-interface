@@ -22,7 +22,6 @@ import 'package:rwa_api_client/src/model/replace_favorites_request.dart';
 import 'package:rwa_api_client/src/model/stock_page.dart';
 
 class MarketsApi {
-
   final Dio _dio;
 
   final Serializers _serializers;
@@ -34,7 +33,7 @@ class MarketsApi {
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
-  /// * [kind] 
+  /// * [kind]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -44,7 +43,7 @@ class MarketsApi {
   ///
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> addFavorite({ 
+  Future<Response<void>> addFavorite({
     required String symbol,
     required ProductKind kind,
     CancelToken? cancelToken,
@@ -54,7 +53,16 @@ class MarketsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/markets/{symbol}/products/{kind}/favorite'.replaceAll('{' r'symbol' '}', encodeQueryParameter(_serializers, symbol, const FullType(String)).toString()).replaceAll('{' r'kind' '}', encodeQueryParameter(_serializers, kind, const FullType(ProductKind)).toString());
+    final _path = r'/v1/markets/{symbol}/products/{kind}/favorite'
+        .replaceAll(
+            '{' r'symbol' '}',
+            encodeQueryParameter(_serializers, symbol, const FullType(String))
+                .toString())
+        .replaceAll(
+            '{' r'kind' '}',
+            encodeQueryParameter(
+                    _serializers, kind, const FullType(ProductKind))
+                .toString());
     final _options = Options(
       method: r'PUT',
       headers: <String, dynamic>{
@@ -85,11 +93,11 @@ class MarketsApi {
   }
 
   /// 资产详情与权益
-  /// 「资产详情与权益」弹窗的内容。bStocks 说明发行方、1:1 股票支持、公司行动、 股息再投资、投票权；HIP-3 说明合约形态、无股东权益、保证金模式、资金费率方向。 
+  /// 「资产详情与权益」弹窗的内容。bStocks 说明发行方、1:1 股票支持、公司行动、 股息再投资、投票权；HIP-3 说明合约形态、无股东权益、保证金模式、资金费率方向。
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
-  /// * [kind] 
+  /// * [kind]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -99,7 +107,7 @@ class MarketsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [AssetInfo] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<AssetInfo>> getAssetInfo({ 
+  Future<Response<AssetInfo>> getAssetInfo({
     required String symbol,
     required ProductKind kind,
     CancelToken? cancelToken,
@@ -109,7 +117,10 @@ class MarketsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/markets/{symbol}/asset-info'.replaceAll('{' r'symbol' '}', encodeQueryParameter(_serializers, symbol, const FullType(String)).toString());
+    final _path = r'/v1/markets/{symbol}/asset-info'.replaceAll(
+        '{' r'symbol' '}',
+        encodeQueryParameter(_serializers, symbol, const FullType(String))
+            .toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -129,7 +140,8 @@ class MarketsApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      r'kind': encodeQueryParameter(_serializers, kind, const FullType(ProductKind)),
+      r'kind':
+          encodeQueryParameter(_serializers, kind, const FullType(ProductKind)),
     };
 
     final _response = await _dio.request<Object>(
@@ -145,11 +157,12 @@ class MarketsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(AssetInfo),
-      ) as AssetInfo;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(AssetInfo),
+            ) as AssetInfo;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -173,12 +186,12 @@ class MarketsApi {
   }
 
   /// 订单簿深度
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
-  /// * [kind] 
-  /// * [depth] 
+  /// * [kind]
+  /// * [depth]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -188,7 +201,7 @@ class MarketsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [OrderBook] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<OrderBook>> getOrderBook({ 
+  Future<Response<OrderBook>> getOrderBook({
     required String symbol,
     required ProductKind kind,
     int? depth = 20,
@@ -199,7 +212,16 @@ class MarketsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/markets/{symbol}/products/{kind}/orderbook'.replaceAll('{' r'symbol' '}', encodeQueryParameter(_serializers, symbol, const FullType(String)).toString()).replaceAll('{' r'kind' '}', encodeQueryParameter(_serializers, kind, const FullType(ProductKind)).toString());
+    final _path = r'/v1/markets/{symbol}/products/{kind}/orderbook'
+        .replaceAll(
+            '{' r'symbol' '}',
+            encodeQueryParameter(_serializers, symbol, const FullType(String))
+                .toString())
+        .replaceAll(
+            '{' r'kind' '}',
+            encodeQueryParameter(
+                    _serializers, kind, const FullType(ProductKind))
+                .toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -219,7 +241,9 @@ class MarketsApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (depth != null) r'depth': encodeQueryParameter(_serializers, depth, const FullType(int)),
+      if (depth != null)
+        r'depth':
+            encodeQueryParameter(_serializers, depth, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -235,11 +259,12 @@ class MarketsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(OrderBook),
-      ) as OrderBook;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(OrderBook),
+            ) as OrderBook;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -267,7 +292,7 @@ class MarketsApi {
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
-  /// * [kind] 
+  /// * [kind]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -277,7 +302,7 @@ class MarketsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [ProductDetail] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ProductDetail>> getProduct({ 
+  Future<Response<ProductDetail>> getProduct({
     required String symbol,
     required ProductKind kind,
     CancelToken? cancelToken,
@@ -287,7 +312,16 @@ class MarketsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/markets/{symbol}/products/{kind}'.replaceAll('{' r'symbol' '}', encodeQueryParameter(_serializers, symbol, const FullType(String)).toString()).replaceAll('{' r'kind' '}', encodeQueryParameter(_serializers, kind, const FullType(ProductKind)).toString());
+    final _path = r'/v1/markets/{symbol}/products/{kind}'
+        .replaceAll(
+            '{' r'symbol' '}',
+            encodeQueryParameter(_serializers, symbol, const FullType(String))
+                .toString())
+        .replaceAll(
+            '{' r'kind' '}',
+            encodeQueryParameter(
+                    _serializers, kind, const FullType(ProductKind))
+                .toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -318,11 +352,12 @@ class MarketsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ProductDetail),
-      ) as ProductDetail;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(ProductDetail),
+            ) as ProductDetail;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -346,11 +381,11 @@ class MarketsApi {
   }
 
   /// 24h 行情统计
-  /// 24h 高 / 低、成交额、成交量、参考价与相对偏离（bStocks 为 Premium，HIP-3 为 Basis）、 价差、买一卖一；HIP-3 额外返回资金费率与未平仓合约量。 
+  /// 24h 高 / 低、成交额、成交量、参考价与相对偏离（bStocks 为 Premium，HIP-3 为 Basis）、 价差、买一卖一；HIP-3 额外返回资金费率与未平仓合约量。
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
-  /// * [kind] 
+  /// * [kind]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -360,7 +395,7 @@ class MarketsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [MarketStats] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<MarketStats>> getProductStats({ 
+  Future<Response<MarketStats>> getProductStats({
     required String symbol,
     required ProductKind kind,
     CancelToken? cancelToken,
@@ -370,7 +405,16 @@ class MarketsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/markets/{symbol}/products/{kind}/stats'.replaceAll('{' r'symbol' '}', encodeQueryParameter(_serializers, symbol, const FullType(String)).toString()).replaceAll('{' r'kind' '}', encodeQueryParameter(_serializers, kind, const FullType(ProductKind)).toString());
+    final _path = r'/v1/markets/{symbol}/products/{kind}/stats'
+        .replaceAll(
+            '{' r'symbol' '}',
+            encodeQueryParameter(_serializers, symbol, const FullType(String))
+                .toString())
+        .replaceAll(
+            '{' r'kind' '}',
+            encodeQueryParameter(
+                    _serializers, kind, const FullType(ProductKind))
+                .toString());
     final _options = Options(
       method: r'GET',
       headers: <String, dynamic>{
@@ -401,11 +445,12 @@ class MarketsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(MarketStats),
-      ) as MarketStats;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(MarketStats),
+            ) as MarketStats;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -429,14 +474,14 @@ class MarketsApi {
   }
 
   /// 产品列表 / 分组
-  /// 首页和市场页的扁平产品列表统一数据源。用 &#x60;group&#x60; 区分「热门 / 涨幅 / 跌幅 / 成交量 / 自选」；&#x60;favorites&#x60; 仅返回当前登录用户的自选产品。 &#x60;product_type&#x60; 对应首页一级筛选（全部 / 现货 / 合约）。每项仍带 &#x60;is_favorite&#x60;，用于渲染收藏状态。 
+  /// 首页和市场页的扁平产品列表统一数据源。用 &#x60;group&#x60; 区分「热门 / 涨幅 / 跌幅 / 成交量 / 自选」；&#x60;favorites&#x60; 仅返回当前登录用户的自选产品。 &#x60;product_type&#x60; 对应首页一级筛选（全部 / 现货 / 合约）。每项仍带 &#x60;is_favorite&#x60;，用于渲染收藏状态。
   ///
   /// Parameters:
   /// * [group] - 列表分组；`favorites` 为当前用户自选列表
-  /// * [productType] 
-  /// * [q] 
+  /// * [productType]
+  /// * [q]
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit] 
+  /// * [limit]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -446,7 +491,7 @@ class MarketsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [ProductPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ProductPage>> listProducts({ 
+  Future<Response<ProductPage>> listProducts({
     MarketProductGroup? group,
     ProductType? productType,
     String? q,
@@ -479,11 +524,20 @@ class MarketsApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (group != null) r'group': encodeQueryParameter(_serializers, group, const FullType(MarketProductGroup)),
-      if (productType != null) r'product_type': encodeQueryParameter(_serializers, productType, const FullType(ProductType)),
-      if (q != null) r'q': encodeQueryParameter(_serializers, q, const FullType(String)),
-      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (group != null)
+        r'group': encodeQueryParameter(
+            _serializers, group, const FullType(MarketProductGroup)),
+      if (productType != null)
+        r'product_type': encodeQueryParameter(
+            _serializers, productType, const FullType(ProductType)),
+      if (q != null)
+        r'q': encodeQueryParameter(_serializers, q, const FullType(String)),
+      if (cursor != null)
+        r'cursor':
+            encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null)
+        r'limit':
+            encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -499,11 +553,12 @@ class MarketsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ProductPage),
-      ) as ProductPage;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(ProductPage),
+            ) as ProductPage;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -527,12 +582,12 @@ class MarketsApi {
   }
 
   /// 股票分组列表
-  /// 市场页「股票」Tab。每支股票包含美股参考价与其支持的产品（bStocks / HIP-3）， 每个产品带自己的链上价格与相对参考价的价差。 
+  /// 市场页「股票」Tab。每支股票包含美股参考价与其支持的产品（bStocks / HIP-3）， 每个产品带自己的链上价格与相对参考价的价差。
   ///
   /// Parameters:
   /// * [q] - 按代码或公司名模糊搜索
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit] 
+  /// * [limit]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -542,7 +597,7 @@ class MarketsApi {
   ///
   /// Returns a [Future] containing a [Response] with a [StockPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<StockPage>> listStocks({ 
+  Future<Response<StockPage>> listStocks({
     String? q,
     String? cursor,
     int? limit = 20,
@@ -573,9 +628,14 @@ class MarketsApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (q != null) r'q': encodeQueryParameter(_serializers, q, const FullType(String)),
-      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (q != null)
+        r'q': encodeQueryParameter(_serializers, q, const FullType(String)),
+      if (cursor != null)
+        r'cursor':
+            encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null)
+        r'limit':
+            encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -591,11 +651,12 @@ class MarketsApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(StockPage),
-      ) as StockPage;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(StockPage),
+            ) as StockPage;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -623,7 +684,7 @@ class MarketsApi {
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
-  /// * [kind] 
+  /// * [kind]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -633,7 +694,7 @@ class MarketsApi {
   ///
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> removeFavorite({ 
+  Future<Response<void>> removeFavorite({
     required String symbol,
     required ProductKind kind,
     CancelToken? cancelToken,
@@ -643,7 +704,16 @@ class MarketsApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/markets/{symbol}/products/{kind}/favorite'.replaceAll('{' r'symbol' '}', encodeQueryParameter(_serializers, symbol, const FullType(String)).toString()).replaceAll('{' r'kind' '}', encodeQueryParameter(_serializers, kind, const FullType(ProductKind)).toString());
+    final _path = r'/v1/markets/{symbol}/products/{kind}/favorite'
+        .replaceAll(
+            '{' r'symbol' '}',
+            encodeQueryParameter(_serializers, symbol, const FullType(String))
+                .toString())
+        .replaceAll(
+            '{' r'kind' '}',
+            encodeQueryParameter(
+                    _serializers, kind, const FullType(ProductKind))
+                .toString());
     final _options = Options(
       method: r'DELETE',
       headers: <String, dynamic>{
@@ -674,10 +744,10 @@ class MarketsApi {
   }
 
   /// 覆盖自选列表（用于排序）
-  /// 仅用于将当前用户已有自选产品整体重新排序。读取自选列表统一使用 &#x60;GET /v1/markets/products?group&#x3D;favorites&#x60;。 
+  /// 仅用于将当前用户已有自选产品整体重新排序。读取自选列表统一使用 &#x60;GET /v1/markets/products?group&#x3D;favorites&#x60;。
   ///
   /// Parameters:
-  /// * [replaceFavoritesRequest] 
+  /// * [replaceFavoritesRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -687,7 +757,7 @@ class MarketsApi {
   ///
   /// Returns a [Future]
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<void>> replaceFavorites({ 
+  Future<Response<void>> replaceFavorites({
     required ReplaceFavoritesRequest replaceFavoritesRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -720,11 +790,11 @@ class MarketsApi {
 
     try {
       const _type = FullType(ReplaceFavoritesRequest);
-      _bodyData = _serializers.serialize(replaceFavoritesRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData =
+          _serializers.serialize(replaceFavoritesRequest, specifiedType: _type);
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
+        requestOptions: _options.compose(
           _dio.options,
           _path,
         ),
@@ -745,5 +815,4 @@ class MarketsApi {
 
     return _response;
   }
-
 }

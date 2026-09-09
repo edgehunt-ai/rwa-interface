@@ -15,7 +15,6 @@ import 'package:rwa_api_client/src/model/activity_status.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
 
 class ActivityApi {
-
   final Dio _dio;
 
   final Serializers _serializers;
@@ -23,13 +22,13 @@ class ActivityApi {
   const ActivityApi(this._dio, this._serializers);
 
   /// 交易与资金活动列表
-  /// 
+  /// 返回当前账号已经实际发生且具有外部证据的交易与资金活动。Deposit 只有完成链上独立核验后 才出现；Order 只有被交易场所接受并取得稳定 Provider 订单身份，或具有链上交易证明后才出现。 Session、Intent、Preview、Authorization、等待付款和内部重试不得进入用户 History。
   ///
   /// Parameters:
-  /// * [category] 
-  /// * [status] 
+  /// * [category]
+  /// * [status]
   /// * [cursor] - 上一页返回的 `next_cursor`
-  /// * [limit] 
+  /// * [limit]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -39,7 +38,7 @@ class ActivityApi {
   ///
   /// Returns a [Future] containing a [Response] with a [ActivityPage] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<ActivityPage>> listActivity({ 
+  Future<Response<ActivityPage>> listActivity({
     ActivityCategory? category,
     ActivityStatus? status,
     String? cursor,
@@ -71,10 +70,18 @@ class ActivityApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (category != null) r'category': encodeQueryParameter(_serializers, category, const FullType(ActivityCategory)),
-      if (status != null) r'status': encodeQueryParameter(_serializers, status, const FullType(ActivityStatus)),
-      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
-      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (category != null)
+        r'category': encodeQueryParameter(
+            _serializers, category, const FullType(ActivityCategory)),
+      if (status != null)
+        r'status': encodeQueryParameter(
+            _serializers, status, const FullType(ActivityStatus)),
+      if (cursor != null)
+        r'cursor':
+            encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null)
+        r'limit':
+            encodeQueryParameter(_serializers, limit, const FullType(int)),
     };
 
     final _response = await _dio.request<Object>(
@@ -90,11 +97,12 @@ class ActivityApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(ActivityPage),
-      ) as ActivityPage;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+              rawResponse,
+              specifiedType: const FullType(ActivityPage),
+            ) as ActivityPage;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -116,5 +124,4 @@ class ActivityApi {
       extra: _response.extra,
     );
   }
-
 }

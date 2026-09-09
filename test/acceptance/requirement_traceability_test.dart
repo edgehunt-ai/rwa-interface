@@ -28,6 +28,29 @@ void main() {
       expect(covered, containsAll(_requiredRefs));
     },
   );
+
+  test('Trade/Foundation audit keeps all child-node evidence', () {
+    final audit = File('specs/007-details-design-api/audit-results.md')
+        .readAsStringSync();
+    final nodeIds = RegExp(r'\| \d+ \| \d+:\d+ \|')
+        .allMatches(audit)
+        .map((match) => match.group(0))
+        .toSet();
+
+    expect(nodeIds, hasLength(54));
+    expect(audit, isNot(contains('node-id=513-16722')));
+  });
+
+  test('funding-transfer audit preserves the approved API boundary', () {
+    final contract = File(
+      'specs/007-details-design-api/contracts/trade-screen-audit.md',
+    ).readAsStringSync();
+
+    expect(contract, contains('`plan_id`'));
+    expect(contract, contains('`authorization_id`'));
+    expect(contract, contains('**Blocked**'));
+    expect(contract, contains('must not manufacture'));
+  });
 }
 
 final class _ScenarioLink {
@@ -205,7 +228,7 @@ const _scenarios = <_ScenarioLink>[
   ),
   _ScenarioLink(
     'test/data/repositories/funding_repository_test.dart',
-    'requires transfer is represented as non-retryable capability',
+    'confirmed deposits map from the new oneOf response',
     {'FR-014'},
   ),
   _ScenarioLink(

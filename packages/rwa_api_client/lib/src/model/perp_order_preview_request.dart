@@ -12,23 +12,24 @@ import 'package:built_value/serializer.dart';
 
 part 'perp_order_preview_request.g.dart';
 
-/// HIP-3 永续订单。只接受 `long` / `short`；市价单以 `amount` 表示 USDC 名义价值， 限价单须传 `limit_price` 和 `quantity`。杠杆、保证金模式和 `reduce_only` 仅适用于此类订单。 
+/// HIP-3 永续订单。只接受 `long` / `short`；市价单以 `amount` 表示 USDC 名义价值， 限价单须传 `limit_price` 和 `quantity`。杠杆、保证金模式和 `reduce_only` 仅适用于此类订单。
 ///
 /// Properties:
-/// * [symbol] 
-/// * [kind] 
-/// * [side] 
-/// * [type] 
+/// * [symbol]
+/// * [kind]
+/// * [side]
+/// * [type]
 /// * [amount] - 市价单的 USDC 名义价值
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode] 
-/// * [reduceOnly] 
+/// * [marginMode]
+/// * [reduceOnly]
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
-/// * [tpSl] 
+/// * [tpSl]
 @BuiltValue()
-abstract class PerpOrderPreviewRequest implements Built<PerpOrderPreviewRequest, PerpOrderPreviewRequestBuilder> {
+abstract class PerpOrderPreviewRequest
+    implements Built<PerpOrderPreviewRequest, PerpOrderPreviewRequestBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -76,19 +77,26 @@ abstract class PerpOrderPreviewRequest implements Built<PerpOrderPreviewRequest,
 
   PerpOrderPreviewRequest._();
 
-  factory PerpOrderPreviewRequest([void updates(PerpOrderPreviewRequestBuilder b)]) = _$PerpOrderPreviewRequest;
+  factory PerpOrderPreviewRequest(
+          [void updates(PerpOrderPreviewRequestBuilder b)]) =
+      _$PerpOrderPreviewRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(PerpOrderPreviewRequestBuilder b) => b
-      ..reduceOnly = false;
+  static void _defaults(PerpOrderPreviewRequestBuilder b) =>
+      b..reduceOnly = false;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<PerpOrderPreviewRequest> get serializer => _$PerpOrderPreviewRequestSerializer();
+  static Serializer<PerpOrderPreviewRequest> get serializer =>
+      _$PerpOrderPreviewRequestSerializer();
 }
 
-class _$PerpOrderPreviewRequestSerializer implements PrimitiveSerializer<PerpOrderPreviewRequest> {
+class _$PerpOrderPreviewRequestSerializer
+    implements PrimitiveSerializer<PerpOrderPreviewRequest> {
   @override
-  final Iterable<Type> types = const [PerpOrderPreviewRequest, _$PerpOrderPreviewRequest];
+  final Iterable<Type> types = const [
+    PerpOrderPreviewRequest,
+    _$PerpOrderPreviewRequest
+  ];
 
   @override
   final String wireName = r'PerpOrderPreviewRequest';
@@ -182,7 +190,9 @@ class _$PerpOrderPreviewRequestSerializer implements PrimitiveSerializer<PerpOrd
     PerpOrderPreviewRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -319,34 +329,42 @@ class _$PerpOrderPreviewRequestSerializer implements PrimitiveSerializer<PerpOrd
 }
 
 class PerpOrderPreviewRequestKindEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'perp')
-  static const PerpOrderPreviewRequestKindEnum perp = _$perpOrderPreviewRequestKindEnum_perp;
+  static const PerpOrderPreviewRequestKindEnum perp =
+      _$perpOrderPreviewRequestKindEnum_perp;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewRequestKindEnum unknownDefaultOpenApi = _$perpOrderPreviewRequestKindEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewRequestKindEnum unknownDefaultOpenApi =
+      _$perpOrderPreviewRequestKindEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewRequestKindEnum> get serializer => _$perpOrderPreviewRequestKindEnumSerializer;
+  static Serializer<PerpOrderPreviewRequestKindEnum> get serializer =>
+      _$perpOrderPreviewRequestKindEnumSerializer;
 
-  const PerpOrderPreviewRequestKindEnum._(String name): super(name);
+  const PerpOrderPreviewRequestKindEnum._(String name) : super(name);
 
-  static BuiltSet<PerpOrderPreviewRequestKindEnum> get values => _$perpOrderPreviewRequestKindEnumValues;
-  static PerpOrderPreviewRequestKindEnum valueOf(String name) => _$perpOrderPreviewRequestKindEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewRequestKindEnum> get values =>
+      _$perpOrderPreviewRequestKindEnumValues;
+  static PerpOrderPreviewRequestKindEnum valueOf(String name) =>
+      _$perpOrderPreviewRequestKindEnumValueOf(name);
 }
 
 class PerpOrderPreviewRequestSideEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'long')
-  static const PerpOrderPreviewRequestSideEnum long = _$perpOrderPreviewRequestSideEnum_long;
+  static const PerpOrderPreviewRequestSideEnum long =
+      _$perpOrderPreviewRequestSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
-  static const PerpOrderPreviewRequestSideEnum short = _$perpOrderPreviewRequestSideEnum_short;
+  static const PerpOrderPreviewRequestSideEnum short =
+      _$perpOrderPreviewRequestSideEnum_short;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewRequestSideEnum unknownDefaultOpenApi = _$perpOrderPreviewRequestSideEnum_unknownDefaultOpenApi;
+  static const PerpOrderPreviewRequestSideEnum unknownDefaultOpenApi =
+      _$perpOrderPreviewRequestSideEnum_unknownDefaultOpenApi;
 
-  static Serializer<PerpOrderPreviewRequestSideEnum> get serializer => _$perpOrderPreviewRequestSideEnumSerializer;
+  static Serializer<PerpOrderPreviewRequestSideEnum> get serializer =>
+      _$perpOrderPreviewRequestSideEnumSerializer;
 
-  const PerpOrderPreviewRequestSideEnum._(String name): super(name);
+  const PerpOrderPreviewRequestSideEnum._(String name) : super(name);
 
-  static BuiltSet<PerpOrderPreviewRequestSideEnum> get values => _$perpOrderPreviewRequestSideEnumValues;
-  static PerpOrderPreviewRequestSideEnum valueOf(String name) => _$perpOrderPreviewRequestSideEnumValueOf(name);
+  static BuiltSet<PerpOrderPreviewRequestSideEnum> get values =>
+      _$perpOrderPreviewRequestSideEnumValues;
+  static PerpOrderPreviewRequestSideEnum valueOf(String name) =>
+      _$perpOrderPreviewRequestSideEnumValueOf(name);
 }
-

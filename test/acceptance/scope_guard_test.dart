@@ -20,12 +20,7 @@ void main() {
           .map((file) => file.readAsStringSync())
           .join('\n')
           .toLowerCase();
-      for (final forbidden in [
-        'completeorderwalletaction',
-        'createfundingplan',
-        'createtransfer',
-        'createclaim',
-      ]) {
+      for (final forbidden in ['completeorderwalletaction', 'createclaim']) {
         expect(source, isNot(contains(forbidden)), reason: forbidden);
       }
       expect(source, isNot(contains('package:rwa_api_client')));

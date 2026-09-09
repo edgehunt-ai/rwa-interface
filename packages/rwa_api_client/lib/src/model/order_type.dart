@@ -10,7 +10,6 @@ import 'package:built_value/serializer.dart';
 part 'order_type.g.dart';
 
 class OrderType extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'market')
   static const OrderType market = _$market;
   @BuiltValueEnumConst(wireName: r'limit')
@@ -20,7 +19,7 @@ class OrderType extends EnumClass {
 
   static Serializer<OrderType> get serializer => _$orderTypeSerializer;
 
-  const OrderType._(String name): super(name);
+  const OrderType._(String name) : super(name);
 
   static BuiltSet<OrderType> get values => _$values;
   static OrderType valueOf(String name) => _$valueOf(name);
@@ -33,4 +32,3 @@ class OrderType extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class OrderTypeMixin = Object with _$OrderTypeMixin;
-

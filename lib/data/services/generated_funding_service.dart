@@ -4,6 +4,9 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import '../api/api_failure_mapper.dart';
 import 'funding_service.dart';
 
+// The server still exposes this deprecated compatibility operation.
+// ignore_for_file: deprecated_member_use
+
 final class GeneratedFundingService implements FundingService {
   GeneratedFundingService(this._api, {this._mapper = const ApiFailureMapper()});
   final api.FundingApi _api;
@@ -12,7 +15,33 @@ final class GeneratedFundingService implements FundingService {
   @override
   Future<api.FundingCatalog> getCatalog() => _body(_api.getFundingCatalog);
   @override
-  Future<api.Deposit> createDeposit(
+  Future<api.FundingPlan> createPlan(
+    api.FundingPlanRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.createFundingPlan(
+      idempotencyKey: idempotencyKey,
+      fundingPlanRequest: request,
+    ),
+  );
+  @override
+  Future<api.FundingPlan> getPlan(String id) =>
+      _body(() => _api.getFundingPlan(planId: id));
+  @override
+  Future<api.Transfer> createTransfer(
+    api.TransferRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.createTransfer(
+      idempotencyKey: idempotencyKey,
+      transferRequest: request,
+    ),
+  );
+  @override
+  Future<api.Transfer> getTransfer(String id) =>
+      _body(() => _api.getTransfer(transferId: id));
+  @override
+  Future<api.LegacyDeposit> createDeposit(
     api.CreateDepositIntentRequest request, {
     required String idempotencyKey,
   }) => _body(
@@ -21,7 +50,6 @@ final class GeneratedFundingService implements FundingService {
       createDepositIntentRequest: request,
     ),
   );
-  @override
   @override
   Future<api.Deposit> getDeposit(String id) =>
       _body(() => _api.getDeposit(depositId: id));

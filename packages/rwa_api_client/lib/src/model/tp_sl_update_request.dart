@@ -16,7 +16,8 @@ part 'tp_sl_update_request.g.dart';
 /// * [stopLimitPrice] - 十进制字符串，避免浮点误差
 /// * [stopLimitPercent] - 与 `stop_limit_price` 互算，二者传其一即可
 @BuiltValue()
-abstract class TpSlUpdateRequest implements Built<TpSlUpdateRequest, TpSlUpdateRequestBuilder> {
+abstract class TpSlUpdateRequest
+    implements Built<TpSlUpdateRequest, TpSlUpdateRequestBuilder> {
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'take_profit_price')
   String? get takeProfitPrice;
@@ -35,16 +36,19 @@ abstract class TpSlUpdateRequest implements Built<TpSlUpdateRequest, TpSlUpdateR
 
   TpSlUpdateRequest._();
 
-  factory TpSlUpdateRequest([void updates(TpSlUpdateRequestBuilder b)]) = _$TpSlUpdateRequest;
+  factory TpSlUpdateRequest([void updates(TpSlUpdateRequestBuilder b)]) =
+      _$TpSlUpdateRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TpSlUpdateRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TpSlUpdateRequest> get serializer => _$TpSlUpdateRequestSerializer();
+  static Serializer<TpSlUpdateRequest> get serializer =>
+      _$TpSlUpdateRequestSerializer();
 }
 
-class _$TpSlUpdateRequestSerializer implements PrimitiveSerializer<TpSlUpdateRequest> {
+class _$TpSlUpdateRequestSerializer
+    implements PrimitiveSerializer<TpSlUpdateRequest> {
   @override
   final Iterable<Type> types = const [TpSlUpdateRequest, _$TpSlUpdateRequest];
 
@@ -92,7 +96,9 @@ class _$TpSlUpdateRequestSerializer implements PrimitiveSerializer<TpSlUpdateReq
     TpSlUpdateRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -167,4 +173,3 @@ class _$TpSlUpdateRequestSerializer implements PrimitiveSerializer<TpSlUpdateReq
     return result.build();
   }
 }
-

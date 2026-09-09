@@ -19,14 +19,8 @@ import '../helpers/trading_provider_harness.dart';
 void main() {
   test('funding commands traverse the complete controlled boundary', () async {
     final adapter = ControlledApiAdapter([
-      _json('GET', '/v1/funding/catalog', 200, _catalogJson),
-      _json('POST', '/v1/deposits', 201, _depositJson()),
-      _json(
-        'GET',
-        '/v1/deposits/deposit-1',
-        200,
-        _depositJson(status: 'ambiguous'),
-      ),
+      _json('POST', '/v1/deposits', 201, _legacyDepositJson()),
+      _json('GET', '/v1/deposits/deposit-1', 200, _confirmedDepositJson()),
       _json('POST', '/v1/withdrawal-quotes', 201, _quoteJson),
       _json(
         'POST',
@@ -63,16 +57,13 @@ void main() {
     addTearDown(deposits.close);
     addTearDown(withdrawals.close);
 
-    final catalog = await container.read(fundingCatalogProvider.future);
-    expect(catalog.rails.map((rail) => rail.network), ['BSC', 'arbitrum']);
-
     final createdDeposit = await container
         .read(depositCommandsProvider)
         .create(chain: 'BSC', amount: '10');
     expect(createdDeposit.capability?.code, 'funding_transfer_not_supported');
     expect(createdDeposit.capability?.retryable, isFalse);
     final deposit = await container.read(depositProvider('deposit-1').future);
-    expect(deposit.resource.status, DepositState.ambiguous);
+    expect(deposit.resource.status, DepositState.credited);
 
     final intent = WithdrawalIntent(
       chain: 'BSC',
@@ -126,25 +117,7 @@ ControlledResponse _json(String method, String path, int status, Object body) =>
       body: body,
     );
 
-const _catalogJson = {
-  'rails': [
-    {
-      'rail': 'bstock',
-      'network': 'BSC',
-      'settlement_asset': 'USDC',
-      'minimum_amount': '1',
-    },
-    {
-      'rail': 'perp',
-      'network': 'Arbitrum',
-      'settlement_asset': 'USDC',
-      'minimum_amount': '1',
-    },
-  ],
-  'updated_at': '2026-01-01T00:00:00Z',
-};
-
-Map<String, Object?> _depositJson({String status = 'awaiting'}) => {
+Map<String, Object?> _legacyDepositJson({String status = 'awaiting'}) => {
   'deposit_id': 'deposit-1',
   'chain': 'BSC',
   'token': 'USDC',
@@ -153,6 +126,29 @@ Map<String, Object?> _depositJson({String status = 'awaiting'}) => {
   'requires_transfer': true,
   'instructions': {'chain': 'BSC', 'token': 'USDC', 'address': '0x123'},
   'created_at': '2026-01-01T00:00:00Z',
+};
+
+Map<String, Object?> _confirmedDepositJson() => {
+  'deposit_id': 'deposit-1',
+  'chain': 'BSC',
+  'chain_id': 56,
+  'token': 'USDC',
+  'token_contract': '0xusdc',
+  'token_decimals': 6,
+  'amount': '10',
+  'amount_raw': '10000000',
+  'status': 'confirmed',
+  'confirmations': 12,
+  'confirmations_required': 12,
+  'tx_hash': '0xtx',
+  'log_index': 0,
+  'block_number': 1,
+  'block_hash': '0xblock',
+  'sender': '0xsender',
+  'recipient': '0x123',
+  'detected_at': '2026-01-01T00:00:00Z',
+  'confirmed_at': '2026-01-01T00:00:00Z',
+  'updated_at': '2026-01-01T00:00:00Z',
 };
 
 const _quoteJson = {

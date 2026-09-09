@@ -14,10 +14,9 @@ final class GeneratedPortfolioService implements PortfolioService {
   @override
   Future<api.PortfolioSummary> getSummary() => _body(_api.getPortfolioSummary);
   @override
-  Future<api.ListAccounts200Response> listAccounts() =>
-      _body(_api.listAccounts);
+  Future<api.PortfolioAccountPage> listAccounts() => _body(_api.listAccounts);
   @override
-  Future<api.HoldingPage> listHoldings({String? cursor}) =>
+  Future<api.PortfolioHoldingPage> listHoldings({String? cursor}) =>
       _body(() => _api.listHoldings(cursor: cursor));
 
   Future<T> _body<T>(Future<Response<T>> Function() request) async {

@@ -8,23 +8,35 @@ void main() {
   test('maps account kind and preserves token precision', () async {
     final accounts = await PortfolioRepositoryImpl(_Portfolio()).listAccounts();
     expect(accounts.single.kind, TradingAccountKind.hip3);
-    expect(accounts.single.balances.single.balance.value, '0.123456789012345678');
+    expect(
+      accounts.single.balances.single.balance.value,
+      '0.123456789012345678',
+    );
   });
 }
 
 final class _Portfolio implements PortfolioService {
   @override
-  Future<api.ListAccounts200Response> listAccounts() async => api.ListAccounts200Response(
-    (response) => response.items.add(api.AccountBalance(
-      (account) => account
-        ..account = api.AccountKind.hip3
-        ..balances.add(api.TokenBalance(
-          (balance) => balance
-            ..symbol = 'USDC'
-            ..balance = '0.123456789012345678',
-        )),
-    )),
-  );
+  Future<api.PortfolioAccountPage> listAccounts() async =>
+      api.PortfolioAccountPage((response) {
+        response
+          ..scope = api.PortfolioAccountPageScopeEnum.internalLedger
+          ..reconciled = true
+          ..freshness = api.PortfolioFreshness.live;
+        response.items.add(
+          api.AccountBalance(
+            (account) => account
+              ..account = api.AccountKind.hip3
+              ..balances.add(
+                api.TokenBalance(
+                  (balance) => balance
+                    ..symbol = 'USDC'
+                    ..balance = '0.123456789012345678',
+                ),
+              ),
+          ),
+        );
+      });
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

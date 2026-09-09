@@ -10,7 +10,6 @@ import 'package:built_value/serializer.dart';
 part 'activity_category.g.dart';
 
 class ActivityCategory extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'orders')
   static const ActivityCategory orders = _$orders;
   @BuiltValueEnumConst(wireName: r'funds')
@@ -20,9 +19,10 @@ class ActivityCategory extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const ActivityCategory unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<ActivityCategory> get serializer => _$activityCategorySerializer;
+  static Serializer<ActivityCategory> get serializer =>
+      _$activityCategorySerializer;
 
-  const ActivityCategory._(String name): super(name);
+  const ActivityCategory._(String name) : super(name);
 
   static BuiltSet<ActivityCategory> get values => _$values;
   static ActivityCategory valueOf(String name) => _$valueOf(name);
@@ -35,4 +35,3 @@ class ActivityCategory extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class ActivityCategoryMixin = Object with _$ActivityCategoryMixin;
-

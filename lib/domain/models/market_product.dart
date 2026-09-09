@@ -6,6 +6,13 @@ final class MarketProductRef {
   const MarketProductRef({required this.symbol, required this.kind});
   final String symbol;
   final MarketProductKind kind;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MarketProductRef && other.symbol == symbol && other.kind == kind;
+
+  @override
+  int get hashCode => Object.hash(symbol, kind);
 }
 
 final class MarketProduct {

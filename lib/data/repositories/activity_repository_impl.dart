@@ -48,14 +48,15 @@ final class ActivityRepositoryImpl implements ActivityRepository {
         ? null
         : DecimalValue(value.amount!, asset: value.asset, unit: 'activity'),
     context: value.context,
-    reference: value.reference?.id == null
-        ? null
-        : ActivityReference(
-            type: value.reference!.type?.name ?? 'unknown',
-            id: value.reference!.id!,
-          ),
+    reference: switch (value.reference) {
+      final reference? => ActivityReference(
+        type: reference.type.name,
+        id: reference.id,
+      ),
+      null => null,
+    },
     createdAt: value.createdAt.toUtc(),
-    updatedAt: value.updatedAt?.toUtc(),
+    updatedAt: value.updatedAt.toUtc(),
   );
   api.ActivityCategory? _category(ActivityCategory? value) => switch (value) {
     ActivityCategory.orders => api.ActivityCategory.orders,

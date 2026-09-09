@@ -16,6 +16,9 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   IdentityFailure? initializeFailure;
   IdentityFailure? sendFailure;
   IdentityFailure? verifyFailure;
+  IdentityFailure? oauthFailure;
+  IdentityFailure? passkeyFailure;
+  IdentityFailure? walletLoginFailure;
   IdentityFailure? logoutFailure;
   Future<void>? initializeBarrier;
   IdentityConfiguration? configuration;
@@ -24,6 +27,7 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   String? verifiedCode;
   int refreshCalls = 0;
   int logoutCalls = 0;
+  WalletConnection? walletConnection;
 
   @override
   bool get isSupported => supported;
@@ -68,6 +72,25 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
     verifiedEmail = email;
     verifiedCode = code;
     if (verifyFailure case final failure?) throw failure;
+    return verifiedPrincipal;
+  }
+
+  @override
+  Future<IdentityPrincipal> loginWithOAuth(String provider) async {
+    if (oauthFailure case final failure?) throw failure;
+    return verifiedPrincipal;
+  }
+
+  @override
+  Future<IdentityPrincipal> loginWithPasskey() async {
+    if (passkeyFailure case final failure?) throw failure;
+    return verifiedPrincipal;
+  }
+
+  @override
+  Future<IdentityPrincipal> loginWithWallet(WalletConnection connection) async {
+    walletConnection = connection;
+    if (walletLoginFailure case final failure?) throw failure;
     return verifiedPrincipal;
   }
 }

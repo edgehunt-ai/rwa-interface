@@ -20,7 +20,7 @@ final class GeneratedWalletsService implements WalletsService {
       _body(() => _api.syncWallet(idempotencyKey: idempotencyKey));
 
   @override
-  Future<api.WalletAuthorization> authorizeWithdrawal(
+  Future<api.WalletAuthorization> createAuthorization(
     String walletId,
     api.WalletAuthorizationRequest request, {
     required String idempotencyKey,

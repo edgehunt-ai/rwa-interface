@@ -10,7 +10,6 @@ import 'package:built_value/serializer.dart';
 part 'withdrawal_status.g.dart';
 
 class WithdrawalStatus extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'pending_signature')
   static const WithdrawalStatus pendingSignature = _$pendingSignature;
   @BuiltValueEnumConst(wireName: r'processing')
@@ -28,9 +27,10 @@ class WithdrawalStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const WithdrawalStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<WithdrawalStatus> get serializer => _$withdrawalStatusSerializer;
+  static Serializer<WithdrawalStatus> get serializer =>
+      _$withdrawalStatusSerializer;
 
-  const WithdrawalStatus._(String name): super(name);
+  const WithdrawalStatus._(String name) : super(name);
 
   static BuiltSet<WithdrawalStatus> get values => _$values;
   static WithdrawalStatus valueOf(String name) => _$valueOf(name);
@@ -43,4 +43,3 @@ class WithdrawalStatus extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class WithdrawalStatusMixin = Object with _$WithdrawalStatusMixin;
-

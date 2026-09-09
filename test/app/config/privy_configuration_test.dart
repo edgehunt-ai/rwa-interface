@@ -35,7 +35,29 @@ void main() {
     });
 
     test('keeps login methods as an explicit code constant', () {
-      expect(PrivyConfiguration.loginMethods, {'email'});
+      expect(PrivyConfiguration.loginMethods, {'email', 'google', 'passkey'});
+    });
+  });
+
+  group('ReownConfiguration', () {
+    test('normalizes the project identifier', () {
+      expect(
+        const ReownConfiguration(projectId: ' project-id ').validate(),
+        'project-id',
+      );
+    });
+
+    test('fails closed when the project identifier is missing', () {
+      expect(
+        () => const ReownConfiguration(projectId: ' ').validate(),
+        throwsA(
+          isA<IdentityFailure>().having(
+            (failure) => failure.code,
+            'code',
+            AuthenticationFailureCode.configuration,
+          ),
+        ),
+      );
     });
   });
 }

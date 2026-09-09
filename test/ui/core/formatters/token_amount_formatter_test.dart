@@ -39,6 +39,42 @@ void main() {
       );
     });
 
+    test(
+      'formats fiat and percentage values without binary floating point',
+      () {
+        expect(
+          TokenAmountFormatter.formatUsd(DecimalValue('12580.4200')),
+          r'$12,580.42',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(DecimalValue('2.01')),
+          '+2.01%',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(DecimalValue('-0.8')),
+          '-0.8%',
+        );
+      },
+    );
+
+    test('formats fixed-scale editable values without feature rounding', () {
+      expect(
+        TokenAmountFormatter.formatFixed(DecimalValue('188'), decimals: 2),
+        '188.00',
+      );
+      expect(
+        TokenAmountFormatter.formatFixed(DecimalValue('-0.5'), decimals: 2),
+        '-0.50',
+      );
+      expect(
+        () => TokenAmountFormatter.formatFixed(
+          DecimalValue('1.001'),
+          decimals: 2,
+        ),
+        throwsFormatException,
+      );
+    });
+
     test('converts atomic units using token decimals without double', () {
       expect(
         TokenAmountFormatter.formatAtomic(
@@ -96,6 +132,18 @@ void main() {
         ),
         throwsRangeError,
       );
+    });
+
+    test('sums USD values at their decimal precision without double', () {
+      expect(
+        TokenAmountFormatter.sumUsd([
+          DecimalValue('12345678901234567890.01', asset: 'USD', unit: 'fiat'),
+          DecimalValue('0.009', asset: 'USD', unit: 'fiat'),
+          DecimalValue('-0.004', asset: 'USD', unit: 'fiat'),
+        ]),
+        r'$12,345,678,901,234,567,890.015',
+      );
+      expect(TokenAmountFormatter.sumUsd(const []), '—');
     });
   });
 }

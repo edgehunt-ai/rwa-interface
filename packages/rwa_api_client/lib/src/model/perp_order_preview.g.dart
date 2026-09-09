@@ -29,16 +29,16 @@ final BuiltSet<PerpOrderPreviewKindEnum> _$perpOrderPreviewKindEnumValues =
   _$perpOrderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
-const PerpOrderPreviewNetworkEnum _$perpOrderPreviewNetworkEnum_arbitrum =
-    const PerpOrderPreviewNetworkEnum._('arbitrum');
+const PerpOrderPreviewNetworkEnum _$perpOrderPreviewNetworkEnum_hyperliquid =
+    const PerpOrderPreviewNetworkEnum._('hyperliquid');
 const PerpOrderPreviewNetworkEnum
     _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi =
     const PerpOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewNetworkEnum _$perpOrderPreviewNetworkEnumValueOf(String name) {
   switch (name) {
-    case 'arbitrum':
-      return _$perpOrderPreviewNetworkEnum_arbitrum;
+    case 'hyperliquid':
+      return _$perpOrderPreviewNetworkEnum_hyperliquid;
     case 'unknownDefaultOpenApi':
       return _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
@@ -49,7 +49,7 @@ PerpOrderPreviewNetworkEnum _$perpOrderPreviewNetworkEnumValueOf(String name) {
 final BuiltSet<PerpOrderPreviewNetworkEnum>
     _$perpOrderPreviewNetworkEnumValues =
     BuiltSet<PerpOrderPreviewNetworkEnum>(const <PerpOrderPreviewNetworkEnum>[
-  _$perpOrderPreviewNetworkEnum_arbitrum,
+  _$perpOrderPreviewNetworkEnum_hyperliquid,
   _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
@@ -79,6 +79,114 @@ final BuiltSet<PerpOrderPreviewSettlementAssetEnum>
   _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
+const PerpOrderPreviewSettlementChainIdEnum
+    _$perpOrderPreviewSettlementChainIdEnum_number1337 =
+    const PerpOrderPreviewSettlementChainIdEnum._('number1337');
+const PerpOrderPreviewSettlementChainIdEnum
+    _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi =
+    const PerpOrderPreviewSettlementChainIdEnum._('unknownDefaultOpenApi');
+
+PerpOrderPreviewSettlementChainIdEnum
+    _$perpOrderPreviewSettlementChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number1337':
+      return _$perpOrderPreviewSettlementChainIdEnum_number1337;
+    case 'unknownDefaultOpenApi':
+      return _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+    default:
+      return _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<PerpOrderPreviewSettlementChainIdEnum>
+    _$perpOrderPreviewSettlementChainIdEnumValues = BuiltSet<
+        PerpOrderPreviewSettlementChainIdEnum>(const <PerpOrderPreviewSettlementChainIdEnum>[
+  _$perpOrderPreviewSettlementChainIdEnum_number1337,
+  _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi,
+]);
+
+const PerpOrderPreviewSettlementAssetIdEnum
+    _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS =
+    const PerpOrderPreviewSettlementAssetIdEnum._(
+        'hyperliquidColon1337SlashPerpsColonUSDCPERPS');
+const PerpOrderPreviewSettlementAssetIdEnum
+    _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi =
+    const PerpOrderPreviewSettlementAssetIdEnum._('unknownDefaultOpenApi');
+
+PerpOrderPreviewSettlementAssetIdEnum
+    _$perpOrderPreviewSettlementAssetIdEnumValueOf(String name) {
+  switch (name) {
+    case 'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
+      return _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
+    case 'unknownDefaultOpenApi':
+      return _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+    default:
+      return _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<PerpOrderPreviewSettlementAssetIdEnum>
+    _$perpOrderPreviewSettlementAssetIdEnumValues = BuiltSet<
+        PerpOrderPreviewSettlementAssetIdEnum>(const <PerpOrderPreviewSettlementAssetIdEnum>[
+  _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS,
+  _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi,
+]);
+
+const PerpOrderPreviewSettlementTokenContractEnum
+    _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000 =
+    const PerpOrderPreviewSettlementTokenContractEnum._(
+        'n0x2100000000000000000000000000000000000000');
+const PerpOrderPreviewSettlementTokenContractEnum
+    _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi =
+    const PerpOrderPreviewSettlementTokenContractEnum._(
+        'unknownDefaultOpenApi');
+
+PerpOrderPreviewSettlementTokenContractEnum
+    _$perpOrderPreviewSettlementTokenContractEnumValueOf(String name) {
+  switch (name) {
+    case 'n0x2100000000000000000000000000000000000000':
+      return _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000;
+    case 'unknownDefaultOpenApi':
+      return _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
+    default:
+      return _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<PerpOrderPreviewSettlementTokenContractEnum>
+    _$perpOrderPreviewSettlementTokenContractEnumValues = BuiltSet<
+        PerpOrderPreviewSettlementTokenContractEnum>(const <PerpOrderPreviewSettlementTokenContractEnum>[
+  _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000,
+  _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi,
+]);
+
+const PerpOrderPreviewSettlementTokenDecimalsEnum
+    _$perpOrderPreviewSettlementTokenDecimalsEnum_number8 =
+    const PerpOrderPreviewSettlementTokenDecimalsEnum._('number8');
+const PerpOrderPreviewSettlementTokenDecimalsEnum
+    _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi =
+    const PerpOrderPreviewSettlementTokenDecimalsEnum._(
+        'unknownDefaultOpenApi');
+
+PerpOrderPreviewSettlementTokenDecimalsEnum
+    _$perpOrderPreviewSettlementTokenDecimalsEnumValueOf(String name) {
+  switch (name) {
+    case 'number8':
+      return _$perpOrderPreviewSettlementTokenDecimalsEnum_number8;
+    case 'unknownDefaultOpenApi':
+      return _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
+    default:
+      return _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<PerpOrderPreviewSettlementTokenDecimalsEnum>
+    _$perpOrderPreviewSettlementTokenDecimalsEnumValues = BuiltSet<
+        PerpOrderPreviewSettlementTokenDecimalsEnum>(const <PerpOrderPreviewSettlementTokenDecimalsEnum>[
+  _$perpOrderPreviewSettlementTokenDecimalsEnum_number8,
+  _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi,
+]);
+
 Serializer<PerpOrderPreviewKindEnum> _$perpOrderPreviewKindEnumSerializer =
     _$PerpOrderPreviewKindEnumSerializer();
 Serializer<PerpOrderPreviewNetworkEnum>
@@ -87,6 +195,18 @@ Serializer<PerpOrderPreviewNetworkEnum>
 Serializer<PerpOrderPreviewSettlementAssetEnum>
     _$perpOrderPreviewSettlementAssetEnumSerializer =
     _$PerpOrderPreviewSettlementAssetEnumSerializer();
+Serializer<PerpOrderPreviewSettlementChainIdEnum>
+    _$perpOrderPreviewSettlementChainIdEnumSerializer =
+    _$PerpOrderPreviewSettlementChainIdEnumSerializer();
+Serializer<PerpOrderPreviewSettlementAssetIdEnum>
+    _$perpOrderPreviewSettlementAssetIdEnumSerializer =
+    _$PerpOrderPreviewSettlementAssetIdEnumSerializer();
+Serializer<PerpOrderPreviewSettlementTokenContractEnum>
+    _$perpOrderPreviewSettlementTokenContractEnumSerializer =
+    _$PerpOrderPreviewSettlementTokenContractEnumSerializer();
+Serializer<PerpOrderPreviewSettlementTokenDecimalsEnum>
+    _$perpOrderPreviewSettlementTokenDecimalsEnumSerializer =
+    _$PerpOrderPreviewSettlementTokenDecimalsEnumSerializer();
 
 class _$PerpOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewKindEnum> {
@@ -120,11 +240,11 @@ class _$PerpOrderPreviewKindEnumSerializer
 class _$PerpOrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'arbitrum': 'Arbitrum',
+    'hyperliquid': 'Hyperliquid',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'Arbitrum': 'arbitrum',
+    'Hyperliquid': 'hyperliquid',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
@@ -178,11 +298,153 @@ class _$PerpOrderPreviewSettlementAssetEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$PerpOrderPreviewSettlementChainIdEnumSerializer
+    implements PrimitiveSerializer<PerpOrderPreviewSettlementChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number1337': 1337,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    1337: 'number1337',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PerpOrderPreviewSettlementChainIdEnum
+  ];
+  @override
+  final String wireName = 'PerpOrderPreviewSettlementChainIdEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, PerpOrderPreviewSettlementChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PerpOrderPreviewSettlementChainIdEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PerpOrderPreviewSettlementChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PerpOrderPreviewSettlementAssetIdEnumSerializer
+    implements PrimitiveSerializer<PerpOrderPreviewSettlementAssetIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
+        'hyperliquid:1337/perps:USDC-PERPS',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'hyperliquid:1337/perps:USDC-PERPS':
+        'hyperliquidColon1337SlashPerpsColonUSDCPERPS',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PerpOrderPreviewSettlementAssetIdEnum
+  ];
+  @override
+  final String wireName = 'PerpOrderPreviewSettlementAssetIdEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, PerpOrderPreviewSettlementAssetIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PerpOrderPreviewSettlementAssetIdEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PerpOrderPreviewSettlementAssetIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PerpOrderPreviewSettlementTokenContractEnumSerializer
+    implements
+        PrimitiveSerializer<PerpOrderPreviewSettlementTokenContractEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'n0x2100000000000000000000000000000000000000':
+        '0x2100000000000000000000000000000000000000',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    '0x2100000000000000000000000000000000000000':
+        'n0x2100000000000000000000000000000000000000',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PerpOrderPreviewSettlementTokenContractEnum
+  ];
+  @override
+  final String wireName = 'PerpOrderPreviewSettlementTokenContractEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          PerpOrderPreviewSettlementTokenContractEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PerpOrderPreviewSettlementTokenContractEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PerpOrderPreviewSettlementTokenContractEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PerpOrderPreviewSettlementTokenDecimalsEnumSerializer
+    implements
+        PrimitiveSerializer<PerpOrderPreviewSettlementTokenDecimalsEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number8': 8,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    8: 'number8',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    PerpOrderPreviewSettlementTokenDecimalsEnum
+  ];
+  @override
+  final String wireName = 'PerpOrderPreviewSettlementTokenDecimalsEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          PerpOrderPreviewSettlementTokenDecimalsEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PerpOrderPreviewSettlementTokenDecimalsEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PerpOrderPreviewSettlementTokenDecimalsEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$PerpOrderPreview extends PerpOrderPreview {
   @override
   final PerpOrderPreviewSettlementAssetEnum settlementAsset;
   @override
+  final PerpOrderPreviewSettlementTokenContractEnum settlementTokenContract;
+  @override
+  final PerpOrderPreviewSettlementTokenDecimalsEnum settlementTokenDecimals;
+  @override
   final PerpOrderPreviewKindEnum kind;
+  @override
+  final PerpOrderPreviewSettlementAssetIdEnum settlementAssetId;
+  @override
+  final PerpOrderPreviewSettlementChainIdEnum settlementChainId;
   @override
   final PerpOrderPreviewNetworkEnum network;
   @override
@@ -240,7 +502,11 @@ class _$PerpOrderPreview extends PerpOrderPreview {
 
   _$PerpOrderPreview._(
       {required this.settlementAsset,
+      required this.settlementTokenContract,
+      required this.settlementTokenDecimals,
       required this.kind,
+      required this.settlementAssetId,
+      required this.settlementChainId,
       required this.network,
       required this.previewId,
       required this.symbol,
@@ -280,7 +546,11 @@ class _$PerpOrderPreview extends PerpOrderPreview {
     if (identical(other, this)) return true;
     return other is PerpOrderPreview &&
         settlementAsset == other.settlementAsset &&
+        settlementTokenContract == other.settlementTokenContract &&
+        settlementTokenDecimals == other.settlementTokenDecimals &&
         kind == other.kind &&
+        settlementAssetId == other.settlementAssetId &&
+        settlementChainId == other.settlementChainId &&
         network == other.network &&
         previewId == other.previewId &&
         symbol == other.symbol &&
@@ -312,7 +582,11 @@ class _$PerpOrderPreview extends PerpOrderPreview {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, settlementAsset.hashCode);
+    _$hash = $jc(_$hash, settlementTokenContract.hashCode);
+    _$hash = $jc(_$hash, settlementTokenDecimals.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, settlementAssetId.hashCode);
+    _$hash = $jc(_$hash, settlementChainId.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
     _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
@@ -346,7 +620,11 @@ class _$PerpOrderPreview extends PerpOrderPreview {
   String toString() {
     return (newBuiltValueToStringHelper(r'PerpOrderPreview')
           ..add('settlementAsset', settlementAsset)
+          ..add('settlementTokenContract', settlementTokenContract)
+          ..add('settlementTokenDecimals', settlementTokenDecimals)
           ..add('kind', kind)
+          ..add('settlementAssetId', settlementAssetId)
+          ..add('settlementChainId', settlementChainId)
           ..add('network', network)
           ..add('previewId', previewId)
           ..add('symbol', symbol)
@@ -389,9 +667,39 @@ class PerpOrderPreviewBuilder
           covariant PerpOrderPreviewSettlementAssetEnum? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
+  PerpOrderPreviewSettlementTokenContractEnum? _settlementTokenContract;
+  PerpOrderPreviewSettlementTokenContractEnum? get settlementTokenContract =>
+      _$this._settlementTokenContract;
+  set settlementTokenContract(
+          covariant PerpOrderPreviewSettlementTokenContractEnum?
+              settlementTokenContract) =>
+      _$this._settlementTokenContract = settlementTokenContract;
+
+  PerpOrderPreviewSettlementTokenDecimalsEnum? _settlementTokenDecimals;
+  PerpOrderPreviewSettlementTokenDecimalsEnum? get settlementTokenDecimals =>
+      _$this._settlementTokenDecimals;
+  set settlementTokenDecimals(
+          covariant PerpOrderPreviewSettlementTokenDecimalsEnum?
+              settlementTokenDecimals) =>
+      _$this._settlementTokenDecimals = settlementTokenDecimals;
+
   PerpOrderPreviewKindEnum? _kind;
   PerpOrderPreviewKindEnum? get kind => _$this._kind;
   set kind(covariant PerpOrderPreviewKindEnum? kind) => _$this._kind = kind;
+
+  PerpOrderPreviewSettlementAssetIdEnum? _settlementAssetId;
+  PerpOrderPreviewSettlementAssetIdEnum? get settlementAssetId =>
+      _$this._settlementAssetId;
+  set settlementAssetId(
+          covariant PerpOrderPreviewSettlementAssetIdEnum? settlementAssetId) =>
+      _$this._settlementAssetId = settlementAssetId;
+
+  PerpOrderPreviewSettlementChainIdEnum? _settlementChainId;
+  PerpOrderPreviewSettlementChainIdEnum? get settlementChainId =>
+      _$this._settlementChainId;
+  set settlementChainId(
+          covariant PerpOrderPreviewSettlementChainIdEnum? settlementChainId) =>
+      _$this._settlementChainId = settlementChainId;
 
   PerpOrderPreviewNetworkEnum? _network;
   PerpOrderPreviewNetworkEnum? get network => _$this._network;
@@ -519,7 +827,11 @@ class PerpOrderPreviewBuilder
     final $v = _$v;
     if ($v != null) {
       _settlementAsset = $v.settlementAsset;
+      _settlementTokenContract = $v.settlementTokenContract;
+      _settlementTokenDecimals = $v.settlementTokenDecimals;
       _kind = $v.kind;
+      _settlementAssetId = $v.settlementAssetId;
+      _settlementChainId = $v.settlementChainId;
       _network = $v.network;
       _previewId = $v.previewId;
       _symbol = $v.symbol;
@@ -570,8 +882,20 @@ class PerpOrderPreviewBuilder
           _$PerpOrderPreview._(
             settlementAsset: BuiltValueNullFieldError.checkNotNull(
                 settlementAsset, r'PerpOrderPreview', 'settlementAsset'),
+            settlementTokenContract: BuiltValueNullFieldError.checkNotNull(
+                settlementTokenContract,
+                r'PerpOrderPreview',
+                'settlementTokenContract'),
+            settlementTokenDecimals: BuiltValueNullFieldError.checkNotNull(
+                settlementTokenDecimals,
+                r'PerpOrderPreview',
+                'settlementTokenDecimals'),
             kind: BuiltValueNullFieldError.checkNotNull(
                 kind, r'PerpOrderPreview', 'kind'),
+            settlementAssetId: BuiltValueNullFieldError.checkNotNull(
+                settlementAssetId, r'PerpOrderPreview', 'settlementAssetId'),
+            settlementChainId: BuiltValueNullFieldError.checkNotNull(
+                settlementChainId, r'PerpOrderPreview', 'settlementChainId'),
             network: BuiltValueNullFieldError.checkNotNull(
                 network, r'PerpOrderPreview', 'network'),
             previewId: BuiltValueNullFieldError.checkNotNull(

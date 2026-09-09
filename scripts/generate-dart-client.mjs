@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
@@ -25,6 +25,12 @@ export function resolveSafeOutput(rootDir, requestedOutput) {
 
 export function generateClient(requestedOutput) {
   const rootDir = resolve(new URL("..", import.meta.url).pathname);
+  const contractSpec = resolve(rootDir, "contracts/rwa-api-contract/openapi/main.yaml");
+  if (!existsSync(contractSpec)) {
+    throw new Error(
+      "Missing contract submodule. Run: git submodule update --init --recursive",
+    );
+  }
   const { outputDir, relativeOutput } = resolveSafeOutput(rootDir, requestedOutput);
   rmSync(outputDir, { recursive: true, force: true });
   execFileSync("npx", ["openapi-generator-cli", "generate", "--generator-key", "rwa-api-client"], {

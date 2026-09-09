@@ -6,6 +6,102 @@ part of 'activity_record.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const ActivityRecordChainEnum _$activityRecordChainEnum_BSC =
+    const ActivityRecordChainEnum._('BSC');
+const ActivityRecordChainEnum _$activityRecordChainEnum_arbitrum =
+    const ActivityRecordChainEnum._('arbitrum');
+const ActivityRecordChainEnum _$activityRecordChainEnum_base_ =
+    const ActivityRecordChainEnum._('base_');
+const ActivityRecordChainEnum _$activityRecordChainEnum_ethereum =
+    const ActivityRecordChainEnum._('ethereum');
+const ActivityRecordChainEnum _$activityRecordChainEnum_hyperliquid =
+    const ActivityRecordChainEnum._('hyperliquid');
+const ActivityRecordChainEnum _$activityRecordChainEnum_polygon =
+    const ActivityRecordChainEnum._('polygon');
+const ActivityRecordChainEnum _$activityRecordChainEnum_solana =
+    const ActivityRecordChainEnum._('solana');
+const ActivityRecordChainEnum _$activityRecordChainEnum_unknownDefaultOpenApi =
+    const ActivityRecordChainEnum._('unknownDefaultOpenApi');
+
+ActivityRecordChainEnum _$activityRecordChainEnumValueOf(String name) {
+  switch (name) {
+    case 'BSC':
+      return _$activityRecordChainEnum_BSC;
+    case 'arbitrum':
+      return _$activityRecordChainEnum_arbitrum;
+    case 'base_':
+      return _$activityRecordChainEnum_base_;
+    case 'ethereum':
+      return _$activityRecordChainEnum_ethereum;
+    case 'hyperliquid':
+      return _$activityRecordChainEnum_hyperliquid;
+    case 'polygon':
+      return _$activityRecordChainEnum_polygon;
+    case 'solana':
+      return _$activityRecordChainEnum_solana;
+    case 'unknownDefaultOpenApi':
+      return _$activityRecordChainEnum_unknownDefaultOpenApi;
+    default:
+      return _$activityRecordChainEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<ActivityRecordChainEnum> _$activityRecordChainEnumValues =
+    BuiltSet<ActivityRecordChainEnum>(const <ActivityRecordChainEnum>[
+  _$activityRecordChainEnum_BSC,
+  _$activityRecordChainEnum_arbitrum,
+  _$activityRecordChainEnum_base_,
+  _$activityRecordChainEnum_ethereum,
+  _$activityRecordChainEnum_hyperliquid,
+  _$activityRecordChainEnum_polygon,
+  _$activityRecordChainEnum_solana,
+  _$activityRecordChainEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<ActivityRecordChainEnum> _$activityRecordChainEnumSerializer =
+    _$ActivityRecordChainEnumSerializer();
+
+class _$ActivityRecordChainEnumSerializer
+    implements PrimitiveSerializer<ActivityRecordChainEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'BSC': 'BSC',
+    'arbitrum': 'Arbitrum',
+    'base_': 'Base',
+    'ethereum': 'Ethereum',
+    'hyperliquid': 'Hyperliquid',
+    'polygon': 'Polygon',
+    'solana': 'Solana',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'BSC': 'BSC',
+    'Arbitrum': 'arbitrum',
+    'Base': 'base_',
+    'Ethereum': 'ethereum',
+    'Hyperliquid': 'hyperliquid',
+    'Polygon': 'polygon',
+    'Solana': 'solana',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[ActivityRecordChainEnum];
+  @override
+  final String wireName = 'ActivityRecordChainEnum';
+
+  @override
+  Object serialize(Serializers serializers, ActivityRecordChainEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  ActivityRecordChainEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ActivityRecordChainEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$ActivityRecord extends ActivityRecord {
   @override
   final String id;
@@ -32,7 +128,7 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   final ActivityRecordReference? reference;
   @override
-  final Chain? chain;
+  final ActivityRecordChainEnum? chain;
   @override
   final String? txHash;
   @override
@@ -40,7 +136,7 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   final DateTime createdAt;
   @override
-  final DateTime? updatedAt;
+  final DateTime updatedAt;
   @override
   final String? asset;
 
@@ -64,7 +160,7 @@ class _$ActivityRecord extends ActivityRecord {
       this.txHash,
       this.explorer,
       required this.createdAt,
-      this.updatedAt,
+      required this.updatedAt,
       this.asset})
       : super._();
   @override
@@ -203,9 +299,9 @@ class ActivityRecordBuilder
   set reference(ActivityRecordReferenceBuilder? reference) =>
       _$this._reference = reference;
 
-  Chain? _chain;
-  Chain? get chain => _$this._chain;
-  set chain(Chain? chain) => _$this._chain = chain;
+  ActivityRecordChainEnum? _chain;
+  ActivityRecordChainEnum? get chain => _$this._chain;
+  set chain(ActivityRecordChainEnum? chain) => _$this._chain = chain;
 
   String? _txHash;
   String? get txHash => _$this._txHash;
@@ -299,7 +395,8 @@ class ActivityRecordBuilder
             explorer: _explorer?.build(),
             createdAt: BuiltValueNullFieldError.checkNotNull(
                 createdAt, r'ActivityRecord', 'createdAt'),
-            updatedAt: updatedAt,
+            updatedAt: BuiltValueNullFieldError.checkNotNull(
+                updatedAt, r'ActivityRecord', 'updatedAt'),
             asset: asset,
           );
     } catch (_) {

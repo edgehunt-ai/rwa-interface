@@ -15,11 +15,14 @@ part 'realtime_withdrawal_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
-/// * [event] 
-/// * [data] 
+/// * [emittedAt]
+/// * [event]
+/// * [data]
 @BuiltValue()
-abstract class RealtimeWithdrawalEvent implements RealtimeEventBase, Built<RealtimeWithdrawalEvent, RealtimeWithdrawalEventBuilder> {
+abstract class RealtimeWithdrawalEvent
+    implements
+        RealtimeEventBase,
+        Built<RealtimeWithdrawalEvent, RealtimeWithdrawalEventBuilder> {
   @BuiltValueField(wireName: r'data')
   Withdrawal get data;
 
@@ -29,18 +32,25 @@ abstract class RealtimeWithdrawalEvent implements RealtimeEventBase, Built<Realt
 
   RealtimeWithdrawalEvent._();
 
-  factory RealtimeWithdrawalEvent([void updates(RealtimeWithdrawalEventBuilder b)]) = _$RealtimeWithdrawalEvent;
+  factory RealtimeWithdrawalEvent(
+          [void updates(RealtimeWithdrawalEventBuilder b)]) =
+      _$RealtimeWithdrawalEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeWithdrawalEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeWithdrawalEvent> get serializer => _$RealtimeWithdrawalEventSerializer();
+  static Serializer<RealtimeWithdrawalEvent> get serializer =>
+      _$RealtimeWithdrawalEventSerializer();
 }
 
-class _$RealtimeWithdrawalEventSerializer implements PrimitiveSerializer<RealtimeWithdrawalEvent> {
+class _$RealtimeWithdrawalEventSerializer
+    implements PrimitiveSerializer<RealtimeWithdrawalEvent> {
   @override
-  final Iterable<Type> types = const [RealtimeWithdrawalEvent, _$RealtimeWithdrawalEvent];
+  final Iterable<Type> types = const [
+    RealtimeWithdrawalEvent,
+    _$RealtimeWithdrawalEvent
+  ];
 
   @override
   final String wireName = r'RealtimeWithdrawalEvent';
@@ -78,7 +88,9 @@ class _$RealtimeWithdrawalEventSerializer implements PrimitiveSerializer<Realtim
     RealtimeWithdrawalEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -151,17 +163,20 @@ class _$RealtimeWithdrawalEventSerializer implements PrimitiveSerializer<Realtim
 }
 
 class RealtimeWithdrawalEventEventEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'withdrawal')
-  static const RealtimeWithdrawalEventEventEnum withdrawal = _$realtimeWithdrawalEventEventEnum_withdrawal;
+  static const RealtimeWithdrawalEventEventEnum withdrawal =
+      _$realtimeWithdrawalEventEventEnum_withdrawal;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeWithdrawalEventEventEnum unknownDefaultOpenApi = _$realtimeWithdrawalEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeWithdrawalEventEventEnum unknownDefaultOpenApi =
+      _$realtimeWithdrawalEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeWithdrawalEventEventEnum> get serializer => _$realtimeWithdrawalEventEventEnumSerializer;
+  static Serializer<RealtimeWithdrawalEventEventEnum> get serializer =>
+      _$realtimeWithdrawalEventEventEnumSerializer;
 
-  const RealtimeWithdrawalEventEventEnum._(String name): super(name);
+  const RealtimeWithdrawalEventEventEnum._(String name) : super(name);
 
-  static BuiltSet<RealtimeWithdrawalEventEventEnum> get values => _$realtimeWithdrawalEventEventEnumValues;
-  static RealtimeWithdrawalEventEventEnum valueOf(String name) => _$realtimeWithdrawalEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeWithdrawalEventEventEnum> get values =>
+      _$realtimeWithdrawalEventEventEnumValues;
+  static RealtimeWithdrawalEventEventEnum valueOf(String name) =>
+      _$realtimeWithdrawalEventEventEnumValueOf(name);
 }
-

@@ -34,6 +34,7 @@ final class _Activity implements ActivityService {
             ..amount = '0.000000000000000001'
             ..asset = 'USDC'
             ..createdAt = DateTime.utc(2026)
+            ..updatedAt = DateTime.utc(2026)
             ..reference.update(
               (reference) => reference
                 ..type = api.ActivityRecordReferenceTypeEnum.order

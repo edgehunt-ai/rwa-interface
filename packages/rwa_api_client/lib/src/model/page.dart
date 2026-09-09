@@ -12,9 +12,9 @@ part 'page.g.dart';
 ///
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
-/// * [hasMore] 
+/// * [hasMore]
 @BuiltValue(instantiable: false)
-abstract class Page  {
+abstract class Page {
   /// 为 `null` 表示没有更多数据
   @BuiltValueField(wireName: r'next_cursor')
   String? get nextCursor;
@@ -39,10 +39,12 @@ class _$PageSerializer implements PrimitiveSerializer<Page> {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
     yield r'next_cursor';
-    yield object.nextCursor == null ? null : serializers.serialize(
-      object.nextCursor,
-      specifiedType: const FullType.nullable(String),
-    );
+    yield object.nextCursor == null
+        ? null
+        : serializers.serialize(
+            object.nextCursor,
+            specifiedType: const FullType.nullable(String),
+          );
     yield r'has_more';
     yield serializers.serialize(
       object.hasMore,
@@ -56,7 +58,9 @@ class _$PageSerializer implements PrimitiveSerializer<Page> {
     Page object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   @override
@@ -65,7 +69,8 @@ class _$PageSerializer implements PrimitiveSerializer<Page> {
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return serializers.deserialize(serialized, specifiedType: FullType($Page)) as $Page;
+    return serializers.deserialize(serialized, specifiedType: FullType($Page))
+        as $Page;
   }
 }
 
@@ -154,4 +159,3 @@ class _$$PageSerializer implements PrimitiveSerializer<$Page> {
     return result.build();
   }
 }
-

@@ -12,13 +12,14 @@ part 'realtime_price_update.g.dart';
 /// RealtimePriceUpdate
 ///
 /// Properties:
-/// * [symbol] 
-/// * [kind] 
+/// * [symbol]
+/// * [kind]
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [change24hPercent] - 十进制字符串，避免浮点误差
-/// * [updatedAt] 
+/// * [updatedAt]
 @BuiltValue()
-abstract class RealtimePriceUpdate implements Built<RealtimePriceUpdate, RealtimePriceUpdateBuilder> {
+abstract class RealtimePriceUpdate
+    implements Built<RealtimePriceUpdate, RealtimePriceUpdateBuilder> {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -39,18 +40,24 @@ abstract class RealtimePriceUpdate implements Built<RealtimePriceUpdate, Realtim
 
   RealtimePriceUpdate._();
 
-  factory RealtimePriceUpdate([void updates(RealtimePriceUpdateBuilder b)]) = _$RealtimePriceUpdate;
+  factory RealtimePriceUpdate([void updates(RealtimePriceUpdateBuilder b)]) =
+      _$RealtimePriceUpdate;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimePriceUpdateBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimePriceUpdate> get serializer => _$RealtimePriceUpdateSerializer();
+  static Serializer<RealtimePriceUpdate> get serializer =>
+      _$RealtimePriceUpdateSerializer();
 }
 
-class _$RealtimePriceUpdateSerializer implements PrimitiveSerializer<RealtimePriceUpdate> {
+class _$RealtimePriceUpdateSerializer
+    implements PrimitiveSerializer<RealtimePriceUpdate> {
   @override
-  final Iterable<Type> types = const [RealtimePriceUpdate, _$RealtimePriceUpdate];
+  final Iterable<Type> types = const [
+    RealtimePriceUpdate,
+    _$RealtimePriceUpdate
+  ];
 
   @override
   final String wireName = r'RealtimePriceUpdate';
@@ -93,7 +100,9 @@ class _$RealtimePriceUpdateSerializer implements PrimitiveSerializer<RealtimePri
     RealtimePriceUpdate object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -171,4 +180,3 @@ class _$RealtimePriceUpdateSerializer implements PrimitiveSerializer<RealtimePri
     return result.build();
   }
 }
-

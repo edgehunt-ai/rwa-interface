@@ -8,10 +8,10 @@ import 'package:built_value/serializer.dart';
 
 part 'tp_sl_spec.g.dart';
 
-/// 止盈止损。市价单只需 `stop_loss_price`（UI 上显示为 Stop Loss）；限价单额外可设 `stop_limit_price`，此时 `stop_loss_price` 对应 UI 上的 Stop Trigger Price。 Long / buy：TP 需高于入场价，SL 需低于入场价；Short / sell 反之。 
+/// 止盈止损。市价单只需 `stop_loss_price`（UI 上显示为 Stop Loss）；限价单额外可设 `stop_limit_price`，此时 `stop_loss_price` 对应 UI 上的 Stop Trigger Price。 Long / buy：TP 需高于入场价，SL 需低于入场价；Short / sell 反之。
 ///
 /// Properties:
-/// * [enabled] 
+/// * [enabled]
 /// * [takeProfitPrice] - 十进制字符串，避免浮点误差
 /// * [stopLossPrice] - 十进制字符串，避免浮点误差
 /// * [stopLimitPrice] - 仅限价单
@@ -52,8 +52,7 @@ abstract class TpSlSpec implements Built<TpSlSpec, TpSlSpecBuilder> {
   factory TpSlSpec([void updates(TpSlSpecBuilder b)]) = _$TpSlSpec;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(TpSlSpecBuilder b) => b
-      ..enabled = false;
+  static void _defaults(TpSlSpecBuilder b) => b..enabled = false;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<TpSlSpec> get serializer => _$TpSlSpecSerializer();
@@ -128,7 +127,9 @@ class _$TpSlSpecSerializer implements PrimitiveSerializer<TpSlSpec> {
     TpSlSpec object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -227,4 +228,3 @@ class _$TpSlSpecSerializer implements PrimitiveSerializer<TpSlSpec> {
     return result.build();
   }
 }
-

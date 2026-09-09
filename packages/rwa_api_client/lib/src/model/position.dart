@@ -14,13 +14,13 @@ part 'position.g.dart';
 /// Position
 ///
 /// Properties:
-/// * [positionId] 
-/// * [symbol] 
-/// * [name] 
-/// * [kind] 
+/// * [positionId]
+/// * [symbol]
+/// * [name]
+/// * [kind]
 /// * [side] - 仅 HIP-3
 /// * [quantity] - 十进制字符串，避免浮点误差
-/// * [quantityUnit] 
+/// * [quantityUnit]
 /// * [valueUsd] - 现货为持仓市值，合约为仓位权益
 /// * [entryPrice] - 十进制字符串，避免浮点误差
 /// * [markPrice] - 十进制字符串，避免浮点误差
@@ -29,15 +29,15 @@ part 'position.g.dart';
 /// * [realizedPnl] - 十进制字符串，避免浮点误差
 /// * [costBasis] - 十进制字符串，避免浮点误差
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode] 
+/// * [marginMode]
 /// * [margin] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 十进制字符串，避免浮点误差
 /// * [fundingPaid] - 累计资金费；负数为支付，正数为收取
 /// * [takeProfitPrice] - 十进制字符串，避免浮点误差
 /// * [stopLossPrice] - 十进制字符串，避免浮点误差
 /// * [stopLimitPrice] - 已设置的止损限价；与 `stop_loss_price` 一起用于完整回显 TP / SL
-/// * [openedAt] 
-/// * [updatedAt] 
+/// * [openedAt]
+/// * [updatedAt]
 @BuiltValue()
 abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'position_id')
@@ -320,7 +320,9 @@ class _$PositionSerializer implements PrimitiveSerializer<Position> {
     Position object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -552,22 +554,25 @@ class _$PositionSerializer implements PrimitiveSerializer<Position> {
 }
 
 class PositionSideEnum extends EnumClass {
-
   /// 仅 HIP-3
   @BuiltValueEnumConst(wireName: r'long')
   static const PositionSideEnum long = _$positionSideEnum_long;
+
   /// 仅 HIP-3
   @BuiltValueEnumConst(wireName: r'short')
   static const PositionSideEnum short = _$positionSideEnum_short;
+
   /// 仅 HIP-3
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PositionSideEnum unknownDefaultOpenApi = _$positionSideEnum_unknownDefaultOpenApi;
+  static const PositionSideEnum unknownDefaultOpenApi =
+      _$positionSideEnum_unknownDefaultOpenApi;
 
-  static Serializer<PositionSideEnum> get serializer => _$positionSideEnumSerializer;
+  static Serializer<PositionSideEnum> get serializer =>
+      _$positionSideEnumSerializer;
 
-  const PositionSideEnum._(String name): super(name);
+  const PositionSideEnum._(String name) : super(name);
 
   static BuiltSet<PositionSideEnum> get values => _$positionSideEnumValues;
-  static PositionSideEnum valueOf(String name) => _$positionSideEnumValueOf(name);
+  static PositionSideEnum valueOf(String name) =>
+      _$positionSideEnumValueOf(name);
 }
-

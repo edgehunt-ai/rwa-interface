@@ -1,0 +1,4 @@
+[submodule "contracts/rwa-api-contract"]
+	path = contracts/rwa-api-contract
+	url = git@github.com:edgehunt-ai/rwa-api-contract.git
+	branch = main

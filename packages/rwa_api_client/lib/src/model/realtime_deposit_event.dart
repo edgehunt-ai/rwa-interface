@@ -15,11 +15,14 @@ part 'realtime_deposit_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
-/// * [event] 
-/// * [data] 
+/// * [emittedAt]
+/// * [event]
+/// * [data]
 @BuiltValue()
-abstract class RealtimeDepositEvent implements RealtimeEventBase, Built<RealtimeDepositEvent, RealtimeDepositEventBuilder> {
+abstract class RealtimeDepositEvent
+    implements
+        RealtimeEventBase,
+        Built<RealtimeDepositEvent, RealtimeDepositEventBuilder> {
   @BuiltValueField(wireName: r'data')
   Deposit get data;
 
@@ -29,18 +32,24 @@ abstract class RealtimeDepositEvent implements RealtimeEventBase, Built<Realtime
 
   RealtimeDepositEvent._();
 
-  factory RealtimeDepositEvent([void updates(RealtimeDepositEventBuilder b)]) = _$RealtimeDepositEvent;
+  factory RealtimeDepositEvent([void updates(RealtimeDepositEventBuilder b)]) =
+      _$RealtimeDepositEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeDepositEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeDepositEvent> get serializer => _$RealtimeDepositEventSerializer();
+  static Serializer<RealtimeDepositEvent> get serializer =>
+      _$RealtimeDepositEventSerializer();
 }
 
-class _$RealtimeDepositEventSerializer implements PrimitiveSerializer<RealtimeDepositEvent> {
+class _$RealtimeDepositEventSerializer
+    implements PrimitiveSerializer<RealtimeDepositEvent> {
   @override
-  final Iterable<Type> types = const [RealtimeDepositEvent, _$RealtimeDepositEvent];
+  final Iterable<Type> types = const [
+    RealtimeDepositEvent,
+    _$RealtimeDepositEvent
+  ];
 
   @override
   final String wireName = r'RealtimeDepositEvent';
@@ -78,7 +87,9 @@ class _$RealtimeDepositEventSerializer implements PrimitiveSerializer<RealtimeDe
     RealtimeDepositEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -151,17 +162,20 @@ class _$RealtimeDepositEventSerializer implements PrimitiveSerializer<RealtimeDe
 }
 
 class RealtimeDepositEventEventEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'deposit')
-  static const RealtimeDepositEventEventEnum deposit = _$realtimeDepositEventEventEnum_deposit;
+  static const RealtimeDepositEventEventEnum deposit =
+      _$realtimeDepositEventEventEnum_deposit;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeDepositEventEventEnum unknownDefaultOpenApi = _$realtimeDepositEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeDepositEventEventEnum unknownDefaultOpenApi =
+      _$realtimeDepositEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeDepositEventEventEnum> get serializer => _$realtimeDepositEventEventEnumSerializer;
+  static Serializer<RealtimeDepositEventEventEnum> get serializer =>
+      _$realtimeDepositEventEventEnumSerializer;
 
-  const RealtimeDepositEventEventEnum._(String name): super(name);
+  const RealtimeDepositEventEventEnum._(String name) : super(name);
 
-  static BuiltSet<RealtimeDepositEventEventEnum> get values => _$realtimeDepositEventEventEnumValues;
-  static RealtimeDepositEventEventEnum valueOf(String name) => _$realtimeDepositEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeDepositEventEventEnum> get values =>
+      _$realtimeDepositEventEventEnumValues;
+  static RealtimeDepositEventEventEnum valueOf(String name) =>
+      _$realtimeDepositEventEventEnumValueOf(name);
 }
-

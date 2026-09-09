@@ -13,25 +13,32 @@ part 'transfer_claim_request.g.dart';
 /// Properties:
 /// * [authorizationId] - 已授权且尚未消费的 Claim 授权 ID
 @BuiltValue()
-abstract class TransferClaimRequest implements Built<TransferClaimRequest, TransferClaimRequestBuilder> {
+abstract class TransferClaimRequest
+    implements Built<TransferClaimRequest, TransferClaimRequestBuilder> {
   /// 已授权且尚未消费的 Claim 授权 ID
   @BuiltValueField(wireName: r'authorization_id')
   String get authorizationId;
 
   TransferClaimRequest._();
 
-  factory TransferClaimRequest([void updates(TransferClaimRequestBuilder b)]) = _$TransferClaimRequest;
+  factory TransferClaimRequest([void updates(TransferClaimRequestBuilder b)]) =
+      _$TransferClaimRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(TransferClaimRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<TransferClaimRequest> get serializer => _$TransferClaimRequestSerializer();
+  static Serializer<TransferClaimRequest> get serializer =>
+      _$TransferClaimRequestSerializer();
 }
 
-class _$TransferClaimRequestSerializer implements PrimitiveSerializer<TransferClaimRequest> {
+class _$TransferClaimRequestSerializer
+    implements PrimitiveSerializer<TransferClaimRequest> {
   @override
-  final Iterable<Type> types = const [TransferClaimRequest, _$TransferClaimRequest];
+  final Iterable<Type> types = const [
+    TransferClaimRequest,
+    _$TransferClaimRequest
+  ];
 
   @override
   final String wireName = r'TransferClaimRequest';
@@ -54,7 +61,9 @@ class _$TransferClaimRequestSerializer implements PrimitiveSerializer<TransferCl
     TransferClaimRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -104,4 +113,3 @@ class _$TransferClaimRequestSerializer implements PrimitiveSerializer<TransferCl
     return result.build();
   }
 }
-

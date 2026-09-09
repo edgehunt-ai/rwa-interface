@@ -15,11 +15,14 @@ part 'realtime_balance_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
-/// * [event] 
-/// * [data] 
+/// * [emittedAt]
+/// * [event]
+/// * [data]
 @BuiltValue()
-abstract class RealtimeBalanceEvent implements RealtimeEventBase, Built<RealtimeBalanceEvent, RealtimeBalanceEventBuilder> {
+abstract class RealtimeBalanceEvent
+    implements
+        RealtimeEventBase,
+        Built<RealtimeBalanceEvent, RealtimeBalanceEventBuilder> {
   @BuiltValueField(wireName: r'data')
   AccountBalance get data;
 
@@ -29,18 +32,24 @@ abstract class RealtimeBalanceEvent implements RealtimeEventBase, Built<Realtime
 
   RealtimeBalanceEvent._();
 
-  factory RealtimeBalanceEvent([void updates(RealtimeBalanceEventBuilder b)]) = _$RealtimeBalanceEvent;
+  factory RealtimeBalanceEvent([void updates(RealtimeBalanceEventBuilder b)]) =
+      _$RealtimeBalanceEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeBalanceEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeBalanceEvent> get serializer => _$RealtimeBalanceEventSerializer();
+  static Serializer<RealtimeBalanceEvent> get serializer =>
+      _$RealtimeBalanceEventSerializer();
 }
 
-class _$RealtimeBalanceEventSerializer implements PrimitiveSerializer<RealtimeBalanceEvent> {
+class _$RealtimeBalanceEventSerializer
+    implements PrimitiveSerializer<RealtimeBalanceEvent> {
   @override
-  final Iterable<Type> types = const [RealtimeBalanceEvent, _$RealtimeBalanceEvent];
+  final Iterable<Type> types = const [
+    RealtimeBalanceEvent,
+    _$RealtimeBalanceEvent
+  ];
 
   @override
   final String wireName = r'RealtimeBalanceEvent';
@@ -78,7 +87,9 @@ class _$RealtimeBalanceEventSerializer implements PrimitiveSerializer<RealtimeBa
     RealtimeBalanceEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -151,17 +162,20 @@ class _$RealtimeBalanceEventSerializer implements PrimitiveSerializer<RealtimeBa
 }
 
 class RealtimeBalanceEventEventEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'balance')
-  static const RealtimeBalanceEventEventEnum balance = _$realtimeBalanceEventEventEnum_balance;
+  static const RealtimeBalanceEventEventEnum balance =
+      _$realtimeBalanceEventEventEnum_balance;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeBalanceEventEventEnum unknownDefaultOpenApi = _$realtimeBalanceEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeBalanceEventEventEnum unknownDefaultOpenApi =
+      _$realtimeBalanceEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeBalanceEventEventEnum> get serializer => _$realtimeBalanceEventEventEnumSerializer;
+  static Serializer<RealtimeBalanceEventEventEnum> get serializer =>
+      _$realtimeBalanceEventEventEnumSerializer;
 
-  const RealtimeBalanceEventEventEnum._(String name): super(name);
+  const RealtimeBalanceEventEventEnum._(String name) : super(name);
 
-  static BuiltSet<RealtimeBalanceEventEventEnum> get values => _$realtimeBalanceEventEventEnumValues;
-  static RealtimeBalanceEventEventEnum valueOf(String name) => _$realtimeBalanceEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeBalanceEventEventEnum> get values =>
+      _$realtimeBalanceEventEventEnumValues;
+  static RealtimeBalanceEventEventEnum valueOf(String name) =>
+      _$realtimeBalanceEventEventEnumValueOf(name);
 }
-

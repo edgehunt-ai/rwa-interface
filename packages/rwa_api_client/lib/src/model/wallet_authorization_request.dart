@@ -12,12 +12,14 @@ part 'wallet_authorization_request.g.dart';
 /// WalletAuthorizationRequest
 ///
 /// Properties:
-/// * [purpose] 
-/// * [asset] 
-/// * [amount] - 十进制字符串，避免浮点误差
-/// * [resourceId] - 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer
+/// * [purpose]
+/// * [asset]
+/// * [amount] - For transfer authorization this is the frozen source maximum input, not the target shortfall.
+/// * [resourceId] - 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer。 Transfer 授权只能消费同账户、未过期且 source/amount 完全匹配的 frozen plan。
 @BuiltValue()
-abstract class WalletAuthorizationRequest implements Built<WalletAuthorizationRequest, WalletAuthorizationRequestBuilder> {
+abstract class WalletAuthorizationRequest
+    implements
+        Built<WalletAuthorizationRequest, WalletAuthorizationRequestBuilder> {
   @BuiltValueField(wireName: r'purpose')
   WalletAuthorizationRequestPurposeEnum get purpose;
   // enum purposeEnum {  order,  transfer,  withdrawal,  claim,  };
@@ -25,28 +27,35 @@ abstract class WalletAuthorizationRequest implements Built<WalletAuthorizationRe
   @BuiltValueField(wireName: r'asset')
   String get asset;
 
-  /// 十进制字符串，避免浮点误差
+  /// For transfer authorization this is the frozen source maximum input, not the target shortfall.
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer
+  /// 绑定的服务端资源 ID；order=preview/order，transfer=funding plan，withdrawal=quote，claim=transfer。 Transfer 授权只能消费同账户、未过期且 source/amount 完全匹配的 frozen plan。
   @BuiltValueField(wireName: r'resource_id')
   String get resourceId;
 
   WalletAuthorizationRequest._();
 
-  factory WalletAuthorizationRequest([void updates(WalletAuthorizationRequestBuilder b)]) = _$WalletAuthorizationRequest;
+  factory WalletAuthorizationRequest(
+          [void updates(WalletAuthorizationRequestBuilder b)]) =
+      _$WalletAuthorizationRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(WalletAuthorizationRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletAuthorizationRequest> get serializer => _$WalletAuthorizationRequestSerializer();
+  static Serializer<WalletAuthorizationRequest> get serializer =>
+      _$WalletAuthorizationRequestSerializer();
 }
 
-class _$WalletAuthorizationRequestSerializer implements PrimitiveSerializer<WalletAuthorizationRequest> {
+class _$WalletAuthorizationRequestSerializer
+    implements PrimitiveSerializer<WalletAuthorizationRequest> {
   @override
-  final Iterable<Type> types = const [WalletAuthorizationRequest, _$WalletAuthorizationRequest];
+  final Iterable<Type> types = const [
+    WalletAuthorizationRequest,
+    _$WalletAuthorizationRequest
+  ];
 
   @override
   final String wireName = r'WalletAuthorizationRequest';
@@ -84,7 +93,9 @@ class _$WalletAuthorizationRequestSerializer implements PrimitiveSerializer<Wall
     WalletAuthorizationRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -102,7 +113,8 @@ class _$WalletAuthorizationRequestSerializer implements PrimitiveSerializer<Wall
         case r'purpose':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(WalletAuthorizationRequestPurposeEnum),
+            specifiedType:
+                const FullType(WalletAuthorizationRequestPurposeEnum),
           ) as WalletAuthorizationRequestPurposeEnum;
           result.purpose = valueDes;
           break;
@@ -157,23 +169,29 @@ class _$WalletAuthorizationRequestSerializer implements PrimitiveSerializer<Wall
 }
 
 class WalletAuthorizationRequestPurposeEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'order')
-  static const WalletAuthorizationRequestPurposeEnum order = _$walletAuthorizationRequestPurposeEnum_order;
+  static const WalletAuthorizationRequestPurposeEnum order =
+      _$walletAuthorizationRequestPurposeEnum_order;
   @BuiltValueEnumConst(wireName: r'transfer')
-  static const WalletAuthorizationRequestPurposeEnum transfer = _$walletAuthorizationRequestPurposeEnum_transfer;
+  static const WalletAuthorizationRequestPurposeEnum transfer =
+      _$walletAuthorizationRequestPurposeEnum_transfer;
   @BuiltValueEnumConst(wireName: r'withdrawal')
-  static const WalletAuthorizationRequestPurposeEnum withdrawal = _$walletAuthorizationRequestPurposeEnum_withdrawal;
+  static const WalletAuthorizationRequestPurposeEnum withdrawal =
+      _$walletAuthorizationRequestPurposeEnum_withdrawal;
   @BuiltValueEnumConst(wireName: r'claim')
-  static const WalletAuthorizationRequestPurposeEnum claim = _$walletAuthorizationRequestPurposeEnum_claim;
+  static const WalletAuthorizationRequestPurposeEnum claim =
+      _$walletAuthorizationRequestPurposeEnum_claim;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletAuthorizationRequestPurposeEnum unknownDefaultOpenApi = _$walletAuthorizationRequestPurposeEnum_unknownDefaultOpenApi;
+  static const WalletAuthorizationRequestPurposeEnum unknownDefaultOpenApi =
+      _$walletAuthorizationRequestPurposeEnum_unknownDefaultOpenApi;
 
-  static Serializer<WalletAuthorizationRequestPurposeEnum> get serializer => _$walletAuthorizationRequestPurposeEnumSerializer;
+  static Serializer<WalletAuthorizationRequestPurposeEnum> get serializer =>
+      _$walletAuthorizationRequestPurposeEnumSerializer;
 
-  const WalletAuthorizationRequestPurposeEnum._(String name): super(name);
+  const WalletAuthorizationRequestPurposeEnum._(String name) : super(name);
 
-  static BuiltSet<WalletAuthorizationRequestPurposeEnum> get values => _$walletAuthorizationRequestPurposeEnumValues;
-  static WalletAuthorizationRequestPurposeEnum valueOf(String name) => _$walletAuthorizationRequestPurposeEnumValueOf(name);
+  static BuiltSet<WalletAuthorizationRequestPurposeEnum> get values =>
+      _$walletAuthorizationRequestPurposeEnumValues;
+  static WalletAuthorizationRequestPurposeEnum valueOf(String name) =>
+      _$walletAuthorizationRequestPurposeEnumValueOf(name);
 }
-

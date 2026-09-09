@@ -42,3 +42,7 @@ Do not record screenshots, logs, or test artifacts containing OTPs or access tok
 - `flutter test`: passed (133 tests)
 - `flutter build apk --debug`: passed; generated `build/app/outputs/flutter-apk/app-debug.apk`
 - Native staging OTP smoke test: pending registered staging client and controlled email inbox
+- 2026-09-08 staging preflight: blocked. The three public staging reads returned
+  `503 service_unconfigured`; no controlled staging identity, registered Privy
+  credentials, or OTP inbox was available. No OTPs, access tokens, or other
+  sensitive values were recorded.

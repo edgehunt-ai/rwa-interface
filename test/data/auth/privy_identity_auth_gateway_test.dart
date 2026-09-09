@@ -1,8 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:privy_flutter/privy_flutter.dart';
 import 'package:privy_flutter/src/modules/email/login_with_email.dart';
+import 'package:privy_flutter/src/modules/login_with_siwe/login_with_siwe.dart';
+import 'package:privy_flutter/src/modules/oauth/login_with_oauth.dart';
 import 'package:rwa_interface/data/auth/privy_identity_auth_gateway.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
+import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
 
 void main() {
   const configuration = IdentityConfiguration(
@@ -37,13 +40,23 @@ void main() {
   });
 
   test('maps email code failure without exposing provider exception', () async {
+    late String capturedOperation;
+    late String capturedDiagnostic;
     final email = _FakeEmail(
       sendResult: const Success(null),
-      loginResult: const Failure(PrivyException('invalid otp 123456')),
+      loginResult: const Failure(
+        PrivyException(
+          'invalid otp 123456 for user@example.com with Bearer token-value',
+        ),
+      ),
     );
     final gateway = PrivyIdentityAuthGateway(
       createPrivy: (_) =>
           _FakePrivy(authState: const Unauthenticated(), email: email),
+      reportDiagnostic: ({required operation, required message}) {
+        capturedOperation = operation;
+        capturedDiagnostic = message;
+      },
     );
     await gateway.initialize(configuration);
     await gateway.requestEmailCode('user@example.com');
@@ -55,6 +68,64 @@ void main() {
           (failure) => failure.code,
           'code',
           AuthenticationFailureCode.invalidCode,
+        ),
+      ),
+    );
+    expect(capturedOperation, 'verify_email_code');
+    expect(
+      capturedDiagnostic,
+      'invalid otp <redacted-code> for <redacted-email> with Bearer <redacted>',
+    );
+  });
+
+  test(
+    'maps an invalid email and code combination as an invalid code',
+    () async {
+      final email = _FakeEmail(
+        sendResult: const Success(null),
+        loginResult: const Failure(
+          PrivyException('Invalid email and code combination'),
+        ),
+      );
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) =>
+            _FakePrivy(authState: const Unauthenticated(), email: email),
+      );
+      await gateway.initialize(configuration);
+
+      await expectLater(
+        gateway.verifyEmailCode(email: 'user@example.com', code: '123456'),
+        throwsA(
+          isA<IdentityFailure>().having(
+            (failure) => failure.code,
+            'code',
+            AuthenticationFailureCode.invalidCode,
+          ),
+        ),
+      );
+    },
+  );
+
+  test('reports an unavailable OAuth browser separately', () async {
+    final gateway = PrivyIdentityAuthGateway(
+      createPrivy: (_) => _FakePrivy(
+        authState: const Unauthenticated(),
+        oauth: _FakeOAuth(
+          loginResult: const Failure(
+            PrivyException('Failed to launch OAuth browser'),
+          ),
+        ),
+      ),
+    );
+    await gateway.initialize(configuration);
+
+    await expectLater(
+      gateway.loginWithOAuth('google'),
+      throwsA(
+        isA<IdentityFailure>().having(
+          (failure) => failure.code,
+          'code',
+          AuthenticationFailureCode.browserUnavailable,
         ),
       ),
     );
@@ -83,18 +154,55 @@ void main() {
     await expectLater(gateway.logout(), throwsA(isA<IdentityFailure>()));
     expect(await gateway.getAccessToken(), isNull);
   });
+
+  test('signs in with the Reown wallet through Privy SIWE', () async {
+    final user = _FakeUser(id: 'did:privy:wallet', token: 'wallet-token');
+    final siwe = _FakeSiwe(loginResult: Success(user));
+    final gateway = PrivyIdentityAuthGateway(
+      createPrivy: (_) =>
+          _FakePrivy(authState: const Unauthenticated(), siwe: siwe),
+    );
+    await gateway.initialize(configuration);
+    final wallet = _WalletConnection();
+
+    final principal = await gateway.loginWithWallet(wallet);
+
+    expect(principal.id, 'did:privy:wallet');
+    expect(siwe.generatedParams?.appDomain, 'rwa.dxd.ink');
+    expect(siwe.generatedParams?.appUri, 'https://rwa.dxd.ink');
+    expect(siwe.generatedParams?.chainId, '1');
+    expect(siwe.generatedParams?.walletAddress, wallet.address);
+    expect(wallet.signedMessage, 'Sign in with Ethereum');
+    expect(siwe.submittedSignature, '0xsignature');
+    expect(await gateway.getAccessToken(), 'wallet-token');
+  });
 }
 
 final class _FakePrivy implements Privy {
-  _FakePrivy({required this.authState, LoginWithEmail? email, this.logoutError})
-    : _email = email ?? _FakeEmail();
+  _FakePrivy({
+    required this.authState,
+    LoginWithEmail? email,
+    LoginWithSiwe? siwe,
+    LoginWithOAuth? oauth,
+    this.logoutError,
+  }) : _email = email ?? _FakeEmail(),
+       _siwe = siwe ?? _FakeSiwe(),
+       _oauth = oauth ?? _FakeOAuth();
 
   final AuthState authState;
   final LoginWithEmail _email;
+  final LoginWithSiwe _siwe;
+  final LoginWithOAuth _oauth;
   final Object? logoutError;
 
   @override
   LoginWithEmail get email => _email;
+
+  @override
+  LoginWithSiwe get siwe => _siwe;
+
+  @override
+  LoginWithOAuth get oAuth => _oauth;
 
   @override
   Future<AuthState> getAuthState() async => authState;
@@ -133,6 +241,23 @@ final class _FakeEmail implements LoginWithEmail {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+final class _FakeOAuth implements LoginWithOAuth {
+  _FakeOAuth({Result<PrivyUser>? loginResult})
+    : _loginResult =
+          loginResult ?? Success(_FakeUser(id: 'user', token: 'token'));
+
+  final Result<PrivyUser> _loginResult;
+
+  @override
+  Future<Result<PrivyUser>> login({
+    required OAuthProvider provider,
+    required String appUrlScheme,
+  }) async => _loginResult;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 final class _FakeUser implements PrivyUser {
   _FakeUser({required this.id, required this.token});
 
@@ -152,4 +277,57 @@ final class _FakeUser implements PrivyUser {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _FakeSiwe implements LoginWithSiwe {
+  _FakeSiwe({Result<PrivyUser>? loginResult})
+    : _loginResult =
+          loginResult ??
+          Success(_FakeUser(id: 'did:privy:wallet', token: 'wallet-token'));
+
+  final Result<PrivyUser> _loginResult;
+  SiweMessageParams? generatedParams;
+  String? submittedSignature;
+
+  @override
+  Future<Result<String>> generateMessage(SiweMessageParams params) async {
+    generatedParams = params;
+    return const Success('Sign in with Ethereum');
+  }
+
+  @override
+  Future<Result<PrivyUser>> login({
+    required String message,
+    required String signature,
+    required SiweMessageParams params,
+    WalletLoginMetadata? metadata,
+  }) async {
+    submittedSignature = signature;
+    return _loginResult;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _WalletConnection implements WalletConnection {
+  String? signedMessage;
+
+  @override
+  String get address => '0x0000000000000000000000000000000000000001';
+
+  @override
+  String get chainId => '1';
+
+  @override
+  String get connectorType => 'walletconnect';
+
+  @override
+  Future<void> disconnect() async {}
+
+  @override
+  Future<String> signPersonalMessage(String message) async {
+    signedMessage = message;
+    return '0xsignature';
+  }
 }

@@ -13,10 +13,10 @@ part 'wallet.g.dart';
 /// Wallet
 ///
 /// Properties:
-/// * [walletId] 
-/// * [address] 
-/// * [chain] 
-/// * [status] 
+/// * [walletId]
+/// * [address]
+/// * [chain]
+/// * [status]
 /// * [createdAt] - RFC 3339 UTC timestamp
 @BuiltValue()
 abstract class Wallet implements Built<Wallet, WalletBuilder> {
@@ -94,7 +94,9 @@ class _$WalletSerializer implements PrimitiveSerializer<Wallet> {
     Wallet object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -172,4 +174,3 @@ class _$WalletSerializer implements PrimitiveSerializer<Wallet> {
     return result.build();
   }
 }
-

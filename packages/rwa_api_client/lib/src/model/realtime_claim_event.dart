@@ -15,11 +15,14 @@ part 'realtime_claim_event.g.dart';
 ///
 /// Properties:
 /// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
-/// * [emittedAt] 
-/// * [event] 
-/// * [data] 
+/// * [emittedAt]
+/// * [event]
+/// * [data]
 @BuiltValue()
-abstract class RealtimeClaimEvent implements RealtimeEventBase, Built<RealtimeClaimEvent, RealtimeClaimEventBuilder> {
+abstract class RealtimeClaimEvent
+    implements
+        RealtimeEventBase,
+        Built<RealtimeClaimEvent, RealtimeClaimEventBuilder> {
   @BuiltValueField(wireName: r'data')
   Claim get data;
 
@@ -29,16 +32,19 @@ abstract class RealtimeClaimEvent implements RealtimeEventBase, Built<RealtimeCl
 
   RealtimeClaimEvent._();
 
-  factory RealtimeClaimEvent([void updates(RealtimeClaimEventBuilder b)]) = _$RealtimeClaimEvent;
+  factory RealtimeClaimEvent([void updates(RealtimeClaimEventBuilder b)]) =
+      _$RealtimeClaimEvent;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeClaimEventBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeClaimEvent> get serializer => _$RealtimeClaimEventSerializer();
+  static Serializer<RealtimeClaimEvent> get serializer =>
+      _$RealtimeClaimEventSerializer();
 }
 
-class _$RealtimeClaimEventSerializer implements PrimitiveSerializer<RealtimeClaimEvent> {
+class _$RealtimeClaimEventSerializer
+    implements PrimitiveSerializer<RealtimeClaimEvent> {
   @override
   final Iterable<Type> types = const [RealtimeClaimEvent, _$RealtimeClaimEvent];
 
@@ -78,7 +84,9 @@ class _$RealtimeClaimEventSerializer implements PrimitiveSerializer<RealtimeClai
     RealtimeClaimEvent object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -151,17 +159,20 @@ class _$RealtimeClaimEventSerializer implements PrimitiveSerializer<RealtimeClai
 }
 
 class RealtimeClaimEventEventEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'claim')
-  static const RealtimeClaimEventEventEnum claim = _$realtimeClaimEventEventEnum_claim;
+  static const RealtimeClaimEventEventEnum claim =
+      _$realtimeClaimEventEventEnum_claim;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeClaimEventEventEnum unknownDefaultOpenApi = _$realtimeClaimEventEventEnum_unknownDefaultOpenApi;
+  static const RealtimeClaimEventEventEnum unknownDefaultOpenApi =
+      _$realtimeClaimEventEventEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeClaimEventEventEnum> get serializer => _$realtimeClaimEventEventEnumSerializer;
+  static Serializer<RealtimeClaimEventEventEnum> get serializer =>
+      _$realtimeClaimEventEventEnumSerializer;
 
-  const RealtimeClaimEventEventEnum._(String name): super(name);
+  const RealtimeClaimEventEventEnum._(String name) : super(name);
 
-  static BuiltSet<RealtimeClaimEventEventEnum> get values => _$realtimeClaimEventEventEnumValues;
-  static RealtimeClaimEventEventEnum valueOf(String name) => _$realtimeClaimEventEventEnumValueOf(name);
+  static BuiltSet<RealtimeClaimEventEventEnum> get values =>
+      _$realtimeClaimEventEventEnumValues;
+  static RealtimeClaimEventEventEnum valueOf(String name) =>
+      _$realtimeClaimEventEventEnumValueOf(name);
 }
-

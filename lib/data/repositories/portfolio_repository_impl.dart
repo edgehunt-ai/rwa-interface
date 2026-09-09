@@ -9,6 +9,9 @@ import '../../domain/models/trading_account.dart';
 import '../../domain/repositories/portfolio_repository.dart';
 import '../services/portfolio_service.dart';
 
+// The domain portfolio still exposes this optional legacy aggregate.
+// ignore_for_file: deprecated_member_use
+
 final class PortfolioRepositoryImpl implements PortfolioRepository {
   PortfolioRepositoryImpl(this._service);
   final PortfolioService _service;
@@ -22,7 +25,7 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
       todayPnl: _optionalUsd(value.todayPnlUsd),
       marginInUseUsd: _optionalUsd(value.marginInUseUsd),
       stocksValueUsd: _optionalUsd(value.stocksValueUsd),
-      updatedAt: value.updatedAt?.toUtc(),
+      updatedAt: value.calculatedAt.toUtc(),
     );
   }
 

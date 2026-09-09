@@ -14,18 +14,19 @@ part 'market_session_info.g.dart';
 /// MarketSessionInfo
 ///
 /// Properties:
-/// * [timezone] 
-/// * [current] 
-/// * [currentLabel] 
-/// * [currentDescription] 
-/// * [nextSession] 
-/// * [nextTransitionAt] 
+/// * [timezone]
+/// * [current]
+/// * [currentLabel]
+/// * [currentDescription]
+/// * [nextSession]
+/// * [nextTransitionAt]
 /// * [secondsUntilTransition] - 距下一次时段切换的秒数，用于「距开盘 02:14:33」倒计时
-/// * [isHoliday] 
-/// * [holidayName] 
-/// * [segments] 
+/// * [isHoliday]
+/// * [holidayName]
+/// * [segments]
 @BuiltValue()
-abstract class MarketSessionInfo implements Built<MarketSessionInfo, MarketSessionInfoBuilder> {
+abstract class MarketSessionInfo
+    implements Built<MarketSessionInfo, MarketSessionInfoBuilder> {
   @BuiltValueField(wireName: r'timezone')
   String get timezone;
 
@@ -61,16 +62,19 @@ abstract class MarketSessionInfo implements Built<MarketSessionInfo, MarketSessi
 
   MarketSessionInfo._();
 
-  factory MarketSessionInfo([void updates(MarketSessionInfoBuilder b)]) = _$MarketSessionInfo;
+  factory MarketSessionInfo([void updates(MarketSessionInfoBuilder b)]) =
+      _$MarketSessionInfo;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(MarketSessionInfoBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<MarketSessionInfo> get serializer => _$MarketSessionInfoSerializer();
+  static Serializer<MarketSessionInfo> get serializer =>
+      _$MarketSessionInfoSerializer();
 }
 
-class _$MarketSessionInfoSerializer implements PrimitiveSerializer<MarketSessionInfo> {
+class _$MarketSessionInfoSerializer
+    implements PrimitiveSerializer<MarketSessionInfo> {
   @override
   final Iterable<Type> types = const [MarketSessionInfo, _$MarketSessionInfo];
 
@@ -156,7 +160,9 @@ class _$MarketSessionInfoSerializer implements PrimitiveSerializer<MarketSession
     MarketSessionInfo object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -244,7 +250,8 @@ class _$MarketSessionInfoSerializer implements PrimitiveSerializer<MarketSession
         case r'segments':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(BuiltList, [FullType(SessionSegment)]),
+            specifiedType:
+                const FullType.nullable(BuiltList, [FullType(SessionSegment)]),
           ) as BuiltList<SessionSegment>?;
           if (valueDes == null) continue;
           result.segments.replace(valueDes);
@@ -277,4 +284,3 @@ class _$MarketSessionInfoSerializer implements PrimitiveSerializer<MarketSession
     return result.build();
   }
 }
-

@@ -10,15 +10,22 @@ import 'package:built_value/serializer.dart';
 part 'transfer_status.g.dart';
 
 class TransferStatus extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'pending')
-  static const TransferStatus pending = _$pending;
-  @BuiltValueEnumConst(wireName: r'processing')
-  static const TransferStatus processing = _$processing;
-  @BuiltValueEnumConst(wireName: r'claim_required')
-  static const TransferStatus claimRequired = _$claimRequired;
+  @BuiltValueEnumConst(wireName: r'awaiting_authorization')
+  static const TransferStatus awaitingAuthorization = _$awaitingAuthorization;
+  @BuiltValueEnumConst(wireName: r'awaiting_wallet')
+  static const TransferStatus awaitingWallet = _$awaitingWallet;
+  @BuiltValueEnumConst(wireName: r'origin_submitted')
+  static const TransferStatus originSubmitted = _$originSubmitted;
+  @BuiltValueEnumConst(wireName: r'origin_confirmed')
+  static const TransferStatus originConfirmed = _$originConfirmed;
+  @BuiltValueEnumConst(wireName: r'filling')
+  static const TransferStatus filling = _$filling;
   @BuiltValueEnumConst(wireName: r'completed')
   static const TransferStatus completed = _$completed;
+  @BuiltValueEnumConst(wireName: r'refund_pending')
+  static const TransferStatus refundPending = _$refundPending;
+  @BuiltValueEnumConst(wireName: r'refunded')
+  static const TransferStatus refunded = _$refunded;
   @BuiltValueEnumConst(wireName: r'failed')
   static const TransferStatus failed = _$failed;
   @BuiltValueEnumConst(wireName: r'ambiguous')
@@ -28,9 +35,10 @@ class TransferStatus extends EnumClass {
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const TransferStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
-  static Serializer<TransferStatus> get serializer => _$transferStatusSerializer;
+  static Serializer<TransferStatus> get serializer =>
+      _$transferStatusSerializer;
 
-  const TransferStatus._(String name): super(name);
+  const TransferStatus._(String name) : super(name);
 
   static BuiltSet<TransferStatus> get values => _$values;
   static TransferStatus valueOf(String name) => _$valueOf(name);
@@ -43,4 +51,3 @@ class TransferStatus extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class TransferStatusMixin = Object with _$TransferStatusMixin;
-

@@ -22,14 +22,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-
-      - name: Install pinned contract tools
-        run: npm ci --ignore-scripts
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -39,5 +31,8 @@ jobs:
         run: flutter pub get
       - name: Validate Flutter environment template
         run: make env-check ENV_FILE=.env.example
-      - name: Run shared quality gate
-        run: npm run quality:check
+      - name: Run Flutter quality gate
+        run: >-
+          dart format --output=none --set-exit-if-changed lib test
+          && dart analyze --fatal-infos
+          && flutter test

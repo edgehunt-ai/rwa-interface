@@ -17,17 +17,14 @@ final class IdempotentCommandGuard {
       () =>
           '$operation-${DateTime.now().microsecondsSinceEpoch}-${_sequence++}',
     );
-    late final Future<T> request;
-    request = () async {
-      try {
-        return await command(key);
-      } finally {
-        if (identical(_inFlight[identity], request)) {
-          _inFlight.remove(identity);
-        }
-      }
-    }();
-    _inFlight[identity] = request;
-    return request;
+    // Start the request before registering its cleanup.  An immediately
+    // completed future can otherwise run `finally` while a self-referential
+    // local future is still uninitialized.
+    final request = command(key);
+    final tracked = request.whenComplete(() {
+      _inFlight.remove(identity);
+    });
+    _inFlight[identity] = tracked;
+    return tracked;
   }
 }

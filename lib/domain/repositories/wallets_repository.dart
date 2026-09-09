@@ -11,4 +11,11 @@ abstract interface class WalletsRepository {
     required String amount,
     required String idempotencyKey,
   });
+  Future<WalletAuthorization> authorizeFundingTransfer({
+    required String walletId,
+    required String planId,
+    required String asset,
+    required String maximumAmount,
+    required String idempotencyKey,
+  });
 }

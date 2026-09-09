@@ -165,7 +165,12 @@ ControlledResponse _json(String method, String path, int status, Object body) =>
 const _previewJson = {
   'kind': 'bstock',
   'network': 'BSC',
-  'settlement_asset': 'USDC',
+  'settlement_asset': 'USDT',
+  'settlement_chain_id': 56,
+  'settlement_asset_id':
+      'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
+  'settlement_token_contract': '0x55d398326f99059ff775485246999027b3197955',
+  'settlement_token_decimals': 18,
   'preview_id': 'preview-1',
   'symbol': 'NVDA',
   'side': 'buy',

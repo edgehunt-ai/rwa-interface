@@ -18,13 +18,26 @@ void main() {
           body: const {
             'total_value_usd': '10.00',
             'available_to_trade_usd': '8.00',
+            'margin_in_use_usd': '0',
+            'unvalued_asset_count': 0,
+            'data_status': 'complete',
+            'freshness': 'live',
+            'calculated_at': '2026-01-01T00:00:00Z',
+            'warnings': <Object?>[],
+            'sources': <Object?>[],
           },
         ),
         ControlledResponse.json(
           method: 'GET',
           path: '/v1/portfolio/accounts',
           statusCode: 200,
-          body: const {'items': <Object?>[]},
+          body: const {
+            'scope': 'internal_ledger',
+            'items': <Object?>[],
+            'reconciled': true,
+            'freshness': 'live',
+            'blockers': <Object?>[],
+          },
         ),
         ControlledResponse.json(
           method: 'GET',
@@ -32,8 +45,13 @@ void main() {
           statusCode: 200,
           body: const {
             'items': <Object?>[],
-            'total_value_usd': '0',
+            'total_equity_usd': '0',
             'has_more': false,
+            'data_status': 'empty',
+            'freshness': 'live',
+            'calculated_at': '2026-01-01T00:00:00Z',
+            'warnings': <Object?>[],
+            'sources': <Object?>[],
           },
         ),
       ]);

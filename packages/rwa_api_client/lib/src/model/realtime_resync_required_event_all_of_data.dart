@@ -12,27 +12,37 @@ part 'realtime_resync_required_event_all_of_data.g.dart';
 /// RealtimeResyncRequiredEventAllOfData
 ///
 /// Properties:
-/// * [reason] 
+/// * [reason]
 @BuiltValue()
-abstract class RealtimeResyncRequiredEventAllOfData implements Built<RealtimeResyncRequiredEventAllOfData, RealtimeResyncRequiredEventAllOfDataBuilder> {
+abstract class RealtimeResyncRequiredEventAllOfData
+    implements
+        Built<RealtimeResyncRequiredEventAllOfData,
+            RealtimeResyncRequiredEventAllOfDataBuilder> {
   @BuiltValueField(wireName: r'reason')
   RealtimeResyncRequiredEventAllOfDataReasonEnum get reason;
   // enum reasonEnum {  event_retention_expired,  };
 
   RealtimeResyncRequiredEventAllOfData._();
 
-  factory RealtimeResyncRequiredEventAllOfData([void updates(RealtimeResyncRequiredEventAllOfDataBuilder b)]) = _$RealtimeResyncRequiredEventAllOfData;
+  factory RealtimeResyncRequiredEventAllOfData(
+          [void updates(RealtimeResyncRequiredEventAllOfDataBuilder b)]) =
+      _$RealtimeResyncRequiredEventAllOfData;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RealtimeResyncRequiredEventAllOfDataBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RealtimeResyncRequiredEventAllOfData> get serializer => _$RealtimeResyncRequiredEventAllOfDataSerializer();
+  static Serializer<RealtimeResyncRequiredEventAllOfData> get serializer =>
+      _$RealtimeResyncRequiredEventAllOfDataSerializer();
 }
 
-class _$RealtimeResyncRequiredEventAllOfDataSerializer implements PrimitiveSerializer<RealtimeResyncRequiredEventAllOfData> {
+class _$RealtimeResyncRequiredEventAllOfDataSerializer
+    implements PrimitiveSerializer<RealtimeResyncRequiredEventAllOfData> {
   @override
-  final Iterable<Type> types = const [RealtimeResyncRequiredEventAllOfData, _$RealtimeResyncRequiredEventAllOfData];
+  final Iterable<Type> types = const [
+    RealtimeResyncRequiredEventAllOfData,
+    _$RealtimeResyncRequiredEventAllOfData
+  ];
 
   @override
   final String wireName = r'RealtimeResyncRequiredEventAllOfData';
@@ -45,7 +55,8 @@ class _$RealtimeResyncRequiredEventAllOfDataSerializer implements PrimitiveSeria
     yield r'reason';
     yield serializers.serialize(
       object.reason,
-      specifiedType: const FullType(RealtimeResyncRequiredEventAllOfDataReasonEnum),
+      specifiedType:
+          const FullType(RealtimeResyncRequiredEventAllOfDataReasonEnum),
     );
   }
 
@@ -55,7 +66,9 @@ class _$RealtimeResyncRequiredEventAllOfDataSerializer implements PrimitiveSeria
     RealtimeResyncRequiredEventAllOfData object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -73,7 +86,8 @@ class _$RealtimeResyncRequiredEventAllOfDataSerializer implements PrimitiveSeria
         case r'reason':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(RealtimeResyncRequiredEventAllOfDataReasonEnum),
+            specifiedType:
+                const FullType(RealtimeResyncRequiredEventAllOfDataReasonEnum),
           ) as RealtimeResyncRequiredEventAllOfDataReasonEnum;
           result.reason = valueDes;
           break;
@@ -107,17 +121,24 @@ class _$RealtimeResyncRequiredEventAllOfDataSerializer implements PrimitiveSeria
 }
 
 class RealtimeResyncRequiredEventAllOfDataReasonEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'event_retention_expired')
-  static const RealtimeResyncRequiredEventAllOfDataReasonEnum eventRetentionExpired = _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired;
+  static const RealtimeResyncRequiredEventAllOfDataReasonEnum
+      eventRetentionExpired =
+      _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeResyncRequiredEventAllOfDataReasonEnum unknownDefaultOpenApi = _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi;
+  static const RealtimeResyncRequiredEventAllOfDataReasonEnum
+      unknownDefaultOpenApi =
+      _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi;
 
-  static Serializer<RealtimeResyncRequiredEventAllOfDataReasonEnum> get serializer => _$realtimeResyncRequiredEventAllOfDataReasonEnumSerializer;
+  static Serializer<RealtimeResyncRequiredEventAllOfDataReasonEnum>
+      get serializer =>
+          _$realtimeResyncRequiredEventAllOfDataReasonEnumSerializer;
 
-  const RealtimeResyncRequiredEventAllOfDataReasonEnum._(String name): super(name);
+  const RealtimeResyncRequiredEventAllOfDataReasonEnum._(String name)
+      : super(name);
 
-  static BuiltSet<RealtimeResyncRequiredEventAllOfDataReasonEnum> get values => _$realtimeResyncRequiredEventAllOfDataReasonEnumValues;
-  static RealtimeResyncRequiredEventAllOfDataReasonEnum valueOf(String name) => _$realtimeResyncRequiredEventAllOfDataReasonEnumValueOf(name);
+  static BuiltSet<RealtimeResyncRequiredEventAllOfDataReasonEnum> get values =>
+      _$realtimeResyncRequiredEventAllOfDataReasonEnumValues;
+  static RealtimeResyncRequiredEventAllOfDataReasonEnum valueOf(String name) =>
+      _$realtimeResyncRequiredEventAllOfDataReasonEnumValueOf(name);
 }
-

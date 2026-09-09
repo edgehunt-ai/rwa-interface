@@ -3,45 +3,48 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/funding_plan_mode.dart';
+import 'package:rwa_api_client/src/model/auto_single_source_funding_plan_request.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
+import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
+import 'package:rwa_api_client/src/model/legacy_funding_plan_request.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:one_of/one_of.dart';
 
 part 'funding_plan_request.g.dart';
 
-/// FundingPlanRequest
+/// Accepts the current immutable preview request or the deprecated v1.0 request during migration.
 ///
 /// Properties:
-/// * [rail] 
-/// * [asset] 
+/// * [tradePreviewId] - Immutable trade preview from which purpose, target identity and required target amount are derived.
+/// * [mode]
+/// * [sourceAssetId] - Optional exact canonical source asset constraint. If supplied, planning must not quote or select any other source.
+/// * [rail]
+/// * [asset]
 /// * [amount] - 十进制字符串，避免浮点误差
 @BuiltValue()
-abstract class FundingPlanRequest implements Built<FundingPlanRequest, FundingPlanRequestBuilder> {
-  @BuiltValueField(wireName: r'rail')
-  ProductKind get rail;
-  // enum railEnum {  bstock,  perp,  };
-
-  @BuiltValueField(wireName: r'asset')
-  FundingPlanRequestAssetEnum get asset;
-  // enum assetEnum {  USDC,  };
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'amount')
-  String get amount;
+abstract class FundingPlanRequest
+    implements Built<FundingPlanRequest, FundingPlanRequestBuilder> {
+  /// One Of [AutoSingleSourceFundingPlanRequest], [LegacyFundingPlanRequest]
+  OneOf get oneOf;
 
   FundingPlanRequest._();
 
-  factory FundingPlanRequest([void updates(FundingPlanRequestBuilder b)]) = _$FundingPlanRequest;
+  factory FundingPlanRequest([void updates(FundingPlanRequestBuilder b)]) =
+      _$FundingPlanRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(FundingPlanRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<FundingPlanRequest> get serializer => _$FundingPlanRequestSerializer();
+  static Serializer<FundingPlanRequest> get serializer =>
+      _$FundingPlanRequestSerializer();
 }
 
-class _$FundingPlanRequestSerializer implements PrimitiveSerializer<FundingPlanRequest> {
+class _$FundingPlanRequestSerializer
+    implements PrimitiveSerializer<FundingPlanRequest> {
   @override
   final Iterable<Type> types = const [FundingPlanRequest, _$FundingPlanRequest];
 
@@ -52,23 +55,7 @@ class _$FundingPlanRequestSerializer implements PrimitiveSerializer<FundingPlanR
     Serializers serializers,
     FundingPlanRequest object, {
     FullType specifiedType = FullType.unspecified,
-  }) sync* {
-    yield r'rail';
-    yield serializers.serialize(
-      object.rail,
-      specifiedType: const FullType(ProductKind),
-    );
-    yield r'asset';
-    yield serializers.serialize(
-      object.asset,
-      specifiedType: const FullType(FundingPlanRequestAssetEnum),
-    );
-    yield r'amount';
-    yield serializers.serialize(
-      object.amount,
-      specifiedType: const FullType(String),
-    );
-  }
+  }) sync* {}
 
   @override
   Object serialize(
@@ -76,48 +63,9 @@ class _$FundingPlanRequestSerializer implements PrimitiveSerializer<FundingPlanR
     FundingPlanRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
-
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required FundingPlanRequestBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'rail':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ProductKind),
-          ) as ProductKind;
-          result.rail = valueDes;
-          break;
-        case r'asset':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(FundingPlanRequestAssetEnum),
-          ) as FundingPlanRequestAssetEnum;
-          result.asset = valueDes;
-          break;
-        case r'amount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.amount = valueDes;
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
+    final oneOf = object.oneOf;
+    return serializers.serialize(oneOf.value,
+        specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -127,32 +75,33 @@ class _$FundingPlanRequestSerializer implements PrimitiveSerializer<FundingPlanR
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = FundingPlanRequestBuilder();
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
+    Object? oneOfDataSrc;
+    final targetType = const FullType(OneOf, [
+      FullType(AutoSingleSourceFundingPlanRequest),
+      FullType(LegacyFundingPlanRequest),
+    ]);
+    oneOfDataSrc = serialized;
+    result.oneOf = serializers.deserialize(oneOfDataSrc,
+        specifiedType: targetType) as OneOf;
     return result.build();
   }
 }
 
 class FundingPlanRequestAssetEnum extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'USDC')
-  static const FundingPlanRequestAssetEnum USDC = _$fundingPlanRequestAssetEnum_USDC;
+  static const FundingPlanRequestAssetEnum USDC =
+      _$fundingPlanRequestAssetEnum_USDC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanRequestAssetEnum unknownDefaultOpenApi = _$fundingPlanRequestAssetEnum_unknownDefaultOpenApi;
+  static const FundingPlanRequestAssetEnum unknownDefaultOpenApi =
+      _$fundingPlanRequestAssetEnum_unknownDefaultOpenApi;
 
-  static Serializer<FundingPlanRequestAssetEnum> get serializer => _$fundingPlanRequestAssetEnumSerializer;
+  static Serializer<FundingPlanRequestAssetEnum> get serializer =>
+      _$fundingPlanRequestAssetEnumSerializer;
 
-  const FundingPlanRequestAssetEnum._(String name): super(name);
+  const FundingPlanRequestAssetEnum._(String name) : super(name);
 
-  static BuiltSet<FundingPlanRequestAssetEnum> get values => _$fundingPlanRequestAssetEnumValues;
-  static FundingPlanRequestAssetEnum valueOf(String name) => _$fundingPlanRequestAssetEnumValueOf(name);
+  static BuiltSet<FundingPlanRequestAssetEnum> get values =>
+      _$fundingPlanRequestAssetEnumValues;
+  static FundingPlanRequestAssetEnum valueOf(String name) =>
+      _$fundingPlanRequestAssetEnumValueOf(name);
 }
-

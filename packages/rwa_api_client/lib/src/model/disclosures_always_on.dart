@@ -11,10 +11,11 @@ part 'disclosures_always_on.g.dart';
 /// 24×7 交易说明
 ///
 /// Properties:
-/// * [title] 
-/// * [body] 
+/// * [title]
+/// * [body]
 @BuiltValue()
-abstract class DisclosuresAlwaysOn implements Built<DisclosuresAlwaysOn, DisclosuresAlwaysOnBuilder> {
+abstract class DisclosuresAlwaysOn
+    implements Built<DisclosuresAlwaysOn, DisclosuresAlwaysOnBuilder> {
   @BuiltValueField(wireName: r'title')
   String? get title;
 
@@ -23,18 +24,24 @@ abstract class DisclosuresAlwaysOn implements Built<DisclosuresAlwaysOn, Disclos
 
   DisclosuresAlwaysOn._();
 
-  factory DisclosuresAlwaysOn([void updates(DisclosuresAlwaysOnBuilder b)]) = _$DisclosuresAlwaysOn;
+  factory DisclosuresAlwaysOn([void updates(DisclosuresAlwaysOnBuilder b)]) =
+      _$DisclosuresAlwaysOn;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DisclosuresAlwaysOnBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DisclosuresAlwaysOn> get serializer => _$DisclosuresAlwaysOnSerializer();
+  static Serializer<DisclosuresAlwaysOn> get serializer =>
+      _$DisclosuresAlwaysOnSerializer();
 }
 
-class _$DisclosuresAlwaysOnSerializer implements PrimitiveSerializer<DisclosuresAlwaysOn> {
+class _$DisclosuresAlwaysOnSerializer
+    implements PrimitiveSerializer<DisclosuresAlwaysOn> {
   @override
-  final Iterable<Type> types = const [DisclosuresAlwaysOn, _$DisclosuresAlwaysOn];
+  final Iterable<Type> types = const [
+    DisclosuresAlwaysOn,
+    _$DisclosuresAlwaysOn
+  ];
 
   @override
   final String wireName = r'DisclosuresAlwaysOn';
@@ -66,7 +73,9 @@ class _$DisclosuresAlwaysOnSerializer implements PrimitiveSerializer<Disclosures
     DisclosuresAlwaysOn object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(serializers, object,
+            specifiedType: specifiedType)
+        .toList();
   }
 
   void _deserializeProperties(
@@ -125,4 +134,3 @@ class _$DisclosuresAlwaysOnSerializer implements PrimitiveSerializer<Disclosures
     return result.build();
   }
 }
-

@@ -6,29 +6,14 @@ part of 'deposit_status.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const DepositStatus _$awaiting = const DepositStatus._('awaiting');
-const DepositStatus _$confirming = const DepositStatus._('confirming');
-const DepositStatus _$credited = const DepositStatus._('credited');
-const DepositStatus _$failed = const DepositStatus._('failed');
-const DepositStatus _$ambiguous = const DepositStatus._('ambiguous');
-const DepositStatus _$manualReview = const DepositStatus._('manualReview');
+const DepositStatus _$confirmed = const DepositStatus._('confirmed');
 const DepositStatus _$unknownDefaultOpenApi =
     const DepositStatus._('unknownDefaultOpenApi');
 
 DepositStatus _$valueOf(String name) {
   switch (name) {
-    case 'awaiting':
-      return _$awaiting;
-    case 'confirming':
-      return _$confirming;
-    case 'credited':
-      return _$credited;
-    case 'failed':
-      return _$failed;
-    case 'ambiguous':
-      return _$ambiguous;
-    case 'manualReview':
-      return _$manualReview;
+    case 'confirmed':
+      return _$confirmed;
     case 'unknownDefaultOpenApi':
       return _$unknownDefaultOpenApi;
     default:
@@ -38,23 +23,13 @@ DepositStatus _$valueOf(String name) {
 
 final BuiltSet<DepositStatus> _$values =
     BuiltSet<DepositStatus>(const <DepositStatus>[
-  _$awaiting,
-  _$confirming,
-  _$credited,
-  _$failed,
-  _$ambiguous,
-  _$manualReview,
+  _$confirmed,
   _$unknownDefaultOpenApi,
 ]);
 
 class _$DepositStatusMeta {
   const _$DepositStatusMeta();
-  DepositStatus get awaiting => _$awaiting;
-  DepositStatus get confirming => _$confirming;
-  DepositStatus get credited => _$credited;
-  DepositStatus get failed => _$failed;
-  DepositStatus get ambiguous => _$ambiguous;
-  DepositStatus get manualReview => _$manualReview;
+  DepositStatus get confirmed => _$confirmed;
   DepositStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   DepositStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<DepositStatus> get values => _$values;
@@ -70,21 +45,11 @@ Serializer<DepositStatus> _$depositStatusSerializer =
 
 class _$DepositStatusSerializer implements PrimitiveSerializer<DepositStatus> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'awaiting': 'awaiting',
-    'confirming': 'confirming',
-    'credited': 'credited',
-    'failed': 'failed',
-    'ambiguous': 'ambiguous',
-    'manualReview': 'manual_review',
+    'confirmed': 'confirmed',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'awaiting': 'awaiting',
-    'confirming': 'confirming',
-    'credited': 'credited',
-    'failed': 'failed',
-    'ambiguous': 'ambiguous',
-    'manual_review': 'manualReview',
+    'confirmed': 'confirmed',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

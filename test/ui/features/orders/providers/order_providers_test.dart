@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/models/application_state.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
@@ -32,6 +34,32 @@ void main() {
       expect(repository.keys.last, firstKey);
       await notifier.submit(_intent('TSLA'));
       expect(repository.keys.last, isNot(firstKey));
+    },
+  );
+
+  test(
+    'failed order submission exposes a stable recoverable command state',
+    () async {
+      final container = ProviderContainer(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(
+            _FailingOrdersRepository(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container
+          .read(orderCommandProvider.notifier)
+          .submit(_intent('NVDA'));
+
+      expect(result, isNull);
+      final state = container.read(orderCommandProvider);
+      expect(
+        state,
+        isA<CommandFailure<OrderIntent, ResourceResult<TradingOrder>>>(),
+      );
+      expect((state as CommandFailure).failure, isA<NetworkFailure>());
     },
   );
 }
@@ -86,4 +114,13 @@ final class _OrdersRepository implements OrdersRepository {
     String orderId, {
     required String idempotencyKey,
   }) => throw UnimplementedError();
+}
+
+final class _FailingOrdersRepository extends _OrdersRepository {
+  @override
+  Future<ResourceResult<TradingOrder>> create(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) => Future<ResourceResult<TradingOrder>>.error(const NetworkFailure());
 }
