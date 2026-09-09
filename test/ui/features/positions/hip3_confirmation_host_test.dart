@@ -6,6 +6,77 @@ import 'package:rwa_interface/domain/models/hip3_step_confirmation.dart';
 import 'package:rwa_interface/ui/features/positions/views/hip3_confirmation_host.dart';
 
 void main() {
+  for (final example in [
+    (
+      'placeStopLoss',
+      'normalized_protection.size_mode',
+      'entire_position',
+      'Protection coverage',
+      'Entire position at trigger time',
+    ),
+    (
+      'closePosition',
+      'close_preview.side',
+      'short',
+      'Closing order direction',
+      'Sell to close long position',
+    ),
+    (
+      'closePosition',
+      'close_preview.side',
+      'long',
+      'Closing order direction',
+      'Buy to close short position',
+    ),
+  ]) {
+    testWidgets('explains ${example.$3} on narrow screens with large text', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: const TextScaler.linear(2)),
+              child: Hip3ConfirmationHost(child: child!),
+            ),
+            home: const Scaffold(body: Text('Positions')),
+          ),
+        ),
+      );
+      final pending = container
+          .read(hip3ConfirmationProvider.notifier)
+          .request(
+            Hip3StepConfirmation(
+              actionId: 'a1',
+              stepId: 's1',
+              productId: 'xyz:TSLA',
+              operation: 'setTpsl',
+              stepKind: example.$1,
+              validUntil: DateTime.now().toUtc().add(
+                const Duration(minutes: 1),
+              ),
+              details: {example.$2: example.$3},
+            ),
+          );
+      await tester.pumpAndSettle();
+      expect(find.text(example.$4), findsOneWidget);
+      expect(find.text(example.$5), findsOneWidget);
+      expect(find.text('Position side'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('Decline signature'));
+      await tester.pumpAndSettle();
+      expect(await pending, isFalse);
+    });
+  }
+
   testWidgets('displays frozen terms and waits for explicit confirmation', (
     tester,
   ) async {

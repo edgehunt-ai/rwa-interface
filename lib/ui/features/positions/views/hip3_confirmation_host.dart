@@ -101,6 +101,7 @@ Iterable<(String, String)> _fields(Hip3StepConfirmation summary) sync* {
     'intent.leverage': 'Leverage',
     'intent.margin_mode': 'Margin mode',
     'intent.scope': 'Protection to cancel',
+    'normalized_protection.size_mode': 'Protection coverage',
     'normalized_protection.quantity': 'Protected quantity',
     'normalized_protection.take_profit.trigger_price':
         'Take-profit trigger price',
@@ -113,7 +114,7 @@ Iterable<(String, String)> _fields(Hip3StepConfirmation summary) sync* {
         'Stop-loss price reference',
     'normalized_protection.stop_loss.execution_type': 'Stop-loss execution',
     'normalized_protection.stop_loss.limit_price': 'Stop-loss limit price',
-    'close_preview.side': 'Position side',
+    'close_preview.side': 'Closing order direction',
     'close_preview.quantity': 'Close quantity',
     'close_preview.remaining_quantity': 'Remaining quantity',
     'close_preview.estimated_price': 'Estimated execution price',
@@ -124,6 +125,18 @@ Iterable<(String, String)> _fields(Hip3StepConfirmation summary) sync* {
   };
   for (final entry in labels.entries) {
     final value = summary.details[entry.key];
-    if (value != null) yield (entry.value, value);
+    if (value != null) {
+      final displayValue = switch ((entry.key, value)) {
+        ('normalized_protection.size_mode', 'entire_position') =>
+          'Entire position at trigger time',
+        ('normalized_protection.size_mode', 'quantity') => 'Fixed quantity',
+        ('normalized_protection.size_mode', 'percent') =>
+          'Percentage of position',
+        ('close_preview.side', 'long') => 'Buy to close short position',
+        ('close_preview.side', 'short') => 'Sell to close long position',
+        _ => value,
+      };
+      yield (entry.value, displayValue);
+    }
   }
 }
