@@ -7,6 +7,15 @@ import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/position.dart';
+import '../../../../domain/models/hip3_action_summary.dart';
+
+final activeHip3ActionsProvider = FutureProvider.autoDispose
+    .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(positionsRepositoryProvider)
+          .activeHip3Actions(cursor: cursor);
+    });
 
 typedef PositionFilter = ({
   String? symbol,
@@ -42,6 +51,18 @@ final class PositionCommands {
   PositionCommands(this._ref);
   final Ref _ref;
   final IdempotentCommandGuard _commands = IdempotentCommandGuard();
+
+  Future<void> resumeHip3Action(String actionId) async {
+    await _commands.run(
+      operation: 'resume-hip3',
+      fingerprint: actionId,
+      command: (_) =>
+          _ref.read(positionsRepositoryProvider).resumeHip3Action(actionId),
+    );
+    _ref.invalidate(positionProvider);
+    _ref.invalidate(positionsProvider);
+    _ref.invalidate(activeHip3ActionsProvider);
+  }
 
   Future<Position> updateTpSl(
     Position position, {

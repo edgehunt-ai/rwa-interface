@@ -45,6 +45,9 @@ import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/repositories/app_update_repository.dart';
 import 'auth_providers.dart';
 import 'session_scope.dart';
+import 'hip3_confirmation_provider.dart';
+import '../../data/services/hip3_position_action_service.dart';
+import '../../data/services/hip3_position_action_executor.dart';
 
 final apiEnvironmentProvider = Provider<ApiEnvironment>(
   (ref) => ApiEnvironment.fromEnvironment(),
@@ -126,11 +129,46 @@ final hip3OrderExecutionRepositoryProvider =
       );
     });
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
+  final generation = ref.watch(sessionGenerationProvider);
   final source = ref.watch(apiDataSourceProvider);
+  final actions = GeneratedHip3PositionActionService(
+    source.client.getOrdersApi(),
+  );
   return PositionsRepositoryImpl(
     GeneratedPositionsService(source.client.getPositionsApi()),
+    actions: actions,
+    executor: Hip3PositionActionExecutor(
+      actions,
+      _PositionSessionSigner(ref, generation),
+      isActive: () =>
+          ref.mounted && ref.read(sessionGenerationProvider) == generation,
+    ),
+    confirm: (summary) =>
+        ref.read(hip3ConfirmationProvider.notifier).request(summary),
   );
 });
+
+/// Reading positions must not require a connected signing wallet. Resolve it
+/// only after consent, and reject work from a previous authenticated session.
+final class _PositionSessionSigner implements Hip3TypedDataSigner {
+  _PositionSessionSigner(this.ref, this.generation);
+  final Ref ref;
+  final Object generation;
+
+  @override
+  Future<String> signTypedDataV4({
+    required String expectedSigner,
+    required Map<String, Object?> typedData,
+  }) {
+    if (!ref.mounted || ref.read(sessionGenerationProvider) != generation) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected);
+    }
+    return ref
+        .read(hip3TypedDataSignerProvider)
+        .signTypedDataV4(expectedSigner: expectedSigner, typedData: typedData);
+  }
+}
+
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return ActivityRepositoryImpl(

@@ -89,6 +89,16 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
 
 Position mapPosition(api.Position value) => Position(
   positionId: value.positionId,
+  productId: value.productId,
+  positionVersion: value.positionVersion,
+  hip3ActionId: value.hip3ActionId,
+  protectionOrderIds: List.unmodifiable(value.protectionOrderIds ?? []),
+  marginMode: switch (value.marginMode) {
+    api.MarginMode.cross => PositionMarginMode.cross,
+    api.MarginMode.isolated => PositionMarginMode.isolated,
+    null => null,
+    _ => PositionMarginMode.unknown,
+  },
   symbol: value.symbol,
   kind: value.kind == api.ProductKind.bstock
       ? MarketProductKind.bstock

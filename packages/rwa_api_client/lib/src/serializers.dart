@@ -55,7 +55,6 @@ import 'package:rwa_api_client/src/model/candle_series.dart';
 import 'package:rwa_api_client/src/model/chain.dart';
 import 'package:rwa_api_client/src/model/chart_range.dart';
 import 'package:rwa_api_client/src/model/claim.dart';
-import 'package:rwa_api_client/src/model/close_position_request.dart';
 import 'package:rwa_api_client/src/model/completed_funding_provider_observation.dart';
 import 'package:rwa_api_client/src/model/completed_funding_source_transaction_observation.dart';
 import 'package:rwa_api_client/src/model/completed_funding_transfer_state.dart';
@@ -273,7 +272,6 @@ import 'package:rwa_api_client/src/model/stock_group.dart';
 import 'package:rwa_api_client/src/model/stock_page.dart';
 import 'package:rwa_api_client/src/model/token_balance.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
-import 'package:rwa_api_client/src/model/tp_sl_update_request.dart';
 import 'package:rwa_api_client/src/model/trade_intent.dart';
 import 'package:rwa_api_client/src/model/trade_intent_blocker.dart';
 import 'package:rwa_api_client/src/model/trade_intent_create_request.dart';
@@ -294,7 +292,6 @@ import 'package:rwa_api_client/src/model/transfer_source_execution_status.dart';
 import 'package:rwa_api_client/src/model/transfer_status.dart';
 import 'package:rwa_api_client/src/model/transfer_target_credit_status.dart';
 import 'package:rwa_api_client/src/model/unavailable_deposit_rail_availability.dart';
-import 'package:rwa_api_client/src/model/update_position_leverage_request.dart';
 import 'package:rwa_api_client/src/model/user.dart';
 import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
@@ -364,7 +361,6 @@ part 'serializers.g.dart';
   Chain,
   ChartRange,
   Claim,
-  ClosePositionRequest,
   CompletedFundingProviderObservation,
   CompletedFundingSourceTransactionObservation,
   CompletedFundingTransferState,
@@ -582,7 +578,6 @@ part 'serializers.g.dart';
   StockPage,
   TokenBalance,
   TpSlSpec,
-  TpSlUpdateRequest,
   TradeIntent,
   TradeIntentBlocker,
   TradeIntentCreateRequest,
@@ -603,7 +598,6 @@ part 'serializers.g.dart';
   TransferStatus,
   TransferTargetCreditStatus,
   UnavailableDepositRailAvailability,
-  UpdatePositionLeverageRequest,
   User,
   UserPaidWalletActionExecutionSubmissionRequest,
   UserSettings,

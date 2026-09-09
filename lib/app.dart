@@ -8,6 +8,7 @@ import 'package:rwa_interface/app/providers/push_notification_providers.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
+import 'package:rwa_interface/ui/features/positions/views/hip3_confirmation_host.dart';
 
 class AppRoot extends StatelessWidget {
   AppRoot({super.key, GoRouter? router})
@@ -53,6 +54,8 @@ final class _AppViewState extends ConsumerState<_AppView> {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.light,
       routerConfig: widget.router,
+      builder: (context, child) =>
+          Hip3ConfirmationHost(child: child ?? const SizedBox.shrink()),
       locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
