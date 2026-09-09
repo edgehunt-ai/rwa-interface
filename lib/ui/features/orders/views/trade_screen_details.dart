@@ -12,60 +12,78 @@ class _Details extends ConsumerWidget {
   final MarketProductKind kind;
   final String symbol;
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          for (final tab in const ['Position', 'Open', 'Details'])
-            TextButton(
-              onPressed: () => onChanged(tab),
-              style: TextButton.styleFrom(padding: EdgeInsets.zero),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      tab,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: activeTab == tab
-                            ? FontWeight.w600
-                            : FontWeight.w400,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 216,
+          height: 50,
+          child: Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                left:
+                    const ['Position', 'Open', 'Details'].indexOf(activeTab) *
+                        72 +
+                    20,
+                bottom: 8,
+                width: 32,
+                height: 2,
+                child: const ColoredBox(color: Color(0xFFFF5BD6)),
+              ),
+              Row(
+                children: [
+                  for (final tab in const ['Position', 'Open', 'Details'])
+                    SizedBox(
+                      width: 72,
+                      child: TextButton(
+                        onPressed: () => onChanged(tab),
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOutCubic,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: activeTab == tab
+                                  ? colors.primaryText
+                                  : colors.secondaryText,
+                              fontWeight: activeTab == tab
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                            child: Text(tab),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 2,
-                      width: 32,
-                      color: activeTab == tab
-                          ? const Color(0xFFFF5BD6)
-                          : Colors.transparent,
-                    ),
-                  ],
-                ),
+                ],
               ),
-            ),
-        ],
-      ),
-      if (activeTab == 'Open')
-        _OpenOrdersTab(
-          orders: ref.watch(ordersProvider(null)),
-          kind: kind,
-          symbol: symbol,
-        ),
-      if (activeTab == 'Position')
-        _PositionTab(
-          positions: ref.watch(
-            positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+            ],
           ),
-          kind: kind,
-          symbol: symbol,
         ),
-      if (activeTab == 'Details') _DetailsCard(kind: kind, symbol: symbol),
-    ],
-  );
+        if (activeTab == 'Open')
+          _OpenOrdersTab(
+            orders: ref.watch(ordersProvider(null)),
+            kind: kind,
+            symbol: symbol,
+          ),
+        if (activeTab == 'Position')
+          _PositionTab(
+            positions: ref.watch(
+              positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+            ),
+            kind: kind,
+            symbol: symbol,
+          ),
+        if (activeTab == 'Details') _DetailsCard(kind: kind, symbol: symbol),
+      ],
+    );
+  }
 }
 
 class _OpenOrdersTab extends ConsumerWidget {
@@ -328,11 +346,11 @@ class _DetailsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final snapshot = ref
-        .watch(
-          marketSnapshotProvider(MarketProductRef(symbol: symbol, kind: kind)),
-        )
-        .value;
+    final snapshotState = ref.watch(
+      marketSnapshotProvider(MarketProductRef(symbol: symbol, kind: kind)),
+    );
+    final snapshot = snapshotState.value;
+    final loading = snapshotState.isLoading;
     final reference = snapshot?.price == null
         ? '—'
         : TokenAmountFormatter.formatUsd(snapshot!.price);
@@ -351,20 +369,27 @@ class _DetailsCard extends ConsumerWidget {
             children: [
               Text(l10n.price, style: _sectionStyle),
               const SizedBox(height: 12),
-              _DetailRow(
+              _MarketDetailRow(
                 kind == MarketProductKind.perp
                     ? l10n.tradeReferencePrice
                     : l10n.tradeUsStockReference,
                 reference,
+                loading: loading,
+                skeletonKey: const Key('trade-details-price-skeleton'),
               ),
-              _DetailRow(
+              _MarketDetailRow(
                 kind == MarketProductKind.perp
                     ? l10n.tradeBasis
                     : l10n.tradePremium,
                 '—',
+                loading: loading,
               ),
-              _DetailRow(l10n.tradeSpread, '—'),
-              _DetailRow(l10n.tradeBestBidAsk, '$bid / $ask'),
+              _MarketDetailRow(l10n.tradeSpread, '—', loading: loading),
+              _MarketDetailRow(
+                l10n.tradeBestBidAsk,
+                '$bid / $ask',
+                loading: loading,
+              ),
             ],
           ),
         ),
@@ -446,6 +471,34 @@ class _DetailRow extends StatelessWidget {
           value,
           style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
+      ],
+    ),
+  );
+}
+
+class _MarketDetailRow extends StatelessWidget {
+  const _MarketDetailRow(
+    this.label,
+    this.value, {
+    required this.loading,
+    this.skeletonKey,
+  });
+
+  final String label;
+  final String value;
+  final bool loading;
+  final Key? skeletonKey;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(child: Text(label)),
+        if (loading)
+          SkeletonBlock(key: skeletonKey, width: 68, height: 14, radius: 4)
+        else
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
     ),
   );
@@ -601,6 +654,7 @@ class _MarketHoursSheet extends StatelessWidget {
                     schedule: '16:00 - 21:30 UTC+8',
                     liquidity: l10n.tradeMediumLiquidity,
                     activeBars: 2,
+                    liquidityTone: _LiquidityTone.medium,
                   ),
                   _MarketSession(
                     asset: 'assets/figma/trade/session_regular.svg',
@@ -608,6 +662,7 @@ class _MarketHoursSheet extends StatelessWidget {
                     schedule: '21:30 - 04:00 UTC+8',
                     liquidity: l10n.tradeHighLiquidity,
                     activeBars: 3,
+                    liquidityTone: _LiquidityTone.high,
                   ),
                   _MarketSession(
                     asset: 'assets/figma/trade/session_pre_after.svg',
@@ -615,6 +670,7 @@ class _MarketHoursSheet extends StatelessWidget {
                     schedule: '04:00 - 08:00 UTC+8',
                     liquidity: l10n.tradeMediumLiquidity,
                     activeBars: 2,
+                    liquidityTone: _LiquidityTone.medium,
                   ),
                   _MarketSession(
                     asset: 'assets/figma/trade/session_overnight.svg',
@@ -622,6 +678,7 @@ class _MarketHoursSheet extends StatelessWidget {
                     schedule: '08:00 - 16:00 UTC+8',
                     liquidity: l10n.tradeMediumLiquidity,
                     activeBars: 2,
+                    liquidityTone: _LiquidityTone.medium,
                     note: l10n.tradeMarketOpensIn,
                   ),
                   _MarketSession(
@@ -630,6 +687,7 @@ class _MarketHoursSheet extends StatelessWidget {
                     schedule: l10n.tradeMarketClosedSchedule,
                     liquidity: l10n.tradeLowLiquidity,
                     activeBars: 1,
+                    liquidityTone: _LiquidityTone.low,
                   ),
                 ],
               ),
@@ -648,6 +706,7 @@ class _MarketSession extends StatelessWidget {
     required this.schedule,
     required this.liquidity,
     required this.activeBars,
+    required this.liquidityTone,
     this.note,
   });
 
@@ -656,12 +715,12 @@ class _MarketSession extends StatelessWidget {
   final String schedule;
   final String liquidity;
   final int activeBars;
+  final _LiquidityTone liquidityTone;
   final String? note;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -695,7 +754,11 @@ class _MarketSession extends StatelessWidget {
                     const SizedBox(width: 4),
                     _LiquidityBars(
                       activeBars: activeBars,
-                      color: semantic.success,
+                      color: switch (liquidityTone) {
+                        _LiquidityTone.high => const Color(0xFFB9F34A),
+                        _LiquidityTone.medium => const Color(0xFFFF9654),
+                        _LiquidityTone.low => const Color(0xFFFF7BE5),
+                      },
                     ),
                   ],
                 ),
@@ -720,6 +783,8 @@ class _MarketSession extends StatelessWidget {
   }
 }
 
+enum _LiquidityTone { low, medium, high }
+
 class _LiquidityBars extends StatelessWidget {
   const _LiquidityBars({required this.activeBars, required this.color});
   final int activeBars;
@@ -735,7 +800,8 @@ class _LiquidityBars extends StatelessWidget {
           width: 4,
           height: 8,
           margin: const EdgeInsets.only(left: 2),
-          color: index < activeBars ? color : inactive,
+          // The design fills the liquidity meter from the right edge.
+          color: index >= 3 - activeBars ? color : inactive,
         ),
       ),
     );

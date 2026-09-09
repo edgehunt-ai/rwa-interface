@@ -4,6 +4,14 @@ enum TokenAmountDisplay { exact, normalized }
 
 /// Formats token amounts without converting them to binary floating point.
 abstract final class TokenAmountFormatter {
+  /// Formats only the numeric portion of a decimal amount.
+  static String formatValue(DecimalValue amount, {int? decimals}) {
+    if (decimals != null) _validateDecimals(decimals);
+    return _groupIntegerDigits(
+      _trimInsignificantZeros(_enforceDecimals(amount.value, decimals)),
+    );
+  }
+
   static String formatUsd(DecimalValue amount) =>
       '\$${_groupIntegerDigits(_trimInsignificantZeros(amount.value))}';
 

@@ -395,30 +395,57 @@ class _AssetTabs extends StatelessWidget {
   final _AssetTab selected;
   final ValueChanged<_AssetTab> onSelected;
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      for (final entry in const {
-        _AssetTab.cash: 'Cash',
-        _AssetTab.bstocks: 'bStocks',
-        _AssetTab.perps: 'Perps',
-      }.entries)
-        TextButton(
-          onPressed: () => onSelected(entry.key),
-          child: Text(
-            entry.value,
-            style: TextStyle(
-              decoration: selected == entry.key
-                  ? TextDecoration.underline
-                  : null,
-              fontWeight: selected == entry.key
-                  ? FontWeight.w600
-                  : FontWeight.w400,
+  Widget build(BuildContext context) {
+    const tabs = {
+      _AssetTab.cash: 'Cash',
+      _AssetTab.bstocks: 'bStocks',
+      _AssetTab.perps: 'Perps',
+    };
+    final selectedIndex = tabs.keys.toList().indexOf(selected);
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return SizedBox(
+      height: 44,
+      child: Stack(
+        children: [
+          AnimatedAlign(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment(-1 + selectedIndex.toDouble(), 1),
+            child: FractionallySizedBox(
+              widthFactor: 1 / 3,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(height: 2, color: colors.selected),
+              ),
             ),
           ),
-        ),
-    ],
-  );
+          Row(
+            children: [
+              for (final entry in tabs.entries)
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => onSelected(entry.key),
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: selected == entry.key
+                            ? colors.primaryText
+                            : colors.secondaryText,
+                        fontWeight: selected == entry.key
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                      child: Text(entry.value),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _CashBalances extends ConsumerWidget {

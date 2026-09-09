@@ -189,6 +189,18 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
+      chipTheme: ChipThemeData(
+        // Segmented controls use their parent surface for unselected items.
+        backgroundColor: Colors.transparent,
+        selectedColor: rwa.surface,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        pressElevation: 0,
+        side: BorderSide.none,
+        padding: EdgeInsets.zero,
+        labelPadding: EdgeInsets.zero,
+      ),
       dividerTheme: DividerThemeData(color: rwa.border, thickness: 1, space: 1),
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,

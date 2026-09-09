@@ -103,8 +103,10 @@ class MarketRankingTabs extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(tab),
-                Container(
-                  width: 24,
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  width: selected ? 24 : 0,
                   height: 2,
                   decoration: BoxDecoration(
                     color: selected ? colors.selected : Colors.transparent,

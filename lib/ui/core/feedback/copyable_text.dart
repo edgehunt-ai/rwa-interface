@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 
 enum CopySensitivity { safe, prohibited }
 
@@ -24,13 +25,12 @@ class CopyableText extends StatelessWidget {
   }
 
   Future<void> _copy(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
     try {
       await Clipboard.setData(ClipboardData(text: value));
-      messenger.showSnackBar(SnackBar(content: Text(l10n.copySucceeded)));
+      if (context.mounted) AppToast.showSuccess(context, l10n.copySucceeded);
     } on Object {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.copyFailed)));
+      if (context.mounted) AppToast.showFailure(context, l10n.copyFailed);
     }
   }
 

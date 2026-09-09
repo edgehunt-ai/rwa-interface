@@ -7,16 +7,16 @@ class BstocksTransferFlowSheet extends ConsumerStatefulWidget {
     required this.amountNeeded,
     this.initialStage = BstocksTransferFlowStage.source,
     this.onClose,
-    this.plan,
-    this.orderPreview,
-    this.symbol = 'NVDAB',
+    required this.plan,
+    required this.orderPreview,
+    required this.symbol,
   });
 
   final DecimalValue amountNeeded;
   final BstocksTransferFlowStage initialStage;
   final VoidCallback? onClose;
-  final FundingPlan? plan;
-  final OrderPreview? orderPreview;
+  final FundingPlan plan;
+  final OrderPreview orderPreview;
   final String symbol;
 
   @override
@@ -69,37 +69,19 @@ class _BstocksTransferFlowState
       const Divider(),
       const Text('In-App transfer'),
       const SizedBox(height: 8),
-      if (widget.plan case final plan?)
-        _ServerSelectedSource(plan: plan)
-      else
-        for (final source in const [
-          ('USDT', 'Arbitrum', '50'),
-          ('USDC', 'Arbitrum', '51.4'),
-          ('ETH', 'Polygon', '0.0'),
-        ])
-          ListTile(
-            title: Text('${source.$1} (${source.$2})'),
-            subtitle: const Text(
-              'Available balance',
-              style: TextStyle(fontSize: 11),
-            ),
-            trailing: Text(
-              source.$3,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
+      _ServerSelectedSource(plan: widget.plan),
       if (error case final value?)
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(value, style: const TextStyle(color: Colors.red)),
         ),
       _AmountOverview(amount: widget.amountNeeded),
-      _TransferDetails(symbol: widget.symbol),
+      _TransferDetails(plan: widget.plan),
       const SizedBox(height: 16),
       _Actions(
         primary: 'Confirm',
         onBack: widget.onClose,
-        onPrimary: widget.plan == null || widget.plan!.isActionable
+        onPrimary: widget.plan.isActionable
             ? () => setState(() => _stage = BstocksTransferFlowStage.review)
             : null,
       ),
@@ -114,9 +96,9 @@ class _BstocksTransferFlowState
       const Divider(),
       Text('Buy ${widget.symbol} · Market'),
       const SizedBox(height: 12),
-      _ConversionOverview(amount: widget.amountNeeded, symbol: widget.symbol),
+      _ConversionOverview(plan: widget.plan, preview: widget.orderPreview),
       const SizedBox(height: 16),
-      _ReviewDetails(symbol: widget.symbol),
+      _ReviewDetails(preview: widget.orderPreview),
       const SizedBox(height: 16),
       _Actions(
         primary: 'Confirm Buy',
@@ -128,10 +110,6 @@ class _BstocksTransferFlowState
 
   Future<void> _submitTransfer() async {
     final plan = widget.plan;
-    if (plan == null) {
-      setState(() => _stage = BstocksTransferFlowStage.submitting);
-      return;
-    }
     setState(() {
       error = null;
       _stage = BstocksTransferFlowStage.submitting;
@@ -169,16 +147,6 @@ class _BstocksTransferFlowState
 
   Future<void> _submitCompletedOrder() async {
     final preview = widget.orderPreview;
-    if (preview == null) {
-      if (mounted) {
-        setState(() {
-          _stage = BstocksTransferFlowStage.review;
-          error =
-              'Funding completed. Return to the order sheet to review again.';
-        });
-      }
-      return;
-    }
     try {
       final result = await ref
           .read(orderCommandProvider.notifier)
@@ -356,10 +324,10 @@ class _AmountOverview extends StatelessWidget {
 /// Matches the two 160pt conversion cards in the trade confirmation design.
 /// Values remain DecimalValue-backed so the display does not use floating point.
 class _ConversionOverview extends StatelessWidget {
-  const _ConversionOverview({required this.amount, required this.symbol});
+  const _ConversionOverview({required this.plan, required this.preview});
 
-  final DecimalValue amount;
-  final String symbol;
+  final FundingPlan plan;
+  final OrderPreview preview;
 
   @override
   Widget build(BuildContext context) {
@@ -371,19 +339,24 @@ class _ConversionOverview extends StatelessWidget {
           children: [
             Expanded(
               child: _ConversionCard(
-                value: TokenAmountFormatter.format(amount, symbol: 'USDT'),
-                asset: 'assets/figma/trade/usdt_mark.png',
+                value: TokenAmountFormatter.format(
+                  plan.shortfall,
+                  symbol: plan.shortfall.asset ?? plan.sourceAsset ?? '—',
+                ),
+                symbol: plan.sourceAsset ?? '—',
                 alignEnd: false,
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: _ConversionCard(
-                value: TokenAmountFormatter.format(
-                  DecimalValue('0.88', asset: symbol, unit: 'token'),
-                  symbol: symbol,
-                ),
-                asset: 'assets/figma/trade/nvidia.svg',
+                value: preview.estimatedQuantity == null
+                    ? '—'
+                    : TokenAmountFormatter.format(
+                        preview.estimatedQuantity!,
+                        symbol: preview.intent.symbol,
+                      ),
+                symbol: preview.intent.symbol,
                 alignEnd: true,
               ),
             ),
@@ -407,12 +380,12 @@ class _ConversionOverview extends StatelessWidget {
 class _ConversionCard extends StatelessWidget {
   const _ConversionCard({
     required this.value,
-    required this.asset,
+    required this.symbol,
     required this.alignEnd,
   });
 
   final String value;
-  final String asset;
+  final String symbol;
   final bool alignEnd;
 
   @override
@@ -437,7 +410,7 @@ class _ConversionCard extends StatelessWidget {
                 ? MainAxisAlignment.end
                 : MainAxisAlignment.start,
             children: [
-              if (!alignEnd) _AssetMark(asset: asset),
+              if (!alignEnd) _AssetMark(symbol: symbol),
               if (!alignEnd) const SizedBox(width: 4),
               Flexible(
                 child: Text(
@@ -447,7 +420,7 @@ class _ConversionCard extends StatelessWidget {
                 ),
               ),
               if (alignEnd) const SizedBox(width: 4),
-              if (alignEnd) _AssetMark(asset: asset),
+              if (alignEnd) _AssetMark(symbol: symbol),
             ],
           ),
           Text(
@@ -465,15 +438,14 @@ class _ConversionCard extends StatelessWidget {
 }
 
 class _AssetMark extends StatelessWidget {
-  const _AssetMark({required this.asset});
+  const _AssetMark({required this.symbol});
 
-  final String asset;
+  final String symbol;
 
   @override
   Widget build(BuildContext context) => Container(
     width: 20,
     height: 20,
-    padding: asset.endsWith('.svg') ? const EdgeInsets.all(4) : EdgeInsets.zero,
     decoration: BoxDecoration(
       color: Theme.of(context).extension<AppRwaColors>()!.surface,
       border: Border.all(
@@ -481,9 +453,7 @@ class _AssetMark extends StatelessWidget {
       ),
       shape: BoxShape.circle,
     ),
-    child: asset.endsWith('.svg')
-        ? SvgPicture.asset(asset, width: 20, height: 20)
-        : Image.asset(asset, width: 20, height: 20),
+    child: Text(symbol, style: const TextStyle(fontSize: 8)),
   );
 }
 
@@ -503,31 +473,57 @@ class _AmountValue extends StatelessWidget {
 }
 
 class _TransferDetails extends StatelessWidget {
-  const _TransferDetails({required this.symbol});
-  final String symbol;
+  const _TransferDetails({required this.plan});
+  final FundingPlan plan;
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      const _SummaryRow(label: 'Estimate time', value: '1–3 mins'),
-      const _SummaryRow(label: 'Bridge Fee', value: r'$0.1'),
-      const _SummaryRow(label: 'Network Fee', value: r'$0.1'),
-      const _SummaryRow(label: 'Slippage', value: '0.12%'),
-      _SummaryRow(label: 'Estimated Fee', value: '0.5 $symbol'),
+      _SummaryRow(
+        label: 'Shortfall',
+        value: TokenAmountFormatter.format(
+          plan.shortfall,
+          symbol: plan.shortfall.asset ?? plan.sourceAsset ?? '—',
+        ),
+      ),
+      _SummaryRow(
+        label: 'Available balance',
+        value: plan.sourceMaximum == null
+            ? 'Unavailable'
+            : TokenAmountFormatter.format(
+                plan.sourceMaximum!,
+                symbol: plan.sourceMaximum!.asset ?? plan.sourceAsset ?? '—',
+              ),
+      ),
     ],
   );
 }
 
 class _ReviewDetails extends StatelessWidget {
-  const _ReviewDetails({required this.symbol});
-  final String symbol;
+  const _ReviewDetails({required this.preview});
+  final OrderPreview preview;
 
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      _SummaryRow(label: 'Order Type', value: 'Market'),
-      _SummaryRow(label: 'Market price', value: r'$182.40 → $188.10'),
-      _SummaryRow(label: 'Slippage', value: '0.12%'),
-      _SummaryRow(label: 'Estimated Fee', value: '0.5 $symbol'),
+      _SummaryRow(
+        label: 'Order Type',
+        value: preview.intent.type == TradingOrderType.market
+            ? 'Market'
+            : 'Limit',
+      ),
+      if (preview.marketPrice case final price?)
+        _SummaryRow(
+          label: 'Market price',
+          value: TokenAmountFormatter.formatUsd(price),
+        ),
+      if (preview.fee case final fee?)
+        _SummaryRow(
+          label: 'Estimated fee',
+          value: TokenAmountFormatter.format(
+            fee,
+            symbol: fee.asset ?? preview.intent.symbol,
+          ),
+        ),
     ],
   );
 }

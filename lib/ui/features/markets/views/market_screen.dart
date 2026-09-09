@@ -44,7 +44,6 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const Spacer(),
-                  _MarketStatusButton(colors: colors),
                 ],
               ),
               const SizedBox(height: 16),
@@ -158,149 +157,50 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   }
 }
 
-class _MarketStatusButton extends StatelessWidget {
-  const _MarketStatusButton({required this.colors});
-  final AppRwaColors colors;
+class _StockBrowse extends ConsumerWidget {
+  const _StockBrowse({required this.onAll});
+  final VoidCallback onAll;
   @override
-  Widget build(BuildContext context) => OutlinedButton.icon(
-    onPressed: () => showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetContext) => MarketStatusSheet(
-        isOpen: false,
-        onDismiss: () => Navigator.of(sheetContext).pop(),
-      ),
-    ),
-    icon: SvgPicture.asset(
-      'assets/figma/home_markets/market_hours.svg',
-      width: 14,
-      height: 14,
-    ),
-    label: const Text('US closed'),
-  );
-}
-
-class MarketStatusSheet extends StatelessWidget {
-  const MarketStatusSheet({
-    super.key,
-    required this.isOpen,
-    required this.onDismiss,
-  });
-
-  final bool isOpen;
-  final VoidCallback onDismiss;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final headline = isOpen
-        ? 'US markets are open. So are we.'
-        : 'US markets are closed. Trading isn’t.';
-    final details = isOpen
-        ? 'Regular US market trading is currently open. bStocks and HIP-3 Perps remain available to trade here, 24/7.'
-        : 'Regular US market trading resumes at 9:30 AM ET. You can still trade bStocks and HIP-3 Perps here, 24/7.';
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final products = ref.watch(
+      marketProductsProvider((query: null, cursor: null)),
+    );
+    return products.when(
+      loading: () => const SizedBox(height: 92),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (page) {
+        final stocks = page.items
+            .where((product) => product.kind == MarketProductKind.bstock)
+            .take(4)
+            .toList(growable: false);
+        if (stocks.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.secondaryText.withValues(alpha: 0.45),
-                borderRadius: BorderRadius.circular(2),
-              ),
+            Row(
+              children: [
+                Text('Stocks', style: Theme.of(context).textTheme.titleLarge),
+                const Spacer(),
+                TextButton(onPressed: onAll, child: const Text('Browse all')),
+              ],
             ),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'US market status',
-                style: Theme.of(context).textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: 320,
-              height: 160,
-              child: Image.asset(
-                isOpen
-                    ? 'assets/figma/home_markets/market_status_open.png'
-                    : 'assets/figma/home_markets/market_status.png',
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              headline,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              details,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: colors.secondaryText),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: FilledButton(
-                onPressed: onDismiss,
-                child: const Text('Got it'),
-              ),
+            // Figma places the 92px product tiles 12px below their 24px header.
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [for (final product in stocks) _StockTile(product)],
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
-class _StockBrowse extends StatelessWidget {
-  const _StockBrowse({required this.onAll});
-  final VoidCallback onAll;
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          Text('Stocks', style: Theme.of(context).textTheme.titleLarge),
-          const Spacer(),
-          TextButton(onPressed: onAll, child: const Text('Browse all')),
-        ],
-      ),
-      // Figma places the 92px product tiles 12px below their 24px header.
-      const SizedBox(height: 12),
-      const Wrap(
-        spacing: 16,
-        runSpacing: 8,
-        children: [
-          _StockTile('NVDA', 'NVIDIA'),
-          _StockTile('TSLA', 'Tesla'),
-          _StockTile('AAPL', 'Apple'),
-          _StockTile('MSFT', 'Microsoft'),
-        ],
-      ),
-    ],
-  );
-}
-
 class _StockTile extends StatelessWidget {
-  const _StockTile(this.symbol, this.name);
-  final String symbol;
-  final String name;
+  const _StockTile(this.product);
+  final MarketProduct product;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -317,18 +217,18 @@ class _StockTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              MarketAssetMark(symbol: symbol, size: 36),
+              MarketAssetMark(symbol: product.symbol, size: 36),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      symbol,
+                      product.symbol,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      name,
+                      product.name,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: colors.secondaryText),
                     ),
@@ -338,10 +238,7 @@ class _StockTile extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          Text(
-            'bStocks · HIP-3',
-            style: TextStyle(color: colors.secondaryText),
-          ),
+          Text(product.network, style: TextStyle(color: colors.secondaryText)),
         ],
       ),
     );

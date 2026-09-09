@@ -230,9 +230,13 @@ class _Tab extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                selected
-                    ? Container(height: 2, width: 24, color: colors.selected)
-                    : const SizedBox(height: 2),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  height: 2,
+                  width: selected ? 24 : 0,
+                  color: selected ? colors.selected : Colors.transparent,
+                ),
               ],
             ),
           ),

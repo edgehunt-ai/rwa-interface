@@ -114,6 +114,7 @@ profile secrets。Android release 启用 R8 代码和资源压缩。
 ## CI 与发布
 
 - GitHub Actions 对 push 和 pull request 执行 Flutter 的 `npm run quality:check`。
+- GitHub Actions 会在 `main` 推送后构建并部署 Flutter Web 到 Vercel；同仓库 PR 会部署 Vercel Preview，来自 fork 的 PR 会跳过部署，避免向不受信任代码提供部署凭据。
 - PR 使用 concurrency，新提交会取消旧的质量运行；Release 运行不会自动取消。
 - `main` 上修改 `pubspec.yaml` 版本会触发 Android/iOS 发布构建、创建 `v<version>` 标签并发布
   GitHub Release。
@@ -129,8 +130,9 @@ API 生成层和 data/domain 层不保存翻译后的 UI 文案，只传递稳�
 
 ## Privy 登录集成
 
-- Android API 28+ 和 iOS 17+ 使用官方 `privy_flutter` SDK；Web、macOS、Windows 和 Linux 会返回
-  明确的 `unsupportedPlatform` 状态，不会初始化 native channel。
+- Android API 28+ 和 iOS 17+ 使用官方 `privy_flutter` SDK。Web 使用同站点内的 React Privy bridge，
+  由 Flutter 通过条件导入调用；macOS、Windows 和 Linux 会返回明确的 `unsupportedPlatform` 状态，不会初始化
+  native channel。Web bridge 的 React bundle 只位于 `web/privy-auth/dist`，不进入 APK/IPA。
 - Android 使用 compile SDK 36（target SDK 仍由 Flutter 配置），用于满足当前 native plugins 与
   Privy Core 的 AndroidX metadata；最低安装版本仍为 API 28。
 - App ID、移动端 Client ID 和 OAuth 回跳 scheme 通过编译期环境变量 `PRIVY_APP_ID`、`PRIVY_CLIENT_ID`、
@@ -169,6 +171,22 @@ make run ENV_FILE=.env.staging FLUTTER_ARGS='-d android'
 
 Release CI 从同名 GitHub Actions Variables 生成临时 `.env.ci`，缺少 `API_BASE_URL`、
 `PRIVY_APP_ID`、`PRIVY_CLIENT_ID` 或 `REOWN_PROJECT_ID` 时停止构建。
+
+Web 发布前先生成 Privy 浏览器 bundle，再运行 Flutter Web 构建：
+
+```bash
+npm run privy:web:build
+flutter build web --dart-define-from-file=.env
+```
+
+在 Privy Dashboard 的 Allowed origins 中登记 Web 的生产、staging 和本地开发地址；Web 使用的
+`PRIVY_APP_ID` 与 `PRIVY_CLIENT_ID` 必须对应启用了所需登录方式的 Web app client。
+
+Vercel 自动部署使用 GitHub Actions，不依赖 Vercel 的 Git 集成。请在仓库 Secrets 中配置
+`VERCEL_TOKEN`、`VERCEL_ORG_ID` 和 `VERCEL_PROJECT_ID`；其中 ID 可通过 `vercel link` 生成的
+`.vercel/project.json` 获取。Web 构建继续使用现有 GitHub Actions Variables：`API_BASE_URL`、
+`PRIVY_APP_ID`、`PRIVY_CLIENT_ID`、`PRIVY_APP_URL_SCHEME`、`REOWN_PROJECT_ID`，可选
+`PRIVY_RELYING_PARTY`、Sentry 变量沿用 Release CI 的命名。
 
 ## 相关文档
 
