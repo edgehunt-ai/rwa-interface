@@ -78,7 +78,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                     state: DesignState.failure,
                     title: AppLocalizations.of(context).activityUnavailable,
                     message: AppLocalizations.of(context).activityRetry,
-                    onRetry: () => ref.refresh(activityProvider(filter)),
+                    onRetry: () => ref.refresh(activityProvider(filter).future),
                   ),
                   data: (page) => page.items.isEmpty
                       ? DesignStateFeedback(

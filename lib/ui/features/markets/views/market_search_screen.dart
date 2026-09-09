@@ -109,7 +109,7 @@ class _MarketDiscoverySearchScreenState
                       marketProductsProvider((
                         query: query.isEmpty ? null : query,
                         cursor: null,
-                      )),
+                      )).future,
                     ),
                   ),
                   data: (page) {
@@ -257,7 +257,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                     marketProductsProvider((
                       query: query.isEmpty ? null : query,
                       cursor: null,
-                    )),
+                    )).future,
                   ),
                 ),
                 data: (page) {

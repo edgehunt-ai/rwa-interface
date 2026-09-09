@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-class FailureState extends StatelessWidget {
+typedef RetryCallback = FutureOr<void> Function();
+
+class FailureState extends StatefulWidget {
   const FailureState({
     super.key,
     this.title,
@@ -15,8 +19,28 @@ class FailureState extends StatelessWidget {
   final String? title;
   final String? description;
   final String? supportingMessage;
-  final VoidCallback? onRetry;
+  final RetryCallback? onRetry;
   final double? height;
+
+  @override
+  State<FailureState> createState() => _FailureStateState();
+}
+
+class _FailureStateState extends State<FailureState> {
+  var _retrying = false;
+
+  Future<void> _retry() async {
+    final onRetry = widget.onRetry;
+    if (onRetry == null || _retrying) return;
+    setState(() => _retrying = true);
+    try {
+      await Future.sync(onRetry);
+    } catch (_) {
+      // The provider exposes the latest failure state after the retry.
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,17 +52,17 @@ class FailureState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Semantics(
-              label: title ?? description ?? 'Request failed',
+              label: widget.title ?? widget.description ?? 'Request failed',
               child: Image.asset(
                 'assets/figma/common/error_state_illustration.png',
                 width: 160,
                 height: 160,
               ),
             ),
-            if (title != null) ...[
+            if (widget.title != null) ...[
               const SizedBox(height: 12),
               Text(
-                title!,
+                widget.title!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 17,
@@ -47,10 +71,10 @@ class FailureState extends StatelessWidget {
                 ),
               ),
             ],
-            if (description != null) ...[
+            if (widget.description != null) ...[
               const SizedBox(height: 12),
               Text(
-                description!,
+                widget.description!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: colors.secondaryText,
@@ -59,10 +83,10 @@ class FailureState extends StatelessWidget {
                 ),
               ),
             ],
-            if (supportingMessage != null) ...[
+            if (widget.supportingMessage != null) ...[
               const SizedBox(height: 8),
               Text(
-                supportingMessage!,
+                widget.supportingMessage!,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: colors.tertiaryText,
@@ -71,14 +95,35 @@ class FailureState extends StatelessWidget {
                 ),
               ),
             ],
-            if (onRetry != null) ...[
+            if (widget.onRetry != null) ...[
               const SizedBox(height: 12),
               SizedBox(
                 width: 353,
                 height: 48,
                 child: FilledButton(
-                  onPressed: onRetry,
-                  child: const Text('Retry'),
+                  onPressed: _retrying ? null : _retry,
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.disabled)
+                          ? colors.primaryAction.withValues(alpha: 0.7)
+                          : null,
+                    ),
+                    foregroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.disabled)
+                          ? colors.onPrimaryAction
+                          : null,
+                    ),
+                  ),
+                  child: _retrying
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Retry'),
                 ),
               ),
             ],
@@ -86,6 +131,8 @@ class FailureState extends StatelessWidget {
         ),
       ),
     );
-    return height == null ? content : SizedBox(height: height, child: content);
+    return widget.height == null
+        ? content
+        : SizedBox(height: widget.height, child: content);
   }
 }

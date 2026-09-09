@@ -35,7 +35,7 @@ class SettingsScreen extends ConsumerWidget {
             state: DesignState.failure,
             title: AppLocalizations.of(context).settingsUnavailable,
             message: AppLocalizations.of(context).settingsRetry,
-            onRetry: () => ref.refresh(accountProvider),
+            onRetry: () => ref.refresh(accountProvider.future),
           ),
           data: (account) => _SettingsContent(
             name: account.displayName ?? account.userId,

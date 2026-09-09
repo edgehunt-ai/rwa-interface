@@ -86,7 +86,7 @@ class _OpenOrdersTab extends ConsumerWidget {
       state: DesignState.failure,
       title: 'Open orders unavailable',
       message: 'Try again to refresh open orders.',
-      onRetry: () => ref.refresh(ordersProvider(null)),
+      onRetry: () => ref.refresh(ordersProvider(null).future),
     ),
     data: (page) {
       final openOrders = page.items
@@ -214,7 +214,7 @@ class _PositionTab extends ConsumerWidget {
       title: 'Positions unavailable',
       message: 'Try again to refresh your position.',
       onRetry: () => ref.refresh(
-        positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+        positionsProvider((symbol: symbol, kind: kind, cursor: null)).future,
       ),
     ),
     data: (page) {

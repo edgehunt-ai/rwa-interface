@@ -61,7 +61,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
             state: DesignState.failure,
             title: 'We couldn\u2019t load your assets',
             message: 'Pull to refresh and try again.',
-            onRetry: () => ref.refresh(portfolioSummaryProvider),
+            onRetry: () => ref.refresh(portfolioSummaryProvider.future),
           ),
           data: (value) => RefreshIndicator(
             onRefresh: () async {
@@ -438,7 +438,7 @@ class _CashBalances extends ConsumerWidget {
       child: DesignStateFeedback(
         state: DesignState.failure,
         title: 'Cash balances unavailable',
-        onRetry: () => ref.refresh(tradingAccountsProvider),
+        onRetry: () => ref.refresh(tradingAccountsProvider.future),
       ),
     ),
     data: (items) {
@@ -631,7 +631,7 @@ class _HoldingSection extends ConsumerWidget {
       child: DesignStateFeedback(
         state: DesignState.failure,
         title: 'Holdings unavailable',
-        onRetry: () => ref.refresh(holdingsProvider(null)),
+        onRetry: () => ref.refresh(holdingsProvider(null).future),
       ),
     ),
     data: (page) {

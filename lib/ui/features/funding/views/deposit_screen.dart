@@ -94,7 +94,7 @@ class DepositRoutesSheet extends ConsumerWidget {
                     state: DesignState.failure,
                     title: 'Deposit routes unavailable',
                     message: 'Try again when your account connection recovers.',
-                    onRetry: () => ref.refresh(fundingCatalogProvider),
+                    onRetry: () => ref.refresh(fundingCatalogProvider.future),
                   ),
                 ),
                 data: (value) => _DepositRouteList(catalog: value),
@@ -331,7 +331,7 @@ class DepositScreen extends ConsumerWidget {
             state: DesignState.failure,
             title: 'Deposit instructions unavailable',
             message: 'Return to deposit routes and try again.',
-            onRetry: () => ref.refresh(depositsProvider(null)),
+            onRetry: () => ref.refresh(depositsProvider(null).future),
           ),
           data: (page) {
             final deposit = _preferredDeposit(page.items);

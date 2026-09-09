@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'app_feedback_state.dart';
@@ -18,7 +20,7 @@ class DesignStateFeedback extends StatelessWidget {
   final DesignState state;
   final String title;
   final String? message;
-  final VoidCallback? onRetry;
+  final FutureOr<void> Function()? onRetry;
 
   @override
   Widget build(BuildContext context) {

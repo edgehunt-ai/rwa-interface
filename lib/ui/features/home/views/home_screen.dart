@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -66,7 +68,7 @@ class HomeScreen extends ConsumerWidget {
                   error: (_, _) => FailureState(
                     title: 'We couldn’t load your portfolio',
                     description: 'Check your connection and try again.',
-                    onRetry: () => ref.invalidate(portfolioSummaryProvider),
+                    onRetry: () => ref.refresh(portfolioSummaryProvider.future),
                   ),
                   data: (value) => _PortfolioCard(portfolio: value),
                 )
@@ -91,7 +93,7 @@ class HomeScreen extends ConsumerWidget {
               _MarketPreview(
                 products: products,
                 onRetry: () => ref.refresh(
-                  marketProductsProvider((query: null, cursor: null)),
+                  marketProductsProvider((query: null, cursor: null)).future,
                 ),
               ),
             ],
@@ -383,7 +385,7 @@ class _LoginAction extends StatelessWidget {
 class _MarketPreview extends StatefulWidget {
   const _MarketPreview({required this.products, required this.onRetry});
   final AsyncValue<DomainPage<MarketProduct>> products;
-  final VoidCallback onRetry;
+  final FutureOr<void> Function() onRetry;
   @override
   State<_MarketPreview> createState() => _MarketPreviewState();
 }

@@ -108,7 +108,8 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     title: 'Markets unavailable',
                     message: 'Pull to refresh and try again.',
                     onRetry: () => ref.refresh(
-                      marketProductsProvider((query: null, cursor: null)),
+                      marketProductsProvider((query: null, cursor: null))
+                          .future,
                     ),
                   ),
                 ),
