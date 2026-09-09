@@ -10,6 +10,135 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get hip3ConfirmSetTp => 'Set take profit';
+
+  @override
+  String get hip3ConfirmSetSl => 'Set stop loss';
+
+  @override
+  String get hip3ConfirmCancelTp => 'Cancel take profit';
+
+  @override
+  String get hip3ConfirmCancelSl => 'Cancel stop loss';
+
+  @override
+  String get hip3ConfirmClose => 'Close position';
+
+  @override
+  String get hip3ConfirmLeverageTitle => 'Adjust leverage';
+
+  @override
+  String get hip3ConfirmTitle => 'Confirm HIP3 action';
+
+  @override
+  String get hip3ConfirmReview =>
+      'Review this step before signing. Earlier completed steps remain effective if you decline.';
+
+  @override
+  String get hip3ConfirmDecline => 'Decline signature';
+
+  @override
+  String get hip3ConfirmSign => 'Confirm and sign';
+
+  @override
+  String get hip3ConfirmLeverage => 'Leverage';
+
+  @override
+  String get hip3ConfirmMargin => 'Margin mode';
+
+  @override
+  String get hip3ConfirmScope => 'Protection to cancel';
+
+  @override
+  String get hip3ConfirmCoverage => 'Protection coverage';
+
+  @override
+  String get hip3ConfirmQuantity => 'Protected quantity';
+
+  @override
+  String get hip3ConfirmTpTrigger => 'Take-profit trigger price';
+
+  @override
+  String get hip3ConfirmTpReference => 'Take-profit price reference';
+
+  @override
+  String get hip3ConfirmTpExecution => 'Take-profit execution';
+
+  @override
+  String get hip3ConfirmTpLimit => 'Take-profit limit price';
+
+  @override
+  String get hip3ConfirmSlTrigger => 'Stop-loss trigger price';
+
+  @override
+  String get hip3ConfirmSlReference => 'Stop-loss price reference';
+
+  @override
+  String get hip3ConfirmSlExecution => 'Stop-loss execution';
+
+  @override
+  String get hip3ConfirmSlLimit => 'Stop-loss limit price';
+
+  @override
+  String get hip3ConfirmDirection => 'Closing order direction';
+
+  @override
+  String get hip3ConfirmCloseQuantity => 'Close quantity';
+
+  @override
+  String get hip3ConfirmRemaining => 'Remaining quantity';
+
+  @override
+  String get hip3ConfirmEstimate => 'Estimated execution price';
+
+  @override
+  String get hip3ConfirmFee => 'Estimated fee (USDC)';
+
+  @override
+  String get hip3ConfirmPnl => 'Estimated realized PnL (USDC)';
+
+  @override
+  String get hip3ConfirmSlippage => 'Maximum slippage (%)';
+
+  @override
+  String get hip3ConfirmEntire => 'Entire position at trigger time';
+
+  @override
+  String get hip3ConfirmFixed => 'Fixed quantity';
+
+  @override
+  String get hip3ConfirmPercent => 'Percentage of position';
+
+  @override
+  String get hip3ConfirmBuyClose => 'Buy to close short position';
+
+  @override
+  String get hip3ConfirmSellClose => 'Sell to close long position';
+
+  @override
+  String get hip3ConfirmMarket => 'Market';
+
+  @override
+  String get hip3ConfirmLimit => 'Limit';
+
+  @override
+  String get hip3ConfirmMark => 'Mark price';
+
+  @override
+  String get hip3ConfirmCross => 'Cross';
+
+  @override
+  String get hip3ConfirmIsolated => 'Isolated';
+
+  @override
+  String get hip3ConfirmBoth => 'Take profit and stop loss';
+
+  @override
+  String hip3ConfirmValidUntil(String time) {
+    return 'Valid until $time (local time)';
+  }
+
+  @override
   String get hip3PendingTitle => 'Unfinished HIP3 actions';
 
   @override

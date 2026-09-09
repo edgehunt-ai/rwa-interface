@@ -10,6 +10,134 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get hip3ConfirmSetTp => '设置止盈';
+
+  @override
+  String get hip3ConfirmSetSl => '设置止损';
+
+  @override
+  String get hip3ConfirmCancelTp => '取消止盈';
+
+  @override
+  String get hip3ConfirmCancelSl => '取消止损';
+
+  @override
+  String get hip3ConfirmClose => '平仓';
+
+  @override
+  String get hip3ConfirmLeverageTitle => '调整杠杆';
+
+  @override
+  String get hip3ConfirmTitle => '确认 HIP3 操作';
+
+  @override
+  String get hip3ConfirmReview => '签名前请核对当前步骤。即使拒绝签名，此前已完成的步骤仍然生效。';
+
+  @override
+  String get hip3ConfirmDecline => '拒绝签名';
+
+  @override
+  String get hip3ConfirmSign => '确认并签名';
+
+  @override
+  String get hip3ConfirmLeverage => '杠杆';
+
+  @override
+  String get hip3ConfirmMargin => '保证金模式';
+
+  @override
+  String get hip3ConfirmScope => '要取消的保护单';
+
+  @override
+  String get hip3ConfirmCoverage => '保护范围';
+
+  @override
+  String get hip3ConfirmQuantity => '保护数量';
+
+  @override
+  String get hip3ConfirmTpTrigger => '止盈触发价';
+
+  @override
+  String get hip3ConfirmTpReference => '止盈参考价格';
+
+  @override
+  String get hip3ConfirmTpExecution => '止盈执行方式';
+
+  @override
+  String get hip3ConfirmTpLimit => '止盈限价';
+
+  @override
+  String get hip3ConfirmSlTrigger => '止损触发价';
+
+  @override
+  String get hip3ConfirmSlReference => '止损参考价格';
+
+  @override
+  String get hip3ConfirmSlExecution => '止损执行方式';
+
+  @override
+  String get hip3ConfirmSlLimit => '止损限价';
+
+  @override
+  String get hip3ConfirmDirection => '平仓委托方向';
+
+  @override
+  String get hip3ConfirmCloseQuantity => '平仓数量';
+
+  @override
+  String get hip3ConfirmRemaining => '剩余数量';
+
+  @override
+  String get hip3ConfirmEstimate => '预计成交价';
+
+  @override
+  String get hip3ConfirmFee => '预计手续费（USDC）';
+
+  @override
+  String get hip3ConfirmPnl => '预计已实现盈亏（USDC）';
+
+  @override
+  String get hip3ConfirmSlippage => '最大滑点（%）';
+
+  @override
+  String get hip3ConfirmEntire => '触发时的整个仓位';
+
+  @override
+  String get hip3ConfirmFixed => '固定数量';
+
+  @override
+  String get hip3ConfirmPercent => '仓位比例';
+
+  @override
+  String get hip3ConfirmBuyClose => '买入平空';
+
+  @override
+  String get hip3ConfirmSellClose => '卖出平多';
+
+  @override
+  String get hip3ConfirmMarket => '市价';
+
+  @override
+  String get hip3ConfirmLimit => '限价';
+
+  @override
+  String get hip3ConfirmMark => '标记价格';
+
+  @override
+  String get hip3ConfirmCross => '全仓保证金';
+
+  @override
+  String get hip3ConfirmIsolated => '逐仓保证金';
+
+  @override
+  String get hip3ConfirmBoth => '止盈和止损';
+
+  @override
+  String hip3ConfirmValidUntil(String time) {
+    return '有效期至 $time（本地时间）';
+  }
+
+  @override
   String get hip3PendingTitle => '未完成的 HIP3 操作';
 
   @override

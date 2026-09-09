@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../app/providers/hip3_confirmation_provider.dart';
 import '../../../../domain/models/hip3_step_confirmation.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Local extension of the existing transaction flow: inherited theme, protected
 /// focus, readable frozen business values, and explicit consent per step.
@@ -14,6 +16,7 @@ final class Hip3ConfirmationHost extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(hip3ConfirmationProvider);
     if (summary == null) return child;
+    final l10n = AppLocalizations.of(context);
     void respond(bool accepted) => ref
         .read(hip3ConfirmationProvider.notifier)
         .respond(
@@ -37,7 +40,7 @@ final class Hip3ConfirmationHost extends ConsumerWidget {
             child: AlertDialog(
               key: ValueKey('${summary.actionId}:${summary.stepId}'),
               scrollable: true,
-              title: Text(_kind(summary.stepKind)),
+              title: Text(_kind(summary.stepKind, l10n)),
               content: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -47,7 +50,7 @@ final class Hip3ConfirmationHost extends ConsumerWidget {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 16),
-                  for (final field in _fields(summary))
+                  for (final field in _fields(summary, l10n))
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Column(
@@ -61,21 +64,25 @@ final class Hip3ConfirmationHost extends ConsumerWidget {
                         ],
                       ),
                     ),
-                  const Text(
-                    'Review this step before signing. Earlier completed steps remain effective if you decline.',
-                  ),
+                  Text(l10n.hip3ConfirmReview),
                   const SizedBox(height: 12),
-                  Text('Valid until ${summary.validUntil.toLocal()}'),
+                  Text(
+                    l10n.hip3ConfirmValidUntil(
+                      DateFormat.yMd(l10n.localeName)
+                          .add_Hms()
+                          .format(summary.validUntil.toLocal()),
+                    ),
+                  ),
                 ],
               ),
               actions: [
                 TextButton(
                   onPressed: () => respond(false),
-                  child: const Text('Decline signature'),
+                  child: Text(l10n.hip3ConfirmDecline),
                 ),
                 FilledButton(
                   onPressed: () => respond(true),
-                  child: const Text('Confirm and sign'),
+                  child: Text(l10n.hip3ConfirmSign),
                 ),
               ],
             ),
@@ -86,54 +93,70 @@ final class Hip3ConfirmationHost extends ConsumerWidget {
   }
 }
 
-String _kind(String kind) => switch (kind) {
-  'placeTakeProfit' => 'Set take profit',
-  'placeStopLoss' => 'Set stop loss',
-  'cancelTakeProfit' => 'Cancel take profit',
-  'cancelStopLoss' => 'Cancel stop loss',
-  'closePosition' => 'Close position',
-  'setLeverage' => 'Adjust leverage',
-  _ => 'Confirm HIP3 action',
+String _kind(String kind, AppLocalizations l10n) => switch (kind) {
+  'placeTakeProfit' => l10n.hip3ConfirmSetTp,
+  'placeStopLoss' => l10n.hip3ConfirmSetSl,
+  'cancelTakeProfit' => l10n.hip3ConfirmCancelTp,
+  'cancelStopLoss' => l10n.hip3ConfirmCancelSl,
+  'closePosition' => l10n.hip3ConfirmClose,
+  'setLeverage' => l10n.hip3ConfirmLeverageTitle,
+  _ => l10n.hip3ConfirmTitle,
 };
 
-Iterable<(String, String)> _fields(Hip3StepConfirmation summary) sync* {
-  const labels = {
-    'intent.leverage': 'Leverage',
-    'intent.margin_mode': 'Margin mode',
-    'intent.scope': 'Protection to cancel',
-    'normalized_protection.size_mode': 'Protection coverage',
-    'normalized_protection.quantity': 'Protected quantity',
+Iterable<(String, String)> _fields(
+  Hip3StepConfirmation summary,
+  AppLocalizations l10n,
+) sync* {
+  final labels = {
+    'intent.leverage': l10n.hip3ConfirmLeverage,
+    'intent.margin_mode': l10n.hip3ConfirmMargin,
+    'intent.scope': l10n.hip3ConfirmScope,
+    'normalized_protection.size_mode': l10n.hip3ConfirmCoverage,
+    'normalized_protection.quantity': l10n.hip3ConfirmQuantity,
     'normalized_protection.take_profit.trigger_price':
-        'Take-profit trigger price',
+        l10n.hip3ConfirmTpTrigger,
     'normalized_protection.take_profit.trigger_reference':
-        'Take-profit price reference',
-    'normalized_protection.take_profit.execution_type': 'Take-profit execution',
-    'normalized_protection.take_profit.limit_price': 'Take-profit limit price',
-    'normalized_protection.stop_loss.trigger_price': 'Stop-loss trigger price',
+        l10n.hip3ConfirmTpReference,
+    'normalized_protection.take_profit.execution_type':
+        l10n.hip3ConfirmTpExecution,
+    'normalized_protection.take_profit.limit_price': l10n.hip3ConfirmTpLimit,
+    'normalized_protection.stop_loss.trigger_price': l10n.hip3ConfirmSlTrigger,
     'normalized_protection.stop_loss.trigger_reference':
-        'Stop-loss price reference',
-    'normalized_protection.stop_loss.execution_type': 'Stop-loss execution',
-    'normalized_protection.stop_loss.limit_price': 'Stop-loss limit price',
-    'close_preview.side': 'Closing order direction',
-    'close_preview.quantity': 'Close quantity',
-    'close_preview.remaining_quantity': 'Remaining quantity',
-    'close_preview.estimated_price': 'Estimated execution price',
-    'close_preview.estimated_fee_usdc': 'Estimated fee (USDC)',
-    'close_preview.estimated_realized_pnl_usdc':
-        'Estimated realized PnL (USDC)',
-    'close_preview.slippage_percent': 'Maximum slippage (%)',
+        l10n.hip3ConfirmSlReference,
+    'normalized_protection.stop_loss.execution_type':
+        l10n.hip3ConfirmSlExecution,
+    'normalized_protection.stop_loss.limit_price': l10n.hip3ConfirmSlLimit,
+    'close_preview.side': l10n.hip3ConfirmDirection,
+    'close_preview.quantity': l10n.hip3ConfirmCloseQuantity,
+    'close_preview.remaining_quantity': l10n.hip3ConfirmRemaining,
+    'close_preview.estimated_price': l10n.hip3ConfirmEstimate,
+    'close_preview.estimated_fee_usdc': l10n.hip3ConfirmFee,
+    'close_preview.estimated_realized_pnl_usdc': l10n.hip3ConfirmPnl,
+    'close_preview.slippage_percent': l10n.hip3ConfirmSlippage,
   };
   for (final entry in labels.entries) {
     final value = summary.details[entry.key];
     if (value != null) {
       final displayValue = switch ((entry.key, value)) {
         ('normalized_protection.size_mode', 'entire_position') =>
-          'Entire position at trigger time',
-        ('normalized_protection.size_mode', 'quantity') => 'Fixed quantity',
+          l10n.hip3ConfirmEntire,
+        ('normalized_protection.size_mode', 'quantity') =>
+          l10n.hip3ConfirmFixed,
         ('normalized_protection.size_mode', 'percent') =>
-          'Percentage of position',
-        ('close_preview.side', 'long') => 'Buy to close short position',
-        ('close_preview.side', 'short') => 'Sell to close long position',
+          l10n.hip3ConfirmPercent,
+        ('close_preview.side', 'long') => l10n.hip3ConfirmBuyClose,
+        ('close_preview.side', 'short') => l10n.hip3ConfirmSellClose,
+        ('intent.margin_mode', 'cross') => l10n.hip3ConfirmCross,
+        ('intent.margin_mode', 'isolated') => l10n.hip3ConfirmIsolated,
+        ('intent.scope', 'both') => l10n.hip3ConfirmBoth,
+        ('intent.scope', 'take_profit') => l10n.hip3ConfirmCancelTp,
+        ('intent.scope', 'stop_loss') => l10n.hip3ConfirmCancelSl,
+        (final key, 'market') when key.endsWith('.execution_type') =>
+          l10n.hip3ConfirmMarket,
+        (final key, 'limit') when key.endsWith('.execution_type') =>
+          l10n.hip3ConfirmLimit,
+        (final key, 'mark') when key.endsWith('.trigger_reference') =>
+          l10n.hip3ConfirmMark,
         _ => value,
       };
       yield (entry.value, displayValue);
