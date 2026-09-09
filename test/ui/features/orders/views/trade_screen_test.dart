@@ -144,7 +144,7 @@ void main() {
   testWidgets('Trade updates the favorite icon after a successful request', (
     tester,
   ) async {
-    final repository = _FavoriteMarketsRepository();
+    final repository = _FavoriteMarketsRepository(isFavorite: false);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
@@ -159,7 +159,28 @@ void main() {
     expect(repository.added, [
       const MarketProductRef(symbol: 'NVDAB', kind: MarketProductKind.bstock),
     ]);
+    expect(repository.removed, isEmpty);
     expect(find.byTooltip('Remove favorite'), findsOneWidget);
+  });
+
+  testWidgets('Trade removes an active favorite', (tester) async {
+    final repository = _FavoriteMarketsRepository(isFavorite: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Remove favorite'));
+    await tester.pumpAndSettle();
+
+    expect(repository.removed, [
+      const MarketProductRef(symbol: 'NVDAB', kind: MarketProductKind.bstock),
+    ]);
+    expect(repository.added, isEmpty);
+    expect(find.byTooltip('Add favorite'), findsOneWidget);
   });
 
   testWidgets('Trade preserves the favorite icon when the request fails', (
@@ -242,8 +263,8 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Long'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Leverage: 10x'), findsOneWidget);
-    expect(find.text('Reduce only'), findsOneWidget);
+    expect(find.text('10×'), findsWidgets);
+    expect(find.byKey(const Key('hip3-tp-sl-toggle')), findsOneWidget);
   });
 
   testWidgets('Trade preserves the HIP-3 short side when opening its panel', (
@@ -430,10 +451,15 @@ MarketProduct _marketProduct(String symbol, MarketProductKind kind) =>
     );
 
 final class _FavoriteMarketsRepository implements MarketsRepository {
-  _FavoriteMarketsRepository({this.shouldFail = false});
+  _FavoriteMarketsRepository({
+    this.isFavorite = false,
+    this.shouldFail = false,
+  });
 
+  final bool isFavorite;
   final bool shouldFail;
   final List<MarketProductRef> added = [];
+  final List<MarketProductRef> removed = [];
 
   @override
   Future<DomainPage<MarketProduct>> listProducts({
@@ -449,6 +475,7 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
         settlementAsset: 'USDT',
         network: 'BSC',
         tradable: true,
+        isFavorite: isFavorite,
       ),
     ],
   );
@@ -457,6 +484,12 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
   Future<void> addFavorite(MarketProductRef ref) async {
     if (shouldFail) throw const NetworkFailure();
     added.add(ref);
+  }
+
+  @override
+  Future<void> removeFavorite(MarketProductRef ref) async {
+    if (shouldFail) throw const NetworkFailure();
+    removed.add(ref);
   }
 
   @override

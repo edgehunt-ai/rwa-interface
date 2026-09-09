@@ -23,15 +23,14 @@ void main() {
     );
 
     expect(find.text('Long NVDA'), findsWidgets);
-    expect(find.text('Leverage: 10x'), findsOneWidget);
+    expect(find.text('10×'), findsWidgets);
     expect(find.text('Cross'), findsOneWidget);
-    expect(find.text('Isolated'), findsOneWidget);
-    expect(find.text('Reduce only'), findsOneWidget);
-    expect(find.text('Take profit / stop loss'), findsOneWidget);
+    expect(find.byKey(const Key('hip3-margin-mode-toggle')), findsOneWidget);
+    expect(find.byKey(const Key('hip3-tp-sl-toggle')), findsOneWidget);
     expect(find.text('Liquidation Price'), findsOneWidget);
     expect(find.text('Margin Required'), findsOneWidget);
 
-    await tester.tap(find.text('Short'));
+    await tester.tap(find.text('Short').first);
     await tester.pump();
     expect(find.text('Short NVDA'), findsWidgets);
   });
@@ -46,7 +45,7 @@ void main() {
     );
 
     expect(find.text('Close Position'), findsOneWidget);
-    expect(find.widgetWithText(FilledButton, 'Close NVDA'), findsOneWidget);
+    expect(find.textContaining('Close NVDA'), findsOneWidget);
   });
 
   testWidgets('HIP-3 order value uses the preview settlement asset', (
@@ -61,6 +60,7 @@ void main() {
       ),
     );
 
+    await tester.enterText(find.byType(TextField).first, '100');
     await tester.pump(const Duration(milliseconds: 301));
     await tester.pumpAndSettle();
 
@@ -74,7 +74,7 @@ void main() {
       ProviderScope(child: buildTestApp(const Hip3OrderPanel())),
     );
 
-    await tester.tap(find.text('Leverage: 10x'));
+    await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
     await tester.pumpAndSettle();
 
     expect(find.bySemanticsLabel('Drag to set leverage'), findsOneWidget);
@@ -83,7 +83,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Leverage: 20x'), findsOneWidget);
+    expect(find.text('20×'), findsWidgets);
   });
 
   testWidgets('HIP-3 order surface remains usable at enlarged text', (
@@ -102,7 +102,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.widgetWithText(FilledButton, 'Close NVDA'), findsOneWidget);
+    expect(find.textContaining('Close NVDA'), findsOneWidget);
   });
 
   testWidgets('HIP-3 review preserves side, margin, leverage, and TP/SL', (
@@ -116,29 +116,28 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Isolated'));
-    await tester.tap(find.text('Leverage: 10x'));
+    await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
+    await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('20x'));
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.widgetWithText(SwitchListTile, 'Take profit / stop loss'),
-    );
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Long NVDA'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Long NVDA'));
+    await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
 
     expect(orders.intent?.side, TradingSide.long);
     expect(orders.intent?.marginMode, TradingMarginMode.isolated);
     expect(orders.intent?.leverage?.value, '20');
-    expect(find.text('Long NVDA · market'), findsOneWidget);
-    expect(find.text('Leverage: 20x · isolated'), findsOneWidget);
+    expect(find.text('Review Long NVDA'), findsOneWidget);
+    expect(find.text('Isolated'), findsOneWidget);
+    expect(find.text('20x'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Back'));
     await tester.pumpAndSettle();
-    expect(find.text('Leverage: 20x'), findsOneWidget);
-    expect(find.text('TP/SL will be set during order review.'), findsOneWidget);
+    expect(find.text('20×'), findsWidgets);
+    expect(find.text('Added'), findsOneWidget);
   });
 
   testWidgets('pending HIP-3 order is signed and submitted before success', (
@@ -156,10 +155,10 @@ void main() {
       ),
     );
 
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Long NVDA'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Long NVDA'));
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm Long'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pumpAndSettle();
 
     expect(execution.orderId, 'order-1');

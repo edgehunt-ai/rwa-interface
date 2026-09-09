@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -32,7 +33,7 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
 }
 
 class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
-  final _amount = TextEditingController(text: '100');
+  final _amount = TextEditingController();
   final _limitPrice = TextEditingController();
   var _side = TradingSide.long;
   final _type = TradingOrderType.market;
@@ -40,6 +41,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _leverage = 10;
   var _reduceOnly = false;
   var _showTpSl = false;
+  var _percentage = 0.0;
   var _submitting = false;
   String? _error;
   OrderPreview? _preview;
@@ -210,182 +212,196 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     return _form(context);
   }
 
-  Widget _form(BuildContext context) => Material(
+  Widget _form(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final isShort = _side == TradingSide.short || _reduceOnly;
+    final actionColor = isShort ? semantic.loss : semantic.success;
+    final amount = _amount.text.trim();
+    final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
+    return Material(
+      color: colors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 543 + (_error == null ? 0 : 36),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Hip3SheetHeader(
+                  title: _reduceOnly
+                      ? 'Close Position'
+                      : '${_side == TradingSide.long ? 'Long' : 'Short'} ${widget.symbol}',
+                  leverage: _leverage,
+                  color: actionColor,
+                  onClose: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(height: 16),
+                if (!_reduceOnly) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: SizedBox(
+                      width: 143,
+                      child: _Hip3SegmentedControl<TradingSide>(
+                        values: const [TradingSide.long, TradingSide.short],
+                        selected: _side,
+                        selectedColor: actionColor,
+                        label: (value) =>
+                            value == TradingSide.long ? 'Long' : 'Short',
+                        onChanged: (value) {
+                          setState(() => _side = value);
+                          _scheduleQuote();
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                _Hip3ModeLeverageCard(
+                  marginMode: _marginMode,
+                  leverage: _leverage,
+                  controller: _amount,
+                  settlementAsset: settlementAsset,
+                  percentage: _percentage,
+                  onMarginModeTap: () {
+                    setState(() {
+                      _marginMode = _marginMode == TradingMarginMode.cross
+                          ? TradingMarginMode.isolated
+                          : TradingMarginMode.cross;
+                    });
+                    _scheduleQuote();
+                  },
+                  onLeverageTap: () async {
+                    final leverage = await showModalBottomSheet<int>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) =>
+                          Hip3LeverageSheet(initialLeverage: _leverage),
+                    );
+                    if (leverage != null && mounted) {
+                      setState(() => _leverage = leverage);
+                      _scheduleQuote();
+                    }
+                  },
+                  onPercentageChanged: (value) =>
+                      setState(() => _percentage = value),
+                ),
+                const SizedBox(height: 16),
+                Divider(color: colors.subtleSurface),
+                const SizedBox(height: 16),
+                _Hip3RiskSummary(
+                  settlementAsset: settlementAsset,
+                  showTpSl: _showTpSl,
+                  onTpSlTap: () => setState(() => _showTpSl = !_showTpSl),
+                ),
+                if (_error case final error?) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    error,
+                    style: TextStyle(color: semantic.loss, fontSize: 12),
+                  ),
+                ],
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(backgroundColor: actionColor),
+                    onPressed: _submitting ? null : _review,
+                    child: Text(
+                      _submitting
+                          ? 'Preparing order...'
+                          : '${_reduceOnly
+                                ? 'Close'
+                                : _side == TradingSide.long
+                                ? 'Long'
+                                : 'Short'} ${widget.symbol} · \$${amount.isEmpty ? '0' : amount}',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _confirmation(BuildContext context) => Material(
     borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
     child: SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _reduceOnly
-                    ? 'Close Position'
-                    : '${_side == TradingSide.long ? 'Long' : 'Short'} ${widget.symbol}',
-                style: Theme.of(context).textTheme.titleLarge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _Hip3SheetHeader(
+              title:
+                  'Review ${_side == TradingSide.long ? 'Long' : 'Short'} ${widget.symbol}',
+              leverage: _leverage,
+              color: _side == TradingSide.short
+                  ? Theme.of(context).extension<AppSemanticColors>()!.loss
+                  : Theme.of(context).extension<AppSemanticColors>()!.success,
+              onClose: () => Navigator.of(context).pop(),
+            ),
+            const SizedBox(height: 24),
+            _Hip3ReviewRow(
+              'Order Value',
+              TokenAmountFormatter.format(
+                _preview!.orderValue,
+                symbol:
+                    _preview!.orderValue.asset ??
+                    _preview!.settlementAsset ??
+                    'USDC',
               ),
-              const SizedBox(height: 16),
-              _Hip3SegmentedControl<TradingSide>(
-                values: const [TradingSide.long, TradingSide.short],
-                selected: _side,
-                label: (value) => value == TradingSide.long ? 'Long' : 'Short',
-                onChanged: (value) {
-                  setState(() => _side = value);
-                  _scheduleQuote();
-                },
-              ),
+            ),
+            const SizedBox(height: 12),
+            _Hip3ReviewRow(
+              'Margin Mode',
+              _marginMode == TradingMarginMode.cross ? 'Cross' : 'Isolated',
+            ),
+            const SizedBox(height: 12),
+            _Hip3ReviewRow('Leverage', '${_leverage}x'),
+            if (_preview!.fee case final fee?) ...[
               const SizedBox(height: 12),
-              TextField(
-                controller: _amount,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Order Value',
-                  suffixText: _quotePreview?.settlementAsset ?? 'USDC',
+              _Hip3ReviewRow(
+                'Estimated Fee',
+                TokenAmountFormatter.format(
+                  fee,
+                  symbol: fee.asset ?? _preview!.settlementAsset ?? 'USDC',
                 ),
               ),
-              if (_type == TradingOrderType.limit) ...[
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _limitPrice,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+            ],
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => setState(() => _preview = null),
+                    child: const Text('Back'),
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Limit Price',
-                    prefixText: r'$',
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    style: _actionStyle(context),
+                    onPressed: _submitting ? null : _submit,
+                    child: Text(_submitting ? 'Submitting...' : 'Confirm'),
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text('Leverage: ${_leverage}x'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () async {
-                  final leverage = await showModalBottomSheet<int>(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (_) =>
-                        Hip3LeverageSheet(initialLeverage: _leverage),
-                  );
-                  if (leverage != null && mounted) {
-                    setState(() => _leverage = leverage);
-                  }
-                },
-              ),
-              _Hip3SegmentedControl<TradingMarginMode>(
-                values: const [
-                  TradingMarginMode.cross,
-                  TradingMarginMode.isolated,
-                ],
-                selected: _marginMode,
-                label: (value) =>
-                    value == TradingMarginMode.cross ? 'Cross' : 'Isolated',
-                onChanged: (value) {
-                  setState(() => _marginMode = value);
-                  _scheduleQuote();
-                },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Reduce only'),
-                value: _reduceOnly,
-                onChanged: (value) {
-                  setState(() => _reduceOnly = value);
-                  _scheduleQuote();
-                },
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Take profit / stop loss'),
-                value: _showTpSl,
-                onChanged: (value) => setState(() => _showTpSl = value),
-              ),
-              const _Hip3RiskSummary(),
-              if (_showTpSl)
-                const Text('TP/SL will be set during order review.'),
-              if (_error case final error?)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(error),
-                ),
-              const SizedBox(height: 16),
-              FilledButton(
-                style: _actionStyle(context),
-                onPressed: _submitting ? null : _review,
-                child: Text(
-                  _submitting
-                      ? 'Preparing order…'
-                      : _reduceOnly
-                      ? 'Close ${widget.symbol}'
-                      : '${_side == TradingSide.long ? 'Long' : 'Short'} ${widget.symbol}',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-
-  Widget _confirmation(BuildContext context) => Material(
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${_reduceOnly
-                ? 'Close'
-                : _side == TradingSide.long
-                ? 'Long'
-                : 'Short'} ${widget.symbol} · ${_type.name}',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Order value: ${TokenAmountFormatter.format(_preview!.orderValue, symbol: _preview!.orderValue.asset ?? _preview!.settlementAsset ?? 'USDC')}',
-          ),
-          Text('Leverage: ${_leverage}x · ${_marginMode.name}'),
-          if (_preview!.fee case final fee?)
-            Text(
-              'Estimated fee: ${TokenAmountFormatter.format(fee, symbol: fee.asset ?? _preview!.settlementAsset ?? 'USDC')}',
             ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => setState(() => _preview = null),
-                  child: const Text('Back'),
-                ),
+            if (_error case final error?)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(error),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  style: _actionStyle(context),
-                  onPressed: _submitting ? null : _submit,
-                  child: Text(
-                    _submitting
-                        ? 'Submitting…'
-                        : 'Confirm ${_reduceOnly
-                              ? 'Close'
-                              : _side == TradingSide.long
-                              ? 'Long'
-                              : 'Short'}',
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (_error case final error?)
-            Padding(padding: const EdgeInsets.only(top: 8), child: Text(error)),
-        ],
+          ],
+        ),
       ),
     ),
   );
@@ -427,12 +443,14 @@ class _Hip3SegmentedControl<T> extends StatelessWidget {
   const _Hip3SegmentedControl({
     required this.values,
     required this.selected,
+    required this.selectedColor,
     required this.label,
     required this.onChanged,
   });
 
   final List<T> values;
   final T selected;
+  final Color selectedColor;
   final String Function(T value) label;
   final ValueChanged<T> onChanged;
 
@@ -448,7 +466,7 @@ class _Hip3SegmentedControl<T> extends StatelessWidget {
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: colors.subtleSurface,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Stack(
           children: [
@@ -463,8 +481,8 @@ class _Hip3SegmentedControl<T> extends StatelessWidget {
                 heightFactor: 1,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: BorderRadius.circular(6),
+                    color: selectedColor,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
@@ -488,7 +506,7 @@ class _Hip3SegmentedControl<T> extends StatelessWidget {
                             style: Theme.of(context).textTheme.labelLarge!
                                 .copyWith(
                                   color: selected == value
-                                      ? colors.primaryText
+                                      ? colors.onPrimaryAction
                                       : colors.secondaryText,
                                   fontWeight: selected == value
                                       ? FontWeight.w600
@@ -510,18 +528,332 @@ class _Hip3SegmentedControl<T> extends StatelessWidget {
 }
 
 class _Hip3RiskSummary extends StatelessWidget {
-  const _Hip3RiskSummary();
+  const _Hip3RiskSummary({
+    required this.settlementAsset,
+    required this.showTpSl,
+    required this.onTpSlTap,
+  });
+
+  final String settlementAsset;
+  final bool showTpSl;
+  final VoidCallback onTpSlTap;
 
   @override
-  Widget build(BuildContext context) => const Padding(
-    padding: EdgeInsets.only(bottom: 12),
-    child: Column(
-      children: [
-        _Hip3RiskRow('Liquidation Price', '–'),
-        SizedBox(height: 8),
-        _Hip3RiskRow('Margin Required', '– USDC'),
-      ],
-    ),
+  Widget build(BuildContext context) => Column(
+    children: [
+      const _Hip3RiskRow('Liquidation Price', '-'),
+      const SizedBox(height: 8),
+      _Hip3RiskRow('Margin Required', '- $settlementAsset'),
+      const SizedBox(height: 8),
+      InkWell(
+        key: const Key('hip3-tp-sl-toggle'),
+        onTap: onTpSlTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Take profit/stop loss',
+                style: TextStyle(
+                  color: Theme.of(context)
+                      .extension<AppRwaColors>()!
+                      .secondaryText,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            Container(
+              width: 18,
+              height: 18,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFF7BE5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.add, color: Colors.white, size: 14),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              showTpSl ? 'Added' : 'Add',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+class _Hip3SheetHeader extends StatelessWidget {
+  const _Hip3SheetHeader({
+    required this.title,
+    required this.leverage,
+    required this.color,
+    required this.onClose,
+  });
+
+  final String title;
+  final int leverage;
+  final Color color;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+      const SizedBox(width: 8),
+      Flexible(
+        child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+      ),
+      const SizedBox(width: 4),
+      _Hip3Badge('$leverage×'),
+      const SizedBox(width: 4),
+      const _Hip3Badge('HIP-3 Perps'),
+      const Spacer(),
+      IconButton(
+        tooltip: 'Close',
+        onPressed: onClose,
+        icon: const Icon(Icons.keyboard_double_arrow_down, size: 24),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+      ),
+    ],
+  );
+}
+
+class _Hip3Badge extends StatelessWidget {
+  const _Hip3Badge(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.subtleSurface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(label, style: const TextStyle(fontSize: 12, height: 16 / 12)),
+    );
+  }
+}
+
+class _Hip3ModeLeverageCard extends StatelessWidget {
+  const _Hip3ModeLeverageCard({
+    required this.marginMode,
+    required this.leverage,
+    required this.controller,
+    required this.settlementAsset,
+    required this.percentage,
+    required this.onMarginModeTap,
+    required this.onLeverageTap,
+    required this.onPercentageChanged,
+  });
+
+  final TradingMarginMode marginMode;
+  final int leverage;
+  final TextEditingController controller;
+  final String settlementAsset;
+  final double percentage;
+  final VoidCallback onMarginModeTap;
+  final VoidCallback onLeverageTap;
+  final ValueChanged<double> onPercentageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.subtleSurface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 36,
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    key: const Key('hip3-margin-mode-toggle'),
+                    onTap: onMarginModeTap,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          marginMode == TradingMarginMode.cross
+                              ? 'Cross'
+                              : 'Isolated',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(width: 2, height: 16, color: colors.surface),
+                Expanded(
+                  child: InkWell(
+                    key: const Key('hip3-leverage-toggle'),
+                    onTap: onLeverageTap,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$leverage×',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(height: 1, color: colors.surface),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Order Value',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: colors.secondaryText,
+                      ),
+                    ),
+                    const Text(
+                      'Balance: --',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 36,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: controller,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,8}'),
+                            ),
+                          ],
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(color: colors.primaryText),
+                          decoration: InputDecoration(
+                            hintText: '0.0',
+                            hintStyle: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(color: colors.tertiaryText),
+                            filled: false,
+                            contentPadding: EdgeInsets.zero,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        settlementAsset,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _Hip3AmountRail(
+                  value: percentage,
+                  onChanged: onPercentageChanged,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Hip3AmountRail extends StatelessWidget {
+  const _Hip3AmountRail({required this.value, required this.onChanged});
+
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return SizedBox(
+      height: 20,
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          activeTrackColor: colors.primaryAction,
+          inactiveTrackColor: colors.surface,
+          trackHeight: 8,
+          thumbColor: colors.primaryAction,
+          overlayShape: SliderComponentShape.noOverlay,
+          valueIndicatorColor: colors.primaryAction,
+          showValueIndicator: ShowValueIndicator.onDrag,
+        ),
+        child: Slider(
+          value: value,
+          divisions: 4,
+          label: '${(value * 100).round()}%',
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}
+
+class _Hip3ReviewRow extends StatelessWidget {
+  const _Hip3ReviewRow(this.label, this.value);
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+          ),
+        ),
+      ),
+      Text(
+        value,
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+      ),
+    ],
   );
 }
 
