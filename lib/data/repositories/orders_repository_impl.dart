@@ -66,8 +66,12 @@ final class OrdersRepositoryImpl implements OrdersRepository {
   @override
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
+    MarketProductKind? kind,
   }) async {
-    final page = await _service.listOrders(cursor: cursor);
+    final page = await _service.listOrders(
+      cursor: cursor,
+      kind: kind == MarketProductKind.perp ? api.ProductKind.perp : null,
+    );
     return DomainPage(
       items: page.items.map(_result).toList(),
       nextCursor: page.nextCursor,

@@ -9,6 +9,7 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
@@ -47,6 +48,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   OrderPreview? _preview;
   OrderPreview? _quotePreview;
   TradingOrder? _submitted;
+  String? _pendingOrderId;
   Timer? _quoteDebounce;
   var _quoteGeneration = 0;
 
@@ -165,20 +167,34 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     if (preview == null) return;
     setState(() => _submitting = true);
     try {
-      var submitted = await ref
-          .read(orderCommandProvider.notifier)
-          .submit(preview.intent, previewId: preview.previewId);
+      var submitted = _pendingOrderId != null
+          ? await ref
+                .read(hip3OrderExecutionRepositoryProvider)
+                .awaitActionAndSubmit(_pendingOrderId!)
+          : await ref
+                .read(orderCommandProvider.notifier)
+                .submit(preview.intent, previewId: preview.previewId);
       if (submitted?.resource.status == TradingOrderStatus.pendingSignature) {
+        _pendingOrderId = submitted!.resource.orderId;
         submitted = await ref
             .read(hip3OrderExecutionRepositoryProvider)
-            .awaitActionAndSubmit(submitted!.resource.orderId);
+            .awaitActionAndSubmit(_pendingOrderId!);
       }
+      ref.invalidate(hip3OrdersProvider);
       if (!mounted) return;
       setState(() {
         _submitted = submitted?.resource;
         _error = submitted == null
             ? 'Order was not submitted. Try again.'
             : null;
+      });
+    } on Hip3ExecutionPending catch (pending) {
+      if (!mounted) return;
+      setState(() {
+        _pendingOrderId = pending.orderId;
+        _error = pending.requiresReview
+            ? 'This order needs review. Do not place a replacement order.'
+            : 'Confirming this order. Retry to check the same order; do not place a replacement.';
       });
     } on Hip3SigningFailure catch (failure) {
       if (!mounted) return;
@@ -390,7 +406,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   child: FilledButton(
                     style: _actionStyle(context),
                     onPressed: _submitting ? null : _submit,
-                    child: Text(_submitting ? 'Submitting...' : 'Confirm'),
+                    child: Text(
+                      _submitting
+                          ? (_pendingOrderId == null
+                                ? 'Submitting...'
+                                : 'Checking order...')
+                          : (_pendingOrderId == null
+                                ? 'Confirm'
+                                : 'Check order status'),
+                    ),
                   ),
                 ),
               ],

@@ -6,6 +6,7 @@ import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/application_state.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/order.dart';
+import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/order_preview.dart';
 import '../../../../domain/models/resource_result.dart';
@@ -14,6 +15,14 @@ final ordersProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
       return ref.watch(ordersRepositoryProvider).list(cursor: cursor);
+    });
+
+final hip3OrdersProvider = FutureProvider.autoDispose
+    .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(ordersRepositoryProvider)
+          .list(cursor: cursor, kind: MarketProductKind.perp);
     });
 
 final orderProvider = FutureProvider.autoDispose
@@ -80,6 +89,7 @@ final class OrderCommandNotifier
         result: result,
       );
       ref.invalidate(ordersProvider);
+      ref.invalidate(hip3OrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
       return result;
     } on ApiFailure catch (failure) {
@@ -97,10 +107,25 @@ final class OrderCommandNotifier
   Future<void> cancel(TradingOrder order) async {
     final key =
         'cancel-${order.orderId}-${DateTime.now().microsecondsSinceEpoch}';
-    final result = await ref
-        .read(ordersRepositoryProvider)
-        .cancel(order.orderId, idempotencyKey: key);
-    ref.invalidate(ordersProvider);
-    ref.invalidate(orderProvider(result.resource.orderId));
+    try {
+      final result =
+          order.kind == MarketProductKind.perp &&
+              (order.status == TradingOrderStatus.open ||
+                  order.status == TradingOrderStatus.partiallyFilled)
+          ? await ref
+                .read(hip3OrderExecutionRepositoryProvider)
+                .cancelOrder(
+                  order.orderId,
+                  idempotencyKey: 'hip3-cancel-${order.orderId}',
+                )
+          : await ref
+                .read(ordersRepositoryProvider)
+                .cancel(order.orderId, idempotencyKey: key);
+      ref.invalidate(ordersProvider);
+      ref.invalidate(orderProvider(result.resource.orderId));
+    } finally {
+      ref.invalidate(hip3OrdersProvider);
+      ref.invalidate(orderProvider(order.orderId));
+    }
   }
 }

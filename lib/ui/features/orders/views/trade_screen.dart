@@ -10,6 +10,7 @@ import 'package:rwa_interface/domain/models/market_snapshot.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/order.dart';
+import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';

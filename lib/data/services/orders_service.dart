@@ -9,7 +9,7 @@ abstract interface class OrdersService {
     CreateOrderRequest request, {
     required String idempotencyKey,
   });
-  Future<OrderPage> listOrders({String? cursor});
+  Future<OrderPage> listOrders({String? cursor, ProductKind? kind});
   Future<Order> getOrder(String orderId);
   Future<Order> cancelOrder(String orderId, {required String idempotencyKey});
 }
