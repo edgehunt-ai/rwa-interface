@@ -239,4 +239,7 @@ final class _Hip3Execution implements Hip3OrderExecutionRepository {
       ),
     );
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

@@ -39,7 +39,11 @@ lib/src/model/arbitrum_deposit_rail.dart
 lib/src/model/arbitrum_usdc_funding_source_asset.dart
 lib/src/model/arbitrum_usdt_funding_source_asset.dart
 lib/src/model/asset_info.dart
+lib/src/model/auto_multi_source_funding_plan_request.dart
+lib/src/model/auto_multi_source_trade_intent_create_request.dart
 lib/src/model/auto_single_source_funding_plan_request.dart
+lib/src/model/auto_single_source_trade_intent_create_request.dart
+lib/src/model/available_deposit_instruction_item.dart
 lib/src/model/available_deposit_rail_availability.dart
 lib/src/model/base_usdc_funding_source_asset.dart
 lib/src/model/base_usdt_funding_source_asset.dart
@@ -63,7 +67,6 @@ lib/src/model/candle_series.dart
 lib/src/model/chain.dart
 lib/src/model/chart_range.dart
 lib/src/model/claim.dart
-lib/src/model/close_position_request.dart
 lib/src/model/completed_funding_provider_observation.dart
 lib/src/model/completed_funding_source_transaction_observation.dart
 lib/src/model/completed_funding_transfer_state.dart
@@ -78,6 +81,9 @@ lib/src/model/deposit_address_base.dart
 lib/src/model/deposit_base.dart
 lib/src/model/deposit_credit_target.dart
 lib/src/model/deposit_instruction.dart
+lib/src/model/deposit_instruction_item.dart
+lib/src/model/deposit_instruction_wallet.dart
+lib/src/model/deposit_instructions_response.dart
 lib/src/model/deposit_mode.dart
 lib/src/model/deposit_page.dart
 lib/src/model/deposit_rail.dart
@@ -92,6 +98,7 @@ lib/src/model/device_register_request.dart
 lib/src/model/disclosures.dart
 lib/src/model/disclosures_always_on.dart
 lib/src/model/disclosures_sessions_inner.dart
+lib/src/model/eligible_funding_position_eligibility.dart
 lib/src/model/erc20_approval_action.dart
 lib/src/model/ethereum_usdc_funding_source_asset.dart
 lib/src/model/ethereum_usdt_funding_source_asset.dart
@@ -109,6 +116,8 @@ lib/src/model/funding_plan_blocker.dart
 lib/src/model/funding_plan_mode.dart
 lib/src/model/funding_plan_request.dart
 lib/src/model/funding_plan_status.dart
+lib/src/model/funding_position_blocker.dart
+lib/src/model/funding_position_eligibility.dart
 lib/src/model/funding_provider.dart
 lib/src/model/funding_provider_observation.dart
 lib/src/model/funding_rail.dart
@@ -127,6 +136,7 @@ lib/src/model/funding_source_asset_catalog.dart
 lib/src/model/funding_source_asset_id.dart
 lib/src/model/funding_source_asset_identity.dart
 lib/src/model/funding_source_balance_snapshot.dart
+lib/src/model/funding_source_position_snapshot.dart
 lib/src/model/funding_source_transaction_observation.dart
 lib/src/model/funding_target_balance_snapshot.dart
 lib/src/model/funding_target_balance_source.dart
@@ -173,6 +183,7 @@ lib/src/model/hip3_trading_rules.dart
 lib/src/model/hip3_trigger_spec.dart
 lib/src/model/holding_group.dart
 lib/src/model/hyperliquid_signature.dart
+lib/src/model/ineligible_funding_position_eligibility.dart
 lib/src/model/key_value.dart
 lib/src/model/legacy_bstock_funding_plan.dart
 lib/src/model/legacy_bstock_funding_rail.dart
@@ -180,6 +191,7 @@ lib/src/model/legacy_bstock_order_preview.dart
 lib/src/model/legacy_deposit.dart
 lib/src/model/legacy_deposit_status.dart
 lib/src/model/legacy_funding_plan_request.dart
+lib/src/model/legacy_funding_transfer_request.dart
 lib/src/model/legacy_perp_funding_plan.dart
 lib/src/model/legacy_perp_funding_rail.dart
 lib/src/model/legacy_perp_order_preview.dart
@@ -191,6 +203,13 @@ lib/src/model/margin_mode.dart
 lib/src/model/market_product_group.dart
 lib/src/model/market_session_info.dart
 lib/src/model/market_stats.dart
+lib/src/model/multi_source_bstock_funding_plan.dart
+lib/src/model/multi_source_funding_leg.dart
+lib/src/model/multi_source_funding_leg_status.dart
+lib/src/model/multi_source_funding_plan_details.dart
+lib/src/model/multi_source_funding_plan_status.dart
+lib/src/model/multi_source_funding_transfer_request.dart
+lib/src/model/multi_source_perp_funding_plan.dart
 lib/src/model/no_executable_action_transfer_state.dart
 lib/src/model/non_completed_funding_transfer_state.dart
 lib/src/model/notification_queued_response.dart
@@ -282,11 +301,11 @@ lib/src/model/stock_group.dart
 lib/src/model/stock_page.dart
 lib/src/model/token_balance.dart
 lib/src/model/tp_sl_spec.dart
-lib/src/model/tp_sl_update_request.dart
 lib/src/model/trade_intent.dart
 lib/src/model/trade_intent_blocker.dart
 lib/src/model/trade_intent_create_request.dart
 lib/src/model/trade_intent_execution_policy.dart
+lib/src/model/trade_intent_funding_leg_binding.dart
 lib/src/model/trade_intent_next_action.dart
 lib/src/model/trade_intent_status.dart
 lib/src/model/transfer.dart
@@ -302,8 +321,13 @@ lib/src/model/transfer_request.dart
 lib/src/model/transfer_source_execution_status.dart
 lib/src/model/transfer_status.dart
 lib/src/model/transfer_target_credit_status.dart
+lib/src/model/unavailable_deposit_instruction_item.dart
 lib/src/model/unavailable_deposit_rail_availability.dart
-lib/src/model/update_position_leverage_request.dart
+lib/src/model/unified_funding_account.dart
+lib/src/model/unified_funding_blocker.dart
+lib/src/model/unified_funding_data_status.dart
+lib/src/model/unified_funding_position.dart
+lib/src/model/unified_funding_transfer.dart
 lib/src/model/user.dart
 lib/src/model/user_paid_wallet_action_execution_submission_request.dart
 lib/src/model/user_settings.dart

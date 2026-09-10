@@ -18,6 +18,16 @@ const FundingPlanBlocker _$sourceBalanceInvalid =
     const FundingPlanBlocker._('sourceBalanceInvalid');
 const FundingPlanBlocker _$singleSourceInsufficient =
     const FundingPlanBlocker._('singleSourceInsufficient');
+const FundingPlanBlocker _$aggregateSourceInsufficient =
+    const FundingPlanBlocker._('aggregateSourceInsufficient');
+const FundingPlanBlocker _$allocationUnavailable =
+    const FundingPlanBlocker._('allocationUnavailable');
+const FundingPlanBlocker _$reservationConflict =
+    const FundingPlanBlocker._('reservationConflict');
+const FundingPlanBlocker _$maxLegsExceeded =
+    const FundingPlanBlocker._('maxLegsExceeded');
+const FundingPlanBlocker _$quoteBudgetExhausted =
+    const FundingPlanBlocker._('quoteBudgetExhausted');
 const FundingPlanBlocker _$noSafeRoute =
     const FundingPlanBlocker._('noSafeRoute');
 const FundingPlanBlocker _$providerUnavailable =
@@ -45,6 +55,16 @@ FundingPlanBlocker _$valueOf(String name) {
       return _$sourceBalanceInvalid;
     case 'singleSourceInsufficient':
       return _$singleSourceInsufficient;
+    case 'aggregateSourceInsufficient':
+      return _$aggregateSourceInsufficient;
+    case 'allocationUnavailable':
+      return _$allocationUnavailable;
+    case 'reservationConflict':
+      return _$reservationConflict;
+    case 'maxLegsExceeded':
+      return _$maxLegsExceeded;
+    case 'quoteBudgetExhausted':
+      return _$quoteBudgetExhausted;
     case 'noSafeRoute':
       return _$noSafeRoute;
     case 'providerUnavailable':
@@ -70,6 +90,11 @@ final BuiltSet<FundingPlanBlocker> _$values =
   _$sourceBalanceStale,
   _$sourceBalanceInvalid,
   _$singleSourceInsufficient,
+  _$aggregateSourceInsufficient,
+  _$allocationUnavailable,
+  _$reservationConflict,
+  _$maxLegsExceeded,
+  _$quoteBudgetExhausted,
   _$noSafeRoute,
   _$providerUnavailable,
   _$quoteExpired,
@@ -86,6 +111,12 @@ class _$FundingPlanBlockerMeta {
   FundingPlanBlocker get sourceBalanceStale => _$sourceBalanceStale;
   FundingPlanBlocker get sourceBalanceInvalid => _$sourceBalanceInvalid;
   FundingPlanBlocker get singleSourceInsufficient => _$singleSourceInsufficient;
+  FundingPlanBlocker get aggregateSourceInsufficient =>
+      _$aggregateSourceInsufficient;
+  FundingPlanBlocker get allocationUnavailable => _$allocationUnavailable;
+  FundingPlanBlocker get reservationConflict => _$reservationConflict;
+  FundingPlanBlocker get maxLegsExceeded => _$maxLegsExceeded;
+  FundingPlanBlocker get quoteBudgetExhausted => _$quoteBudgetExhausted;
   FundingPlanBlocker get noSafeRoute => _$noSafeRoute;
   FundingPlanBlocker get providerUnavailable => _$providerUnavailable;
   FundingPlanBlocker get quoteExpired => _$quoteExpired;
@@ -114,6 +145,11 @@ class _$FundingPlanBlockerSerializer
     'sourceBalanceStale': 'source_balance_stale',
     'sourceBalanceInvalid': 'source_balance_invalid',
     'singleSourceInsufficient': 'single_source_insufficient',
+    'aggregateSourceInsufficient': 'aggregate_source_insufficient',
+    'allocationUnavailable': 'allocation_unavailable',
+    'reservationConflict': 'reservation_conflict',
+    'maxLegsExceeded': 'max_legs_exceeded',
+    'quoteBudgetExhausted': 'quote_budget_exhausted',
     'noSafeRoute': 'no_safe_route',
     'providerUnavailable': 'provider_unavailable',
     'quoteExpired': 'quote_expired',
@@ -128,6 +164,11 @@ class _$FundingPlanBlockerSerializer
     'source_balance_stale': 'sourceBalanceStale',
     'source_balance_invalid': 'sourceBalanceInvalid',
     'single_source_insufficient': 'singleSourceInsufficient',
+    'aggregate_source_insufficient': 'aggregateSourceInsufficient',
+    'allocation_unavailable': 'allocationUnavailable',
+    'reservation_conflict': 'reservationConflict',
+    'max_legs_exceeded': 'maxLegsExceeded',
+    'quote_budget_exhausted': 'quoteBudgetExhausted',
     'no_safe_route': 'noSafeRoute',
     'provider_unavailable': 'providerUnavailable',
     'quote_expired': 'quoteExpired',

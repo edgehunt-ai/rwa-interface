@@ -80,7 +80,7 @@ void main() {
     expect(errors.single, isA<NetworkFailure>());
   });
 
-  test('deposit instructions are cached per route and session', () async {
+  test('deposit instructions are selected from the cached directory', () async {
     final repository = _FundingRepository();
     final container = _container(repository);
     final route = (chain: 'Arbitrum', token: 'USDC');
@@ -93,21 +93,20 @@ void main() {
       await container.read(depositInstructionProvider(route).future),
       isA<DepositInstruction>(),
     );
-    expect(repository.instructionCalls, 1);
+    expect(repository.directoryCalls, 1);
 
     container.read(sessionGenerationProvider.notifier).clearUserScope();
     await container.read(depositInstructionProvider(route).future);
-    expect(repository.instructionCalls, 2);
+    expect(repository.directoryCalls, 2);
   });
 
-  test('deposit routes are derived from the funding catalog', () async {
+  test('deposit routes are derived from the aggregate directory', () async {
     final repository = _FundingRepository();
     final container = _container(repository);
 
     final routes = await container.read(depositRoutesProvider.future);
 
-    expect(repository.catalogCalls, 1);
-    expect(repository.instructionCalls, 0);
+    expect(repository.directoryCalls, 1);
     expect(routes.map((route) => '${route.chain}:${route.token}'), [
       'Arbitrum:USDC',
       'BSC:USDT',
@@ -138,7 +137,7 @@ final class _FundingRepository implements FundingRepository {
   int catalogCalls = 0;
   int listCalls = 0;
   int getCalls = 0;
-  int instructionCalls = 0;
+  int directoryCalls = 0;
   bool failCatalog = false;
 
   ResourceResult<Deposit> get _deposit => ResourceResult(
@@ -186,22 +185,27 @@ final class _FundingRepository implements FundingRepository {
   }
 
   @override
-  Future<DepositInstruction> getDepositInstruction({
-    required String chain,
-    required String token,
-  }) async {
-    instructionCalls++;
-    return DepositInstruction(
-      chain: chain,
-      token: token,
-      tokenContract: '0xusdc',
-      tokenDecimals: 6,
-      address: '0x123',
-      qrPayload: 'ethereum:0xusdc@42161/transfer?address=0x123',
-      minimumAmount: DecimalValue('1', asset: token, unit: 'token'),
-      confirmationsRequired: 20,
-      estimatedArrivalSeconds: 60,
-      warning: 'Send $token only.',
+  @override
+  Future<DepositDirectory> getDepositDirectory() async {
+    directoryCalls++;
+    return DepositDirectory(
+      updatedAt: DateTime.utc(2026),
+      walletAddress: '0x123',
+      instructions: [
+        for (final route in (await getCatalog()).depositRoutes)
+          DepositInstruction(
+            chain: route.chain,
+            token: route.token,
+            tokenContract: '0x${route.token.toLowerCase()}',
+            tokenDecimals: 6,
+            address: '0x123',
+            qrPayload: 'ethereum:0x${route.token.toLowerCase()}',
+            minimumAmount: route.minimumAmount,
+            confirmationsRequired: route.confirmationsRequired,
+            estimatedArrivalSeconds: 60,
+            warning: 'Send ${route.token} only.',
+          ),
+      ],
     );
   }
 

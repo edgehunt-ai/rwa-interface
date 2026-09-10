@@ -13,6 +13,11 @@ abstract interface class Hip3OrderActionService {
   });
 
   Future<api.Hip3Action> getAction(String actionId);
+  Future<api.Hip3ActionPage> listActions({String? cursor});
+  Future<api.Hip3Action> cancelAction(
+    String actionId, {
+    required String idempotencyKey,
+  });
 
   Future<api.Hip3Action> submitStep({
     required String orderId,
@@ -68,6 +73,19 @@ final class GeneratedHip3OrderActionService implements Hip3OrderActionService {
   @override
   Future<api.Hip3Action> getAction(String actionId) =>
       _body(() => _api.getHip3Action(actionId: actionId));
+  @override
+  Future<api.Hip3ActionPage> listActions({String? cursor}) =>
+      _body(() => _api.listHip3Actions(cursor: cursor));
+  @override
+  Future<api.Hip3Action> cancelAction(
+    String actionId, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.cancelHip3Action(
+      actionId: actionId,
+      idempotencyKey: idempotencyKey,
+    ),
+  );
 
   @override
   Future<api.Hip3Action> submitStep({

@@ -19,6 +19,7 @@ import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
+import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 part 'bstocks_funding_required.dart';

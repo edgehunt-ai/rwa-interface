@@ -48,7 +48,15 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ArbitrumUsdtFundingSourceAssetTokenDecimalsEnum.serializer)
       ..add(ArbitrumUsdtFundingSourceAssetTokenEnum.serializer)
       ..add(AssetInfo.serializer)
+      ..add(AutoMultiSourceFundingPlanRequest.serializer)
+      ..add(AutoMultiSourceFundingPlanRequestModeEnum.serializer)
+      ..add(AutoMultiSourceTradeIntentCreateRequest.serializer)
+      ..add(AutoMultiSourceTradeIntentCreateRequestFundingModeEnum.serializer)
       ..add(AutoSingleSourceFundingPlanRequest.serializer)
+      ..add(AutoSingleSourceFundingPlanRequestModeEnum.serializer)
+      ..add(AutoSingleSourceTradeIntentCreateRequest.serializer)
+      ..add(AutoSingleSourceTradeIntentCreateRequestFundingModeEnum.serializer)
+      ..add(AvailableDepositInstructionItem.serializer)
       ..add(AvailableDepositRailAvailability.serializer)
       ..add(AvailableDepositRailAvailabilityStatusEnum.serializer)
       ..add(BaseUsdcFundingSourceAsset.serializer)
@@ -140,7 +148,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Chain.serializer)
       ..add(ChartRange.serializer)
       ..add(Claim.serializer)
-      ..add(ClosePositionRequest.serializer)
       ..add(CompletedFundingProviderObservation.serializer)
       ..add(CompletedFundingProviderObservationStatusEnum.serializer)
       ..add(CompletedFundingSourceTransactionObservation.serializer)
@@ -165,6 +172,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(DepositBaseTokenEnum.serializer)
       ..add(DepositCreditTarget.serializer)
       ..add(DepositInstruction.serializer)
+      ..add(DepositInstructionItem.serializer)
+      ..add(DepositInstructionWallet.serializer)
+      ..add(DepositInstructionWalletCustodyEnum.serializer)
+      ..add(DepositInstructionsResponse.serializer)
       ..add(DepositMode.serializer)
       ..add(DepositPage.serializer)
       ..add(DepositRail.serializer)
@@ -181,6 +192,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Disclosures.serializer)
       ..add(DisclosuresAlwaysOn.serializer)
       ..add(DisclosuresSessionsInner.serializer)
+      ..add(EligibleFundingPositionEligibility.serializer)
+      ..add(EligibleFundingPositionEligibilityStatusEnum.serializer)
       ..add(Erc20ApprovalAction.serializer)
       ..add(Erc20ApprovalActionChainIdEnum.serializer)
       ..add(Erc20ApprovalActionKindEnum.serializer)
@@ -224,6 +237,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FundingPlanMode.serializer)
       ..add(FundingPlanRequest.serializer)
       ..add(FundingPlanStatus.serializer)
+      ..add(FundingPositionBlocker.serializer)
+      ..add(FundingPositionEligibility.serializer)
       ..add(FundingProvider.serializer)
       ..add(FundingProviderObservation.serializer)
       ..add(FundingRail.serializer)
@@ -247,6 +262,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FundingSourceAssetId.serializer)
       ..add(FundingSourceAssetIdentity.serializer)
       ..add(FundingSourceBalanceSnapshot.serializer)
+      ..add(FundingSourcePositionSnapshot.serializer)
       ..add(FundingSourceTransactionObservation.serializer)
       ..add(FundingTargetBalanceSnapshot.serializer)
       ..add(FundingTargetBalanceSource.serializer)
@@ -336,6 +352,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(HoldingGroup.serializer)
       ..add(HyperliquidSignature.serializer)
       ..add(HyperliquidSignatureVEnum.serializer)
+      ..add(IneligibleFundingPositionEligibility.serializer)
+      ..add(IneligibleFundingPositionEligibilityStatusEnum.serializer)
       ..add(KeyValue.serializer)
       ..add(KeyValueToneEnum.serializer)
       ..add(LegacyBstockFundingPlan.serializer)
@@ -356,6 +374,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(LegacyDepositTokenEnum.serializer)
       ..add(LegacyFundingPlanRequest.serializer)
       ..add(LegacyFundingPlanRequestAssetEnum.serializer)
+      ..add(LegacyFundingTransferRequest.serializer)
       ..add(LegacyPerpFundingPlan.serializer)
       ..add(LegacyPerpFundingPlanAssetEnum.serializer)
       ..add(LegacyPerpFundingPlanNetworkEnum.serializer)
@@ -378,6 +397,22 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(MarketProductGroup.serializer)
       ..add(MarketSessionInfo.serializer)
       ..add(MarketStats.serializer)
+      ..add(MultiSourceBstockFundingPlan.serializer)
+      ..add(MultiSourceBstockFundingPlanAssetEnum.serializer)
+      ..add(MultiSourceBstockFundingPlanModeEnum.serializer)
+      ..add(MultiSourceBstockFundingPlanNetworkEnum.serializer)
+      ..add(MultiSourceBstockFundingPlanRailEnum.serializer)
+      ..add(MultiSourceFundingLeg.serializer)
+      ..add(MultiSourceFundingLegStatus.serializer)
+      ..add(MultiSourceFundingPlanDetails.serializer)
+      ..add(MultiSourceFundingPlanDetailsMaxLegsEnum.serializer)
+      ..add(MultiSourceFundingPlanStatus.serializer)
+      ..add(MultiSourceFundingTransferRequest.serializer)
+      ..add(MultiSourcePerpFundingPlan.serializer)
+      ..add(MultiSourcePerpFundingPlanAssetEnum.serializer)
+      ..add(MultiSourcePerpFundingPlanModeEnum.serializer)
+      ..add(MultiSourcePerpFundingPlanNetworkEnum.serializer)
+      ..add(MultiSourcePerpFundingPlanRailEnum.serializer)
       ..add(NoExecutableActionTransferState.serializer)
       ..add(NonCompletedFundingTransferState.serializer)
       ..add(NonCompletedFundingTransferStateStatusEnum.serializer)
@@ -536,13 +571,12 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(StockPage.serializer)
       ..add(TokenBalance.serializer)
       ..add(TpSlSpec.serializer)
-      ..add(TpSlUpdateRequest.serializer)
       ..add(TradeIntent.serializer)
       ..add(TradeIntentBlocker.serializer)
       ..add(TradeIntentCreateRequest.serializer)
-      ..add(TradeIntentCreateRequestFundingModeEnum.serializer)
       ..add(TradeIntentExecutionPolicy.serializer)
       ..add(TradeIntentExecutionPolicyOrderTypeEnum.serializer)
+      ..add(TradeIntentFundingLegBinding.serializer)
       ..add(TradeIntentNextAction.serializer)
       ..add(TradeIntentStatus.serializer)
       ..add(Transfer.serializer)
@@ -558,9 +592,16 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(TransferSourceExecutionStatus.serializer)
       ..add(TransferStatus.serializer)
       ..add(TransferTargetCreditStatus.serializer)
+      ..add(UnavailableDepositInstructionItem.serializer)
       ..add(UnavailableDepositRailAvailability.serializer)
       ..add(UnavailableDepositRailAvailabilityStatusEnum.serializer)
-      ..add(UpdatePositionLeverageRequest.serializer)
+      ..add(UnifiedFundingAccount.serializer)
+      ..add(UnifiedFundingAccountValuationCurrencyEnum.serializer)
+      ..add(UnifiedFundingBlocker.serializer)
+      ..add(UnifiedFundingDataStatus.serializer)
+      ..add(UnifiedFundingPosition.serializer)
+      ..add(UnifiedFundingPositionCustodyEnum.serializer)
+      ..add(UnifiedFundingTransfer.serializer)
       ..add(User.serializer)
       ..add(UserPaidWalletActionExecutionSubmissionRequest.serializer)
       ..add(UserSettings.serializer)
@@ -623,6 +664,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(Deposit)]),
           () => ListBuilder<Deposit>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(DepositInstructionItem)]),
+          () => ListBuilder<DepositInstructionItem>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(DepositRailBlocker)]),
           () => ListBuilder<DepositRailBlocker>())
       ..addBuilderFactory(
@@ -640,8 +685,24 @@ Serializers _$serializers = (Serializers().toBuilder()
           () => ListBuilder<KeyValue>())
       ..addBuilderFactory(
           const FullType(
+              BuiltList, const [const FullType(FundingPositionBlocker)]),
+          () => ListBuilder<FundingPositionBlocker>())
+      ..addBuilderFactory(
+          const FullType(
               BuiltList, const [const FullType(FundingRouteBlocker)]),
           () => ListBuilder<FundingRouteBlocker>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(FundingWalletActionSummary)]),
+          () => ListBuilder<FundingWalletActionSummary>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(FundingWalletActionSummary)]),
+          () => ListBuilder<FundingWalletActionSummary>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(FundingWalletActionSummary)]),
+          () => ListBuilder<FundingWalletActionSummary>())
       ..addBuilderFactory(
           const FullType(
               BuiltList, const [const FullType(FundingWalletActionSummary)]),
@@ -784,6 +845,22 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(TokenBalance)]),
           () => ListBuilder<TokenBalance>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(TradeIntentFundingLegBinding)]),
+          () => ListBuilder<TradeIntentFundingLegBinding>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(UnifiedFundingPosition)]),
+          () => ListBuilder<UnifiedFundingPosition>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(UnifiedFundingTransfer)]),
+          () => ListBuilder<UnifiedFundingTransfer>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltSet, const [const FullType(UnifiedFundingBlocker)]),
+          () => SetBuilder<UnifiedFundingBlocker>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Wallet)]),
           () => ListBuilder<Wallet>())
       ..addBuilderFactory(
@@ -796,11 +873,25 @@ Serializers _$serializers = (Serializers().toBuilder()
           ]),
           () => MapBuilder<String, JsonObject?>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltSet, const [const FullType(FundingPositionBlocker)]),
+          () => SetBuilder<FundingPositionBlocker>())
+      ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(FundingRail)]),
           () => SetBuilder<FundingRail>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(DepositRail)]),
-          () => ListBuilder<DepositRail>()))
+          () => ListBuilder<DepositRail>())
+      ..addBuilderFactory(
+          const FullType(BuiltSet, const [const FullType(String)]),
+          () => SetBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltSet, const [const FullType(String)]),
+          () => SetBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(MultiSourceFundingLeg)]),
+          () => ListBuilder<MultiSourceFundingLeg>()))
     .build();
 
 // ignore_for_file: deprecated_member_use_from_same_package,type=lint

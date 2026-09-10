@@ -538,6 +538,16 @@ final _readyFundingPlan = FundingPlan(
   sourceWalletId: 'wallet-1',
   sourceAsset: 'USDC',
   sourceMaximum: DecimalValue('150', asset: 'USDC', unit: 'token'),
+  legs: [
+    FundingLeg(
+      legId: 'leg-1',
+      walletId: 'wallet-1',
+      asset: 'USDC',
+      maximumAmount: DecimalValue('150', asset: 'USDC', unit: 'token'),
+      outputAmount: DecimalValue('100', asset: 'USDT', unit: 'token'),
+      status: FundingLegState.actionReleased,
+    ),
+  ],
 );
 
 final _fundedPreview = OrderPreview(
@@ -575,6 +585,7 @@ final class _CompletedFundingRepository implements FundingRepository {
   @override
   Future<FundingTransfer> createFundingTransfer({
     required String planId,
+    String? legId,
     required String authorizationId,
     required String idempotencyKey,
   }) async {

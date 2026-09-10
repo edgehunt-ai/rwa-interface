@@ -269,4 +269,7 @@ final class _Service implements Hip3OrderActionService {
     this.idempotencyKey = idempotencyKey;
     return _submittedActions[index];
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

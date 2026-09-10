@@ -15,6 +15,7 @@ import '../../data/repositories/session_repository_impl.dart';
 import '../../data/repositories/app_update_repository_impl.dart';
 import '../../data/repositories/wallets_repository_impl.dart';
 import '../../data/repositories/realtime_repository_impl.dart';
+import '../../data/repositories/trade_intent_repository_impl.dart';
 import '../../data/services/generated_account_service.dart';
 import '../../data/services/generated_activity_service.dart';
 import '../../data/services/generated_markets_service.dart';
@@ -30,6 +31,7 @@ import '../../data/services/dio_realtime_service.dart';
 import '../../data/services/generated_system_service.dart';
 import '../../data/services/package_info_service.dart';
 import '../../data/services/realtime_service.dart';
+import '../../data/services/generated_trade_intent_service.dart';
 import '../../domain/repositories/markets_repository.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../domain/repositories/funding_repository.dart';
@@ -41,6 +43,7 @@ import '../../domain/repositories/activity_repository.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/wallets_repository.dart';
 import '../../domain/repositories/realtime_repository.dart';
+import '../../domain/repositories/trade_intent_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/repositories/app_update_repository.dart';
 import 'auth_providers.dart';
@@ -108,6 +111,12 @@ final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
     GeneratedOrdersService(source.client.getOrdersApi()),
   );
 });
+final tradeIntentRepositoryProvider = Provider<TradeIntentRepository>((ref) {
+  final source = ref.watch(apiDataSourceProvider);
+  return TradeIntentRepositoryImpl(
+    GeneratedTradeIntentService(source.client.getOrdersApi()),
+  );
+});
 final hip3TypedDataSignerProvider = Provider<Hip3TypedDataSigner>((ref) {
   final gateway = ref.watch(identityAuthGatewayProvider);
   if (gateway case final Hip3TypedDataSigner signer) return signer;
@@ -128,7 +137,11 @@ final hip3OrderExecutionRepositoryProvider =
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return PositionsRepositoryImpl(
-    GeneratedPositionsService(source.client.getPositionsApi()),
+    GeneratedPositionsService(
+      source.client.getPositionsApi(),
+      source.client.getOrdersApi(),
+      ref.watch(hip3TypedDataSignerProvider),
+    ),
   );
 });
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {

@@ -15,10 +15,11 @@ final class GeneratedFundingService implements FundingService {
   @override
   Future<api.FundingCatalog> getCatalog() => _body(_api.getFundingCatalog);
   @override
-  Future<api.DepositInstruction> getDepositInstruction({
-    required String chain,
-    required String token,
-  }) => _body(() => _api.getDepositInstruction(chain: chain, token: token));
+  Future<api.DepositInstruction> getDepositDirectory() =>
+      _body(_api.getDepositInstruction);
+  @override
+  Future<api.UnifiedFundingAccount> getUnifiedFundingAccount() =>
+      _body(_api.getUnifiedFundingAccount);
   @override
   Future<api.FundingPlan> createPlan(
     api.FundingPlanRequest request, {

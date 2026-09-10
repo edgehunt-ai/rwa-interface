@@ -4,6 +4,8 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/trade_intent_status.dart';
+import 'package:rwa_api_client/src/model/trade_intent_funding_leg_binding.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
 import 'package:rwa_api_client/src/model/trade_intent_execution_policy.dart';
 import 'package:rwa_api_client/src/model/trade_intent_blocker.dart';
@@ -24,8 +26,9 @@ part 'trade_intent.g.dart';
 /// * [nextAction] 
 /// * [blocker] 
 /// * [executionPolicy] 
-/// * [fundingPlanId] 
+/// * [fundingPlanId] - The active FundingPlan created for the same trade preview is atomically bound by the server to this TradeIntent. Clients cannot submit or replace this identifier. 
 /// * [transferId] 
+/// * [fundingLegs] - Present for multi-source intents and may be empty when no funding allocation is required. Absent for legacy/single-source intents. Entries remain in ordinal order and each binds at most one dedicated Transfer. 
 /// * [orderId] 
 /// * [createdAt] 
 /// * [updatedAt] 
@@ -60,11 +63,16 @@ abstract class TradeIntent implements Built<TradeIntent, TradeIntentBuilder> {
   @BuiltValueField(wireName: r'execution_policy')
   TradeIntentExecutionPolicy get executionPolicy;
 
+  /// The active FundingPlan created for the same trade preview is atomically bound by the server to this TradeIntent. Clients cannot submit or replace this identifier. 
   @BuiltValueField(wireName: r'funding_plan_id')
   String? get fundingPlanId;
 
   @BuiltValueField(wireName: r'transfer_id')
   String? get transferId;
+
+  /// Present for multi-source intents and may be empty when no funding allocation is required. Absent for legacy/single-source intents. Entries remain in ordinal order and each binds at most one dedicated Transfer. 
+  @BuiltValueField(wireName: r'funding_legs')
+  BuiltList<TradeIntentFundingLegBinding>? get fundingLegs;
 
   @BuiltValueField(wireName: r'order_id')
   String? get orderId;
@@ -151,6 +159,13 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
       object.transferId,
       specifiedType: const FullType.nullable(String),
     );
+    if (object.fundingLegs != null) {
+      yield r'funding_legs';
+      yield serializers.serialize(
+        object.fundingLegs,
+        specifiedType: const FullType(BuiltList, [FullType(TradeIntentFundingLegBinding)]),
+      );
+    }
     yield r'order_id';
     yield object.orderId == null ? null : serializers.serialize(
       object.orderId,
@@ -266,6 +281,14 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
           ) as String?;
           if (valueDes == null) continue;
           result.transferId = valueDes;
+          break;
+        case r'funding_legs':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(TradeIntentFundingLegBinding)]),
+          ) as BuiltList<TradeIntentFundingLegBinding>?;
+          if (valueDes == null) continue;
+          result.fundingLegs.replace(valueDes);
           break;
         case r'order_id':
           final valueDes = serializers.deserialize(

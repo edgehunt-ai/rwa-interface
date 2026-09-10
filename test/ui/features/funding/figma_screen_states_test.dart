@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_flutter_wc/qr_flutter_wc.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/routing/app_router.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
@@ -57,7 +59,82 @@ void main() {
     expect(find.byType(DepositScreen), findsOneWidget);
     expect(find.text('Deposit crypto'), findsOneWidget);
     expect(find.text('USDC on BSC'), findsOneWidget);
-    expect(find.text('USDC on Arbitrum'), findsNothing);
+    expect(find.text('USDC on Arbitrum'), findsOneWidget);
+  });
+
+  testWidgets('deposit instructions render the API QR payload', (tester) async {
+    const payload =
+        'ethereum:0xaf88d065e77c8cc2239327c5edb3a432268e5831@42161/'
+        'transfer?address=0x1111111111111111111111111111111111111111';
+    final instruction = DepositInstruction(
+      chain: 'Arbitrum',
+      token: 'USDC',
+      tokenContract: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+      tokenDecimals: 6,
+      address: '0x1111111111111111111111111111111111111111',
+      qrPayload: payload,
+      minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
+      confirmationsRequired: 20,
+      estimatedArrivalSeconds: 60,
+      warning: 'Send USDC only.',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositInstructionProvider((chain: 'Arbitrum', token: 'USDC'))
+              .overrideWith((_) async => instruction),
+        ],
+        child: buildTestApp(
+          const DepositScreen(chain: 'Arbitrum', token: 'USDC'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
+    expect(find.byType(QrImageView), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('Network')).dy,
+      lessThan(tester.getTopLeft(find.text('Token')).dy),
+    );
+  });
+
+  testWidgets('balance increase opens the deposit received sheet', (
+    tester,
+  ) async {
+    const route = (chain: 'Arbitrum', token: 'USDC');
+    final instruction = _depositInstruction(route);
+    final change = DepositBalanceChange(
+      eventId: 'balance-1',
+      chain: route.chain,
+      token: route.token,
+      amount: DecimalValue('1000', asset: route.token, unit: 'token'),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositInstructionProvider(route)
+              .overrideWith((_) async => instruction),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => Stream.value(change)),
+        ],
+        child: buildTestApp(
+          DepositScreen(chain: route.chain, token: route.token),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Deposit Assets'), findsOneWidget);
+    expect(find.text('Deposit received !'), findsOneWidget);
+    expect(find.text('+ 1,000 USDC (Arbitrum)'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Got it'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Got it'));
+    await tester.pumpAndSettle();
+    expect(find.text('Deposit received !'), findsNothing);
   });
 
   testWidgets('withdrawal picker shows available assets', (tester) async {
@@ -106,6 +183,22 @@ void main() {
     expect(find.text('Authorization required'), findsOneWidget);
   });
 }
+
+DepositInstruction _depositInstruction(DepositBalanceMonitorKey route) =>
+    DepositInstruction(
+      chain: route.chain,
+      token: route.token,
+      tokenContract: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+      tokenDecimals: 6,
+      address: '0x1111111111111111111111111111111111111111',
+      qrPayload:
+          'ethereum:0xaf88d065e77c8cc2239327c5edb3a432268e5831@42161/'
+          'transfer?address=0x1111111111111111111111111111111111111111',
+      minimumAmount: DecimalValue('1', asset: route.token, unit: 'token'),
+      confirmationsRequired: 20,
+      estimatedArrivalSeconds: 60,
+      warning: 'Send ${route.token} only.',
+    );
 
 final _depositRoutes = [
   DepositRoute(

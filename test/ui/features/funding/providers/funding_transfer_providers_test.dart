@@ -48,6 +48,16 @@ final class _FundingRepository implements FundingRepository {
     sourceWalletId: 'wallet-1',
     sourceAsset: 'USDC',
     sourceMaximum: DecimalValue('15', asset: 'USDC', unit: 'token'),
+    legs: [
+      FundingLeg(
+        legId: 'leg-1',
+        walletId: 'wallet-1',
+        asset: 'USDC',
+        maximumAmount: DecimalValue('15', asset: 'USDC', unit: 'token'),
+        outputAmount: DecimalValue('12', asset: 'USDT', unit: 'token'),
+        status: FundingLegState.actionReleased,
+      ),
+    ],
   );
 
   @override
@@ -63,6 +73,7 @@ final class _FundingRepository implements FundingRepository {
   @override
   Future<FundingTransfer> createFundingTransfer({
     required String planId,
+    String? legId,
     required String authorizationId,
     required String idempotencyKey,
   }) async {

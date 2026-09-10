@@ -49,23 +49,18 @@ final class FundingTransferCommands {
   }
 
   Future<WalletAuthorization> authorize(FundingPlan plan) {
-    final walletId = plan.sourceWalletId;
-    final asset = plan.sourceAsset;
-    final maximum = plan.sourceMaximum;
-    if (!plan.isActionable ||
-        walletId == null ||
-        asset == null ||
-        maximum == null) {
+    final leg = plan.nextActionableLeg;
+    if (!plan.isActionable || leg == null) {
       throw StateError('Funding plan has no actionable server-selected source');
     }
     return _ref
         .read(walletsRepositoryProvider)
         .authorizeFundingTransfer(
-          walletId: walletId,
+          walletId: leg.walletId,
           planId: plan.planId,
-          asset: asset,
-          maximumAmount: maximum.value,
-          idempotencyKey: 'transfer-authorization-${plan.planId}',
+          asset: leg.asset,
+          maximumAmount: leg.maximumAmount.value,
+          idempotencyKey: 'transfer-authorization-${plan.planId}-${leg.legId}',
         );
   }
 
@@ -83,6 +78,7 @@ final class FundingTransferCommands {
           .read(fundingRepositoryProvider)
           .createFundingTransfer(
             planId: plan.planId,
+            legId: plan.nextActionableLeg?.legId,
             authorizationId: authorization.authorizationId,
             idempotencyKey: key,
           ),

@@ -6,10 +6,8 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 abstract interface class FundingService {
   Future<api.FundingCatalog> getCatalog();
-  Future<api.DepositInstruction> getDepositInstruction({
-    required String chain,
-    required String token,
-  });
+  Future<api.DepositInstruction> getDepositDirectory();
+  Future<api.UnifiedFundingAccount> getUnifiedFundingAccount();
   Future<api.FundingPlan> createPlan(
     api.FundingPlanRequest request, {
     required String idempotencyKey,

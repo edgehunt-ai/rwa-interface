@@ -3,19 +3,20 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/funding_plan_mode.dart';
+import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'auto_single_source_funding_plan_request.g.dart';
 
-/// AutoSingleSourceFundingPlanRequest
+/// Deprecated compatibility request. New clients should use `auto_multi_source`; this variant remains accepted during the v1 compatibility window for callers that require one source. 
 ///
 /// Properties:
 /// * [tradePreviewId] - Immutable trade preview from which purpose, target identity and required target amount are derived.
 /// * [mode] 
 /// * [sourceAssetId] - Optional exact canonical source asset constraint. If supplied, planning must not quote or select any other source.
+@Deprecated('AutoSingleSourceFundingPlanRequest has been deprecated')
 @BuiltValue()
 abstract class AutoSingleSourceFundingPlanRequest implements Built<AutoSingleSourceFundingPlanRequest, AutoSingleSourceFundingPlanRequestBuilder> {
   /// Immutable trade preview from which purpose, target identity and required target amount are derived.
@@ -23,7 +24,7 @@ abstract class AutoSingleSourceFundingPlanRequest implements Built<AutoSingleSou
   String get tradePreviewId;
 
   @BuiltValueField(wireName: r'mode')
-  FundingPlanMode get mode;
+  AutoSingleSourceFundingPlanRequestModeEnum get mode;
   // enum modeEnum {  auto_single_source,  };
 
   /// Optional exact canonical source asset constraint. If supplied, planning must not quote or select any other source.
@@ -62,7 +63,7 @@ class _$AutoSingleSourceFundingPlanRequestSerializer implements PrimitiveSeriali
     yield r'mode';
     yield serializers.serialize(
       object.mode,
-      specifiedType: const FullType(FundingPlanMode),
+      specifiedType: const FullType(AutoSingleSourceFundingPlanRequestModeEnum),
     );
     if (object.sourceAssetId != null) {
       yield r'source_asset_id';
@@ -104,8 +105,8 @@ class _$AutoSingleSourceFundingPlanRequestSerializer implements PrimitiveSeriali
         case r'mode':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(FundingPlanMode),
-          ) as FundingPlanMode;
+            specifiedType: const FullType(AutoSingleSourceFundingPlanRequestModeEnum),
+          ) as AutoSingleSourceFundingPlanRequestModeEnum;
           result.mode = valueDes;
           break;
         case r'source_asset_id':
@@ -143,5 +144,21 @@ class _$AutoSingleSourceFundingPlanRequestSerializer implements PrimitiveSeriali
     );
     return result.build();
   }
+}
+
+@Deprecated('AutoSingleSourceFundingPlanRequestModeEnum has been deprecated')
+class AutoSingleSourceFundingPlanRequestModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'auto_single_source')
+  static const AutoSingleSourceFundingPlanRequestModeEnum autoSingleSource = _$autoSingleSourceFundingPlanRequestModeEnum_autoSingleSource;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const AutoSingleSourceFundingPlanRequestModeEnum unknownDefaultOpenApi = _$autoSingleSourceFundingPlanRequestModeEnum_unknownDefaultOpenApi;
+
+  static Serializer<AutoSingleSourceFundingPlanRequestModeEnum> get serializer => _$autoSingleSourceFundingPlanRequestModeEnumSerializer;
+
+  const AutoSingleSourceFundingPlanRequestModeEnum._(String name): super(name);
+
+  static BuiltSet<AutoSingleSourceFundingPlanRequestModeEnum> get values => _$autoSingleSourceFundingPlanRequestModeEnumValues;
+  static AutoSingleSourceFundingPlanRequestModeEnum valueOf(String name) => _$autoSingleSourceFundingPlanRequestModeEnumValueOf(name);
 }
 

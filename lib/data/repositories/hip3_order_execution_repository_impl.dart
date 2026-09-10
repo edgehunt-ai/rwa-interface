@@ -1,6 +1,7 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../../domain/models/order.dart';
+import '../../domain/models/domain_page.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
@@ -77,6 +78,39 @@ final class Hip3OrderExecutionRepositoryImpl
       }
     });
   }
+
+  @override
+  Future<DomainPage<Hip3ActionSummary>> listActions({String? cursor}) async {
+    final page = await _service.listActions(cursor: cursor);
+    return DomainPage(
+      items: page.items.map(_summary).toList(growable: false),
+      nextCursor: page.nextCursor,
+      hasMore: page.hasMore,
+    );
+  }
+
+  @override
+  Future<Hip3ActionSummary> getAction(String actionId) async =>
+      _summary(await _service.getAction(actionId));
+
+  @override
+  Future<Hip3ActionSummary> cancelAction(
+    String actionId, {
+    required String idempotencyKey,
+  }) async => _summary(
+    await _service.cancelAction(actionId, idempotencyKey: idempotencyKey),
+  );
+
+  Hip3ActionSummary _summary(api.Hip3Action action) => Hip3ActionSummary(
+    actionId: action.actionId,
+    operation: action.operation.name,
+    status: action.status.name,
+    productId: action.productId,
+    positionId: action.positionId,
+    orderId: action.orderId,
+    failureReason: action.failureReason,
+    updatedAt: action.updatedAt.toUtc(),
+  );
 
   api.Hip3ActionStep? _signableStep(api.Hip3Action action) => action.steps
       .where(

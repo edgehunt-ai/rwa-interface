@@ -942,7 +942,7 @@ packages:
     source: hosted
     version: "3.0.2"
   qr_flutter_wc:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: qr_flutter_wc
       sha256: a926bf6bcf7d350eea48480e205ccffffca5cc84b5d77fb2b256318693e40d07

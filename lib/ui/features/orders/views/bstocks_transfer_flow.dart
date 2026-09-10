@@ -96,6 +96,7 @@ class _BstocksTransferFlowState
       const Divider(),
       Text('Buy ${widget.symbol} · Market'),
       const SizedBox(height: 12),
+      const _UnifiedFundingAccountSummary(),
       _ConversionOverview(plan: widget.plan, preview: widget.orderPreview),
       const SizedBox(height: 16),
       _ReviewDetails(preview: widget.orderPreview),
@@ -319,6 +320,26 @@ class _AmountOverview extends StatelessWidget {
       ],
     ),
   );
+}
+
+class _UnifiedFundingAccountSummary extends ConsumerWidget {
+  const _UnifiedFundingAccountSummary();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final account = ref.watch(unifiedFundingAccountProvider);
+    return account.when(
+      loading: () => const SizedBox(height: 20),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (value) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: _SummaryRow(
+          label: 'Available to fund',
+          value: TokenAmountFormatter.formatUsd(value.availableToFundUsd),
+        ),
+      ),
+    );
+  }
 }
 
 /// Matches the two 160pt conversion cards in the trade confirmation design.

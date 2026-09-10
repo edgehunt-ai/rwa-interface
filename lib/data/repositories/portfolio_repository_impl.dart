@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import '../../domain/models/decimal_value.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/market_product.dart';
+import '../../domain/models/order_intent.dart';
 import '../../domain/models/portfolio.dart';
 import '../../domain/models/position.dart';
 import '../../domain/models/trading_account.dart';

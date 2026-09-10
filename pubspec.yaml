@@ -39,6 +39,7 @@ dependencies:
   dio: ^5.7.0
   flutter_riverpod: ^3.0.0
   flutter_svg: ^2.2.4
+  qr_flutter_wc: ^0.0.3
   rwa_api_client:
     path: packages/rwa_api_client
   # Public union wrapper required by the generated OpenAPI request models.

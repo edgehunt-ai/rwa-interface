@@ -63,30 +63,65 @@ final class FundingRepositoryImpl implements FundingRepository {
   }
 
   @override
-  Future<DepositInstruction> getDepositInstruction({
-    required String chain,
-    required String token,
-  }) async {
-    final wire = await _service.getDepositInstruction(
-      chain: chain,
-      token: token,
-    );
-    final value = wire.oneOf.value;
-    if (value is! api.DepositAddressBase) {
-      throw StateError('Unsupported deposit instruction response');
+  Future<DepositDirectory> getDepositDirectory() async {
+    final response = await _service.getDepositDirectory();
+    final value = response.oneOf.value;
+    if (value is! api.DepositInstructionsResponse) {
+      throw const FormatException('Expected aggregate deposit instructions');
     }
-    return DepositInstruction(
-      chain: value.chain,
-      token: value.token,
-      tokenContract: value.tokenContract,
-      tokenDecimals: value.tokenDecimals,
-      address: value.address,
-      memo: value.memo,
-      qrPayload: value.qrPayload,
-      minimumAmount: _money(value.minDeposit)!,
-      confirmationsRequired: value.confirmationsRequired,
-      estimatedArrivalSeconds: value.estimatedArrivalSeconds,
-      warning: value.warning,
+    final address = value.wallet?.address;
+    return DepositDirectory(
+      walletAddress: address,
+      updatedAt: value.updatedAt.toUtc(),
+      instructions: value.items
+          .map((wire) => wire.oneOf.value)
+          .whereType<api.AvailableDepositInstructionItem>()
+          .map((item) {
+            final identity = item.identity.oneOf.value as dynamic;
+            if (address == null) {
+              throw const FormatException(
+                'Available deposit rail omitted wallet',
+              );
+            }
+            return DepositInstruction(
+              chain: identity.network.name as String,
+              token: identity.token.name as String,
+              tokenContract: identity.tokenContract.name as String,
+              tokenDecimals: int.parse(identity.tokenDecimals.name as String),
+              address: address,
+              qrPayload: item.qrPayload,
+              minimumAmount: _money(item.minDeposit)!,
+              confirmationsRequired: item.confirmationsRequired,
+              estimatedArrivalSeconds: item.estimatedArrivalSeconds,
+              warning: item.warning,
+            );
+          })
+          .toList(growable: false),
+    );
+  }
+
+  @override
+  Future<UnifiedFundingAccountSummary> getUnifiedFundingAccount() async {
+    final value = await _service.getUnifiedFundingAccount();
+    return UnifiedFundingAccountSummary(
+      totalUsd: DecimalValue(value.valuedTotalUsd, asset: 'USD', unit: 'fiat'),
+      availableToFundUsd: DecimalValue(
+        value.availableToFundValueUsd,
+        asset: 'USD',
+        unit: 'fiat',
+      ),
+      reservedUsd: DecimalValue(
+        value.reservedValueUsd,
+        asset: 'USD',
+        unit: 'fiat',
+      ),
+      inTransitUsd: DecimalValue(
+        value.inTransitValueUsd,
+        asset: 'USD',
+        unit: 'fiat',
+      ),
+      dataStatus: value.dataStatus.name,
+      calculatedAt: value.calculatedAt.toUtc(),
     );
   }
 
@@ -99,16 +134,29 @@ final class FundingRepositoryImpl implements FundingRepository {
     await _service.createPlan(
       api.FundingPlanRequest(
         (request) => request.oneOf = OneOfDynamic(
-          typeIndex: 0,
-          types: const [api.AutoSingleSourceFundingPlanRequest],
-          value: api.AutoSingleSourceFundingPlanRequest(
-            (plan) => plan
-              ..tradePreviewId = tradePreviewId
-              ..mode = api.FundingPlanMode.autoSingleSource
-              ..sourceAssetId = sourceAssetId == null
-                  ? null
-                  : api.FundingSourceAssetId.valueOf(sourceAssetId),
-          ),
+          typeIndex: sourceAssetId == null ? 0 : 1,
+          types: const [
+            api.AutoMultiSourceFundingPlanRequest,
+            api.AutoSingleSourceFundingPlanRequest,
+          ],
+          value: sourceAssetId == null
+              ? api.AutoMultiSourceFundingPlanRequest(
+                  (plan) => plan
+                    ..tradePreviewId = tradePreviewId
+                    ..mode = api
+                        .AutoMultiSourceFundingPlanRequestModeEnum
+                        .autoMultiSource,
+                )
+              : api.AutoSingleSourceFundingPlanRequest(
+                  (plan) => plan
+                    ..tradePreviewId = tradePreviewId
+                    ..mode = api
+                        .AutoSingleSourceFundingPlanRequestModeEnum
+                        .autoSingleSource
+                    ..sourceAssetId = api.FundingSourceAssetId.valueOf(
+                      sourceAssetId,
+                    ),
+                ),
         ),
       ),
       idempotencyKey: idempotencyKey,
@@ -122,14 +170,31 @@ final class FundingRepositoryImpl implements FundingRepository {
   @override
   Future<FundingTransfer> createFundingTransfer({
     required String planId,
+    String? legId,
     required String authorizationId,
     required String idempotencyKey,
   }) async => _transfer(
     await _service.createTransfer(
       api.TransferRequest(
-        (request) => request
-          ..planId = planId
-          ..authorizationId = authorizationId,
+        (request) => request.oneOf = OneOfDynamic(
+          typeIndex: legId == null ? 1 : 0,
+          types: const [
+            api.MultiSourceFundingTransferRequest,
+            api.LegacyFundingTransferRequest,
+          ],
+          value: legId == null
+              ? api.LegacyFundingTransferRequest(
+                  (transfer) => transfer
+                    ..planId = planId
+                    ..authorizationId = authorizationId,
+                )
+              : api.MultiSourceFundingTransferRequest(
+                  (transfer) => transfer
+                    ..planId = planId
+                    ..legId = legId
+                    ..authorizationId = authorizationId,
+                ),
+        ),
       ),
       idempotencyKey: idempotencyKey,
     ),
@@ -293,6 +358,50 @@ final class FundingRepositoryImpl implements FundingRepository {
 
   FundingPlan _fundingPlan(api.FundingPlan wire) {
     final value = wire.oneOf.value;
+    if (value
+        case api.MultiSourceBstockFundingPlan() ||
+            api.MultiSourcePerpFundingPlan()) {
+      final plan = value as dynamic;
+      final legs = (plan.multiSource as api.MultiSourceFundingPlanDetails).legs
+          .map((leg) {
+            final source = leg.sourcePositionSnapshot;
+            final asset = source.asset.oneOf.value as dynamic;
+            return FundingLeg(
+              legId: leg.legId,
+              walletId: source.walletId,
+              asset: asset.token.name as String,
+              maximumAmount: _money(leg.route.maximumInputAmount)!,
+              outputAmount: _money(leg.outputAmount)!,
+              status: switch (leg.status.name) {
+                'planned' => FundingLegState.planned,
+                'actionReleased' => FundingLegState.actionReleased,
+                'submitted' => FundingLegState.submitted,
+                'completed' => FundingLegState.completed,
+                'failed' => FundingLegState.failed,
+                'ambiguous' => FundingLegState.ambiguous,
+                'manualReview' => FundingLegState.manualReview,
+                _ => FundingLegState.unknown,
+              },
+              transferId: leg.transferId,
+            );
+          })
+          .toList(growable: false);
+      return FundingPlan(
+        planId: plan.planId as String,
+        tradePreviewId: plan.tradePreviewId as String,
+        shortfall: _money(plan.shortfall as String)!,
+        status: switch (plan.status.name as String) {
+          'ready' => FundingPlanState.ready,
+          'funded' => FundingPlanState.alreadyFunded,
+          'blocked' => FundingPlanState.blocked,
+          'expired' => FundingPlanState.expired,
+          'cancelled' => FundingPlanState.cancelled,
+          _ => FundingPlanState.unknown,
+        },
+        blocker: (plan.blocker as api.FundingPlanBlocker?)?.name,
+        legs: legs,
+      );
+    }
     if (value is! api.BstockFundingPlan && value is! api.PerpFundingPlan) {
       throw StateError('Unsupported funding plan response');
     }

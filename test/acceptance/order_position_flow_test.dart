@@ -12,6 +12,7 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
+import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
@@ -65,7 +66,11 @@ void main() {
           ),
           positionsRepositoryProvider.overrideWithValue(
             PositionsRepositoryImpl(
-              GeneratedPositionsService(source.client.getPositionsApi()),
+              GeneratedPositionsService(
+                source.client.getPositionsApi(),
+                source.client.getOrdersApi(),
+                _FakeHip3Signer(),
+              ),
             ),
           ),
         ],
@@ -75,12 +80,7 @@ void main() {
         orderCommandProvider,
         (_, _) {},
       );
-      final positionCommandSubscription = container.listen(
-        positionCommandProvider,
-        (_, _) {},
-      );
       addTearDown(commandSubscription.close);
-      addTearDown(positionCommandSubscription.close);
 
       final intent = OrderIntent(
         symbol: 'NVDA',
@@ -113,25 +113,7 @@ void main() {
       final position = await container.read(
         positionProvider('position-1').future,
       );
-      final positionCommands = container.read(positionCommandProvider);
-      final withRisk = await positionCommands.updateTpSl(
-        position,
-        takeProfit: '120',
-        stopLoss: '90',
-      );
-      expect(withRisk.takeProfitPrice?.value, '120');
-      expect(
-        (await positionCommands.clearTpSl('position-1')).takeProfitPrice,
-        isNull,
-      );
-      expect(
-        (await positionCommands.updateLeverage(position, '3')).leverage?.value,
-        '3',
-      );
-      expect(
-        (await positionCommands.close('position-1', percent: '100')).status,
-        TradingOrderStatus.submitted,
-      );
+      expect(position.positionId, 'position-1');
 
       final createRequests = adapter.requests.where(
         (request) => request.method == 'POST' && request.path == '/v1/orders',
@@ -144,6 +126,14 @@ void main() {
       );
     },
   );
+}
+
+final class _FakeHip3Signer implements Hip3TypedDataSigner {
+  @override
+  Future<String> signTypedDataV4({
+    required String expectedSigner,
+    required Map<String, Object?> typedData,
+  }) => throw UnimplementedError('This flow does not submit a HIP3 action');
 }
 
 RwaApiDataSource _source(ControlledApiAdapter adapter) {

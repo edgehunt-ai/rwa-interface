@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter_wc/qr_flutter_wc.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
@@ -9,8 +10,10 @@ import 'package:rwa_interface/ui/core/feedback/copyable_text.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
+import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
+import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 Future<void> showDepositRoutesSheet(BuildContext context) =>
     showModalBottomSheet<void>(
@@ -93,7 +96,8 @@ class DepositRoutesSheet extends ConsumerWidget {
                       title: 'Deposit routes unavailable',
                       message:
                           'Try again when your account connection recovers.',
-                      onRetry: () => ref.refresh(fundingCatalogProvider.future),
+                      onRetry: () =>
+                          ref.refresh(depositDirectoryProvider.future),
                     ),
                   ),
                   data: _DepositRouteList.new,
@@ -343,7 +347,7 @@ class _SupportedAssetMark extends StatelessWidget {
   );
 }
 
-class DepositScreen extends ConsumerWidget {
+class DepositScreen extends ConsumerStatefulWidget {
   const DepositScreen({
     super.key,
     this.showSelector = false,
@@ -355,7 +359,18 @@ class DepositScreen extends ConsumerWidget {
   final String? token;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DepositScreen> createState() => _DepositScreenState();
+}
+
+class _DepositScreenState extends ConsumerState<DepositScreen> {
+  final Set<String> _handledBalanceEvents = {};
+  bool _presentingReceipt = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final showSelector = widget.showSelector;
+    final chain = widget.chain;
+    final token = widget.token;
     if (showSelector) return const _DepositSelector();
     if (chain == null || token == null) {
       return const Scaffold(
@@ -368,8 +383,11 @@ class DepositScreen extends ConsumerWidget {
         ),
       );
     }
-    final instruction = ref.watch(
-      depositInstructionProvider((chain: chain!, token: token!)),
+    final route = (chain: chain, token: token);
+    final instruction = ref.watch(depositInstructionProvider(route));
+    ref.listen<AsyncValue<DepositBalanceChange>>(
+      depositBalanceChangesProvider(route),
+      (_, next) => next.whenData(_handleBalanceChange),
     );
     return Scaffold(
       body: SafeArea(
@@ -382,11 +400,99 @@ class DepositScreen extends ConsumerWidget {
             state: DesignState.failure,
             title: 'Deposit instructions unavailable',
             message: 'Return to deposit routes and try again.',
-            onRetry: () => ref.refresh(
-              depositInstructionProvider((chain: chain!, token: token!)).future,
-            ),
+            onRetry: () =>
+                ref.refresh(depositInstructionProvider(route).future),
           ),
           data: (value) => _DepositInstructions(instruction: value),
+        ),
+      ),
+    );
+  }
+
+  void _handleBalanceChange(DepositBalanceChange change) {
+    if (_presentingReceipt || !_handledBalanceEvents.add(change.eventId)) {
+      return;
+    }
+    _presentingReceipt = true;
+    ref.invalidate(portfolioSummaryProvider);
+    ref.invalidate(tradingAccountsProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await showDepositReceivedSheet(context, change: change);
+      if (mounted) _presentingReceipt = false;
+    });
+  }
+}
+
+Future<void> showDepositReceivedSheet(
+  BuildContext context, {
+  required DepositBalanceChange change,
+}) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  backgroundColor: Colors.transparent,
+  builder: (context) => _DepositReceivedSheet(change: change),
+);
+
+class _DepositReceivedSheet extends StatelessWidget {
+  const _DepositReceivedSheet({required this.change});
+  final DepositBalanceChange change;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return SafeArea(
+      top: false,
+      child: Material(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.secondaryText.withValues(alpha: .45),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Deposit Assets',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              Image.asset(
+                'assets/figma/funding/deposit_received.png',
+                width: 160,
+                height: 160,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Deposit received !',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '+ ${TokenAmountFormatter.format(change.amount, symbol: change.token)} (${change.chain})',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: colors.secondaryText),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Got it'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -435,7 +541,13 @@ class _DepositInstructions extends StatelessWidget {
               color: colors.subtleSurface,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: SvgPicture.asset('assets/figma/funding/deposit_qr.svg'),
+            child: QrImageView(
+              key: const ValueKey('deposit-qr'),
+              data: instruction.qrPayload,
+              size: 160,
+              backgroundColor: colors.subtleSurface,
+              semanticsLabel: 'Deposit QR code',
+            ),
           ),
         ),
         const SizedBox(height: 32),
@@ -481,17 +593,17 @@ class _ReadonlyRoute extends StatelessWidget {
       child: Column(
         children: [
           _RouteValue(
-            label: 'Token',
-            value: instruction.token,
-            asset: 'assets/figma/funding/usdc.svg',
-          ),
-          Divider(height: 1, color: colors.border),
-          _RouteValue(
             label: 'Network',
             value: instruction.chain,
             asset: instruction.chain == 'BSC'
                 ? 'assets/figma/funding/bnb_chain.svg'
                 : 'assets/figma/funding/arbitrum.svg',
+          ),
+          Divider(height: 1, color: colors.border),
+          _RouteValue(
+            label: 'Token',
+            value: instruction.token,
+            asset: 'assets/figma/funding/usdc.svg',
           ),
         ],
       ),
@@ -597,12 +709,9 @@ class _DepositSelector extends ConsumerWidget {
           error: (_, _) => DesignStateFeedback(
             state: DesignState.failure,
             title: 'Supported assets unavailable',
-            onRetry: () => ref.refresh(fundingCatalogProvider.future),
+            onRetry: () => ref.refresh(depositDirectoryProvider.future),
           ),
           data: (value) {
-            final additionalRoutes = value
-                .where((route) => !route.isRecommended)
-                .toList();
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
               children: [
@@ -627,11 +736,11 @@ class _DepositSelector extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 32),
-                for (final route in additionalRoutes) ...[
+                for (final route in value) ...[
                   _DepositRouteTile(route: route),
                   const SizedBox(height: 12),
                 ],
-                if (additionalRoutes.isEmpty) ...[
+                if (value.isEmpty) ...[
                   const SizedBox(height: 60),
                   Image.asset(
                     'assets/figma/funding/deposit_empty.png',

@@ -15,6 +15,28 @@ enum TradingOrderStatus {
   unknown,
 }
 
+final class Hip3ActionSummary {
+  const Hip3ActionSummary({
+    required this.actionId,
+    required this.operation,
+    required this.status,
+    required this.productId,
+    required this.updatedAt,
+    this.positionId,
+    this.orderId,
+    this.failureReason,
+  });
+
+  final String actionId;
+  final String operation;
+  final String status;
+  final String productId;
+  final String? positionId;
+  final String? orderId;
+  final String? failureReason;
+  final DateTime updatedAt;
+}
+
 final class TradingOrder {
   const TradingOrder({
     required this.orderId,

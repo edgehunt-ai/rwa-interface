@@ -1,4 +1,5 @@
 import 'decimal_value.dart';
+import 'deposit.dart';
 
 enum FundingRailKind { bstock, perp }
 
@@ -41,4 +42,34 @@ final class FundingCatalog {
   final List<FundingRail> rails;
   final List<DepositRoute> depositRoutes;
   final DateTime updatedAt;
+}
+
+final class DepositDirectory {
+  const DepositDirectory({
+    required this.instructions,
+    required this.updatedAt,
+    this.walletAddress,
+  });
+
+  final String? walletAddress;
+  final List<DepositInstruction> instructions;
+  final DateTime updatedAt;
+}
+
+final class UnifiedFundingAccountSummary {
+  const UnifiedFundingAccountSummary({
+    required this.totalUsd,
+    required this.availableToFundUsd,
+    required this.reservedUsd,
+    required this.inTransitUsd,
+    required this.dataStatus,
+    required this.calculatedAt,
+  });
+
+  final DecimalValue totalUsd;
+  final DecimalValue availableToFundUsd;
+  final DecimalValue reservedUsd;
+  final DecimalValue inTransitUsd;
+  final String dataStatus;
+  final DateTime calculatedAt;
 }

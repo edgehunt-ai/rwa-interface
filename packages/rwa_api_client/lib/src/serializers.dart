@@ -31,7 +31,11 @@ import 'package:rwa_api_client/src/model/arbitrum_deposit_rail.dart';
 import 'package:rwa_api_client/src/model/arbitrum_usdc_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/arbitrum_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/asset_info.dart';
+import 'package:rwa_api_client/src/model/auto_multi_source_funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/auto_multi_source_trade_intent_create_request.dart';
 import 'package:rwa_api_client/src/model/auto_single_source_funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/auto_single_source_trade_intent_create_request.dart';
+import 'package:rwa_api_client/src/model/available_deposit_instruction_item.dart';
 import 'package:rwa_api_client/src/model/available_deposit_rail_availability.dart';
 import 'package:rwa_api_client/src/model/base_usdc_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/base_usdt_funding_source_asset.dart';
@@ -55,7 +59,6 @@ import 'package:rwa_api_client/src/model/candle_series.dart';
 import 'package:rwa_api_client/src/model/chain.dart';
 import 'package:rwa_api_client/src/model/chart_range.dart';
 import 'package:rwa_api_client/src/model/claim.dart';
-import 'package:rwa_api_client/src/model/close_position_request.dart';
 import 'package:rwa_api_client/src/model/completed_funding_provider_observation.dart';
 import 'package:rwa_api_client/src/model/completed_funding_source_transaction_observation.dart';
 import 'package:rwa_api_client/src/model/completed_funding_transfer_state.dart';
@@ -69,6 +72,9 @@ import 'package:rwa_api_client/src/model/deposit_address_base.dart';
 import 'package:rwa_api_client/src/model/deposit_base.dart';
 import 'package:rwa_api_client/src/model/deposit_credit_target.dart';
 import 'package:rwa_api_client/src/model/deposit_instruction.dart';
+import 'package:rwa_api_client/src/model/deposit_instruction_item.dart';
+import 'package:rwa_api_client/src/model/deposit_instruction_wallet.dart';
+import 'package:rwa_api_client/src/model/deposit_instructions_response.dart';
 import 'package:rwa_api_client/src/model/deposit_mode.dart';
 import 'package:rwa_api_client/src/model/deposit_page.dart';
 import 'package:rwa_api_client/src/model/deposit_rail.dart';
@@ -83,6 +89,7 @@ import 'package:rwa_api_client/src/model/device_register_request.dart';
 import 'package:rwa_api_client/src/model/disclosures.dart';
 import 'package:rwa_api_client/src/model/disclosures_always_on.dart';
 import 'package:rwa_api_client/src/model/disclosures_sessions_inner.dart';
+import 'package:rwa_api_client/src/model/eligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/erc20_approval_action.dart';
 import 'package:rwa_api_client/src/model/ethereum_usdc_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/ethereum_usdt_funding_source_asset.dart';
@@ -100,6 +107,8 @@ import 'package:rwa_api_client/src/model/funding_plan_blocker.dart';
 import 'package:rwa_api_client/src/model/funding_plan_mode.dart';
 import 'package:rwa_api_client/src/model/funding_plan_request.dart';
 import 'package:rwa_api_client/src/model/funding_plan_status.dart';
+import 'package:rwa_api_client/src/model/funding_position_blocker.dart';
+import 'package:rwa_api_client/src/model/funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/funding_provider.dart';
 import 'package:rwa_api_client/src/model/funding_provider_observation.dart';
 import 'package:rwa_api_client/src/model/funding_rail.dart';
@@ -118,6 +127,7 @@ import 'package:rwa_api_client/src/model/funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_identity.dart';
 import 'package:rwa_api_client/src/model/funding_source_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/funding_source_position_snapshot.dart';
 import 'package:rwa_api_client/src/model/funding_source_transaction_observation.dart';
 import 'package:rwa_api_client/src/model/funding_target_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/funding_target_balance_source.dart';
@@ -164,6 +174,7 @@ import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
 import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
 import 'package:rwa_api_client/src/model/holding_group.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
+import 'package:rwa_api_client/src/model/ineligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_rail.dart';
@@ -171,6 +182,7 @@ import 'package:rwa_api_client/src/model/legacy_bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/legacy_deposit.dart';
 import 'package:rwa_api_client/src/model/legacy_deposit_status.dart';
 import 'package:rwa_api_client/src/model/legacy_funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/legacy_funding_transfer_request.dart';
 import 'package:rwa_api_client/src/model/legacy_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/legacy_perp_funding_rail.dart';
 import 'package:rwa_api_client/src/model/legacy_perp_order_preview.dart';
@@ -182,6 +194,13 @@ import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/market_product_group.dart';
 import 'package:rwa_api_client/src/model/market_session_info.dart';
 import 'package:rwa_api_client/src/model/market_stats.dart';
+import 'package:rwa_api_client/src/model/multi_source_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/multi_source_funding_leg.dart';
+import 'package:rwa_api_client/src/model/multi_source_funding_leg_status.dart';
+import 'package:rwa_api_client/src/model/multi_source_funding_plan_details.dart';
+import 'package:rwa_api_client/src/model/multi_source_funding_plan_status.dart';
+import 'package:rwa_api_client/src/model/multi_source_funding_transfer_request.dart';
+import 'package:rwa_api_client/src/model/multi_source_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/no_executable_action_transfer_state.dart';
 import 'package:rwa_api_client/src/model/non_completed_funding_transfer_state.dart';
 import 'package:rwa_api_client/src/model/notification_queued_response.dart';
@@ -273,11 +292,11 @@ import 'package:rwa_api_client/src/model/stock_group.dart';
 import 'package:rwa_api_client/src/model/stock_page.dart';
 import 'package:rwa_api_client/src/model/token_balance.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
-import 'package:rwa_api_client/src/model/tp_sl_update_request.dart';
 import 'package:rwa_api_client/src/model/trade_intent.dart';
 import 'package:rwa_api_client/src/model/trade_intent_blocker.dart';
 import 'package:rwa_api_client/src/model/trade_intent_create_request.dart';
 import 'package:rwa_api_client/src/model/trade_intent_execution_policy.dart';
+import 'package:rwa_api_client/src/model/trade_intent_funding_leg_binding.dart';
 import 'package:rwa_api_client/src/model/trade_intent_next_action.dart';
 import 'package:rwa_api_client/src/model/trade_intent_status.dart';
 import 'package:rwa_api_client/src/model/transfer.dart';
@@ -293,8 +312,13 @@ import 'package:rwa_api_client/src/model/transfer_request.dart';
 import 'package:rwa_api_client/src/model/transfer_source_execution_status.dart';
 import 'package:rwa_api_client/src/model/transfer_status.dart';
 import 'package:rwa_api_client/src/model/transfer_target_credit_status.dart';
+import 'package:rwa_api_client/src/model/unavailable_deposit_instruction_item.dart';
 import 'package:rwa_api_client/src/model/unavailable_deposit_rail_availability.dart';
-import 'package:rwa_api_client/src/model/update_position_leverage_request.dart';
+import 'package:rwa_api_client/src/model/unified_funding_account.dart';
+import 'package:rwa_api_client/src/model/unified_funding_blocker.dart';
+import 'package:rwa_api_client/src/model/unified_funding_data_status.dart';
+import 'package:rwa_api_client/src/model/unified_funding_position.dart';
+import 'package:rwa_api_client/src/model/unified_funding_transfer.dart';
 import 'package:rwa_api_client/src/model/user.dart';
 import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
@@ -340,7 +364,11 @@ part 'serializers.g.dart';
   ArbitrumUsdcFundingSourceAsset,
   ArbitrumUsdtFundingSourceAsset,
   AssetInfo,
+  AutoMultiSourceFundingPlanRequest,
+  AutoMultiSourceTradeIntentCreateRequest,
   AutoSingleSourceFundingPlanRequest,
+  AutoSingleSourceTradeIntentCreateRequest,
+  AvailableDepositInstructionItem,
   AvailableDepositRailAvailability,
   BaseUsdcFundingSourceAsset,
   BaseUsdtFundingSourceAsset,
@@ -364,7 +392,6 @@ part 'serializers.g.dart';
   Chain,
   ChartRange,
   Claim,
-  ClosePositionRequest,
   CompletedFundingProviderObservation,
   CompletedFundingSourceTransactionObservation,
   CompletedFundingTransferState,
@@ -378,6 +405,9 @@ part 'serializers.g.dart';
   DepositBase,$DepositBase,
   DepositCreditTarget,
   DepositInstruction,
+  DepositInstructionItem,
+  DepositInstructionWallet,
+  DepositInstructionsResponse,
   DepositMode,
   DepositPage,
   DepositRail,
@@ -392,6 +422,7 @@ part 'serializers.g.dart';
   Disclosures,
   DisclosuresAlwaysOn,
   DisclosuresSessionsInner,
+  EligibleFundingPositionEligibility,
   Erc20ApprovalAction,
   EthereumUsdcFundingSourceAsset,
   EthereumUsdtFundingSourceAsset,
@@ -409,6 +440,8 @@ part 'serializers.g.dart';
   FundingPlanMode,
   FundingPlanRequest,
   FundingPlanStatus,
+  FundingPositionBlocker,
+  FundingPositionEligibility,
   FundingProvider,
   FundingProviderObservation,
   FundingRail,
@@ -427,6 +460,7 @@ part 'serializers.g.dart';
   FundingSourceAssetId,
   FundingSourceAssetIdentity,
   FundingSourceBalanceSnapshot,
+  FundingSourcePositionSnapshot,
   FundingSourceTransactionObservation,
   FundingTargetBalanceSnapshot,
   FundingTargetBalanceSource,
@@ -473,6 +507,7 @@ part 'serializers.g.dart';
   Hip3TriggerSpec,
   HoldingGroup,
   HyperliquidSignature,
+  IneligibleFundingPositionEligibility,
   KeyValue,
   LegacyBstockFundingPlan,
   LegacyBstockFundingRail,
@@ -480,6 +515,7 @@ part 'serializers.g.dart';
   LegacyDeposit,
   LegacyDepositStatus,
   LegacyFundingPlanRequest,
+  LegacyFundingTransferRequest,
   LegacyPerpFundingPlan,
   LegacyPerpFundingRail,
   LegacyPerpOrderPreview,
@@ -491,6 +527,13 @@ part 'serializers.g.dart';
   MarketProductGroup,
   MarketSessionInfo,
   MarketStats,
+  MultiSourceBstockFundingPlan,
+  MultiSourceFundingLeg,
+  MultiSourceFundingLegStatus,
+  MultiSourceFundingPlanDetails,
+  MultiSourceFundingPlanStatus,
+  MultiSourceFundingTransferRequest,
+  MultiSourcePerpFundingPlan,
   NoExecutableActionTransferState,
   NonCompletedFundingTransferState,
   NotificationQueuedResponse,
@@ -582,11 +625,11 @@ part 'serializers.g.dart';
   StockPage,
   TokenBalance,
   TpSlSpec,
-  TpSlUpdateRequest,
   TradeIntent,
   TradeIntentBlocker,
   TradeIntentCreateRequest,
   TradeIntentExecutionPolicy,
+  TradeIntentFundingLegBinding,
   TradeIntentNextAction,
   TradeIntentStatus,
   Transfer,
@@ -602,8 +645,13 @@ part 'serializers.g.dart';
   TransferSourceExecutionStatus,
   TransferStatus,
   TransferTargetCreditStatus,
+  UnavailableDepositInstructionItem,
   UnavailableDepositRailAvailability,
-  UpdatePositionLeverageRequest,
+  UnifiedFundingAccount,
+  UnifiedFundingBlocker,
+  UnifiedFundingDataStatus,
+  UnifiedFundingPosition,
+  UnifiedFundingTransfer,
   User,
   UserPaidWalletActionExecutionSubmissionRequest,
   UserSettings,
@@ -679,12 +727,20 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<ActivityRecord>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(UnifiedFundingTransfer)]),
+        () => ListBuilder<UnifiedFundingTransfer>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
         () => ListBuilder<PortfolioWarningCode>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProductRef)]),
         () => ListBuilder<ProductRef>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
+        () => ListBuilder<UnifiedFundingPosition>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
@@ -711,12 +767,20 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<MarginMode>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(String)]),
+        () => SetBuilder<String>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(KeyValue)]),
         () => ListBuilder<KeyValue>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Chain)]),
         () => ListBuilder<Chain>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingPositionBlocker)]),
+        () => ListBuilder<FundingPositionBlocker>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3ActionStep)]),
@@ -739,12 +803,28 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<StockGroup>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(UnifiedFundingBlocker)]),
+        () => SetBuilder<UnifiedFundingBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(FundingPositionBlocker)]),
+        () => SetBuilder<FundingPositionBlocker>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AppVersionInfo)]),
         () => ListBuilder<AppVersionInfo>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(TradeIntentFundingLegBinding)]),
+        () => ListBuilder<TradeIntentFundingLegBinding>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(DisclosuresSessionsInner)]),
         () => ListBuilder<DisclosuresSessionsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(MultiSourceFundingLeg)]),
+        () => ListBuilder<MultiSourceFundingLeg>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
@@ -765,6 +845,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(SessionSegment)]),
         () => ListBuilder<SessionSegment>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DepositInstructionItem)]),
+        () => ListBuilder<DepositInstructionItem>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(String)]),

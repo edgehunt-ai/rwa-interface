@@ -432,7 +432,7 @@ class MarketsApi {
   /// 首页和市场页的扁平产品列表统一数据源。用 &#x60;group&#x60; 区分「热门 / 涨幅 / 跌幅 / 成交量 / 自选」；&#x60;favorites&#x60; 仅返回当前登录用户的自选产品。 &#x60;product_type&#x60; 对应首页一级筛选（全部 / 现货 / 合约）。每项仍带 &#x60;is_favorite&#x60;，用于渲染收藏状态。 
   ///
   /// Parameters:
-  /// * [group] - 列表分组；`favorites` 为当前用户自选列表
+  /// * [group] - 列表分组；`favorites` 为当前用户自选列表且需要有效 Bearer credential
   /// * [productType] 
   /// * [q] 
   /// * [cursor] - 上一页返回的 `next_cursor`

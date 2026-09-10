@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/application_state.dart';
@@ -32,6 +33,46 @@ final orderPreviewProvider = FutureProvider.autoDispose
             idempotencyKey: 'preview-${intent.fingerprint.hashCode}',
           );
     });
+
+final hip3ActionsProvider = FutureProvider.autoDispose
+    .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(hip3OrderExecutionRepositoryProvider)
+          .listActions(cursor: cursor);
+    });
+
+final hip3ActionProvider = FutureProvider.autoDispose
+    .family<Hip3ActionSummary, String>((ref, actionId) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(hip3OrderExecutionRepositoryProvider)
+          .getAction(actionId);
+    });
+
+final hip3ActionCommandsProvider = Provider.autoDispose(
+  (ref) => Hip3ActionCommands(ref),
+);
+
+final class Hip3ActionCommands {
+  Hip3ActionCommands(this._ref);
+
+  final Ref _ref;
+  final IdempotentCommandGuard _commands = IdempotentCommandGuard();
+
+  Future<Hip3ActionSummary> cancel(String actionId) async {
+    final result = await _commands.run(
+      operation: 'cancel-hip3-action',
+      fingerprint: actionId,
+      command: (key) => _ref
+          .read(hip3OrderExecutionRepositoryProvider)
+          .cancelAction(actionId, idempotencyKey: key),
+    );
+    _ref.invalidate(hip3ActionsProvider);
+    _ref.invalidate(hip3ActionProvider(actionId));
+    return result;
+  }
+}
 
 final orderCommandProvider =
     NotifierProvider<

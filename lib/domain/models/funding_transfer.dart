@@ -10,6 +10,7 @@ final class FundingPlan {
     this.sourceWalletId,
     this.sourceAsset,
     this.sourceMaximum,
+    this.legs = const [],
     this.blocker,
   });
 
@@ -20,10 +21,47 @@ final class FundingPlan {
   final String? sourceWalletId;
   final String? sourceAsset;
   final DecimalValue? sourceMaximum;
+  final List<FundingLeg> legs;
   final String? blocker;
 
   bool get isActionable =>
-      status == FundingPlanState.ready && sourceWalletId != null;
+      status == FundingPlanState.ready && nextActionableLeg != null;
+
+  FundingLeg? get nextActionableLeg =>
+      legs.where((leg) => leg.isActionable).firstOrNull;
+}
+
+final class FundingLeg {
+  const FundingLeg({
+    required this.legId,
+    required this.walletId,
+    required this.asset,
+    required this.maximumAmount,
+    required this.outputAmount,
+    required this.status,
+    this.transferId,
+  });
+
+  final String legId;
+  final String walletId;
+  final String asset;
+  final DecimalValue maximumAmount;
+  final DecimalValue outputAmount;
+  final FundingLegState status;
+  final String? transferId;
+
+  bool get isActionable => status == FundingLegState.actionReleased;
+}
+
+enum FundingLegState {
+  planned,
+  actionReleased,
+  submitted,
+  completed,
+  failed,
+  ambiguous,
+  manualReview,
+  unknown,
 }
 
 enum FundingPlanState {
