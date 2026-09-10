@@ -10,10 +10,8 @@ import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
-import 'package:rwa_interface/ui/features/markets/views/market_screen.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_search_screen.dart';
 
 import '../../../helpers/display_config.dart';
@@ -235,113 +233,6 @@ final class _RecordingMarketsRepository implements MarketsRepository {
   }) async {
     queries.add(query);
     return DomainPage(items: [_product('NVDA', 'NVIDIA')]);
-  }
-
-  MarketProduct _product(String symbol, String name) => MarketProduct(
-    symbol: symbol,
-    name: name,
-    kind: MarketProductKind.bstock,
-    price: DecimalValue('120', asset: 'USD', unit: 'price'),
-    settlementAsset: 'USDC',
-    network: 'Arbitrum',
-    tradable: true,
-  );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _PagedMarketsRepository implements MarketsRepository {
-  @override
-  Future<DomainPage<MarketProduct>> listProducts({
-    String? query,
-    String? cursor,
-    dynamic kind,
-    dynamic group,
-    int? limit,
-  }) async {
-    if (cursor == 'page-2') {
-      return DomainPage(items: [_product('NVDA', 'NVIDIA')]);
-    }
-    return DomainPage(
-      items: [
-        for (var index = 0; index < 8; index++)
-          _product('STK$index', 'Stock $index'),
-      ],
-      nextCursor: 'page-2',
-      hasMore: true,
-    );
-  }
-
-  MarketProduct _product(String symbol, String name) => MarketProduct(
-    symbol: symbol,
-    name: name,
-    kind: MarketProductKind.bstock,
-    price: DecimalValue('120', asset: 'USD', unit: 'price'),
-    settlementAsset: 'USDC',
-    network: 'Arbitrum',
-    tradable: true,
-  );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _ShortPagedMarketsRepository implements MarketsRepository {
-  @override
-  Future<DomainPage<MarketProduct>> listProducts({
-    String? query,
-    String? cursor,
-    dynamic kind,
-    dynamic group,
-    int? limit,
-  }) async => cursor == 'page-2'
-      ? DomainPage(items: [_product('NVDA', 'NVIDIA')])
-      : DomainPage(
-          items: [_product('STK0', 'Stock 0')],
-          nextCursor: 'page-2',
-          hasMore: true,
-        );
-
-  MarketProduct _product(String symbol, String name) => MarketProduct(
-    symbol: symbol,
-    name: name,
-    kind: MarketProductKind.bstock,
-    price: DecimalValue('120', asset: 'USD', unit: 'price'),
-    settlementAsset: 'USDC',
-    network: 'Arbitrum',
-    tradable: true,
-  );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-final class _DeferredPagedMarketsRepository implements MarketsRepository {
-  final _nextPage = Completer<DomainPage<MarketProduct>>();
-
-  @override
-  Future<DomainPage<MarketProduct>> listProducts({
-    String? query,
-    String? cursor,
-    dynamic kind,
-    dynamic group,
-    int? limit,
-  }) => cursor == 'page-2'
-      ? _nextPage.future
-      : Future.value(
-          DomainPage(
-            items: [
-              for (var index = 0; index < 8; index++)
-                _product('STK$index', 'Stock $index'),
-            ],
-            nextCursor: 'page-2',
-            hasMore: true,
-          ),
-        );
-
-  void completeNextPage() {
-    _nextPage.complete(DomainPage(items: [_product('NVDA', 'NVIDIA')]));
   }
 
   MarketProduct _product(String symbol, String name) => MarketProduct(
