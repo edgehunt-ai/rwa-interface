@@ -25,6 +25,9 @@ final class ConditionalOrder {
     required this.sizeMode,
     required this.quantity,
     required this.triggerReference,
+    this.activationStatus = 'unknown',
+    this.warningCode,
+    this.parentOrderId,
   });
   final String role;
   final DecimalValue triggerPrice;
@@ -33,6 +36,9 @@ final class ConditionalOrder {
   final String sizeMode;
   final String quantity;
   final String triggerReference;
+  final String activationStatus;
+  final String? warningCode;
+  final String? parentOrderId;
 }
 
 final class TradingOrder {

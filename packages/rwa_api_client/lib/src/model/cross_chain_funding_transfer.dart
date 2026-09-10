@@ -38,6 +38,7 @@ part 'cross_chain_funding_transfer.g.dart';
 /// * [walletActionReleasedAt] 
 /// * [transferId] 
 /// * [planId] 
+/// * [legId] - Required by the server for a Transfer created from an `auto_multi_source` plan and null for legacy or single-source plans. Together with `plan_id`, it permanently identifies one leg. 
 /// * [amount] - Frozen target shortfall covered by this Transfer.
 /// * [source_] 
 /// * [provider] 
@@ -105,6 +106,10 @@ abstract class CrossChainFundingTransfer implements Built<CrossChainFundingTrans
 
   @BuiltValueField(wireName: r'plan_id')
   String get planId;
+
+  /// Required by the server for a Transfer created from an `auto_multi_source` plan and null for legacy or single-source plans. Together with `plan_id`, it permanently identifies one leg. 
+  @BuiltValueField(wireName: r'leg_id')
+  String? get legId;
 
   /// Frozen target shortfall covered by this Transfer.
   @BuiltValueField(wireName: r'amount')
@@ -245,6 +250,13 @@ class _$CrossChainFundingTransferSerializer implements PrimitiveSerializer<Cross
       object.planId,
       specifiedType: const FullType(String),
     );
+    if (object.legId != null) {
+      yield r'leg_id';
+      yield serializers.serialize(
+        object.legId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'amount';
     yield serializers.serialize(
       object.amount,
@@ -441,6 +453,14 @@ class _$CrossChainFundingTransferSerializer implements PrimitiveSerializer<Cross
             specifiedType: const FullType(String),
           ) as String;
           result.planId = valueDes;
+          break;
+        case r'leg_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.legId = valueDes;
           break;
         case r'amount':
           final valueDes = serializers.deserialize(

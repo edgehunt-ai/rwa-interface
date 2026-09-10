@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -15,6 +16,7 @@ part 'hip3_preview_execution.g.dart';
 /// HIP3 预览规范化后的执行条件。amount 是名义金额而非保证金；费用明确以 USDC 计价。 market 使用有滑点边界的 IOC；limit 按指定 TIF，不保证成交。 maximum_quantity 是该方向/价格/杠杆下允许的最大量（reduce-only 为可减仓量）。 preview 冻结条件而非保证市场成交价；create order 必须与预览一致，且再次校验过期、 仓位、可用余额与规则。强平价无法估算时为 null 并给出 reason，不展示为 0。 
 ///
 /// Properties:
+/// * [openingProtection] - 开仓请求附带 protection 时必须返回，与同次父单签名中的子保护完全一致。无保护时省略；不得作为已激活证明。
 /// * [contextId] 
 /// * [productId] 
 /// * [environment] 
@@ -35,6 +37,10 @@ part 'hip3_preview_execution.g.dart';
 /// * [slippagePercent] - 十进制字符串，避免浮点误差
 @BuiltValue()
 abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3PreviewExecutionBuilder> {
+  /// 开仓请求附带 protection 时必须返回，与同次父单签名中的子保护完全一致。无保护时省略；不得作为已激活证明。
+  @BuiltValueField(wireName: r'opening_protection')
+  Hip3OpeningProtectionConfirmation? get openingProtection;
+
   @BuiltValueField(wireName: r'context_id')
   String get contextId;
 
@@ -126,6 +132,13 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
     Hip3PreviewExecution object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.openingProtection != null) {
+      yield r'opening_protection';
+      yield serializers.serialize(
+        object.openingProtection,
+        specifiedType: const FullType(Hip3OpeningProtectionConfirmation),
+      );
+    }
     yield r'context_id';
     yield serializers.serialize(
       object.contextId,
@@ -239,6 +252,14 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'opening_protection':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3OpeningProtectionConfirmation),
+          ) as Hip3OpeningProtectionConfirmation?;
+          if (valueDes == null) continue;
+          result.openingProtection.replace(valueDes);
+          break;
         case r'context_id':
           final valueDes = serializers.deserialize(
             value,

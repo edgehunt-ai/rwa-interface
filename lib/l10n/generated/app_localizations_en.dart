@@ -565,6 +565,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get takeProfitStopLoss => 'Take profit/stop loss';
 
   @override
+  String get hip3OrderTpSl => 'Order TP/SL';
+
+  @override
+  String get hip3PositionTpSl => 'Position TP/SL';
+
+  @override
+  String get hip3PositionProtectionScope =>
+      'This editor manages position TP/SL only. Opening-order TP/SL is separate; check its activation and quantity in Orders. Empty fields here do not mean all protection is absent.';
+
+  @override
   String get bstocksTpSlUnavailable =>
       'TP/SL is not available for bStocks orders.';
 

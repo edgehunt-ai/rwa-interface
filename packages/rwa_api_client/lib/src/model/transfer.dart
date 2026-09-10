@@ -50,6 +50,7 @@ part 'transfer.g.dart';
 /// * [routeLockedAt] 
 /// * [walletActionReleasedAt] 
 /// * [planId] 
+/// * [legId] - Required by the server for a Transfer created from an `auto_multi_source` plan and null for legacy or single-source plans. Together with `plan_id`, it permanently identifies one leg. 
 /// * [source_] 
 /// * [provider] 
 /// * [refundStatus] 

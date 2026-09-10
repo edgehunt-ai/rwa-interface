@@ -6,6 +6,28 @@ part of 'funding_plan.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const FundingPlanModeEnum _$fundingPlanModeEnum_autoMultiSource =
+    const FundingPlanModeEnum._('autoMultiSource');
+const FundingPlanModeEnum _$fundingPlanModeEnum_unknownDefaultOpenApi =
+    const FundingPlanModeEnum._('unknownDefaultOpenApi');
+
+FundingPlanModeEnum _$fundingPlanModeEnumValueOf(String name) {
+  switch (name) {
+    case 'autoMultiSource':
+      return _$fundingPlanModeEnum_autoMultiSource;
+    case 'unknownDefaultOpenApi':
+      return _$fundingPlanModeEnum_unknownDefaultOpenApi;
+    default:
+      return _$fundingPlanModeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<FundingPlanModeEnum> _$fundingPlanModeEnumValues =
+    BuiltSet<FundingPlanModeEnum>(const <FundingPlanModeEnum>[
+  _$fundingPlanModeEnum_autoMultiSource,
+  _$fundingPlanModeEnum_unknownDefaultOpenApi,
+]);
+
 const FundingPlanStatusEnum _$fundingPlanStatusEnum_ready =
     const FundingPlanStatusEnum._('ready');
 const FundingPlanStatusEnum _$fundingPlanStatusEnum_expired =
@@ -104,6 +126,8 @@ final BuiltSet<FundingPlanAssetEnum> _$fundingPlanAssetEnumValues =
   _$fundingPlanAssetEnum_unknownDefaultOpenApi,
 ]);
 
+Serializer<FundingPlanModeEnum> _$fundingPlanModeEnumSerializer =
+    _$FundingPlanModeEnumSerializer();
 Serializer<FundingPlanStatusEnum> _$fundingPlanStatusEnumSerializer =
     _$FundingPlanStatusEnumSerializer();
 Serializer<FundingPlanRailEnum> _$fundingPlanRailEnumSerializer =
@@ -112,6 +136,34 @@ Serializer<FundingPlanNetworkEnum> _$fundingPlanNetworkEnumSerializer =
     _$FundingPlanNetworkEnumSerializer();
 Serializer<FundingPlanAssetEnum> _$fundingPlanAssetEnumSerializer =
     _$FundingPlanAssetEnumSerializer();
+
+class _$FundingPlanModeEnumSerializer
+    implements PrimitiveSerializer<FundingPlanModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'autoMultiSource': 'auto_multi_source',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'auto_multi_source': 'autoMultiSource',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[FundingPlanModeEnum];
+  @override
+  final String wireName = 'FundingPlanModeEnum';
+
+  @override
+  Object serialize(Serializers serializers, FundingPlanModeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  FundingPlanModeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      FundingPlanModeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$FundingPlanStatusEnumSerializer
     implements PrimitiveSerializer<FundingPlanStatusEnum> {

@@ -8,6 +8,7 @@ import '../../domain/models/order.dart';
 import '../../domain/models/order_fill.dart';
 import '../../domain/models/order_intent.dart';
 import '../../domain/models/order_preview.dart';
+import '../../domain/models/hip3_opening_protection.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/models/unsupported_capability.dart';
 import '../../domain/repositories/orders_repository.dart';
@@ -28,7 +29,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     );
     final value = wire.oneOf.value;
     final common = value as api.OrderPreviewCommon;
-    return OrderPreview(
+    final preview = OrderPreview(
       previewId: common.previewId,
       intent: intent,
       orderValue: _value(common.orderValue, 'notional'),
@@ -49,8 +50,122 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       },
       priceUpdated: common.priceUpdated ?? false,
       expiresAt: common.quoteExpiresAt?.toUtc(),
+      hip3Execution: common.hip3Execution == null
+          ? null
+          : _hip3Execution(common.hip3Execution!),
+      feeRate: _optional(common.feeRate, 'rate'),
+      feeNote: common.feeNote,
+      details: List.unmodifiable(
+        common.details?.map(
+              (entry) => PreviewDetail(
+                entry.label,
+                entry.value,
+                tone: entry.tone?.name,
+              ),
+            ) ??
+            const <PreviewDetail>[],
+      ),
     );
+    if (!preview.openingProtectionMatchesIntent) {
+      throw const FormatException(
+        'Opening protection confirmation is missing or differs from the order',
+      );
+    }
+    return preview;
   }
+
+  Hip3PreviewExecution _hip3Execution(
+    api.Hip3PreviewExecution value,
+  ) => Hip3PreviewExecution(
+    openingProtection: value.openingProtection == null
+        ? null
+        : Hip3OpeningProtectionConfirmation(
+            quantity: DecimalValue(
+              value.openingProtection!.quantity,
+              unit: 'quantity',
+            ),
+            legs: List.unmodifiable(
+              value.openingProtection!.legs.map(
+                (leg) => Hip3ConfirmedProtectionLeg(
+                  takeProfit: switch (leg.role) {
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
+                        .takeProfit =>
+                      true,
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
+                        .stopLoss =>
+                      false,
+                    _ => throw const FormatException('Unknown protection role'),
+                  },
+                  market: switch (leg.executionType) {
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
+                        .market =>
+                      true,
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
+                        .limit =>
+                      false,
+                    _ => throw const FormatException(
+                      'Unknown protection execution',
+                    ),
+                  },
+                  triggerPrice: DecimalValue(
+                    leg.triggerPrice,
+                    asset: 'USDC',
+                    unit: 'price',
+                  ),
+                  executionPrice: DecimalValue(
+                    leg.executionPrice,
+                    asset: 'USDC',
+                    unit: 'price',
+                  ),
+                ),
+              ),
+            ),
+          ),
+    contextId: value.contextId,
+    productId: value.productId,
+    environment: value.environment.name,
+    quantity: DecimalValue(value.quantity, unit: 'quantity'),
+    type: switch (value.type) {
+      api.Hip3PreviewExecutionTypeEnum.market => TradingOrderType.market,
+      api.Hip3PreviewExecutionTypeEnum.limit => TradingOrderType.limit,
+      _ => throw const FormatException('Unsupported HIP3 execution type'),
+    },
+    timeInForce: value.timeInForce.name,
+    limitPrice: DecimalValue(value.limitPrice, asset: 'USDC', unit: 'price'),
+    leverage: DecimalValue(value.leverage, unit: 'multiple'),
+    marginMode: switch (value.marginMode) {
+      api.MarginMode.cross => TradingMarginMode.cross,
+      api.MarginMode.isolated => TradingMarginMode.isolated,
+      _ => throw const FormatException('Unsupported HIP3 margin mode'),
+    },
+    reduceOnly: value.reduceOnly,
+    notional: DecimalValue(value.notionalUsdc, asset: 'USDC', unit: 'notional'),
+    marginRequired: DecimalValue(
+      value.marginRequiredUsdc,
+      asset: 'USDC',
+      unit: 'margin',
+    ),
+    availableMargin: DecimalValue(
+      value.availableMarginUsdc,
+      asset: 'USDC',
+      unit: 'margin',
+    ),
+    maximumQuantity: DecimalValue(value.maximumQuantity, unit: 'quantity'),
+    estimatedFee: DecimalValue(
+      value.estimatedFeeUsdc,
+      asset: 'USDC',
+      unit: 'fee',
+    ),
+    slippagePercent: DecimalValue(value.slippagePercent, unit: 'percent'),
+    liquidationPrice: value.liquidationPrice == null
+        ? null
+        : DecimalValue(value.liquidationPrice!, asset: 'USDC', unit: 'price'),
+    liquidationPriceUnavailableReason: value.liquidationPriceUnavailableReason,
+  );
 
   @override
   Future<ResourceResult<TradingOrder>> create(
@@ -129,7 +244,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
               ..marginMode = _margin(intent.marginMode)
               ..reduceOnly = intent.reduceOnly
               ..slippagePercent = intent.slippage?.value;
-            _tpSl(builder.tpSl, intent.tpSl);
+            if (intent.tpSl != null) {
+              throw ArgumentError('Use openingProtection for HIP3 orders');
+            }
+            builder.protection = _openingProtection(intent.openingProtection)
+                ?.toBuilder();
           });
     return api.OrderPreviewRequest(
       (builder) => builder.oneOf = OneOfDynamic(
@@ -176,7 +295,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
               ..reduceOnly = intent.reduceOnly
               ..slippagePercent = intent.slippage?.value
               ..previewId = previewId;
-            _tpSl(builder.tpSl, intent.tpSl);
+            if (intent.tpSl != null) {
+              throw ArgumentError('Use openingProtection for HIP3 orders');
+            }
+            builder.protection = _openingProtection(intent.openingProtection)
+                ?.toBuilder();
           });
     return api.CreateOrderRequest(
       (builder) => builder.oneOf = OneOfDynamic(
@@ -194,6 +317,28 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       ..takeProfitPrice = value.takeProfit?.value
       ..stopLossPrice = value.stopLoss?.value
       ..stopLimitPrice = value.stopLimit?.value;
+  }
+
+  api.Hip3OrderProtectionSpec? _openingProtection(
+    Hip3OpeningProtection? value,
+  ) {
+    if (value == null) return null;
+    api.Hip3TriggerSpec? leg(Hip3OpeningProtectionLeg? value) => value == null
+        ? null
+        : api.Hip3TriggerSpec(
+            (b) => b
+              ..triggerPrice = value.triggerPrice.value
+              ..triggerReference = api.Hip3TriggerSpecTriggerReferenceEnum.mark
+              ..executionType = value.limitPrice == null
+                  ? api.Hip3TriggerSpecExecutionTypeEnum.market
+                  : api.Hip3TriggerSpecExecutionTypeEnum.limit
+              ..limitPrice = value.limitPrice?.value,
+          );
+    return api.Hip3OrderProtectionSpec(
+      (b) => b
+        ..takeProfit = leg(value.takeProfit)?.toBuilder()
+        ..stopLoss = leg(value.stopLoss)?.toBuilder(),
+    );
   }
 
   ResourceResult<TradingOrder> _result(api.Order value) {
@@ -239,6 +384,10 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
           sizeMode: value.conditional!.sizeMode.name,
           quantity: value.conditional!.quantity,
           triggerReference: value.conditional!.triggerReference.name,
+          activationStatus:
+              value.conditional!.activationStatus?.name ?? 'unknown',
+          warningCode: value.conditional!.warningCode?.name,
+          parentOrderId: value.conditional!.parentOrderId,
         ),
   orderId: value.orderId,
   clientOrderId: value.clientOrderId,

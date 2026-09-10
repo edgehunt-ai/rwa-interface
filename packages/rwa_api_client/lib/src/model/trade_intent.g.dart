@@ -28,6 +28,8 @@ class _$TradeIntent extends TradeIntent {
   @override
   final String? transferId;
   @override
+  final BuiltList<TradeIntentFundingLegBinding>? fundingLegs;
+  @override
   final String? orderId;
   @override
   final DateTime createdAt;
@@ -50,6 +52,7 @@ class _$TradeIntent extends TradeIntent {
       required this.executionPolicy,
       this.fundingPlanId,
       this.transferId,
+      this.fundingLegs,
       this.orderId,
       required this.createdAt,
       required this.updatedAt,
@@ -76,6 +79,7 @@ class _$TradeIntent extends TradeIntent {
         executionPolicy == other.executionPolicy &&
         fundingPlanId == other.fundingPlanId &&
         transferId == other.transferId &&
+        fundingLegs == other.fundingLegs &&
         orderId == other.orderId &&
         createdAt == other.createdAt &&
         updatedAt == other.updatedAt &&
@@ -95,6 +99,7 @@ class _$TradeIntent extends TradeIntent {
     _$hash = $jc(_$hash, executionPolicy.hashCode);
     _$hash = $jc(_$hash, fundingPlanId.hashCode);
     _$hash = $jc(_$hash, transferId.hashCode);
+    _$hash = $jc(_$hash, fundingLegs.hashCode);
     _$hash = $jc(_$hash, orderId.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
     _$hash = $jc(_$hash, updatedAt.hashCode);
@@ -116,6 +121,7 @@ class _$TradeIntent extends TradeIntent {
           ..add('executionPolicy', executionPolicy)
           ..add('fundingPlanId', fundingPlanId)
           ..add('transferId', transferId)
+          ..add('fundingLegs', fundingLegs)
           ..add('orderId', orderId)
           ..add('createdAt', createdAt)
           ..add('updatedAt', updatedAt)
@@ -173,6 +179,12 @@ class TradeIntentBuilder implements Builder<TradeIntent, TradeIntentBuilder> {
   String? get transferId => _$this._transferId;
   set transferId(String? transferId) => _$this._transferId = transferId;
 
+  ListBuilder<TradeIntentFundingLegBinding>? _fundingLegs;
+  ListBuilder<TradeIntentFundingLegBinding> get fundingLegs =>
+      _$this._fundingLegs ??= ListBuilder<TradeIntentFundingLegBinding>();
+  set fundingLegs(ListBuilder<TradeIntentFundingLegBinding>? fundingLegs) =>
+      _$this._fundingLegs = fundingLegs;
+
   String? _orderId;
   String? get orderId => _$this._orderId;
   set orderId(String? orderId) => _$this._orderId = orderId;
@@ -206,6 +218,7 @@ class TradeIntentBuilder implements Builder<TradeIntent, TradeIntentBuilder> {
       _executionPolicy = $v.executionPolicy.toBuilder();
       _fundingPlanId = $v.fundingPlanId;
       _transferId = $v.transferId;
+      _fundingLegs = $v.fundingLegs?.toBuilder();
       _orderId = $v.orderId;
       _createdAt = $v.createdAt;
       _updatedAt = $v.updatedAt;
@@ -249,6 +262,7 @@ class TradeIntentBuilder implements Builder<TradeIntent, TradeIntentBuilder> {
             executionPolicy: executionPolicy.build(),
             fundingPlanId: fundingPlanId,
             transferId: transferId,
+            fundingLegs: _fundingLegs?.build(),
             orderId: orderId,
             createdAt: BuiltValueNullFieldError.checkNotNull(
                 createdAt, r'TradeIntent', 'createdAt'),
@@ -262,6 +276,9 @@ class TradeIntentBuilder implements Builder<TradeIntent, TradeIntentBuilder> {
       try {
         _$failedField = 'executionPolicy';
         executionPolicy.build();
+
+        _$failedField = 'fundingLegs';
+        _fundingLegs?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'TradeIntent', _$failedField, e.toString());

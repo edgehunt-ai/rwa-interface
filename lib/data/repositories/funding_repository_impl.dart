@@ -104,7 +104,9 @@ final class FundingRepositoryImpl implements FundingRepository {
           value: api.AutoSingleSourceFundingPlanRequest(
             (plan) => plan
               ..tradePreviewId = tradePreviewId
-              ..mode = api.FundingPlanMode.autoSingleSource
+              ..mode = api
+                  .AutoSingleSourceFundingPlanRequestModeEnum
+                  .autoSingleSource
               ..sourceAssetId = sourceAssetId == null
                   ? null
                   : api.FundingSourceAssetId.valueOf(sourceAssetId),
@@ -127,9 +129,18 @@ final class FundingRepositoryImpl implements FundingRepository {
   }) async => _transfer(
     await _service.createTransfer(
       api.TransferRequest(
-        (request) => request
-          ..planId = planId
-          ..authorizationId = authorizationId,
+        (request) => request.oneOf = OneOfDynamic(
+          typeIndex: 0,
+          types: const [
+            api.LegacyFundingTransferRequest,
+            api.MultiSourceFundingTransferRequest,
+          ],
+          value: api.LegacyFundingTransferRequest(
+            (b) => b
+              ..planId = planId
+              ..authorizationId = authorizationId,
+          ),
+        ),
       ),
       idempotencyKey: idempotencyKey,
     ),

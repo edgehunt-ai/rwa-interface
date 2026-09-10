@@ -150,6 +150,89 @@ final BuiltSet<Hip3ConditionalOrderTriggerStatusEnum>
   _$hip3ConditionalOrderTriggerStatusEnum_unknownDefaultOpenApi,
 ]);
 
+const Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnum_pendingSubmission =
+    const Hip3ConditionalOrderActivationStatusEnum._('pendingSubmission');
+const Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnum_waitingForParent =
+    const Hip3ConditionalOrderActivationStatusEnum._('waitingForParent');
+const Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnum_pendingConfirmation =
+    const Hip3ConditionalOrderActivationStatusEnum._('pendingConfirmation');
+const Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnum_active =
+    const Hip3ConditionalOrderActivationStatusEnum._('active');
+const Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnum_inactive =
+    const Hip3ConditionalOrderActivationStatusEnum._('inactive');
+const Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnum_unknown =
+    const Hip3ConditionalOrderActivationStatusEnum._('unknown');
+const Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi =
+    const Hip3ConditionalOrderActivationStatusEnum._('unknownDefaultOpenApi');
+
+Hip3ConditionalOrderActivationStatusEnum
+    _$hip3ConditionalOrderActivationStatusEnumValueOf(String name) {
+  switch (name) {
+    case 'pendingSubmission':
+      return _$hip3ConditionalOrderActivationStatusEnum_pendingSubmission;
+    case 'waitingForParent':
+      return _$hip3ConditionalOrderActivationStatusEnum_waitingForParent;
+    case 'pendingConfirmation':
+      return _$hip3ConditionalOrderActivationStatusEnum_pendingConfirmation;
+    case 'active':
+      return _$hip3ConditionalOrderActivationStatusEnum_active;
+    case 'inactive':
+      return _$hip3ConditionalOrderActivationStatusEnum_inactive;
+    case 'unknown':
+      return _$hip3ConditionalOrderActivationStatusEnum_unknown;
+    case 'unknownDefaultOpenApi':
+      return _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi;
+    default:
+      return _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<Hip3ConditionalOrderActivationStatusEnum>
+    _$hip3ConditionalOrderActivationStatusEnumValues = BuiltSet<
+        Hip3ConditionalOrderActivationStatusEnum>(const <Hip3ConditionalOrderActivationStatusEnum>[
+  _$hip3ConditionalOrderActivationStatusEnum_pendingSubmission,
+  _$hip3ConditionalOrderActivationStatusEnum_waitingForParent,
+  _$hip3ConditionalOrderActivationStatusEnum_pendingConfirmation,
+  _$hip3ConditionalOrderActivationStatusEnum_active,
+  _$hip3ConditionalOrderActivationStatusEnum_inactive,
+  _$hip3ConditionalOrderActivationStatusEnum_unknown,
+  _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi,
+]);
+
+const Hip3ConditionalOrderWarningCodeEnum
+    _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection =
+    const Hip3ConditionalOrderWarningCodeEnum._(
+        'parentCancelledCheckRemainingPositionProtection');
+const Hip3ConditionalOrderWarningCodeEnum
+    _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi =
+    const Hip3ConditionalOrderWarningCodeEnum._('unknownDefaultOpenApi');
+
+Hip3ConditionalOrderWarningCodeEnum
+    _$hip3ConditionalOrderWarningCodeEnumValueOf(String name) {
+  switch (name) {
+    case 'parentCancelledCheckRemainingPositionProtection':
+      return _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection;
+    case 'unknownDefaultOpenApi':
+      return _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi;
+    default:
+      return _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<Hip3ConditionalOrderWarningCodeEnum>
+    _$hip3ConditionalOrderWarningCodeEnumValues = BuiltSet<
+        Hip3ConditionalOrderWarningCodeEnum>(const <Hip3ConditionalOrderWarningCodeEnum>[
+  _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection,
+  _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi,
+]);
+
 const Hip3ConditionalOrderSizeModeEnum
     _$hip3ConditionalOrderSizeModeEnum_entirePosition =
     const Hip3ConditionalOrderSizeModeEnum._('entirePosition');
@@ -200,6 +283,12 @@ Serializer<Hip3ConditionalOrderExecutionTypeEnum>
 Serializer<Hip3ConditionalOrderTriggerStatusEnum>
     _$hip3ConditionalOrderTriggerStatusEnumSerializer =
     _$Hip3ConditionalOrderTriggerStatusEnumSerializer();
+Serializer<Hip3ConditionalOrderActivationStatusEnum>
+    _$hip3ConditionalOrderActivationStatusEnumSerializer =
+    _$Hip3ConditionalOrderActivationStatusEnumSerializer();
+Serializer<Hip3ConditionalOrderWarningCodeEnum>
+    _$hip3ConditionalOrderWarningCodeEnumSerializer =
+    _$Hip3ConditionalOrderWarningCodeEnumSerializer();
 Serializer<Hip3ConditionalOrderSizeModeEnum>
     _$hip3ConditionalOrderSizeModeEnumSerializer =
     _$Hip3ConditionalOrderSizeModeEnumSerializer();
@@ -343,6 +432,82 @@ class _$Hip3ConditionalOrderTriggerStatusEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$Hip3ConditionalOrderActivationStatusEnumSerializer
+    implements PrimitiveSerializer<Hip3ConditionalOrderActivationStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'pendingSubmission': 'pending_submission',
+    'waitingForParent': 'waiting_for_parent',
+    'pendingConfirmation': 'pending_confirmation',
+    'active': 'active',
+    'inactive': 'inactive',
+    'unknown': 'unknown',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'pending_submission': 'pendingSubmission',
+    'waiting_for_parent': 'waitingForParent',
+    'pending_confirmation': 'pendingConfirmation',
+    'active': 'active',
+    'inactive': 'inactive',
+    'unknown': 'unknown',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    Hip3ConditionalOrderActivationStatusEnum
+  ];
+  @override
+  final String wireName = 'Hip3ConditionalOrderActivationStatusEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          Hip3ConditionalOrderActivationStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  Hip3ConditionalOrderActivationStatusEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Hip3ConditionalOrderActivationStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$Hip3ConditionalOrderWarningCodeEnumSerializer
+    implements PrimitiveSerializer<Hip3ConditionalOrderWarningCodeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'parentCancelledCheckRemainingPositionProtection':
+        'parent_cancelled_check_remaining_position_protection',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'parent_cancelled_check_remaining_position_protection':
+        'parentCancelledCheckRemainingPositionProtection',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    Hip3ConditionalOrderWarningCodeEnum
+  ];
+  @override
+  final String wireName = 'Hip3ConditionalOrderWarningCodeEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, Hip3ConditionalOrderWarningCodeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  Hip3ConditionalOrderWarningCodeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      Hip3ConditionalOrderWarningCodeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$Hip3ConditionalOrderSizeModeEnumSerializer
     implements PrimitiveSerializer<Hip3ConditionalOrderSizeModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
@@ -389,11 +554,15 @@ class _$Hip3ConditionalOrder extends Hip3ConditionalOrder {
   @override
   final Hip3ConditionalOrderTriggerStatusEnum triggerStatus;
   @override
+  final Hip3ConditionalOrderActivationStatusEnum? activationStatus;
+  @override
+  final Hip3ConditionalOrderWarningCodeEnum? warningCode;
+  @override
   final String protectionGroupId;
   @override
   final String? parentOrderId;
   @override
-  final String positionId;
+  final String? positionId;
   @override
   final Hip3ConditionalOrderSizeModeEnum sizeMode;
   @override
@@ -411,9 +580,11 @@ class _$Hip3ConditionalOrder extends Hip3ConditionalOrder {
       required this.triggerReference,
       required this.executionType,
       required this.triggerStatus,
+      this.activationStatus,
+      this.warningCode,
       required this.protectionGroupId,
       this.parentOrderId,
-      required this.positionId,
+      this.positionId,
       required this.sizeMode,
       required this.quantity,
       required this.reduceOnly})
@@ -436,6 +607,8 @@ class _$Hip3ConditionalOrder extends Hip3ConditionalOrder {
         triggerReference == other.triggerReference &&
         executionType == other.executionType &&
         triggerStatus == other.triggerStatus &&
+        activationStatus == other.activationStatus &&
+        warningCode == other.warningCode &&
         protectionGroupId == other.protectionGroupId &&
         parentOrderId == other.parentOrderId &&
         positionId == other.positionId &&
@@ -452,6 +625,8 @@ class _$Hip3ConditionalOrder extends Hip3ConditionalOrder {
     _$hash = $jc(_$hash, triggerReference.hashCode);
     _$hash = $jc(_$hash, executionType.hashCode);
     _$hash = $jc(_$hash, triggerStatus.hashCode);
+    _$hash = $jc(_$hash, activationStatus.hashCode);
+    _$hash = $jc(_$hash, warningCode.hashCode);
     _$hash = $jc(_$hash, protectionGroupId.hashCode);
     _$hash = $jc(_$hash, parentOrderId.hashCode);
     _$hash = $jc(_$hash, positionId.hashCode);
@@ -470,6 +645,8 @@ class _$Hip3ConditionalOrder extends Hip3ConditionalOrder {
           ..add('triggerReference', triggerReference)
           ..add('executionType', executionType)
           ..add('triggerStatus', triggerStatus)
+          ..add('activationStatus', activationStatus)
+          ..add('warningCode', warningCode)
           ..add('protectionGroupId', protectionGroupId)
           ..add('parentOrderId', parentOrderId)
           ..add('positionId', positionId)
@@ -511,6 +688,18 @@ class Hip3ConditionalOrderBuilder
   set triggerStatus(Hip3ConditionalOrderTriggerStatusEnum? triggerStatus) =>
       _$this._triggerStatus = triggerStatus;
 
+  Hip3ConditionalOrderActivationStatusEnum? _activationStatus;
+  Hip3ConditionalOrderActivationStatusEnum? get activationStatus =>
+      _$this._activationStatus;
+  set activationStatus(
+          Hip3ConditionalOrderActivationStatusEnum? activationStatus) =>
+      _$this._activationStatus = activationStatus;
+
+  Hip3ConditionalOrderWarningCodeEnum? _warningCode;
+  Hip3ConditionalOrderWarningCodeEnum? get warningCode => _$this._warningCode;
+  set warningCode(Hip3ConditionalOrderWarningCodeEnum? warningCode) =>
+      _$this._warningCode = warningCode;
+
   String? _protectionGroupId;
   String? get protectionGroupId => _$this._protectionGroupId;
   set protectionGroupId(String? protectionGroupId) =>
@@ -550,6 +739,8 @@ class Hip3ConditionalOrderBuilder
       _triggerReference = $v.triggerReference;
       _executionType = $v.executionType;
       _triggerStatus = $v.triggerStatus;
+      _activationStatus = $v.activationStatus;
+      _warningCode = $v.warningCode;
       _protectionGroupId = $v.protectionGroupId;
       _parentOrderId = $v.parentOrderId;
       _positionId = $v.positionId;
@@ -587,11 +778,12 @@ class Hip3ConditionalOrderBuilder
               executionType, r'Hip3ConditionalOrder', 'executionType'),
           triggerStatus: BuiltValueNullFieldError.checkNotNull(
               triggerStatus, r'Hip3ConditionalOrder', 'triggerStatus'),
+          activationStatus: activationStatus,
+          warningCode: warningCode,
           protectionGroupId: BuiltValueNullFieldError.checkNotNull(
               protectionGroupId, r'Hip3ConditionalOrder', 'protectionGroupId'),
           parentOrderId: parentOrderId,
-          positionId: BuiltValueNullFieldError.checkNotNull(
-              positionId, r'Hip3ConditionalOrder', 'positionId'),
+          positionId: positionId,
           sizeMode: BuiltValueNullFieldError.checkNotNull(
               sizeMode, r'Hip3ConditionalOrder', 'sizeMode'),
           quantity: BuiltValueNullFieldError.checkNotNull(
