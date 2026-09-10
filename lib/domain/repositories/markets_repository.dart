@@ -2,12 +2,16 @@ import '../models/domain_page.dart';
 import '../models/stock.dart';
 import '../models/market_product.dart';
 import '../models/market_snapshot.dart';
+import '../models/market_list_query.dart';
 
 abstract interface class MarketsRepository {
   Future<DomainPage<Stock>> listStocks();
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    MarketProductKind? kind,
+    MarketListGroup? group,
+    int? limit,
   });
   Future<MarketProduct> getProduct(MarketProductRef ref);
   Future<MarketSnapshot> getSnapshot(MarketProductRef ref);

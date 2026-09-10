@@ -345,6 +345,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3ChartLoading => 'Loading price history…';
 
   @override
+  String get hip3ChartInspect => 'Touch or drag the chart to inspect a candle.';
+
+  @override
+  String get hip3ChartVolume => 'Volume';
+
+  @override
+  String hip3ChartUnits(String symbol) {
+    return 'OHLC in USDC · Volume in $symbol';
+  }
+
+  @override
+  String get hip3ChartHistoryLoad => 'Load earlier candles';
+
+  @override
+  String get hip3ChartHistoryLoading => 'Loading earlier candles…';
+
+  @override
+  String get hip3ChartHistoryRetry => 'Retry earlier candles';
+
+  @override
+  String get hip3ChartHistoryError =>
+      'Earlier candles could not load. Your chart is unchanged.';
+
+  @override
+  String get hip3ChartHistoryEmpty =>
+      'No candles in that earlier window. You can continue further back.';
+
+  @override
+  String get hip3ChartHistoryEnd => 'Reached the available history limit.';
+
+  @override
   String get hip3ChartError => 'Could not load price history.';
 
   @override
@@ -396,6 +427,136 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get price => 'Price';
+
+  @override
+  String get hip3OrderDetailTitle => 'HIP3 order details';
+
+  @override
+  String get hip3OrderHistoryTitle => 'HIP3 order records';
+
+  @override
+  String get hip3OrderHistoryEmpty => 'No HIP3 orders were returned.';
+
+  @override
+  String get hip3OrderLoadMore => 'Load more orders';
+
+  @override
+  String get hip3OrderLoading => 'Loading order details';
+
+  @override
+  String get hip3OrderLoadError =>
+      'Could not load order records. Retry to fetch the latest data.';
+
+  @override
+  String get hip3OrderRetry => 'Retry';
+
+  @override
+  String get hip3OrderRefresh => 'Refresh orders';
+
+  @override
+  String get hip3OrderNotHip3 =>
+      'HIP3 order details are unavailable for this order.';
+
+  @override
+  String get hip3OrderUnavailable => 'Unavailable';
+
+  @override
+  String get hip3OrderUnitUnavailable => 'unit unavailable';
+
+  @override
+  String get hip3OrderSummary => 'Order totals';
+
+  @override
+  String get hip3OrderDirection => 'Order direction';
+
+  @override
+  String hip3OrderSide(String side) {
+    String _temp0 = intl.Intl.selectLogic(side, {
+      'buy': 'Buy',
+      'sell': 'Sell',
+      'long': 'Long',
+      'short': 'Short',
+      'other': 'Unavailable',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get hip3OrderFilledQuantity => 'Total filled quantity';
+
+  @override
+  String get hip3OrderAveragePrice => 'Average fill price';
+
+  @override
+  String get hip3OrderTotalFee => 'Total fee';
+
+  @override
+  String get hip3OrderRealizedPnl => 'Order realized PnL';
+
+  @override
+  String get hip3OrderSummaryNote =>
+      'Totals are reported by the order API, not calculated from the records below.';
+
+  @override
+  String get hip3OrderFillsTitle => 'Individual fills';
+
+  @override
+  String hip3OrderFillsCoverage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'This response contains $count fill records',
+      one: 'This response contains 1 fill record',
+    );
+    return '$_temp0 for this order. Earlier or missing records cannot be requested separately; completeness is not confirmed.';
+  }
+
+  @override
+  String get hip3OrderReturnedRange => 'Returned execution times';
+
+  @override
+  String get hip3OrderObservedAt => 'Provider observation time';
+
+  @override
+  String get hip3OrderFillMissingFields =>
+      'The API does not provide direction or realized PnL for individual fills. Order direction and order PnL are shown separately above.';
+
+  @override
+  String get hip3OrderFillsOmitted =>
+      'Fill details were not provided by the API. This does not mean the order has no executions.';
+
+  @override
+  String get hip3OrderFillsEmpty =>
+      'No individual fills were returned. This does not prove that no executions occurred.';
+
+  @override
+  String hip3OrderFillNumber(int index) {
+    return 'Fill $index';
+  }
+
+  @override
+  String get hip3OrderFillTime => 'Execution time';
+
+  @override
+  String get hip3OrderFillDirection => 'Fill direction';
+
+  @override
+  String get hip3OrderFillQuantity => 'Fill quantity';
+
+  @override
+  String get hip3OrderFillFee => 'Fill fee';
+
+  @override
+  String get hip3OrderFillPnl => 'Fill realized PnL';
+
+  @override
+  String get hip3OrderFillId => 'Fill ID';
+
+  @override
+  String get hip3OrderProviderTradeId => 'Provider trade ID';
+
+  @override
+  String get hip3OrderProviderHash => 'Provider transaction hash';
 
   @override
   String get add => 'Add';

@@ -34,6 +34,41 @@ void main() {
     ),
   );
 
+  test(
+    'leverage context maps exact limits and refuses wrong product/network/mode',
+    () async {
+      actions.tradingContext = _context();
+      final context = await repository.leverageContext('xyz:XYZ');
+      expect(context.maximum.value, '10');
+      expect(context.current!.value, '2');
+      expect(context.marginMode, PositionMarginMode.cross);
+      expect(context.canChange, isTrue);
+      actions.tradingContext = _context().rebuild(
+        (b) => b.productId = 'xyz:OTHER',
+      );
+      await expectLater(
+        repository.leverageContext('xyz:XYZ'),
+        throwsFormatException,
+      );
+      actions.tradingContext = _context().rebuild(
+        (b) => b.environment = api.Hip3Environment.mainnet,
+      );
+      expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
+      actions.tradingContext = _context().rebuild(
+        (b) => b.currentMarginMode = null,
+      );
+      expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
+      actions.tradingContext = _context().rebuild(
+        (b) => b.currentLeverage = null,
+      );
+      expect((await repository.leverageContext('xyz:XYZ')).current, isNull);
+      actions.tradingContext = _context().rebuild(
+        (b) => b.supportedOperations.clear(),
+      );
+      expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
+    },
+  );
+
   test('TP/SL direction uses decimal comparisons without precision loss', () {
     expect(
       () => repository.updateTpSl(
@@ -132,6 +167,10 @@ final class _Positions implements PositionsService {
 }
 
 final class _Actions implements Hip3PositionActionService {
+  api.Hip3TradingContext? tradingContext;
+  @override
+  Future<api.Hip3TradingContext> context(String productId) async =>
+      tradingContext!;
   api.Hip3ActionPage? page;
   String? cursor;
   @override
@@ -151,6 +190,37 @@ final class _Actions implements Hip3PositionActionService {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+api.Hip3TradingContext _context() =>
+    api.standardSerializers.deserializeWith(api.Hip3TradingContext.serializer, {
+      'context_id': 'ctx1',
+      'environment': 'testnet',
+      'product_id': 'xyz:XYZ',
+      'symbol': 'XYZ',
+      'venue': 'xyz',
+      'settlement_asset': 'USDC',
+      'current_leverage': '2',
+      'current_margin_mode': 'cross',
+      'available_margin_usdc': '100',
+      'withdrawable_usdc': '100',
+      'supported_operations': ['set_leverage'],
+      'observed_at': '2026-09-10T00:00:00Z',
+      'valid_until': '2099-01-01T00:00:00Z',
+      'rules': {
+        'rules_version': 'r1',
+        'size_decimals': 3,
+        'price_max_significant_digits': 5,
+        'price_max_decimals': 3,
+        'integer_prices_allowed': true,
+        'minimum_notional_usdc': '10',
+        'max_leverage': '10',
+        'margin_modes': ['cross'],
+        'order_types': ['market', 'limit'],
+        'time_in_force': ['gtc', 'ioc'],
+        'trigger_references': ['mark'],
+        'observed_at': '2026-09-10T00:00:00Z',
+      },
+    })!;
 
 api.Hip3Action _recovered() => api.standardSerializers.deserializeWith(
   api.Hip3Action.serializer,

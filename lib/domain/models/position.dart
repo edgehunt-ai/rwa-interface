@@ -21,6 +21,8 @@ final class Position {
     this.entryPrice,
     this.markPrice,
     this.unrealizedPnl,
+    this.unrealizedPnlPercent,
+    this.fundingPaid,
     this.realizedPnl,
     this.leverage,
     this.margin,
@@ -46,6 +48,10 @@ final class Position {
   final DecimalValue? entryPrice;
   final DecimalValue? markPrice;
   final DecimalValue? unrealizedPnl;
+  final DecimalValue? unrealizedPnlPercent;
+
+  /// Signed cumulative funding: negative paid, positive received.
+  final DecimalValue? fundingPaid;
   final DecimalValue? realizedPnl;
   final DecimalValue? leverage;
   final DecimalValue? margin;

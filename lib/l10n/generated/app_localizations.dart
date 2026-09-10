@@ -752,6 +752,60 @@ abstract class AppLocalizations {
   /// **'Loading price history…'**
   String get hip3ChartLoading;
 
+  /// No description provided for @hip3ChartInspect.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch or drag the chart to inspect a candle.'**
+  String get hip3ChartInspect;
+
+  /// No description provided for @hip3ChartVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get hip3ChartVolume;
+
+  /// No description provided for @hip3ChartUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'OHLC in USDC · Volume in {symbol}'**
+  String hip3ChartUnits(String symbol);
+
+  /// No description provided for @hip3ChartHistoryLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier candles'**
+  String get hip3ChartHistoryLoad;
+
+  /// No description provided for @hip3ChartHistoryLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading earlier candles…'**
+  String get hip3ChartHistoryLoading;
+
+  /// No description provided for @hip3ChartHistoryRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry earlier candles'**
+  String get hip3ChartHistoryRetry;
+
+  /// No description provided for @hip3ChartHistoryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier candles could not load. Your chart is unchanged.'**
+  String get hip3ChartHistoryError;
+
+  /// No description provided for @hip3ChartHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No candles in that earlier window. You can continue further back.'**
+  String get hip3ChartHistoryEmpty;
+
+  /// No description provided for @hip3ChartHistoryEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached the available history limit.'**
+  String get hip3ChartHistoryEnd;
+
   /// No description provided for @hip3ChartError.
   ///
   /// In en, this message translates to:
@@ -853,6 +907,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Price'**
   String get price;
+
+  /// No description provided for @hip3OrderDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 order details'**
+  String get hip3OrderDetailTitle;
+
+  /// No description provided for @hip3OrderHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 order records'**
+  String get hip3OrderHistoryTitle;
+
+  /// No description provided for @hip3OrderHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No HIP3 orders were returned.'**
+  String get hip3OrderHistoryEmpty;
+
+  /// No description provided for @hip3OrderLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more orders'**
+  String get hip3OrderLoadMore;
+
+  /// No description provided for @hip3OrderLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading order details'**
+  String get hip3OrderLoading;
+
+  /// No description provided for @hip3OrderLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load order records. Retry to fetch the latest data.'**
+  String get hip3OrderLoadError;
+
+  /// No description provided for @hip3OrderRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get hip3OrderRetry;
+
+  /// No description provided for @hip3OrderRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh orders'**
+  String get hip3OrderRefresh;
+
+  /// No description provided for @hip3OrderNotHip3.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 order details are unavailable for this order.'**
+  String get hip3OrderNotHip3;
+
+  /// No description provided for @hip3OrderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get hip3OrderUnavailable;
+
+  /// No description provided for @hip3OrderUnitUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'unit unavailable'**
+  String get hip3OrderUnitUnavailable;
+
+  /// No description provided for @hip3OrderSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Order totals'**
+  String get hip3OrderSummary;
+
+  /// No description provided for @hip3OrderDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Order direction'**
+  String get hip3OrderDirection;
+
+  /// No description provided for @hip3OrderSide.
+  ///
+  /// In en, this message translates to:
+  /// **'{side, select, buy{Buy} sell{Sell} long{Long} short{Short} other{Unavailable}}'**
+  String hip3OrderSide(String side);
+
+  /// No description provided for @hip3OrderFilledQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Total filled quantity'**
+  String get hip3OrderFilledQuantity;
+
+  /// No description provided for @hip3OrderAveragePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Average fill price'**
+  String get hip3OrderAveragePrice;
+
+  /// No description provided for @hip3OrderTotalFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Total fee'**
+  String get hip3OrderTotalFee;
+
+  /// No description provided for @hip3OrderRealizedPnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Order realized PnL'**
+  String get hip3OrderRealizedPnl;
+
+  /// No description provided for @hip3OrderSummaryNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Totals are reported by the order API, not calculated from the records below.'**
+  String get hip3OrderSummaryNote;
+
+  /// No description provided for @hip3OrderFillsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual fills'**
+  String get hip3OrderFillsTitle;
+
+  /// No description provided for @hip3OrderFillsCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{This response contains 1 fill record} other{This response contains {count} fill records}} for this order. Earlier or missing records cannot be requested separately; completeness is not confirmed.'**
+  String hip3OrderFillsCoverage(int count);
+
+  /// No description provided for @hip3OrderReturnedRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned execution times'**
+  String get hip3OrderReturnedRange;
+
+  /// No description provided for @hip3OrderObservedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider observation time'**
+  String get hip3OrderObservedAt;
+
+  /// No description provided for @hip3OrderFillMissingFields.
+  ///
+  /// In en, this message translates to:
+  /// **'The API does not provide direction or realized PnL for individual fills. Order direction and order PnL are shown separately above.'**
+  String get hip3OrderFillMissingFields;
+
+  /// No description provided for @hip3OrderFillsOmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill details were not provided by the API. This does not mean the order has no executions.'**
+  String get hip3OrderFillsOmitted;
+
+  /// No description provided for @hip3OrderFillsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No individual fills were returned. This does not prove that no executions occurred.'**
+  String get hip3OrderFillsEmpty;
+
+  /// No description provided for @hip3OrderFillNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill {index}'**
+  String hip3OrderFillNumber(int index);
+
+  /// No description provided for @hip3OrderFillTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution time'**
+  String get hip3OrderFillTime;
+
+  /// No description provided for @hip3OrderFillDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill direction'**
+  String get hip3OrderFillDirection;
+
+  /// No description provided for @hip3OrderFillQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill quantity'**
+  String get hip3OrderFillQuantity;
+
+  /// No description provided for @hip3OrderFillFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill fee'**
+  String get hip3OrderFillFee;
+
+  /// No description provided for @hip3OrderFillPnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill realized PnL'**
+  String get hip3OrderFillPnl;
+
+  /// No description provided for @hip3OrderFillId.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill ID'**
+  String get hip3OrderFillId;
+
+  /// No description provided for @hip3OrderProviderTradeId.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider trade ID'**
+  String get hip3OrderProviderTradeId;
+
+  /// No description provided for @hip3OrderProviderHash.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider transaction hash'**
+  String get hip3OrderProviderHash;
 
   /// No description provided for @add.
   ///

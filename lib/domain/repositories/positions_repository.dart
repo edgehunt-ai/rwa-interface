@@ -5,8 +5,10 @@ import '../models/position.dart';
 import '../models/position_operation.dart';
 import '../models/order_intent.dart';
 import '../models/hip3_action_summary.dart';
+import '../models/position_leverage_context.dart';
 
 abstract interface class PositionsRepository {
+  Future<PositionLeverageContext> leverageContext(String productId);
   Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({String? cursor});
 
   /// Recover a server-persisted HIP3 workflow without creating another action.

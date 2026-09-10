@@ -313,7 +313,19 @@ class _PositionCard extends StatelessWidget {
             position.symbol,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
-          if (pnl != null)
+          if (kind == MarketProductKind.perp)
+            Hip3PositionMetrics(
+              position: position,
+              onEditLeverage: position.productId == null
+                  ? null
+                  : () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) =>
+                          Hip3PositionLeverageSheet(position: position),
+                    ),
+            ),
+          if (kind != MarketProductKind.perp && pnl != null)
             _DetailRow('Unrealized PnL', TokenAmountFormatter.formatUsd(pnl)),
           _DetailRow(
             'Value',
@@ -326,12 +338,12 @@ class _PositionCard extends StatelessWidget {
               symbol: position.symbol,
             ),
           ),
-          if (position.entryPrice != null)
+          if (kind != MarketProductKind.perp && position.entryPrice != null)
             _DetailRow(
               'Entry Price',
               TokenAmountFormatter.formatUsd(position.entryPrice!),
             ),
-          if (position.markPrice != null)
+          if (kind != MarketProductKind.perp && position.markPrice != null)
             _DetailRow(
               'Market Price',
               TokenAmountFormatter.formatUsd(position.markPrice!),

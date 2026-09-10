@@ -13,6 +13,7 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_leverage_context.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
@@ -181,11 +182,17 @@ void main() {
       const filter = (symbol: null, kind: null, cursor: null);
       final list = container.listen(positionsProvider(filter), (_, _) {});
       final commands = container.listen(positionCommandProvider, (_, _) {});
+      final context = container.listen(
+        positionLeverageContextProvider('xyz:NVDA'),
+        (_, _) {},
+      );
+      addTearDown(context.close);
       addTearDown(first.close);
       addTearDown(other.close);
       addTearDown(list.close);
       addTearDown(commands.close);
       await Future.wait([
+        container.read(positionLeverageContextProvider('xyz:NVDA').future),
         container.read(positionProvider('position-1').future),
         container.read(positionProvider('position-2').future),
         container.read(positionsProvider(filter).future),
@@ -196,10 +203,12 @@ void main() {
           .updateLeverage(_position(), '2');
       await container.read(positionProvider('position-1').future);
       await container.read(positionsProvider(filter).future);
+      await container.read(positionLeverageContextProvider('xyz:NVDA').future);
 
       expect(repository.getCalls['position-1'], 2);
       expect(repository.getCalls['position-2'], 1);
       expect(repository.listCalls, 2);
+      expect(repository.contextCalls, 2);
     },
   );
 
@@ -229,6 +238,7 @@ void main() {
 
 Position _position() => Position(
   positionId: 'position-1',
+  productId: 'xyz:NVDA',
   symbol: 'NVDA',
   kind: MarketProductKind.perp,
   side: PositionSide.long,
@@ -246,6 +256,17 @@ final class _PositionsRepository implements PositionsRepository {
   Completer<void>? leverageCompletion;
   Hip3ActionPending? pending;
   int activeCalls = 0;
+  int contextCalls = 0;
+  @override
+  Future<PositionLeverageContext> leverageContext(String productId) async {
+    contextCalls++;
+    return PositionLeverageContext(
+      productId: productId,
+      maximum: DecimalValue('10'),
+      validUntil: DateTime.utc(2099),
+      canChange: true,
+    );
+  }
 
   @override
   Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({

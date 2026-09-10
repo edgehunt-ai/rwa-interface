@@ -10,6 +10,10 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 
+import '../../../../domain/models/market_list_query.dart';
+import '../providers/market_list_provider.dart';
+import 'market_paged_list.dart';
+
 class MarketScreen extends ConsumerStatefulWidget {
   const MarketScreen({super.key});
   @override
@@ -19,6 +23,13 @@ class MarketScreen extends ConsumerStatefulWidget {
 class _MarketScreenState extends ConsumerState<MarketScreen> {
   String activeTab = 'Popular';
   MarketProductKind? kind;
+  MarketListQuery get listQuery =>
+      MarketListQuery(kind: kind, group: marketGroupForTab(activeTab));
+
+  void _change(VoidCallback change) {
+    setState(change);
+    ref.invalidate(marketListProvider(listQuery));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,122 +43,163 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async =>
-              ref.refresh(marketProductsProvider((query: null, cursor: null))),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Markets',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const Spacer(),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Semantics(
-                button: true,
-                label: 'Search markets',
-                child: TextField(
-                  readOnly: true,
-                  onTap: () => context.pushNamed(AppRoutes.marketSearchName),
-                  decoration: InputDecoration(
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: SvgPicture.asset(
-                        'assets/figma/home_markets/search.svg',
-                        width: 20,
-                        height: 20,
-                      ),
-                    ),
-                    hintText: 'Search ticker or company',
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(14)),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _StockBrowse(
-                onAll: () => context.pushNamed(AppRoutes.allStocksName),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Text(
-                    'Products',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const Spacer(),
-                  MarketProductFilter(
-                    value: kind,
-                    onChanged: (value) => setState(() => kind = value),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              MarketRankingTabs(
-                active: activeTab,
-                onSelected: (value) => setState(() => activeTab = value),
-              ),
-              products.when(
-                loading: () => const SizedBox(
-                  height: 280,
-                  child: DesignStateFeedback(
-                    state: DesignState.loading,
-                    title: 'Loading products',
-                  ),
-                ),
-                error: (_, _) => SizedBox(
-                  height: 340,
-                  child: DesignStateFeedback(
-                    state: DesignState.failure,
-                    title: 'Markets unavailable',
-                    message: 'Pull to refresh and try again.',
-                    onRetry: () => ref.refresh(
-                      marketProductsProvider((query: null, cursor: null))
-                          .future,
-                    ),
-                  ),
-                ),
-                data: (page) {
-                  var items = page.items;
-                  if (kind != null) {
-                    items = items
-                        .where((product) => product.kind == kind)
-                        .toList(growable: false);
-                  }
-                  items = marketProductsForTab(items, activeTab);
-                  if (items.isEmpty) {
-                    return const SizedBox(
-                      height: 280,
-                      child: DesignStateFeedback(
-                        state: DesignState.empty,
-                        title: 'No matching products',
-                        message: 'Try another search or product filter.',
-                      ),
-                    );
-                  }
-                  return Column(
-                    children: [
-                      for (final product in items) ...[
-                        MarketProductRow(
-                          product: product,
-                          onTap: () => context.push(
-                            AppRoutes.tradeLocation(
-                              symbol: product.symbol,
-                              kind: product.kind.name,
+          onRefresh: () async {
+            if (kind == MarketProductKind.bstock) {
+              ref.invalidate(
+                marketProductsProvider((query: null, cursor: null)),
+              );
+              await ref.read(
+                marketProductsProvider((query: null, cursor: null)).future,
+              );
+            } else {
+              await ref.read(marketListProvider(listQuery).notifier).refresh();
+            }
+          },
+          child: CustomScrollView(
+            key: ValueKey(listQuery),
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+                sliver: SliverMainAxisGroup(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Markets',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium,
+                              ),
+                              const Spacer(),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Semantics(
+                            button: true,
+                            label: 'Search markets',
+                            child: TextField(
+                              readOnly: true,
+                              onTap: () =>
+                                  context.pushNamed(AppRoutes.marketSearchName),
+                              decoration: InputDecoration(
+                                prefixIcon: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: SvgPicture.asset(
+                                    'assets/figma/home_markets/search.svg',
+                                    width: 20,
+                                    height: 20,
+                                  ),
+                                ),
+                                hintText: 'Search ticker or company',
+                                border: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(14),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          _StockBrowse(
+                            onAll: () =>
+                                context.pushNamed(AppRoutes.allStocksName),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Products',
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                              ),
+                              MarketProductFilter(
+                                value: kind,
+                                onChanged: (value) =>
+                                    _change(() => kind = value),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          MarketRankingTabs(
+                            active: activeTab,
+                            onSelected: (value) =>
+                                _change(() => activeTab = value),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (kind != MarketProductKind.bstock)
+                      MarketPagedSliver(query: listQuery)
+                    else
+                      SliverToBoxAdapter(
+                        child: products.when(
+                          loading: () => const SizedBox(
+                            height: 280,
+                            child: DesignStateFeedback(
+                              state: DesignState.loading,
+                              title: 'Loading products',
+                            ),
+                          ),
+                          error: (_, _) => SizedBox(
+                            height: 340,
+                            child: DesignStateFeedback(
+                              state: DesignState.failure,
+                              title: 'Markets unavailable',
+                              message: 'Pull to refresh and try again.',
+                              onRetry: () => ref.refresh(
+                                marketProductsProvider((
+                                  query: null,
+                                  cursor: null,
+                                )).future,
+                              ),
+                            ),
+                          ),
+                          data: (page) {
+                            var items = page.items;
+                            if (kind != null) {
+                              items = items
+                                  .where((product) => product.kind == kind)
+                                  .toList(growable: false);
+                            }
+                            items = marketProductsForTab(items, activeTab);
+                            if (items.isEmpty) {
+                              return const SizedBox(
+                                height: 280,
+                                child: DesignStateFeedback(
+                                  state: DesignState.empty,
+                                  title: 'No matching products',
+                                  message:
+                                      'Try another search or product filter.',
+                                ),
+                              );
+                            }
+                            return Column(
+                              children: [
+                                for (final product in items) ...[
+                                  MarketProductRow(
+                                    product: product,
+                                    onTap: () => context.push(
+                                      AppRoutes.tradeLocation(
+                                        symbol: product.symbol,
+                                        kind: product.kind.name,
+                                      ),
+                                    ),
+                                  ),
+                                  if (product != items.last)
+                                    Divider(height: 1, color: colors.border),
+                                ],
+                              ],
+                            );
+                          },
                         ),
-                        if (product != items.last)
-                          Divider(height: 1, color: colors.border),
-                      ],
-                    ],
-                  );
-                },
+                      ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -206,13 +258,14 @@ class _StockTile extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
       width: 168,
-      height: 92,
+      constraints: const BoxConstraints(minHeight: 92),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -237,7 +290,7 @@ class _StockTile extends StatelessWidget {
               ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 8),
           Text(product.network, style: TextStyle(color: colors.secondaryText)),
         ],
       ),

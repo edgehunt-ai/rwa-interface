@@ -18,22 +18,27 @@ void main() {
 
 final class _Markets implements MarketsService {
   @override
-  Future<api.ProductPage> listProducts({String? query, String? cursor}) async =>
-      api.ProductPage(
-        (page) => page
-          ..hasMore = true
-          ..nextCursor = 'b'
-          ..items.add(
-            api.ProductListing(
-              (item) => item
-                ..symbol = 'NVDA'
-                ..name = 'NVIDIA'
-                ..kind = api.ProductKind.bstock
-                ..price = '123.4500'
-                ..isFavorite = true,
-            ),
-          ),
-      );
+  Future<api.ProductPage> listProducts({
+    String? query,
+    String? cursor,
+    api.MarketProductGroup? group,
+    api.ProductType? productType,
+    int? limit,
+  }) async => api.ProductPage(
+    (page) => page
+      ..hasMore = true
+      ..nextCursor = 'b'
+      ..items.add(
+        api.ProductListing(
+          (item) => item
+            ..symbol = 'NVDA'
+            ..name = 'NVIDIA'
+            ..kind = api.ProductKind.bstock
+            ..price = '123.4500'
+            ..isFavorite = true,
+        ),
+      ),
+  );
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

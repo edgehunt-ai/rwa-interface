@@ -8,6 +8,7 @@ import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/position.dart';
+import '../../../../domain/models/position_leverage_context.dart';
 import '../../../../domain/models/position_operation.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../orders/providers/order_providers.dart';
@@ -51,6 +52,12 @@ final positionCommandProvider = Provider.autoDispose((ref) {
   ref.watch(sessionGenerationProvider);
   return PositionCommands(ref);
 });
+
+final positionLeverageContextProvider = FutureProvider.autoDispose
+    .family<PositionLeverageContext, String>((ref, productId) {
+      ref.watch(sessionGenerationProvider);
+      return ref.watch(positionsRepositoryProvider).leverageContext(productId);
+    }, retry: (_, _) => null);
 
 final positionProtectionOrdersProvider = FutureProvider.autoDispose
     .family<List<TradingOrder>, Position>((ref, position) async {
@@ -116,6 +123,7 @@ final class PositionCommands {
     );
     _ref.invalidate(positionProvider);
     _ref.invalidate(positionsProvider);
+    _ref.invalidate(positionLeverageContextProvider);
   }
 
   Future<Position> updateTpSl(
@@ -175,6 +183,9 @@ final class PositionCommands {
     );
     _ref.invalidate(positionProvider(position.positionId));
     _ref.invalidate(positionsProvider);
+    if (position.productId case final productId?) {
+      _ref.invalidate(positionLeverageContextProvider(productId));
+    }
     return result;
   }
 

@@ -1,0 +1,166 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/session_scope.dart';
+import '../../../../domain/models/domain_page.dart';
+import '../../../../domain/models/market_list_query.dart';
+import '../../../../domain/models/market_product.dart';
+import '../../../../domain/repositories/markets_repository.dart';
+
+final marketListProvider = NotifierProvider.autoDispose
+    .family<MarketListNotifier, MarketListState, MarketListQuery>(
+      MarketListNotifier.new,
+    );
+
+final class MarketListState {
+  const MarketListState({
+    this.items = const [],
+    this.nextCursor,
+    this.hasMore = false,
+    this.loading = false,
+    this.loadingMore = false,
+    this.error,
+  });
+  final List<MarketProduct> items;
+  final String? nextCursor;
+  final bool hasMore;
+  final bool loading;
+  final bool loadingMore;
+  final Object? error;
+}
+
+/// One instance per complete filter. Refresh/rebuild generations additionally
+/// isolate late pages for the *same* filter, including account changes.
+final class MarketListNotifier extends Notifier<MarketListState> {
+  MarketListNotifier(this.query);
+  final MarketListQuery query;
+  int _generation = 0;
+  Future<void>? _more;
+  final _usedCursors = <String>{};
+
+  @override
+  MarketListState build() {
+    ref.watch(sessionGenerationProvider);
+    final repository = ref.watch(marketsRepositoryProvider);
+    final generation = ++_generation;
+    _usedCursors.clear();
+    _more = null;
+    ref.onDispose(() => _generation++);
+    unawaited(_first(repository, generation));
+    return const MarketListState(loading: true);
+  }
+
+  Future<DomainPage<MarketProduct>> _page(
+    MarketsRepository repository,
+    String? cursor,
+  ) => repository.listProducts(
+    query: query.query.trim().isEmpty ? null : query.query.trim(),
+    cursor: cursor,
+    kind: query.kind,
+    group: query.group,
+    limit: query.limit,
+  );
+
+  bool _current(int generation) => ref.mounted && _generation == generation;
+
+  Future<void> refresh() {
+    final generation = ++_generation;
+    _usedCursors.clear();
+    _more = null;
+    state = const MarketListState(loading: true);
+    return _first(ref.read(marketsRepositoryProvider), generation);
+  }
+
+  Future<void> _first(MarketsRepository repository, int generation) async {
+    try {
+      final page = await Future.sync(() => _page(repository, null));
+      if (!_current(generation)) return;
+      _validateCursor(page, null);
+      state = _loaded(page, const []);
+    } catch (error) {
+      if (_current(generation)) state = MarketListState(error: error);
+    }
+  }
+
+  Future<void> loadMore() {
+    if (_more != null) return _more!;
+    if (state.loading || !state.hasMore || state.nextCursor == null) {
+      return Future.value();
+    }
+    final generation = _generation;
+    final previous = state;
+    final request = _next(
+      ref.read(marketsRepositoryProvider),
+      previous,
+      generation,
+    );
+    _more = request;
+    return request.whenComplete(() {
+      if (_current(generation)) _more = null;
+    });
+  }
+
+  Future<void> _next(
+    MarketsRepository repository,
+    MarketListState previous,
+    int generation,
+  ) async {
+    state = MarketListState(
+      items: previous.items,
+      nextCursor: previous.nextCursor,
+      hasMore: true,
+      loadingMore: true,
+    );
+    try {
+      final page = await _page(repository, previous.nextCursor);
+      if (!_current(generation)) return;
+      _validateCursor(page, previous.nextCursor);
+      _usedCursors.add(previous.nextCursor!);
+      state = _loaded(page, previous.items);
+    } catch (error) {
+      if (_current(generation)) {
+        state = MarketListState(
+          items: previous.items,
+          nextCursor: previous.nextCursor,
+          hasMore: true,
+          error: error,
+        );
+      }
+    }
+  }
+
+  void _validateCursor(DomainPage<MarketProduct> page, String? requested) {
+    if (page.hasMore &&
+        (page.nextCursor == null ||
+            page.nextCursor!.isEmpty ||
+            page.nextCursor == requested ||
+            _usedCursors.contains(page.nextCursor))) {
+      throw const FormatException('Market pagination did not advance');
+    }
+  }
+
+  MarketListState _loaded(
+    DomainPage<MarketProduct> page,
+    List<MarketProduct> previous,
+  ) {
+    // Preserve server order. Same ticker across venues/product kinds is not a duplicate.
+    final unique = <MarketProductRef, MarketProduct>{
+      for (final product in previous)
+        MarketProductRef(symbol: product.symbol, kind: product.kind): product,
+    };
+    for (final product in page.items) {
+      // Defensive only: the server must filter before pagination. Do not use
+      // bStocks grouping, which would drop HIP3-only symbols.
+      if (query.kind != null && product.kind != query.kind) continue;
+      unique[MarketProductRef(symbol: product.symbol, kind: product.kind)] =
+          product;
+    }
+    return MarketListState(
+      items: List.unmodifiable(unique.values),
+      hasMore: page.hasMore,
+      nextCursor: page.hasMore ? page.nextCursor : null,
+    );
+  }
+}

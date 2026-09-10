@@ -1,6 +1,7 @@
 import 'decimal_value.dart';
 import 'market_product.dart';
 import 'order_intent.dart';
+import 'order_fill.dart';
 
 enum TradingOrderStatus {
   pendingSignature,
@@ -62,6 +63,9 @@ final class TradingOrder {
     this.txHash,
     this.failureReason,
     this.updatedAt,
+    this.fills,
+    this.realizedPnl,
+    this.providerObservedAt,
   });
   final String orderId;
   final String? productId;
@@ -83,6 +87,12 @@ final class TradingOrder {
   final String? failureReason;
   final DateTime createdAt;
   final DateTime? updatedAt;
+
+  /// Null means omitted; an empty array means no fill records in this response.
+  /// Neither asserts completeness of the provider's historical executions.
+  final List<TradingOrderFill>? fills;
+  final DecimalValue? realizedPnl;
+  final DateTime? providerObservedAt;
 
   bool get isTerminal => const {
     TradingOrderStatus.filled,

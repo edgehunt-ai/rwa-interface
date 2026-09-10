@@ -7,6 +7,35 @@ import 'package:rwa_interface/domain/models/position.dart';
 
 void main() {
   test(
+    'preserves HIP3 return and signed funding without deriving missing data',
+    () {
+      final wire = api.Position(
+        (b) => b
+          ..positionId = 'p1'
+          ..symbol = 'TSLA'
+          ..kind = api.ProductKind.perp
+          ..quantity = '1'
+          ..valueUsd = '100'
+          ..unrealizedPnlPercent = '-12.3456'
+          ..fundingPaid = '-0.000123',
+      );
+      final value = mapPosition(wire);
+      expect(value.unrealizedPnlPercent?.value, '-12.3456');
+      expect(value.fundingPaid?.value, '-0.000123');
+      final missing = mapPosition(
+        wire.rebuild(
+          (b) => b
+            ..unrealizedPnlPercent = null
+            ..fundingPaid = null
+            ..realizedPnl = '7',
+        ),
+      );
+      expect(missing.unrealizedPnlPercent, isNull);
+      expect(missing.fundingPaid, isNull);
+      expect(missing.unrealizedPnl, isNull);
+    },
+  );
+  test(
     'preserves HIP3 action binding and confirmed protection identifiers',
     () {
       final position = mapPosition(
