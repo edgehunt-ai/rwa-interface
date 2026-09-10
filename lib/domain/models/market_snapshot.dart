@@ -82,11 +82,15 @@ final class CandleChart {
     required this.range,
     required this.points,
     this.referencePoints = const [],
+    this.referencePrice,
+    this.referencePriceIsStale = false,
     this.sessions = const [],
   });
   final String symbol;
   final String range;
   final List<Candle> points;
   final List<Candle> referencePoints;
+  final DecimalValue? referencePrice;
+  final bool referencePriceIsStale;
   final List<MarketSessionSegment> sessions;
 }

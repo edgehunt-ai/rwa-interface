@@ -93,6 +93,9 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       to: request.to,
       interval: request.interval,
     );
+    final reference = ref.kind == MarketProductKind.bstock
+        ? await _referencePrice(charts, ref.symbol)
+        : null;
     return CandleChart(
       symbol: value.symbol,
       range: value.range.name,
@@ -117,6 +120,10 @@ final class MarketsRepositoryImpl implements MarketsRepository {
                 ),
               )
               .toList(),
+      referencePrice: reference == null
+          ? null
+          : DecimalValue(reference.price, asset: 'USD', unit: 'price'),
+      referencePriceIsStale: reference?.isStale ?? false,
       sessions: (value.sessions?.toList() ?? const <api.SessionSegment>[])
           .map(
             (segment) => MarketSessionSegment(
@@ -185,6 +192,17 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     api.SessionKind.weekend => MarketSessionKind.weekend,
     _ => MarketSessionKind.holiday,
   };
+
+  Future<api.ReferencePrice?> _referencePrice(
+    ChartsService charts,
+    String symbol,
+  ) async {
+    try {
+      return await charts.getReferencePrice(symbol);
+    } catch (_) {
+      return null;
+    }
+  }
 
   DecimalValue? _decimal(String? value, {String? asset, String? unit}) =>
       value == null ? null : DecimalValue(value, asset: asset, unit: unit);

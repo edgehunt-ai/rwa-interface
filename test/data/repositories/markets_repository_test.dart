@@ -64,6 +64,8 @@ void main() {
     );
 
     expect(chart.referencePoints.single.close.value, '175');
+    expect(chart.referencePrice?.value, '180');
+    expect(chart.referencePriceIsStale, isTrue);
     expect(chart.sessions.single.kind, MarketSessionKind.regular);
     expect(chart.sessions.single.label, 'Regular Market');
   });
@@ -142,6 +144,17 @@ final class _Charts implements ChartsService {
       );
     });
   }
+
+  @override
+  Future<wire.ReferencePrice> getReferencePrice(String symbol) async =>
+      wire.ReferencePrice(
+        (price) => price
+          ..symbol = symbol
+          ..price = '180'
+          ..session = wire.SessionKind.overnight
+          ..asOf = DateTime.utc(2026)
+          ..isStale = true,
+      );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

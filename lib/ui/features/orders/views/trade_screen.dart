@@ -207,7 +207,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   selectedChangePercent: selectedChange,
                   referencePrice:
                       selectedReference?.close ??
-                      candles?.referencePoints.lastOrNull?.close,
+                      candles?.referencePoints.lastOrNull?.close ??
+                      candles?.referencePrice,
                   loading: snapshotState.isLoading,
                   isFavorite: isFavorite,
                   favoriteLoading: favoritesCommand.isLoading,
@@ -671,6 +672,8 @@ class _Chart extends StatelessWidget {
                                     referenceColor: colors.secondaryText,
                                     points: points,
                                     referencePoints: referencePoints,
+                                    fallbackReferencePrice:
+                                        chart?.referencePrice,
                                   ),
                                 ),
                                 TradeChartStyle.candle => CustomPaint(
@@ -704,7 +707,9 @@ class _Chart extends StatelessWidget {
                                 price: points[selectedIndex].close,
                                 changePercent: selectedChange,
                                 color: selectedColor,
-                                referencePrice: selectedReference?.close,
+                                referencePrice:
+                                    selectedReference?.close ??
+                                    chart?.referencePrice,
                               ),
                             ),
                           ],
@@ -1173,17 +1178,24 @@ class _ReferenceChartPainter extends CustomPainter {
     required this.referenceColor,
     required this.points,
     required this.referencePoints,
+    this.fallbackReferencePrice,
   });
 
   final Color productColor;
   final Color referenceColor;
   final List<Candle> points;
   final List<Candle> referencePoints;
+  final DecimalValue? fallbackReferencePrice;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (points.isEmpty) return;
-    final scale = _ChartScale.fromCandles([...points, ...referencePoints]);
+    final scale = _ChartScale.fromCandles([
+      ...points,
+      ...referencePoints,
+      if (fallbackReferencePrice case final price?)
+        Candle(at: points.first.at, close: price),
+    ]);
     final productPath = _linePath(points, size, scale);
     final fill = Path.from(productPath)
       ..lineTo(size.width, size.height)
@@ -1209,8 +1221,10 @@ class _ReferenceChartPainter extends CustomPainter {
         ..strokeWidth = 2.2
         ..strokeCap = StrokeCap.round,
     );
-    if (referencePoints.isEmpty) return;
-    final referencePath = _referencePath(referencePoints, points, size, scale);
+    final referencePath = referencePoints.isEmpty
+        ? _fallbackReferencePath(size, scale)
+        : _referencePath(referencePoints, points, size, scale);
+    if (referencePath == null) return;
     _drawDashedPath(
       canvas,
       referencePath,
@@ -1219,6 +1233,15 @@ class _ReferenceChartPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.6,
     );
+  }
+
+  Path? _fallbackReferencePath(Size size, _ChartScale scale) {
+    final price = fallbackReferencePrice;
+    if (price == null) return null;
+    final y = scale.y(_decimalAsDouble(price), size.height);
+    return Path()
+      ..moveTo(0, y)
+      ..lineTo(size.width, y);
   }
 
   Path _linePath(List<Candle> candles, Size size, _ChartScale scale) {
@@ -1263,7 +1286,8 @@ class _ReferenceChartPainter extends CustomPainter {
       oldDelegate.productColor != productColor ||
       oldDelegate.referenceColor != referenceColor ||
       oldDelegate.points != points ||
-      oldDelegate.referencePoints != referencePoints;
+      oldDelegate.referencePoints != referencePoints ||
+      oldDelegate.fallbackReferencePrice != fallbackReferencePrice;
 }
 
 void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
