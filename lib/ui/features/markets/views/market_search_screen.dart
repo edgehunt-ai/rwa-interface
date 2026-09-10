@@ -9,6 +9,10 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 
+import '../../../../domain/models/market_list_query.dart';
+import '../providers/market_list_provider.dart';
+import 'market_paged_list.dart';
+
 class MarketSearchScreen extends ConsumerStatefulWidget {
   const MarketSearchScreen({super.key});
 
@@ -27,131 +31,142 @@ class MarketDiscoverySearchScreen extends ConsumerStatefulWidget {
 class _MarketDiscoverySearchScreenState
     extends ConsumerState<MarketDiscoverySearchScreen> {
   String query = '';
+  String activeTab = 'Popular';
+  MarketProductKind? kind;
   final _controller = TextEditingController();
+  final _scroll = ScrollController();
+  MarketListQuery get listQuery => MarketListQuery(
+    query: query.trim(),
+    kind: kind,
+    group: marketGroupForTab(activeTab),
+  );
+
+  void _change(VoidCallback change) {
+    final previous = listQuery;
+    setState(change);
+    if (previous != listQuery) {
+      ref.invalidate(marketListProvider(listQuery));
+      if (_scroll.hasClients) _scroll.jumpTo(0);
+    }
+  }
 
   @override
   void dispose() {
+    _scroll.dispose();
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final products = ref.watch(
-      marketProductsProvider((
-        query: query.isEmpty ? null : query,
-        cursor: null,
-      )),
-    );
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Search markets',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => context.pop(),
-                    child: const Text('Cancel'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                autofocus: true,
-                controller: _controller,
-                onChanged: (value) => setState(() => query = value),
-                decoration: InputDecoration(
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: SvgPicture.asset(
-                      'assets/figma/home_markets/search.svg',
-                      width: 20,
-                      height: 20,
-                    ),
-                  ),
-                  hintText: 'Search ticker or company',
-                  suffixIcon: query.isEmpty
-                      ? null
-                      : IconButton(
-                          tooltip: 'Clear search',
-                          onPressed: () {
-                            _controller.clear();
-                            setState(() => query = '');
-                          },
-                          icon: const Icon(Icons.close),
-                        ),
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(14)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: products.when(
-                  loading: () => const DesignStateFeedback(
-                    state: DesignState.loading,
-                    title: 'Loading markets',
-                  ),
-                  error: (_, _) => DesignStateFeedback(
-                    state: DesignState.failure,
-                    title: 'Markets unavailable',
-                    message: 'Try again when the market catalog is available.',
-                    onRetry: () => ref.refresh(
-                      marketProductsProvider((
-                        query: query.isEmpty ? null : query,
-                        cursor: null,
-                      )).future,
-                    ),
-                  ),
-                  data: (page) {
-                    final visible = page.items.take(2).toList(growable: false);
-                    if (visible.isEmpty) {
-                      return const DesignStateFeedback(
-                        state: DesignState.empty,
-                        title: 'No matching markets',
-                        message: 'Try another ticker or company name.',
-                      );
-                    }
-                    return ListView(
-                      children: [
-                        Text(
-                          query.isEmpty ? 'Recent searches' : 'Results',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        for (final product in visible)
-                          MarketProductRow(
-                            product: product,
-                            onTap: () => context.push(
-                              AppRoutes.tradeLocation(
-                                symbol: product.symbol,
-                                kind: product.kind.name,
+        child: RefreshIndicator(
+          onRefresh: () =>
+              ref.read(marketListProvider(listQuery).notifier).refresh(),
+          child: CustomScrollView(
+            controller: _scroll,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                sliver: SliverMainAxisGroup(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Search markets',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => context.pop(),
+                                child: const Text('Cancel'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            autofocus: true,
+                            controller: _controller,
+                            onChanged: (value) => _change(() => query = value),
+                            decoration: InputDecoration(
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: SvgPicture.asset(
+                                  'assets/figma/home_markets/search.svg',
+                                  width: 20,
+                                  height: 20,
+                                ),
+                              ),
+                              hintText: 'Search ticker or company',
+                              suffixIcon: query.isEmpty
+                                  ? null
+                                  : IconButton(
+                                      tooltip: 'Clear search',
+                                      onPressed: () {
+                                        _controller.clear();
+                                        _change(() => query = '');
+                                      },
+                                      icon: const Icon(Icons.close),
+                                    ),
+                              border: const OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(14),
+                                ),
                               ),
                             ),
                           ),
-                        if (query.isEmpty) ...[
-                          const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: () =>
-                                context.pushNamed(AppRoutes.allStocksName),
-                            child: const Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text('Browse all stocks ›'),
-                            ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  query.isEmpty ? 'Products' : 'Results',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium,
+                                ),
+                              ),
+                              MarketProductFilter(
+                                value: kind,
+                                onChanged: (value) =>
+                                    _change(() => kind = value),
+                              ),
+                            ],
                           ),
+                          MarketRankingTabs(
+                            active: activeTab,
+                            onSelected: (value) =>
+                                _change(() => activeTab = value),
+                          ),
+                          const SizedBox(height: 8),
                         ],
-                      ],
-                    );
-                  },
+                      ),
+                    ),
+                    MarketPagedSliver(
+                      key: ValueKey(listQuery),
+                      query: listQuery,
+                    ),
+                    if (query.isEmpty)
+                      SliverToBoxAdapter(
+                        child: TextButton(
+                          onPressed: () =>
+                              context.pushNamed(AppRoutes.allStocksName),
+                          child: const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text('Browse all stocks ›'),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

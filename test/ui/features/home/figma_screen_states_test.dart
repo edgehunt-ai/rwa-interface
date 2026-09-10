@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwa_interface/domain/models/market_list_query.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
@@ -138,6 +139,9 @@ final class _Markets implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    MarketProductKind? kind,
+    MarketListGroup? group,
+    int? limit,
   }) async => DomainPage(
     items: [
       MarketProduct(

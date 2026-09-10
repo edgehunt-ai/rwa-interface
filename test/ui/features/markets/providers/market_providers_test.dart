@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwa_interface/domain/models/market_list_query.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
@@ -31,6 +32,9 @@ final class _MarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    MarketProductKind? kind,
+    MarketListGroup? group,
+    int? limit,
   }) async => DomainPage(items: const [], nextCursor: cursor);
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
