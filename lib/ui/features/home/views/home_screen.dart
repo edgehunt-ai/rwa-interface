@@ -285,7 +285,8 @@ class _QuickActions extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: () => context.pushNamed(AppRoutes.withdrawalName),
+              onPressed: () =>
+                  context.pushNamed(AppRoutes.withdrawalSelectName),
               icon: SvgPicture.asset(
                 'assets/figma/home_markets/withdraw.svg',
                 width: 20,

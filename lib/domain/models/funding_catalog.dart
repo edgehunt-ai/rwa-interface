@@ -1,21 +1,6 @@
 import 'decimal_value.dart';
 import 'deposit.dart';
 
-enum FundingRailKind { bstock, perp }
-
-final class FundingRail {
-  const FundingRail({
-    required this.kind,
-    required this.network,
-    required this.settlementAsset,
-    this.minimumAmount,
-  });
-  final FundingRailKind kind;
-  final String network;
-  final String settlementAsset;
-  final DecimalValue? minimumAmount;
-}
-
 final class DepositRoute {
   const DepositRoute({
     required this.chain,
@@ -30,18 +15,6 @@ final class DepositRoute {
   final DecimalValue minimumAmount;
   final int confirmationsRequired;
   final bool isRecommended;
-}
-
-final class FundingCatalog {
-  const FundingCatalog({
-    required this.rails,
-    this.depositRoutes = const [],
-    required this.updatedAt,
-  });
-
-  final List<FundingRail> rails;
-  final List<DepositRoute> depositRoutes;
-  final DateTime updatedAt;
 }
 
 final class DepositDirectory {

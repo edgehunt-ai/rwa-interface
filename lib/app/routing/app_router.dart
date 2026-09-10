@@ -74,7 +74,10 @@ abstract final class AppRouter {
         GoRoute(
           name: AppRoutes.withdrawalName,
           path: AppRoutes.withdrawalPath,
-          builder: (context, state) => const WithdrawalScreen(),
+          builder: (context, state) => WithdrawalScreen(
+            token: state.uri.queryParameters['token'] ?? 'USDC',
+            chain: state.uri.queryParameters['chain'] ?? 'Arbitrum',
+          ),
         ),
         GoRoute(
           name: AppRoutes.withdrawalSelectName,

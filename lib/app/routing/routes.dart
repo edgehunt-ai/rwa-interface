@@ -21,6 +21,14 @@ abstract final class AppRoutes {
   static const withdrawalPath = '/funding/withdraw';
   static const withdrawalSelectName = 'withdrawalSelect';
   static const withdrawalSelectPath = '/funding/withdraw/select';
+
+  static String withdrawalLocation({
+    required String token,
+    required String chain,
+  }) => Uri(
+    path: withdrawalPath,
+    queryParameters: {'token': token, 'chain': chain},
+  ).toString();
   static const tradeName = 'trade';
   static const tradePath = '/trade';
 

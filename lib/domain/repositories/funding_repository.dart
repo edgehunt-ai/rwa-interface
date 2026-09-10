@@ -6,27 +6,20 @@ import '../models/resource_result.dart';
 import '../models/withdrawal.dart';
 
 abstract interface class FundingRepository {
-  Future<FundingCatalog> getCatalog();
   Future<DepositDirectory> getDepositDirectory();
   Future<UnifiedFundingAccountSummary> getUnifiedFundingAccount();
   Future<FundingPlan> createFundingPlan({
     required String tradePreviewId,
-    String? sourceAssetId,
     required String idempotencyKey,
   });
   Future<FundingPlan> getFundingPlan(String id);
   Future<FundingTransfer> createFundingTransfer({
     required String planId,
-    String? legId,
+    required String legId,
     required String authorizationId,
     required String idempotencyKey,
   });
   Future<FundingTransfer> getFundingTransfer(String id);
-  Future<ResourceResult<Deposit>> createDeposit({
-    required String chain,
-    String? amount,
-    required String idempotencyKey,
-  });
   Future<ResourceResult<Deposit>> getDeposit(String id);
   Future<DomainPage<ResourceResult<Deposit>>> listDeposits({String? cursor});
   Future<WithdrawalQuote> quoteWithdrawal(

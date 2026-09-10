@@ -63,8 +63,40 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   void _refreshAmount() {
-    setState(() {});
+    final balance = ref.read(portfolioSummaryProvider).value;
+    final available = double.tryParse(balance?.availableToTradeUsd.value ?? '');
+    final entered = double.tryParse(amount.text.trim());
+    final nextPercentage =
+        available == null ||
+            available <= 0 ||
+            entered == null ||
+            !entered.isFinite ||
+            entered < 0
+        ? 0.0
+        : (entered / available * 100).clamp(0.0, 100.0);
+    setState(() => percentage = nextPercentage);
     _scheduleQuote();
+  }
+
+  void _updateAmountFromPercentage(double value, Portfolio? portfolio) {
+    final available = double.tryParse(
+      portfolio?.availableToTradeUsd.value ?? '',
+    );
+    if (available == null) {
+      setState(() => percentage = value);
+      return;
+    }
+    if (available <= 0) {
+      setState(() => percentage = 0);
+      return;
+    }
+
+    final nextAmount = available * value / 100;
+    final nextText = _formatInputAmount(nextAmount);
+    amount.value = TextEditingValue(
+      text: nextText,
+      selection: TextSelection.collapsed(offset: nextText.length),
+    );
   }
 
   void _scheduleQuote() {
@@ -382,7 +414,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 ),
                 _PercentageSlider(
                   value: percentage,
-                  onChanged: (value) => setState(() => percentage = value),
+                  onChanged: (value) =>
+                      _updateAmountFromPercentage(value, portfolio.value),
                 ),
               ],
             ),
@@ -610,6 +643,11 @@ bool _isDecimal(String value) {
 String? _availableBalance(Portfolio? portfolio) => portfolio == null
     ? null
     : TokenAmountFormatter.formatUsd(portfolio.availableToTradeUsd);
+
+String _formatInputAmount(double value) {
+  final fixed = value.toStringAsFixed(8);
+  return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
+}
 
 class _ChoiceRow<T> extends StatelessWidget {
   const _ChoiceRow({

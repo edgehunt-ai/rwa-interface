@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
@@ -14,12 +16,15 @@ void main() {
       final container = ProviderContainer(
         overrides: [fundingRepositoryProvider.overrideWithValue(repository)],
       );
-      final subscription = container.listen(fundingCatalogProvider, (_, _) {});
+      final subscription = container.listen(
+        depositDirectoryProvider,
+        (_, _) {},
+      );
       final watch = Stopwatch()..start();
-      final catalog = await container.read(fundingCatalogProvider.future);
+      final directory = await container.read(depositDirectoryProvider.future);
       watch.stop();
       samples.add(watch.elapsed);
-      expect(catalog.rails.single.network, 'BSC');
+      expect(directory.instructions.single.chain, 'BSC');
       subscription.close();
       container.dispose();
     }
@@ -34,17 +39,24 @@ final class _ControlledFundingRepository implements FundingRepository {
   int queries = 0;
 
   @override
-  Future<FundingCatalog> getCatalog() async {
+  Future<DepositDirectory> getDepositDirectory() async {
     queries++;
-    return FundingCatalog(
-      rails: const [
-        FundingRail(
-          kind: FundingRailKind.bstock,
-          network: 'BSC',
-          settlementAsset: 'USDT',
+    return DepositDirectory(
+      updatedAt: DateTime.utc(2026),
+      instructions: [
+        DepositInstruction(
+          chain: 'BSC',
+          token: 'USDT',
+          tokenContract: '0xusdt',
+          tokenDecimals: 6,
+          address: '0x123',
+          qrPayload: 'ethereum:0xusdt',
+          minimumAmount: DecimalValue('1', asset: 'USDT', unit: 'token'),
+          confirmationsRequired: 15,
+          estimatedArrivalSeconds: 60,
+          warning: 'Send USDT only.',
         ),
       ],
-      updatedAt: DateTime.utc(2026),
     );
   }
 

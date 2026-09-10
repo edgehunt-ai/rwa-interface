@@ -959,7 +959,8 @@ class _CashActionSheet extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
-                onPressed: () => context.pushNamed(AppRoutes.withdrawalName),
+                onPressed: () =>
+                    context.pushNamed(AppRoutes.withdrawalSelectName),
                 child: const Text('Withdraw'),
               ),
             ),

@@ -2,58 +2,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
-import 'package:rwa_interface/domain/models/unsupported_capability.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 
 void main() {
-  test('funding transfer capability always waits for feature', () {
-    const capability = UnsupportedCapability.fundingTransfer(
-      resourceId: 'deposit-1',
-    );
-    expect(capability.userAction, 'wait_for_feature');
-    expect(capability.retryable, isFalse);
-  });
-
   test(
-    'same deposit intent merges concurrency and preserves retry key',
+    'directory, list, and detail are isolated by session generation',
     () async {
       final repository = _FundingRepository();
       final container = _container(repository);
-      final subscription = container.listen(depositCommandsProvider, (_, _) {});
-      addTearDown(subscription.close);
-      final commands = container.read(depositCommandsProvider);
-
-      final results = await Future.wait([
-        commands.create(chain: 'BSC', amount: '1'),
-        commands.create(chain: 'BSC', amount: '1'),
-      ]);
-      expect(results, hasLength(2));
-      expect(repository.keys, hasLength(1));
-
-      await commands.create(chain: 'BSC', amount: '1');
-      expect(repository.keys.toSet(), hasLength(1));
-
-      await commands.create(chain: 'BSC', amount: '2');
-      expect(repository.keys.toSet(), hasLength(2));
-    },
-  );
-
-  test(
-    'catalog, list, and detail are isolated by session generation',
-    () async {
-      final repository = _FundingRepository();
-      final container = _container(repository);
-      final catalog = container.listen(fundingCatalogProvider, (_, _) {});
+      final directory = container.listen(depositDirectoryProvider, (_, _) {});
       final list = container.listen(depositsProvider(null), (_, _) {});
       final detail = container.listen(depositProvider('deposit-1'), (_, _) {});
-      addTearDown(catalog.close);
+      addTearDown(directory.close);
       addTearDown(list.close);
       addTearDown(detail.close);
 
@@ -61,24 +27,11 @@ void main() {
       container.read(sessionGenerationProvider.notifier).clearUserScope();
       await _readQueries(container);
 
-      expect(repository.catalogCalls, 2);
+      expect(repository.directoryCalls, 2);
       expect(repository.listCalls, 2);
       expect(repository.getCalls, 2);
     },
   );
-
-  test('query exposes a stable domain failure', () async {
-    final repository = _FundingRepository()..failCatalog = true;
-    final container = _container(repository);
-    final errors = <Object>[];
-    final subscription = container.listen(fundingCatalogProvider, (_, next) {
-      if (next.hasError) errors.add(next.error!);
-    });
-    addTearDown(subscription.close);
-
-    await pumpEventQueue();
-    expect(errors.single, isA<NetworkFailure>());
-  });
 
   test('deposit instructions are selected from the cached directory', () async {
     final repository = _FundingRepository();
@@ -127,18 +80,15 @@ ProviderContainer _container(_FundingRepository repository) {
 }
 
 Future<void> _readQueries(ProviderContainer container) => Future.wait([
-  container.read(fundingCatalogProvider.future),
+  container.read(depositDirectoryProvider.future),
   container.read(depositsProvider(null).future),
   container.read(depositProvider('deposit-1').future),
 ]);
 
 final class _FundingRepository implements FundingRepository {
-  final List<String> keys = [];
-  int catalogCalls = 0;
   int listCalls = 0;
   int getCalls = 0;
   int directoryCalls = 0;
-  bool failCatalog = false;
 
   ResourceResult<Deposit> get _deposit => ResourceResult(
     resource: const Deposit(
@@ -147,44 +97,9 @@ final class _FundingRepository implements FundingRepository {
       token: 'USDC',
       status: DepositState.awaiting,
       instructions: DepositInstructions(address: '0x123'),
-      requiresTransfer: true,
-    ),
-    capability: const UnsupportedCapability.fundingTransfer(
-      resourceId: 'deposit-1',
     ),
   );
 
-  @override
-  Future<FundingCatalog> getCatalog() async {
-    catalogCalls++;
-    if (failCatalog) throw const NetworkFailure();
-    return FundingCatalog(
-      rails: const [],
-      depositRoutes: [
-        DepositRoute(
-          chain: 'Arbitrum',
-          token: 'USDC',
-          minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
-          confirmationsRequired: 20,
-        ),
-        DepositRoute(
-          chain: 'BSC',
-          token: 'USDT',
-          minimumAmount: DecimalValue('1', asset: 'USDT', unit: 'token'),
-          confirmationsRequired: 15,
-        ),
-        DepositRoute(
-          chain: 'BSC',
-          token: 'USDC',
-          minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
-          confirmationsRequired: 15,
-        ),
-      ],
-      updatedAt: DateTime.utc(2026),
-    );
-  }
-
-  @override
   @override
   Future<DepositDirectory> getDepositDirectory() async {
     directoryCalls++;
@@ -192,32 +107,29 @@ final class _FundingRepository implements FundingRepository {
       updatedAt: DateTime.utc(2026),
       walletAddress: '0x123',
       instructions: [
-        for (final route in (await getCatalog()).depositRoutes)
+        for (final route in const [
+          ('Arbitrum', 'USDC', '1', 20),
+          ('BSC', 'USDT', '1', 15),
+          ('BSC', 'USDC', '1', 15),
+        ])
           DepositInstruction(
-            chain: route.chain,
-            token: route.token,
-            tokenContract: '0x${route.token.toLowerCase()}',
+            chain: route.$1,
+            token: route.$2,
+            tokenContract: '0x${route.$2.toLowerCase()}',
             tokenDecimals: 6,
             address: '0x123',
-            qrPayload: 'ethereum:0x${route.token.toLowerCase()}',
-            minimumAmount: route.minimumAmount,
-            confirmationsRequired: route.confirmationsRequired,
+            qrPayload: 'ethereum:0x${route.$2.toLowerCase()}',
+            minimumAmount: DecimalValue(
+              route.$3,
+              asset: route.$2,
+              unit: 'token',
+            ),
+            confirmationsRequired: route.$4,
             estimatedArrivalSeconds: 60,
-            warning: 'Send ${route.token} only.',
+            warning: 'Send ${route.$2} only.',
           ),
       ],
     );
-  }
-
-  @override
-  Future<ResourceResult<Deposit>> createDeposit({
-    required String chain,
-    String? amount,
-    required String idempotencyKey,
-  }) async {
-    keys.add(idempotencyKey);
-    await Future<void>.delayed(const Duration(milliseconds: 2));
-    return _deposit;
   }
 
   @override

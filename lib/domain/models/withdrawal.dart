@@ -1,5 +1,24 @@
 import 'decimal_value.dart';
 
+final class WithdrawableAsset {
+  const WithdrawableAsset({
+    required this.symbol,
+    required this.chain,
+    required this.balance,
+    this.valueUsd,
+    this.decimals,
+  });
+
+  final String symbol;
+  final String chain;
+  final DecimalValue balance;
+  final DecimalValue? valueUsd;
+  final int? decimals;
+
+  String get key => '$symbol|$chain';
+  bool get isWithdrawalSupported => symbol == 'USDC';
+}
+
 final class WithdrawalIntent {
   const WithdrawalIntent({
     required this.chain,

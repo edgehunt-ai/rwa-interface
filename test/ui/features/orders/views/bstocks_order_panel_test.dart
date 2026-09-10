@@ -102,6 +102,52 @@ void main() {
     expect(find.text('0.02 USDC'), findsWidgets);
   });
 
+  testWidgets('balance slider and order value stay synchronized', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioSummaryProvider.overrideWith(
+            (ref) async => Portfolio(
+              totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
+              availableToTradeUsd: DecimalValue(
+                '456.78',
+                asset: 'USD',
+                unit: 'fiat',
+              ),
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final input = find.byType(TextField).first;
+    final slider = find.byKey(const Key('bstocks-percentage-slider'));
+    tester.widget<Slider>(slider).onChanged!(50);
+    await tester.pump();
+    expect(tester.widget<TextField>(input).controller!.text, '228.39');
+    expect(tester.widget<Slider>(slider).value, 50);
+
+    await tester.enterText(input, '114.195');
+    await tester.pump();
+    expect(tester.widget<Slider>(slider).value, closeTo(25, 0.0001));
+
+    await tester.enterText(input, '999');
+    await tester.pump();
+    expect(tester.widget<Slider>(slider).value, 100);
+
+    await tester.enterText(input, '-1');
+    await tester.pump();
+    expect(tester.widget<Slider>(slider).value, 0);
+
+    await tester.enterText(input, 'invalid');
+    await tester.pump();
+    expect(tester.widget<Slider>(slider).value, 0);
+  });
+
   testWidgets('bStocks order form shows a skeleton while the balance loads', (
     tester,
   ) async {
@@ -624,7 +670,7 @@ final class _CompletedFundingRepository implements FundingRepository {
   @override
   Future<FundingTransfer> createFundingTransfer({
     required String planId,
-    String? legId,
+    required String legId,
     required String authorizationId,
     required String idempotencyKey,
   }) async {

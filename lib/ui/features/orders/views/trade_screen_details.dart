@@ -303,7 +303,7 @@ class _PositionCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   onPressed: kind == MarketProductKind.bstock
-                      ? () => context.pushNamed(AppRoutes.withdrawalName)
+                      ? () => context.pushNamed(AppRoutes.withdrawalSelectName)
                       : () => showModalBottomSheet<void>(
                           context: context,
                           isScrollControlled: true,

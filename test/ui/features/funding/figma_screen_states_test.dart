@@ -10,10 +10,12 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
+import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
 import 'package:rwa_interface/ui/features/funding/views/withdrawal_screen.dart';
+import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
 import '../../../helpers/test_app.dart';
@@ -143,13 +145,26 @@ void main() {
     );
     addTearDown(router.dispose);
 
-    await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tradingAccountsProvider.overrideWith((_) async => _accounts),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(WithdrawalScreen), findsOneWidget);
     expect(find.text('Select asset'), findsOneWidget);
     expect(find.text('Available to withdraw'), findsOneWidget);
     expect(find.text('USD Coin · Arbitrum'), findsOneWidget);
+    expect(find.text('Native'), findsNothing);
+    expect(find.text('USDT'), findsNothing);
+
+    await tester.tap(find.text('USDC'));
+    await tester.pumpAndSettle();
+    expect(find.text('Withdraw USDC'), findsOneWidget);
   });
 
   testWidgets('withdrawal form validates input then presents its quote', (
@@ -157,7 +172,10 @@ void main() {
   ) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [fundingRepositoryProvider.overrideWithValue(_Funding())],
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(_Funding()),
+          tradingAccountsProvider.overrideWith((_) async => _accounts),
+        ],
         child: MaterialApp(
           theme: AppTheme.light,
           home: const WithdrawalScreen(),
@@ -165,24 +183,51 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Review withdrawal'));
-    await tester.pump();
-    expect(find.text('Enter a recipient address and amount.'), findsOneWidget);
+    final reviewButton = find.widgetWithText(FilledButton, 'Review withdrawal');
+    final disabledButton = tester.widget<FilledButton>(reviewButton);
+    expect(disabledButton.onPressed, isNull);
 
     await tester.enterText(find.byType(TextField).at(0), '0xrecipient');
     await tester.enterText(find.byType(TextField).at(1), '5');
-    final review = find.widgetWithText(FilledButton, 'Review withdrawal');
-    await tester.drag(find.byType(ListView), const Offset(0, -160));
-    await tester.pumpAndSettle();
-    await tester.tap(review);
+    await tester.pump();
+    expect(tester.widget<FilledButton>(reviewButton).onPressed, isNotNull);
+    await tester.scrollUntilVisible(
+      reviewButton,
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(reviewButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Review withdrawal'), findsOneWidget);
     expect(find.text('5 USDC'), findsWidgets);
     expect(find.text('4.9 USDC'), findsOneWidget);
-    expect(find.text('Authorization required'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Withdraw USDC'), findsOneWidget);
   });
 }
+
+final _accounts = [
+  TradingAccount(
+    kind: TradingAccountKind.app,
+    chain: 'Arbitrum',
+    balances: [
+      TokenBalance(
+        symbol: 'USDC',
+        balance: DecimalValue('1240.20', asset: 'USDC', unit: 'token'),
+        valueUsd: DecimalValue('1240.20', asset: 'USD', unit: 'fiat'),
+        decimals: 2,
+        chain: 'Arbitrum',
+      ),
+      TokenBalance(
+        symbol: 'USDT',
+        balance: DecimalValue('580', asset: 'USDT', unit: 'token'),
+        valueUsd: DecimalValue('580', asset: 'USD', unit: 'fiat'),
+        decimals: 2,
+        chain: 'BSC',
+      ),
+    ],
+  ),
+];
 
 DepositInstruction _depositInstruction(DepositBalanceMonitorKey route) =>
     DepositInstruction(

@@ -3,7 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/domain_page.dart';
+import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/withdrawal.dart';
+import '../../portfolio/providers/portfolio_providers.dart';
+
+final withdrawalAssetsProvider =
+    FutureProvider.autoDispose<List<WithdrawableAsset>>((ref) async {
+      final accounts = await ref.watch(tradingAccountsProvider.future);
+      final assets = <String, WithdrawableAsset>{};
+      for (final account in accounts) {
+        for (final balance in account.balances) {
+          final chain = balance.chain ?? account.chain;
+          if (chain == null ||
+              balance.balance.compareTo(DecimalValue('0')) <= 0) {
+            continue;
+          }
+          final asset = WithdrawableAsset(
+            symbol: balance.symbol,
+            chain: chain,
+            balance: balance.balance,
+            valueUsd: balance.valueUsd,
+            decimals: balance.decimals,
+          );
+          if (!asset.isWithdrawalSupported) continue;
+          assets[asset.key] = asset;
+        }
+      }
+      return assets.values.toList(growable: false);
+    });
 
 final withdrawalsProvider = FutureProvider.autoDispose
     .family<DomainPage<Withdrawal>, String?>((ref, cursor) {

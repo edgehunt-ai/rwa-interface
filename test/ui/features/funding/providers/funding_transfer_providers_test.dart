@@ -63,7 +63,6 @@ final class _FundingRepository implements FundingRepository {
   @override
   Future<FundingPlan> createFundingPlan({
     required String tradePreviewId,
-    String? sourceAssetId,
     required String idempotencyKey,
   }) async {
     createdPlanFor = tradePreviewId;
@@ -73,7 +72,7 @@ final class _FundingRepository implements FundingRepository {
   @override
   Future<FundingTransfer> createFundingTransfer({
     required String planId,
-    String? legId,
+    required String legId,
     required String authorizationId,
     required String idempotencyKey,
   }) async {

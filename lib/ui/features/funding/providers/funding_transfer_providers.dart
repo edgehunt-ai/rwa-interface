@@ -29,18 +29,14 @@ final class FundingTransferCommands {
   final Ref _ref;
   final IdempotentCommandGuard _commands = IdempotentCommandGuard();
 
-  Future<FundingPlan> plan({
-    required String tradePreviewId,
-    String? sourceAssetId,
-  }) async {
+  Future<FundingPlan> plan({required String tradePreviewId}) async {
     final result = await _commands.run(
       operation: 'funding-plan',
-      fingerprint: '$tradePreviewId|$sourceAssetId',
+      fingerprint: tradePreviewId,
       command: (key) => _ref
           .read(fundingRepositoryProvider)
           .createFundingPlan(
             tradePreviewId: tradePreviewId,
-            sourceAssetId: sourceAssetId,
             idempotencyKey: key,
           ),
     );
@@ -78,7 +74,7 @@ final class FundingTransferCommands {
           .read(fundingRepositoryProvider)
           .createFundingTransfer(
             planId: plan.planId,
-            legId: plan.nextActionableLeg?.legId,
+            legId: plan.nextActionableLeg!.legId,
             authorizationId: authorization.authorizationId,
             idempotencyKey: key,
           ),
