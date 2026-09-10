@@ -339,6 +339,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3ChartLoading => '正在加载价格历史…';
 
   @override
+  String get hip3ChartInspect => '轻触或拖动图表，查看单根 K 线读数。';
+
+  @override
+  String get hip3ChartVolume => '成交量';
+
+  @override
+  String hip3ChartUnits(String symbol) {
+    return '开高低收价格单位：USDC · 成交量单位：$symbol';
+  }
+
+  @override
+  String get hip3ChartHistoryLoad => '加载更早 K 线';
+
+  @override
+  String get hip3ChartHistoryLoading => '正在加载更早 K 线…';
+
+  @override
+  String get hip3ChartHistoryRetry => '重试加载更早 K 线';
+
+  @override
+  String get hip3ChartHistoryError => '更早 K 线加载失败，已加载的图表保持不变。';
+
+  @override
+  String get hip3ChartHistoryEmpty => '该历史时段暂无 K 线，可继续查询更早时段。';
+
+  @override
+  String get hip3ChartHistoryEnd => '已到达可查询历史的上限。';
+
+  @override
   String get hip3ChartError => '价格历史加载失败。';
 
   @override
