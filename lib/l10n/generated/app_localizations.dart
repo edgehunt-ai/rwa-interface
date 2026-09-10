@@ -1873,6 +1873,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'HIP-3 Perpetual Position'**
   String get tradePerpPositionType;
+
+  /// No description provided for @portfolioPartialData.
+  ///
+  /// In en, this message translates to:
+  /// **'Some assets could not be read or valued. Shown amounts are a subtotal.'**
+  String get portfolioPartialData;
+
+  /// No description provided for @portfolioStaleData.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing an older snapshot. Balances and positions may have changed.'**
+  String get portfolioStaleData;
+
+  /// No description provided for @portfolioUnverifiedData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data completeness is not confirmed. Refresh before relying on these amounts.'**
+  String get portfolioUnverifiedData;
+
+  /// No description provided for @portfolioLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more holdings'**
+  String get portfolioLoadMore;
+
+  /// No description provided for @portfolioRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh assets'**
+  String get portfolioRefresh;
+
+  /// No description provided for @portfolioHoldingsUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings could not be fully confirmed'**
+  String get portfolioHoldingsUnconfirmed;
+
+  /// No description provided for @portfolioMoreHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'More holdings are available on the next page.'**
+  String get portfolioMoreHoldings;
+
+  /// No description provided for @portfolioAllocationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset allocation is not available yet.'**
+  String get portfolioAllocationUnavailable;
+
+  /// No description provided for @portfolioUnifiedCollateral.
+  ///
+  /// In en, this message translates to:
+  /// **'Unified-account collateral is shared by spot and perpetuals and must not be counted twice. Position value is not additional equity.'**
+  String get portfolioUnifiedCollateral;
+
+  /// No description provided for @portfolioHistoryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio history is not available yet. No estimated trend is shown.'**
+  String get portfolioHistoryUnavailable;
+
+  /// No description provided for @portfolioLedgerNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'These are internal ledger balances, not additional on-chain assets. They are not added to portfolio value.'**
+  String get portfolioLedgerNotice;
 }
 
 class _AppLocalizationsDelegate

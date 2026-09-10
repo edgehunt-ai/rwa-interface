@@ -337,5 +337,16 @@
   "tradeDividendRights": "Dividend Rights",
   "tradeNone": "None",
   "tradePositionType": "Position Type",
-  "tradePerpPositionType": "HIP-3 Perpetual Position"
+  "tradePerpPositionType": "HIP-3 Perpetual Position",
+  "portfolioPartialData": "Some assets could not be read or valued. Shown amounts are a subtotal.",
+  "portfolioStaleData": "Showing an older snapshot. Balances and positions may have changed.",
+  "portfolioUnverifiedData": "Data completeness is not confirmed. Refresh before relying on these amounts.",
+  "portfolioLoadMore": "Load more holdings",
+  "portfolioRefresh": "Refresh assets",
+  "portfolioHoldingsUnconfirmed": "Holdings could not be fully confirmed",
+  "portfolioMoreHoldings": "More holdings are available on the next page.",
+  "portfolioAllocationUnavailable": "Asset allocation is not available yet.",
+  "portfolioUnifiedCollateral": "Unified-account collateral is shared by spot and perpetuals and must not be counted twice. Position value is not additional equity.",
+  "portfolioHistoryUnavailable": "Portfolio history is not available yet. No estimated trend is shown.",
+  "portfolioLedgerNotice": "These are internal ledger balances, not additional on-chain assets. They are not added to portfolio value."
 }

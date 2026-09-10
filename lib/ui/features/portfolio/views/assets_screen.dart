@@ -7,6 +7,8 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/domain/models/portfolio_read_status.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
@@ -47,16 +49,18 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
     }
     final portfolio = ref.watch(portfolioSummaryProvider);
     final accounts = ref.watch(tradingAccountsProvider);
-    final holdings = ref.watch(holdingsProvider(null));
+    final holdings = ref.watch(holdingsOverviewProvider);
     return Scaffold(
       bottomNavigationBar: const AppBottomNavigation(
         current: AppDestination.assets,
       ),
       body: SafeArea(
         child: portfolio.when(
-          loading: () => const DesignStateFeedback(
-            state: DesignState.loading,
-            title: 'Loading assets',
+          loading: () => const SingleChildScrollView(
+            child: DesignStateFeedback(
+              state: DesignState.loading,
+              title: 'Loading assets',
+            ),
           ),
           error: (_, _) => DesignStateFeedback(
             state: DesignState.failure,
@@ -69,6 +73,12 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
               ref.invalidate(portfolioSummaryProvider);
               ref.invalidate(tradingAccountsProvider);
               ref.invalidate(holdingsProvider);
+              ref.invalidate(holdingsOverviewProvider);
+              await Future.wait([
+                ref.read(portfolioSummaryProvider.future),
+                ref.read(tradingAccountsProvider.future),
+                ref.read(holdingsOverviewProvider.future),
+              ]);
             },
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
@@ -78,10 +88,8 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 20),
-                _PortfolioSummary(
-                  portfolio: value,
-                  showMiniTrend: !trendExpanded,
-                ),
+                _PortfolioSummary(portfolio: value),
+                _PortfolioDataNotice(status: value.readStatus),
                 if (trendExpanded) ...[
                   const SizedBox(height: 20),
                   _TrendExpanded(
@@ -127,7 +135,14 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                 ),
                 const SizedBox(height: 16),
                 switch (tab) {
-                  _AssetTab.cash => _CashBalances(accounts: accounts),
+                  _AssetTab.cash => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(AppLocalizations.of(context).portfolioLedgerNotice),
+                      const SizedBox(height: 12),
+                      _CashBalances(accounts: accounts),
+                    ],
+                  ),
                   _AssetTab.bstocks => _HoldingSection(
                     title: 'bStocks',
                     holdings: holdings,
@@ -210,19 +225,14 @@ class _LoggedOutAssets extends StatelessWidget {
 enum _AssetTab { cash, bstocks, perps }
 
 class _PortfolioSummary extends StatelessWidget {
-  const _PortfolioSummary({
-    required this.portfolio,
-    required this.showMiniTrend,
-  });
+  const _PortfolioSummary({required this.portfolio});
   final Portfolio portfolio;
-  final bool showMiniTrend;
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final pnl = portfolio.todayPnl;
     final positive = !(pnl?.value.startsWith('-') ?? false);
     return SizedBox(
-      height: 100,
       child: Row(
         children: [
           Expanded(
@@ -253,16 +263,6 @@ class _PortfolioSummary extends StatelessWidget {
               ],
             ),
           ),
-          if (showMiniTrend)
-            SizedBox(
-              width: 108,
-              height: 48,
-              child: CustomPaint(
-                painter: _TrendPainter(
-                  Theme.of(context).extension<AppRwaColors>()!.selected,
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -300,55 +300,13 @@ class _Allocation extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  flex: 26,
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: colors.primaryAction,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  flex: 45,
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: colors.secondaryText,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  flex: 29,
-                  child: Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: colors.selected,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
             Text(
-              'Cash 26% · bStocks 45% · Perps 29%',
-              style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              AppLocalizations.of(context).portfolioAllocationUnavailable,
+              style: TextStyle(color: colors.secondaryText),
             ),
             if (expanded) ...[
               const SizedBox(height: 8),
-              const _ValueRow(
-                label: 'Cash balances · 26%',
-                value: '\$3,240.20',
-              ),
-              const _ValueRow(label: 'bStocks · 45%', value: '\$5,610.22'),
-              const _ValueRow(label: 'Perps equity · 29%', value: '\$3,730.00'),
+              Text(AppLocalizations.of(context).portfolioUnifiedCollateral),
             ],
           ],
         ),
@@ -377,23 +335,7 @@ class _TrendExpanded extends StatelessWidget {
           ),
         ],
       ),
-      const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [Text('1D'), Text('1W'), Text('1M'), Text('1Y')],
-      ),
-      SizedBox(
-        height: 126,
-        width: double.infinity,
-        child: CustomPaint(
-          painter: _TrendPainter(
-            Theme.of(context).extension<AppRwaColors>()!.selected,
-          ),
-        ),
-      ),
-      const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text('7 days ago'), Text('Today')],
-      ),
+      Text(AppLocalizations.of(context).portfolioHistoryUnavailable),
     ],
   );
 }
@@ -492,6 +434,10 @@ class _CashBalances extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          for (final account in items.where(
+            (account) => !account.readStatus.reliable,
+          ))
+            _PortfolioDataNotice(status: account.readStatus),
           _SectionTitle(
             title: 'Cash balances',
             value: _sumUsd(balances.map((item) => item.valueUsd)),
@@ -666,7 +612,7 @@ class _HoldingSection extends ConsumerWidget {
       child: DesignStateFeedback(
         state: DesignState.failure,
         title: 'Holdings unavailable',
-        onRetry: () => ref.refresh(holdingsProvider(null).future),
+        onRetry: () => ref.refresh(holdingsOverviewProvider.future),
       ),
     ),
     data: (page) {
@@ -674,27 +620,75 @@ class _HoldingSection extends ConsumerWidget {
           .expand((HoldingGroup group) => group.positions)
           .where((Position position) => position.kind == kind)
           .toList(growable: false);
-      if (positions.isEmpty) {
-        return SizedBox(
-          height: 180,
-          child: DesignStateFeedback(
-            state: DesignState.empty,
-            title: 'No $title holdings',
-          ),
-        );
-      }
+      final status = page.portfolioStatus ?? const PortfolioReadStatus();
+      final l10n = AppLocalizations.of(context);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle(
-            title: title,
-            value: _sumUsd(positions.map((item) => item.valueUsd)),
-          ),
+          _PortfolioDataNotice(status: status),
+          if (positions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                page.hasMore
+                    ? l10n.portfolioMoreHoldings
+                    : status.reliable
+                    ? 'No $title holdings'
+                    : l10n.portfolioHoldingsUnconfirmed,
+              ),
+            ),
+          if (positions.isNotEmpty)
+            _SectionTitle(
+              title: title,
+              value: _sumUsd(positions.map((item) => item.valueUsd)),
+            ),
           for (final position in positions) _HoldingRow(position: position),
+          if (page.hasMore)
+            TextButton(
+              onPressed: holdings.isLoading
+                  ? null
+                  : () =>
+                        ref.read(holdingsPageCountProvider.notifier).loadMore(),
+              child: Text(l10n.portfolioLoadMore),
+            ),
         ],
       );
     },
   );
+}
+
+class _PortfolioDataNotice extends ConsumerWidget {
+  const _PortfolioDataNotice({required this.status});
+  final PortfolioReadStatus status;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (status.reliable) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (status.completeness == PortfolioCompleteness.partial)
+            Text(l10n.portfolioPartialData),
+          if (status.freshness == PortfolioFreshness.stale)
+            Text(l10n.portfolioStaleData),
+          if (status.completeness != PortfolioCompleteness.partial &&
+              status.freshness != PortfolioFreshness.stale)
+            Text(l10n.portfolioUnverifiedData),
+          TextButton(
+            onPressed: () {
+              ref.invalidate(portfolioSummaryProvider);
+              ref.invalidate(tradingAccountsProvider);
+              ref.invalidate(holdingsOverviewProvider);
+            },
+            child: Text(l10n.portfolioRefresh),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _HoldingRow extends StatelessWidget {
@@ -768,10 +762,12 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final String value;
   @override
-  Widget build(BuildContext context) => Row(
+  Widget build(BuildContext context) => Wrap(
+    alignment: WrapAlignment.spaceBetween,
+    spacing: 12,
+    runSpacing: 4,
     children: [
       Text(title, style: Theme.of(context).textTheme.titleLarge),
-      const Spacer(),
       Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
     ],
   );
@@ -834,28 +830,3 @@ class _TokenIcon extends StatelessWidget {
 
 String _sumUsd(Iterable<DecimalValue?> values) =>
     TokenAmountFormatter.sumUsd(values);
-
-class _TrendPainter extends CustomPainter {
-  const _TrendPainter(this.color);
-  final Color color;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    final path = Path()
-      ..moveTo(0, size.height * .7)
-      ..quadraticBezierTo(
-        size.width * .2,
-        size.height * .25,
-        size.width * .4,
-        size.height * .55,
-      )
-      ..quadraticBezierTo(size.width * .7, 0, size.width, size.height * .3);
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

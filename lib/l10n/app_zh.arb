@@ -297,5 +297,16 @@
   "tradeDividendRights": "股息权利",
   "tradeNone": "无",
   "tradePositionType": "持仓类型",
-  "tradePerpPositionType": "HIP-3 永续合约持仓"
+  "tradePerpPositionType": "HIP-3 永续合约持仓",
+  "portfolioPartialData": "部分资产无法读取或估值，显示金额仅为已获取部分的合计。",
+  "portfolioStaleData": "当前显示较早的快照，余额和持仓可能已变化。",
+  "portfolioUnverifiedData": "尚未确认数据完整性，请刷新后再参考这些金额。",
+  "portfolioLoadMore": "加载更多持仓",
+  "portfolioRefresh": "刷新资产",
+  "portfolioHoldingsUnconfirmed": "暂时无法完整确认持仓",
+  "portfolioMoreHoldings": "下一页还有更多持仓。",
+  "portfolioAllocationUnavailable": "暂未提供资产分类占比。",
+  "portfolioUnifiedCollateral": "统一账户抵押物由现货和永续共享，不能重复计值；仓位价值不代表额外权益。",
+  "portfolioHistoryUnavailable": "暂未提供资产历史，不显示推测的趋势曲线。",
+  "portfolioLedgerNotice": "以下为内部账本余额，并非额外链上资产，不会再次计入资产总值。"
 }

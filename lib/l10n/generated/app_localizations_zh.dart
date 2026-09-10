@@ -919,4 +919,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tradePerpPositionType => 'HIP-3 永续合约持仓';
+
+  @override
+  String get portfolioPartialData => '部分资产无法读取或估值，显示金额仅为已获取部分的合计。';
+
+  @override
+  String get portfolioStaleData => '当前显示较早的快照，余额和持仓可能已变化。';
+
+  @override
+  String get portfolioUnverifiedData => '尚未确认数据完整性，请刷新后再参考这些金额。';
+
+  @override
+  String get portfolioLoadMore => '加载更多持仓';
+
+  @override
+  String get portfolioRefresh => '刷新资产';
+
+  @override
+  String get portfolioHoldingsUnconfirmed => '暂时无法完整确认持仓';
+
+  @override
+  String get portfolioMoreHoldings => '下一页还有更多持仓。';
+
+  @override
+  String get portfolioAllocationUnavailable => '暂未提供资产分类占比。';
+
+  @override
+  String get portfolioUnifiedCollateral =>
+      '统一账户抵押物由现货和永续共享，不能重复计值；仓位价值不代表额外权益。';
+
+  @override
+  String get portfolioHistoryUnavailable => '暂未提供资产历史，不显示推测的趋势曲线。';
+
+  @override
+  String get portfolioLedgerNotice => '以下为内部账本余额，并非额外链上资产，不会再次计入资产总值。';
 }

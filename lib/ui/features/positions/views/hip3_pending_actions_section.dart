@@ -48,6 +48,7 @@ class _PendingActionsState extends ConsumerState<_PendingActions> {
     if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
     setState(() => _busyAction = null);
     ref.invalidate(holdingsProvider);
+    ref.invalidate(holdingsOverviewProvider);
     ref.invalidate(portfolioSummaryProvider);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
