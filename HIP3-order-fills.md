@@ -11,7 +11,9 @@ Base: `rwa-interface/main` at `f0fcb46`, independent `feat/hip3-order-fills` wor
   orders remain reachable after they leave the open list.
 - Existing generic `/details`, bStocks views, order writes, cancellation,
   signing executor, protection state, reconciliation and migrations unchanged.
-- No backend, OpenAPI or generated API client edits.
+- Follow-up fill-facts change adds backend read projection, optional contract
+  fields and narrowly scoped immutable fill-ingestion metadata plus migration
+  0039. No execution-state or signature changes.
 
 ## Facts and missing fields
 
@@ -26,12 +28,20 @@ Base: `rwa-interface/main` at `f0fcb46`, independent `feat/hip3-order-fills` wor
   neither claims the order never executed.
 - Aggregate filled quantity, average price, fee and order-level realized PnL are
   shown under Order totals, not computed from a potentially partial fill array.
-- Current OrderFill has **no side or per-fill realized PnL**. Those values display
-  Unavailable with an explanation. Order side/PnL are never copied into each fill.
-- Order and OrderFill do not expose a settlement/quote asset. New fill-price and
-  realized-PnL mappings leave it absent. This view also avoids using the legacy
-  aggregate mapper's assumed USDC: unknown units are explicitly unavailable.
-  Base quantity uses the order symbol; each fill's fee uses `fee_asset`.
+- Optional fill `side` is execution buy/sell, never position long/short.
+  Optional `closed_pnl` preserves upstream signed decimal and null vs zero;
+  no aggregate allocation or additional fee deduction. Raw upstream `dir` is
+  stored, then mapped to six opening/closing/reversal effects or `unknown`.
+  Missing dir stays null; no `startPosition` inference or historical backfill.
+- Fill currency and collateral token index are resolved at ingestion from the
+  same-network venue metadata and spot token metadata. Opening, close and
+  protection fills use the same source, independent of fees or opening preview.
+  Order settlement currency uses consistent fill identities, falling back to
+  an account/product-bound context only when all fill snapshots are missing.
+  Unknown/mixed snapshots cannot silently label aggregate PnL.
+  Fill PnL uses `pnl_asset`; price/order PnL use `settlement_asset`.
+  Missing units remain unavailable, with no fee-asset or USDC fallback.
+  Base quantity uses the order symbol; each fill's fee independently uses `fee_asset`.
 - Contract-required fields missing from malformed payloads produce a query error
   with retry (generated validation is not weakened to manufacture zero values).
 
@@ -50,7 +60,25 @@ Base: `rwa-interface/main` at `f0fcb46`, independent `feat/hip3-order-fills` wor
 
 ## Verification
 
-Final run: **40 tests passed**, `flutter analyze --no-pub` reported no issues,
+Persisted-metadata follow-up: frontend quality gate passes 428 tests and analysis;
+the phone capture test also passes, with light/dark Buy + Close short inspected.
+Server tests cover raw unknown directions, token index lookup (not list order or
+fee token), all six effect mappings, and a close without an opening preview.
+
+Fill-facts follow-up: full frontend quality gate passed (421 tests). After the
+final HIP3-only aggregate unit mapping change, 24 targeted mapping/page/regression
+tests passed and Flutter analysis had no issues. Light/dark phone captures
+show execution buy separately from short order, raw signed PnL and independent
+fee/PnL currencies without overflow. No full iOS build or live transaction.
+
+Follow-up contract integration: latest contract/main has unrelated funding API
+changes not yet supported by interface/main. The server pins main-based contract
+`7c05cc0`; this consumer pins `f1fde74` (identical additive fill fields on its
+existing `774877a` base), generated using `api:update:branch`. No funding adapter
+or generated source was manually patched. Upgrade the full consumer contract
+when the funding integration is ready.
+
+Original baseline run: **40 tests passed**, `flutter analyze --no-pub` reported no issues,
 and `git diff --check` was clean.
 
 - Mapping tests exercise the real generated GET decoder and repository, including

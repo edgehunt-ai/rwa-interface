@@ -500,7 +500,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hip3OrderFillMissingFields =>
-      '接口尚未提供逐笔方向和逐笔已实现盈亏。订单方向及订单盈亏在上方单独展示。';
+      '买入/卖出表示本次成交方向，不代表开仓/平仓。本笔盈亏为上游原始平仓盈亏；手续费单独展示，不重复扣除。缺失的事实或币种显示为不可用。';
 
   @override
   String get hip3OrderFillsOmitted => '接口未提供成交明细，不代表订单没有成交。';
@@ -520,13 +520,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3OrderFillDirection => '逐笔方向';
 
   @override
+  String get hip3OrderFillEffectLabel => '开平仓类型';
+
+  @override
+  String hip3OrderFillEffect(String effect) {
+    String _temp0 = intl.Intl.selectLogic(effect, {
+      'open_long': '开多',
+      'close_long': '平多',
+      'open_short': '开空',
+      'close_short': '平空',
+      'long_to_short': '多转空',
+      'short_to_long': '空转多',
+      'other': '未知',
+    });
+    return '$_temp0';
+  }
+
+  @override
   String get hip3OrderFillQuantity => '本笔成交数量';
 
   @override
   String get hip3OrderFillFee => '本笔手续费';
 
   @override
-  String get hip3OrderFillPnl => '本笔已实现盈亏';
+  String get hip3OrderFillPnl => '本笔平仓盈亏';
 
   @override
   String get hip3OrderFillId => '成交记录 ID';
