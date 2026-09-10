@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../app/providers/session_scope.dart';
+import '../../../../app/routing/routes.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/repositories/hip3_order_execution_repository.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../providers/order_providers.dart';
 
 class Hip3OpenOrdersPanel extends ConsumerStatefulWidget {
@@ -69,6 +72,13 @@ class _PanelState extends ConsumerState<Hip3OpenOrdersPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => context.pushNamed(AppRoutes.hip3OrderHistoryName),
+            child: Text(AppLocalizations.of(context).hip3OrderHistoryTitle),
+          ),
+        ),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
@@ -215,6 +225,13 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
             ),
             Text('Order price: ${order.limitPrice?.value ?? 'Market'}'),
             Text('Status: ${order.status.name}'),
+            TextButton(
+              onPressed: () => context.pushNamed(
+                AppRoutes.hip3OrderDetailName,
+                pathParameters: {'orderId': order.orderId},
+              ),
+              child: Text(AppLocalizations.of(context).hip3OrderDetailTitle),
+            ),
             if (progress != null) ...[
               const SizedBox(height: 8),
               LinearProgressIndicator(

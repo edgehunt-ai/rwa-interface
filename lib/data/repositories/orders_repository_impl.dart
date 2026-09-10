@@ -5,6 +5,7 @@ import '../../domain/models/decimal_value.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
+import '../../domain/models/order_fill.dart';
 import '../../domain/models/order_intent.dart';
 import '../../domain/models/order_preview.dart';
 import '../../domain/models/resource_result.dart';
@@ -267,6 +268,34 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
   failureReason: value.failureReason,
   createdAt: value.createdAt.toUtc(),
   updatedAt: value.updatedAt?.toUtc(),
+  realizedPnl: value.realizedPnl == null
+      ? null
+      : DecimalValue(value.realizedPnl!, unit: 'pnl'),
+  providerObservedAt: value.providerObservedAt?.toUtc(),
+  fills: value.fills == null
+      ? null
+      : List.unmodifiable(
+          value.fills!.map(
+            (fill) => TradingOrderFill(
+              fillId: fill.fillId,
+              providerTradeId: fill.providerTradeId,
+              // OrderFill has no quote/settlement asset; do not guess USDC.
+              price: DecimalValue(fill.price, unit: 'price'),
+              quantity: DecimalValue(
+                fill.quantity,
+                asset: value.symbol,
+                unit: 'quantity',
+              ),
+              fee: DecimalValue(
+                fill.fee,
+                asset: fill.feeAsset.trim().isEmpty ? null : fill.feeAsset,
+                unit: 'fee',
+              ),
+              providerHash: fill.providerHash,
+              executedAt: fill.executedAt.toUtc(),
+            ),
+          ),
+        ),
 );
 
 TradingOrderStatus _status(api.OrderStatus value) => switch (value) {
