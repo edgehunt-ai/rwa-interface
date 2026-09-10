@@ -4,17 +4,19 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/legacy_perp_funding_plan.dart';
-import 'package:rwa_api_client/src/model/funding_circuit_snapshot.dart';
-import 'package:rwa_api_client/src/model/funding_plan_mode.dart';
 import 'package:rwa_api_client/src/model/funding_plan_blocker.dart';
-import 'package:rwa_api_client/src/model/bstock_funding_plan.dart';
-import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/perp_funding_target_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/perp_funding_plan.dart';
-import 'package:rwa_api_client/src/model/funding_source_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/funding_wallet_action_summary.dart';
 import 'package:rwa_api_client/src/model/funding_route_quote.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/multi_source_funding_plan_details.dart';
+import 'package:rwa_api_client/src/model/multi_source_perp_funding_plan.dart';
+import 'package:rwa_api_client/src/model/funding_circuit_snapshot.dart';
+import 'package:rwa_api_client/src/model/bstock_funding_plan.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/perp_funding_target_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/funding_source_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/multi_source_bstock_funding_plan.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
@@ -41,20 +43,14 @@ part 'funding_plan.g.dart';
 /// * [rail] 
 /// * [network] 
 /// * [asset] 
+/// * [multiSource] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [totalFee] - 十进制字符串，避免浮点误差
 /// * [steps] 
 @BuiltValue()
 abstract class FundingPlan implements Built<FundingPlan, FundingPlanBuilder> {
-  /// One Of [BstockFundingPlan], [LegacyBstockFundingPlan], [LegacyPerpFundingPlan], [PerpFundingPlan]
+  /// One Of [BstockFundingPlan], [LegacyBstockFundingPlan], [LegacyPerpFundingPlan], [MultiSourceBstockFundingPlan], [MultiSourcePerpFundingPlan], [PerpFundingPlan]
   OneOf get oneOf;
-
-  static const String discriminatorFieldName = r'rail';
-
-  static const Map<String, Type> discriminatorMapping = {
-    r'bstock': BstockFundingPlan,
-    r'perp': PerpFundingPlan,
-  };
 
   FundingPlan._();
 
@@ -65,29 +61,6 @@ abstract class FundingPlan implements Built<FundingPlan, FundingPlanBuilder> {
 
   @BuiltValueSerializer(custom: true)
   static Serializer<FundingPlan> get serializer => _$FundingPlanSerializer();
-}
-
-extension FundingPlanDiscriminatorExt on FundingPlan {
-    String? get discriminatorValue {
-        if (this is BstockFundingPlan) {
-            return r'bstock';
-        }
-        if (this is PerpFundingPlan) {
-            return r'perp';
-        }
-        return null;
-    }
-}
-extension FundingPlanBuilderDiscriminatorExt on FundingPlanBuilder {
-    String? get discriminatorValue {
-        if (this is BstockFundingPlanBuilder) {
-            return r'bstock';
-        }
-        if (this is PerpFundingPlanBuilder) {
-            return r'perp';
-        }
-        return null;
-    }
 }
 
 class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
@@ -122,34 +95,26 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
   }) {
     final result = FundingPlanBuilder();
     Object? oneOfDataSrc;
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex = serializedList.indexOf(FundingPlan.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    final targetType = const FullType(OneOf, [FullType(BstockFundingPlan), FullType(PerpFundingPlan), FullType(MultiSourceBstockFundingPlan), FullType(MultiSourcePerpFundingPlan), FullType(LegacyBstockFundingPlan), FullType(LegacyPerpFundingPlan), ]);
     oneOfDataSrc = serialized;
-    final oneOfTypes = [BstockFundingPlan, PerpFundingPlan, ];
-    Object oneOfResult;
-    Type oneOfType;
-    switch (discValue) {
-      case r'bstock':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(BstockFundingPlan),
-        ) as BstockFundingPlan;
-        oneOfType = BstockFundingPlan;
-        break;
-      case r'perp':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(PerpFundingPlan),
-        ) as PerpFundingPlan;
-        oneOfType = PerpFundingPlan;
-        break;
-      default:
-        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
-    }
-    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
+}
+
+class FundingPlanModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'auto_multi_source')
+  static const FundingPlanModeEnum autoMultiSource = _$fundingPlanModeEnum_autoMultiSource;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const FundingPlanModeEnum unknownDefaultOpenApi = _$fundingPlanModeEnum_unknownDefaultOpenApi;
+
+  static Serializer<FundingPlanModeEnum> get serializer => _$fundingPlanModeEnumSerializer;
+
+  const FundingPlanModeEnum._(String name): super(name);
+
+  static BuiltSet<FundingPlanModeEnum> get values => _$fundingPlanModeEnumValues;
+  static FundingPlanModeEnum valueOf(String name) => _$fundingPlanModeEnumValueOf(name);
 }
 
 class FundingPlanStatusEnum extends EnumClass {

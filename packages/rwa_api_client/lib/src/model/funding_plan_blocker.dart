@@ -23,6 +23,16 @@ class FundingPlanBlocker extends EnumClass {
   static const FundingPlanBlocker sourceBalanceInvalid = _$sourceBalanceInvalid;
   @BuiltValueEnumConst(wireName: r'single_source_insufficient')
   static const FundingPlanBlocker singleSourceInsufficient = _$singleSourceInsufficient;
+  @BuiltValueEnumConst(wireName: r'aggregate_source_insufficient')
+  static const FundingPlanBlocker aggregateSourceInsufficient = _$aggregateSourceInsufficient;
+  @BuiltValueEnumConst(wireName: r'allocation_unavailable')
+  static const FundingPlanBlocker allocationUnavailable = _$allocationUnavailable;
+  @BuiltValueEnumConst(wireName: r'reservation_conflict')
+  static const FundingPlanBlocker reservationConflict = _$reservationConflict;
+  @BuiltValueEnumConst(wireName: r'max_legs_exceeded')
+  static const FundingPlanBlocker maxLegsExceeded = _$maxLegsExceeded;
+  @BuiltValueEnumConst(wireName: r'quote_budget_exhausted')
+  static const FundingPlanBlocker quoteBudgetExhausted = _$quoteBudgetExhausted;
   @BuiltValueEnumConst(wireName: r'no_safe_route')
   static const FundingPlanBlocker noSafeRoute = _$noSafeRoute;
   @BuiltValueEnumConst(wireName: r'provider_unavailable')

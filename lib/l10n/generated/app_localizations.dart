@@ -1142,6 +1142,24 @@ abstract class AppLocalizations {
   /// **'Take profit/stop loss'**
   String get takeProfitStopLoss;
 
+  /// No description provided for @hip3OrderTpSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Order TP/SL'**
+  String get hip3OrderTpSl;
+
+  /// No description provided for @hip3PositionTpSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Position TP/SL'**
+  String get hip3PositionTpSl;
+
+  /// No description provided for @hip3PositionProtectionScope.
+  ///
+  /// In en, this message translates to:
+  /// **'This editor manages position TP/SL only. Opening-order TP/SL is separate; check its activation and quantity in Orders. Empty fields here do not mean all protection is absent.'**
+  String get hip3PositionProtectionScope;
+
   /// No description provided for @bstocksTpSlUnavailable.
   ///
   /// In en, this message translates to:

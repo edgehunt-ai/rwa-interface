@@ -60,6 +60,13 @@ Base: `rwa-interface/main` at `f0fcb46`, independent `feat/hip3-order-fills` wor
 
 ## Verification
 
+Final main integration: 457 frontend tests and static analysis pass. Combined
+contract validation and Dart/Rust/TypeScript client checks pass. Backend query
+20, HIP3 unit 57, worker 7 and application query 1 tests pass; PostgreSQL target
+compiles after merge (18 database regressions passed before merge). The existing
+main Rust formatting discrepancies are left unchanged. No deployment or live
+transaction was performed.
+
 Persisted-metadata follow-up: frontend quality gate passes 428 tests and analysis;
 the phone capture test also passes, with light/dark Buy + Close short inspected.
 Server tests cover raw unknown directions, token index lookup (not list order or
@@ -71,12 +78,11 @@ tests passed and Flutter analysis had no issues. Light/dark phone captures
 show execution buy separately from short order, raw signed PnL and independent
 fee/PnL currencies without overflow. No full iOS build or live transaction.
 
-Follow-up contract integration: latest contract/main has unrelated funding API
-changes not yet supported by interface/main. The server pins main-based contract
-`7c05cc0`; this consumer pins `f1fde74` (identical additive fill fields on its
-existing `774877a` base), generated using `api:update:branch`. No funding adapter
-or generated source was manually patched. Upgrade the full consumer contract
-when the funding integration is ready.
+Final main integration: latest interface/main now includes the required funding
+adapter and native opening protection integration. Both server and consumer pin
+the combined contract `16c3f28b9cc20d7d249c83684e241c3e2f859eee`. The consumer
+was regenerated using `api:update:branch`; no generated source was manually
+patched. The temporary client-only contract baseline is no longer needed.
 
 Original baseline run: **40 tests passed**, `flutter analyze --no-pub` reported no issues,
 and `git diff --check` was clean.

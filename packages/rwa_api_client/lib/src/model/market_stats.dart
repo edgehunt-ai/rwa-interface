@@ -8,7 +8,7 @@ import 'package:built_value/serializer.dart';
 
 part 'market_stats.g.dart';
 
-/// MarketStats
+/// HIP-3 成交量/成交额与前日基准来自同场所 asset context；高低价按最近24小时的一分钟成交K线聚合， 边界按分钟包含，可能包含当前未收盘的一根；没有成交K线时省略高低字段，不填零。 HIP-3 reference_price 为该场所 oracle，reference_label 必须明确其来源，不冒充美股报价。 盘口缺少一侧时省略相应最优价和 spread；上游请求失败不是空盘口。 next_funding_at 没有已验证来源时为空。可选统计缺失不代表数值为零。 
 ///
 /// Properties:
 /// * [high24h] - 十进制字符串，避免浮点误差
@@ -23,7 +23,7 @@ part 'market_stats.g.dart';
 /// * [spreadPercent] - 十进制字符串，避免浮点误差
 /// * [bestBid] - 十进制字符串，避免浮点误差
 /// * [bestAsk] - 十进制字符串，避免浮点误差
-/// * [fundingRate] - 仅 HIP-3。正费率多头付空头，负费率反向。
+/// * [fundingRate] - 仅 HIP-3，原始小数费率（如 0.0001 表示 0.01%），不是用户已支付的美元金额。正费率多头付空头，负费率反向。
 /// * [nextFundingAt] 
 /// * [openInterestUsd] - 仅 HIP-3
 @BuiltValue()
@@ -75,7 +75,7 @@ abstract class MarketStats implements Built<MarketStats, MarketStatsBuilder> {
   @BuiltValueField(wireName: r'best_ask')
   String? get bestAsk;
 
-  /// 仅 HIP-3。正费率多头付空头，负费率反向。
+  /// 仅 HIP-3，原始小数费率（如 0.0001 表示 0.01%），不是用户已支付的美元金额。正费率多头付空头，负费率反向。
   @BuiltValueField(wireName: r'funding_rate')
   String? get fundingRate;
 

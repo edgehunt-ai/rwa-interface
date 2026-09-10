@@ -73,6 +73,8 @@ class _$Hip3PreviewExecutionTypeEnumSerializer
 
 class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
+  final Hip3OpeningProtectionConfirmation? openingProtection;
+  @override
   final String contextId;
   @override
   final String productId;
@@ -114,7 +116,8 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
       (Hip3PreviewExecutionBuilder()..update(updates))._build();
 
   _$Hip3PreviewExecution._(
-      {required this.contextId,
+      {this.openingProtection,
+      required this.contextId,
       required this.productId,
       required this.environment,
       required this.quantity,
@@ -146,6 +149,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Hip3PreviewExecution &&
+        openingProtection == other.openingProtection &&
         contextId == other.contextId &&
         productId == other.productId &&
         environment == other.environment &&
@@ -170,6 +174,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, openingProtection.hashCode);
     _$hash = $jc(_$hash, contextId.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, environment.hashCode);
@@ -195,6 +200,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Hip3PreviewExecution')
+          ..add('openingProtection', openingProtection)
           ..add('contextId', contextId)
           ..add('productId', productId)
           ..add('environment', environment)
@@ -221,6 +227,13 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
 class Hip3PreviewExecutionBuilder
     implements Builder<Hip3PreviewExecution, Hip3PreviewExecutionBuilder> {
   _$Hip3PreviewExecution? _$v;
+
+  Hip3OpeningProtectionConfirmationBuilder? _openingProtection;
+  Hip3OpeningProtectionConfirmationBuilder get openingProtection =>
+      _$this._openingProtection ??= Hip3OpeningProtectionConfirmationBuilder();
+  set openingProtection(
+          Hip3OpeningProtectionConfirmationBuilder? openingProtection) =>
+      _$this._openingProtection = openingProtection;
 
   String? _contextId;
   String? get contextId => _$this._contextId;
@@ -313,6 +326,7 @@ class Hip3PreviewExecutionBuilder
   Hip3PreviewExecutionBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _openingProtection = $v.openingProtection?.toBuilder();
       _contextId = $v.contextId;
       _productId = $v.productId;
       _environment = $v.environment;
@@ -350,47 +364,62 @@ class Hip3PreviewExecutionBuilder
   Hip3PreviewExecution build() => _build();
 
   _$Hip3PreviewExecution _build() {
-    final _$result = _$v ??
-        _$Hip3PreviewExecution._(
-          contextId: BuiltValueNullFieldError.checkNotNull(
-              contextId, r'Hip3PreviewExecution', 'contextId'),
-          productId: BuiltValueNullFieldError.checkNotNull(
-              productId, r'Hip3PreviewExecution', 'productId'),
-          environment: BuiltValueNullFieldError.checkNotNull(
-              environment, r'Hip3PreviewExecution', 'environment'),
-          quantity: BuiltValueNullFieldError.checkNotNull(
-              quantity, r'Hip3PreviewExecution', 'quantity'),
-          type: BuiltValueNullFieldError.checkNotNull(
-              type, r'Hip3PreviewExecution', 'type'),
-          timeInForce: BuiltValueNullFieldError.checkNotNull(
-              timeInForce, r'Hip3PreviewExecution', 'timeInForce'),
-          limitPrice: BuiltValueNullFieldError.checkNotNull(
-              limitPrice, r'Hip3PreviewExecution', 'limitPrice'),
-          leverage: BuiltValueNullFieldError.checkNotNull(
-              leverage, r'Hip3PreviewExecution', 'leverage'),
-          marginMode: BuiltValueNullFieldError.checkNotNull(
-              marginMode, r'Hip3PreviewExecution', 'marginMode'),
-          reduceOnly: BuiltValueNullFieldError.checkNotNull(
-              reduceOnly, r'Hip3PreviewExecution', 'reduceOnly'),
-          notionalUsdc: BuiltValueNullFieldError.checkNotNull(
-              notionalUsdc, r'Hip3PreviewExecution', 'notionalUsdc'),
-          marginRequiredUsdc: BuiltValueNullFieldError.checkNotNull(
-              marginRequiredUsdc,
-              r'Hip3PreviewExecution',
-              'marginRequiredUsdc'),
-          availableMarginUsdc: BuiltValueNullFieldError.checkNotNull(
-              availableMarginUsdc,
-              r'Hip3PreviewExecution',
-              'availableMarginUsdc'),
-          maximumQuantity: BuiltValueNullFieldError.checkNotNull(
-              maximumQuantity, r'Hip3PreviewExecution', 'maximumQuantity'),
-          estimatedFeeUsdc: BuiltValueNullFieldError.checkNotNull(
-              estimatedFeeUsdc, r'Hip3PreviewExecution', 'estimatedFeeUsdc'),
-          liquidationPrice: liquidationPrice,
-          liquidationPriceUnavailableReason: liquidationPriceUnavailableReason,
-          slippagePercent: BuiltValueNullFieldError.checkNotNull(
-              slippagePercent, r'Hip3PreviewExecution', 'slippagePercent'),
-        );
+    _$Hip3PreviewExecution _$result;
+    try {
+      _$result = _$v ??
+          _$Hip3PreviewExecution._(
+            openingProtection: _openingProtection?.build(),
+            contextId: BuiltValueNullFieldError.checkNotNull(
+                contextId, r'Hip3PreviewExecution', 'contextId'),
+            productId: BuiltValueNullFieldError.checkNotNull(
+                productId, r'Hip3PreviewExecution', 'productId'),
+            environment: BuiltValueNullFieldError.checkNotNull(
+                environment, r'Hip3PreviewExecution', 'environment'),
+            quantity: BuiltValueNullFieldError.checkNotNull(
+                quantity, r'Hip3PreviewExecution', 'quantity'),
+            type: BuiltValueNullFieldError.checkNotNull(
+                type, r'Hip3PreviewExecution', 'type'),
+            timeInForce: BuiltValueNullFieldError.checkNotNull(
+                timeInForce, r'Hip3PreviewExecution', 'timeInForce'),
+            limitPrice: BuiltValueNullFieldError.checkNotNull(
+                limitPrice, r'Hip3PreviewExecution', 'limitPrice'),
+            leverage: BuiltValueNullFieldError.checkNotNull(
+                leverage, r'Hip3PreviewExecution', 'leverage'),
+            marginMode: BuiltValueNullFieldError.checkNotNull(
+                marginMode, r'Hip3PreviewExecution', 'marginMode'),
+            reduceOnly: BuiltValueNullFieldError.checkNotNull(
+                reduceOnly, r'Hip3PreviewExecution', 'reduceOnly'),
+            notionalUsdc: BuiltValueNullFieldError.checkNotNull(
+                notionalUsdc, r'Hip3PreviewExecution', 'notionalUsdc'),
+            marginRequiredUsdc: BuiltValueNullFieldError.checkNotNull(
+                marginRequiredUsdc,
+                r'Hip3PreviewExecution',
+                'marginRequiredUsdc'),
+            availableMarginUsdc: BuiltValueNullFieldError.checkNotNull(
+                availableMarginUsdc,
+                r'Hip3PreviewExecution',
+                'availableMarginUsdc'),
+            maximumQuantity: BuiltValueNullFieldError.checkNotNull(
+                maximumQuantity, r'Hip3PreviewExecution', 'maximumQuantity'),
+            estimatedFeeUsdc: BuiltValueNullFieldError.checkNotNull(
+                estimatedFeeUsdc, r'Hip3PreviewExecution', 'estimatedFeeUsdc'),
+            liquidationPrice: liquidationPrice,
+            liquidationPriceUnavailableReason:
+                liquidationPriceUnavailableReason,
+            slippagePercent: BuiltValueNullFieldError.checkNotNull(
+                slippagePercent, r'Hip3PreviewExecution', 'slippagePercent'),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'openingProtection';
+        _openingProtection?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'Hip3PreviewExecution', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

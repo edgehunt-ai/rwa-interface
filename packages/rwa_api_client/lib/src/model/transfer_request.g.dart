@@ -8,15 +8,12 @@ part of 'transfer_request.dart';
 
 class _$TransferRequest extends TransferRequest {
   @override
-  final String planId;
-  @override
-  final String authorizationId;
+  final OneOf oneOf;
 
   factory _$TransferRequest([void Function(TransferRequestBuilder)? updates]) =>
       (TransferRequestBuilder()..update(updates))._build();
 
-  _$TransferRequest._({required this.planId, required this.authorizationId})
-      : super._();
+  _$TransferRequest._({required this.oneOf}) : super._();
   @override
   TransferRequest rebuild(void Function(TransferRequestBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -27,16 +24,13 @@ class _$TransferRequest extends TransferRequest {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is TransferRequest &&
-        planId == other.planId &&
-        authorizationId == other.authorizationId;
+    return other is TransferRequest && oneOf == other.oneOf;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, planId.hashCode);
-    _$hash = $jc(_$hash, authorizationId.hashCode);
+    _$hash = $jc(_$hash, oneOf.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -44,8 +38,7 @@ class _$TransferRequest extends TransferRequest {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'TransferRequest')
-          ..add('planId', planId)
-          ..add('authorizationId', authorizationId))
+          ..add('oneOf', oneOf))
         .toString();
   }
 }
@@ -54,14 +47,9 @@ class TransferRequestBuilder
     implements Builder<TransferRequest, TransferRequestBuilder> {
   _$TransferRequest? _$v;
 
-  String? _planId;
-  String? get planId => _$this._planId;
-  set planId(String? planId) => _$this._planId = planId;
-
-  String? _authorizationId;
-  String? get authorizationId => _$this._authorizationId;
-  set authorizationId(String? authorizationId) =>
-      _$this._authorizationId = authorizationId;
+  OneOf? _oneOf;
+  OneOf? get oneOf => _$this._oneOf;
+  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
 
   TransferRequestBuilder() {
     TransferRequest._defaults(this);
@@ -70,8 +58,7 @@ class TransferRequestBuilder
   TransferRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _planId = $v.planId;
-      _authorizationId = $v.authorizationId;
+      _oneOf = $v.oneOf;
       _$v = null;
     }
     return this;
@@ -93,10 +80,8 @@ class TransferRequestBuilder
   _$TransferRequest _build() {
     final _$result = _$v ??
         _$TransferRequest._(
-          planId: BuiltValueNullFieldError.checkNotNull(
-              planId, r'TransferRequest', 'planId'),
-          authorizationId: BuiltValueNullFieldError.checkNotNull(
-              authorizationId, r'TransferRequest', 'authorizationId'),
+          oneOf: BuiltValueNullFieldError.checkNotNull(
+              oneOf, r'TransferRequest', 'oneOf'),
         );
     replace(_$result);
     return _$result;

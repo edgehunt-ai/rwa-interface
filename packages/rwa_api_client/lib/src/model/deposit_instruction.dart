@@ -6,16 +6,23 @@
 import 'package:rwa_api_client/src/model/arbitrum_deposit_address.dart';
 import 'package:rwa_api_client/src/model/deposit_credit_target.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/deposit_instruction_wallet.dart';
 import 'package:rwa_api_client/src/model/bsc_deposit_address.dart';
+import 'package:rwa_api_client/src/model/deposit_instruction_item.dart';
+import 'package:rwa_api_client/src/model/deposit_instructions_response.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
 
 part 'deposit_instruction.g.dart';
 
-/// 当前账号的只读入金指引。读取、复制地址或展示二维码不得创建入金意图、操作或用户历史记录。 
+/// Parameterless calls return the aggregate instruction directory. Calls that supply both deprecated legacy `chain` and `token` query parameters retain the original BSC or Arbitrum single-rail response. Reading, copying or displaying any variant must not create an intent, operation or user activity. 
 ///
 /// Properties:
+/// * [catalogVersion] 
+/// * [wallet] - Null when no unique active verified Embedded EVM Wallet is available. In that state every item must be unavailable and therefore omit `qr_payload`. 
+/// * [items] - Runtime invariant: exactly one item for each canonical Ethereum/Arbitrum/Base/BSC USDC/USDT identity, with every identity appearing exactly once. OpenAPI 3.0 cannot express uniqueness by nested identity, so the server must enforce this invariant before serialization. Items are ordered by numeric `chain_id` ascending, then by `token_contract` lexicographic ascending within the same chain. 
+/// * [updatedAt] 
 /// * [chain] 
 /// * [chainId] 
 /// * [token] 
@@ -31,15 +38,8 @@ part 'deposit_instruction.g.dart';
 /// * [warning] 
 @BuiltValue()
 abstract class DepositInstruction implements Built<DepositInstruction, DepositInstructionBuilder> {
-  /// One Of [ArbitrumDepositAddress], [BscDepositAddress]
+  /// One Of [ArbitrumDepositAddress], [BscDepositAddress], [DepositInstructionsResponse]
   OneOf get oneOf;
-
-  static const String discriminatorFieldName = r'chain';
-
-  static const Map<String, Type> discriminatorMapping = {
-    r'Arbitrum': ArbitrumDepositAddress,
-    r'BSC': BscDepositAddress,
-  };
 
   DepositInstruction._();
 
@@ -50,29 +50,6 @@ abstract class DepositInstruction implements Built<DepositInstruction, DepositIn
 
   @BuiltValueSerializer(custom: true)
   static Serializer<DepositInstruction> get serializer => _$DepositInstructionSerializer();
-}
-
-extension DepositInstructionDiscriminatorExt on DepositInstruction {
-    String? get discriminatorValue {
-        if (this is ArbitrumDepositAddress) {
-            return r'Arbitrum';
-        }
-        if (this is BscDepositAddress) {
-            return r'BSC';
-        }
-        return null;
-    }
-}
-extension DepositInstructionBuilderDiscriminatorExt on DepositInstructionBuilder {
-    String? get discriminatorValue {
-        if (this is ArbitrumDepositAddressBuilder) {
-            return r'Arbitrum';
-        }
-        if (this is BscDepositAddressBuilder) {
-            return r'BSC';
-        }
-        return null;
-    }
 }
 
 class _$DepositInstructionSerializer implements PrimitiveSerializer<DepositInstruction> {
@@ -107,32 +84,9 @@ class _$DepositInstructionSerializer implements PrimitiveSerializer<DepositInstr
   }) {
     final result = DepositInstructionBuilder();
     Object? oneOfDataSrc;
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex = serializedList.indexOf(DepositInstruction.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    final targetType = const FullType(OneOf, [FullType(DepositInstructionsResponse), FullType(BscDepositAddress), FullType(ArbitrumDepositAddress), ]);
     oneOfDataSrc = serialized;
-    final oneOfTypes = [ArbitrumDepositAddress, BscDepositAddress, ];
-    Object oneOfResult;
-    Type oneOfType;
-    switch (discValue) {
-      case r'Arbitrum':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(ArbitrumDepositAddress),
-        ) as ArbitrumDepositAddress;
-        oneOfType = ArbitrumDepositAddress;
-        break;
-      case r'BSC':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(BscDepositAddress),
-        ) as BscDepositAddress;
-        oneOfType = BscDepositAddress;
-        break;
-      default:
-        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
-    }
-    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }

@@ -53,4 +53,28 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('HIP3 limit supports notional sizing without loosening spot sizing', () {
+    final intent = OrderIntent(
+      symbol: 'TSLA',
+      kind: MarketProductKind.perp,
+      side: TradingSide.short,
+      type: TradingOrderType.limit,
+      amount: value('15'),
+      limitPrice: value('100'),
+    );
+    expect(intent.amount?.value, '15');
+    expect(intent.quantity, isNull);
+    expect(
+      () => OrderIntent(
+        symbol: 'TSLA',
+        kind: MarketProductKind.bstock,
+        side: TradingSide.sell,
+        type: TradingOrderType.limit,
+        amount: value('15'),
+        limitPrice: value('100'),
+      ),
+      throwsArgumentError,
+    );
+  });
 }

@@ -40,6 +40,8 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
   @override
   final String planId;
   @override
+  final String? legId;
+  @override
   final String amount;
   @override
   final FundingSourceBalanceSnapshot source_;
@@ -83,6 +85,7 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
       this.walletActionReleasedAt,
       required this.transferId,
       required this.planId,
+      this.legId,
       required this.amount,
       required this.source_,
       required this.provider,
@@ -124,6 +127,7 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
         walletActionReleasedAt == other.walletActionReleasedAt &&
         transferId == other.transferId &&
         planId == other.planId &&
+        legId == other.legId &&
         amount == other.amount &&
         source_ == other.source_ &&
         provider == other.provider &&
@@ -156,6 +160,7 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
     _$hash = $jc(_$hash, walletActionReleasedAt.hashCode);
     _$hash = $jc(_$hash, transferId.hashCode);
     _$hash = $jc(_$hash, planId.hashCode);
+    _$hash = $jc(_$hash, legId.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
     _$hash = $jc(_$hash, provider.hashCode);
@@ -190,6 +195,7 @@ class _$CrossChainFundingTransfer extends CrossChainFundingTransfer {
           ..add('walletActionReleasedAt', walletActionReleasedAt)
           ..add('transferId', transferId)
           ..add('planId', planId)
+          ..add('legId', legId)
           ..add('amount', amount)
           ..add('source_', source_)
           ..add('provider', provider)
@@ -288,6 +294,10 @@ class CrossChainFundingTransferBuilder
   String? get planId => _$this._planId;
   set planId(String? planId) => _$this._planId = planId;
 
+  String? _legId;
+  String? get legId => _$this._legId;
+  set legId(String? legId) => _$this._legId = legId;
+
   String? _amount;
   String? get amount => _$this._amount;
   set amount(String? amount) => _$this._amount = amount;
@@ -361,6 +371,7 @@ class CrossChainFundingTransferBuilder
       _walletActionReleasedAt = $v.walletActionReleasedAt;
       _transferId = $v.transferId;
       _planId = $v.planId;
+      _legId = $v.legId;
       _amount = $v.amount;
       _source_ = $v.source_.toBuilder();
       _provider = $v.provider;
@@ -423,6 +434,7 @@ class CrossChainFundingTransferBuilder
                 transferId, r'CrossChainFundingTransfer', 'transferId'),
             planId: BuiltValueNullFieldError.checkNotNull(
                 planId, r'CrossChainFundingTransfer', 'planId'),
+            legId: legId,
             amount: BuiltValueNullFieldError.checkNotNull(
                 amount, r'CrossChainFundingTransfer', 'amount'),
             source_: source_.build(),

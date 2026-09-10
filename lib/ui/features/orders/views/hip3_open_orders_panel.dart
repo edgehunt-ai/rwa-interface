@@ -131,6 +131,8 @@ class Hip3OpenOrderCard extends ConsumerStatefulWidget {
 }
 
 class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
+  static const _parentCancelWarning =
+      'If this order has attached TP/SL, cancelling the parent also cancels that protection. Check protection for any remaining position; replacement protection is not created automatically.';
   bool _busy = false;
   String? _message;
   Future<void> _cancel() async {
@@ -141,7 +143,14 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
     });
     try {
       await ref.read(orderCommandProvider.notifier).cancel(widget.order);
-      if (mounted) widget.onChanged();
+      if (mounted) {
+        if (widget.order.conditional == null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text(_parentCancelWarning)));
+        }
+        widget.onChanged();
+      }
     } on Hip3ExecutionPending {
       if (mounted) {
         setState(
@@ -209,6 +218,27 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
             Text(order.createdAt.toLocal().toString()),
             if (conditional != null) ...[
               Text(
+                order.isTerminal
+                    ? 'Protection is no longer active'
+                    : switch (conditional.activationStatus) {
+                        'pendingSubmission' => 'Protection not submitted',
+                        'waitingForParent' =>
+                          'Protection waiting for parent fill — not active',
+                        'pendingConfirmation' =>
+                          'Protection activation awaiting confirmation',
+                        'active' => 'Protection active',
+                        'inactive' => 'Protection is no longer active',
+                        _ => 'Protection status unknown — not confirmed active',
+                      },
+              ),
+              if (conditional.parentOrderId != null)
+                Text('Attached to order: ${conditional.parentOrderId}'),
+              if (conditional.warningCode ==
+                  'parentCancelledCheckRemainingPositionProtection')
+                const Text(
+                  'Parent cancelled: this protection is inactive. Check protection for any remaining position; no replacement is created automatically.',
+                ),
+              Text(
                 'Trigger price: ${conditional.triggerPrice.value} USDC · ${conditional.triggerReference}',
               ),
               Text(
@@ -220,6 +250,8 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                     : 'Fixed quantity: ${conditional.quantity}',
               ),
             ],
+            if (conditional == null && !order.isTerminal)
+              const Text(_parentCancelWarning),
             Text(
               'Filled / Total: ${order.filledQuantity?.value ?? '0'} / ${order.quantity?.value ?? conditional?.quantity ?? '—'}',
             ),

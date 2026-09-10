@@ -66,7 +66,7 @@ abstract class PerpFundingPlan implements Built<PerpFundingPlan, PerpFundingPlan
 
   @BuiltValueField(wireName: r'blocker')
   FundingPlanBlocker? get blocker;
-  // enum blockerEnum {  target_balance_unavailable,  target_balance_stale,  source_balance_unavailable,  source_balance_stale,  source_balance_invalid,  single_source_insufficient,  no_safe_route,  provider_unavailable,  quote_expired,  route_disabled,  manual_review_required,  };
+  // enum blockerEnum {  target_balance_unavailable,  target_balance_stale,  source_balance_unavailable,  source_balance_stale,  source_balance_invalid,  single_source_insufficient,  aggregate_source_insufficient,  allocation_unavailable,  reservation_conflict,  max_legs_exceeded,  quote_budget_exhausted,  no_safe_route,  provider_unavailable,  quote_expired,  route_disabled,  manual_review_required,  };
 
   @BuiltValueField(wireName: r'source')
   FundingSourceBalanceSnapshot? get source_;

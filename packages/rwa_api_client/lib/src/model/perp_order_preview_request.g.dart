@@ -136,7 +136,7 @@ class _$PerpOrderPreviewRequest extends PerpOrderPreviewRequest {
   @override
   final Hip3TimeInForce? timeInForce;
   @override
-  final Hip3ProtectionSpec? protection;
+  final Hip3OrderProtectionSpec? protection;
   @override
   final String symbol;
   @override
@@ -271,10 +271,10 @@ class PerpOrderPreviewRequestBuilder
   set timeInForce(Hip3TimeInForce? timeInForce) =>
       _$this._timeInForce = timeInForce;
 
-  Hip3ProtectionSpecBuilder? _protection;
-  Hip3ProtectionSpecBuilder get protection =>
-      _$this._protection ??= Hip3ProtectionSpecBuilder();
-  set protection(Hip3ProtectionSpecBuilder? protection) =>
+  Hip3OrderProtectionSpecBuilder? _protection;
+  Hip3OrderProtectionSpecBuilder get protection =>
+      _$this._protection ??= Hip3OrderProtectionSpecBuilder();
+  set protection(Hip3OrderProtectionSpecBuilder? protection) =>
       _$this._protection = protection;
 
   String? _symbol;
