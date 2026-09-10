@@ -47,6 +47,26 @@ void main() {
       expect(charts.interval, '1h');
     },
   );
+
+  test('chart mapping retains reference prices and market sessions', () async {
+    final repository = MarketsRepositoryImpl(
+      _Markets('1'),
+      _Charts(withExtras: true),
+    );
+    const product = MarketProductRef(
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+    );
+
+    final chart = await repository.getCandles(
+      product,
+      range: CandleChartRange.oneHour,
+    );
+
+    expect(chart.referencePoints.single.close.value, '175');
+    expect(chart.sessions.single.kind, MarketSessionKind.regular);
+    expect(chart.sessions.single.label, 'Regular Market');
+  });
 }
 
 final class _Markets implements MarketsService {
@@ -77,6 +97,9 @@ final class _Markets implements MarketsService {
 }
 
 final class _Charts implements ChartsService {
+  _Charts({this.withExtras = false});
+
+  final bool withExtras;
   wire.ChartRange? range;
   DateTime? from;
   DateTime? to;
@@ -95,12 +118,29 @@ final class _Charts implements ChartsService {
     this.from = from;
     this.to = to;
     this.interval = interval;
-    return wire.CandleSeries(
-      (series) => series
+    return wire.CandleSeries((series) {
+      series
         ..symbol = symbol
         ..kind = kind
-        ..range = wire.ChartRange.n4h,
-    );
+        ..range = wire.ChartRange.n4h;
+      if (!withExtras) return;
+      series.referencePoints.add(
+        wire.CandlePoint(
+          (point) => point
+            ..t = DateTime.utc(2026)
+            ..c = '175',
+        ),
+      );
+      series.sessions.add(
+        wire.SessionSegment(
+          (segment) => segment
+            ..session = wire.SessionKind.regular
+            ..label = 'Regular Market'
+            ..start = DateTime.utc(2026)
+            ..end = DateTime.utc(2026, 1, 1, 1),
+        ),
+      );
+    });
   }
 
   @override

@@ -108,6 +108,25 @@ final class MarketsRepositoryImpl implements MarketsRepository {
             ),
           )
           .toList(),
+      referencePoints:
+          (value.referencePoints?.toList() ?? const <api.CandlePoint>[])
+              .map(
+                (point) => Candle(
+                  at: point.t.toUtc(),
+                  close: DecimalValue(point.c, asset: 'USD', unit: 'price'),
+                ),
+              )
+              .toList(),
+      sessions: (value.sessions?.toList() ?? const <api.SessionSegment>[])
+          .map(
+            (segment) => MarketSessionSegment(
+              kind: _sessionKind(segment.session),
+              start: segment.start.toUtc(),
+              end: segment.end.toUtc(),
+              label: segment.label,
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -156,6 +175,15 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   api.ProductKind _apiKind(MarketProductKind value) => switch (value) {
     MarketProductKind.bstock => api.ProductKind.bstock,
     MarketProductKind.perp => api.ProductKind.perp,
+  };
+
+  MarketSessionKind _sessionKind(api.SessionKind value) => switch (value) {
+    api.SessionKind.premarket => MarketSessionKind.premarket,
+    api.SessionKind.regular => MarketSessionKind.regular,
+    api.SessionKind.after => MarketSessionKind.afterHours,
+    api.SessionKind.overnight => MarketSessionKind.overnight,
+    api.SessionKind.weekend => MarketSessionKind.weekend,
+    _ => MarketSessionKind.holiday,
   };
 
   DecimalValue? _decimal(String? value, {String? asset, String? unit}) =>

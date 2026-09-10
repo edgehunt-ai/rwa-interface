@@ -52,8 +52,6 @@ void main() {
     await tester.pump();
     await tester.tap(find.byTooltip('US stock reference price'));
     await tester.pump();
-    expect(find.text(r'US Stock $175.22'), findsOneWidget);
-    expect(find.text(r'US $175.22'), findsOneWidget);
 
     await tester.tap(find.text('24/7'));
     await tester.pumpAndSettle();
@@ -151,6 +149,88 @@ void main() {
     fourHours.complete(_chart(product.symbol, CandleChartRange.fourHours));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
+  });
+
+  testWidgets('Trade drag tooltip updates the price and change colors', (
+    tester,
+  ) async {
+    const product = MarketProductRef(
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider(product).overrideWith(
+            (_) async => MarketSnapshot(
+              price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+              change24hPercent: DecimalValue('-1', unit: 'percent'),
+            ),
+          ),
+          marketCandlesProvider((
+            product: product,
+            range: CandleChartRange.oneHour,
+          )).overrideWith((_) async => _interactiveChart(product.symbol)),
+        ],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final chart = find.byKey(const Key('trade-chart-plot'));
+    final bounds = tester.getRect(chart);
+    final gesture = await tester.startGesture(bounds.centerLeft);
+    await gesture.moveTo(Offset(bounds.right - 1, bounds.center.dy));
+    await tester.pump();
+
+    expect(find.text(r'$110'), findsWidgets);
+    expect(find.text('+10%'), findsWidgets);
+    expect(
+      tester.widget<Text>(_headerPrice(r'$110')).style?.color,
+      const Color(0xFF04A08B),
+    );
+
+    await gesture.up();
+    await tester.pump();
+    expect(_headerPrice(r'$100'), findsOneWidget);
+    expect(
+      tester.widget<Text>(_headerPrice(r'$100')).style?.color,
+      const Color(0xFFB3261E),
+    );
+  });
+
+  testWidgets('Reference chart shows US prices and market sessions', (
+    tester,
+  ) async {
+    const product = MarketProductRef(
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketCandlesProvider((
+            product: product,
+            range: CandleChartRange.oneHour,
+          )).overrideWith((_) async => _interactiveChart(product.symbol)),
+        ],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('US stock reference price'));
+    await tester.pump();
+    expect(find.text('US Stock \$175'), findsOneWidget);
+    expect(find.text('Regular Market'), findsOneWidget);
+
+    final chart = find.byKey(const Key('trade-chart-plot'));
+    final bounds = tester.getRect(chart);
+    final gesture = await tester.startGesture(bounds.centerLeft);
+    await gesture.moveTo(Offset(bounds.right - 1, bounds.center.dy));
+    await tester.pump();
+    expect(find.text('US \$175'), findsOneWidget);
+    await gesture.up();
   });
 
   testWidgets(
@@ -491,6 +571,43 @@ CandleChart _chart(String symbol, CandleChartRange range) => CandleChart(
       close: DecimalValue('100', asset: 'USDC', unit: 'price'),
     ),
   ],
+);
+
+CandleChart _interactiveChart(String symbol) => CandleChart(
+  symbol: symbol,
+  range: '1h',
+  points: [
+    Candle(
+      at: DateTime.utc(2026),
+      close: DecimalValue('100', asset: 'USDC', unit: 'price'),
+    ),
+    Candle(
+      at: DateTime.utc(2026, 1, 1, 0, 1),
+      close: DecimalValue('110', asset: 'USDC', unit: 'price'),
+    ),
+  ],
+  referencePoints: [
+    Candle(
+      at: DateTime.utc(2026),
+      close: DecimalValue('160', asset: 'USD', unit: 'price'),
+    ),
+    Candle(
+      at: DateTime.utc(2026, 1, 1, 0, 1),
+      close: DecimalValue('175', asset: 'USD', unit: 'price'),
+    ),
+  ],
+  sessions: [
+    MarketSessionSegment(
+      kind: MarketSessionKind.regular,
+      start: DateTime.utc(2026),
+      end: DateTime.utc(2026, 1, 1, 0, 1),
+    ),
+  ],
+);
+
+Finder _headerPrice(String value) => find.byWidgetPredicate(
+  (widget) =>
+      widget is Text && widget.data == value && widget.style?.fontSize == 24,
 );
 
 Widget _tradeWithMarkets({List<MarketProduct>? products}) => ProviderScope(

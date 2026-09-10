@@ -53,13 +53,40 @@ final class Candle {
   final DecimalValue? volume;
 }
 
+enum MarketSessionKind {
+  premarket,
+  regular,
+  afterHours,
+  overnight,
+  weekend,
+  holiday,
+}
+
+final class MarketSessionSegment {
+  const MarketSessionSegment({
+    required this.kind,
+    required this.start,
+    required this.end,
+    this.label,
+  });
+
+  final MarketSessionKind kind;
+  final DateTime start;
+  final DateTime end;
+  final String? label;
+}
+
 final class CandleChart {
   const CandleChart({
     required this.symbol,
     required this.range,
     required this.points,
+    this.referencePoints = const [],
+    this.sessions = const [],
   });
   final String symbol;
   final String range;
   final List<Candle> points;
+  final List<Candle> referencePoints;
+  final List<MarketSessionSegment> sessions;
 }

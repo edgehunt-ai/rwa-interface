@@ -50,6 +50,7 @@ class TradeScreen extends ConsumerStatefulWidget {
 class _TradeScreenState extends ConsumerState<TradeScreen> {
   TradeChartStyle chartStyle = TradeChartStyle.line;
   var chartRange = CandleChartRange.oneHour;
+  Candle? chartSelection;
   var marketHoursOpen = false;
   var detailTab = 'Details';
   late MarketProductKind productKind;
@@ -75,6 +76,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       productKind = product.kind;
       _favoriteOverrideRef = null;
       _favoriteOverride = null;
+      chartSelection = null;
     });
   }
 
@@ -154,6 +156,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     );
     final snapshot = snapshotState.value;
     final candles = candlesState.value;
+    final selectedChange = _chartChangePercent(candles?.points, chartSelection);
+    final selectedReference = _nearestCandle(
+      candles?.referencePoints,
+      chartSelection?.at,
+    );
     ref.listen<CommandState<OrderIntent, ResourceResult<TradingOrder>>>(
       orderCommandProvider,
       (_, next) {
@@ -196,6 +203,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   kind: productKind,
                   chartStyle: chartStyle,
                   snapshot: snapshot,
+                  selectedPrice: chartSelection?.close,
+                  selectedChangePercent: selectedChange,
+                  referencePrice:
+                      selectedReference?.close ??
+                      candles?.referencePoints.lastOrNull?.close,
                   loading: snapshotState.isLoading,
                   isFavorite: isFavorite,
                   favoriteLoading: favoritesCommand.isLoading,
@@ -210,7 +222,13 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   candles: candles,
                   loading: candlesState.isLoading,
                   onStyleChanged: (next) => setState(() => chartStyle = next),
-                  onRangeChanged: (next) => setState(() => chartRange = next),
+                  onRangeChanged: (next) => setState(() {
+                    chartRange = next;
+                    chartSelection = null;
+                  }),
+                  selectedCandle: chartSelection,
+                  onSelectionChanged: (next) =>
+                      setState(() => chartSelection = next),
                 ),
                 const SizedBox(height: 16),
                 _Statistics(candles: candles, loading: candlesState.isLoading),
@@ -413,6 +431,9 @@ class _ProductHeader extends StatelessWidget {
     required this.kind,
     required this.chartStyle,
     required this.snapshot,
+    required this.selectedPrice,
+    required this.selectedChangePercent,
+    required this.referencePrice,
     required this.loading,
     required this.isFavorite,
     required this.favoriteLoading,
@@ -423,6 +444,9 @@ class _ProductHeader extends StatelessWidget {
   final MarketProductKind kind;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
+  final DecimalValue? selectedPrice;
+  final DecimalValue? selectedChangePercent;
+  final DecimalValue? referencePrice;
   final bool loading;
   final bool isFavorite;
   final bool favoriteLoading;
@@ -431,9 +455,9 @@ class _ProductHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final price = snapshot?.price;
-    final change = snapshot?.change24hPercent;
+    final price = selectedPrice ?? snapshot?.price;
+    final change = selectedChangePercent ?? snapshot?.change24hPercent;
+    final changeColor = _changeColor(context, change);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -514,7 +538,7 @@ class _ProductHeader extends StatelessWidget {
               Text(
                 price == null ? '—' : TokenAmountFormatter.formatUsd(price),
                 style: TextStyle(
-                  color: price == null ? null : semantic.success,
+                  color: price == null ? null : changeColor,
                   fontWeight: FontWeight.w700,
                   fontSize: 24,
                   height: 30 / 24,
@@ -527,22 +551,31 @@ class _ProductHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: semantic.success.withValues(alpha: .1),
+                  color: changeColor.withValues(alpha: .1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   TokenAmountFormatter.formatPercent(change),
                   style: TextStyle(
-                    color: semantic.success,
+                    color: changeColor,
                     fontSize: 12,
                     height: 16 / 12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-            if (chartStyle == TradeChartStyle.reference) ...[
+            if (chartStyle == TradeChartStyle.reference &&
+                referencePrice != null) ...[
               const SizedBox(width: 8),
-              const Text(r'US Stock $175.22', style: TextStyle(fontSize: 12)),
+              Text(
+                'US Stock ${TokenAmountFormatter.formatUsd(referencePrice!)}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context)
+                      .extension<AppRwaColors>()!
+                      .secondaryText,
+                ),
+              ),
             ],
           ],
         ),
@@ -557,21 +590,25 @@ class _Chart extends StatelessWidget {
     required this.range,
     required this.candles,
     required this.loading,
+    required this.selectedCandle,
     required this.onStyleChanged,
     required this.onRangeChanged,
+    required this.onSelectionChanged,
   });
   final TradeChartStyle style;
   final CandleChartRange range;
   final CandleChart? candles;
   final bool loading;
+  final Candle? selectedCandle;
   final ValueChanged<TradeChartStyle> onStyleChanged;
   final ValueChanged<CandleChartRange> onRangeChanged;
+  final ValueChanged<Candle?> onSelectionChanged;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final l10n = AppLocalizations.of(context);
+    final chart = candles;
     final latestClose = candles?.points.lastOrNull?.close;
     return Column(
       children: [
@@ -580,93 +617,118 @@ class _Chart extends StatelessWidget {
           height: 142,
           child: loading
               ? const _ChartLoadingSkeleton()
-              : Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Semantics(
-                        label: latestClose == null
-                            ? 'Price chart unavailable'
-                            : 'Price chart latest close ${TokenAmountFormatter.formatUsd(latestClose)}',
-                        child: switch (style) {
-                          TradeChartStyle.line ||
-                          TradeChartStyle.reference => CustomPaint(
-                            painter: _LineChartPainter(
-                              semantic.success,
-                              candles?.points ?? const [],
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final points = candles?.points ?? const <Candle>[];
+                    final referencePoints =
+                        candles?.referencePoints ?? const <Candle>[];
+                    final selectedIndex = _selectedCandleIndex(
+                      points,
+                      selectedCandle,
+                    );
+                    final selectedChange = selectedIndex == null
+                        ? null
+                        : _chartChangePercent(points, points[selectedIndex]);
+                    final selectedColor = _changeColor(context, selectedChange);
+                    final selectedReference = selectedIndex == null
+                        ? null
+                        : _nearestCandle(
+                            referencePoints,
+                            points[selectedIndex].at,
+                          );
+                    return GestureDetector(
+                      key: const Key('trade-chart-plot'),
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragStart: (details) => _selectCandle(
+                        details.localPosition.dx,
+                        constraints.maxWidth,
+                        points,
+                      ),
+                      onHorizontalDragUpdate: (details) => _selectCandle(
+                        details.localPosition.dx,
+                        constraints.maxWidth,
+                        points,
+                      ),
+                      onHorizontalDragEnd: (_) => onSelectionChanged(null),
+                      onHorizontalDragCancel: () => onSelectionChanged(null),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: Semantics(
+                              label: latestClose == null
+                                  ? 'Price chart unavailable'
+                                  : 'Price chart latest close ${TokenAmountFormatter.formatUsd(latestClose)}',
+                              child: switch (style) {
+                                TradeChartStyle.line => CustomPaint(
+                                  painter: _LineChartPainter(
+                                    semantic.success,
+                                    points,
+                                  ),
+                                ),
+                                TradeChartStyle.reference => CustomPaint(
+                                  painter: _ReferenceChartPainter(
+                                    productColor: semantic.success,
+                                    referenceColor: colors.secondaryText,
+                                    points: points,
+                                    referencePoints: referencePoints,
+                                  ),
+                                ),
+                                TradeChartStyle.candle => CustomPaint(
+                                  painter: _CandleChartPainter(
+                                    semantic.success,
+                                    points,
+                                  ),
+                                ),
+                              },
                             ),
                           ),
-                          TradeChartStyle.candle => CustomPaint(
-                            painter: _CandleChartPainter(
-                              semantic.success,
-                              candles?.points ?? const [],
+                          if (selectedIndex != null) ...[
+                            Positioned(
+                              left: _chartX(
+                                selectedIndex,
+                                points.length,
+                                constraints.maxWidth,
+                              ),
+                              top: 0,
+                              bottom: 0,
+                              child: Container(width: 1, color: colors.border),
                             ),
-                          ),
-                        },
-                      ),
-                    ),
-                    if (latestClose != null)
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        top: 42,
-                        child: CustomPaint(
-                          painter: _DashedLinePainter(colors.border),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 3,
+                            Positioned(
+                              left: _tooltipLeft(
+                                selectedIndex,
+                                points.length,
+                                constraints.maxWidth,
                               ),
-                              decoration: BoxDecoration(
-                                color: colors.surface,
-                                border: Border.all(color: colors.border),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                TokenAmountFormatter.formatUsd(latestClose),
-                                style: const TextStyle(fontSize: 11),
+                              top: 8,
+                              child: _ChartValueTooltip(
+                                price: points[selectedIndex].close,
+                                changePercent: selectedChange,
+                                color: selectedColor,
+                                referencePrice: selectedReference?.close,
                               ),
                             ),
-                          ),
-                        ),
+                          ],
+                        ],
                       ),
-                    if (style == TradeChartStyle.reference) ...[
-                      Positioned(
-                        left: 16,
-                        right: 16,
-                        top: 47,
-                        child: Divider(color: colors.secondaryText, height: 1),
-                      ),
-                      Positioned(
-                        right: 0,
-                        top: 37,
-                        child: Semantics(
-                          label: l10n.tradeReferencePrice,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colors.surface,
-                              border: Border.all(color: colors.border),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              l10n.tradeReferenceValue,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: colors.secondaryText,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+                    );
+                  },
                 ),
         ),
+        if (style == TradeChartStyle.reference &&
+            chart != null &&
+            chart.sessions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 4),
+            child: SizedBox(
+              height: 16,
+              width: double.infinity,
+              child: _SessionBand(
+                sessions: chart.sessions,
+                from: chart.points.firstOrNull?.at,
+                to: chart.points.lastOrNull?.at,
+              ),
+            ),
+          ),
         Row(
           children: [
             for (final option in CandleChartRange.values)
@@ -686,29 +748,29 @@ class _Chart extends StatelessWidget {
               ),
             const Spacer(),
             Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 3),
+              height: 32,
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: colors.subtleSurface,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
                   _ChartControl(
                     tooltip: 'Line chart',
-                    icon: Icons.show_chart,
+                    asset: 'assets/figma/trade/chart_mode_line.svg',
                     selected: style == TradeChartStyle.line,
                     onTap: () => onStyleChanged(TradeChartStyle.line),
                   ),
                   _ChartControl(
                     tooltip: 'Candlestick chart',
-                    icon: Icons.candlestick_chart,
+                    asset: 'assets/figma/trade/chart_mode_candle.svg',
                     selected: style == TradeChartStyle.candle,
                     onTap: () => onStyleChanged(TradeChartStyle.candle),
                   ),
                   _ChartControl(
                     tooltip: 'US stock reference price',
-                    icon: Icons.price_check,
+                    asset: 'assets/figma/trade/chart_mode_reference.svg',
                     selected: style == TradeChartStyle.reference,
                     onTap: () => onStyleChanged(TradeChartStyle.reference),
                   ),
@@ -720,7 +782,212 @@ class _Chart extends StatelessWidget {
       ],
     );
   }
+
+  void _selectCandle(double dx, double width, List<Candle> points) {
+    if (points.isEmpty || width <= 0) return;
+    final index = points.length == 1
+        ? 0
+        : (dx / width * (points.length - 1))
+              .round()
+              .clamp(0, points.length - 1)
+              .toInt();
+    onSelectionChanged(points[index]);
+  }
 }
+
+int? _selectedCandleIndex(List<Candle> points, Candle? selectedCandle) {
+  if (selectedCandle == null) return null;
+  final index = points.indexOf(selectedCandle);
+  return index < 0 ? null : index;
+}
+
+Candle? _nearestCandle(List<Candle>? points, DateTime? at) {
+  if (points == null || points.isEmpty || at == null) return null;
+  return points.reduce(
+    (nearest, point) =>
+        point.at.difference(at).abs() < nearest.at.difference(at).abs()
+        ? point
+        : nearest,
+  );
+}
+
+DecimalValue? _chartChangePercent(
+  List<Candle>? points,
+  Candle? selectedCandle,
+) {
+  if (points == null || points.isEmpty || selectedCandle == null) return null;
+  final openingPrice = _decimalAsDouble(points.first.close);
+  if (openingPrice == 0) return null;
+  final selectedPrice = _decimalAsDouble(selectedCandle.close);
+  final change = (selectedPrice - openingPrice) / openingPrice * 100;
+  return DecimalValue(change.toStringAsFixed(2), unit: 'percent');
+}
+
+Color _changeColor(BuildContext context, DecimalValue? change) {
+  final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+  return switch (change == null ? 0 : _decimalSign(change)) {
+    > 0 => semantic.success,
+    < 0 => semantic.loss,
+    _ => Theme.of(context).extension<AppRwaColors>()!.primaryText,
+  };
+}
+
+int _decimalSign(DecimalValue value) {
+  final digits = value.value.replaceAll(RegExp(r'[-.]'), '');
+  if (!digits.contains(RegExp('[1-9]'))) return 0;
+  return value.value.startsWith('-') ? -1 : 1;
+}
+
+double _tooltipLeft(int index, int count, double width) {
+  const tooltipWidth = 98.0;
+  return (_chartX(index, count, width) - tooltipWidth / 2)
+      .clamp(0, width - tooltipWidth)
+      .toDouble();
+}
+
+class _ChartValueTooltip extends StatelessWidget {
+  const _ChartValueTooltip({
+    required this.price,
+    required this.changePercent,
+    required this.color,
+    this.referencePrice,
+  });
+
+  final DecimalValue price;
+  final DecimalValue? changePercent;
+  final Color color;
+  final DecimalValue? referencePrice;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    decoration: BoxDecoration(
+      color: Theme.of(context).extension<AppRwaColors>()!.surface,
+      border: Border.all(color: color.withValues(alpha: .35)),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          TokenAmountFormatter.formatUsd(price),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+        if (changePercent case final percent?)
+          Text(
+            TokenAmountFormatter.formatPercent(percent),
+            style: TextStyle(fontSize: 10, color: color),
+          ),
+        if (referencePrice case final price?)
+          Text(
+            'US ${TokenAmountFormatter.formatUsd(price)}',
+            style: TextStyle(
+              fontSize: 10,
+              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+class _SessionBand extends StatelessWidget {
+  const _SessionBand({
+    required this.sessions,
+    required this.from,
+    required this.to,
+  });
+
+  final List<MarketSessionSegment> sessions;
+  final DateTime? from;
+  final DateTime? to;
+
+  @override
+  Widget build(BuildContext context) {
+    final start = from;
+    final end = to;
+    if (start == null || end == null || !end.isAfter(start)) {
+      return const SizedBox.shrink();
+    }
+    final window = end.difference(start).inMilliseconds;
+    return LayoutBuilder(
+      builder: (context, constraints) => Stack(
+        children: [
+          for (final segment in sessions)
+            if (_segmentEnd(
+              segment,
+              end,
+            ).isAfter(_segmentStart(segment, start)))
+              Positioned(
+                left:
+                    constraints.maxWidth *
+                    _segmentStart(
+                      segment,
+                      start,
+                    ).difference(start).inMilliseconds /
+                    window,
+                width:
+                    constraints.maxWidth *
+                    _segmentEnd(
+                      segment,
+                      end,
+                    ).difference(_segmentStart(segment, start)).inMilliseconds /
+                    window,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  color: _sessionColor(segment.kind).withValues(alpha: .1),
+                  alignment: Alignment.center,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => constraints.maxWidth < 68
+                        ? const SizedBox.shrink()
+                        : Text(
+                            segment.label ?? _sessionLabel(segment.kind),
+                            maxLines: 1,
+                            overflow: TextOverflow.clip,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Theme.of(context)
+                                  .extension<AppRwaColors>()!
+                                  .secondaryText,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+
+  DateTime _segmentStart(MarketSessionSegment segment, DateTime windowStart) =>
+      segment.start.isBefore(windowStart) ? windowStart : segment.start;
+
+  DateTime _segmentEnd(MarketSessionSegment segment, DateTime windowEnd) =>
+      segment.end.isAfter(windowEnd) ? windowEnd : segment.end;
+}
+
+String _sessionLabel(MarketSessionKind kind) => switch (kind) {
+  MarketSessionKind.premarket => 'Pre-market',
+  MarketSessionKind.regular => 'Regular Market',
+  MarketSessionKind.afterHours => 'After-hours',
+  MarketSessionKind.overnight => 'Overnight',
+  MarketSessionKind.weekend => 'Weekend',
+  MarketSessionKind.holiday => 'Holiday',
+};
+
+Color _sessionColor(MarketSessionKind kind) => switch (kind) {
+  MarketSessionKind.regular => const Color(0xFFB9F34A),
+  MarketSessionKind.premarket ||
+  MarketSessionKind.afterHours => const Color(0xFFFF9654),
+  MarketSessionKind.overnight => const Color(0xFF2690E6),
+  MarketSessionKind.weekend ||
+  MarketSessionKind.holiday => const Color(0xFF9292A0),
+};
 
 class _ChartLoadingSkeleton extends StatelessWidget {
   const _ChartLoadingSkeleton();
@@ -768,36 +1035,47 @@ class _ChartLoadingSkeleton extends StatelessWidget {
 class _ChartControl extends StatelessWidget {
   const _ChartControl({
     required this.tooltip,
-    required this.icon,
+    required this.asset,
     required this.selected,
     required this.onTap,
   });
 
   final String tooltip;
-  final IconData icon;
+  final String asset;
   final bool selected;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Tooltip(
-    message: tooltip,
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(11),
-      child: Container(
-        width: 36,
-        height: 34,
-        alignment: Alignment.center,
-        decoration: selected
-            ? BoxDecoration(
-                color: Theme.of(context).extension<AppRwaColors>()!.surface,
-                borderRadius: BorderRadius.circular(11),
-              )
-            : null,
-        child: Icon(icon, size: 19),
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 24,
+          height: 24,
+          alignment: Alignment.center,
+          decoration: selected
+              ? BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(8),
+                )
+              : null,
+          child: SvgPicture.asset(
+            asset,
+            width: 16,
+            height: 16,
+            colorFilter: ColorFilter.mode(
+              selected ? colors.primaryText : colors.secondaryText,
+              BlendMode.srcIn,
+            ),
+          ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _LineChartPainter extends CustomPainter {
@@ -889,8 +1167,128 @@ class _CandleChartPainter extends CustomPainter {
       oldDelegate.color != color || oldDelegate.points != points;
 }
 
+class _ReferenceChartPainter extends CustomPainter {
+  const _ReferenceChartPainter({
+    required this.productColor,
+    required this.referenceColor,
+    required this.points,
+    required this.referencePoints,
+  });
+
+  final Color productColor;
+  final Color referenceColor;
+  final List<Candle> points;
+  final List<Candle> referencePoints;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.isEmpty) return;
+    final scale = _ChartScale.fromCandles([...points, ...referencePoints]);
+    final productPath = _linePath(points, size, scale);
+    final fill = Path.from(productPath)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(
+      fill,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            productColor.withValues(alpha: .18),
+            productColor.withValues(alpha: .02),
+          ],
+        ).createShader(Offset.zero & size),
+    );
+    canvas.drawPath(
+      productPath,
+      Paint()
+        ..color = productColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round,
+    );
+    if (referencePoints.isEmpty) return;
+    final referencePath = _referencePath(referencePoints, points, size, scale);
+    _drawDashedPath(
+      canvas,
+      referencePath,
+      Paint()
+        ..color = referenceColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6,
+    );
+  }
+
+  Path _linePath(List<Candle> candles, Size size, _ChartScale scale) {
+    final path = Path();
+    for (var index = 0; index < candles.length; index++) {
+      final offset = Offset(
+        _chartX(index, candles.length, size.width),
+        scale.y(_decimalAsDouble(candles[index].close), size.height),
+      );
+      if (index == 0) {
+        path.moveTo(offset.dx, offset.dy);
+      } else {
+        path.lineTo(offset.dx, offset.dy);
+      }
+    }
+    return path;
+  }
+
+  Path _referencePath(
+    List<Candle> candles,
+    List<Candle> productPoints,
+    Size size,
+    _ChartScale scale,
+  ) {
+    final path = Path();
+    for (var index = 0; index < candles.length; index++) {
+      final offset = Offset(
+        _chartXForTime(candles[index].at, productPoints, size.width),
+        scale.y(_decimalAsDouble(candles[index].close), size.height),
+      );
+      if (index == 0) {
+        path.moveTo(offset.dx, offset.dy);
+      } else {
+        path.lineTo(offset.dx, offset.dy);
+      }
+    }
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(covariant _ReferenceChartPainter oldDelegate) =>
+      oldDelegate.productColor != productColor ||
+      oldDelegate.referenceColor != referenceColor ||
+      oldDelegate.points != points ||
+      oldDelegate.referencePoints != referencePoints;
+}
+
+void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
+  for (final metric in path.computeMetrics()) {
+    for (var distance = 0.0; distance < metric.length; distance += 7) {
+      canvas.drawPath(
+        metric.extractPath(distance, min(distance + 4, metric.length)),
+        paint,
+      );
+    }
+  }
+}
+
 double _chartX(int index, int count, double width) =>
     count == 1 ? width / 2 : width * index / (count - 1);
+
+double _chartXForTime(DateTime at, List<Candle> points, double width) {
+  if (points.length < 2) return width / 2;
+  final start = points.first.at.millisecondsSinceEpoch;
+  final end = points.last.at.millisecondsSinceEpoch;
+  if (end == start) return width / 2;
+  return ((at.millisecondsSinceEpoch - start) / (end - start) * width)
+      .clamp(0, width)
+      .toDouble();
+}
 
 double _decimalAsDouble(DecimalValue value) => double.parse(value.value);
 
@@ -915,28 +1313,6 @@ final class _ChartScale {
 
   double y(double value, double height) =>
       height - (value - minimum) / (maximum - minimum) * height;
-}
-
-class _DashedLinePainter extends CustomPainter {
-  const _DashedLinePainter(this.color);
-  final Color color;
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color.withValues(alpha: .55)
-      ..strokeWidth = 1;
-    for (var x = 0.0; x < size.width - 55; x += 7) {
-      canvas.drawLine(
-        Offset(x, size.height / 2),
-        Offset(x + 3, size.height / 2),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedLinePainter oldDelegate) =>
-      oldDelegate.color != color;
 }
 
 class _Statistics extends StatelessWidget {
