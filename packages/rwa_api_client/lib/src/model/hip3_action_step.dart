@@ -14,7 +14,7 @@ part 'hip3_action_step.g.dart';
 /// waiting 步骤不得包含 signing；prepared 仅当前可签步骤包含 signing。 Provider 响应不完整或超时进入 ambiguous；后台依据步骤类型独立查询 orderStatus/fills 或账户设置并验证证据，不能只凭 HTTP 200 判成功。 后续步骤在实际释放时才冻结 nonce、有效期和 payload；冻结后不可改写。 
 ///
 /// Properties:
-/// * [normalizedProtection] - 保护单步骤 prepared 时必须提供；size_mode=quantity，quantity 和各腿 trigger_price 为冻结绝对值，不再包含 percent 或 price_change_percent。与签名 payload 完全一致，供确认展示。
+/// * [normalizedProtection] - 保护单步骤 prepared 时必须提供；固定数量或比例保护归一为 size_mode=quantity，quantity 为冻结绝对值；全仓保护保留 size_mode=entire_position 且禁止 quantity/percent，表示触发时整个仓位而非准备时数量。各腿 trigger_price 为冻结绝对值，不再包含 price_change_percent。与签名 payload 的数量语义完全一致，供确认展示；取消步骤展示被取消保护单的原有参数。
 /// * [stepId] 
 /// * [sequence] 
 /// * [kind] 
@@ -23,7 +23,7 @@ part 'hip3_action_step.g.dart';
 /// * [failureReason] 
 @BuiltValue()
 abstract class Hip3ActionStep implements Built<Hip3ActionStep, Hip3ActionStepBuilder> {
-  /// 保护单步骤 prepared 时必须提供；size_mode=quantity，quantity 和各腿 trigger_price 为冻结绝对值，不再包含 percent 或 price_change_percent。与签名 payload 完全一致，供确认展示。
+  /// 保护单步骤 prepared 时必须提供；固定数量或比例保护归一为 size_mode=quantity，quantity 为冻结绝对值；全仓保护保留 size_mode=entire_position 且禁止 quantity/percent，表示触发时整个仓位而非准备时数量。各腿 trigger_price 为冻结绝对值，不再包含 price_change_percent。与签名 payload 的数量语义完全一致，供确认展示；取消步骤展示被取消保护单的原有参数。
   @BuiltValueField(wireName: r'normalized_protection')
   Hip3ProtectionSpec? get normalizedProtection;
 

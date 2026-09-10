@@ -63,7 +63,6 @@ lib/src/model/candle_series.dart
 lib/src/model/chain.dart
 lib/src/model/chart_range.dart
 lib/src/model/claim.dart
-lib/src/model/close_position_request.dart
 lib/src/model/completed_funding_provider_observation.dart
 lib/src/model/completed_funding_source_transaction_observation.dart
 lib/src/model/completed_funding_transfer_state.dart
@@ -282,7 +281,6 @@ lib/src/model/stock_group.dart
 lib/src/model/stock_page.dart
 lib/src/model/token_balance.dart
 lib/src/model/tp_sl_spec.dart
-lib/src/model/tp_sl_update_request.dart
 lib/src/model/trade_intent.dart
 lib/src/model/trade_intent_blocker.dart
 lib/src/model/trade_intent_create_request.dart
@@ -303,7 +301,6 @@ lib/src/model/transfer_source_execution_status.dart
 lib/src/model/transfer_status.dart
 lib/src/model/transfer_target_credit_status.dart
 lib/src/model/unavailable_deposit_rail_availability.dart
-lib/src/model/update_position_leverage_request.dart
 lib/src/model/user.dart
 lib/src/model/user_paid_wallet_action_execution_submission_request.dart
 lib/src/model/user_settings.dart

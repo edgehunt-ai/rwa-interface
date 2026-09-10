@@ -11,9 +11,34 @@ import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
+import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 
 void main() {
+  test('HIP3 listing passes perp without changing the unscoped list', () async {
+    final repository = _OrdersRepository();
+    final container = ProviderContainer(
+      overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    await container.read(hip3OrdersProvider(null).future);
+    expect(repository.listedKind, MarketProductKind.perp);
+    await container.read(ordersProvider(null).future);
+    expect(repository.listedKind, isNull);
+  });
+  test('resting HIP3 cancellation uses the signing repository', () async {
+    final execution = _CancelExecution();
+    final container = ProviderContainer(
+      overrides: [
+        ordersRepositoryProvider.overrideWithValue(_OrdersRepository()),
+        hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(orderCommandProvider.notifier).cancel(_perpOrder());
+    expect(execution.orderId, 'perp-1');
+    expect(execution.key, 'hip3-cancel-perp-1');
+  });
   test(
     '20 concurrent submits share one request and one idempotency key',
     () async {
@@ -72,7 +97,36 @@ OrderIntent _intent(String symbol) => OrderIntent(
   quantity: DecimalValue('1', unit: 'quantity'),
 );
 
+TradingOrder _perpOrder() => TradingOrder(
+  orderId: 'perp-1',
+  symbol: 'xyz:NVDA',
+  kind: MarketProductKind.perp,
+  side: TradingSide.long,
+  type: TradingOrderType.limit,
+  status: TradingOrderStatus.open,
+  createdAt: DateTime.utc(2026),
+);
+
+final class _CancelExecution implements Hip3OrderExecutionRepository {
+  String? orderId;
+  String? key;
+  @override
+  Future<ResourceResult<TradingOrder>> cancelOrder(
+    String orderId, {
+    required String idempotencyKey,
+  }) async {
+    this.orderId = orderId;
+    key = idempotencyKey;
+    return ResourceResult(resource: _perpOrder());
+  }
+
+  @override
+  Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(String orderId) =>
+      throw UnimplementedError();
+}
+
 final class _OrdersRepository implements OrdersRepository {
+  MarketProductKind? listedKind;
   int createCalls = 0;
   final List<String> keys = [];
   @override
@@ -100,7 +154,12 @@ final class _OrdersRepository implements OrdersRepository {
   @override
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
-  }) async => const DomainPage(items: []);
+    MarketProductKind? kind,
+  }) async {
+    listedKind = kind;
+    return const DomainPage(items: []);
+  }
+
   @override
   Future<OrderPreview> preview(
     OrderIntent intent, {

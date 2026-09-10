@@ -15,6 +15,30 @@ import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'an unresolved broadcast shows confirmation pending, not success',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(_ExecutableHip3Orders()),
+            hip3OrderExecutionRepositoryProvider.overrideWithValue(
+              _Hip3Execution(pending: true),
+            ),
+          ],
+          child: buildTestApp(const Hip3OrderPanel()),
+        ),
+      );
+      await tester.enterText(find.byType(TextField).first, '100');
+      await tester.tap(find.byType(FilledButton).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Confirming this order.'), findsOneWidget);
+      expect(find.text('Order submitted'), findsNothing);
+      expect(find.text('Trade Successful'), findsNothing);
+    },
+  );
   testWidgets('HIP-3 panel exposes perpetual-only order controls', (
     tester,
   ) async {
@@ -220,6 +244,13 @@ final class _ExecutableHip3Orders implements OrdersRepository {
 }
 
 final class _Hip3Execution implements Hip3OrderExecutionRepository {
+  _Hip3Execution({this.pending = false});
+  final bool pending;
+  @override
+  Future<ResourceResult<TradingOrder>> cancelOrder(
+    String orderId, {
+    required String idempotencyKey,
+  }) => throw UnimplementedError();
   String? orderId;
 
   @override
@@ -227,6 +258,7 @@ final class _Hip3Execution implements Hip3OrderExecutionRepository {
     String orderId,
   ) async {
     this.orderId = orderId;
+    if (pending) throw Hip3ExecutionPending(orderId, 'action-1');
     return ResourceResult(
       resource: TradingOrder(
         orderId: orderId,

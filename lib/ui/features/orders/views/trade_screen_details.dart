@@ -68,7 +68,11 @@ class _Details extends ConsumerWidget {
         ),
         if (activeTab == 'Open')
           _OpenOrdersTab(
-            orders: ref.watch(ordersProvider(null)),
+            orders: ref.watch(
+              kind == MarketProductKind.perp
+                  ? hip3OrdersProvider(null)
+                  : ordersProvider(null),
+            ),
             kind: kind,
             symbol: symbol,
           ),
@@ -104,7 +108,11 @@ class _OpenOrdersTab extends ConsumerWidget {
       state: DesignState.failure,
       title: 'Open orders unavailable',
       message: 'Try again to refresh open orders.',
-      onRetry: () => ref.refresh(ordersProvider(null).future),
+      onRetry: () => ref.refresh(
+        kind == MarketProductKind.perp
+            ? hip3OrdersProvider(null).future
+            : ordersProvider(null).future,
+      ),
     ),
     data: (page) {
       final openOrders = page.items
@@ -127,8 +135,25 @@ class _OpenOrdersTab extends ConsumerWidget {
           for (final order in openOrders)
             _OpenOrderCard(
               order: order,
-              onCancel: () =>
-                  ref.read(orderCommandProvider.notifier).cancel(order),
+              onCancel: () async {
+                if (order.kind != MarketProductKind.perp) {
+                  await ref.read(orderCommandProvider.notifier).cancel(order);
+                  return;
+                }
+                String message;
+                try {
+                  await ref.read(orderCommandProvider.notifier).cancel(order);
+                  message = 'Cancellation submitted. Refresh to confirm the final order status.';
+                } on Hip3ExecutionPending {
+                  message = 'Cancellation is still being confirmed. Refresh this order before retrying.';
+                } on Object {
+                  message = 'Unable to complete cancellation. Refresh the order and retry.';
+                }
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(message)));
+                }
+              },
             ),
         ],
       );

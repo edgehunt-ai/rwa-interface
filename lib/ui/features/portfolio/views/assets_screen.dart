@@ -17,6 +17,7 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
+import 'package:rwa_interface/ui/features/positions/views/hip3_pending_actions_section.dart';
 
 class AssetsScreen extends ConsumerStatefulWidget {
   const AssetsScreen({super.key});
@@ -132,10 +133,17 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen> {
                     holdings: holdings,
                     kind: MarketProductKind.bstock,
                   ),
-                  _AssetTab.perps => _HoldingSection(
-                    title: 'Perps equity',
-                    holdings: holdings,
-                    kind: MarketProductKind.perp,
+                  _AssetTab.perps => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Hip3PendingActionsSection(),
+                      const SizedBox(height: 20),
+                      _HoldingSection(
+                        title: 'Perps equity',
+                        holdings: holdings,
+                        kind: MarketProductKind.perp,
+                      ),
+                    ],
                   ),
                 },
               ],

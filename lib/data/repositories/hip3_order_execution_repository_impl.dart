@@ -1,6 +1,7 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../../domain/models/order.dart';
+import '../../domain/models/api_failure.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
@@ -25,62 +26,152 @@ final class Hip3OrderExecutionRepositoryImpl
   final Map<String, Future<ResourceResult<TradingOrder>>> _inFlight = {};
 
   @override
-  Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(String orderId) {
-    return _inFlight.putIfAbsent(orderId, () async {
+  Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(String orderId) =>
+      _execute(orderId, cancel: false, key: 'hip3-action-create-$orderId');
+
+  @override
+  Future<ResourceResult<TradingOrder>> cancelOrder(
+    String orderId, {
+    required String idempotencyKey,
+  }) => _execute(orderId, cancel: true, key: idempotencyKey);
+
+  Future<ResourceResult<TradingOrder>> _execute(
+    String orderId, {
+    required bool cancel,
+    required String key,
+  }) {
+    final flightKey = '${cancel ? 'cancel' : 'place'}:$orderId';
+    return _inFlight.putIfAbsent(flightKey, () async {
       try {
-        var action = await _service.createPlaceOrderAction(
-          orderId: orderId,
-          idempotencyKey: 'hip3-action-create-$orderId',
-        );
+        api.Hip3Action? action;
         for (var attempt = 0; attempt < 30; attempt++) {
-          if (action.status == api.Hip3ActionStatus.succeeded) {
+          try {
+            action = cancel
+                ? await _service.createCancelOrderAction(
+                    orderId: orderId,
+                    idempotencyKey: key,
+                  )
+                : await _service.createPlaceOrderAction(
+                    orderId: orderId,
+                    idempotencyKey: key,
+                  );
+            break;
+          } on ServerFailure catch (failure) {
+            if (cancel ||
+                failure.code != 'hip3_action_not_ready' ||
+                !failure.retryable) {
+              rethrow;
+            }
+            await _delay(const Duration(milliseconds: 500));
+          }
+        }
+        if (action == null) {
+          throw const Hip3SigningFailure(
+            Hip3SigningFailureCode.actionNotReady,
+            retryable: true,
+          );
+        }
+        var current = action;
+        for (var attempt = 0; attempt < 30; attempt++) {
+          if (current.orderId != orderId ||
+              current.environment != api.Hip3Environment.testnet ||
+              current.operation !=
+                  (cancel
+                      ? api.Hip3Operation.cancelOrder
+                      : api.Hip3Operation.placeOrder)) {
+            throw const Hip3SigningFailure(
+              Hip3SigningFailureCode.invalidPayload,
+            );
+          }
+          if (current.status == api.Hip3ActionStatus.succeeded) {
             return ResourceResult(
               resource: mapOrder(await _service.getOrder(orderId)),
             );
           }
-          _throwIfTerminal(action);
-
-          final step = _signableStep(action);
-          if (step == null) {
-            await _delay(const Duration(milliseconds: 500));
-            action = await _service.getAction(action.actionId);
-            continue;
-          }
-
-          final signing = step.signing!;
-          if (!signing.validUntil.toUtc().isAfter(_now().toUtc())) {
-            throw const Hip3SigningFailure(
-              Hip3SigningFailureCode.actionExpired,
+          if (current.status == api.Hip3ActionStatus.manualReview) {
+            throw Hip3ExecutionPending(
+              orderId,
+              current.actionId,
+              requiresReview: true,
             );
           }
-          final signature = _signatures['${action.actionId}:${step.stepId}'] ??=
-              Hip3RsvSignature.fromCompactHex(
+          _throwIfTerminal(current);
+          final step = current.status == api.Hip3ActionStatus.awaitingSignature
+              ? _signableStep(current)
+              : null;
+          if (step != null) {
+            final signing = step.signing!;
+            final signatureKey = '${current.actionId}:${step.stepId}';
+            var signature = _signatures[signatureKey];
+            if (signature == null) {
+              if (!signing.validUntil.toUtc().isAfter(_now().toUtc())) {
+                throw const Hip3SigningFailure(
+                  Hip3SigningFailureCode.actionExpired,
+                );
+              }
+              signature = Hip3RsvSignature.fromCompactHex(
                 await _signer.signTypedDataV4(
                   expectedSigner: signing.expectedSigner,
                   typedData: _typedData(signing),
                 ),
               );
-          action = await _service.submitStep(
-            orderId: orderId,
-            actionId: action.actionId,
-            stepId: step.stepId,
-            request: _request(signature),
-            idempotencyKey: 'hip3-action-${action.actionId}-${step.stepId}',
-          );
+              _signatures[signatureKey] = signature;
+            }
+            try {
+              current = await _service.submitStep(
+                orderId: orderId,
+                actionId: current.actionId,
+                stepId: step.stepId,
+                request: _request(signature),
+                idempotencyKey:
+                    'hip3-action-${current.actionId}-${step.stepId}',
+              );
+              continue;
+            } on ApiFailure catch (failure) {
+              // The response may be lost after broadcast. Query before considering a same-key retry.
+              if (!_transient(failure)) rethrow;
+            }
+          }
+          await _delay(const Duration(milliseconds: 500));
+          try {
+            current = await _service.getAction(current.actionId);
+          } on ApiFailure catch (failure) {
+            if (!_transient(failure)) rethrow;
+            // Do not resubmit from a stale prepared snapshot when status cannot be read.
+            for (var retry = 0; retry < 3; retry++) {
+              await _delay(const Duration(milliseconds: 500));
+              try {
+                current = await _service.getAction(current.actionId);
+                break;
+              } on ApiFailure catch (failure) {
+                if (!_transient(failure)) rethrow;
+                if (retry == 2) {
+                  throw Hip3ExecutionPending(orderId, current.actionId);
+                }
+              }
+            }
+          }
         }
-        throw const Hip3SigningFailure(
-          Hip3SigningFailureCode.actionNotReady,
-          retryable: true,
-        );
+        throw Hip3ExecutionPending(orderId, current.actionId);
       } finally {
-        _inFlight.remove(orderId);
+        _inFlight.remove(flightKey);
       }
     });
   }
 
+  bool _transient(ApiFailure failure) =>
+      failure is NetworkFailure ||
+      failure is TimeoutFailure ||
+      (failure is ServerFailure &&
+          failure.retryable &&
+          (failure.statusCode == 429 || failure.statusCode >= 500));
+
   api.Hip3ActionStep? _signableStep(api.Hip3Action action) => action.steps
       .where(
-        (step) => step.stepId == action.currentStepId && step.signing != null,
+        (step) =>
+            step.stepId == action.currentStepId &&
+            step.signing != null &&
+            step.status.name == 'prepared',
       )
       .firstOrNull;
 
@@ -109,8 +200,6 @@ final class Hip3OrderExecutionRepositoryImpl
         throw const Hip3SigningFailure(Hip3SigningFailureCode.actionExpired);
       case api.Hip3ActionStatus.failed:
       case api.Hip3ActionStatus.cancelled:
-      case api.Hip3ActionStatus.ambiguous:
-      case api.Hip3ActionStatus.manualReview:
       case api.Hip3ActionStatus.unknownDefaultOpenApi:
         throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
       default:

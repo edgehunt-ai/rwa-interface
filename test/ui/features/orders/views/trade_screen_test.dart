@@ -563,8 +563,10 @@ final class _OrderOutcomeRepository implements OrdersRepository {
   }) => throw UnimplementedError();
 
   @override
-  Future<DomainPage<ResourceResult<TradingOrder>>> list({String? cursor}) =>
-      throw UnimplementedError();
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+  }) => throw UnimplementedError();
 
   @override
   Future<ResourceResult<TradingOrder>> get(String orderId) =>
@@ -643,8 +645,10 @@ final class _OpenOrderRepository implements OrdersRepository {
   );
 
   @override
-  Future<DomainPage<ResourceResult<TradingOrder>>> list({String? cursor}) =>
-      Future.value(DomainPage(items: [ResourceResult(resource: _order)]));
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+  }) => Future.value(DomainPage(items: [ResourceResult(resource: _order)]));
 
   @override
   Future<ResourceResult<TradingOrder>> cancel(

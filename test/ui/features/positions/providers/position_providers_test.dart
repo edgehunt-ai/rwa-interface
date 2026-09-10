@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
+import 'package:rwa_interface/domain/models/hip3_action_summary.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -12,6 +17,92 @@ import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
 void main() {
+  test(
+    'late success cannot refresh a replacement session or reuse its guard',
+    () async {
+      final repository = _PositionsRepository()
+        ..leverageCompletion = Completer<void>();
+      final container = ProviderContainer(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final commandsSubscription = container.listen(
+        positionCommandProvider,
+        (_, _) {},
+      );
+      final detailSubscription = container.listen(
+        positionProvider('position-1'),
+        (_, _) {},
+      );
+      final actionsSubscription = container.listen(
+        activeHip3ActionsProvider(null),
+        (_, _) {},
+      );
+      addTearDown(commandsSubscription.close);
+      addTearDown(detailSubscription.close);
+      addTearDown(actionsSubscription.close);
+      await container.read(positionProvider('position-1').future);
+      await container.read(activeHip3ActionsProvider(null).future);
+      final oldCommands = container.read(positionCommandProvider);
+      final stale = oldCommands.updateLeverage(_position(), '2');
+      final staleCheck = expectLater(stale, throwsA(isA<CancelledFailure>()));
+
+      container.read(sessionGenerationProvider.notifier).clearUserScope();
+      final newCommands = container.read(positionCommandProvider);
+      expect(identical(oldCommands, newCommands), isFalse);
+      await container.read(positionProvider('position-1').future);
+      await container.read(activeHip3ActionsProvider(null).future);
+      expect(repository.getCalls['position-1'], 2);
+      expect(repository.activeCalls, 2);
+
+      repository.leverageCompletion!.complete();
+      await staleCheck;
+      await container.pump();
+      expect(repository.getCalls['position-1'], 2);
+      expect(repository.activeCalls, 2);
+
+      await newCommands.updateLeverage(_position(), '2');
+      expect(repository.leverageKeys.toSet(), hasLength(2));
+    },
+  );
+
+  for (final requiresReview in [false, true]) {
+    test(
+      'pending action refreshes recovery list (review=$requiresReview)',
+      () async {
+        final repository = _PositionsRepository()
+          ..pending = Hip3ActionPending(
+            'action-1',
+            requiresReview: requiresReview,
+          );
+        final container = ProviderContainer(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(repository),
+          ],
+        );
+        addTearDown(container.dispose);
+        final actions = container.listen(
+          activeHip3ActionsProvider(null),
+          (_, _) {},
+        );
+        final commands = container.listen(positionCommandProvider, (_, _) {});
+        addTearDown(actions.close);
+        addTearDown(commands.close);
+        await container.read(activeHip3ActionsProvider(null).future);
+        expect(repository.activeCalls, 1);
+
+        await expectLater(
+          container
+              .read(positionCommandProvider)
+              .updateLeverage(_position(), '2'),
+          throwsA(same(repository.pending)),
+        );
+        await container.read(activeHip3ActionsProvider(null).future);
+        expect(repository.activeCalls, 2);
+      },
+    );
+  }
+
   test('position list forwards filters through repository boundary', () async {
     final repository = _PositionsRepository();
     final container = ProviderContainer(
@@ -152,6 +243,18 @@ final class _PositionsRepository implements PositionsRepository {
   final Map<String, int> getCalls = {};
   int listCalls = 0;
   bool failUpdates = false;
+  Completer<void>? leverageCompletion;
+  Hip3ActionPending? pending;
+  int activeCalls = 0;
+
+  @override
+  Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({
+    String? cursor,
+  }) async {
+    activeCalls++;
+    return const DomainPage(items: []);
+  }
+
   @override
   Future<DomainPage<Position>> list({
     String? symbol,
@@ -183,8 +286,10 @@ final class _PositionsRepository implements PositionsRepository {
     required String idempotencyKey,
   }) async {
     leverageKeys.add(idempotencyKey);
+    await leverageCompletion?.future;
     await Future<void>.delayed(const Duration(milliseconds: 2));
     if (failUpdates) throw const NetworkFailure();
+    if (pending != null) throw pending!;
     return position;
   }
 

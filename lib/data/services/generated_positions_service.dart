@@ -22,53 +22,6 @@ final class GeneratedPositionsService implements PositionsService {
   @override
   Future<api.Position> getPosition(String positionId) =>
       _body(() => _api.getPosition(positionId: positionId));
-  @override
-  Future<api.Position> updateTpSl(
-    String positionId,
-    api.TpSlUpdateRequest request, {
-    required String idempotencyKey,
-  }) => _body(
-    () => _api.updatePositionTpSl(
-      positionId: positionId,
-      idempotencyKey: idempotencyKey,
-      tpSlUpdateRequest: request,
-    ),
-  );
-  @override
-  Future<api.Position> clearTpSl(
-    String positionId, {
-    required String idempotencyKey,
-  }) => _body(
-    () => _api.clearPositionTpSl(
-      positionId: positionId,
-      idempotencyKey: idempotencyKey,
-    ),
-  );
-  @override
-  Future<api.Position> updateLeverage(
-    String positionId,
-    api.UpdatePositionLeverageRequest request, {
-    required String idempotencyKey,
-  }) => _body(
-    () => _api.updatePositionLeverage(
-      positionId: positionId,
-      idempotencyKey: idempotencyKey,
-      updatePositionLeverageRequest: request,
-    ),
-  );
-  @override
-  Future<api.Order> closePosition(
-    String positionId,
-    api.ClosePositionRequest request, {
-    required String idempotencyKey,
-  }) => _body(
-    () => _api.closePosition(
-      positionId: positionId,
-      idempotencyKey: idempotencyKey,
-      closePositionRequest: request,
-    ),
-  );
-
   Future<T> _body<T>(Future<Response<T>> Function() request) async {
     try {
       final data = (await request()).data;

@@ -3,10 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/position.dart';
+import '../../../../domain/models/hip3_action_summary.dart';
+
+final activeHip3ActionsProvider = FutureProvider.autoDispose
+    .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(positionsRepositoryProvider)
+          .activeHip3Actions(cursor: cursor);
+    });
 
 typedef PositionFilter = ({
   String? symbol,
@@ -34,14 +44,52 @@ final positionProvider = FutureProvider.autoDispose.family<Position, String>((
   return ref.watch(positionsRepositoryProvider).get(positionId);
 });
 
-final positionCommandProvider = Provider.autoDispose(
-  (ref) => PositionCommands(ref),
-);
+final positionCommandProvider = Provider.autoDispose((ref) {
+  ref.watch(sessionGenerationProvider);
+  return PositionCommands(ref);
+});
 
 final class PositionCommands {
   PositionCommands(this._ref);
   final Ref _ref;
   final IdempotentCommandGuard _commands = IdempotentCommandGuard();
+
+  Future<T> _run<T>({
+    required String operation,
+    required String fingerprint,
+    required Future<T> Function(String) command,
+  }) async {
+    if (!_ref.mounted) throw const CancelledFailure();
+    final generation = _ref.read(sessionGenerationProvider);
+    try {
+      final result = await _commands.run(
+        operation: operation,
+        fingerprint: fingerprint,
+        command: command,
+      );
+      if (!_ref.mounted || _ref.read(sessionGenerationProvider) != generation) {
+        throw const CancelledFailure();
+      }
+      return result;
+    } finally {
+      // A failed/paused call can still have created a recoverable server action.
+      // Never refresh a different user's session after an in-flight command.
+      if (_ref.mounted && _ref.read(sessionGenerationProvider) == generation) {
+        _ref.invalidate(activeHip3ActionsProvider);
+      }
+    }
+  }
+
+  Future<void> resumeHip3Action(String actionId) async {
+    await _run(
+      operation: 'resume-hip3',
+      fingerprint: actionId,
+      command: (_) =>
+          _ref.read(positionsRepositoryProvider).resumeHip3Action(actionId),
+    );
+    _ref.invalidate(positionProvider);
+    _ref.invalidate(positionsProvider);
+  }
 
   Future<Position> updateTpSl(
     Position position, {
@@ -49,7 +97,7 @@ final class PositionCommands {
     String? stopLoss,
     String? stopLimit,
   }) async {
-    final result = await _commands.run(
+    final result = await _run(
       operation: 'tp-sl',
       fingerprint: '${position.positionId}|$takeProfit|$stopLoss|$stopLimit',
       command: (key) => _ref
@@ -68,7 +116,7 @@ final class PositionCommands {
   }
 
   Future<Position> clearTpSl(String positionId) async {
-    final result = await _commands.run(
+    final result = await _run(
       operation: 'clear-tp-sl',
       fingerprint: positionId,
       command: (key) => _ref
@@ -81,7 +129,7 @@ final class PositionCommands {
   }
 
   Future<Position> updateLeverage(Position position, String leverage) async {
-    final result = await _commands.run(
+    final result = await _run(
       operation: 'leverage',
       fingerprint: '${position.positionId}|$leverage',
       command: (key) => _ref
@@ -98,7 +146,7 @@ final class PositionCommands {
     String? quantity,
     String? percent,
   }) async {
-    final result = await _commands.run(
+    final result = await _run(
       operation: 'close-position',
       fingerprint: '$positionId|$quantity|$percent',
       command: (key) => _ref

@@ -155,12 +155,8 @@ Class | Method | HTTP request | Description
 [*PortfolioApi*](doc/PortfolioApi.md) | [**listAccounts**](doc/PortfolioApi.md#listaccounts) | **GET** /v1/portfolio/accounts | 内部账本账户余额
 [*PortfolioApi*](doc/PortfolioApi.md) | [**listHoldings**](doc/PortfolioApi.md#listholdings) | **GET** /v1/portfolio/holdings | 按股票分组的持仓
 [*PortfolioApi*](doc/PortfolioApi.md) | [**listPortfolioAssets**](doc/PortfolioApi.md#listportfolioassets) | **GET** /v1/portfolio/assets | 分页列出真实用户资产
-[*PositionsApi*](doc/PositionsApi.md) | [**clearPositionTpSl**](doc/PositionsApi.md#clearpositiontpsl) | **DELETE** /v1/positions/{position_id}/tpsl | 清除止盈止损
-[*PositionsApi*](doc/PositionsApi.md) | [**closePosition**](doc/PositionsApi.md#closeposition) | **POST** /v1/positions/{position_id}/close | 平仓（支持部分平仓）
 [*PositionsApi*](doc/PositionsApi.md) | [**getPosition**](doc/PositionsApi.md#getposition) | **GET** /v1/positions/{position_id} | 仓位详情
 [*PositionsApi*](doc/PositionsApi.md) | [**listPositions**](doc/PositionsApi.md#listpositions) | **GET** /v1/positions | 持仓列表
-[*PositionsApi*](doc/PositionsApi.md) | [**updatePositionLeverage**](doc/PositionsApi.md#updatepositionleverage) | **PATCH** /v1/positions/{position_id}/leverage | 调整杠杆 / 保证金模式
-[*PositionsApi*](doc/PositionsApi.md) | [**updatePositionTpSl**](doc/PositionsApi.md#updatepositiontpsl) | **PUT** /v1/positions/{position_id}/tpsl | 设置 / 修改止盈止损
 [*SystemApi*](doc/SystemApi.md) | [**getDisclosures**](doc/SystemApi.md#getdisclosures) | **GET** /v1/system/disclosures | 产品说明文案
 [*SystemApi*](doc/SystemApi.md) | [**listAppVersions**](doc/SystemApi.md#listappversions) | **GET** /v1/system/app-version | 各平台最新版本
 [*SystemApi*](doc/SystemApi.md) | [**streamEvents**](doc/SystemApi.md#streamevents) | **GET** /v1/events | 实时事件流（SSE）
@@ -214,7 +210,6 @@ Class | Method | HTTP request | Description
  - [Chain](doc/Chain.md)
  - [ChartRange](doc/ChartRange.md)
  - [Claim](doc/Claim.md)
- - [ClosePositionRequest](doc/ClosePositionRequest.md)
  - [CompletedFundingProviderObservation](doc/CompletedFundingProviderObservation.md)
  - [CompletedFundingSourceTransactionObservation](doc/CompletedFundingSourceTransactionObservation.md)
  - [CompletedFundingTransferState](doc/CompletedFundingTransferState.md)
@@ -432,7 +427,6 @@ Class | Method | HTTP request | Description
  - [StockPage](doc/StockPage.md)
  - [TokenBalance](doc/TokenBalance.md)
  - [TpSlSpec](doc/TpSlSpec.md)
- - [TpSlUpdateRequest](doc/TpSlUpdateRequest.md)
  - [TradeIntent](doc/TradeIntent.md)
  - [TradeIntentBlocker](doc/TradeIntentBlocker.md)
  - [TradeIntentCreateRequest](doc/TradeIntentCreateRequest.md)
@@ -453,7 +447,6 @@ Class | Method | HTTP request | Description
  - [TransferStatus](doc/TransferStatus.md)
  - [TransferTargetCreditStatus](doc/TransferTargetCreditStatus.md)
  - [UnavailableDepositRailAvailability](doc/UnavailableDepositRailAvailability.md)
- - [UpdatePositionLeverageRequest](doc/UpdatePositionLeverageRequest.md)
  - [User](doc/User.md)
  - [UserPaidWalletActionExecutionSubmissionRequest](doc/UserPaidWalletActionExecutionSubmissionRequest.md)
  - [UserSettings](doc/UserSettings.md)

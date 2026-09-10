@@ -98,6 +98,384 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @hip3ConfirmSetTp.
+  ///
+  /// In en, this message translates to:
+  /// **'Set take profit'**
+  String get hip3ConfirmSetTp;
+
+  /// No description provided for @hip3ConfirmSetSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Set stop loss'**
+  String get hip3ConfirmSetSl;
+
+  /// No description provided for @hip3ConfirmCancelTp.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel take profit'**
+  String get hip3ConfirmCancelTp;
+
+  /// No description provided for @hip3ConfirmCancelSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel stop loss'**
+  String get hip3ConfirmCancelSl;
+
+  /// No description provided for @hip3ConfirmClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close position'**
+  String get hip3ConfirmClose;
+
+  /// No description provided for @hip3ConfirmLeverageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust leverage'**
+  String get hip3ConfirmLeverageTitle;
+
+  /// No description provided for @hip3ConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm HIP3 action'**
+  String get hip3ConfirmTitle;
+
+  /// No description provided for @hip3ConfirmReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review this step before signing. Earlier completed steps remain effective if you decline.'**
+  String get hip3ConfirmReview;
+
+  /// No description provided for @hip3ConfirmDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline signature'**
+  String get hip3ConfirmDecline;
+
+  /// No description provided for @hip3ConfirmSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and sign'**
+  String get hip3ConfirmSign;
+
+  /// No description provided for @hip3ConfirmLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage'**
+  String get hip3ConfirmLeverage;
+
+  /// No description provided for @hip3ConfirmMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin mode'**
+  String get hip3ConfirmMargin;
+
+  /// No description provided for @hip3ConfirmScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection to cancel'**
+  String get hip3ConfirmScope;
+
+  /// No description provided for @hip3ConfirmCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection coverage'**
+  String get hip3ConfirmCoverage;
+
+  /// No description provided for @hip3ConfirmQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Protected quantity'**
+  String get hip3ConfirmQuantity;
+
+  /// No description provided for @hip3ConfirmTpTrigger.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit trigger price'**
+  String get hip3ConfirmTpTrigger;
+
+  /// No description provided for @hip3ConfirmTpReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit price reference'**
+  String get hip3ConfirmTpReference;
+
+  /// No description provided for @hip3ConfirmTpExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit execution'**
+  String get hip3ConfirmTpExecution;
+
+  /// No description provided for @hip3ConfirmTpLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit limit price'**
+  String get hip3ConfirmTpLimit;
+
+  /// No description provided for @hip3ConfirmSlTrigger.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss trigger price'**
+  String get hip3ConfirmSlTrigger;
+
+  /// No description provided for @hip3ConfirmSlReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss price reference'**
+  String get hip3ConfirmSlReference;
+
+  /// No description provided for @hip3ConfirmSlExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss execution'**
+  String get hip3ConfirmSlExecution;
+
+  /// No description provided for @hip3ConfirmSlLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss limit price'**
+  String get hip3ConfirmSlLimit;
+
+  /// No description provided for @hip3ConfirmDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing order direction'**
+  String get hip3ConfirmDirection;
+
+  /// No description provided for @hip3ConfirmCloseQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Close quantity'**
+  String get hip3ConfirmCloseQuantity;
+
+  /// No description provided for @hip3ConfirmRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining quantity'**
+  String get hip3ConfirmRemaining;
+
+  /// No description provided for @hip3ConfirmEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated execution price'**
+  String get hip3ConfirmEstimate;
+
+  /// No description provided for @hip3ConfirmFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated fee (USDC)'**
+  String get hip3ConfirmFee;
+
+  /// No description provided for @hip3ConfirmPnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated realized PnL (USDC)'**
+  String get hip3ConfirmPnl;
+
+  /// No description provided for @hip3ConfirmSlippage.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum slippage (%)'**
+  String get hip3ConfirmSlippage;
+
+  /// No description provided for @hip3ConfirmEntire.
+  ///
+  /// In en, this message translates to:
+  /// **'Entire position at trigger time'**
+  String get hip3ConfirmEntire;
+
+  /// No description provided for @hip3ConfirmFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed quantity'**
+  String get hip3ConfirmFixed;
+
+  /// No description provided for @hip3ConfirmPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage of position'**
+  String get hip3ConfirmPercent;
+
+  /// No description provided for @hip3ConfirmBuyClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy to close short position'**
+  String get hip3ConfirmBuyClose;
+
+  /// No description provided for @hip3ConfirmSellClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell to close long position'**
+  String get hip3ConfirmSellClose;
+
+  /// No description provided for @hip3ConfirmMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get hip3ConfirmMarket;
+
+  /// No description provided for @hip3ConfirmLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit'**
+  String get hip3ConfirmLimit;
+
+  /// No description provided for @hip3ConfirmMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark price'**
+  String get hip3ConfirmMark;
+
+  /// No description provided for @hip3ConfirmCross.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross'**
+  String get hip3ConfirmCross;
+
+  /// No description provided for @hip3ConfirmIsolated.
+  ///
+  /// In en, this message translates to:
+  /// **'Isolated'**
+  String get hip3ConfirmIsolated;
+
+  /// No description provided for @hip3ConfirmBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit and stop loss'**
+  String get hip3ConfirmBoth;
+
+  /// No description provided for @hip3ConfirmValidUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until {time} (local time)'**
+  String hip3ConfirmValidUntil(String time);
+
+  /// No description provided for @hip3PendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfinished HIP3 actions'**
+  String get hip3PendingTitle;
+
+  /// No description provided for @hip3PendingRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh actions'**
+  String get hip3PendingRefresh;
+
+  /// No description provided for @hip3PendingLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading unfinished actions…'**
+  String get hip3PendingLoading;
+
+  /// No description provided for @hip3PendingLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load actions. Refresh to try again.'**
+  String get hip3PendingLoadError;
+
+  /// No description provided for @hip3PendingEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No unfinished position actions on this page.'**
+  String get hip3PendingEmpty;
+
+  /// No description provided for @hip3PendingMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more actions'**
+  String get hip3PendingMore;
+
+  /// No description provided for @hip3PendingContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue action'**
+  String get hip3PendingContinue;
+
+  /// No description provided for @hip3PendingCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check progress'**
+  String get hip3PendingCheck;
+
+  /// No description provided for @hip3PendingBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking action…'**
+  String get hip3PendingBusy;
+
+  /// No description provided for @hip3PendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs manual review. Do not create a replacement action. Contact support with the action ID.'**
+  String get hip3PendingReview;
+
+  /// No description provided for @hip3PendingSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your signature'**
+  String get hip3PendingSignature;
+
+  /// No description provided for @hip3PendingProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the exchange result'**
+  String get hip3PendingProcessing;
+
+  /// No description provided for @hip3PendingUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be resumed here.'**
+  String get hip3PendingUnavailable;
+
+  /// No description provided for @hip3PendingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not continue. Refresh and retry the same action.'**
+  String get hip3PendingError;
+
+  /// No description provided for @hip3PendingStillActive.
+  ///
+  /// In en, this message translates to:
+  /// **'The action is still unfinished. Continue this action instead of creating another.'**
+  String get hip3PendingStillActive;
+
+  /// No description provided for @hip3PendingComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Action confirmed'**
+  String get hip3PendingComplete;
+
+  /// No description provided for @hip3PendingSetTpsl.
+  ///
+  /// In en, this message translates to:
+  /// **'Set or update TP/SL'**
+  String get hip3PendingSetTpsl;
+
+  /// No description provided for @hip3PendingClearTpsl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel TP/SL'**
+  String get hip3PendingClearTpsl;
+
+  /// No description provided for @hip3PendingLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust leverage'**
+  String get hip3PendingLeverage;
+
+  /// No description provided for @hip3PendingClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close position'**
+  String get hip3PendingClose;
+
+  /// No description provided for @hip3PendingEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier steps have already taken effect.'**
+  String get hip3PendingEffects;
+
   /// Application title
   ///
   /// In en, this message translates to:

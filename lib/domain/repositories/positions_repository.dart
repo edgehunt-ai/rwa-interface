@@ -2,8 +2,13 @@ import '../models/domain_page.dart';
 import '../models/market_product.dart';
 import '../models/order.dart';
 import '../models/position.dart';
+import '../models/hip3_action_summary.dart';
 
 abstract interface class PositionsRepository {
+  Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({String? cursor});
+
+  /// Recover a server-persisted HIP3 workflow without creating another action.
+  Future<void> resumeHip3Action(String actionId);
   Future<DomainPage<Position>> list({
     String? symbol,
     MarketProductKind? kind,
