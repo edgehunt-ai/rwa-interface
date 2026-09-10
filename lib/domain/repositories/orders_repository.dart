@@ -19,6 +19,9 @@ abstract interface class OrdersRepository {
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
     MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   });
   Future<ResourceResult<TradingOrder>> get(String orderId);
   Future<ResourceResult<TradingOrder>> cancel(

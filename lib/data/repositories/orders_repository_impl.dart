@@ -67,9 +67,15 @@ final class OrdersRepositoryImpl implements OrdersRepository {
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
     MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   }) async {
     final page = await _service.listOrders(
       cursor: cursor,
+      symbol: symbol,
+      productId: productId,
+      statusGroup: statusGroup,
       kind: kind == MarketProductKind.perp ? api.ProductKind.perp : null,
     );
     return DomainPage(
@@ -217,6 +223,22 @@ final class OrdersRepositoryImpl implements OrdersRepository {
 }
 
 TradingOrder mapOrder(api.Order value) => TradingOrder(
+  productId: value.productId,
+  conditional: value.conditional == null
+      ? null
+      : ConditionalOrder(
+          role: value.conditional!.role.name,
+          triggerPrice: DecimalValue(
+            value.conditional!.triggerPrice,
+            asset: 'USDC',
+            unit: 'price',
+          ),
+          triggerStatus: value.conditional!.triggerStatus.name,
+          executionType: value.conditional!.executionType.name,
+          sizeMode: value.conditional!.sizeMode.name,
+          quantity: value.conditional!.quantity,
+          triggerReference: value.conditional!.triggerReference.name,
+        ),
   orderId: value.orderId,
   clientOrderId: value.clientOrderId,
   symbol: value.symbol,

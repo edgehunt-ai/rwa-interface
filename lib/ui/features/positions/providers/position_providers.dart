@@ -8,6 +8,9 @@ import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/position.dart';
+import '../../../../domain/models/position_operation.dart';
+import '../../../../domain/models/order_intent.dart';
+import '../../orders/providers/order_providers.dart';
 import '../../../../domain/models/hip3_action_summary.dart';
 
 final activeHip3ActionsProvider = FutureProvider.autoDispose
@@ -49,6 +52,27 @@ final positionCommandProvider = Provider.autoDispose((ref) {
   return PositionCommands(ref);
 });
 
+final positionProtectionOrdersProvider = FutureProvider.autoDispose
+    .family<List<TradingOrder>, Position>((ref, position) async {
+      ref.watch(sessionGenerationProvider);
+      final repository = ref.watch(ordersRepositoryProvider);
+      final orders = await Future.wait(
+        position.protectionOrderIds.map(repository.get),
+      );
+      return orders
+          .map((result) {
+            final order = result.resource;
+            if (order.positionId != position.positionId ||
+                order.productId != position.productId ||
+                order.conditional == null) {
+              throw const FormatException('Protection order binding mismatch');
+            }
+            return order;
+          })
+          .where((order) => !order.isTerminal)
+          .toList(growable: false);
+    });
+
 final class PositionCommands {
   PositionCommands(this._ref);
   final Ref _ref;
@@ -76,6 +100,9 @@ final class PositionCommands {
       // Never refresh a different user's session after an in-flight command.
       if (_ref.mounted && _ref.read(sessionGenerationProvider) == generation) {
         _ref.invalidate(activeHip3ActionsProvider);
+        _ref.invalidate(hip3OpenOrdersProvider);
+        _ref.invalidate(hip3OrdersProvider);
+        _ref.invalidate(positionsProvider);
       }
     }
   }
@@ -94,19 +121,26 @@ final class PositionCommands {
   Future<Position> updateTpSl(
     Position position, {
     String? takeProfit,
+    String? takeLimit,
     String? stopLoss,
     String? stopLimit,
+    String? quantity,
+    ProtectionClearScope? clearScope,
   }) async {
     final result = await _run(
       operation: 'tp-sl',
-      fingerprint: '${position.positionId}|$takeProfit|$stopLoss|$stopLimit',
+      fingerprint:
+          '${position.positionId}|${position.productId}|${position.positionVersion}|$takeProfit|$takeLimit|$stopLoss|$stopLimit|$quantity|$clearScope',
       command: (key) => _ref
           .read(positionsRepositoryProvider)
           .updateTpSl(
             position,
             takeProfit: takeProfit,
+            takeLimit: takeLimit,
             stopLoss: stopLoss,
             stopLimit: stopLimit,
+            quantity: quantity,
+            clearScope: clearScope,
             idempotencyKey: key,
           ),
     );
@@ -115,13 +149,16 @@ final class PositionCommands {
     return result;
   }
 
-  Future<Position> clearTpSl(String positionId) async {
+  Future<Position> clearTpSl(
+    String positionId, {
+    ProtectionClearScope scope = ProtectionClearScope.both,
+  }) async {
     final result = await _run(
       operation: 'clear-tp-sl',
-      fingerprint: positionId,
+      fingerprint: '$positionId|$scope',
       command: (key) => _ref
           .read(positionsRepositoryProvider)
-          .clearTpSl(positionId, idempotencyKey: key),
+          .clearTpSl(positionId, scope: scope, idempotencyKey: key),
     );
     _ref.invalidate(positionProvider(positionId));
     _ref.invalidate(positionsProvider);
@@ -145,16 +182,23 @@ final class PositionCommands {
     String positionId, {
     String? quantity,
     String? percent,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    Position? expectedPosition,
   }) async {
     final result = await _run(
       operation: 'close-position',
-      fingerprint: '$positionId|$quantity|$percent',
+      fingerprint:
+          '$positionId|$quantity|$percent|$type|$limitPrice|${expectedPosition?.productId}|${expectedPosition?.positionVersion}',
       command: (key) => _ref
           .read(positionsRepositoryProvider)
           .close(
             positionId,
             quantity: quantity,
             percent: percent,
+            type: type,
+            limitPrice: limitPrice,
+            expectedPosition: expectedPosition,
             idempotencyKey: key,
           ),
     );

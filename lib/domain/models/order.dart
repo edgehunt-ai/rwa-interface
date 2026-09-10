@@ -15,6 +15,25 @@ enum TradingOrderStatus {
   unknown,
 }
 
+final class ConditionalOrder {
+  const ConditionalOrder({
+    required this.role,
+    required this.triggerPrice,
+    required this.triggerStatus,
+    required this.executionType,
+    required this.sizeMode,
+    required this.quantity,
+    required this.triggerReference,
+  });
+  final String role;
+  final DecimalValue triggerPrice;
+  final String triggerStatus;
+  final String executionType;
+  final String sizeMode;
+  final String quantity;
+  final String triggerReference;
+}
+
 final class TradingOrder {
   const TradingOrder({
     required this.orderId,
@@ -25,6 +44,8 @@ final class TradingOrder {
     required this.status,
     required this.createdAt,
     this.clientOrderId,
+    this.productId,
+    this.conditional,
     this.quantity,
     this.filledQuantity,
     this.limitPrice,
@@ -37,6 +58,8 @@ final class TradingOrder {
     this.updatedAt,
   });
   final String orderId;
+  final String? productId;
+  final ConditionalOrder? conditional;
   final String? clientOrderId;
   final String symbol;
   final MarketProductKind kind;

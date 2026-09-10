@@ -30,10 +30,19 @@ void main() {
       final service = GeneratedOrdersService(
         api.RwaApiClient(dio: dio).getOrdersApi(),
       );
-      await service.listOrders(kind: api.ProductKind.perp, cursor: 'cursor-1');
+      await service.listOrders(
+        kind: api.ProductKind.perp,
+        cursor: 'cursor-1',
+        symbol: 'TSLA',
+        productId: 'xyz:TSLA',
+        statusGroup: 'open',
+      );
       await service.listOrders();
       expect(queries[0]['kind'], 'perp');
       expect(queries[0]['cursor'], 'cursor-1');
+      expect(queries[0]['symbol'], 'TSLA');
+      expect(queries[0]['product_id'], 'xyz:TSLA');
+      expect(queries[0]['status_group'], 'open');
       expect(queries[1]['kind'], isNull);
     },
   );

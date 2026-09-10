@@ -15,6 +15,9 @@ import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/position.dart';
+import '../../domain/models/position_operation.dart';
+import '../../domain/models/decimal_value.dart';
+import '../../domain/models/order_intent.dart';
 import '../../domain/repositories/positions_repository.dart';
 import '../services/positions_service.dart';
 import 'orders_repository_impl.dart';
@@ -138,10 +141,74 @@ final class PositionsRepositoryImpl implements PositionsRepository {
   Future<Position> updateTpSl(
     Position position, {
     String? takeProfit,
+    String? takeLimit,
     String? stopLoss,
     String? stopLimit,
+    String? quantity,
+    ProtectionClearScope? clearScope,
     required String idempotencyKey,
   }) async {
+    if (clearScope != null) {
+      // Freeze the complete desired edit before any signed side effect. Retry
+      // each persisted action with its own stable key; never silently skip a
+      // pending cancellation and proceed to creating protection.
+      final initial = await _preparations.get(
+        '$idempotencyKey-edit',
+        jsonEncode([
+          position.positionId,
+          position.productId,
+          position.positionVersion,
+          takeProfit,
+          takeLimit,
+          stopLoss,
+          stopLimit,
+          quantity,
+          clearScope.name,
+        ]),
+        () async {
+          if (takeProfit != null || stopLoss != null) {
+            Hip3PositionIntents.setProtection(
+              position,
+              takeProfit: takeProfit,
+              takeLimit: takeLimit,
+              stopLoss: stopLoss,
+              stopLimit: stopLimit,
+              quantity: quantity,
+            );
+          }
+          return position;
+        },
+      );
+      await _run(
+        initial,
+        Hip3PositionIntents.clearProtection(initial, scope: clearScope),
+        api.Hip3Operation.clearTpsl,
+        '$idempotencyKey-clear',
+      );
+      if (takeProfit == null && stopLoss == null) {
+        return get(position.positionId);
+      }
+      final refreshed = await _preparations.get(
+        '$idempotencyKey-after-clear',
+        position.positionId,
+        () => get(position.positionId),
+      );
+      if (refreshed.productId != initial.productId ||
+          refreshed.side != initial.side) {
+        throw const FormatException(
+          'Position changed; refresh before editing protection',
+        );
+      }
+      return updateTpSl(
+        refreshed,
+        takeProfit: takeProfit,
+        takeLimit: takeLimit,
+        stopLoss: stopLoss,
+        stopLimit: stopLimit,
+        quantity: quantity,
+        idempotencyKey: '$idempotencyKey-set',
+      );
+    }
     final intent = await _preparations.get(
       idempotencyKey,
       jsonEncode([
@@ -149,14 +216,19 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         position.positionId,
         position.productId,
         takeProfit,
+        takeLimit,
         stopLoss,
         stopLimit,
+        quantity,
+        position.positionVersion,
       ]),
       () async => Hip3PositionIntents.setProtection(
         position,
         takeProfit: takeProfit,
+        takeLimit: takeLimit,
         stopLoss: stopLoss,
         stopLimit: stopLimit,
+        quantity: quantity,
       ),
     );
     await _run(position, intent, api.Hip3Operation.setTpsl, idempotencyKey);
@@ -166,16 +238,17 @@ final class PositionsRepositoryImpl implements PositionsRepository {
   @override
   Future<Position> clearTpSl(
     String positionId, {
+    ProtectionClearScope scope = ProtectionClearScope.both,
     required String idempotencyKey,
   }) async {
     final position = await _preparations.get(
       idempotencyKey,
-      jsonEncode(['clear_tpsl', positionId]),
+      jsonEncode(['clear_tpsl', positionId, scope.name]),
       () => get(positionId),
     );
     await _run(
       position,
-      Hip3PositionIntents.clearProtection(position),
+      Hip3PositionIntents.clearProtection(position, scope: scope),
       api.Hip3Operation.clearTpsl,
       idempotencyKey,
     );
@@ -221,11 +294,22 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     String positionId, {
     String? quantity,
     String? percent,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    Position? expectedPosition,
     required String idempotencyKey,
   }) async {
     if (quantity != null && percent != null) {
       throw ArgumentError('Quantity and percent are mutually exclusive');
     }
+    if (type == TradingOrderType.limit) {
+      if (limitPrice == null) throw ArgumentError('Limit price is required');
+      requirePositiveDecimal(limitPrice);
+    } else if (limitPrice != null) {
+      throw ArgumentError('Market close must not include a limit price');
+    }
+    if (percent != null) requireWithinPosition(percent, '100');
+    if (quantity != null) requirePositiveDecimal(quantity);
     final (position, preview) = await _preparations.get(
       idempotencyKey,
       jsonEncode([
@@ -233,15 +317,40 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         positionId,
         quantity,
         percent ?? (quantity == null ? '100' : null),
+        type.name,
+        limitPrice,
+        expectedPosition?.productId,
+        expectedPosition?.positionVersion,
+        expectedPosition?.side.name,
+        expectedPosition?.quantity.value,
       ]),
       () async {
         final position = await get(positionId);
         _requireProduct(position);
+        if (position.side == PositionSide.none ||
+            (expectedPosition != null &&
+                (expectedPosition.positionId != positionId ||
+                    expectedPosition.productId != position.productId ||
+                    expectedPosition.positionVersion !=
+                        position.positionVersion ||
+                    expectedPosition.side != position.side ||
+                    expectedPosition.quantity.value !=
+                        position.quantity.value))) {
+          throw const FormatException(
+            'Position changed; refresh before closing',
+          );
+        }
+        if (quantity != null) {
+          requireWithinPosition(quantity, position.quantity.value);
+        }
         final preview = await _actions.previewClose(
           positionId,
           api.Hip3ClosePreviewRequest(
             (b) => b
-              ..type = api.Hip3ClosePreviewRequestTypeEnum.market
+              ..type = type == TradingOrderType.limit
+                  ? api.Hip3ClosePreviewRequestTypeEnum.limit
+                  : api.Hip3ClosePreviewRequestTypeEnum.market
+              ..limitPrice = limitPrice
               ..quantity = quantity
               ..percent = percent ?? (quantity == null ? '100' : null),
           ),
@@ -252,8 +361,28 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     );
     if (preview.positionId != positionId ||
         preview.productId != position.productId ||
+        preview.positionVersion != position.positionVersion ||
+        preview.type.name != type.name ||
+        preview.side.name !=
+            (position.side == PositionSide.long ? 'short' : 'long') ||
+        (type == TradingOrderType.limit && preview.limitPrice == null) ||
         preview.environment != api.Hip3Environment.testnet) {
       throw const FormatException('Close preview binding mismatch');
+    }
+    requireWithinPosition(
+      preview.quantity,
+      quantity ?? percentageQuantity(position.quantity.value, percent ?? '100'),
+    );
+    if (limitPrice != null) {
+      requirePositiveDecimal(preview.limitPrice!);
+      final comparison = DecimalValue(preview.limitPrice!)
+          .compareTo(DecimalValue(limitPrice));
+      if ((position.side == PositionSide.long && comparison < 0) ||
+          (position.side == PositionSide.short && comparison > 0)) {
+        throw const FormatException(
+          'Close preview exceeds the requested limit',
+        );
+      }
     }
     final completed = await _run(
       position,

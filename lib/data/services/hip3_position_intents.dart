@@ -3,24 +3,31 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import '../../domain/models/decimal_value.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/position.dart';
+import '../../domain/models/position_operation.dart';
 
 /// Converts domain inputs to the only supported mutation transport: actions.
 abstract final class Hip3PositionIntents {
   static api.Hip3ActionCreateRequest setProtection(
     Position position, {
     String? takeProfit,
+    String? takeLimit,
     String? stopLoss,
     String? stopLimit,
+    String? quantity,
   }) {
     _position(position);
     if ((takeProfit == null && stopLoss == null) ||
-        (stopLimit != null && stopLoss == null)) {
+        (stopLimit != null && stopLoss == null) ||
+        (takeLimit != null && takeProfit == null)) {
       throw ArgumentError(
-        'Specify a protection leg; stop limit requires stop loss',
+        'Specify a protection leg; each limit price requires its trigger',
       );
     }
-    for (final price in [takeProfit, stopLoss, stopLimit]) {
+    for (final price in [takeProfit, takeLimit, stopLoss, stopLimit]) {
       if (price != null) _positive(price);
+    }
+    if (quantity != null) {
+      requireWithinPosition(quantity, position.quantity.value);
     }
     // A profitable stop can be above entry. Direction is relative to mark,
     // and the backend revalidates against a fresh venue observation.
@@ -54,20 +61,28 @@ abstract final class Hip3PositionIntents {
       'position_id': position.positionId,
       'position_version': position.positionVersion,
       'protection': {
-        'size_mode': 'entire_position',
-        if (takeProfit != null) 'take_profit': leg(takeProfit),
+        'size_mode': quantity == null ? 'entire_position' : 'quantity',
+        'quantity': ?quantity,
+        if (takeProfit != null) 'take_profit': leg(takeProfit, takeLimit),
         if (stopLoss != null) 'stop_loss': leg(stopLoss, stopLimit),
       },
     });
   }
 
-  static api.Hip3ActionCreateRequest clearProtection(Position position) {
+  static api.Hip3ActionCreateRequest clearProtection(
+    Position position, {
+    ProtectionClearScope scope = ProtectionClearScope.both,
+  }) {
     _position(position);
     return _request({
       'operation': 'clear_tpsl',
       'position_id': position.positionId,
       'position_version': position.positionVersion,
-      'scope': 'both',
+      'scope': switch (scope) {
+        ProtectionClearScope.takeProfit => 'take_profit',
+        ProtectionClearScope.stopLoss => 'stop_loss',
+        ProtectionClearScope.both => 'both',
+      },
     });
   }
 

@@ -66,7 +66,11 @@ class _Details extends ConsumerWidget {
             ],
           ),
         ),
-        if (activeTab == 'Open')
+        if (activeTab == 'Open' && kind == MarketProductKind.perp)
+          Hip3OpenOrdersPanel(key: ValueKey('hip3-open-$symbol'), symbol: symbol,
+            productId: ref.watch(positionsProvider((symbol: symbol, kind: kind, cursor: null)))
+              .value?.items.where((p) => p.symbol == symbol && p.kind == kind).firstOrNull?.productId),
+        if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
             orders: ref.watch(
               kind == MarketProductKind.perp
@@ -332,10 +336,7 @@ class _PositionCard extends StatelessWidget {
                       : () => showModalBottomSheet<void>(
                           context: context,
                           isScrollControlled: true,
-                          builder: (_) => const Hip3OrderPanel(
-                            initialSide: TradingSide.short,
-                            initialReduceOnly: true,
-                          ),
+                          builder: (_) => Hip3ClosePositionSheet(position: position),
                         ),
                   child: Text(
                     kind == MarketProductKind.bstock ? 'Transfer' : 'Close',
