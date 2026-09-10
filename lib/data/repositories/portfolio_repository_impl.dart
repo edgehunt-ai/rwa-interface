@@ -116,6 +116,8 @@ Position mapPosition(api.Position value) => Position(
   entryPrice: _optional(value.entryPrice, 'price'),
   markPrice: _optional(value.markPrice, 'price'),
   unrealizedPnl: _optional(value.unrealizedPnl, 'pnl'),
+  unrealizedPnlPercent: _optional(value.unrealizedPnlPercent, 'percent'),
+  fundingPaid: _optional(value.fundingPaid, 'funding'),
   realizedPnl: _optional(value.realizedPnl, 'pnl'),
   leverage: _optional(value.leverage, 'leverage'),
   margin: _optional(value.margin, 'margin'),

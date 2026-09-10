@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'hip3_close_position_sheet.dart';
+import '../../positions/views/hip3_position_metrics.dart';
+import '../../positions/views/hip3_position_leverage_sheet.dart';
 import 'hip3_open_orders_panel.dart';
 import '../../../../domain/models/position_operation.dart';
 import '../../../../domain/models/hip3_action_pending.dart';

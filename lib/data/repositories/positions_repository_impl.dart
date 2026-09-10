@@ -15,6 +15,7 @@ import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/position.dart';
+import '../../domain/models/position_leverage_context.dart';
 import '../../domain/models/position_operation.dart';
 import '../../domain/models/decimal_value.dart';
 import '../../domain/models/order_intent.dart';
@@ -35,6 +36,33 @@ final class PositionsRepositoryImpl implements PositionsRepository {
   final Future<bool> Function(Hip3StepConfirmation) _confirm;
   final PositionsService _service;
   final Hip3PreparationCache _preparations = Hip3PreparationCache();
+
+  @override
+  Future<PositionLeverageContext> leverageContext(String productId) async {
+    final context = await _actions.context(productId);
+    if (context.productId != productId) {
+      throw const FormatException('Trading context binding mismatch');
+    }
+    final mode = switch (context.currentMarginMode) {
+      api.MarginMode.cross => PositionMarginMode.cross,
+      api.MarginMode.isolated => PositionMarginMode.isolated,
+      _ => null,
+    };
+    return PositionLeverageContext(
+      productId: productId,
+      maximum: DecimalValue(context.rules.maxLeverage),
+      current: context.currentLeverage == null
+          ? null
+          : DecimalValue(context.currentLeverage!),
+      marginMode: mode,
+      validUntil: context.validUntil.toUtc(),
+      canChange:
+          context.environment == api.Hip3Environment.testnet &&
+          mode != null &&
+          context.supportedOperations.contains(api.Hip3Operation.setLeverage) &&
+          context.blocker == null,
+    );
+  }
 
   @override
   Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({
