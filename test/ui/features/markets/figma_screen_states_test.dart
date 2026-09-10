@@ -55,6 +55,35 @@ void main() {
     expect(find.text('Recent searches'), findsNothing);
   });
 
+  testWidgets('market discovery restores recent searches from history', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketSearchHistoryServiceProvider.overrideWithValue(
+            _MarketSearchHistoryService(
+              entries: const [
+                MarketProductRef(
+                  symbol: 'NVDA',
+                  kind: MarketProductKind.bstock,
+                ),
+              ],
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const MarketDiscoverySearchScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recent searches'), findsOneWidget);
+  });
+
   testWidgets(
     'market search shows remote results after its debounced query resolves',
     (tester) async {
@@ -114,6 +143,27 @@ void main() {
     },
   );
 
+  testWidgets('all stocks hides stale remote results during a new debounce', (
+    tester,
+  ) async {
+    final repository = _ProgressiveMarketsRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const MarketSearchScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'ts');
+    await tester.pump();
+
+    expect(find.text('NVDA'), findsNothing);
+  });
+
   for (final searchScreen in <Widget>[
     const MarketDiscoverySearchScreen(),
     const MarketSearchScreen(),
@@ -153,12 +203,18 @@ void main() {
 }
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {
+  _MarketSearchHistoryService({List<MarketProductRef> entries = const []})
+    : _entries = List.unmodifiable(entries);
+
+  final List<MarketProductRef> _entries;
+
   @override
-  Future<List<MarketProductRef>> read() async => const [];
+  Future<List<MarketProductRef>> read() async => _entries;
 
   @override
   Future<List<MarketProductRef>> record(MarketProductRef product) async => [
     product,
+    ..._entries.where((entry) => entry != product),
   ];
 }
 

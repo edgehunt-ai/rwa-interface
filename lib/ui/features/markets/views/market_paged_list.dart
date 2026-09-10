@@ -21,8 +21,13 @@ MarketListGroup marketGroupForTab(String tab) => switch (tab) {
 
 /// Reuses the existing product row while lazily rendering accumulated pages.
 class MarketPagedSliver extends ConsumerWidget {
-  const MarketPagedSliver({super.key, required this.query});
+  const MarketPagedSliver({
+    super.key,
+    required this.query,
+    this.onProductOpened,
+  });
   final MarketListQuery query;
+  final ValueChanged<MarketProduct>? onProductOpened;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,12 +90,15 @@ class MarketPagedSliver extends ConsumerWidget {
             children: [
               MarketProductRow(
                 product: product,
-                onTap: () => context.push(
-                  AppRoutes.tradeLocation(
-                    symbol: product.symbol,
-                    kind: product.kind.name,
-                  ),
-                ),
+                onTap: () {
+                  onProductOpened?.call(product);
+                  context.push(
+                    AppRoutes.tradeLocation(
+                      symbol: product.symbol,
+                      kind: product.kind.name,
+                    ),
+                  );
+                },
               ),
               if (index + 1 < state.items.length) const Divider(height: 1),
             ],

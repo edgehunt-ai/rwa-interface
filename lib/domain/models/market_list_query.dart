@@ -10,8 +10,13 @@ final class MarketListQuery {
     this.query = '',
     this.limit = 20,
   });
+
+  const MarketListQuery.allStocks({this.query = '', this.limit = 20})
+    : kind = null,
+      group = null;
+
   final MarketProductKind? kind;
-  final MarketListGroup group;
+  final MarketListGroup? group;
   final String query;
   final int limit;
 

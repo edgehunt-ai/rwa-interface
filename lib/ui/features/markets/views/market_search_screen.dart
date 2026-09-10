@@ -66,6 +66,15 @@ class _MarketDiscoverySearchScreenState
 
   @override
   Widget build(BuildContext context) {
+    final recentSearches = ref.watch(recentMarketSearchesProvider);
+    final recentReferences = recentSearches.asData?.value ?? const [];
+    final catalog = recentReferences.isEmpty
+        ? null
+        : ref.watch(marketProductsProvider((query: null, cursor: null)));
+    final recentProducts = _recentProducts(
+      catalog?.asData?.value.items ?? const [],
+      recentReferences,
+    );
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -158,9 +167,31 @@ class _MarketDiscoverySearchScreenState
                         ],
                       ),
                     ),
+                    if (query.isEmpty && recentProducts.isNotEmpty) ...[
+                      SliverToBoxAdapter(
+                        child: Text(
+                          'Recent searches',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                      SliverList.separated(
+                        itemCount: recentProducts.length,
+                        itemBuilder: (context, index) {
+                          final product = recentProducts[index];
+                          return MarketProductRow(
+                            product: product,
+                            onTap: () => _openRecentProduct(product),
+                          );
+                        },
+                        separatorBuilder: (_, _) => const Divider(height: 1),
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                    ],
                     MarketPagedSliver(
                       key: ValueKey(listQuery),
                       query: listQuery,
+                      onProductOpened: _recordRecentSearch,
                     ),
                     if (query.isEmpty)
                       SliverToBoxAdapter(
@@ -199,6 +230,21 @@ class _MarketDiscoverySearchScreenState
       _change(() => _remoteQuery = query);
     });
   }
+
+  void _recordRecentSearch(MarketProduct product) {
+    unawaited(
+      ref
+          .read(recentMarketSearchesProvider.notifier)
+          .record(MarketProductRef(symbol: product.symbol, kind: product.kind)),
+    );
+  }
+
+  void _openRecentProduct(MarketProduct product) {
+    _recordRecentSearch(product);
+    context.push(
+      AppRoutes.tradeLocation(symbol: product.symbol, kind: product.kind.name),
+    );
+  }
 }
 
 class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
@@ -209,6 +255,9 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
   final _controller = TextEditingController();
   Timer? _searchDebounce;
 
+  MarketListQuery get _listQuery =>
+      MarketListQuery.allStocks(query: _remoteQuery);
+
   @override
   void dispose() {
     _searchDebounce?.cancel();
@@ -218,13 +267,16 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final products = ref.watch(
-      marketProductsProvider((
-        query: _remoteQuery.isEmpty ? null : _remoteQuery,
-        cursor: null,
-      )),
+    final catalog = ref.watch(
+      marketProductsProvider((query: null, cursor: null)),
     );
+    final state = ref.watch(marketListProvider(_listQuery));
+    final commands = ref.read(marketListProvider(_listQuery).notifier);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final localProducts = query.isEmpty
+        ? const <MarketProduct>[]
+        : _localSearch(catalog.asData?.value.items ?? const [], query);
+    final awaitingRemoteSearch = query.isNotEmpty && query != _remoteQuery;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -288,55 +340,52 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
               ),
             ),
             Expanded(
-              child: products.when(
-                loading: () => const DesignStateFeedback(
-                  state: DesignState.loading,
-                  title: 'Loading stocks',
-                ),
-                error: (_, _) => DesignStateFeedback(
-                  state: DesignState.failure,
-                  title: 'Stocks unavailable',
-                  message: 'Try again when the market catalog is available.',
-                  onRetry: () => ref.refresh(
-                    marketProductsProvider((
-                      query: _remoteQuery.isEmpty ? null : _remoteQuery,
-                      cursor: null,
-                    )).future,
-                  ),
-                ),
-                data: (page) {
-                  final stocks = _stockRows(page.items);
-                  if (stocks.isEmpty) {
-                    return const DesignStateFeedback(
-                      state: DesignState.empty,
-                      title: 'No stocks found',
-                      message: 'Try another ticker or company name.',
-                    );
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: stocks.length + (query.isEmpty ? 0 : 1),
-                    separatorBuilder: (_, _) =>
-                        Divider(height: 1, color: colors.border),
-                    itemBuilder: (_, index) {
-                      if (query.isNotEmpty && index == 0) {
-                        return SizedBox(
-                          height: 24,
-                          child: Text(
-                            '${stocks.length} ${stocks.length == 1 ? 'result' : 'results'}',
-                            style: TextStyle(color: colors.tertiaryText),
-                          ),
-                        );
-                      }
-                      final product = stocks[index - (query.isEmpty ? 0 : 1)];
-                      return _StockBrowseRow(
-                        product: product,
-                        allProducts: page.items,
-                      );
-                    },
-                  );
-                },
-              ),
+              child: awaitingRemoteSearch
+                  ? localProducts.isEmpty
+                        ? const DesignStateFeedback(
+                            state: DesignState.loading,
+                            title: 'Loading stocks',
+                          )
+                        : _stockList(
+                            products: localProducts,
+                            isLoadingMore: true,
+                            colors: colors,
+                          )
+                  : state.loading
+                  ? localProducts.isEmpty
+                        ? const DesignStateFeedback(
+                            state: DesignState.loading,
+                            title: 'Loading stocks',
+                          )
+                        : _stockList(
+                            products: localProducts,
+                            isLoadingMore: true,
+                            colors: colors,
+                          )
+                  : state.error != null && state.items.isEmpty
+                  ? localProducts.isEmpty
+                        ? DesignStateFeedback(
+                            state: DesignState.failure,
+                            title: 'Stocks unavailable',
+                            message: 'Try again when the market catalog is available.',
+                            onRetry: commands.refresh,
+                          )
+                        : _stockList(
+                            products: localProducts,
+                            isLoadingMore: true,
+                            colors: colors,
+                          )
+                  : _stockList(
+                      products: query.isEmpty
+                          ? state.items
+                          : _mergeProducts(localProducts, state.items),
+                      allRemoteProducts: state.items,
+                      hasMore: state.hasMore,
+                      isLoadingMore: state.loadingMore,
+                      loadMoreError: state.error,
+                      onLoadMore: commands.loadMore,
+                      colors: colors,
+                    ),
             ),
           ],
         ),
@@ -360,6 +409,105 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
       setState(() => _remoteQuery = query);
     });
   }
+
+  Widget _stockList({
+    required List<MarketProduct> products,
+    required AppRwaColors colors,
+    List<MarketProduct>? allRemoteProducts,
+    bool hasMore = false,
+    bool isLoadingMore = false,
+    Object? loadMoreError,
+    VoidCallback? onLoadMore,
+  }) {
+    final stocks = _stockRows(products);
+    if (stocks.isEmpty && !hasMore) {
+      return const DesignStateFeedback(
+        state: DesignState.empty,
+        title: 'No stocks found',
+        message: 'Try another ticker or company name.',
+      );
+    }
+    final headerCount = query.isEmpty ? 0 : 1;
+    final footerCount = hasMore || isLoadingMore || loadMoreError != null
+        ? 1
+        : 0;
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: headerCount + stocks.length + footerCount,
+      separatorBuilder: (_, _) => Divider(height: 1, color: colors.border),
+      itemBuilder: (_, index) {
+        if (query.isNotEmpty && index == 0) {
+          return SizedBox(
+            height: 24,
+            child: Text(
+              '${stocks.length} ${stocks.length == 1 ? 'result' : 'results'}',
+              style: TextStyle(color: colors.tertiaryText),
+            ),
+          );
+        }
+        if (index == headerCount + stocks.length) {
+          if (isLoadingMore) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (hasMore) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: TextButton(
+                onPressed: onLoadMore,
+                child: Text(
+                  loadMoreError == null ? 'Load more' : 'Retry loading more',
+                ),
+              ),
+            );
+          }
+        }
+        final product = stocks[index - headerCount];
+        return _StockBrowseRow(
+          product: product,
+          allProducts: allRemoteProducts ?? products,
+        );
+      },
+    );
+  }
+}
+
+List<MarketProduct> _recentProducts(
+  List<MarketProduct> products,
+  List<MarketProductRef> recentSearches,
+) {
+  final byReference = {
+    for (final product in products)
+      MarketProductRef(symbol: product.symbol, kind: product.kind): product,
+  };
+  return [for (final reference in recentSearches) ?byReference[reference]];
+}
+
+List<MarketProduct> _localSearch(List<MarketProduct> products, String query) {
+  final normalizedQuery = query.trim().toLowerCase();
+  if (normalizedQuery.isEmpty) return const [];
+  return [
+    for (final product in products)
+      if (product.symbol.toLowerCase().contains(normalizedQuery) ||
+          product.name.toLowerCase().contains(normalizedQuery))
+        product,
+  ];
+}
+
+List<MarketProduct> _mergeProducts(
+  List<MarketProduct> localProducts,
+  List<MarketProduct> remoteProducts,
+) {
+  final unique = <MarketProductRef, MarketProduct>{};
+  for (final product in [...localProducts, ...remoteProducts]) {
+    unique.putIfAbsent(
+      MarketProductRef(symbol: product.symbol, kind: product.kind),
+      () => product,
+    );
+  }
+  return unique.values.toList(growable: false);
 }
 
 List<MarketProduct> _stockRows(List<MarketProduct> products) {

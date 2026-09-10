@@ -26,6 +26,7 @@ typedef Query = ({
 class _Markets implements MarketsRepository {
   final requests = <Query>[];
   late Future<DomainPage<MarketProduct>> Function(Query) handle;
+  Future<DomainPage<MarketProduct>> Function(Query)? allStocksHandle;
   @override
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
@@ -38,6 +39,8 @@ class _Markets implements MarketsRepository {
     requests.add(request);
     // Unchanged stock tiles/all-stocks/home boundary.
     if (group == null) {
+      final handler = allStocksHandle;
+      if (handler != null) return handler(request);
       return Future.value(
         page([product('NVDA', kind: MarketProductKind.bstock)]),
       );
@@ -155,6 +158,7 @@ void main() {
       await tester.enterText(find.byType(TextField), 'old');
       await tester.pump();
       await tester.enterText(find.byType(TextField), 'new');
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
       old.complete(page([product('STALE')]));
       await tester.pumpAndSettle();
@@ -207,6 +211,22 @@ void main() {
       expect(find.text('No matching products'), findsNothing);
     },
   );
+
+  testWidgets('all stocks follows the server next cursor', (tester) async {
+    final repo = _Markets()
+      ..allStocksHandle = (query) async => query.cursor == null
+          ? page([product('A')], next: 'next')
+          : page([product('B')]);
+    await mount(tester, repo, const MarketSearchScreen());
+
+    expect(find.text('A'), findsWidgets);
+    await tester.tap(find.text('Load more'));
+    await tester.pumpAndSettle();
+
+    expect(repo.requests.last.cursor, 'next');
+    expect(find.text('B'), findsWidgets);
+    expect(find.text('Load more'), findsNothing);
+  });
 
   for (final size in [const Size(375, 812), const Size(812, 375)]) {
     testWidgets(
