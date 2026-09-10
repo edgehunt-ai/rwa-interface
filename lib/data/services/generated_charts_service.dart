@@ -14,8 +14,16 @@ final class GeneratedChartsService implements ChartsService {
     String symbol,
     api.ProductKind kind, {
     String? interval,
+    DateTime? from,
+    DateTime? to,
   }) => _body(
-    () => _api.getCandles(symbol: symbol, kind: kind, interval: interval),
+    () => _api.getCandles(
+      symbol: symbol,
+      kind: kind,
+      interval: interval,
+      from: from,
+      to: to,
+    ),
   );
   @override
   Future<api.MarketSessionInfo> getMarketSessions() =>

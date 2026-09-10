@@ -374,11 +374,14 @@ class _DetailsCard extends ConsumerWidget {
     final snapshotState = ref.watch(
       marketSnapshotProvider(MarketProductRef(symbol: symbol, kind: kind)),
     );
-    final snapshot = snapshotState.value;
+    final snapshot = snapshotState.hasError ? null : snapshotState.value;
     final loading = snapshotState.isLoading;
-    final reference = snapshot?.price == null
+    final referencePrice = kind == MarketProductKind.perp
+        ? snapshot?.referencePrice
+        : snapshot?.price;
+    final reference = referencePrice == null
         ? '—'
-        : TokenAmountFormatter.formatUsd(snapshot!.price);
+        : TokenAmountFormatter.formatUsd(referencePrice);
     final bid = snapshot?.bids.firstOrNull?.price == null
         ? '—'
         : TokenAmountFormatter.formatUsd(snapshot!.bids.first.price);
@@ -396,7 +399,7 @@ class _DetailsCard extends ConsumerWidget {
               const SizedBox(height: 12),
               _MarketDetailRow(
                 kind == MarketProductKind.perp
-                    ? l10n.tradeReferencePrice
+                    ? snapshot?.referenceLabel ?? l10n.tradeReferencePrice
                     : l10n.tradeUsStockReference,
                 reference,
                 loading: loading,
@@ -406,10 +409,22 @@ class _DetailsCard extends ConsumerWidget {
                 kind == MarketProductKind.perp
                     ? l10n.tradeBasis
                     : l10n.tradePremium,
-                '—',
+                snapshot?.basisPercent == null
+                    ? '—'
+                    : TokenAmountFormatter.formatPercent(
+                        snapshot!.basisPercent!,
+                      ),
                 loading: loading,
               ),
-              _MarketDetailRow(l10n.tradeSpread, '—', loading: loading),
+              _MarketDetailRow(
+                l10n.tradeSpread,
+                snapshot?.spreadPercent == null
+                    ? '—'
+                    : TokenAmountFormatter.formatPercent(
+                        snapshot!.spreadPercent!,
+                      ),
+                loading: loading,
+              ),
               _MarketDetailRow(
                 l10n.tradeBestBidAsk,
                 '$bid / $ask',

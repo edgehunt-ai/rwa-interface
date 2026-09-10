@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -21,8 +23,16 @@ final marketProductProvider = FutureProvider.autoDispose
     });
 
 final marketSnapshotProvider = FutureProvider.autoDispose
-    .family<MarketSnapshot, MarketProductRef>((ref, product) {
-      return ref.watch(marketsRepositoryProvider).getSnapshot(product);
+    .family<MarketSnapshot, MarketProductRef>((ref, product) async {
+      Timer? timer;
+      ref.onDispose(() => timer?.cancel());
+      try {
+        return await ref.watch(marketsRepositoryProvider).getSnapshot(product);
+      } finally {
+        if (product.kind == MarketProductKind.perp && ref.mounted) {
+          timer = Timer(const Duration(seconds: 10), ref.invalidateSelf);
+        }
+      }
     });
 
 final marketCandlesProvider = FutureProvider.autoDispose

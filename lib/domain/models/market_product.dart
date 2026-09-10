@@ -26,6 +26,7 @@ final class MarketProduct {
     required this.tradable,
     this.change24hPercent,
     this.volume24h,
+    this.turnover24hUsd,
     this.isFavorite = false,
   });
 
@@ -38,5 +39,6 @@ final class MarketProduct {
   final bool tradable;
   final DecimalValue? change24hPercent;
   final DecimalValue? volume24h;
+  final DecimalValue? turnover24hUsd;
   final bool isFavorite;
 }

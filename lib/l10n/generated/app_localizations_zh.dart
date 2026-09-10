@@ -336,6 +336,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get marketsUnavailable => '市场不可用';
 
   @override
+  String get hip3ChartLoading => '正在加载价格历史…';
+
+  @override
+  String get hip3ChartError => '价格历史加载失败。';
+
+  @override
+  String get hip3ChartEmpty => '该时段暂无成交数据。';
+
+  @override
+  String get hip3ChartRetry => '刷新图表';
+
+  @override
+  String get hip3ChartStale => '价格历史可能已过期，请刷新。';
+
+  @override
+  String get hip3ChartLine => '折线图';
+
+  @override
+  String get hip3ChartCandles => '蜡烛图';
+
+  @override
+  String get hip3ChartReferenceUnavailable => '参考价格历史暂不可用。';
+
+  @override
   String get noProductsYet => '暂无产品';
 
   @override

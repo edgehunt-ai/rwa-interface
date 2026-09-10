@@ -746,6 +746,54 @@ abstract class AppLocalizations {
   /// **'Markets unavailable'**
   String get marketsUnavailable;
 
+  /// No description provided for @hip3ChartLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading price history…'**
+  String get hip3ChartLoading;
+
+  /// No description provided for @hip3ChartError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load price history.'**
+  String get hip3ChartError;
+
+  /// No description provided for @hip3ChartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No trades in this period.'**
+  String get hip3ChartEmpty;
+
+  /// No description provided for @hip3ChartRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh chart'**
+  String get hip3ChartRetry;
+
+  /// No description provided for @hip3ChartStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Price history may be out of date. Refresh to update.'**
+  String get hip3ChartStale;
+
+  /// No description provided for @hip3ChartLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Line chart'**
+  String get hip3ChartLine;
+
+  /// No description provided for @hip3ChartCandles.
+  ///
+  /// In en, this message translates to:
+  /// **'Candlestick chart'**
+  String get hip3ChartCandles;
+
+  /// No description provided for @hip3ChartReferenceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference price history is not available.'**
+  String get hip3ChartReferenceUnavailable;
+
   /// No description provided for @noProductsYet.
   ///
   /// In en, this message translates to:
