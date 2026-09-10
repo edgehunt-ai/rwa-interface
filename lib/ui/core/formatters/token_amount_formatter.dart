@@ -15,9 +15,20 @@ abstract final class TokenAmountFormatter {
   static String formatUsd(DecimalValue amount) =>
       '\$${_groupIntegerDigits(_trimInsignificantZeros(amount.value))}';
 
-  static String formatPercent(DecimalValue amount, {bool signed = true}) {
+  /// Formats a percentage for display with at most two fractional digits.
+  ///
+  /// Market API values can contain high-precision decimal values, which are
+  /// useful for calculations but are not appropriate for compact UI labels.
+  static String formatPercent(
+    DecimalValue amount, {
+    bool signed = true,
+    int maxFractionDigits = 2,
+  }) {
+    _validateDecimals(maxFractionDigits);
     final normalized = _groupIntegerDigits(
-      _trimInsignificantZeros(amount.value),
+      _trimInsignificantZeros(
+        _roundToFractionDigits(amount.value, maxFractionDigits),
+      ),
     );
     if (!signed || normalized.startsWith('-') || normalized == '0') {
       return '$normalized%';
@@ -154,6 +165,29 @@ abstract final class TokenAmountFormatter {
     return withoutZeros.endsWith('.')
         ? withoutZeros.substring(0, withoutZeros.length - 1)
         : withoutZeros;
+  }
+
+  static String _roundToFractionDigits(String value, int maxFractionDigits) {
+    final negative = value.startsWith('-');
+    final unsigned = negative ? value.substring(1) : value;
+    final parts = unsigned.split('.');
+    final integer = parts.first;
+    final fraction = parts.length == 1 ? '' : parts.last;
+    if (fraction.length <= maxFractionDigits) return value;
+
+    final retainedFraction = fraction.substring(0, maxFractionDigits);
+    var scaled = BigInt.parse('$integer$retainedFraction');
+    if (fraction[maxFractionDigits].compareTo('5') >= 0) {
+      scaled += BigInt.one;
+    }
+
+    final digits = scaled.toString().padLeft(maxFractionDigits + 1, '0');
+    final rounded = maxFractionDigits == 0
+        ? digits
+        : '${digits.substring(0, digits.length - maxFractionDigits)}.'
+              '${digits.substring(digits.length - maxFractionDigits)}';
+    if (scaled == BigInt.zero) return rounded;
+    return '${negative ? '-' : ''}$rounded';
   }
 
   static String _groupIntegerDigits(String value) {

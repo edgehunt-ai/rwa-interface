@@ -4,6 +4,7 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
+import 'package:rwa_interface/data/services/market_search_history_service.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 
 void main() {
@@ -24,6 +25,42 @@ void main() {
       'b',
     );
   });
+
+  test('updates recent searches after a market is opened', () async {
+    final history = _MarketSearchHistoryService();
+    final container = ProviderContainer(
+      overrides: [
+        marketSearchHistoryServiceProvider.overrideWithValue(history),
+      ],
+    );
+    addTearDown(container.dispose);
+    const product = MarketProductRef(
+      symbol: 'NVDA',
+      kind: MarketProductKind.bstock,
+    );
+
+    await container.read(recentMarketSearchesProvider.future);
+    await container.read(recentMarketSearchesProvider.notifier).record(product);
+
+    expect(container.read(recentMarketSearchesProvider).asData?.value, [
+      product,
+    ]);
+  });
+}
+
+final class _MarketSearchHistoryService implements MarketSearchHistoryService {
+  final entries = <MarketProductRef>[];
+
+  @override
+  Future<List<MarketProductRef>> read() async => entries;
+
+  @override
+  Future<List<MarketProductRef>> record(MarketProductRef product) async {
+    entries
+      ..remove(product)
+      ..insert(0, product);
+    return List.unmodifiable(entries);
+  }
 }
 
 final class _MarketsRepository implements MarketsRepository {

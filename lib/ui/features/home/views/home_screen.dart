@@ -11,6 +11,7 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
+import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/failure_state.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
@@ -394,7 +395,8 @@ class _MarketPreviewState extends State<_MarketPreview> {
   String activeTab = 'Favorites';
   MarketProductKind? kind;
   bool _favoritesSelectedByUser = false;
-  bool _fallbackScheduled = false;
+  bool _popularFallbackScheduled = false;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -428,39 +430,48 @@ class _MarketPreviewState extends State<_MarketPreview> {
           }),
         ),
         const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(18),
+        widget.products.when(
+          loading: () => const _HomeStateCard(height: 240),
+          error: (_, _) => FailureState(
+            height: 340,
+            title: 'We couldn’t load the markets',
+            description: 'Check your connection and try again.',
+            onRetry: widget.onRetry,
           ),
-          child: widget.products.when(
-            loading: () => const _HomeStateCard(height: 240),
-            error: (_, _) => FailureState(
-              height: 340,
-              title: 'We couldn’t load the markets',
-              description: 'Check your connection and try again.',
-              onRetry: widget.onRetry,
-            ),
-            data: (page) {
-              var items = page.items.cast<MarketProduct>();
-              if (kind != null) {
-                items = items.where((product) => product.kind == kind).toList();
-              }
-              items = marketProductsForTab(items, activeTab);
-              if (items.isEmpty) {
-                if (activeTab == 'Favorites' && !_favoritesSelectedByUser) {
+          data: (page) {
+            var items = page.items.cast<MarketProduct>();
+            if (kind != null) {
+              items = items.where((product) => product.kind == kind).toList();
+            }
+            items = marketProductsForTab(items, activeTab);
+            if (items.isEmpty) {
+              if (activeTab == 'Favorites') {
+                if (!_favoritesSelectedByUser) {
                   _schedulePopularFallback();
                 }
-                return const SizedBox(
-                  height: 240,
-                  child: DesignStateFeedback(
-                    state: DesignState.empty,
-                    title: 'No products yet',
-                  ),
+                return FavoritesEmptyState(
+                  onExplore: () => setState(() => activeTab = 'Popular'),
                 );
               }
-              final visible = items.take(5).toList(growable: false);
-              return Column(
+              return Container(
+                height: 240,
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const DesignStateFeedback(
+                  state: DesignState.empty,
+                  title: 'No products yet',
+                ),
+              );
+            }
+            final visible = items.take(5).toList(growable: false);
+            return Container(
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
                 children: [
                   for (final product in visible) ...[
                     Padding(
@@ -485,19 +496,19 @@ class _MarketPreviewState extends State<_MarketPreview> {
                       ),
                   ],
                 ],
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
   void _schedulePopularFallback() {
-    if (_fallbackScheduled) return;
-    _fallbackScheduled = true;
+    if (_popularFallbackScheduled) return;
+    _popularFallbackScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fallbackScheduled = false;
+      _popularFallbackScheduled = false;
       if (!mounted || _favoritesSelectedByUser || activeTab != 'Favorites') {
         return;
       }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
+import '../../../../data/services/market_search_history_service.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/market_snapshot.dart';
@@ -36,6 +37,34 @@ final favoritesCommandProvider =
     AsyncNotifierProvider.autoDispose<FavoritesCommand, void>(
       FavoritesCommand.new,
     );
+
+final marketSearchHistoryServiceProvider = Provider<MarketSearchHistoryService>(
+  (_) => SharedPreferencesMarketSearchHistoryService(),
+);
+
+final recentMarketSearchesProvider =
+    AsyncNotifierProvider.autoDispose<
+      RecentMarketSearches,
+      List<MarketProductRef>
+    >(RecentMarketSearches.new);
+
+final class RecentMarketSearches extends AsyncNotifier<List<MarketProductRef>> {
+  @override
+  Future<List<MarketProductRef>> build() =>
+      ref.read(marketSearchHistoryServiceProvider).read();
+
+  Future<void> record(MarketProductRef product) async {
+    final previous = state.asData?.value ?? const <MarketProductRef>[];
+    try {
+      final updated = await ref
+          .read(marketSearchHistoryServiceProvider)
+          .record(product);
+      state = AsyncData(updated);
+    } catch (_) {
+      state = AsyncData(previous);
+    }
+  }
+}
 
 final class FavoritesCommand extends AsyncNotifier<void> {
   @override

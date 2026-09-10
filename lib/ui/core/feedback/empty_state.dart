@@ -85,3 +85,75 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
+
+class FavoritesEmptyState extends StatelessWidget {
+  const FavoritesEmptyState({super.key, required this.onExplore});
+
+  final VoidCallback onExplore;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 160,
+            height: 160,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 16.2,
+                  top: 22.6,
+                  width: 127.6,
+                  height: 127.6,
+                  child: Image.asset(
+                    'assets/figma/home_markets/'
+                    'favorites_empty_illustration.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'No favorites yet',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              height: 22 / 17,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.1,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Tap the star on any market to save it here.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: colors.secondaryText,
+              fontSize: 15,
+              height: 22 / 15,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: 200,
+            height: 44,
+            child: OutlinedButton(
+              onPressed: onExplore,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(200, 44),
+                maximumSize: const Size(200, 44),
+                backgroundColor: colors.subtleSurface,
+              ),
+              child: const Text('Explore markets'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

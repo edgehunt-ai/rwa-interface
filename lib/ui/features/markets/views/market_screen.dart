@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
+import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
+import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
@@ -17,8 +20,30 @@ class MarketScreen extends ConsumerStatefulWidget {
 }
 
 class _MarketScreenState extends ConsumerState<MarketScreen> {
-  String activeTab = 'Popular';
+  String activeTab = 'Favorites';
   MarketProductKind? kind;
+  bool _favoritesSelectedByUser = false;
+  bool _popularFallbackScheduled = false;
+  final _scrollController = ScrollController();
+  final _additionalProducts = <MarketProduct>[];
+  DomainPage<MarketProduct>? _firstPage;
+  String? _nextCursor;
+  bool _hasLoadedAdditionalPage = false;
+  bool _loadingMore = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +57,15 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async =>
-              ref.refresh(marketProductsProvider((query: null, cursor: null))),
+          onRefresh: () async {
+            _resetPagination();
+            // ignore: unused_result
+            await ref.refresh(
+              marketProductsProvider((query: null, cursor: null)).future,
+            );
+          },
           child: ListView(
+            controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
             children: [
               Row(
@@ -83,14 +114,21 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                   const Spacer(),
                   MarketProductFilter(
                     value: kind,
-                    onChanged: (value) => setState(() => kind = value),
+                    onChanged: (value) => setState(() {
+                      kind = value;
+                      _resetPaginationState();
+                    }),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               MarketRankingTabs(
                 active: activeTab,
-                onSelected: (value) => setState(() => activeTab = value),
+                onSelected: (value) => setState(() {
+                  activeTab = value;
+                  if (value == 'Favorites') _favoritesSelectedByUser = true;
+                  _resetPaginationState();
+                }),
               ),
               products.when(
                 loading: () => const SizedBox(
@@ -113,7 +151,9 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                   ),
                 ),
                 data: (page) {
-                  var items = page.items;
+                  _firstPage = page;
+                  final allProducts = [...page.items, ..._additionalProducts];
+                  var items = allProducts;
                   if (kind != null) {
                     items = items
                         .where((product) => product.kind == kind)
@@ -121,6 +161,15 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                   }
                   items = marketProductsForTab(items, activeTab);
                   if (items.isEmpty) {
+                    _scheduleLoadForUnderfilledViewport(page);
+                    if (activeTab == 'Favorites') {
+                      if (!_favoritesSelectedByUser) {
+                        _schedulePopularFallback();
+                      }
+                      return FavoritesEmptyState(
+                        onExplore: () => setState(() => activeTab = 'Popular'),
+                      );
+                    }
                     return const SizedBox(
                       height: 280,
                       child: DesignStateFeedback(
@@ -130,6 +179,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                       ),
                     );
                   }
+                  _scheduleLoadForUnderfilledViewport(page);
                   return Column(
                     children: [
                       for (final product in items) ...[
@@ -145,6 +195,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                         if (product != items.last)
                           Divider(height: 1, color: colors.border),
                       ],
+                      if (_loadingMore) const _MarketProductsLoadingCard(),
                     ],
                   );
                 },
@@ -152,6 +203,99 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients ||
+        _scrollController.position.extentAfter >= 240) {
+      return;
+    }
+    final firstPage = _firstPage;
+    if (firstPage != null) _loadNextPage(firstPage);
+  }
+
+  void _resetPagination() {
+    setState(_resetPaginationState);
+  }
+
+  void _resetPaginationState() {
+    _additionalProducts.clear();
+    _nextCursor = null;
+    _hasLoadedAdditionalPage = false;
+    _loadingMore = false;
+  }
+
+  Future<void> _loadNextPage(DomainPage<MarketProduct> firstPage) async {
+    final cursor = _hasLoadedAdditionalPage
+        ? _nextCursor
+        : firstPage.nextCursor;
+    if (_loadingMore || cursor == null) return;
+
+    setState(() => _loadingMore = true);
+    try {
+      final nextPage = await ref.read(
+        marketProductsProvider((query: null, cursor: cursor)).future,
+      );
+      if (!mounted) return;
+      setState(() {
+        _additionalProducts.addAll(nextPage.items);
+        _nextCursor = nextPage.nextCursor;
+        _hasLoadedAdditionalPage = true;
+        _loadingMore = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadingMore = false);
+    }
+  }
+
+  void _scheduleLoadForUnderfilledViewport(
+    DomainPage<MarketProduct> firstPage,
+  ) {
+    final cursor = _hasLoadedAdditionalPage
+        ? _nextCursor
+        : firstPage.nextCursor;
+    if (_loadingMore || cursor == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          _loadingMore ||
+          !_scrollController.hasClients ||
+          _scrollController.position.maxScrollExtent > 0) {
+        return;
+      }
+      _loadNextPage(firstPage);
+    });
+  }
+
+  void _schedulePopularFallback() {
+    if (_popularFallbackScheduled) return;
+    _popularFallbackScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _popularFallbackScheduled = false;
+      if (!mounted || _favoritesSelectedByUser || activeTab != 'Favorites') {
+        return;
+      }
+      setState(() => activeTab = 'Popular');
+    });
+  }
+}
+
+class _MarketProductsLoadingCard extends StatelessWidget {
+  const _MarketProductsLoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const LoadingSkeleton(rows: 2, padding: EdgeInsets.all(16)),
       ),
     );
   }

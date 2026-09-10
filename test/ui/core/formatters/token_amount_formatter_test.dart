@@ -54,6 +54,20 @@ void main() {
           TokenAmountFormatter.formatPercent(DecimalValue('-0.8')),
           '-0.8%',
         );
+        expect(
+          TokenAmountFormatter.formatPercent(
+            DecimalValue('-0.473949693625376621'),
+          ),
+          '-0.47%',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(DecimalValue('2.316')),
+          '+2.32%',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(DecimalValue('-0.0049')),
+          '0%',
+        );
       },
     );
 

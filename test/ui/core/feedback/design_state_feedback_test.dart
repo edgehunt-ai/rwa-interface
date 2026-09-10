@@ -38,6 +38,25 @@ void main() {
     expect(find.byType(SkeletonBlock), findsWidgets);
   });
 
+  testWidgets('keeps the loading skeleton within a constrained height', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        const SizedBox(
+          height: 180,
+          child: DesignStateFeedback(
+            state: DesignState.loading,
+            title: 'Loading assets',
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SkeletonBlock), findsWidgets);
+  });
+
   testWidgets('shows loading in the retry button while retrying', (
     tester,
   ) async {

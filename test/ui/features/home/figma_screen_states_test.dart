@@ -90,10 +90,56 @@ void main() {
 
     expect(find.text('NVDA'), findsWidgets);
   });
+
+  testWidgets('home switches to Popular when initial favorites are empty', (
+    tester,
+  ) async {
+    final container = await _authenticatedContainer(
+      markets: _EmptyFavoritesMarkets(),
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Popular'), findsOneWidget);
+    expect(find.text('NVDA'), findsWidgets);
+    expect(find.text('No favorites yet'), findsNothing);
+  });
+
+  testWidgets('home keeps the favorites empty state after user selects it', (
+    tester,
+  ) async {
+    final container = await _authenticatedContainer(
+      markets: _EmptyFavoritesMarkets(),
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Favorites'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No favorites yet'), findsOneWidget);
+    expect(
+      find.text('Tap the star on any market to save it here.'),
+      findsOneWidget,
+    );
+  });
 }
 
 Future<ProviderContainer> _authenticatedContainer({
   AccountRepository? account,
+  MarketsRepository? markets,
 }) async {
   final container = ProviderContainer(
     overrides: [
@@ -108,7 +154,7 @@ Future<ProviderContainer> _authenticatedContainer({
       sessionRepositoryProvider.overrideWithValue(_Session()),
       walletsRepositoryProvider.overrideWithValue(_Wallets()),
       portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
-      marketsRepositoryProvider.overrideWithValue(_Markets()),
+      marketsRepositoryProvider.overrideWithValue(markets ?? _Markets()),
       if (account != null) accountRepositoryProvider.overrideWithValue(account),
     ],
   );
@@ -149,6 +195,30 @@ final class _Markets implements MarketsRepository {
         network: 'Arbitrum',
         tradable: true,
         isFavorite: true,
+      ),
+    ],
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _EmptyFavoritesMarkets implements MarketsRepository {
+  @override
+  Future<DomainPage<MarketProduct>> listProducts({
+    String? query,
+    String? cursor,
+  }) async => DomainPage(
+    items: [
+      MarketProduct(
+        symbol: 'NVDA',
+        name: 'NVIDIA',
+        kind: MarketProductKind.bstock,
+        price: DecimalValue('120', asset: 'USD', unit: 'fiat'),
+        settlementAsset: 'USDC',
+        network: 'Arbitrum',
+        tradable: true,
+        isFavorite: false,
       ),
     ],
   );

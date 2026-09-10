@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
@@ -11,43 +13,67 @@ class LoadingSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Padding(
-      padding: padding ?? const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SkeletonBlock(width: 136, height: 24),
-          const SizedBox(height: 20),
-          for (var index = 0; index < rows; index++) ...[
-            Row(
-              children: [
-                SkeletonBlock(width: 40, height: 40, radius: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonBlock(
-                        width: index.isEven ? 152 : 116,
-                        height: 14,
-                      ),
-                      const SizedBox(height: 8),
-                      SkeletonBlock(width: index.isEven ? 92 : 124, height: 12),
-                    ],
-                  ),
-                ),
-                SkeletonBlock(width: 58, height: 16),
-              ],
-            ),
-            if (index != rows - 1) ...[
-              const SizedBox(height: 16),
-              Divider(height: 1, color: colors.border),
-              const SizedBox(height: 16),
-            ],
-          ],
-        ],
-      ),
+    final resolvedPadding = (padding ?? const EdgeInsets.all(20)).resolve(
+      Directionality.of(context),
     );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableHeight = constraints.hasBoundedHeight
+            ? math
+                  .max(0, constraints.maxHeight - resolvedPadding.vertical)
+                  .toDouble()
+            : double.infinity;
+        final visibleRows = _visibleRows(availableHeight);
+        final showHeader = availableHeight >= 24 || !availableHeight.isFinite;
+        return Padding(
+          padding: resolvedPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showHeader) const SkeletonBlock(width: 136, height: 24),
+              if (visibleRows > 0) const SizedBox(height: 20),
+              for (var index = 0; index < visibleRows; index++) ...[
+                Row(
+                  children: [
+                    const SkeletonBlock(width: 40, height: 40, radius: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SkeletonBlock(
+                            width: index.isEven ? 152 : 116,
+                            height: 14,
+                          ),
+                          const SizedBox(height: 8),
+                          SkeletonBlock(
+                            width: index.isEven ? 92 : 124,
+                            height: 12,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SkeletonBlock(width: 58, height: 16),
+                  ],
+                ),
+                if (index != visibleRows - 1) ...[
+                  const SizedBox(height: 16),
+                  Divider(height: 1, color: colors.border),
+                  const SizedBox(height: 16),
+                ],
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  int _visibleRows(double availableHeight) {
+    if (!availableHeight.isFinite) return rows;
+    // Header (24) + gap (20) + first row (40); each later row adds 73.
+    if (availableHeight < 84) return 0;
+    return math.min(rows, 1 + ((availableHeight - 84) ~/ 73));
   }
 }
 
