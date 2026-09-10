@@ -9,8 +9,10 @@ import 'package:rwa_api_client/src/model/perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_wallet_action_summary.dart';
 import 'package:rwa_api_client/src/model/funding_route_quote.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/multi_source_funding_plan_details.dart';
 import 'package:rwa_api_client/src/model/multi_source_perp_funding_plan.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_circuit_snapshot.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_plan.dart';
 import 'package:built_collection/built_collection.dart';
@@ -43,13 +45,15 @@ part 'funding_plan.g.dart';
 /// * [rail] 
 /// * [network] 
 /// * [asset] 
+/// * [fundingSessionId] 
+/// * [selectionVersion] 
 /// * [multiSource] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [totalFee] - 十进制字符串，避免浮点误差
 /// * [steps] 
 @BuiltValue()
 abstract class FundingPlan implements Built<FundingPlan, FundingPlanBuilder> {
-  /// One Of [BstockFundingPlan], [LegacyBstockFundingPlan], [LegacyPerpFundingPlan], [MultiSourceBstockFundingPlan], [MultiSourcePerpFundingPlan], [PerpFundingPlan]
+  /// One Of [BstockFundingPlan], [LegacyBstockFundingPlan], [LegacyPerpFundingPlan], [MultiSourceBstockFundingPlan], [MultiSourcePerpFundingPlan], [PerpFundingPlan], [UserSelectedMultiSourceBstockFundingPlan], [UserSelectedMultiSourcePerpFundingPlan]
   OneOf get oneOf;
 
   FundingPlan._();
@@ -95,7 +99,7 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
   }) {
     final result = FundingPlanBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(BstockFundingPlan), FullType(PerpFundingPlan), FullType(MultiSourceBstockFundingPlan), FullType(MultiSourcePerpFundingPlan), FullType(LegacyBstockFundingPlan), FullType(LegacyPerpFundingPlan), ]);
+    final targetType = const FullType(OneOf, [FullType(BstockFundingPlan), FullType(PerpFundingPlan), FullType(MultiSourceBstockFundingPlan), FullType(MultiSourcePerpFundingPlan), FullType(UserSelectedMultiSourceBstockFundingPlan), FullType(UserSelectedMultiSourcePerpFundingPlan), FullType(LegacyBstockFundingPlan), FullType(LegacyPerpFundingPlan), ]);
     oneOfDataSrc = serialized;
     result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
@@ -104,8 +108,8 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
 
 class FundingPlanModeEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'auto_multi_source')
-  static const FundingPlanModeEnum autoMultiSource = _$fundingPlanModeEnum_autoMultiSource;
+  @BuiltValueEnumConst(wireName: r'user_selected_multi_source')
+  static const FundingPlanModeEnum userSelectedMultiSource = _$fundingPlanModeEnum_userSelectedMultiSource;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingPlanModeEnum unknownDefaultOpenApi = _$fundingPlanModeEnum_unknownDefaultOpenApi;
 

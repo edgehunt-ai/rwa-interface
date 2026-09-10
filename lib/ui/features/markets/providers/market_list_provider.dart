@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/hip3_query_refresh.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_list_query.dart';
@@ -39,6 +40,10 @@ final class MarketListNotifier extends Notifier<MarketListState> {
   int _generation = 0;
   Future<void>? _more;
   final _usedCursors = <String>{};
+  Timer? _timer;
+  bool _subscribed = true;
+  bool _reading = false;
+  int _pages = 1;
 
   @override
   MarketListState build() {
@@ -47,7 +52,27 @@ final class MarketListNotifier extends Notifier<MarketListState> {
     final generation = ++_generation;
     _usedCursors.clear();
     _more = null;
-    ref.onDispose(() => _generation++);
+    _pages = 1;
+    _subscribed = true;
+    _reading = true;
+    ref.onDispose(() {
+      _generation++;
+      _timer?.cancel();
+    });
+    ref.onCancel(() {
+      _subscribed = false;
+      _timer?.cancel();
+    });
+    ref.onResume(() {
+      _subscribed = true;
+      _schedule();
+    });
+    ref.listen(hip3ForegroundProvider, (_, foreground) {
+      _timer?.cancel();
+      if (foreground && _subscribed && !_reading && _more == null) {
+        unawaited(_refreshVisible());
+      }
+    });
     unawaited(_first(repository, generation));
     return const MarketListState(loading: true);
   }
@@ -65,10 +90,78 @@ final class MarketListNotifier extends Notifier<MarketListState> {
 
   bool _current(int generation) => ref.mounted && _generation == generation;
 
+  void _schedule() {
+    _timer?.cancel();
+    if (!ref.mounted ||
+        !_subscribed ||
+        _reading ||
+        _more != null ||
+        !ref.read(hip3ForegroundProvider)) {
+      return;
+    }
+    _timer = Timer(const Duration(seconds: 10), () {
+      if (ref.mounted && _subscribed && ref.read(hip3ForegroundProvider)) {
+        unawaited(_refreshVisible());
+      }
+    });
+  }
+
+  /// Re-read the visible window from page one, never append a fresh first page
+  /// to old cursor pages. Publish atomically so polling preserves scroll data.
+  Future<void> _refreshVisible() async {
+    if (_reading || _more != null) return;
+    _reading = true;
+    final generation = _generation;
+    final repository = ref.read(marketsRepositoryProvider);
+    final previous = state;
+    final used = <String>{};
+    var updated = const MarketListState();
+    try {
+      String? cursor;
+      for (var index = 0; index < _pages; index++) {
+        if (!_subscribed || !ref.read(hip3ForegroundProvider)) return;
+        final page = await _page(repository, cursor);
+        if (!_current(generation)) return;
+        if (page.hasMore &&
+            (page.nextCursor == null ||
+                page.nextCursor!.isEmpty ||
+                page.nextCursor == cursor ||
+                used.contains(page.nextCursor))) {
+          throw const FormatException('Market pagination did not advance');
+        }
+        if (cursor != null) used.add(cursor);
+        updated = _loaded(page, updated.items);
+        if (!page.hasMore) break;
+        cursor = page.nextCursor;
+      }
+      _usedCursors
+        ..clear()
+        ..addAll(used);
+      state = updated;
+    } catch (error) {
+      if (_current(generation)) {
+        state = MarketListState(
+          items: previous.items,
+          nextCursor: previous.nextCursor,
+          hasMore: previous.hasMore,
+          error: error,
+        );
+      }
+    } finally {
+      if (_current(generation)) {
+        _reading = false;
+        _schedule();
+      }
+    }
+  }
+
   Future<void> refresh() {
     final generation = ++_generation;
     _usedCursors.clear();
     _more = null;
+    _timer?.cancel();
+    _pages = 1;
+    _reading = true;
     state = const MarketListState(loading: true);
     return _first(ref.read(marketsRepositoryProvider), generation);
   }
@@ -81,15 +174,24 @@ final class MarketListNotifier extends Notifier<MarketListState> {
       state = _loaded(page, const []);
     } catch (error) {
       if (_current(generation)) state = MarketListState(error: error);
+    } finally {
+      if (_current(generation)) {
+        _reading = false;
+        _schedule();
+      }
     }
   }
 
   Future<void> loadMore() {
     if (_more != null) return _more!;
-    if (state.loading || !state.hasMore || state.nextCursor == null) {
+    if (_reading ||
+        state.loading ||
+        !state.hasMore ||
+        state.nextCursor == null) {
       return Future.value();
     }
     final generation = _generation;
+    _timer?.cancel();
     final previous = state;
     final request = _next(
       ref.read(marketsRepositoryProvider),
@@ -98,7 +200,10 @@ final class MarketListNotifier extends Notifier<MarketListState> {
     );
     _more = request;
     return request.whenComplete(() {
-      if (_current(generation)) _more = null;
+      if (_current(generation)) {
+        _more = null;
+        _schedule();
+      }
     });
   }
 
@@ -118,6 +223,7 @@ final class MarketListNotifier extends Notifier<MarketListState> {
       if (!_current(generation)) return;
       _validateCursor(page, previous.nextCursor);
       _usedCursors.add(previous.nextCursor!);
+      _pages++;
       state = _loaded(page, previous.items);
     } catch (error) {
       if (_current(generation)) {

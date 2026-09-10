@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/market_snapshot.dart';
@@ -230,4 +231,20 @@ void main() {
     await old;
     expect(state().points.map((p) => p.close.value), ['2']);
   });
+
+  test(
+    'account change resets accumulated history and rejects late pages',
+    () async {
+      await watch();
+      final old = load();
+      container.read(sessionGenerationProvider.notifier).clearUserScope();
+      await container.pump();
+      repo.requests.single.result.complete(
+        chart([point(start.subtract(const Duration(minutes: 1)), '999')]),
+      );
+      await old;
+      expect(state().points.map((p) => p.close.value), ['2']);
+      expect(state().loading, false);
+    },
+  );
 }

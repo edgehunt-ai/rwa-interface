@@ -20,6 +20,8 @@ part 'multi_source_perp_funding_plan.g.dart';
 /// Properties:
 /// * [planId] 
 /// * [tradePreviewId] 
+/// * [fundingSessionId] 
+/// * [selectionVersion] 
 /// * [mode] 
 /// * [requiredTargetAmount] - 十进制字符串，避免浮点误差
 /// * [targetSnapshot] 
@@ -40,7 +42,13 @@ abstract class MultiSourcePerpFundingPlan implements Built<MultiSourcePerpFundin
   String get planId;
 
   @BuiltValueField(wireName: r'trade_preview_id')
-  String get tradePreviewId;
+  String? get tradePreviewId;
+
+  @BuiltValueField(wireName: r'funding_session_id')
+  String? get fundingSessionId;
+
+  @BuiltValueField(wireName: r'selection_version')
+  int? get selectionVersion;
 
   @BuiltValueField(wireName: r'mode')
   MultiSourcePerpFundingPlanModeEnum get mode;
@@ -121,10 +129,24 @@ class _$MultiSourcePerpFundingPlanSerializer implements PrimitiveSerializer<Mult
       specifiedType: const FullType(String),
     );
     yield r'trade_preview_id';
-    yield serializers.serialize(
+    yield object.tradePreviewId == null ? null : serializers.serialize(
       object.tradePreviewId,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType.nullable(String),
     );
+    if (object.fundingSessionId != null) {
+      yield r'funding_session_id';
+      yield serializers.serialize(
+        object.fundingSessionId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.selectionVersion != null) {
+      yield r'selection_version';
+      yield serializers.serialize(
+        object.selectionVersion,
+        specifiedType: const FullType.nullable(int),
+      );
+    }
     yield r'mode';
     yield serializers.serialize(
       object.mode,
@@ -228,9 +250,26 @@ class _$MultiSourcePerpFundingPlanSerializer implements PrimitiveSerializer<Mult
         case r'trade_preview_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
           result.tradePreviewId = valueDes;
+          break;
+        case r'funding_session_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.fundingSessionId = valueDes;
+          break;
+        case r'selection_version':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.selectionVersion = valueDes;
           break;
         case r'mode':
           final valueDes = serializers.deserialize(

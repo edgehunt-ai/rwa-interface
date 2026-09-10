@@ -16,11 +16,11 @@ part 'portfolio_summary.g.dart';
 /// 去重后的只读资产总览；金额字段均使用 Decimal wire string。
 ///
 /// Properties:
-/// * [totalValueUsd] - 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。
+/// * [totalValueUsd] - 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。 Hyperliquid Unified Account 的抵押物从 spotClearinghouseState 读取且只计一次； 不叠加各 DEX 的 accountValue、仓位名义价值或再次叠加未实现损益。 
 /// * [todayPnlUsd] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
 /// * [todayPnlPercent] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
-/// * [availableToTradeUsd] - 可证明为 spendable/withdrawable 且没有 blocker 的余额子集；普通钱包余额 不会自动等于 available to trade。 
-/// * [marginInUseUsd] - Hyperliquid 报告的 margin used。
+/// * [availableToTradeUsd] - 可证明可用的余额子集；普通钱包余额不会自动等于 available to trade。 Hyperliquid Unified Account 使用 USDC spot total 减去 hold，最低为零， 并在上游提供 tokenToAvailableAfterMaintenance 时受该 USDC 上限约束。 过期或不可用来源不计入此金额，调用方必须同时展示 freshness、data_status 和 warnings。 这是只读快照估计值，不是可提款额或下单承诺；具体订单仍需通过实时预览、费用和风险检查。 
+/// * [marginInUseUsd] - Hyperliquid 所覆盖 DEX 持仓报告的 margin used 合计；不表示独立于统一抵押物之外的额外资产。
 /// * [stocksValueUsd] - Legacy optional aggregate retained for older clients; new clients use source-aware assets.
 /// * [unvaluedAssetCount] 
 /// * [dataStatus] - 当 `unvalued_asset_count > 0` 时必须为 `partial`。
@@ -32,7 +32,7 @@ part 'portfolio_summary.g.dart';
 /// * [sources] 
 @BuiltValue()
 abstract class PortfolioSummary implements Built<PortfolioSummary, PortfolioSummaryBuilder> {
-  /// 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。
+  /// 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。 Hyperliquid Unified Account 的抵押物从 spotClearinghouseState 读取且只计一次； 不叠加各 DEX 的 accountValue、仓位名义价值或再次叠加未实现损益。 
   @BuiltValueField(wireName: r'total_value_usd')
   String get totalValueUsd;
 
@@ -44,11 +44,11 @@ abstract class PortfolioSummary implements Built<PortfolioSummary, PortfolioSumm
   @BuiltValueField(wireName: r'today_pnl_percent')
   String? get todayPnlPercent;
 
-  /// 可证明为 spendable/withdrawable 且没有 blocker 的余额子集；普通钱包余额 不会自动等于 available to trade。 
+  /// 可证明可用的余额子集；普通钱包余额不会自动等于 available to trade。 Hyperliquid Unified Account 使用 USDC spot total 减去 hold，最低为零， 并在上游提供 tokenToAvailableAfterMaintenance 时受该 USDC 上限约束。 过期或不可用来源不计入此金额，调用方必须同时展示 freshness、data_status 和 warnings。 这是只读快照估计值，不是可提款额或下单承诺；具体订单仍需通过实时预览、费用和风险检查。 
   @BuiltValueField(wireName: r'available_to_trade_usd')
   String get availableToTradeUsd;
 
-  /// Hyperliquid 报告的 margin used。
+  /// Hyperliquid 所覆盖 DEX 持仓报告的 margin used 合计；不表示独立于统一抵押物之外的额外资产。
   @BuiltValueField(wireName: r'margin_in_use_usd')
   String get marginInUseUsd;
 

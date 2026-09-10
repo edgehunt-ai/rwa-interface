@@ -183,7 +183,7 @@ class SystemApi {
   }
 
   /// 实时事件流（SSE）
-  /// Server-Sent Events。推送价格、订单状态、持仓与余额变化， 替代前端轮询。每条事件同时以 SSE 的 &#x60;id:&#x60; 字段和载荷的 &#x60;event_id&#x60; 给出可续传 标识；断线重连时客户端带上最近收到的 &#x60;Last-Event-ID&#x60;，服务端补发其后的事件。 事件名与强类型 &#x60;data&#x60; 结构见 &#x60;RealtimeEvent&#x60;。 
+  /// 当前运行时尚未支持 SSE，返回 503；客户端继续使用有界、前台感知的轮询读取行情、订单、持仓与余额。 以下为预留事件协议，不代表当前支持订阅、补发或断线续传。 Server-Sent Events。推送价格、订单状态、持仓与余额变化， 替代前端轮询。每条事件同时以 SSE 的 &#x60;id:&#x60; 字段和载荷的 &#x60;event_id&#x60; 给出可续传 标识；断线重连时客户端带上最近收到的 &#x60;Last-Event-ID&#x60;，服务端补发其后的事件。 事件名与强类型 &#x60;data&#x60; 结构见 &#x60;RealtimeEvent&#x60;。 
   ///
   /// Parameters:
   /// * [channels] - 订阅频道，如 `prices:NVDA:perp,orders,positions`

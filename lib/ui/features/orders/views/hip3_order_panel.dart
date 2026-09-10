@@ -32,11 +32,13 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
     this.initialSide = TradingSide.long,
     this.initialReduceOnly = false,
     this.symbol = 'NVDA',
+    this.market,
   });
 
   final TradingSide initialSide;
   final bool initialReduceOnly;
   final String symbol;
+  final Hip3PublicMarket? market;
 
   @override
   ConsumerState<Hip3OrderPanel> createState() => _Hip3OrderPanelState();
@@ -87,11 +89,19 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final generation = ref.read(sessionGenerationProvider);
     setState(() => _contextLoading = true);
     try {
-      ref.invalidate(hip3OpeningContextProvider(widget.symbol));
+      final product = widget.market?.productId ?? widget.symbol;
+      ref.invalidate(hip3OpeningContextProvider(product));
       final context = await ref.read(
-        hip3OpeningContextProvider(widget.symbol).future,
+        hip3OpeningContextProvider(product).future,
       );
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      if (!_matchesMarket(context)) {
+        setState(() {
+          _context = null;
+          _error = AppLocalizations.of(this.context).hip3MarketIdentityMismatch;
+        });
+        return;
+      }
       setState(() {
         _context = context;
         _leverage = context.currentLeverage ?? 1;
@@ -115,6 +125,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         setState(() => _contextLoading = false);
       }
     }
+  }
+
+  bool _matchesMarket(Hip3OpeningContext context) {
+    final market = widget.market;
+    return market == null ||
+        (market.tradable &&
+            market.matches(
+              productId: context.productId,
+              venue: context.venue ?? '',
+              environment: context.environment,
+              settlementAsset: context.settlementAsset ?? '',
+            ));
   }
 
   Future<void> _applySettings(int leverage, TradingMarginMode mode) async {
@@ -148,6 +170,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             idempotencyKey: _settingKey!,
           );
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      if (!_matchesMarket(refreshed)) {
+        setState(() {
+          _context = null;
+          _error = AppLocalizations.of(this.context).hip3MarketIdentityMismatch;
+        });
+        return;
+      }
       setState(() {
         _context = refreshed;
         _leverage = refreshed.currentLeverage!;
@@ -195,7 +224,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         return null;
       }
       return OrderIntent(
-        symbol: widget.symbol,
+        symbol: _context?.productId ?? widget.symbol,
         kind: MarketProductKind.perp,
         side: _side,
         type: _type,
@@ -691,7 +720,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           children: [
             _Hip3SheetHeader(
               title:
-                  'Review ${_preview!.intent.side == TradingSide.long ? 'Long' : 'Short'} ${_preview!.intent.symbol}',
+                  'Review ${_preview!.intent.side == TradingSide.long ? 'Long' : 'Short'} ${widget.symbol}',
               leverage:
                   int.tryParse(_preview!.hip3Execution?.leverage.value ?? '') ??
                   _leverage,

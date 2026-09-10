@@ -8,7 +8,7 @@ part of 'holding_group.dart';
 
 class _$HoldingGroup extends HoldingGroup {
   @override
-  final Stock stock;
+  final HoldingStock stock;
   @override
   final String totalValueUsd;
   @override
@@ -62,9 +62,9 @@ class HoldingGroupBuilder
     implements Builder<HoldingGroup, HoldingGroupBuilder> {
   _$HoldingGroup? _$v;
 
-  StockBuilder? _stock;
-  StockBuilder get stock => _$this._stock ??= StockBuilder();
-  set stock(StockBuilder? stock) => _$this._stock = stock;
+  HoldingStockBuilder? _stock;
+  HoldingStockBuilder get stock => _$this._stock ??= HoldingStockBuilder();
+  set stock(HoldingStockBuilder? stock) => _$this._stock = stock;
 
   String? _totalValueUsd;
   String? get totalValueUsd => _$this._totalValueUsd;

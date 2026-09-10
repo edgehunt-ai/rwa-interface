@@ -124,9 +124,10 @@ class ChartsApi {
   }
 
   /// 美股交易时段
-  /// 返回当前时段（盘前 / 开盘 / 盘后 / 隔夜 / 休市）、距下一次切换的倒计时， 以及给定区间内的时段分段（用于图表底部的时段色带与轴标签）。 链上产品 24×7 可交易，但不同时段的参考价新鲜度与深度不同。 
+  /// 返回当前时段（盘前 / 开盘 / 盘后 / 隔夜 / 休市）、距下一次切换的倒计时， 以及给定区间内的时段分段（用于图表底部的时段色带与轴标签）。 链上产品 24×7 可交易，但不同时段的参考价新鲜度与深度不同。 HIP3 调用必须传 kind&#x3D;perp；当前未接入获准美股日历源，返回 503 hip3_reference_calendar_unavailable， 不以固定休市或下一小时作为真实交易时段。省略 kind 保留现有 bStocks 共享行为，不代表 HIP3 日历可用。 
   ///
   /// Parameters:
+  /// * [kind] 
   /// * [from] 
   /// * [to] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -139,6 +140,7 @@ class ChartsApi {
   /// Returns a [Future] containing a [Response] with a [MarketSessionInfo] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<MarketSessionInfo>> getMarketSessions({ 
+    ProductKind? kind,
     DateTime? from,
     DateTime? to,
     CancelToken? cancelToken,
@@ -168,6 +170,7 @@ class ChartsApi {
     );
 
     final _queryParameters = <String, dynamic>{
+      if (kind != null) r'kind': encodeQueryParameter(_serializers, kind, const FullType(ProductKind)),
       if (from != null) r'from': encodeQueryParameter(_serializers, from, const FullType(DateTime)),
       if (to != null) r'to': encodeQueryParameter(_serializers, to, const FullType(DateTime)),
     };
@@ -213,10 +216,11 @@ class ChartsApi {
   }
 
   /// 美股参考价
-  /// 最近一次美股参考报价及其时段与新鲜度。休市时停留在最近收盘价。
+  /// 最近一次美股参考报价及其时段与新鲜度。HIP3 调用必须传 kind&#x3D;perp； 当前缺少获准的美股参考数据源，返回 503 hip3_reference_price_unavailable，不能以 mark/oracle/固定价格代替。 省略 kind 保留现有 bStocks 共享行为；仅有 HIP3 产品的 symbol 也不能进入静态参考价兜底。 
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
+  /// * [kind] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -228,6 +232,7 @@ class ChartsApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<ReferencePrice>> getReferencePrice({ 
     required String symbol,
+    ProductKind? kind,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -254,9 +259,14 @@ class ChartsApi {
       validateStatus: validateStatus,
     );
 
+    final _queryParameters = <String, dynamic>{
+      if (kind != null) r'kind': encodeQueryParameter(_serializers, kind, const FullType(ProductKind)),
+    };
+
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
+      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,

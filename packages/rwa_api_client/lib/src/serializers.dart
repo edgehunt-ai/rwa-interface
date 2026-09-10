@@ -122,6 +122,14 @@ import 'package:rwa_api_client/src/model/funding_route_capability.dart';
 import 'package:rwa_api_client/src/model/funding_route_capability_matrix.dart';
 import 'package:rwa_api_client/src/model/funding_route_capability_status.dart';
 import 'package:rwa_api_client/src/model/funding_route_quote.dart';
+import 'package:rwa_api_client/src/model/funding_session.dart';
+import 'package:rwa_api_client/src/model/funding_session_create_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_plan_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_selection_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_source_allocation.dart';
+import 'package:rwa_api_client/src/model/funding_session_source_allocation_input.dart';
+import 'package:rwa_api_client/src/model/funding_session_status.dart';
+import 'package:rwa_api_client/src/model/funding_session_trade_intent_create_request.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
@@ -168,6 +176,7 @@ import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_public_market.dart';
 import 'package:rwa_api_client/src/model/hip3_set_leverage_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_set_tp_sl_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_step_signing_payload.dart';
@@ -176,6 +185,7 @@ import 'package:rwa_api_client/src/model/hip3_trading_context.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
 import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
 import 'package:rwa_api_client/src/model/holding_group.dart';
+import 'package:rwa_api_client/src/model/holding_stock.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
 import 'package:rwa_api_client/src/model/ineligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
@@ -240,6 +250,7 @@ import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_holding_page.dart';
+import 'package:rwa_api_client/src/model/portfolio_holding_page_all_of_coverage.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice_severity.dart';
 import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
@@ -324,6 +335,8 @@ import 'package:rwa_api_client/src/model/unified_funding_position.dart';
 import 'package:rwa_api_client/src/model/unified_funding_transfer.dart';
 import 'package:rwa_api_client/src/model/user.dart';
 import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
 import 'package:rwa_api_client/src/model/wallet.dart';
@@ -458,6 +471,14 @@ part 'serializers.g.dart';
   FundingRouteCapabilityMatrix,
   FundingRouteCapabilityStatus,
   FundingRouteQuote,
+  FundingSession,
+  FundingSessionCreateRequest,
+  FundingSessionPlanRequest,
+  FundingSessionSelectionRequest,
+  FundingSessionSourceAllocation,
+  FundingSessionSourceAllocationInput,
+  FundingSessionStatus,
+  FundingSessionTradeIntentCreateRequest,
   FundingSourceAsset,
   FundingSourceAssetCatalog,
   FundingSourceAssetId,
@@ -504,6 +525,7 @@ part 'serializers.g.dart';
   Hip3PlaceOrderActionRequest,
   Hip3PreviewExecution,
   Hip3ProtectionSpec,
+  Hip3PublicMarket,
   Hip3SetLeverageActionRequest,
   Hip3SetTpSlActionRequest,
   Hip3StepSigningPayload,
@@ -512,6 +534,7 @@ part 'serializers.g.dart';
   Hip3TradingRules,
   Hip3TriggerSpec,
   HoldingGroup,
+  HoldingStock,
   HyperliquidSignature,
   IneligibleFundingPositionEligibility,
   KeyValue,
@@ -576,6 +599,7 @@ part 'serializers.g.dart';
   PortfolioDataStatus,
   PortfolioFreshness,
   PortfolioHoldingPage,
+  PortfolioHoldingPageAllOfCoverage,
   PortfolioNotice,
   PortfolioNoticeSeverity,
   PortfolioPriceSource,
@@ -660,6 +684,8 @@ part 'serializers.g.dart';
   UnifiedFundingTransfer,
   User,
   UserPaidWalletActionExecutionSubmissionRequest,
+  UserSelectedMultiSourceBstockFundingPlan,
+  UserSelectedMultiSourcePerpFundingPlan,
   UserSettings,
   UserSettingsUpdate,
   Wallet,
@@ -685,14 +711,6 @@ part 'serializers.g.dart';
 ])
 Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Device)]),
-        () => ListBuilder<Device>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Withdrawal)]),
-        () => ListBuilder<Withdrawal>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3Eip712Field)]),
         () => ListBuilder<Hip3Eip712Field>(),
       )
@@ -701,44 +719,20 @@ Serializers serializers = (_$serializers.toBuilder()
         () => SetBuilder<FundingRail>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(FundingSessionSourceAllocationInput)]),
+        () => SetBuilder<FundingSessionSourceAllocationInput>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Position)]),
         () => ListBuilder<Position>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(HoldingGroup)]),
-        () => ListBuilder<HoldingGroup>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Deposit)]),
-        () => ListBuilder<Deposit>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(OrderBookLevel)]),
         () => ListBuilder<OrderBookLevel>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3Operation)]),
-        () => ListBuilder<Hip3Operation>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Order)]),
-        () => ListBuilder<Order>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Wallet)]),
-        () => ListBuilder<Wallet>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ActivityRecord)]),
-        () => ListBuilder<ActivityRecord>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(UnifiedFundingTransfer)]),
         () => ListBuilder<UnifiedFundingTransfer>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
-        () => ListBuilder<PortfolioWarningCode>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProductRef)]),
@@ -749,32 +743,12 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<UnifiedFundingPosition>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
-        () => ListBuilder<FundingWalletActionSummary>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3TimeInForce)]),
-        () => ListBuilder<Hip3TimeInForce>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3OpeningProtectionConfirmationLegsInner)]),
-        () => ListBuilder<Hip3OpeningProtectionConfirmationLegsInner>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingRouteBlocker)]),
         () => ListBuilder<FundingRouteBlocker>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(CandlePoint)]),
-        () => ListBuilder<CandlePoint>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(DepositRail)]),
         () => ListBuilder<DepositRail>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(MarginMode)]),
-        () => ListBuilder<MarginMode>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(String)]),
@@ -785,40 +759,16 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<KeyValue>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Chain)]),
-        () => ListBuilder<Chain>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingPositionBlocker)]),
         () => ListBuilder<FundingPositionBlocker>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3ActionStep)]),
-        () => ListBuilder<Hip3ActionStep>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioAsset)]),
         () => ListBuilder<PortfolioAsset>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(DepositRailBlocker)]),
-        () => ListBuilder<DepositRailBlocker>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ProductListing)]),
-        () => ListBuilder<ProductListing>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(StockGroup)]),
-        () => ListBuilder<StockGroup>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(UnifiedFundingBlocker)]),
         () => SetBuilder<UnifiedFundingBlocker>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltSet, [FullType(FundingPositionBlocker)]),
-        () => SetBuilder<FundingPositionBlocker>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AppVersionInfo)]),
@@ -837,20 +787,112 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<MultiSourceFundingLeg>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
-        () => MapBuilder<String, JsonObject?>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TokenBalance)]),
         () => ListBuilder<TokenBalance>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(OrderFill)]),
-        () => ListBuilder<OrderFill>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioNotice)]),
         () => ListBuilder<PortfolioNotice>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+        () => ListBuilder<PortfolioSourceSummary>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Action)]),
+        () => ListBuilder<Hip3Action>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Device)]),
+        () => ListBuilder<Device>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Withdrawal)]),
+        () => ListBuilder<Withdrawal>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(HoldingGroup)]),
+        () => ListBuilder<HoldingGroup>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Deposit)]),
+        () => ListBuilder<Deposit>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Operation)]),
+        () => ListBuilder<Hip3Operation>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Order)]),
+        () => ListBuilder<Order>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Wallet)]),
+        () => ListBuilder<Wallet>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ActivityRecord)]),
+        () => ListBuilder<ActivityRecord>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
+        () => ListBuilder<PortfolioWarningCode>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
+        () => ListBuilder<FundingWalletActionSummary>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3TimeInForce)]),
+        () => ListBuilder<Hip3TimeInForce>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3OpeningProtectionConfirmationLegsInner)]),
+        () => ListBuilder<Hip3OpeningProtectionConfirmationLegsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(CandlePoint)]),
+        () => ListBuilder<CandlePoint>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(MarginMode)]),
+        () => ListBuilder<MarginMode>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Chain)]),
+        () => ListBuilder<Chain>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3ActionStep)]),
+        () => ListBuilder<Hip3ActionStep>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DepositRailBlocker)]),
+        () => ListBuilder<DepositRailBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ProductListing)]),
+        () => ListBuilder<ProductListing>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(StockGroup)]),
+        () => ListBuilder<StockGroup>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(FundingPositionBlocker)]),
+        () => SetBuilder<FundingPositionBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingSessionSourceAllocation)]),
+        () => ListBuilder<FundingSessionSourceAllocation>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+        () => MapBuilder<String, JsonObject?>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(OrderFill)]),
+        () => ListBuilder<OrderFill>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(SessionSegment)]),
@@ -865,16 +907,8 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<String>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
-        () => ListBuilder<PortfolioSourceSummary>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AccountBalance)]),
         () => ListBuilder<AccountBalance>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3Action)]),
-        () => ListBuilder<Hip3Action>(),
       )
       ..add(DepositAddressBase.serializer)
       ..add(DepositBase.serializer)

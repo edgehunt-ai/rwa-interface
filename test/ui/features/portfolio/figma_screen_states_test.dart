@@ -21,6 +21,57 @@ import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/domain/models/portfolio_read_status.dart';
 
 void main() {
+  testWidgets(
+    'HIP3 holdings shows omitted coverage without claiming an empty wallet',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            portfolioRepositoryProvider.overrideWithValue(
+              _Portfolio(
+                status: const PortfolioReadStatus(
+                  completeness: PortfolioCompleteness.partial,
+                  freshness: PortfolioFreshness.live,
+                  holdingsCoverage: (
+                    observedPositionCount: 3,
+                    displayedPositionCount: 2,
+                    unmappedPositionCount: 1,
+                    excludedNonHip3PositionCount: 4,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const AssetsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.text('Perps').last, 200);
+      await tester.ensureVisible(find.text('Perps').last);
+      await tester.tap(find.text('Perps').last);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.textContaining('HIP3 coverage:'),
+        150,
+      );
+      expect(find.textContaining('2 of 3 observed positions'), findsOneWidget);
+      expect(
+        find.textContaining('1 positions could not be matched'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('4 verified non-HIP3 positions'),
+        findsOneWidget,
+      );
+      expect(find.text('No Perps holdings'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
   setUpAll(() async {
     if (Platform.environment['HIP3_CAPTURE_UI'] == '1') {
       final font = FontLoader('Roboto')
@@ -175,5 +226,5 @@ final class _Portfolio implements PortfolioRepository {
 
   @override
   Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async =>
-      const DomainPage(items: []);
+      DomainPage(items: const [], portfolioStatus: status);
 }

@@ -26,6 +26,9 @@ part 'trade_intent.g.dart';
 /// * [nextAction] 
 /// * [blocker] 
 /// * [executionPolicy] 
+/// * [fundingMode] 
+/// * [fundingSessionId] - Present only when this intent was created from a funded Funding Session.
+/// * [fundingSessionVersion] 
 /// * [fundingPlanId] - The active FundingPlan created for the same trade preview is atomically bound by the server to this TradeIntent. Clients cannot submit or replace this identifier. 
 /// * [transferId] 
 /// * [fundingLegs] - Present for multi-source intents and may be empty when no funding allocation is required. Absent for legacy/single-source intents. Entries remain in ordinal order and each binds at most one dedicated Transfer. 
@@ -62,6 +65,17 @@ abstract class TradeIntent implements Built<TradeIntent, TradeIntentBuilder> {
 
   @BuiltValueField(wireName: r'execution_policy')
   TradeIntentExecutionPolicy get executionPolicy;
+
+  @BuiltValueField(wireName: r'funding_mode')
+  TradeIntentFundingModeEnum get fundingMode;
+  // enum fundingModeEnum {  auto_single_source,  auto_multi_source,  funding_session,  };
+
+  /// Present only when this intent was created from a funded Funding Session.
+  @BuiltValueField(wireName: r'funding_session_id')
+  String? get fundingSessionId;
+
+  @BuiltValueField(wireName: r'funding_session_version')
+  int? get fundingSessionVersion;
 
   /// The active FundingPlan created for the same trade preview is atomically bound by the server to this TradeIntent. Clients cannot submit or replace this identifier. 
   @BuiltValueField(wireName: r'funding_plan_id')
@@ -148,6 +162,21 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
     yield serializers.serialize(
       object.executionPolicy,
       specifiedType: const FullType(TradeIntentExecutionPolicy),
+    );
+    yield r'funding_mode';
+    yield serializers.serialize(
+      object.fundingMode,
+      specifiedType: const FullType(TradeIntentFundingModeEnum),
+    );
+    yield r'funding_session_id';
+    yield object.fundingSessionId == null ? null : serializers.serialize(
+      object.fundingSessionId,
+      specifiedType: const FullType.nullable(String),
+    );
+    yield r'funding_session_version';
+    yield object.fundingSessionVersion == null ? null : serializers.serialize(
+      object.fundingSessionVersion,
+      specifiedType: const FullType.nullable(int),
     );
     yield r'funding_plan_id';
     yield object.fundingPlanId == null ? null : serializers.serialize(
@@ -266,6 +295,29 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
           ) as TradeIntentExecutionPolicy;
           result.executionPolicy.replace(valueDes);
           break;
+        case r'funding_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(TradeIntentFundingModeEnum),
+          ) as TradeIntentFundingModeEnum;
+          result.fundingMode = valueDes;
+          break;
+        case r'funding_session_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.fundingSessionId = valueDes;
+          break;
+        case r'funding_session_version':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.fundingSessionVersion = valueDes;
+          break;
         case r'funding_plan_id':
           final valueDes = serializers.deserialize(
             value,
@@ -346,5 +398,24 @@ class _$TradeIntentSerializer implements PrimitiveSerializer<TradeIntent> {
     );
     return result.build();
   }
+}
+
+class TradeIntentFundingModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'auto_single_source')
+  static const TradeIntentFundingModeEnum autoSingleSource = _$tradeIntentFundingModeEnum_autoSingleSource;
+  @BuiltValueEnumConst(wireName: r'auto_multi_source')
+  static const TradeIntentFundingModeEnum autoMultiSource = _$tradeIntentFundingModeEnum_autoMultiSource;
+  @BuiltValueEnumConst(wireName: r'funding_session')
+  static const TradeIntentFundingModeEnum fundingSession = _$tradeIntentFundingModeEnum_fundingSession;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const TradeIntentFundingModeEnum unknownDefaultOpenApi = _$tradeIntentFundingModeEnum_unknownDefaultOpenApi;
+
+  static Serializer<TradeIntentFundingModeEnum> get serializer => _$tradeIntentFundingModeEnumSerializer;
+
+  const TradeIntentFundingModeEnum._(String name): super(name);
+
+  static BuiltSet<TradeIntentFundingModeEnum> get values => _$tradeIntentFundingModeEnumValues;
+  static TradeIntentFundingModeEnum valueOf(String name) => _$tradeIntentFundingModeEnumValueOf(name);
 }
 

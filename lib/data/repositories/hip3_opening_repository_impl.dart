@@ -104,6 +104,8 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
       contextId: value.contextId,
       productId: value.productId,
       environment: value.environment.name,
+      venue: value.venue,
+      settlementAsset: value.settlementAsset.name,
       currentLeverage: int.tryParse(value.currentLeverage ?? ''),
       maximumLeverage: maximum,
       currentMarginMode: mode(value.currentMarginMode),

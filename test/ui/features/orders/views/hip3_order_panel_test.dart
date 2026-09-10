@@ -29,6 +29,33 @@ import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart'
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
 
 void main() {
+  testWidgets(
+    'market environment mismatch blocks context before quote or signature',
+    (tester) async {
+      await tester.pumpWidget(
+        _app(
+          const Hip3OrderPanel(
+            symbol: 'TSLA',
+            market: Hip3PublicMarket(
+              productId: 'xyz:TSLA',
+              venue: 'xyz',
+              environment: 'mainnet',
+              settlementAsset: 'USDC',
+              tradable: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'The market and trading account use different products or environments. Reload the market before placing an order.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Available margin'), findsNothing);
+    },
+  );
   testWidgets('quantity input is labelled in product units, not dollars', (
     tester,
   ) async {
@@ -603,6 +630,10 @@ final class _Opening implements Hip3OpeningRepository {
             ? productOrSymbol
             : 'xyz:$productOrSymbol',
         environment: 'testnet',
+        venue: productOrSymbol.contains(':')
+            ? productOrSymbol.split(':').first
+            : 'xyz',
+        settlementAsset: 'USDC',
         currentLeverage: leverage,
         maximumLeverage: maximum,
         currentMarginMode: mode,

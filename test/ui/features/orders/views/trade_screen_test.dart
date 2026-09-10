@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwa_interface/domain/models/market_list_query.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
@@ -359,6 +360,47 @@ void main() {
     expect(find.byTooltip('Remove favorite'), findsNothing);
   });
 
+  testWidgets(
+    'Trade ignores old account favorite completion and refreshes current star',
+    (tester) async {
+      final gate = Completer<void>();
+      final old = _FavoriteMarketsRepository(addGate: gate);
+      final current = _FavoriteMarketsRepository();
+      final container = ProviderContainer(
+        overrides: [
+          marketsRepositoryProvider.overrideWith(
+            (ref) =>
+                ref.watch(sessionGenerationProvider).value == 0 ? old : current,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: buildTestApp(const TradeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Add favorite'));
+      await tester.pump();
+      container.read(sessionGenerationProvider.notifier).clearUserScope();
+      await tester.pumpAndSettle();
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Add favorite'), findsOneWidget);
+      expect(find.byTooltip('Remove favorite'), findsNothing);
+      expect(find.text('Added to favorites.'), findsNothing);
+      await tester.tap(find.byTooltip('Add favorite'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Remove favorite'), findsOneWidget);
+      current.isFavorite = false;
+      container.invalidate(marketProductsProvider);
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Add favorite'), findsOneWidget);
+    },
+  );
+
   testWidgets('bStocks order acceptance shows only the success toast', (
     tester,
   ) async {
@@ -653,6 +695,15 @@ MarketProduct _marketProduct(String symbol, MarketProductKind kind) =>
       settlementAsset: kind == MarketProductKind.bstock ? 'USDT' : 'USDC',
       network: kind == MarketProductKind.bstock ? 'BSC' : 'Hyperliquid',
       tradable: true,
+      hip3Market: kind == MarketProductKind.perp
+          ? Hip3PublicMarket(
+              productId: 'xyz:$symbol',
+              venue: 'xyz',
+              environment: 'testnet',
+              settlementAsset: 'USDC',
+              tradable: true,
+            )
+          : null,
     );
 
 final class _FavoriteMarketsRepository implements MarketsRepository {
@@ -662,7 +713,7 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
     this.addGate,
   });
 
-  final bool isFavorite;
+  bool isFavorite;
   final bool shouldFail;
   final Completer<void>? addGate;
   final List<MarketProductRef> added = [];
@@ -695,12 +746,14 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
     await addGate?.future;
     if (shouldFail) throw const NetworkFailure();
     added.add(ref);
+    isFavorite = true;
   }
 
   @override
   Future<void> removeFavorite(MarketProductRef ref) async {
     if (shouldFail) throw const NetworkFailure();
     removed.add(ref);
+    isFavorite = false;
   }
 
   @override

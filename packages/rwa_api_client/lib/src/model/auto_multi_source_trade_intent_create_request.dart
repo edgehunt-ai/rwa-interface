@@ -17,6 +17,7 @@ part 'auto_multi_source_trade_intent_create_request.g.dart';
 /// * [authorizationId] - Order authorization; funding Transfers require a separate authorization for each leg.
 /// * [fundingMode] 
 /// * [executionPolicy] 
+@Deprecated('AutoMultiSourceTradeIntentCreateRequest has been deprecated')
 @BuiltValue()
 abstract class AutoMultiSourceTradeIntentCreateRequest implements Built<AutoMultiSourceTradeIntentCreateRequest, AutoMultiSourceTradeIntentCreateRequestBuilder> {
   @BuiltValueField(wireName: r'preview_id')
@@ -156,6 +157,7 @@ class _$AutoMultiSourceTradeIntentCreateRequestSerializer implements PrimitiveSe
   }
 }
 
+@Deprecated('AutoMultiSourceTradeIntentCreateRequestFundingModeEnum has been deprecated')
 class AutoMultiSourceTradeIntentCreateRequestFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_multi_source')

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'hip3_quote_provenance.dart';
+
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -248,13 +251,14 @@ class MarketProductRow extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final positive =
         !(product.change24hPercent?.value.startsWith('-') ?? false);
-    final row = SizedBox(
-      height: dense ? 70 : 72,
+    final row = ConstrainedBox(
+      constraints: BoxConstraints(minHeight: dense ? 70 : 72),
       child: Row(
         children: [
           MarketAssetMark(symbol: product.symbol),
           const SizedBox(width: 12),
           Expanded(
+            flex: 2,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,17 +269,16 @@ class MarketProductRow extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
-                Row(
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 2,
                   children: [
-                    Flexible(
-                      child: Text(
-                        product.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall
-                            ?.copyWith(color: colors.secondaryText),
-                      ),
+                    Text(
+                      product.name,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: colors.secondaryText),
                     ),
-                    const SizedBox(width: 4),
                     SvgPicture.asset(
                       product.kind == MarketProductKind.bstock
                           ? 'assets/figma/home_markets/venue_bnb.svg'
@@ -283,7 +286,6 @@ class MarketProductRow extends StatelessWidget {
                       width: 14,
                       height: 14,
                     ),
-                    const SizedBox(width: 4),
                     Text(
                       product.kind == MarketProductKind.bstock
                           ? 'bStocks'
@@ -297,34 +299,50 @@ class MarketProductRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                TokenAmountFormatter.formatUsd(product.price),
-                style: Theme.of(context).textTheme.bodyLarge
-                    ?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              if (product.change24hPercent != null)
+          Flexible(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
                 Text(
-                  TokenAmountFormatter.formatPercent(product.change24hPercent!),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: positive ? semantic.success : semantic.loss,
-                  ),
+                  TokenAmountFormatter.formatUsd(product.price),
+                  style: Theme.of(context).textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
-            ],
+                if (product.change24hPercent != null)
+                  Text(
+                    TokenAmountFormatter.formatPercent(
+                      product.change24hPercent!,
+                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: positive ? semantic.success : semantic.loss,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
     );
-    if (onTap == null) return row;
+    final content = product.kind == MarketProductKind.perp
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              row,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Hip3QuoteProvenance.product(product),
+              ),
+            ],
+          )
+        : row;
+    if (onTap == null) return content;
     return Semantics(
       button: true,
       label: 'Open ${product.symbol} trade details',
       child: Material(
         color: Colors.transparent,
-        child: InkWell(onTap: onTap, child: row),
+        child: InkWell(onTap: onTap, child: content),
       ),
     );
   }

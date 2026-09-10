@@ -6,6 +6,52 @@ part of 'activity_record.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnum_opening =
+    const ActivityRecordBusinessTypeEnum._('opening');
+const ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnum_closing =
+    const ActivityRecordBusinessTypeEnum._('closing');
+const ActivityRecordBusinessTypeEnum
+    _$activityRecordBusinessTypeEnum_takeProfit =
+    const ActivityRecordBusinessTypeEnum._('takeProfit');
+const ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnum_stopLoss =
+    const ActivityRecordBusinessTypeEnum._('stopLoss');
+const ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnum_unknown =
+    const ActivityRecordBusinessTypeEnum._('unknown');
+const ActivityRecordBusinessTypeEnum
+    _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi =
+    const ActivityRecordBusinessTypeEnum._('unknownDefaultOpenApi');
+
+ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'opening':
+      return _$activityRecordBusinessTypeEnum_opening;
+    case 'closing':
+      return _$activityRecordBusinessTypeEnum_closing;
+    case 'takeProfit':
+      return _$activityRecordBusinessTypeEnum_takeProfit;
+    case 'stopLoss':
+      return _$activityRecordBusinessTypeEnum_stopLoss;
+    case 'unknown':
+      return _$activityRecordBusinessTypeEnum_unknown;
+    case 'unknownDefaultOpenApi':
+      return _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi;
+    default:
+      return _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<ActivityRecordBusinessTypeEnum>
+    _$activityRecordBusinessTypeEnumValues = BuiltSet<
+        ActivityRecordBusinessTypeEnum>(const <ActivityRecordBusinessTypeEnum>[
+  _$activityRecordBusinessTypeEnum_opening,
+  _$activityRecordBusinessTypeEnum_closing,
+  _$activityRecordBusinessTypeEnum_takeProfit,
+  _$activityRecordBusinessTypeEnum_stopLoss,
+  _$activityRecordBusinessTypeEnum_unknown,
+  _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi,
+]);
+
 const ActivityRecordChainEnum _$activityRecordChainEnum_BSC =
     const ActivityRecordChainEnum._('BSC');
 const ActivityRecordChainEnum _$activityRecordChainEnum_arbitrum =
@@ -58,8 +104,49 @@ final BuiltSet<ActivityRecordChainEnum> _$activityRecordChainEnumValues =
   _$activityRecordChainEnum_unknownDefaultOpenApi,
 ]);
 
+Serializer<ActivityRecordBusinessTypeEnum>
+    _$activityRecordBusinessTypeEnumSerializer =
+    _$ActivityRecordBusinessTypeEnumSerializer();
 Serializer<ActivityRecordChainEnum> _$activityRecordChainEnumSerializer =
     _$ActivityRecordChainEnumSerializer();
+
+class _$ActivityRecordBusinessTypeEnumSerializer
+    implements PrimitiveSerializer<ActivityRecordBusinessTypeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'opening': 'opening',
+    'closing': 'closing',
+    'takeProfit': 'take_profit',
+    'stopLoss': 'stop_loss',
+    'unknown': 'unknown',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'opening': 'opening',
+    'closing': 'closing',
+    'take_profit': 'takeProfit',
+    'stop_loss': 'stopLoss',
+    'unknown': 'unknown',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[ActivityRecordBusinessTypeEnum];
+  @override
+  final String wireName = 'ActivityRecordBusinessTypeEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, ActivityRecordBusinessTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  ActivityRecordBusinessTypeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ActivityRecordBusinessTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$ActivityRecordChainEnumSerializer
     implements PrimitiveSerializer<ActivityRecordChainEnum> {
@@ -104,6 +191,8 @@ class _$ActivityRecordChainEnumSerializer
 
 class _$ActivityRecord extends ActivityRecord {
   @override
+  final ActivityRecordBusinessTypeEnum? businessType;
+  @override
   final String id;
   @override
   final ActivityCategory category;
@@ -144,7 +233,8 @@ class _$ActivityRecord extends ActivityRecord {
       (ActivityRecordBuilder()..update(updates))._build();
 
   _$ActivityRecord._(
-      {required this.id,
+      {this.businessType,
+      required this.id,
       required this.category,
       required this.type,
       required this.status,
@@ -174,6 +264,7 @@ class _$ActivityRecord extends ActivityRecord {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ActivityRecord &&
+        businessType == other.businessType &&
         id == other.id &&
         category == other.category &&
         type == other.type &&
@@ -197,6 +288,7 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, businessType.hashCode);
     _$hash = $jc(_$hash, id.hashCode);
     _$hash = $jc(_$hash, category.hashCode);
     _$hash = $jc(_$hash, type.hashCode);
@@ -222,6 +314,7 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ActivityRecord')
+          ..add('businessType', businessType)
           ..add('id', id)
           ..add('category', category)
           ..add('type', type)
@@ -247,6 +340,11 @@ class _$ActivityRecord extends ActivityRecord {
 class ActivityRecordBuilder
     implements Builder<ActivityRecord, ActivityRecordBuilder> {
   _$ActivityRecord? _$v;
+
+  ActivityRecordBusinessTypeEnum? _businessType;
+  ActivityRecordBusinessTypeEnum? get businessType => _$this._businessType;
+  set businessType(ActivityRecordBusinessTypeEnum? businessType) =>
+      _$this._businessType = businessType;
 
   String? _id;
   String? get id => _$this._id;
@@ -332,6 +430,7 @@ class ActivityRecordBuilder
   ActivityRecordBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _businessType = $v.businessType;
       _id = $v.id;
       _category = $v.category;
       _type = $v.type;
@@ -373,6 +472,7 @@ class ActivityRecordBuilder
     try {
       _$result = _$v ??
           _$ActivityRecord._(
+            businessType: businessType,
             id: BuiltValueNullFieldError.checkNotNull(
                 id, r'ActivityRecord', 'id'),
             category: BuiltValueNullFieldError.checkNotNull(

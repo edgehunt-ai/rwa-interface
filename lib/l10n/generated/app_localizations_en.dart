@@ -10,6 +10,137 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get marketFavoritesReorder => 'Reorder favorites';
+
+  @override
+  String get marketFavoritesCompleteSet =>
+      'Reorder all favorites, including other product types. This does not add or remove favorites.';
+
+  @override
+  String get marketFavoritesLoadingAll => 'Loading all favorites…';
+
+  @override
+  String get marketFavoritesLoadFailed =>
+      'The full favorites list could not be loaded. Reload before changing its order.';
+
+  @override
+  String get marketFavoritesOrderChanged =>
+      'The order was not confirmed. Favorites are being reloaded; review the latest full list and try again.';
+
+  @override
+  String get marketFavoritesEmpty => 'No favorites to reorder.';
+
+  @override
+  String get marketFavoritesSaving => 'Saving order…';
+
+  @override
+  String get marketFavoritesSaveOrder => 'Save order';
+
+  @override
+  String get marketFavoriteMoveUp => 'Move favorite up';
+
+  @override
+  String get marketFavoriteMoveDown => 'Move favorite down';
+
+  @override
+  String get hip3QuoteExpiredShort => 'Expired quote';
+
+  @override
+  String get hip3QuoteMark => 'Mark price';
+
+  @override
+  String get hip3QuoteOracle => 'HIP3 Oracle price';
+
+  @override
+  String get hip3QuoteUnknownSource => 'Price source unavailable';
+
+  @override
+  String get hip3QuoteOracleDisclosure =>
+      'Mark and HIP3 Oracle prices are not US stock-market reference prices.';
+
+  @override
+  String hip3QuoteObserved(String time) {
+    return 'Observed: $time';
+  }
+
+  @override
+  String get hip3QuoteTimeUnavailable => 'Observation time unavailable';
+
+  @override
+  String get hip3QuoteExpired =>
+      'Quote expired — wait for a fresh quote before trading.';
+
+  @override
+  String get hip3QuoteFreshnessUnknown => 'Quote freshness unverified';
+
+  @override
+  String get hip3QuoteCurrent => 'Within the quote validity window';
+
+  @override
+  String hip3HoldingsCoverage(int displayed, int observed) {
+    return 'HIP3 coverage: $displayed of $observed observed positions can be displayed across all pages. This is not a full-wallet view.';
+  }
+
+  @override
+  String hip3HoldingsUnmapped(int count) {
+    return '$count positions could not be matched to verified products and are not shown.';
+  }
+
+  @override
+  String hip3HoldingsExcluded(int count) {
+    return '$count verified non-HIP3 positions are outside this view.';
+  }
+
+  @override
+  String get marketFavoriteAdd => 'Add favorite';
+
+  @override
+  String get marketFavoriteRemove => 'Remove favorite';
+
+  @override
+  String get marketFavoriteAdded => 'Added to favorites.';
+
+  @override
+  String get marketFavoriteRemoved => 'Removed from favorites.';
+
+  @override
+  String get marketFavoriteFailed => 'Unable to update favorites. Try again.';
+
+  @override
+  String get hip3ActivityOpening => 'Opening';
+
+  @override
+  String get hip3ActivityClosing => 'Closing';
+
+  @override
+  String get hip3ActivityTakeProfit => 'Take profit';
+
+  @override
+  String get hip3ActivityStopLoss => 'Stop loss';
+
+  @override
+  String get hip3ActivityUnknown => 'Unclassified HIP3 order';
+
+  @override
+  String get hip3MarketIdentityMismatch =>
+      'The market and trading account use different products or environments. Reload the market before placing an order.';
+
+  @override
+  String get hip3MarketMainnetReadOnly =>
+      'Mainnet market data is read-only. App trading currently supports Testnet; this quote cannot be used for a Testnet order.';
+
+  @override
+  String get hip3MarketOpeningUnavailable =>
+      'Opening is unavailable for this market. Reload to check its current trading availability.';
+
+  @override
+  String get hip3MarketAccountScope =>
+      'Account positions and orders currently use Testnet. They are not positions or orders for this market environment.';
+
+  @override
+  String get hip3MarketViewAccount => 'View account assets';
+
+  @override
   String get hip3ConfirmSetTp => 'Set take profit';
 
   @override
