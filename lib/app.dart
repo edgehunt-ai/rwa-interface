@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/app_router.dart';
 import 'package:rwa_interface/app/providers/locale_provider.dart';
+import 'package:rwa_interface/app/providers/hip3_query_refresh.dart';
 import 'package:rwa_interface/app/providers/push_notification_providers.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
+import 'package:rwa_interface/ui/features/positions/views/hip3_confirmation_host.dart';
 
 class AppRoot extends StatelessWidget {
   AppRoot({super.key, GoRouter? router})
@@ -30,12 +32,32 @@ final class _AppView extends ConsumerStatefulWidget {
 }
 
 final class _AppViewState extends ConsumerState<_AppView> {
+  late final AppLifecycleListener _hip3Lifecycle;
+
   @override
   void initState() {
     super.initState();
-    Future<void>.microtask(
-      () => ref.read(authenticationProvider.notifier).bootstrap(),
+    _hip3Lifecycle = AppLifecycleListener(
+      onStateChange: (state) => ref
+          .read(hip3ForegroundProvider.notifier)
+          .setForeground(state == AppLifecycleState.resumed),
     );
+    Future<void>.microtask(() async {
+      if (!mounted) return;
+      final lifecycle = WidgetsBinding.instance.lifecycleState;
+      ref
+          .read(hip3ForegroundProvider.notifier)
+          .setForeground(
+            lifecycle == null || lifecycle == AppLifecycleState.resumed,
+          );
+      await ref.read(authenticationProvider.notifier).bootstrap();
+    });
+  }
+
+  @override
+  void dispose() {
+    _hip3Lifecycle.dispose();
+    super.dispose();
   }
 
   @override
@@ -53,6 +75,8 @@ final class _AppViewState extends ConsumerState<_AppView> {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.light,
       routerConfig: widget.router,
+      builder: (context, child) =>
+          Hip3ConfirmationHost(child: child ?? const SizedBox.shrink()),
       locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,

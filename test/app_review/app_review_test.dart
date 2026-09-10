@@ -167,7 +167,10 @@ final class _MarketsDelegate implements MarketsRepository {
   @override
   Future<CandleChart> getCandles(
     MarketProductRef ref, {
-    required CandleChartRange range,
+    CandleChartRange? range,
+    String? interval,
+    DateTime? from,
+    DateTime? to,
   }) => throw UnimplementedError();
 
   @override
@@ -178,6 +181,9 @@ final class _MarketsDelegate implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    dynamic kind,
+    dynamic group,
+    int? limit,
   }) => throw UnimplementedError();
 
   @override
@@ -230,8 +236,13 @@ final class _PreviewDelegate implements OrdersRepository {
       throw UnimplementedError();
 
   @override
-  Future<DomainPage<ResourceResult<TradingOrder>>> list({String? cursor}) =>
-      throw UnimplementedError();
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) => throw UnimplementedError();
 }
 
 ProductSession _session(String userId) => ProductSession(

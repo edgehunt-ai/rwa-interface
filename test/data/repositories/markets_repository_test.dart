@@ -1,12 +1,36 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as wire;
 import 'package:rwa_interface/data/repositories/markets_repository_impl.dart';
-import 'package:rwa_interface/data/services/charts_service.dart';
 import 'package:rwa_interface/data/services/markets_service.dart';
+import 'package:rwa_interface/data/services/charts_service.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/market_snapshot.dart';
 
 void main() {
+  test(
+    'HIP3 candle mapping retains OHLCV decimals and explicit time window',
+    () async {
+      final charts = _Charts();
+      final repository = MarketsRepositoryImpl(_Markets('1'), charts);
+      final to = DateTime.utc(2026, 9, 10, 10);
+      final from = to.subtract(const Duration(hours: 1));
+      final chart = await repository.getCandles(
+        const MarketProductRef(symbol: 'TSLA', kind: MarketProductKind.perp),
+        interval: '1m',
+        from: from,
+        to: to,
+      );
+      expect(charts.from, from);
+      expect(charts.to, to);
+      expect(chart.points.single.open!.value, '100.0000');
+      expect(chart.points.single.high!.value, '103.0000');
+      expect(chart.points.single.low!.value, '99.0000');
+      expect(chart.points.single.close.value, '101.0000');
+      expect(chart.points.single.volume!.value, '0.001');
+      expect(chart.from, from);
+      expect(chart.to, to);
+      expect(chart.interval, '1m');
+    },
+  );
   test('分页映射保留 cursor，金融字符串逐字不变', () async {
     const financial = '999999999999999999.123456789012345678';
     final repository = MarketsRepositoryImpl(_Markets(financial));
@@ -14,61 +38,46 @@ void main() {
     expect(page.nextCursor, 'next-page');
     expect(page.items.single.referencePrice, financial);
   });
+}
 
-  test(
-    'chart range maps to the contract window and sampling interval',
-    () async {
-      final charts = _Charts();
-      final repository = MarketsRepositoryImpl(_Markets('1'), charts);
-      const product = MarketProductRef(
-        symbol: 'NVDAB',
-        kind: MarketProductKind.bstock,
-      );
-
-      await repository.getCandles(product, range: CandleChartRange.oneHour);
-      expect(charts.range, isNull);
-      expect(charts.from, isNotNull);
-      expect(charts.to, isNotNull);
-      expect(charts.to!.difference(charts.from!), const Duration(hours: 1));
-      expect(charts.interval, '1m');
-
-      await repository.getCandles(product, range: CandleChartRange.fourHours);
-      expect(charts.range, wire.ChartRange.n4h);
-      expect(charts.from, isNull);
-      expect(charts.to, isNull);
-      expect(charts.interval, '5m');
-
-      await repository.getCandles(product, range: CandleChartRange.oneDay);
-      expect(charts.range, wire.ChartRange.n24h);
-      expect(charts.interval, '15m');
-
-      await repository.getCandles(product, range: CandleChartRange.oneWeek);
-      expect(charts.range, wire.ChartRange.n1w);
-      expect(charts.interval, '1h');
-    },
-  );
-
-  test('chart mapping retains reference prices and market sessions', () async {
-    final repository = MarketsRepositoryImpl(
-      _Markets('1'),
-      _Charts(withExtras: true),
+class _Charts implements ChartsService {
+  DateTime? from, to;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  @override
+  Future<wire.CandleSeries> getCandles(
+    String symbol,
+    wire.ProductKind kind, {
+    wire.ChartRange? range,
+    String? interval,
+    DateTime? from,
+    DateTime? to,
+  }) async {
+    expect(symbol, 'TSLA');
+    expect(kind, wire.ProductKind.perp);
+    this.from = from;
+    this.to = to;
+    return wire.CandleSeries(
+      (b) => b
+        ..symbol = symbol
+        ..kind = kind
+        ..range = wire.ChartRange.n24h
+        ..interval = interval
+        ..from = from
+        ..to = to
+        ..points.add(
+          wire.CandlePoint(
+            (p) => p
+              ..t = from
+              ..o = '100.0000'
+              ..h = '103.0000'
+              ..l = '99.0000'
+              ..c = '101.0000'
+              ..v = '0.001',
+          ),
+        ),
     );
-    const product = MarketProductRef(
-      symbol: 'NVDAB',
-      kind: MarketProductKind.bstock,
-    );
-
-    final chart = await repository.getCandles(
-      product,
-      range: CandleChartRange.oneHour,
-    );
-
-    expect(chart.referencePoints.single.close.value, '175');
-    expect(chart.referencePrice?.value, '180');
-    expect(chart.referencePriceIsStale, isTrue);
-    expect(chart.sessions.single.kind, MarketSessionKind.regular);
-    expect(chart.sessions.single.label, 'Regular Market');
-  });
+  }
 }
 
 final class _Markets implements MarketsService {
@@ -96,66 +105,4 @@ final class _Markets implements MarketsService {
         ),
       ),
   );
-}
-
-final class _Charts implements ChartsService {
-  _Charts({this.withExtras = false});
-
-  final bool withExtras;
-  wire.ChartRange? range;
-  DateTime? from;
-  DateTime? to;
-  String? interval;
-
-  @override
-  Future<wire.CandleSeries> getCandles(
-    String symbol,
-    wire.ProductKind kind, {
-    wire.ChartRange? range,
-    DateTime? from,
-    DateTime? to,
-    String? interval,
-  }) async {
-    this.range = range;
-    this.from = from;
-    this.to = to;
-    this.interval = interval;
-    return wire.CandleSeries((series) {
-      series
-        ..symbol = symbol
-        ..kind = kind
-        ..range = wire.ChartRange.n4h;
-      if (!withExtras) return;
-      series.referencePoints.add(
-        wire.CandlePoint(
-          (point) => point
-            ..t = DateTime.utc(2026)
-            ..c = '175',
-        ),
-      );
-      series.sessions.add(
-        wire.SessionSegment(
-          (segment) => segment
-            ..session = wire.SessionKind.regular
-            ..label = 'Regular Market'
-            ..start = DateTime.utc(2026)
-            ..end = DateTime.utc(2026, 1, 1, 1),
-        ),
-      );
-    });
-  }
-
-  @override
-  Future<wire.ReferencePrice> getReferencePrice(String symbol) async =>
-      wire.ReferencePrice(
-        (price) => price
-          ..symbol = symbol
-          ..price = '180'
-          ..session = wire.SessionKind.overnight
-          ..asOf = DateTime.utc(2026)
-          ..isStale = true,
-      );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

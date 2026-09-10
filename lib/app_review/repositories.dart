@@ -4,6 +4,9 @@ import '../domain/models/deposit.dart';
 import '../domain/models/domain_page.dart';
 import '../domain/models/funding_catalog.dart';
 import '../domain/models/funding_transfer.dart';
+import '../domain/models/hip3_action_summary.dart';
+import '../domain/models/position_leverage_context.dart';
+import '../domain/models/position_operation.dart';
 import '../domain/models/market_product.dart';
 import '../domain/models/order.dart';
 import '../domain/models/order_intent.dart';
@@ -300,6 +303,25 @@ final class AppReviewActivityRepository implements ActivityRepository {
 
 final class AppReviewPositionsRepository implements PositionsRepository {
   @override
+  Future<PositionLeverageContext> leverageContext(String productId) async =>
+      PositionLeverageContext(
+        productId: productId,
+        maximum: DecimalValue('50'),
+        current: DecimalValue('5'),
+        marginMode: PositionMarginMode.cross,
+        validUntil: _now.add(const Duration(hours: 1)),
+        canChange: true,
+      );
+
+  @override
+  Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({
+    String? cursor,
+  }) async => const DomainPage(items: []);
+
+  @override
+  Future<void> resumeHip3Action(String actionId) async {}
+
+  @override
   Future<DomainPage<Position>> list({
     String? symbol,
     MarketProductKind? kind,
@@ -320,14 +342,18 @@ final class AppReviewPositionsRepository implements PositionsRepository {
   Future<Position> updateTpSl(
     Position position, {
     String? takeProfit,
+    String? takeLimit,
     String? stopLoss,
     String? stopLimit,
+    String? quantity,
+    ProtectionClearScope? clearScope,
     required String idempotencyKey,
   }) async => position;
 
   @override
   Future<Position> clearTpSl(
     String positionId, {
+    ProtectionClearScope scope = ProtectionClearScope.both,
     required String idempotencyKey,
   }) => get(positionId);
 
@@ -343,6 +369,9 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     String positionId, {
     String? quantity,
     String? percent,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    Position? expectedPosition,
     required String idempotencyKey,
   }) async {
     final position = await get(positionId);
@@ -535,8 +564,15 @@ final class AppReviewOrdersRepository implements OrdersRepository {
   @override
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   }) async => DomainPage(
     items: store.orders.values
+        .where((order) => kind == null || order.kind == kind)
+        .where((order) => symbol == null || order.symbol == symbol)
+        .where((order) => productId == null || order.productId == productId)
         .map((order) => ResourceResult(resource: order))
         .toList(growable: false),
   );
@@ -760,6 +796,12 @@ final class AppReviewHip3OrderExecutionRepository
     String actionId, {
     required String idempotencyKey,
   }) => getAction(actionId);
+
+  @override
+  Future<ResourceResult<TradingOrder>> cancelOrder(
+    String orderId, {
+    required String idempotencyKey,
+  }) async => ResourceResult(resource: store.orders[orderId]!);
 }
 
 final class AppReviewRealtimeRepository implements RealtimeRepository {

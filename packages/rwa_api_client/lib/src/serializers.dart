@@ -161,7 +161,10 @@ import 'package:rwa_api_client/src/model/hip3_eip712_typed_data.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_types.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
 import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
+import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
+import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation_legs_inner.dart';
 import 'package:rwa_api_client/src/model/hip3_operation.dart';
+import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
@@ -494,7 +497,10 @@ part 'serializers.g.dart';
   Hip3Eip712Types,
   Hip3Environment,
   Hip3MainnetProduct,
+  Hip3OpeningProtectionConfirmation,
+  Hip3OpeningProtectionConfirmationLegsInner,
   Hip3Operation,
+  Hip3OrderProtectionSpec,
   Hip3PlaceOrderActionRequest,
   Hip3PreviewExecution,
   Hip3ProtectionSpec,
@@ -749,6 +755,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3TimeInForce)]),
         () => ListBuilder<Hip3TimeInForce>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3OpeningProtectionConfirmationLegsInner)]),
+        () => ListBuilder<Hip3OpeningProtectionConfirmationLegsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingRouteBlocker)]),

@@ -38,8 +38,21 @@ final class GeneratedOrdersService implements OrdersService {
   }
 
   @override
-  Future<OrderPage> listOrders({String? cursor}) =>
-      _body(() => _api.listOrders(cursor: cursor));
+  Future<OrderPage> listOrders({
+    String? cursor,
+    ProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) => _body(
+    () => _api.listOrders(
+      cursor: cursor,
+      kind: kind,
+      symbol: symbol,
+      productId: productId,
+      statusGroup: statusGroup,
+    ),
+  );
   @override
   Future<Order> getOrder(String orderId) =>
       _body(() => _api.getOrder(orderId: orderId));

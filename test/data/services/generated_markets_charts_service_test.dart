@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:dio/dio.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:rwa_interface/data/api/api_environment.dart';
 import 'package:rwa_interface/data/api/rwa_api_data_source.dart';
@@ -9,6 +10,46 @@ import '../../helpers/controlled_api_adapter.dart';
 import '../../helpers/trading_provider_harness.dart';
 
 void main() {
+  test('HIP3 chart preserves explicit window and interval through generated HTTP client', () async {
+    final adapter = ControlledApiAdapter([
+      ControlledResponse.json(
+        method: 'GET',
+        path: '/v1/markets/TSLA/products/perp/candles',
+        statusCode: 200,
+        body: const {
+          'symbol': 'TSLA',
+          'kind': 'perp',
+          'range': '24h',
+          'interval': '1m',
+          'points': <Object>[],
+        },
+      ),
+    ]);
+    final source = _source(adapter);
+    RequestOptions? request;
+    source.dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          request = options;
+          handler.next(options);
+        },
+      ),
+    );
+    final charts = GeneratedChartsService(source.client.getChartsApi());
+    final to = DateTime.utc(2026, 9, 10, 10);
+    final from = to.subtract(const Duration(hours: 1));
+    await charts.getCandles(
+      'TSLA',
+      api.ProductKind.perp,
+      interval: '1m',
+      from: from,
+      to: to,
+    );
+    expect(request!.queryParameters['interval'], '1m');
+    expect(DateTime.parse(request!.queryParameters['from'].toString()), from);
+    expect(DateTime.parse(request!.queryParameters['to'].toString()), to);
+    expect(request!.queryParameters.containsKey('range'), isFalse);
+  });
   test(
     'generated market and chart services deserialize contract values',
     () async {

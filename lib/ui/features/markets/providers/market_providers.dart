@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -6,6 +8,7 @@ import '../../../../data/services/market_search_history_service.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/market_snapshot.dart';
+import 'market_list_provider.dart';
 
 typedef MarketQuery = ({String? query, String? cursor});
 
@@ -22,8 +25,16 @@ final marketProductProvider = FutureProvider.autoDispose
     });
 
 final marketSnapshotProvider = FutureProvider.autoDispose
-    .family<MarketSnapshot, MarketProductRef>((ref, product) {
-      return ref.watch(marketsRepositoryProvider).getSnapshot(product);
+    .family<MarketSnapshot, MarketProductRef>((ref, product) async {
+      Timer? timer;
+      ref.onDispose(() => timer?.cancel());
+      try {
+        return await ref.watch(marketsRepositoryProvider).getSnapshot(product);
+      } finally {
+        if (product.kind == MarketProductKind.perp && ref.mounted) {
+          timer = Timer(const Duration(seconds: 10), ref.invalidateSelf);
+        }
+      }
     });
 
 final marketCandlesProvider = FutureProvider.autoDispose
@@ -91,5 +102,6 @@ final class FavoritesCommand extends AsyncNotifier<void> {
   void _invalidate(MarketProductRef product) {
     ref.invalidate(marketProductProvider(product));
     ref.invalidate(marketProductsProvider);
+    ref.invalidate(marketListProvider);
   }
 }

@@ -5,6 +5,38 @@ import 'package:rwa_interface/data/repositories/funding_repository_impl.dart';
 import 'package:rwa_interface/data/services/funding_service.dart';
 
 void main() {
+  test(
+    'generated request type update preserves multi-source funding wire',
+    () async {
+      final service = _CaptureFunding();
+      final repository = FundingRepositoryImpl(service);
+      await expectLater(
+        repository.createFundingPlan(
+          tradePreviewId: 'preview',
+          idempotencyKey: 'plan-key',
+        ),
+        throwsStateError,
+      );
+      expect(service.plan, {
+        'trade_preview_id': 'preview',
+        'mode': 'auto_multi_source',
+      });
+      await expectLater(
+        repository.createFundingTransfer(
+          planId: 'plan',
+          legId: 'leg',
+          authorizationId: 'authorization',
+          idempotencyKey: 'transfer-key',
+        ),
+        throwsStateError,
+      );
+      expect(service.transfer, {
+        'plan_id': 'plan',
+        'leg_id': 'leg',
+        'authorization_id': 'authorization',
+      });
+    },
+  );
   test('confirmed deposits map from the new oneOf response', () async {
     final result = await FundingRepositoryImpl(_Funding())
         .getDeposit('deposit-1');
@@ -13,6 +45,37 @@ void main() {
     expect(result.resource.instructions.address, '0xrecipient');
     expect(result.capability, isNull);
   });
+}
+
+final class _CaptureFunding implements FundingService {
+  Object? plan;
+  Object? transfer;
+  @override
+  Future<api.FundingPlan> createPlan(
+    api.FundingPlanRequest request, {
+    required String idempotencyKey,
+  }) async {
+    plan = api.standardSerializers.serializeWith(
+      api.FundingPlanRequest.serializer,
+      request,
+    );
+    throw StateError('captured without sending');
+  }
+
+  @override
+  Future<api.Transfer> createTransfer(
+    api.TransferRequest request, {
+    required String idempotencyKey,
+  }) async {
+    transfer = api.standardSerializers.serializeWith(
+      api.TransferRequest.serializer,
+      request,
+    );
+    throw StateError('captured without sending');
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 final class _Funding implements FundingService {

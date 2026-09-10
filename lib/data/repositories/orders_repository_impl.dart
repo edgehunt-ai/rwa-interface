@@ -5,8 +5,10 @@ import '../../domain/models/decimal_value.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
+import '../../domain/models/order_fill.dart';
 import '../../domain/models/order_intent.dart';
 import '../../domain/models/order_preview.dart';
+import '../../domain/models/hip3_opening_protection.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/models/unsupported_capability.dart';
 import '../../domain/repositories/orders_repository.dart';
@@ -27,7 +29,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     );
     final value = wire.oneOf.value;
     final common = value as api.OrderPreviewCommon;
-    return OrderPreview(
+    final preview = OrderPreview(
       previewId: common.previewId,
       intent: intent,
       orderValue: _value(common.orderValue, 'notional'),
@@ -48,8 +50,122 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       },
       priceUpdated: common.priceUpdated ?? false,
       expiresAt: common.quoteExpiresAt?.toUtc(),
+      hip3Execution: common.hip3Execution == null
+          ? null
+          : _hip3Execution(common.hip3Execution!),
+      feeRate: _optional(common.feeRate, 'rate'),
+      feeNote: common.feeNote,
+      details: List.unmodifiable(
+        common.details?.map(
+              (entry) => PreviewDetail(
+                entry.label,
+                entry.value,
+                tone: entry.tone?.name,
+              ),
+            ) ??
+            const <PreviewDetail>[],
+      ),
     );
+    if (!preview.openingProtectionMatchesIntent) {
+      throw const FormatException(
+        'Opening protection confirmation is missing or differs from the order',
+      );
+    }
+    return preview;
   }
+
+  Hip3PreviewExecution _hip3Execution(
+    api.Hip3PreviewExecution value,
+  ) => Hip3PreviewExecution(
+    openingProtection: value.openingProtection == null
+        ? null
+        : Hip3OpeningProtectionConfirmation(
+            quantity: DecimalValue(
+              value.openingProtection!.quantity,
+              unit: 'quantity',
+            ),
+            legs: List.unmodifiable(
+              value.openingProtection!.legs.map(
+                (leg) => Hip3ConfirmedProtectionLeg(
+                  takeProfit: switch (leg.role) {
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
+                        .takeProfit =>
+                      true,
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
+                        .stopLoss =>
+                      false,
+                    _ => throw const FormatException('Unknown protection role'),
+                  },
+                  market: switch (leg.executionType) {
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
+                        .market =>
+                      true,
+                    api
+                        .Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
+                        .limit =>
+                      false,
+                    _ => throw const FormatException(
+                      'Unknown protection execution',
+                    ),
+                  },
+                  triggerPrice: DecimalValue(
+                    leg.triggerPrice,
+                    asset: 'USDC',
+                    unit: 'price',
+                  ),
+                  executionPrice: DecimalValue(
+                    leg.executionPrice,
+                    asset: 'USDC',
+                    unit: 'price',
+                  ),
+                ),
+              ),
+            ),
+          ),
+    contextId: value.contextId,
+    productId: value.productId,
+    environment: value.environment.name,
+    quantity: DecimalValue(value.quantity, unit: 'quantity'),
+    type: switch (value.type) {
+      api.Hip3PreviewExecutionTypeEnum.market => TradingOrderType.market,
+      api.Hip3PreviewExecutionTypeEnum.limit => TradingOrderType.limit,
+      _ => throw const FormatException('Unsupported HIP3 execution type'),
+    },
+    timeInForce: value.timeInForce.name,
+    limitPrice: DecimalValue(value.limitPrice, asset: 'USDC', unit: 'price'),
+    leverage: DecimalValue(value.leverage, unit: 'multiple'),
+    marginMode: switch (value.marginMode) {
+      api.MarginMode.cross => TradingMarginMode.cross,
+      api.MarginMode.isolated => TradingMarginMode.isolated,
+      _ => throw const FormatException('Unsupported HIP3 margin mode'),
+    },
+    reduceOnly: value.reduceOnly,
+    notional: DecimalValue(value.notionalUsdc, asset: 'USDC', unit: 'notional'),
+    marginRequired: DecimalValue(
+      value.marginRequiredUsdc,
+      asset: 'USDC',
+      unit: 'margin',
+    ),
+    availableMargin: DecimalValue(
+      value.availableMarginUsdc,
+      asset: 'USDC',
+      unit: 'margin',
+    ),
+    maximumQuantity: DecimalValue(value.maximumQuantity, unit: 'quantity'),
+    estimatedFee: DecimalValue(
+      value.estimatedFeeUsdc,
+      asset: 'USDC',
+      unit: 'fee',
+    ),
+    slippagePercent: DecimalValue(value.slippagePercent, unit: 'percent'),
+    liquidationPrice: value.liquidationPrice == null
+        ? null
+        : DecimalValue(value.liquidationPrice!, asset: 'USDC', unit: 'price'),
+    liquidationPriceUnavailableReason: value.liquidationPriceUnavailableReason,
+  );
 
   @override
   Future<ResourceResult<TradingOrder>> create(
@@ -66,8 +182,18 @@ final class OrdersRepositoryImpl implements OrdersRepository {
   @override
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   }) async {
-    final page = await _service.listOrders(cursor: cursor);
+    final page = await _service.listOrders(
+      cursor: cursor,
+      symbol: symbol,
+      productId: productId,
+      statusGroup: statusGroup,
+      kind: kind == MarketProductKind.perp ? api.ProductKind.perp : null,
+    );
     return DomainPage(
       items: page.items.map(_result).toList(),
       nextCursor: page.nextCursor,
@@ -118,7 +244,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
               ..marginMode = _margin(intent.marginMode)
               ..reduceOnly = intent.reduceOnly
               ..slippagePercent = intent.slippage?.value;
-            _tpSl(builder.tpSl, intent.tpSl);
+            if (intent.tpSl != null) {
+              throw ArgumentError('Use openingProtection for HIP3 orders');
+            }
+            builder.protection = _openingProtection(intent.openingProtection)
+                ?.toBuilder();
           });
     return api.OrderPreviewRequest(
       (builder) => builder.oneOf = OneOfDynamic(
@@ -165,7 +295,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
               ..reduceOnly = intent.reduceOnly
               ..slippagePercent = intent.slippage?.value
               ..previewId = previewId;
-            _tpSl(builder.tpSl, intent.tpSl);
+            if (intent.tpSl != null) {
+              throw ArgumentError('Use openingProtection for HIP3 orders');
+            }
+            builder.protection = _openingProtection(intent.openingProtection)
+                ?.toBuilder();
           });
     return api.CreateOrderRequest(
       (builder) => builder.oneOf = OneOfDynamic(
@@ -183,6 +317,28 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       ..takeProfitPrice = value.takeProfit?.value
       ..stopLossPrice = value.stopLoss?.value
       ..stopLimitPrice = value.stopLimit?.value;
+  }
+
+  api.Hip3OrderProtectionSpec? _openingProtection(
+    Hip3OpeningProtection? value,
+  ) {
+    if (value == null) return null;
+    api.Hip3TriggerSpec? leg(Hip3OpeningProtectionLeg? value) => value == null
+        ? null
+        : api.Hip3TriggerSpec(
+            (b) => b
+              ..triggerPrice = value.triggerPrice.value
+              ..triggerReference = api.Hip3TriggerSpecTriggerReferenceEnum.mark
+              ..executionType = value.limitPrice == null
+                  ? api.Hip3TriggerSpecExecutionTypeEnum.market
+                  : api.Hip3TriggerSpecExecutionTypeEnum.limit
+              ..limitPrice = value.limitPrice?.value,
+          );
+    return api.Hip3OrderProtectionSpec(
+      (b) => b
+        ..takeProfit = leg(value.takeProfit)?.toBuilder()
+        ..stopLoss = leg(value.stopLoss)?.toBuilder(),
+    );
   }
 
   ResourceResult<TradingOrder> _result(api.Order value) {
@@ -213,6 +369,26 @@ final class OrdersRepositoryImpl implements OrdersRepository {
 }
 
 TradingOrder mapOrder(api.Order value) => TradingOrder(
+  productId: value.productId,
+  conditional: value.conditional == null
+      ? null
+      : ConditionalOrder(
+          role: value.conditional!.role.name,
+          triggerPrice: DecimalValue(
+            value.conditional!.triggerPrice,
+            asset: 'USDC',
+            unit: 'price',
+          ),
+          triggerStatus: value.conditional!.triggerStatus.name,
+          executionType: value.conditional!.executionType.name,
+          sizeMode: value.conditional!.sizeMode.name,
+          quantity: value.conditional!.quantity,
+          triggerReference: value.conditional!.triggerReference.name,
+          activationStatus:
+              value.conditional!.activationStatus?.name ?? 'unknown',
+          warningCode: value.conditional!.warningCode?.name,
+          parentOrderId: value.conditional!.parentOrderId,
+        ),
   orderId: value.orderId,
   clientOrderId: value.clientOrderId,
   symbol: value.symbol,
@@ -230,18 +406,70 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
       ? TradingOrderType.market
       : TradingOrderType.limit,
   status: _status(value.status),
-  quantity: _orderValue(value.quantity, 'quantity'),
-  filledQuantity: _orderValue(value.filledQuantity, 'quantity'),
-  limitPrice: _orderValue(value.limitPrice, 'price'),
-  averageFillPrice: _orderValue(value.averageFillPrice, 'price'),
-  orderValue: _orderValue(value.orderValue, 'notional'),
-  fee: _orderValue(value.fee, 'fee'),
+  quantity: _orderValue(value.quantity, 'quantity', value),
+  filledQuantity: _orderValue(value.filledQuantity, 'quantity', value),
+  limitPrice: _orderValue(value.limitPrice, 'price', value),
+  averageFillPrice: _orderValue(value.averageFillPrice, 'price', value),
+  orderValue: _orderValue(value.orderValue, 'notional', value),
+  fee: _orderValue(value.fee, 'fee', value),
   positionId: value.positionId,
   txHash: value.txHash,
   failureReason: value.failureReason,
   createdAt: value.createdAt.toUtc(),
   updatedAt: value.updatedAt?.toUtc(),
+  realizedPnl: value.realizedPnl == null
+      ? null
+      : DecimalValue(
+          value.realizedPnl!,
+          asset: _knownAsset(value.settlementAsset),
+          unit: 'pnl',
+        ),
+  settlementAsset: _knownAsset(value.settlementAsset),
+  providerObservedAt: value.providerObservedAt?.toUtc(),
+  fills: value.fills == null
+      ? null
+      : List.unmodifiable(
+          value.fills!.map(
+            (fill) => TradingOrderFill(
+              fillId: fill.fillId,
+              providerTradeId: fill.providerTradeId,
+              side: switch (fill.side?.name) {
+                'buy' => FillSide.buy,
+                'sell' => FillSide.sell,
+                _ => null,
+              },
+              positionEffect: fill.positionEffect,
+              closedPnl: fill.closedPnl == null
+                  ? null
+                  : DecimalValue(
+                      fill.closedPnl!,
+                      asset: _knownAsset(fill.pnlAsset),
+                      unit: 'pnl',
+                    ),
+              price: DecimalValue(
+                fill.price,
+                asset: _knownAsset(value.settlementAsset),
+                unit: 'price',
+              ),
+              quantity: DecimalValue(
+                fill.quantity,
+                asset: value.symbol,
+                unit: 'quantity',
+              ),
+              fee: DecimalValue(
+                fill.fee,
+                asset: fill.feeAsset.trim().isEmpty ? null : fill.feeAsset,
+                unit: 'fee',
+              ),
+              providerHash: fill.providerHash,
+              executedAt: fill.executedAt.toUtc(),
+            ),
+          ),
+        ),
 );
+
+String? _knownAsset(String? asset) =>
+    asset == null || asset.trim().isEmpty ? null : asset;
 
 TradingOrderStatus _status(api.OrderStatus value) => switch (value) {
   api.OrderStatus.pendingSignature => TradingOrderStatus.pendingSignature,
@@ -256,5 +484,15 @@ TradingOrderStatus _status(api.OrderStatus value) => switch (value) {
   _ => TradingOrderStatus.unknown,
 };
 
-DecimalValue? _orderValue(String? value, String unit) =>
-    value == null ? null : DecimalValue(value, asset: 'USDC', unit: unit);
+DecimalValue? _orderValue(String? value, String unit, api.Order order) {
+  if (value == null) return null;
+  // Preserve bStocks mapping; HIP3 units must be supplied, never assumed.
+  final asset = order.kind == api.ProductKind.perp
+      ? switch (unit) {
+          'quantity' => order.symbol,
+          'fee' => null, // No aggregate fee currency in the contract.
+          _ => _knownAsset(order.settlementAsset),
+        }
+      : 'USDC';
+  return DecimalValue(value, asset: asset, unit: unit);
+}

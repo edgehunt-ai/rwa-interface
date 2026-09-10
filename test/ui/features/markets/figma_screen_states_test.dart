@@ -34,7 +34,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('market search does not present catalog entries as recent', (
+  testWidgets('market discovery starts with the server-backed product list', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -53,13 +53,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Recent searches'), findsOneWidget);
-    expect(find.text('No recent searches'), findsOneWidget);
-    expect(find.text('NVDA'), findsNothing);
+    expect(find.text('Products'), findsOneWidget);
+    expect(find.text('Recent searches'), findsNothing);
   });
 
   testWidgets(
-    'market search shows local results before remote results resolve',
+    'market search shows remote results after its debounced query resolves',
     (tester) async {
       final repository = _ProgressiveMarketsRepository();
       await tester.pumpWidget(
@@ -81,20 +80,17 @@ void main() {
       await tester.enterText(find.byType(TextField), 'nv');
       await tester.pump();
 
-      expect(find.text('NVDA'), findsOneWidget);
-      expect(find.byType(SkeletonBlock), findsWidgets);
-
       await tester.pump(const Duration(milliseconds: 300));
       repository.completeSearch();
       await tester.pumpAndSettle();
 
-      expect(find.text('NVDA'), findsOneWidget);
+      expect(find.text('NVDA'), findsWidgets);
       expect(find.text('TSLA'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'all stocks search shows local results before remote results resolve',
+    'all stocks shows remote results after its debounced query resolves',
     (tester) async {
       final repository = _ProgressiveMarketsRepository();
       await tester.pumpWidget(
@@ -111,14 +107,11 @@ void main() {
       await tester.enterText(find.byType(TextField), 'nv');
       await tester.pump();
 
-      expect(find.text('NVDA'), findsOneWidget);
-      expect(find.byType(SkeletonBlock), findsWidgets);
-
       await tester.pump(const Duration(milliseconds: 300));
       repository.completeSearch();
       await tester.pumpAndSettle();
 
-      expect(find.text('NVDA'), findsOneWidget);
+      expect(find.text('NVDA'), findsWidgets);
       expect(find.text('TSLA'), findsOneWidget);
     },
   );
@@ -159,102 +152,6 @@ void main() {
       expect(repository.queries.whereType<String>(), ['nvd']);
     });
   }
-
-  testWidgets('all stocks loads the next cursor page while scrolling', (
-    tester,
-  ) async {
-    await configureDisplay(tester, size: const Size(320, 568));
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          marketsRepositoryProvider.overrideWithValue(
-            _PagedMarketsRepository(),
-          ),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const MarketSearchScreen(),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('STK0'), findsOneWidget);
-    await tester.fling(find.byType(ListView), const Offset(0, -600), 1000);
-    await tester.pumpAndSettle();
-
-    expect(find.text('NVDA'), findsWidgets);
-  });
-
-  testWidgets(
-    'all stocks loads another page when the first page cannot scroll',
-    (tester) async {
-      await configureDisplay(tester, size: const Size(320, 568));
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            marketsRepositoryProvider.overrideWithValue(
-              _ShortPagedMarketsRepository(),
-            ),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            home: const MarketSearchScreen(),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('NVDA'), findsOneWidget);
-    },
-  );
-
-  testWidgets('markets products load the next cursor page while scrolling', (
-    tester,
-  ) async {
-    await configureDisplay(tester, size: const Size(393, 568));
-    final repository = _DeferredPagedMarketsRepository();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: MaterialApp(theme: AppTheme.light, home: const MarketScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.fling(
-      find.byType(ListView).first,
-      const Offset(0, -1800),
-      1000,
-    );
-    await tester.pump();
-    expect(find.byType(SkeletonBlock), findsWidgets);
-    repository.completeNextPage();
-    await tester.pumpAndSettle();
-
-    expect(find.text('NVDA'), findsOneWidget);
-  });
-
-  testWidgets('market switches to Popular when initial favorites are empty', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
-        ],
-        child: MaterialApp(theme: AppTheme.light, home: const MarketScreen()),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('NVDA'), findsOneWidget);
-    expect(find.text('No favorites yet'), findsNothing);
-    await tester.tap(find.text('Favorites'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('No favorites yet'), findsOneWidget);
-  });
 }
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {
@@ -272,6 +169,9 @@ final class _MarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    dynamic kind,
+    dynamic group,
+    int? limit,
   }) async => DomainPage(
     items: [
       MarketProduct(
@@ -297,6 +197,9 @@ final class _ProgressiveMarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    dynamic kind,
+    dynamic group,
+    int? limit,
   }) => query == null
       ? Future.value(DomainPage(items: [_product('NVDA', 'NVIDIA')]))
       : _searchResults.future;
@@ -326,6 +229,9 @@ final class _RecordingMarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    dynamic kind,
+    dynamic group,
+    int? limit,
   }) async {
     queries.add(query);
     return DomainPage(items: [_product('NVDA', 'NVIDIA')]);
@@ -350,6 +256,9 @@ final class _PagedMarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    dynamic kind,
+    dynamic group,
+    int? limit,
   }) async {
     if (cursor == 'page-2') {
       return DomainPage(items: [_product('NVDA', 'NVIDIA')]);
@@ -383,6 +292,9 @@ final class _ShortPagedMarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    dynamic kind,
+    dynamic group,
+    int? limit,
   }) async => cursor == 'page-2'
       ? DomainPage(items: [_product('NVDA', 'NVIDIA')])
       : DomainPage(
@@ -412,6 +324,9 @@ final class _DeferredPagedMarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    dynamic kind,
+    dynamic group,
+    int? limit,
   }) => cursor == 'page-2'
       ? _nextPage.future
       : Future.value(

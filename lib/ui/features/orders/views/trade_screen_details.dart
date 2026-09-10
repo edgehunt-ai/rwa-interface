@@ -66,9 +66,27 @@ class _Details extends ConsumerWidget {
             ],
           ),
         ),
-        if (activeTab == 'Open')
+        if (activeTab == 'Open' && kind == MarketProductKind.perp)
+          Hip3OpenOrdersPanel(
+            key: ValueKey('hip3-open-$symbol'),
+            symbol: symbol,
+            productId: ref
+                .watch(
+                  positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+                )
+                .value
+                ?.items
+                .where((p) => p.symbol == symbol && p.kind == kind)
+                .firstOrNull
+                ?.productId,
+          ),
+        if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
-            orders: ref.watch(ordersProvider(null)),
+            orders: ref.watch(
+              kind == MarketProductKind.perp
+                  ? hip3OrdersProvider(null)
+                  : ordersProvider(null),
+            ),
             kind: kind,
             symbol: symbol,
           ),
@@ -104,7 +122,11 @@ class _OpenOrdersTab extends ConsumerWidget {
       state: DesignState.failure,
       title: 'Open orders unavailable',
       message: 'Try again to refresh open orders.',
-      onRetry: () => ref.refresh(ordersProvider(null).future),
+      onRetry: () => ref.refresh(
+        kind == MarketProductKind.perp
+            ? hip3OrdersProvider(null).future
+            : ordersProvider(null).future,
+      ),
     ),
     data: (page) {
       final openOrders = page.items
@@ -127,8 +149,25 @@ class _OpenOrdersTab extends ConsumerWidget {
           for (final order in openOrders)
             _OpenOrderCard(
               order: order,
-              onCancel: () =>
-                  ref.read(orderCommandProvider.notifier).cancel(order),
+              onCancel: () async {
+                if (order.kind != MarketProductKind.perp) {
+                  await ref.read(orderCommandProvider.notifier).cancel(order);
+                  return;
+                }
+                String message;
+                try {
+                  await ref.read(orderCommandProvider.notifier).cancel(order);
+                  message = 'Cancellation submitted. Refresh to confirm the final order status.';
+                } on Hip3ExecutionPending {
+                  message = 'Cancellation is still being confirmed. Refresh this order before retrying.';
+                } on Object {
+                  message = 'Unable to complete cancellation. Refresh the order and retry.';
+                }
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(message)));
+                }
+              },
             ),
         ],
       );
@@ -274,7 +313,19 @@ class _PositionCard extends StatelessWidget {
             position.symbol,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
-          if (pnl != null)
+          if (kind == MarketProductKind.perp)
+            Hip3PositionMetrics(
+              position: position,
+              onEditLeverage: position.productId == null
+                  ? null
+                  : () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) =>
+                          Hip3PositionLeverageSheet(position: position),
+                    ),
+            ),
+          if (kind != MarketProductKind.perp && pnl != null)
             _DetailRow('Unrealized PnL', TokenAmountFormatter.formatUsd(pnl)),
           _DetailRow(
             'Value',
@@ -287,12 +338,12 @@ class _PositionCard extends StatelessWidget {
               symbol: position.symbol,
             ),
           ),
-          if (position.entryPrice != null)
+          if (kind != MarketProductKind.perp && position.entryPrice != null)
             _DetailRow(
               'Entry Price',
               TokenAmountFormatter.formatUsd(position.entryPrice!),
             ),
-          if (position.markPrice != null)
+          if (kind != MarketProductKind.perp && position.markPrice != null)
             _DetailRow(
               'Market Price',
               TokenAmountFormatter.formatUsd(position.markPrice!),
@@ -307,10 +358,8 @@ class _PositionCard extends StatelessWidget {
                       : () => showModalBottomSheet<void>(
                           context: context,
                           isScrollControlled: true,
-                          builder: (_) => const Hip3OrderPanel(
-                            initialSide: TradingSide.short,
-                            initialReduceOnly: true,
-                          ),
+                          builder: (_) =>
+                              Hip3ClosePositionSheet(position: position),
                         ),
                   child: Text(
                     kind == MarketProductKind.bstock ? 'Transfer' : 'Close',
@@ -349,11 +398,14 @@ class _DetailsCard extends ConsumerWidget {
     final snapshotState = ref.watch(
       marketSnapshotProvider(MarketProductRef(symbol: symbol, kind: kind)),
     );
-    final snapshot = snapshotState.value;
+    final snapshot = snapshotState.hasError ? null : snapshotState.value;
     final loading = snapshotState.isLoading;
-    final reference = snapshot?.price == null
+    final referencePrice = kind == MarketProductKind.perp
+        ? snapshot?.referencePrice
+        : snapshot?.price;
+    final reference = referencePrice == null
         ? '—'
-        : TokenAmountFormatter.formatUsd(snapshot!.price);
+        : TokenAmountFormatter.formatUsd(referencePrice);
     final bid = snapshot?.bids.firstOrNull?.price == null
         ? '—'
         : TokenAmountFormatter.formatUsd(snapshot!.bids.first.price);
@@ -371,7 +423,7 @@ class _DetailsCard extends ConsumerWidget {
               const SizedBox(height: 12),
               _MarketDetailRow(
                 kind == MarketProductKind.perp
-                    ? l10n.tradeReferencePrice
+                    ? snapshot?.referenceLabel ?? l10n.tradeReferencePrice
                     : l10n.tradeUsStockReference,
                 reference,
                 loading: loading,
@@ -381,10 +433,22 @@ class _DetailsCard extends ConsumerWidget {
                 kind == MarketProductKind.perp
                     ? l10n.tradeBasis
                     : l10n.tradePremium,
-                '—',
+                snapshot?.basisPercent == null
+                    ? '—'
+                    : TokenAmountFormatter.formatPercent(
+                        snapshot!.basisPercent!,
+                      ),
                 loading: loading,
               ),
-              _MarketDetailRow(l10n.tradeSpread, '—', loading: loading),
+              _MarketDetailRow(
+                l10n.tradeSpread,
+                snapshot?.spreadPercent == null
+                    ? '—'
+                    : TokenAmountFormatter.formatPercent(
+                        snapshot!.spreadPercent!,
+                      ),
+                loading: loading,
+              ),
               _MarketDetailRow(
                 l10n.tradeBestBidAsk,
                 '$bid / $ask',

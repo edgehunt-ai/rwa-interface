@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwa_interface/domain/models/market_list_query.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
@@ -13,6 +14,7 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
@@ -40,6 +42,21 @@ void expectNodeVisible({
 }
 
 void main() {
+  testWidgets('Switching to HIP3 never retains the fixed stock reference', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('US stock reference price'));
+    await tester.pump();
+    expect(find.text(r'US Stock $175.22'), findsOneWidget);
+
+    await tester.tap(find.text('HIP-3 Perp'));
+    await tester.pumpAndSettle();
+    expect(find.text(r'US Stock $175.22'), findsNothing);
+    expect(find.text(r'US $175.22'), findsNothing);
+  });
+
   testWidgets('Trade switches chart states and exposes market hours', (
     tester,
   ) async {
@@ -403,7 +420,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Long'));
     await tester.pumpAndSettle();
 
-    expect(find.text('10×'), findsWidgets);
+    expect(find.text('Long NVDA'), findsWidgets);
     expect(find.byKey(const Key('hip3-tp-sl-toggle')), findsOneWidget);
   });
 
@@ -490,9 +507,9 @@ void main() {
 
     await tester.enterText(find.byType(TextField).at(0), '200');
     await tester.enterText(find.byType(TextField).at(1), '150');
-    expect(find.text('Drag to set'), findsNWidgets(2));
-    expect(find.text('Quantity'), findsOneWidget);
-    expect(find.text('NVDA'), findsWidgets);
+    expect(find.text('Drag to set'), findsNothing);
+    expect(find.text('Protection size'), findsOneWidget);
+    expect(find.text('Entire position (default)'), findsOneWidget);
     await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pump();
@@ -524,7 +541,7 @@ void main() {
     await tester.ensureVisible(editTpSl);
     await tester.tap(editTpSl);
     await tester.pumpAndSettle();
-    expect(find.text('Drag to set'), findsNWidgets(2));
+    expect(find.text('Protection size'), findsOneWidget);
   });
 
   testWidgets(
@@ -655,6 +672,9 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    MarketProductKind? kind,
+    MarketListGroup? group,
+    int? limit,
   }) async => DomainPage(
     items: [
       MarketProduct(
@@ -730,8 +750,13 @@ final class _OrderOutcomeRepository implements OrdersRepository {
   }) => throw UnimplementedError();
 
   @override
-  Future<DomainPage<ResourceResult<TradingOrder>>> list({String? cursor}) =>
-      throw UnimplementedError();
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) => throw UnimplementedError();
 
   @override
   Future<ResourceResult<TradingOrder>> get(String orderId) =>
@@ -751,8 +776,11 @@ final class _PositionsRepository implements PositionsRepository {
   Future<Position> updateTpSl(
     Position position, {
     String? takeProfit,
+    String? takeLimit,
     String? stopLoss,
     String? stopLimit,
+    String? quantity,
+    ProtectionClearScope? clearScope,
     required String idempotencyKey,
   }) async {
     tpSlUpdates.add((position.positionId, takeProfit, stopLoss));
@@ -777,6 +805,7 @@ final class _PositionsRepository implements PositionsRepository {
   @override
   Future<Position> clearTpSl(
     String positionId, {
+    ProtectionClearScope scope = ProtectionClearScope.both,
     required String idempotencyKey,
   }) => throw UnimplementedError();
 
@@ -792,6 +821,9 @@ final class _PositionsRepository implements PositionsRepository {
     String positionId, {
     String? quantity,
     String? percent,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    Position? expectedPosition,
     required String idempotencyKey,
   }) => throw UnimplementedError();
 }
@@ -810,8 +842,13 @@ final class _OpenOrderRepository implements OrdersRepository {
   );
 
   @override
-  Future<DomainPage<ResourceResult<TradingOrder>>> list({String? cursor}) =>
-      Future.value(DomainPage(items: [ResourceResult(resource: _order)]));
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) => Future.value(DomainPage(items: [ResourceResult(resource: _order)]));
 
   @override
   Future<ResourceResult<TradingOrder>> cancel(

@@ -526,8 +526,13 @@ final class _DelayedOrdersRepository implements OrdersRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
-  Future<DomainPage<ResourceResult<TradingOrder>>> list({String? cursor}) =>
-      throw UnimplementedError();
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) => throw UnimplementedError();
 
   @override
   Future<ResourceResult<TradingOrder>> get(String orderId) =>

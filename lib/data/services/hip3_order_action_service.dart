@@ -13,9 +13,16 @@ abstract interface class Hip3OrderActionService {
   });
 
   Future<api.Hip3Action> getAction(String actionId);
+
   Future<api.Hip3ActionPage> listActions({String? cursor});
+
   Future<api.Hip3Action> cancelAction(
     String actionId, {
+    required String idempotencyKey,
+  });
+
+  Future<api.Hip3Action> createCancelOrderAction({
+    required String orderId,
     required String idempotencyKey,
   });
 
@@ -73,9 +80,11 @@ final class GeneratedHip3OrderActionService implements Hip3OrderActionService {
   @override
   Future<api.Hip3Action> getAction(String actionId) =>
       _body(() => _api.getHip3Action(actionId: actionId));
+
   @override
   Future<api.Hip3ActionPage> listActions({String? cursor}) =>
       _body(() => _api.listHip3Actions(cursor: cursor));
+
   @override
   Future<api.Hip3Action> cancelAction(
     String actionId, {
@@ -84,6 +93,35 @@ final class GeneratedHip3OrderActionService implements Hip3OrderActionService {
     () => _api.cancelHip3Action(
       actionId: actionId,
       idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  @override
+  Future<api.Hip3Action> createCancelOrderAction({
+    required String orderId,
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.createHip3Action(
+      idempotencyKey: idempotencyKey,
+      hip3ActionCreateRequest: api.Hip3ActionCreateRequest(
+        (b) => b.oneOf = OneOfDynamic(
+          typeIndex: 0,
+          types: const [
+            api.Hip3CancelOrderActionRequest,
+            api.Hip3ClearTpSlActionRequest,
+            api.Hip3CloseActionRequest,
+            api.Hip3PlaceOrderActionRequest,
+            api.Hip3SetLeverageActionRequest,
+            api.Hip3SetTpSlActionRequest,
+          ],
+          value: api.Hip3CancelOrderActionRequest(
+            (r) => r
+              ..operation =
+                  api.Hip3CancelOrderActionRequestOperationEnum.cancelOrder
+              ..orderId = orderId,
+          ),
+        ),
+      ),
     ),
   );
 

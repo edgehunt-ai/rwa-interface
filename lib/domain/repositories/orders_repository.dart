@@ -1,3 +1,5 @@
+import 'package:rwa_interface/domain/models/market_product.dart';
+
 import '../models/domain_page.dart';
 import '../models/order.dart';
 import '../models/order_intent.dart';
@@ -14,7 +16,13 @@ abstract interface class OrdersRepository {
     required String idempotencyKey,
     String? previewId,
   });
-  Future<DomainPage<ResourceResult<TradingOrder>>> list({String? cursor});
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  });
   Future<ResourceResult<TradingOrder>> get(String orderId);
   Future<ResourceResult<TradingOrder>> cancel(
     String orderId, {

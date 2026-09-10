@@ -98,6 +98,384 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @hip3ConfirmSetTp.
+  ///
+  /// In en, this message translates to:
+  /// **'Set take profit'**
+  String get hip3ConfirmSetTp;
+
+  /// No description provided for @hip3ConfirmSetSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Set stop loss'**
+  String get hip3ConfirmSetSl;
+
+  /// No description provided for @hip3ConfirmCancelTp.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel take profit'**
+  String get hip3ConfirmCancelTp;
+
+  /// No description provided for @hip3ConfirmCancelSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel stop loss'**
+  String get hip3ConfirmCancelSl;
+
+  /// No description provided for @hip3ConfirmClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close position'**
+  String get hip3ConfirmClose;
+
+  /// No description provided for @hip3ConfirmLeverageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust leverage'**
+  String get hip3ConfirmLeverageTitle;
+
+  /// No description provided for @hip3ConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm HIP3 action'**
+  String get hip3ConfirmTitle;
+
+  /// No description provided for @hip3ConfirmReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review this step before signing. Earlier completed steps remain effective if you decline.'**
+  String get hip3ConfirmReview;
+
+  /// No description provided for @hip3ConfirmDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline signature'**
+  String get hip3ConfirmDecline;
+
+  /// No description provided for @hip3ConfirmSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and sign'**
+  String get hip3ConfirmSign;
+
+  /// No description provided for @hip3ConfirmLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage'**
+  String get hip3ConfirmLeverage;
+
+  /// No description provided for @hip3ConfirmMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin mode'**
+  String get hip3ConfirmMargin;
+
+  /// No description provided for @hip3ConfirmScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection to cancel'**
+  String get hip3ConfirmScope;
+
+  /// No description provided for @hip3ConfirmCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection coverage'**
+  String get hip3ConfirmCoverage;
+
+  /// No description provided for @hip3ConfirmQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Protected quantity'**
+  String get hip3ConfirmQuantity;
+
+  /// No description provided for @hip3ConfirmTpTrigger.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit trigger price'**
+  String get hip3ConfirmTpTrigger;
+
+  /// No description provided for @hip3ConfirmTpReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit price reference'**
+  String get hip3ConfirmTpReference;
+
+  /// No description provided for @hip3ConfirmTpExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit execution'**
+  String get hip3ConfirmTpExecution;
+
+  /// No description provided for @hip3ConfirmTpLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit limit price'**
+  String get hip3ConfirmTpLimit;
+
+  /// No description provided for @hip3ConfirmSlTrigger.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss trigger price'**
+  String get hip3ConfirmSlTrigger;
+
+  /// No description provided for @hip3ConfirmSlReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss price reference'**
+  String get hip3ConfirmSlReference;
+
+  /// No description provided for @hip3ConfirmSlExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss execution'**
+  String get hip3ConfirmSlExecution;
+
+  /// No description provided for @hip3ConfirmSlLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss limit price'**
+  String get hip3ConfirmSlLimit;
+
+  /// No description provided for @hip3ConfirmDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing order direction'**
+  String get hip3ConfirmDirection;
+
+  /// No description provided for @hip3ConfirmCloseQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Close quantity'**
+  String get hip3ConfirmCloseQuantity;
+
+  /// No description provided for @hip3ConfirmRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining quantity'**
+  String get hip3ConfirmRemaining;
+
+  /// No description provided for @hip3ConfirmEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated execution price'**
+  String get hip3ConfirmEstimate;
+
+  /// No description provided for @hip3ConfirmFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated fee (USDC)'**
+  String get hip3ConfirmFee;
+
+  /// No description provided for @hip3ConfirmPnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated realized PnL (USDC)'**
+  String get hip3ConfirmPnl;
+
+  /// No description provided for @hip3ConfirmSlippage.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum slippage (%)'**
+  String get hip3ConfirmSlippage;
+
+  /// No description provided for @hip3ConfirmEntire.
+  ///
+  /// In en, this message translates to:
+  /// **'Entire position at trigger time'**
+  String get hip3ConfirmEntire;
+
+  /// No description provided for @hip3ConfirmFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed quantity'**
+  String get hip3ConfirmFixed;
+
+  /// No description provided for @hip3ConfirmPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Percentage of position'**
+  String get hip3ConfirmPercent;
+
+  /// No description provided for @hip3ConfirmBuyClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy to close short position'**
+  String get hip3ConfirmBuyClose;
+
+  /// No description provided for @hip3ConfirmSellClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell to close long position'**
+  String get hip3ConfirmSellClose;
+
+  /// No description provided for @hip3ConfirmMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get hip3ConfirmMarket;
+
+  /// No description provided for @hip3ConfirmLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit'**
+  String get hip3ConfirmLimit;
+
+  /// No description provided for @hip3ConfirmMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark price'**
+  String get hip3ConfirmMark;
+
+  /// No description provided for @hip3ConfirmCross.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross'**
+  String get hip3ConfirmCross;
+
+  /// No description provided for @hip3ConfirmIsolated.
+  ///
+  /// In en, this message translates to:
+  /// **'Isolated'**
+  String get hip3ConfirmIsolated;
+
+  /// No description provided for @hip3ConfirmBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit and stop loss'**
+  String get hip3ConfirmBoth;
+
+  /// No description provided for @hip3ConfirmValidUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until {time} (local time)'**
+  String hip3ConfirmValidUntil(String time);
+
+  /// No description provided for @hip3PendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfinished HIP3 actions'**
+  String get hip3PendingTitle;
+
+  /// No description provided for @hip3PendingRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh actions'**
+  String get hip3PendingRefresh;
+
+  /// No description provided for @hip3PendingLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading unfinished actions…'**
+  String get hip3PendingLoading;
+
+  /// No description provided for @hip3PendingLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load actions. Refresh to try again.'**
+  String get hip3PendingLoadError;
+
+  /// No description provided for @hip3PendingEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No unfinished position actions on this page.'**
+  String get hip3PendingEmpty;
+
+  /// No description provided for @hip3PendingMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more actions'**
+  String get hip3PendingMore;
+
+  /// No description provided for @hip3PendingContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue action'**
+  String get hip3PendingContinue;
+
+  /// No description provided for @hip3PendingCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check progress'**
+  String get hip3PendingCheck;
+
+  /// No description provided for @hip3PendingBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking action…'**
+  String get hip3PendingBusy;
+
+  /// No description provided for @hip3PendingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs manual review. Do not create a replacement action. Contact support with the action ID.'**
+  String get hip3PendingReview;
+
+  /// No description provided for @hip3PendingSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your signature'**
+  String get hip3PendingSignature;
+
+  /// No description provided for @hip3PendingProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the exchange result'**
+  String get hip3PendingProcessing;
+
+  /// No description provided for @hip3PendingUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be resumed here.'**
+  String get hip3PendingUnavailable;
+
+  /// No description provided for @hip3PendingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not continue. Refresh and retry the same action.'**
+  String get hip3PendingError;
+
+  /// No description provided for @hip3PendingStillActive.
+  ///
+  /// In en, this message translates to:
+  /// **'The action is still unfinished. Continue this action instead of creating another.'**
+  String get hip3PendingStillActive;
+
+  /// No description provided for @hip3PendingComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Action confirmed'**
+  String get hip3PendingComplete;
+
+  /// No description provided for @hip3PendingSetTpsl.
+  ///
+  /// In en, this message translates to:
+  /// **'Set or update TP/SL'**
+  String get hip3PendingSetTpsl;
+
+  /// No description provided for @hip3PendingClearTpsl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel TP/SL'**
+  String get hip3PendingClearTpsl;
+
+  /// No description provided for @hip3PendingLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust leverage'**
+  String get hip3PendingLeverage;
+
+  /// No description provided for @hip3PendingClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close position'**
+  String get hip3PendingClose;
+
+  /// No description provided for @hip3PendingEffects.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier steps have already taken effect.'**
+  String get hip3PendingEffects;
+
   /// Application title
   ///
   /// In en, this message translates to:
@@ -368,6 +746,108 @@ abstract class AppLocalizations {
   /// **'Markets unavailable'**
   String get marketsUnavailable;
 
+  /// No description provided for @hip3ChartLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading price history…'**
+  String get hip3ChartLoading;
+
+  /// No description provided for @hip3ChartInspect.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch or drag the chart to inspect a candle.'**
+  String get hip3ChartInspect;
+
+  /// No description provided for @hip3ChartVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get hip3ChartVolume;
+
+  /// No description provided for @hip3ChartUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'OHLC in USDC · Volume in {symbol}'**
+  String hip3ChartUnits(String symbol);
+
+  /// No description provided for @hip3ChartHistoryLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier candles'**
+  String get hip3ChartHistoryLoad;
+
+  /// No description provided for @hip3ChartHistoryLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading earlier candles…'**
+  String get hip3ChartHistoryLoading;
+
+  /// No description provided for @hip3ChartHistoryRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry earlier candles'**
+  String get hip3ChartHistoryRetry;
+
+  /// No description provided for @hip3ChartHistoryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier candles could not load. Your chart is unchanged.'**
+  String get hip3ChartHistoryError;
+
+  /// No description provided for @hip3ChartHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No candles in that earlier window. You can continue further back.'**
+  String get hip3ChartHistoryEmpty;
+
+  /// No description provided for @hip3ChartHistoryEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Reached the available history limit.'**
+  String get hip3ChartHistoryEnd;
+
+  /// No description provided for @hip3ChartError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load price history.'**
+  String get hip3ChartError;
+
+  /// No description provided for @hip3ChartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No trades in this period.'**
+  String get hip3ChartEmpty;
+
+  /// No description provided for @hip3ChartRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh chart'**
+  String get hip3ChartRetry;
+
+  /// No description provided for @hip3ChartStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Price history may be out of date. Refresh to update.'**
+  String get hip3ChartStale;
+
+  /// No description provided for @hip3ChartLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Line chart'**
+  String get hip3ChartLine;
+
+  /// No description provided for @hip3ChartCandles.
+  ///
+  /// In en, this message translates to:
+  /// **'Candlestick chart'**
+  String get hip3ChartCandles;
+
+  /// No description provided for @hip3ChartReferenceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference price history is not available.'**
+  String get hip3ChartReferenceUnavailable;
+
   /// No description provided for @noProductsYet.
   ///
   /// In en, this message translates to:
@@ -428,6 +908,228 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get price;
 
+  /// No description provided for @hip3OrderDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 order details'**
+  String get hip3OrderDetailTitle;
+
+  /// No description provided for @hip3OrderHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 order records'**
+  String get hip3OrderHistoryTitle;
+
+  /// No description provided for @hip3OrderHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No HIP3 orders were returned.'**
+  String get hip3OrderHistoryEmpty;
+
+  /// No description provided for @hip3OrderLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more orders'**
+  String get hip3OrderLoadMore;
+
+  /// No description provided for @hip3OrderLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading order details'**
+  String get hip3OrderLoading;
+
+  /// No description provided for @hip3OrderLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load order records. Retry to fetch the latest data.'**
+  String get hip3OrderLoadError;
+
+  /// No description provided for @hip3OrderRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get hip3OrderRetry;
+
+  /// No description provided for @hip3OrderRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh orders'**
+  String get hip3OrderRefresh;
+
+  /// No description provided for @hip3OrderNotHip3.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 order details are unavailable for this order.'**
+  String get hip3OrderNotHip3;
+
+  /// No description provided for @hip3OrderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get hip3OrderUnavailable;
+
+  /// No description provided for @hip3OrderUnitUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'unit unavailable'**
+  String get hip3OrderUnitUnavailable;
+
+  /// No description provided for @hip3OrderSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Order totals'**
+  String get hip3OrderSummary;
+
+  /// No description provided for @hip3OrderDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Order direction'**
+  String get hip3OrderDirection;
+
+  /// No description provided for @hip3OrderSide.
+  ///
+  /// In en, this message translates to:
+  /// **'{side, select, buy{Buy} sell{Sell} long{Long} short{Short} other{Unavailable}}'**
+  String hip3OrderSide(String side);
+
+  /// No description provided for @hip3OrderFilledQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Total filled quantity'**
+  String get hip3OrderFilledQuantity;
+
+  /// No description provided for @hip3OrderAveragePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Average fill price'**
+  String get hip3OrderAveragePrice;
+
+  /// No description provided for @hip3OrderTotalFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Total fee'**
+  String get hip3OrderTotalFee;
+
+  /// No description provided for @hip3OrderRealizedPnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Order realized PnL'**
+  String get hip3OrderRealizedPnl;
+
+  /// No description provided for @hip3OrderSummaryNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Totals are reported by the order API, not calculated from the records below.'**
+  String get hip3OrderSummaryNote;
+
+  /// No description provided for @hip3OrderFillsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Individual fills'**
+  String get hip3OrderFillsTitle;
+
+  /// No description provided for @hip3OrderFillsCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{This response contains 1 fill record} other{This response contains {count} fill records}} for this order. Earlier or missing records cannot be requested separately; completeness is not confirmed.'**
+  String hip3OrderFillsCoverage(int count);
+
+  /// No description provided for @hip3OrderReturnedRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned execution times'**
+  String get hip3OrderReturnedRange;
+
+  /// No description provided for @hip3OrderObservedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider observation time'**
+  String get hip3OrderObservedAt;
+
+  /// No description provided for @hip3OrderFillMissingFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy/sell describes each execution, not whether a position opened or closed. Fill PnL is the provider’s raw closed PnL; fees are shown separately, not deducted again. Missing facts or currencies remain unavailable.'**
+  String get hip3OrderFillMissingFields;
+
+  /// No description provided for @hip3OrderFillsOmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill details were not provided by the API. This does not mean the order has no executions.'**
+  String get hip3OrderFillsOmitted;
+
+  /// No description provided for @hip3OrderFillsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No individual fills were returned. This does not prove that no executions occurred.'**
+  String get hip3OrderFillsEmpty;
+
+  /// No description provided for @hip3OrderFillNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill {index}'**
+  String hip3OrderFillNumber(int index);
+
+  /// No description provided for @hip3OrderFillTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution time'**
+  String get hip3OrderFillTime;
+
+  /// No description provided for @hip3OrderFillDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill direction'**
+  String get hip3OrderFillDirection;
+
+  /// No description provided for @hip3OrderFillEffectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Position effect'**
+  String get hip3OrderFillEffectLabel;
+
+  /// No description provided for @hip3OrderFillEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'{effect, select, open_long{Open long} close_long{Close long} open_short{Open short} close_short{Close short} long_to_short{Long to short} short_to_long{Short to long} other{Unknown}}'**
+  String hip3OrderFillEffect(String effect);
+
+  /// No description provided for @hip3OrderFillQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill quantity'**
+  String get hip3OrderFillQuantity;
+
+  /// No description provided for @hip3OrderFillFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill fee'**
+  String get hip3OrderFillFee;
+
+  /// No description provided for @hip3OrderFillPnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill closed PnL'**
+  String get hip3OrderFillPnl;
+
+  /// No description provided for @hip3OrderFillId.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill ID'**
+  String get hip3OrderFillId;
+
+  /// No description provided for @hip3OrderProviderTradeId.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider trade ID'**
+  String get hip3OrderProviderTradeId;
+
+  /// No description provided for @hip3OrderProviderHash.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider transaction hash'**
+  String get hip3OrderProviderHash;
+
   /// No description provided for @add.
   ///
   /// In en, this message translates to:
@@ -439,6 +1141,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Take profit/stop loss'**
   String get takeProfitStopLoss;
+
+  /// No description provided for @hip3OrderTpSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Order TP/SL'**
+  String get hip3OrderTpSl;
+
+  /// No description provided for @hip3PositionTpSl.
+  ///
+  /// In en, this message translates to:
+  /// **'Position TP/SL'**
+  String get hip3PositionTpSl;
+
+  /// No description provided for @hip3PositionProtectionScope.
+  ///
+  /// In en, this message translates to:
+  /// **'This editor manages position TP/SL only. Opening-order TP/SL is separate; check its activation and quantity in Orders. Empty fields here do not mean all protection is absent.'**
+  String get hip3PositionProtectionScope;
 
   /// No description provided for @bstocksTpSlUnavailable.
   ///
@@ -1165,6 +1885,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'HIP-3 Perpetual Position'**
   String get tradePerpPositionType;
+
+  /// No description provided for @portfolioPartialData.
+  ///
+  /// In en, this message translates to:
+  /// **'Some assets could not be read or valued. Shown amounts are a subtotal.'**
+  String get portfolioPartialData;
+
+  /// No description provided for @portfolioStaleData.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing an older snapshot. Balances and positions may have changed.'**
+  String get portfolioStaleData;
+
+  /// No description provided for @portfolioUnverifiedData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data completeness is not confirmed. Refresh before relying on these amounts.'**
+  String get portfolioUnverifiedData;
+
+  /// No description provided for @portfolioLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more holdings'**
+  String get portfolioLoadMore;
+
+  /// No description provided for @portfolioRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh assets'**
+  String get portfolioRefresh;
+
+  /// No description provided for @portfolioHoldingsUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings could not be fully confirmed'**
+  String get portfolioHoldingsUnconfirmed;
+
+  /// No description provided for @portfolioMoreHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'More holdings are available on the next page.'**
+  String get portfolioMoreHoldings;
+
+  /// No description provided for @portfolioAllocationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset allocation is not available yet.'**
+  String get portfolioAllocationUnavailable;
+
+  /// No description provided for @portfolioUnifiedCollateral.
+  ///
+  /// In en, this message translates to:
+  /// **'Unified-account collateral is shared by spot and perpetuals and must not be counted twice. Position value is not additional equity.'**
+  String get portfolioUnifiedCollateral;
+
+  /// No description provided for @portfolioHistoryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio history is not available yet. No estimated trend is shown.'**
+  String get portfolioHistoryUnavailable;
+
+  /// No description provided for @portfolioLedgerNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'These are internal ledger balances, not additional on-chain assets. They are not added to portfolio value.'**
+  String get portfolioLedgerNotice;
 }
 
 class _AppLocalizationsDelegate

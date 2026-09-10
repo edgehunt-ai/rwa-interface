@@ -9,6 +9,8 @@ import 'package:rwa_interface/ui/features/markets/views/market_search_screen.dar
 import 'package:rwa_interface/ui/features/not_found/views/not_found_screen.dart';
 import 'package:rwa_interface/ui/features/portfolio/views/assets_screen.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_order_detail_screen.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_order_history_screen.dart';
 import 'package:rwa_interface/ui/features/account/views/settings_screen.dart';
 import 'package:rwa_interface/ui/features/activity/views/activity_screen.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
@@ -103,6 +105,17 @@ abstract final class AppRouter {
           name: AppRoutes.settingsName,
           path: AppRoutes.settingsPath,
           builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          name: AppRoutes.hip3OrderHistoryName,
+          path: AppRoutes.hip3OrderHistoryPath,
+          builder: (context, state) => const Hip3OrderHistoryScreen(),
+        ),
+        GoRoute(
+          name: AppRoutes.hip3OrderDetailName,
+          path: AppRoutes.hip3OrderDetailPath,
+          builder: (context, state) =>
+              Hip3OrderDetailScreen(orderId: state.pathParameters['orderId']!),
         ),
         GoRoute(
           name: AppRoutes.activityName,

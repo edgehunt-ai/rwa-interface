@@ -3,9 +3,113 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:rwa_interface/data/repositories/hip3_order_execution_repository_impl.dart';
 import 'package:rwa_interface/data/services/hip3_order_action_service.dart';
 import 'package:rwa_interface/domain/models/order.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
+  test('cancel uses an independently signed cancellation workflow', () async {
+    final service = _Service(
+      createdAction: _action(signable: true, operation: 'cancel_order'),
+      submittedActions: [
+        _action(status: 'succeeded', operation: 'cancel_order'),
+      ],
+    );
+    final signer = _Signer();
+    await Hip3OrderExecutionRepositoryImpl(
+      signer,
+      service,
+      now: () => DateTime.utc(2026, 9, 9),
+      delay: (_) async {},
+    ).cancelOrder('order-1', idempotencyKey: 'cancel-key');
+    expect(service.createIdempotencyKey, 'cancel-key');
+    expect(service.submitCalls, 1);
+    expect(signer.calls, 1);
+  });
+  test(
+    'unresolved broadcast reports pending with the original order identity',
+    () async {
+      final service = _Service(
+        createdAction: _action(status: 'ambiguous'),
+        fetchedActions: [_action(status: 'ambiguous')],
+      );
+      final signer = _Signer();
+      await expectLater(
+        Hip3OrderExecutionRepositoryImpl(
+          signer,
+          service,
+          now: () => DateTime.utc(2026, 9, 9),
+          delay: (_) async {},
+        ).awaitActionAndSubmit('order-1'),
+        throwsA(
+          isA<Hip3ExecutionPending>().having(
+            (e) => e.orderId,
+            'order',
+            'order-1',
+          ),
+        ),
+      );
+      expect(service.submitCalls, 0);
+      expect(signer.calls, 0);
+    },
+  );
+  test(
+    'retries only preparation-not-ready with the same creation key',
+    () async {
+      final service = _Service(
+        createdAction: _action(signable: true),
+        submittedActions: [_action(status: 'succeeded')],
+        notReadyAttempts: 2,
+      );
+      final signer = _Signer();
+      await Hip3OrderExecutionRepositoryImpl(
+        signer,
+        service,
+        now: () => DateTime.utc(2026, 9, 9),
+        delay: (_) async {},
+      ).awaitActionAndSubmit('order-1');
+      expect(service.createCalls, 3);
+      expect(signer.calls, 1);
+    },
+  );
+
+  test(
+    'ambiguous broadcast is polled without signing or submitting again',
+    () async {
+      final service = _Service(
+        createdAction: _action(signable: true),
+        submittedActions: [_action(status: 'ambiguous')],
+        fetchedActions: [_action(status: 'succeeded')],
+      );
+      final signer = _Signer();
+      final result = await Hip3OrderExecutionRepositoryImpl(
+        signer,
+        service,
+        now: () => DateTime.utc(2026, 9, 9),
+        delay: (_) async {},
+      ).awaitActionAndSubmit('order-1');
+      expect(result.resource.status, TradingOrderStatus.open);
+      expect(service.submitCalls, 1);
+      expect(signer.calls, 1);
+    },
+  );
+
+  test('lost submission response is reconciled by action query', () async {
+    final service = _Service(
+      createdAction: _action(signable: true),
+      submitTimeout: true,
+      fetchedActions: [_action(status: 'succeeded')],
+    );
+    final signer = _Signer();
+    await Hip3OrderExecutionRepositoryImpl(
+      signer,
+      service,
+      now: () => DateTime.utc(2026, 9, 9),
+      delay: (_) async {},
+    ).awaitActionAndSubmit('order-1');
+    expect(service.submitCalls, 1);
+    expect(signer.calls, 1);
+  });
   test(
     'signs the current action step and fetches the completed order',
     () async {
@@ -115,14 +219,15 @@ void main() {
 const _wallet = '0x0000000000000000000000000000000000000001';
 
 api.Hip3Action _action({
+  String operation = 'place_order',
   String status = 'awaiting_signature',
   bool signable = false,
   String validUntil = '2026-09-10T00:00:00Z',
 }) {
   final json = <String, Object?>{
-    'intent': {'operation': 'place_order', 'order_id': 'order-1'},
+    'intent': {'operation': operation, 'order_id': 'order-1'},
     'action_id': 'action-1',
-    'operation': 'place_order',
+    'operation': operation,
     'environment': 'testnet',
     'product_id': 'xyz:NVDA',
     'status': status,
@@ -133,7 +238,7 @@ api.Hip3Action _action({
       {
         'step_id': 'step-1',
         'sequence': 1,
-        'kind': 'place_order',
+        'kind': operation,
         'status': signable ? 'prepared' : 'waiting',
         'signing': signable
             ? {
@@ -219,11 +324,21 @@ final class _Service implements Hip3OrderActionService {
     required this.createdAction,
     this._fetchedActions = const [],
     this._submittedActions = const [],
+    this.notReadyAttempts = 0,
+    this.submitTimeout = false,
   });
 
   final api.Hip3Action createdAction;
   final List<api.Hip3Action> _fetchedActions;
   final List<api.Hip3Action> _submittedActions;
+  final int notReadyAttempts;
+  final bool submitTimeout;
+  @override
+  Future<api.Hip3Action> createCancelOrderAction({
+    required String orderId,
+    required String idempotencyKey,
+  }) =>
+      createPlaceOrderAction(orderId: orderId, idempotencyKey: idempotencyKey);
   int createCalls = 0;
   int getActionCalls = 0;
   int getOrderCalls = 0;
@@ -239,6 +354,13 @@ final class _Service implements Hip3OrderActionService {
   }) async {
     createCalls++;
     createIdempotencyKey = idempotencyKey;
+    if (createCalls <= notReadyAttempts) {
+      throw const ServerFailure(
+        statusCode: 503,
+        code: 'hip3_action_not_ready',
+        retryable: true,
+      );
+    }
     return createdAction;
   }
 
@@ -263,8 +385,11 @@ final class _Service implements Hip3OrderActionService {
     required api.Hip3ActionSubmissionRequest request,
     required String idempotencyKey,
   }) async {
-    final index = submitCalls.clamp(0, _submittedActions.length - 1).toInt();
     submitCalls++;
+    if (submitTimeout) throw const TimeoutFailure();
+    final index = (submitCalls - 1)
+        .clamp(0, _submittedActions.length - 1)
+        .toInt();
     this.request = request;
     this.idempotencyKey = idempotencyKey;
     return _submittedActions[index];

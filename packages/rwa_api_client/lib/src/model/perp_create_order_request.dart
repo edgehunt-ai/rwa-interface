@@ -8,13 +8,13 @@ import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'perp_create_order_request.g.dart';
 
-/// protection 与旧版 tp_sl 不得同时传入。引用 preview 时必须匹配其冻结的规范化委托和 context； context 的 symbol 必须一致。不支持的能力返回 422，不得静默忽略或降低订单约束。 
+/// protection 表示本单止盈止损，与旧版 tp_sl 不得同时传入。引用 preview 时必须匹配其冻结的规范化委托、保护和 context； context 的 symbol 必须一致。不支持的能力返回 422，不得静默忽略或降低订单约束。 
 ///
 /// Properties:
 /// * [contextId] - 必须与所引用 preview 的 context 相同；账户/环境不由客户端决定。
@@ -44,7 +44,7 @@ abstract class PerpCreateOrderRequest implements Built<PerpCreateOrderRequest, P
   // enum timeInForceEnum {  gtc,  ioc,  alo,  };
 
   @BuiltValueField(wireName: r'protection')
-  Hip3ProtectionSpec? get protection;
+  Hip3OrderProtectionSpec? get protection;
 
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
@@ -137,7 +137,7 @@ class _$PerpCreateOrderRequestSerializer implements PrimitiveSerializer<PerpCrea
       yield r'protection';
       yield serializers.serialize(
         object.protection,
-        specifiedType: const FullType(Hip3ProtectionSpec),
+        specifiedType: const FullType.nullable(Hip3OrderProtectionSpec),
       );
     }
     yield r'symbol';
@@ -265,8 +265,8 @@ class _$PerpCreateOrderRequestSerializer implements PrimitiveSerializer<PerpCrea
         case r'protection':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(Hip3ProtectionSpec),
-          ) as Hip3ProtectionSpec?;
+            specifiedType: const FullType.nullable(Hip3OrderProtectionSpec),
+          ) as Hip3OrderProtectionSpec?;
           if (valueDes == null) continue;
           result.protection.replace(valueDes);
           break;

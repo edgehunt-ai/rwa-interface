@@ -170,7 +170,10 @@ lib/src/model/hip3_eip712_typed_data.dart
 lib/src/model/hip3_eip712_types.dart
 lib/src/model/hip3_environment.dart
 lib/src/model/hip3_mainnet_product.dart
+lib/src/model/hip3_opening_protection_confirmation.dart
+lib/src/model/hip3_opening_protection_confirmation_legs_inner.dart
 lib/src/model/hip3_operation.dart
+lib/src/model/hip3_order_protection_spec.dart
 lib/src/model/hip3_place_order_action_request.dart
 lib/src/model/hip3_preview_execution.dart
 lib/src/model/hip3_protection_spec.dart

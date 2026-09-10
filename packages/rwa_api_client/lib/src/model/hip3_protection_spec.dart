@@ -10,7 +10,7 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_protection_spec.g.dart';
 
-/// 至少一个 take_profit/stop_loss。size_mode=quantity 需 quantity 且禁止 percent； percent 需 (0,100] 的 percent 且禁止 quantity；entire_position 禁止两者。 App 默认选择 entire_position（请求仍须显式传 size_mode），按触发时的实际仓位 使用 Provider 原生全仓 reduce-only 语义；所有子订单只减仓。 用户明确选择 quantity 时保持固定数量；percent 按准备时仓位绝对数量计算并冻结为固定数量。 固定数量不会随部分成交或仓位变化自动缩量，不承诺后台自动缩减或取消另一 leg。 两 leg 均存在时为同组保护标识，不代表后台自动调整数量或保证原子 OCO。 后端持续对账成交、部分成交、取消和仓位变化，不能把本地创建当成保护已生效。 保护单经用户签名并由 Provider 确认生效后，触发执行不需要再次签名； 用户后续修改保护参数或主动取消保护单，须通过新的 action 步骤重新签名。 
+/// 持仓止盈止损：仅用于已有持仓的保护设置，不用于开仓附带保护。 至少一个 take_profit/stop_loss。size_mode=quantity 需 quantity 且禁止 percent； percent 需 (0,100] 的 percent 且禁止 quantity；entire_position 禁止两者。 App 默认选择 entire_position（请求仍须显式传 size_mode），按触发时的实际仓位 使用 Provider 原生全仓 reduce-only 语义；所有子订单只减仓。 用户明确选择 quantity 时保持固定数量；percent 按准备时仓位绝对数量计算并冻结为固定数量。 固定数量不会随部分成交或仓位变化自动缩量，不承诺后台自动缩减或取消另一 leg。 两 leg 均存在时为同组保护标识，不代表后台自动调整数量或保证原子 OCO。 后端持续对账成交、部分成交、取消和仓位变化，不能把本地创建当成保护已生效。 保护单经用户签名并由 Provider 确认生效后，触发执行不需要再次签名； 用户后续修改保护参数或主动取消保护单，须通过新的 action 步骤重新签名。
 ///
 /// Properties:
 /// * [sizeMode] 
@@ -203,4 +203,3 @@ class Hip3ProtectionSpecSizeModeEnum extends EnumClass {
   static BuiltSet<Hip3ProtectionSpecSizeModeEnum> get values => _$hip3ProtectionSpecSizeModeEnumValues;
   static Hip3ProtectionSpecSizeModeEnum valueOf(String name) => _$hip3ProtectionSpecSizeModeEnumValueOf(name);
 }
-

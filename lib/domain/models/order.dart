@@ -1,6 +1,7 @@
 import 'decimal_value.dart';
 import 'market_product.dart';
 import 'order_intent.dart';
+import 'order_fill.dart';
 
 enum TradingOrderStatus {
   pendingSignature,
@@ -15,26 +16,29 @@ enum TradingOrderStatus {
   unknown,
 }
 
-final class Hip3ActionSummary {
-  const Hip3ActionSummary({
-    required this.actionId,
-    required this.operation,
-    required this.status,
-    required this.productId,
-    required this.updatedAt,
-    this.positionId,
-    this.orderId,
-    this.failureReason,
+final class ConditionalOrder {
+  const ConditionalOrder({
+    required this.role,
+    required this.triggerPrice,
+    required this.triggerStatus,
+    required this.executionType,
+    required this.sizeMode,
+    required this.quantity,
+    required this.triggerReference,
+    this.activationStatus = 'unknown',
+    this.warningCode,
+    this.parentOrderId,
   });
-
-  final String actionId;
-  final String operation;
-  final String status;
-  final String productId;
-  final String? positionId;
-  final String? orderId;
-  final String? failureReason;
-  final DateTime updatedAt;
+  final String role;
+  final DecimalValue triggerPrice;
+  final String triggerStatus;
+  final String executionType;
+  final String sizeMode;
+  final String quantity;
+  final String triggerReference;
+  final String activationStatus;
+  final String? warningCode;
+  final String? parentOrderId;
 }
 
 final class TradingOrder {
@@ -47,6 +51,8 @@ final class TradingOrder {
     required this.status,
     required this.createdAt,
     this.clientOrderId,
+    this.productId,
+    this.conditional,
     this.quantity,
     this.filledQuantity,
     this.limitPrice,
@@ -57,8 +63,14 @@ final class TradingOrder {
     this.txHash,
     this.failureReason,
     this.updatedAt,
+    this.fills,
+    this.realizedPnl,
+    this.providerObservedAt,
+    this.settlementAsset,
   });
   final String orderId;
+  final String? productId;
+  final ConditionalOrder? conditional;
   final String? clientOrderId;
   final String symbol;
   final MarketProductKind kind;
@@ -76,6 +88,13 @@ final class TradingOrder {
   final String? failureReason;
   final DateTime createdAt;
   final DateTime? updatedAt;
+
+  /// Null means omitted; an empty array means no fill records in this response.
+  /// Neither asserts completeness of the provider's historical executions.
+  final List<TradingOrderFill>? fills;
+  final DecimalValue? realizedPnl;
+  final DateTime? providerObservedAt;
+  final String? settlementAsset;
 
   bool get isTerminal => const {
     TradingOrderStatus.filled,

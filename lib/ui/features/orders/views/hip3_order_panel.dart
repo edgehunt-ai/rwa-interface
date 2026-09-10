@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import '../../../../app/providers/hip3_query_refresh.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,10 +11,18 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+
+import 'hip3_preview_details.dart';
+import 'hip3_opening_protection_fields.dart';
+import '../../../../domain/models/hip3_opening_protection.dart';
+import '../../../../domain/models/hip3_opening_context.dart';
+import '../../../../domain/models/hip3_opening_size.dart';
+import '../../../../app/providers/session_scope.dart';
 
 /// HIP-3-specific order composition. Keeping it separate from bStocks prevents
 /// perpetual-only fields leaking into the spot order payload.
@@ -35,10 +45,16 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
 class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   final _amount = TextEditingController();
   final _limitPrice = TextEditingController();
+  final _protectionPrices = List.generate(4, (_) => TextEditingController());
   var _side = TradingSide.long;
-  final _type = TradingOrderType.market;
+  var _type = TradingOrderType.market;
+  var _inputNotional = true;
   var _marginMode = TradingMarginMode.cross;
-  var _leverage = 10;
+  var _leverage = 1;
+  Hip3OpeningContext? _context;
+  var _contextLoading = true;
+  String? _settingKey;
+  (int, TradingMarginMode)? _pendingSetting;
   var _reduceOnly = false;
   var _showTpSl = false;
   var _percentage = 0.0;
@@ -47,7 +63,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   OrderPreview? _preview;
   OrderPreview? _quotePreview;
   TradingOrder? _submitted;
+  String? _pendingOrderId;
   Timer? _quoteDebounce;
+  Timer? _previewExpiry;
   var _quoteGeneration = 0;
 
   @override
@@ -57,16 +75,113 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _reduceOnly = widget.initialReduceOnly;
     _amount.addListener(_scheduleQuote);
     _limitPrice.addListener(_scheduleQuote);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleQuote());
+    for (final controller in _protectionPrices) {
+      controller.addListener(_scheduleQuote);
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadContext();
+    });
+  }
+
+  Future<void> _loadContext() async {
+    final generation = ref.read(sessionGenerationProvider);
+    setState(() => _contextLoading = true);
+    try {
+      ref.invalidate(hip3OpeningContextProvider(widget.symbol));
+      final context = await ref.read(
+        hip3OpeningContextProvider(widget.symbol).future,
+      );
+      if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      setState(() {
+        _context = context;
+        _leverage = context.currentLeverage ?? 1;
+        _marginMode = context.currentMarginMode ?? TradingMarginMode.cross;
+        if (!context.orderTypes.contains(_type) &&
+            context.orderTypes.isNotEmpty) {
+          _type = context.orderTypes.first;
+        }
+        _error = context.blocker;
+      });
+      _scheduleQuote();
+    } on Object {
+      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+        setState(
+          () => _error =
+              'Unable to load trading rules. Retry before placing an order.',
+        );
+      }
+    } finally {
+      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+        setState(() => _contextLoading = false);
+      }
+    }
+  }
+
+  Future<void> _applySettings(int leverage, TradingMarginMode mode) async {
+    final context = _context;
+    if (context == null || _submitting) return;
+    if (leverage < 1 ||
+        leverage > context.maximumLeverage ||
+        !context.marginModes.contains(mode) ||
+        !context.operations.contains('setLeverage')) {
+      setState(
+        () => _error = 'Choose a supported margin mode and leverage before requesting a signature.',
+      );
+      return;
+    }
+    final generation = ref.read(sessionGenerationProvider);
+    final setting = (leverage, mode);
+    if (_pendingSetting != null && _pendingSetting != setting) return;
+    _pendingSetting = setting;
+    _settingKey ??= 'hip3-leverage-${DateTime.now().microsecondsSinceEpoch}';
+    setState(() {
+      _submitting = true;
+      _quotePreview = null;
+    });
+    try {
+      final refreshed = await ref
+          .read(hip3OpeningRepositoryProvider)
+          .setLeverage(
+            context.productId,
+            leverage,
+            mode,
+            idempotencyKey: _settingKey!,
+          );
+      if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      setState(() {
+        _context = refreshed;
+        _leverage = refreshed.currentLeverage!;
+        _marginMode = refreshed.currentMarginMode!;
+        _pendingSetting = null;
+        _settingKey = null;
+        _error = null;
+      });
+      _scheduleQuote();
+    } on Object {
+      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+        setState(
+          () => _error = 'Settings are not confirmed. Resume the same request before opening an order.',
+        );
+      }
+    } finally {
+      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+        setState(() => _submitting = false);
+      }
+    }
   }
 
   @override
   void dispose() {
     _quoteDebounce?.cancel();
+    _previewExpiry?.cancel();
     _amount.removeListener(_scheduleQuote);
     _limitPrice.removeListener(_scheduleQuote);
     _amount.dispose();
     _limitPrice.dispose();
+    for (final controller in _protectionPrices) {
+      controller.removeListener(_scheduleQuote);
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -76,15 +191,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final rawLimitPrice = _limitPrice.text.trim();
     if (_type == TradingOrderType.limit && rawLimitPrice.isEmpty) return null;
     try {
+      if (DecimalValue(rawAmount).compareTo(DecimalValue('0')) <= 0) {
+        return null;
+      }
       return OrderIntent(
         symbol: widget.symbol,
         kind: MarketProductKind.perp,
         side: _side,
         type: _type,
-        amount: _type == TradingOrderType.market
+        amount: _inputNotional
             ? DecimalValue(rawAmount, asset: 'USDC', unit: 'token')
             : null,
-        quantity: _type == TradingOrderType.limit
+        quantity: !_inputNotional
             ? DecimalValue(rawAmount, asset: widget.symbol, unit: 'token')
             : null,
         limitPrice: _type == TradingOrderType.limit
@@ -93,20 +211,48 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         leverage: DecimalValue('$_leverage', asset: 'x', unit: 'multiple'),
         marginMode: _marginMode,
         reduceOnly: _reduceOnly,
+        openingProtection: _openingProtection(),
       );
     } on FormatException {
       return null;
+    } on ArgumentError {
+      return null;
     }
+  }
+
+  Hip3OpeningProtection? _openingProtection() {
+    if (!_showTpSl) return null;
+    Hip3OpeningProtectionLeg? leg(int index) {
+      final trigger = _protectionPrices[index].text.trim();
+      final limit = _protectionPrices[index + 1].text.trim();
+      if (trigger.isEmpty) {
+        if (limit.isNotEmpty) {
+          throw const FormatException('A limit needs its trigger');
+        }
+        return null;
+      }
+      return Hip3OpeningProtectionLeg(
+        triggerPrice: DecimalValue(trigger, asset: 'USDC', unit: 'price'),
+        limitPrice: limit.isEmpty
+            ? null
+            : DecimalValue(limit, asset: 'USDC', unit: 'price'),
+      );
+    }
+
+    return Hip3OpeningProtection(takeProfit: leg(0), stopLoss: leg(2));
   }
 
   void _scheduleQuote() {
     _quoteDebounce?.cancel();
     final generation = ++_quoteGeneration;
     final intent = _intentFromFields();
-    if (intent == null) {
-      if (_quotePreview != null) setState(() => _quotePreview = null);
-      return;
-    }
+    // Update the entered amount/unit immediately, even before a quote returns.
+    setState(() {
+      if (_quotePreview?.intent.fingerprint != intent?.fingerprint) {
+        _quotePreview = null;
+      }
+    });
+    if (_context == null || _pendingSetting != null || intent == null) return;
     _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
       try {
         final quote = await ref.read(orderPreviewProvider(intent).future);
@@ -122,6 +268,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   Future<void> _review() async {
+    final generation = ref.read(sessionGenerationProvider);
+    bool isCurrent() =>
+        mounted && ref.read(sessionGenerationProvider) == generation;
+    if (_context == null || _contextLoading || _pendingSetting != null) return;
+    if (_context!.isExpired) {
+      await _loadContext();
+      if (!isCurrent() || _context == null || _context!.isExpired) return;
+    }
     final rawAmount = _amount.text.trim();
     if (rawAmount.isEmpty) {
       setState(() => _error = 'Enter an order value.');
@@ -133,61 +287,109 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       return;
     }
     try {
-      final intent = _intentFromFields()!;
+      final intent = _intentFromFields();
+      if (intent == null) {
+        setState(
+          () => _error = _showTpSl
+              ? 'Enter valid order values and at least one positive protection trigger. Each protection limit needs its trigger.'
+              : 'Enter a positive quantity or order value and a valid limit price.',
+        );
+        return;
+      }
       setState(() {
         _error = null;
         _submitting = true;
       });
       final cachedQuote = _quotePreview;
-      final preview = cachedQuote?.intent.fingerprint == intent.fingerprint
+      final preview =
+          cachedQuote?.intent.fingerprint == intent.fingerprint &&
+              cachedQuote?.isExpired == false
           ? cachedQuote
           : await ref.read(orderPreviewProvider(intent).future);
-      if (mounted) {
+      if (isCurrent()) {
         setState(() => _preview = preview);
+        _previewExpiry?.cancel();
+        final expiry = preview?.expiresAt;
+        if (expiry != null && expiry.isAfter(DateTime.now().toUtc())) {
+          _previewExpiry = Timer(expiry.difference(DateTime.now().toUtc()), () {
+            if (isCurrent()) setState(() {});
+          });
+        }
       }
     } on FormatException {
-      if (mounted) {
+      if (isCurrent()) {
         setState(() => _error = 'Enter valid order values.');
       }
     } on Object {
-      if (mounted) {
+      if (isCurrent()) {
         setState(() => _error = 'Unable to prepare this order. Try again.');
       }
     } finally {
-      if (mounted) {
+      if (isCurrent()) {
         setState(() => _submitting = false);
       }
     }
   }
 
   Future<void> _submit() async {
+    final generation = ref.read(sessionGenerationProvider);
+    bool isCurrent() =>
+        mounted && ref.read(sessionGenerationProvider) == generation;
     final preview = _preview;
     if (preview == null) return;
+    if (_pendingOrderId == null &&
+        (preview.hip3Execution == null ||
+            !preview.openingProtectionMatchesIntent ||
+            preview.expiresAt == null ||
+            preview.isExpired)) {
+      setState(
+        () => _error = 'This quote is unavailable or expired. Go back and request a new quote.',
+      );
+      return;
+    }
     setState(() => _submitting = true);
     try {
-      var submitted = await ref
-          .read(orderCommandProvider.notifier)
-          .submit(preview.intent, previewId: preview.previewId);
+      var submitted = _pendingOrderId != null
+          ? await ref
+                .read(hip3OrderExecutionRepositoryProvider)
+                .awaitActionAndSubmit(_pendingOrderId!)
+          : await ref
+                .read(orderCommandProvider.notifier)
+                .submit(preview.intent, previewId: preview.previewId);
+      if (!isCurrent()) return;
       if (submitted?.resource.status == TradingOrderStatus.pendingSignature) {
+        _pendingOrderId = submitted!.resource.orderId;
         submitted = await ref
             .read(hip3OrderExecutionRepositoryProvider)
-            .awaitActionAndSubmit(submitted!.resource.orderId);
+            .awaitActionAndSubmit(_pendingOrderId!);
       }
-      if (!mounted) return;
+      if (!isCurrent()) return;
+      ref.invalidate(hip3OrdersProvider);
       setState(() {
         _submitted = submitted?.resource;
         _error = submitted == null
             ? 'Order was not submitted. Try again.'
             : null;
       });
+    } on Hip3ExecutionPending catch (pending) {
+      if (!isCurrent()) return;
+      setState(() {
+        _pendingOrderId = pending.orderId;
+        _error = pending.requiresReview
+            ? 'This order needs review. Do not place a replacement order.'
+            : 'Confirming this order. Retry to check the same order; do not place a replacement.';
+      });
     } on Hip3SigningFailure catch (failure) {
-      if (!mounted) return;
+      if (!isCurrent()) return;
       setState(() => _error = _signingError(failure));
     } on Object {
-      if (!mounted) return;
+      if (!isCurrent()) return;
       setState(() => _error = 'Unable to sign this order. Try again.');
     } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (isCurrent()) {
+        ref.read(hip3QueryRevisionProvider.notifier).refresh();
+        setState(() => _submitting = false);
+      }
     }
   }
 
@@ -207,9 +409,35 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(sessionGenerationProvider, (previous, next) {
+      if (previous == next) return;
+      _quoteDebounce?.cancel();
+      _previewExpiry?.cancel();
+      ++_quoteGeneration;
+      setState(() {
+        _context = null;
+        _preview = null;
+        _quotePreview = null;
+        _submitted = null;
+        _pendingOrderId = null;
+        _pendingSetting = null;
+        _settingKey = null;
+        _error = null;
+        _submitting = false;
+        _amount.clear();
+        _limitPrice.clear();
+        _showTpSl = false;
+        for (final controller in _protectionPrices) {
+          controller.clear();
+        }
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadContext();
+      });
+    });
     if (_submitted != null) return _result(context);
     if (_preview != null) return _confirmation(context);
-    return _form(context);
+    return IgnorePointer(ignoring: _submitting, child: _form(context));
   }
 
   Widget _form(BuildContext context) {
@@ -224,8 +452,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 543 + (_error == null ? 0 : 36),
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             child: Column(
@@ -240,6 +467,48 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   onClose: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(height: 16),
+                if (_contextLoading) const Text('Loading trading rules...'),
+                if (_context == null && !_contextLoading)
+                  TextButton(
+                    onPressed: _loadContext,
+                    child: const Text('Retry trading rules'),
+                  ),
+                if (_context case final rules?) ...[
+                  Text(
+                    '${rules.environment} · ${rules.productId} · Available margin ${rules.availableMargin.value} USDC',
+                  ),
+                  Text(
+                    'Order notional: ${rules.minimumNotional.value}–${rules.maximumNotional?.value ?? 'venue limit'} USDC',
+                  ),
+                  const SizedBox(height: 12),
+                  if (rules.orderTypes.length > 1)
+                    _Hip3SegmentedControl<TradingOrderType>(
+                      values: rules.orderTypes.toList(),
+                      selected: _type,
+                      selectedColor: actionColor,
+                      label: (type) =>
+                          type == TradingOrderType.market ? 'Market' : 'Limit',
+                      onChanged: (type) {
+                        if (_submitting) return;
+                        setState(() {
+                          _type = type;
+                          _inputNotional = type == TradingOrderType.market;
+                          _amount.clear();
+                          _quotePreview = null;
+                        });
+                      },
+                    ),
+                  if (_type == TradingOrderType.limit)
+                    TextField(
+                      controller: _limitPrice,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Limit price (USDC)',
+                      ),
+                    ),
+                ],
                 if (!_reduceOnly) ...[
                   Align(
                     alignment: Alignment.centerLeft,
@@ -260,43 +529,107 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   ),
                   const SizedBox(height: 16),
                 ],
+                const SizedBox(height: 12),
+                _Hip3SegmentedControl<bool>(
+                  values: const [true, false],
+                  selected: _inputNotional,
+                  selectedColor: actionColor,
+                  label: (notional) => notional ? 'Amount (USDC)' : 'Quantity',
+                  onChanged: (notional) {
+                    if (_submitting) return;
+                    setState(() {
+                      _inputNotional = notional;
+                      _amount.clear();
+                      _quotePreview = null;
+                      _percentage = 0;
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
                 _Hip3ModeLeverageCard(
                   marginMode: _marginMode,
                   leverage: _leverage,
                   controller: _amount,
                   settlementAsset: settlementAsset,
+                  inputAsset: _inputNotional ? settlementAsset : widget.symbol,
+                  quantityInput: !_inputNotional,
+                  availableMargin: _context?.availableMargin.value,
                   percentage: _percentage,
                   onMarginModeTap: () {
-                    setState(() {
-                      _marginMode = _marginMode == TradingMarginMode.cross
-                          ? TradingMarginMode.isolated
-                          : TradingMarginMode.cross;
-                    });
-                    _scheduleQuote();
+                    final modes = _context?.marginModes;
+                    if (modes == null ||
+                        modes.isEmpty ||
+                        _pendingSetting != null ||
+                        _submitting) {
+                      return;
+                    }
+                    final next = modes.firstWhere(
+                      (mode) => mode != _marginMode,
+                      orElse: () => _marginMode,
+                    );
+                    if (next != _marginMode) _applySettings(_leverage, next);
                   },
                   onLeverageTap: () async {
+                    final generation = ref.read(sessionGenerationProvider);
+                    final rules = _context;
+                    if (rules == null ||
+                        _submitting ||
+                        _pendingSetting != null) {
+                      return;
+                    }
                     final leverage = await showModalBottomSheet<int>(
                       context: context,
                       isScrollControlled: true,
-                      builder: (_) =>
-                          Hip3LeverageSheet(initialLeverage: _leverage),
+                      builder: (_) => Hip3LeverageSheet(
+                        initialLeverage: _leverage,
+                        maximumLeverage: rules.maximumLeverage,
+                      ),
                     );
-                    if (leverage != null && mounted) {
-                      setState(() => _leverage = leverage);
-                      _scheduleQuote();
+                    if (leverage != null &&
+                        mounted &&
+                        ref.read(sessionGenerationProvider) == generation) {
+                      await _applySettings(leverage, _marginMode);
                     }
                   },
-                  onPercentageChanged: (value) =>
-                      setState(() => _percentage = value),
+                  onPercentageChanged: (value) {
+                    final quote = _quotePreview;
+                    final rules = _context;
+                    if (quote?.hip3Execution == null ||
+                        quote!.isExpired ||
+                        rules == null) {
+                      setState(
+                        () => _error = 'Enter an amount to get a current maximum quantity before using the percentage slider.',
+                      );
+                      return;
+                    }
+                    final input = hip3OpeningPercentage(
+                      quote.hip3Execution!,
+                      (value * 100).round(),
+                      rules.sizeDecimals,
+                      notional: _inputNotional,
+                    );
+                    setState(() {
+                      _percentage = value;
+                      _amount.text = input;
+                    });
+                  },
                 ),
                 const SizedBox(height: 16),
                 Divider(color: colors.subtleSurface),
                 const SizedBox(height: 16),
                 _Hip3RiskSummary(
                   settlementAsset: settlementAsset,
+                  execution: _quotePreview?.hip3Execution,
                   showTpSl: _showTpSl,
-                  onTpSlTap: () => setState(() => _showTpSl = !_showTpSl),
+                  allowProtection: !_reduceOnly,
+                  onTpSlTap: () {
+                    if (_reduceOnly) return;
+                    setState(() => _showTpSl = !_showTpSl);
+                    _scheduleQuote();
+                  },
                 ),
+                if (_showTpSl)
+                  Hip3OpeningProtectionFields(controllers: _protectionPrices),
                 if (_error case final error?) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -304,13 +637,30 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     style: TextStyle(color: semantic.loss, fontSize: 12),
                   ),
                 ],
-                const Spacer(),
+                if (_pendingSetting case final setting?)
+                  TextButton(
+                    onPressed: _submitting
+                        ? null
+                        : () => _applySettings(setting.$1, setting.$2),
+                    child: const Text('Resume settings change'),
+                  ),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: FilledButton(
                     style: FilledButton.styleFrom(backgroundColor: actionColor),
-                    onPressed: _submitting ? null : _review,
+                    onPressed:
+                        _submitting ||
+                            _contextLoading ||
+                            _context == null ||
+                            _pendingSetting != null ||
+                            _context?.blocker != null ||
+                            !_context!.operations.contains('placeOrder') ||
+                            !_context!.orderTypes.contains(_type) ||
+                            !_context!.marginModes.contains(_marginMode)
+                        ? null
+                        : _review,
                     child: Text(
                       _submitting
                           ? 'Preparing order...'
@@ -318,7 +668,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                                 ? 'Close'
                                 : _side == TradingSide.long
                                 ? 'Long'
-                                : 'Short'} ${widget.symbol} · \$${amount.isEmpty ? '0' : amount}',
+                                : 'Short'} ${widget.symbol} · ${_inputNotional ? '\$${amount.isEmpty ? '0' : amount}' : '${amount.isEmpty ? '0' : amount} ${widget.symbol}'}',
                     ),
                   ),
                 ),
@@ -341,47 +691,46 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           children: [
             _Hip3SheetHeader(
               title:
-                  'Review ${_side == TradingSide.long ? 'Long' : 'Short'} ${widget.symbol}',
-              leverage: _leverage,
+                  'Review ${_preview!.intent.side == TradingSide.long ? 'Long' : 'Short'} ${_preview!.intent.symbol}',
+              leverage:
+                  int.tryParse(_preview!.hip3Execution?.leverage.value ?? '') ??
+                  _leverage,
               color: _side == TradingSide.short
                   ? Theme.of(context).extension<AppSemanticColors>()!.loss
                   : Theme.of(context).extension<AppSemanticColors>()!.success,
               onClose: () => Navigator.of(context).pop(),
             ),
-            const SizedBox(height: 24),
-            _Hip3ReviewRow(
-              'Order Value',
-              TokenAmountFormatter.format(
-                _preview!.orderValue,
-                symbol:
-                    _preview!.orderValue.asset ??
-                    _preview!.settlementAsset ??
-                    'USDC',
+            const SizedBox(height: 16),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Hip3PreviewDetails(preview: _preview!),
               ),
             ),
-            const SizedBox(height: 12),
-            _Hip3ReviewRow(
-              'Margin Mode',
-              _marginMode == TradingMarginMode.cross ? 'Cross' : 'Isolated',
-            ),
-            const SizedBox(height: 12),
-            _Hip3ReviewRow('Leverage', '${_leverage}x'),
-            if (_preview!.fee case final fee?) ...[
-              const SizedBox(height: 12),
-              _Hip3ReviewRow(
-                'Estimated Fee',
-                TokenAmountFormatter.format(
-                  fee,
-                  symbol: fee.asset ?? _preview!.settlementAsset ?? 'USDC',
+            if (_pendingOrderId == null &&
+                (_preview!.isExpired ||
+                    _preview!.hip3Execution == null ||
+                    _preview!.expiresAt == null))
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Quote unavailable or expired. Go back to refresh it.',
                 ),
               ),
-            ],
-            const Spacer(),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => setState(() => _preview = null),
+                    onPressed: _submitting || _pendingOrderId != null
+                        ? null
+                        : () {
+                            _previewExpiry?.cancel();
+                            setState(() {
+                              _preview = null;
+                              _quotePreview = null;
+                            });
+                            _scheduleQuote();
+                          },
                     child: const Text('Back'),
                   ),
                 ),
@@ -389,8 +738,24 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 Expanded(
                   child: FilledButton(
                     style: _actionStyle(context),
-                    onPressed: _submitting ? null : _submit,
-                    child: Text(_submitting ? 'Submitting...' : 'Confirm'),
+                    onPressed:
+                        _submitting ||
+                            (_pendingOrderId == null &&
+                                (_preview!.isExpired ||
+                                    _preview!.hip3Execution == null ||
+                                    !_preview!.openingProtectionMatchesIntent ||
+                                    _preview!.expiresAt == null))
+                        ? null
+                        : _submit,
+                    child: Text(
+                      _submitting
+                          ? (_pendingOrderId == null
+                                ? 'Submitting...'
+                                : 'Checking order...')
+                          : (_pendingOrderId == null
+                                ? 'Confirm'
+                                : 'Check order status'),
+                    ),
                   ),
                 ),
               ],
@@ -428,6 +793,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 : 'Order submitted',
             style: Theme.of(context).textTheme.titleLarge,
           ),
+          if (_preview?.intent.openingProtection != null)
+            const Text(
+              'Attached protection is not confirmed active. Check protection orders for the current status.',
+            ),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -532,54 +901,74 @@ class _Hip3RiskSummary extends StatelessWidget {
     required this.settlementAsset,
     required this.showTpSl,
     required this.onTpSlTap,
+    this.execution,
+    this.allowProtection = true,
   });
 
   final String settlementAsset;
   final bool showTpSl;
   final VoidCallback onTpSlTap;
+  final Hip3PreviewExecution? execution;
+  final bool allowProtection;
 
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      const _Hip3RiskRow('Liquidation Price', '-'),
+      _Hip3RiskRow(
+        'Liquidation Price',
+        execution?.liquidationPrice?.value ?? 'Unavailable',
+      ),
       const SizedBox(height: 8),
-      _Hip3RiskRow('Margin Required', '- $settlementAsset'),
+      _Hip3RiskRow(
+        'Margin Required',
+        '${execution?.marginRequired.value ?? '—'} $settlementAsset',
+      ),
+      if (execution case final value?)
+        _Hip3RiskRow('Maximum quantity', value.maximumQuantity.value),
       const SizedBox(height: 8),
-      InkWell(
-        key: const Key('hip3-tp-sl-toggle'),
-        onTap: onTpSlTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Take profit/stop loss',
-                style: TextStyle(
-                  color: Theme.of(context)
-                      .extension<AppRwaColors>()!
-                      .secondaryText,
-                  fontSize: 13,
+      if (allowProtection)
+        InkWell(
+          key: const Key('hip3-tp-sl-toggle'),
+          onTap: onTpSlTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context).hip3OrderTpSl,
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .extension<AppRwaColors>()!
+                        .secondaryText,
+                    fontSize: 13,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              width: 18,
-              height: 18,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFF7BE5),
-                shape: BoxShape.circle,
+              Container(
+                width: 18,
+                height: 18,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFF7BE5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  showTpSl ? Icons.remove : Icons.add,
+                  color: Colors.white,
+                  size: 14,
+                ),
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 14),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              showTpSl ? 'Added' : 'Add',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-          ],
+              const SizedBox(width: 4),
+              Text(
+                showTpSl ? 'Remove' : 'Configure',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
     ],
   );
 }
@@ -606,14 +995,13 @@ class _Hip3SheetHeader extends StatelessWidget {
         decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       ),
       const SizedBox(width: 8),
-      Flexible(
+      Expanded(
         child: Text(title, style: Theme.of(context).textTheme.titleLarge),
       ),
       const SizedBox(width: 4),
       _Hip3Badge('$leverage×'),
       const SizedBox(width: 4),
       const _Hip3Badge('HIP-3 Perps'),
-      const Spacer(),
       IconButton(
         tooltip: 'Close',
         onPressed: onClose,
@@ -651,6 +1039,9 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     required this.leverage,
     required this.controller,
     required this.settlementAsset,
+    required this.inputAsset,
+    required this.quantityInput,
+    this.availableMargin,
     required this.percentage,
     required this.onMarginModeTap,
     required this.onLeverageTap,
@@ -661,6 +1052,9 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   final int leverage;
   final TextEditingController controller;
   final String settlementAsset;
+  final String inputAsset;
+  final bool quantityInput;
+  final String? availableMargin;
   final double percentage;
   final VoidCallback onMarginModeTap;
   final VoidCallback onLeverageTap;
@@ -733,15 +1127,15 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Order Value',
+                      quantityInput ? 'Quantity' : 'Order Value',
                       style: TextStyle(
                         fontSize: 11,
                         color: colors.secondaryText,
                       ),
                     ),
-                    const Text(
-                      'Balance: --',
-                      style: TextStyle(
+                    Text(
+                      'Margin: ${availableMargin ?? '—'} USDC',
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -778,7 +1172,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        settlementAsset,
+                        inputAsset,
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -832,44 +1226,24 @@ class _Hip3AmountRail extends StatelessWidget {
   }
 }
 
-class _Hip3ReviewRow extends StatelessWidget {
-  const _Hip3ReviewRow(this.label, this.value);
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Text(
-          label,
-          style: TextStyle(
-            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
-          ),
-        ),
-      ),
-      Text(
-        value,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-      ),
-    ],
-  );
-}
-
 /// Leverage selection is kept inside the HIP-3 presentation layer so its
 /// result remains local UI state until an order preview is requested.
 class Hip3LeverageSheet extends StatefulWidget {
-  const Hip3LeverageSheet({super.key, required this.initialLeverage});
+  const Hip3LeverageSheet({
+    super.key,
+    required this.initialLeverage,
+    required this.maximumLeverage,
+  });
 
   final int initialLeverage;
+  final int maximumLeverage;
 
   @override
   State<Hip3LeverageSheet> createState() => _Hip3LeverageSheetState();
 }
 
 class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
-  late var _leverage = widget.initialLeverage;
+  late var _leverage = widget.initialLeverage.clamp(1, widget.maximumLeverage);
 
   @override
   Widget build(BuildContext context) {
@@ -920,8 +1294,10 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
                     child: Slider(
                       value: _leverage.toDouble(),
                       min: 1,
-                      max: 20,
-                      divisions: 19,
+                      max: widget.maximumLeverage.toDouble(),
+                      divisions: widget.maximumLeverage > 1
+                          ? widget.maximumLeverage - 1
+                          : null,
                       label: '${_leverage}x',
                       onChanged: (value) =>
                           setState(() => _leverage = value.round()),
@@ -931,10 +1307,18 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    for (final option in const [2, 5, 10, 20]) ...[
+                    for (final option in {
+                      1,
+                      2,
+                      5,
+                      10,
+                      widget.maximumLeverage,
+                    }.where((n) => n <= widget.maximumLeverage)) ...[
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsets.only(right: option == 20 ? 0 : 8),
+                          padding: EdgeInsets.only(
+                            right: option == widget.maximumLeverage ? 0 : 8,
+                          ),
                           child: _LeverageOption(
                             value: option,
                             selected: _leverage == option,

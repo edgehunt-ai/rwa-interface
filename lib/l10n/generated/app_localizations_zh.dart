@@ -10,6 +10,197 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get hip3ConfirmSetTp => '设置止盈';
+
+  @override
+  String get hip3ConfirmSetSl => '设置止损';
+
+  @override
+  String get hip3ConfirmCancelTp => '取消止盈';
+
+  @override
+  String get hip3ConfirmCancelSl => '取消止损';
+
+  @override
+  String get hip3ConfirmClose => '平仓';
+
+  @override
+  String get hip3ConfirmLeverageTitle => '调整杠杆';
+
+  @override
+  String get hip3ConfirmTitle => '确认 HIP3 操作';
+
+  @override
+  String get hip3ConfirmReview => '签名前请核对当前步骤。即使拒绝签名，此前已完成的步骤仍然生效。';
+
+  @override
+  String get hip3ConfirmDecline => '拒绝签名';
+
+  @override
+  String get hip3ConfirmSign => '确认并签名';
+
+  @override
+  String get hip3ConfirmLeverage => '杠杆';
+
+  @override
+  String get hip3ConfirmMargin => '保证金模式';
+
+  @override
+  String get hip3ConfirmScope => '要取消的保护单';
+
+  @override
+  String get hip3ConfirmCoverage => '保护范围';
+
+  @override
+  String get hip3ConfirmQuantity => '保护数量';
+
+  @override
+  String get hip3ConfirmTpTrigger => '止盈触发价';
+
+  @override
+  String get hip3ConfirmTpReference => '止盈参考价格';
+
+  @override
+  String get hip3ConfirmTpExecution => '止盈执行方式';
+
+  @override
+  String get hip3ConfirmTpLimit => '止盈限价';
+
+  @override
+  String get hip3ConfirmSlTrigger => '止损触发价';
+
+  @override
+  String get hip3ConfirmSlReference => '止损参考价格';
+
+  @override
+  String get hip3ConfirmSlExecution => '止损执行方式';
+
+  @override
+  String get hip3ConfirmSlLimit => '止损限价';
+
+  @override
+  String get hip3ConfirmDirection => '平仓委托方向';
+
+  @override
+  String get hip3ConfirmCloseQuantity => '平仓数量';
+
+  @override
+  String get hip3ConfirmRemaining => '剩余数量';
+
+  @override
+  String get hip3ConfirmEstimate => '预计成交价';
+
+  @override
+  String get hip3ConfirmFee => '预计手续费（USDC）';
+
+  @override
+  String get hip3ConfirmPnl => '预计已实现盈亏（USDC）';
+
+  @override
+  String get hip3ConfirmSlippage => '最大滑点（%）';
+
+  @override
+  String get hip3ConfirmEntire => '触发时的整个仓位';
+
+  @override
+  String get hip3ConfirmFixed => '固定数量';
+
+  @override
+  String get hip3ConfirmPercent => '仓位比例';
+
+  @override
+  String get hip3ConfirmBuyClose => '买入平空';
+
+  @override
+  String get hip3ConfirmSellClose => '卖出平多';
+
+  @override
+  String get hip3ConfirmMarket => '市价';
+
+  @override
+  String get hip3ConfirmLimit => '限价';
+
+  @override
+  String get hip3ConfirmMark => '标记价格';
+
+  @override
+  String get hip3ConfirmCross => '全仓保证金';
+
+  @override
+  String get hip3ConfirmIsolated => '逐仓保证金';
+
+  @override
+  String get hip3ConfirmBoth => '止盈和止损';
+
+  @override
+  String hip3ConfirmValidUntil(String time) {
+    return '有效期至 $time（本地时间）';
+  }
+
+  @override
+  String get hip3PendingTitle => '未完成的 HIP3 操作';
+
+  @override
+  String get hip3PendingRefresh => '刷新操作';
+
+  @override
+  String get hip3PendingLoading => '正在加载未完成的操作…';
+
+  @override
+  String get hip3PendingLoadError => '无法加载操作，请刷新重试。';
+
+  @override
+  String get hip3PendingEmpty => '本页没有未完成的持仓操作。';
+
+  @override
+  String get hip3PendingMore => '加载更多操作';
+
+  @override
+  String get hip3PendingContinue => '继续操作';
+
+  @override
+  String get hip3PendingCheck => '查询进度';
+
+  @override
+  String get hip3PendingBusy => '正在查询操作…';
+
+  @override
+  String get hip3PendingReview => '需要人工处理。请勿创建替代操作，请提供操作 ID 联系客服。';
+
+  @override
+  String get hip3PendingSignature => '等待你的签名';
+
+  @override
+  String get hip3PendingProcessing => '正在核对交易所结果';
+
+  @override
+  String get hip3PendingUnavailable => '此操作无法在这里继续。';
+
+  @override
+  String get hip3PendingError => '无法继续，请刷新后重试同一个操作。';
+
+  @override
+  String get hip3PendingStillActive => '操作尚未完成，请继续此操作，不要重复创建。';
+
+  @override
+  String get hip3PendingComplete => '操作已确认';
+
+  @override
+  String get hip3PendingSetTpsl => '设置或修改止盈止损';
+
+  @override
+  String get hip3PendingClearTpsl => '取消止盈止损';
+
+  @override
+  String get hip3PendingLeverage => '调整杠杆';
+
+  @override
+  String get hip3PendingClose => '平仓';
+
+  @override
+  String get hip3PendingEffects => '此前的步骤已生效。';
+
+  @override
   String get appTitle => 'RWA 交易界面';
 
   @override
@@ -145,6 +336,59 @@ class AppLocalizationsZh extends AppLocalizations {
   String get marketsUnavailable => '市场不可用';
 
   @override
+  String get hip3ChartLoading => '正在加载价格历史…';
+
+  @override
+  String get hip3ChartInspect => '轻触或拖动图表，查看单根 K 线读数。';
+
+  @override
+  String get hip3ChartVolume => '成交量';
+
+  @override
+  String hip3ChartUnits(String symbol) {
+    return '开高低收价格单位：USDC · 成交量单位：$symbol';
+  }
+
+  @override
+  String get hip3ChartHistoryLoad => '加载更早 K 线';
+
+  @override
+  String get hip3ChartHistoryLoading => '正在加载更早 K 线…';
+
+  @override
+  String get hip3ChartHistoryRetry => '重试加载更早 K 线';
+
+  @override
+  String get hip3ChartHistoryError => '更早 K 线加载失败，已加载的图表保持不变。';
+
+  @override
+  String get hip3ChartHistoryEmpty => '该历史时段暂无 K 线，可继续查询更早时段。';
+
+  @override
+  String get hip3ChartHistoryEnd => '已到达可查询历史的上限。';
+
+  @override
+  String get hip3ChartError => '价格历史加载失败。';
+
+  @override
+  String get hip3ChartEmpty => '该时段暂无成交数据。';
+
+  @override
+  String get hip3ChartRetry => '刷新图表';
+
+  @override
+  String get hip3ChartStale => '价格历史可能已过期，请刷新。';
+
+  @override
+  String get hip3ChartLine => '折线图';
+
+  @override
+  String get hip3ChartCandles => '蜡烛图';
+
+  @override
+  String get hip3ChartReferenceUnavailable => '参考价格历史暂不可用。';
+
+  @override
   String get noProductsYet => '暂无产品';
 
   @override
@@ -175,10 +419,156 @@ class AppLocalizationsZh extends AppLocalizations {
   String get price => '价格';
 
   @override
+  String get hip3OrderDetailTitle => 'HIP3 订单详情';
+
+  @override
+  String get hip3OrderHistoryTitle => 'HIP3 订单记录';
+
+  @override
+  String get hip3OrderHistoryEmpty => '本次未返回 HIP3 订单。';
+
+  @override
+  String get hip3OrderLoadMore => '加载更多订单';
+
+  @override
+  String get hip3OrderLoading => '正在加载订单详情';
+
+  @override
+  String get hip3OrderLoadError => '订单记录加载失败，请重试获取最新数据。';
+
+  @override
+  String get hip3OrderRetry => '重试';
+
+  @override
+  String get hip3OrderRefresh => '刷新订单';
+
+  @override
+  String get hip3OrderNotHip3 => '此订单的 HIP3 详情不可用。';
+
+  @override
+  String get hip3OrderUnavailable => '不可用';
+
+  @override
+  String get hip3OrderUnitUnavailable => '单位不可用';
+
+  @override
+  String get hip3OrderSummary => '订单汇总';
+
+  @override
+  String get hip3OrderDirection => '订单方向';
+
+  @override
+  String hip3OrderSide(String side) {
+    String _temp0 = intl.Intl.selectLogic(side, {
+      'buy': '买入',
+      'sell': '卖出',
+      'long': '做多',
+      'short': '做空',
+      'other': '不可用',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get hip3OrderFilledQuantity => '累计成交数量';
+
+  @override
+  String get hip3OrderAveragePrice => '成交均价';
+
+  @override
+  String get hip3OrderTotalFee => '累计手续费';
+
+  @override
+  String get hip3OrderRealizedPnl => '订单已实现盈亏';
+
+  @override
+  String get hip3OrderSummaryNote => '汇总值由订单接口提供，不根据下方记录推算。';
+
+  @override
+  String get hip3OrderFillsTitle => '逐笔成交';
+
+  @override
+  String hip3OrderFillsCoverage(int count) {
+    return '本次接口返回此订单的 $count 笔成交记录。接口不支持单独补查更早或缺失的记录，无法确认历史是否完整。';
+  }
+
+  @override
+  String get hip3OrderReturnedRange => '返回记录的成交时间范围';
+
+  @override
+  String get hip3OrderObservedAt => '交易所数据观察时间';
+
+  @override
+  String get hip3OrderFillMissingFields =>
+      '买入/卖出表示本次成交方向，不代表开仓/平仓。本笔盈亏为上游原始平仓盈亏；手续费单独展示，不重复扣除。缺失的事实或币种显示为不可用。';
+
+  @override
+  String get hip3OrderFillsOmitted => '接口未提供成交明细，不代表订单没有成交。';
+
+  @override
+  String get hip3OrderFillsEmpty => '本次未返回逐笔成交记录，不代表订单从未成交。';
+
+  @override
+  String hip3OrderFillNumber(int index) {
+    return '第 $index 笔记录';
+  }
+
+  @override
+  String get hip3OrderFillTime => '成交时间';
+
+  @override
+  String get hip3OrderFillDirection => '逐笔方向';
+
+  @override
+  String get hip3OrderFillEffectLabel => '开平仓类型';
+
+  @override
+  String hip3OrderFillEffect(String effect) {
+    String _temp0 = intl.Intl.selectLogic(effect, {
+      'open_long': '开多',
+      'close_long': '平多',
+      'open_short': '开空',
+      'close_short': '平空',
+      'long_to_short': '多转空',
+      'short_to_long': '空转多',
+      'other': '未知',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get hip3OrderFillQuantity => '本笔成交数量';
+
+  @override
+  String get hip3OrderFillFee => '本笔手续费';
+
+  @override
+  String get hip3OrderFillPnl => '本笔平仓盈亏';
+
+  @override
+  String get hip3OrderFillId => '成交记录 ID';
+
+  @override
+  String get hip3OrderProviderTradeId => '交易所成交 ID';
+
+  @override
+  String get hip3OrderProviderHash => '交易所交易哈希';
+
+  @override
   String get add => '添加';
 
   @override
   String get takeProfitStopLoss => '止盈/止损';
+
+  @override
+  String get hip3OrderTpSl => '本单止盈止损';
+
+  @override
+  String get hip3PositionTpSl => '持仓止盈止损';
+
+  @override
+  String get hip3PositionProtectionScope =>
+      '这里只管理持仓止盈止损。开仓时附带的本单止盈止损独立存在，请在订单中查看其激活状态和数量；这里为空不代表所有保护都不存在。';
 
   @override
   String get bstocksTpSlUnavailable => 'bStocks 订单暂不支持止盈/止损。';
@@ -546,4 +936,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tradePerpPositionType => 'HIP-3 永续合约持仓';
+
+  @override
+  String get portfolioPartialData => '部分资产无法读取或估值，显示金额仅为已获取部分的合计。';
+
+  @override
+  String get portfolioStaleData => '当前显示较早的快照，余额和持仓可能已变化。';
+
+  @override
+  String get portfolioUnverifiedData => '尚未确认数据完整性，请刷新后再参考这些金额。';
+
+  @override
+  String get portfolioLoadMore => '加载更多持仓';
+
+  @override
+  String get portfolioRefresh => '刷新资产';
+
+  @override
+  String get portfolioHoldingsUnconfirmed => '暂时无法完整确认持仓';
+
+  @override
+  String get portfolioMoreHoldings => '下一页还有更多持仓。';
+
+  @override
+  String get portfolioAllocationUnavailable => '暂未提供资产分类占比。';
+
+  @override
+  String get portfolioUnifiedCollateral =>
+      '统一账户抵押物由现货和永续共享，不能重复计值；仓位价值不代表额外权益。';
+
+  @override
+  String get portfolioHistoryUnavailable => '暂未提供资产历史，不显示推测的趋势曲线。';
+
+  @override
+  String get portfolioLedgerNotice => '以下为内部账本余额，并非额外链上资产，不会再次计入资产总值。';
 }

@@ -1,6 +1,7 @@
 import 'decimal_value.dart';
 import 'position.dart';
 import 'trading_account.dart';
+import 'portfolio_read_status.dart';
 
 final class HoldingGroup {
   const HoldingGroup({
@@ -24,6 +25,7 @@ final class Portfolio {
     this.updatedAt,
     this.accounts = const [],
     this.holdings = const [],
+    this.readStatus = const PortfolioReadStatus(),
   });
   final DecimalValue totalValueUsd;
   final DecimalValue availableToTradeUsd;
@@ -34,4 +36,5 @@ final class Portfolio {
   final DateTime? updatedAt;
   final List<TradingAccount> accounts;
   final List<HoldingGroup> holdings;
+  final PortfolioReadStatus readStatus;
 }

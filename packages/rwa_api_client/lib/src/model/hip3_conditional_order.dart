@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_conditional_order.g.dart';
 
-/// Order.type 保留 market/limit；role 表示 TP/SL，可单独取消该 Order.order_id。 trigger_status 与订单成交状态独立。triggered 不等于 filled，quantity 为当前保护数量。 parent_order_id 可为 null（对已有仓位新增保护），同组 TP/SL 用 protection_group_id 关联。 
+/// Order.type 保留 market/limit；role 表示 TP/SL，可单独取消该 Order.order_id。 trigger_status 与订单成交状态独立。triggered 不等于 filled，quantity 为当前保护数量。 parent_order_id 可为 null（对已有仓位新增保护），同组 TP/SL 用 protection_group_id 关联。 开仓附带保护的 position_id 为 null，不伪造持仓关联。已提交不等于已激活； 只有 activation_status=active 表示已观察到场所安装保护，不能由 untriggered 推断生效。 
 ///
 /// Properties:
 /// * [role] 
@@ -17,6 +17,8 @@ part 'hip3_conditional_order.g.dart';
 /// * [triggerReference] 
 /// * [executionType] 
 /// * [triggerStatus] 
+/// * [activationStatus] - pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+/// * [warningCode] - 父单主动撤销已导致本单保护取消；如父单已有部分成交，检查剩余持仓保护。此提示不表示账户其他持仓保护已被取消，不承诺自动补保护。
 /// * [protectionGroupId] 
 /// * [parentOrderId] 
 /// * [positionId] 
@@ -45,6 +47,16 @@ abstract class Hip3ConditionalOrder implements Built<Hip3ConditionalOrder, Hip3C
   Hip3ConditionalOrderTriggerStatusEnum get triggerStatus;
   // enum triggerStatusEnum {  untriggered,  triggered,  cancelled,  expired,  };
 
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueField(wireName: r'activation_status')
+  Hip3ConditionalOrderActivationStatusEnum? get activationStatus;
+  // enum activationStatusEnum {  pending_submission,  waiting_for_parent,  pending_confirmation,  active,  inactive,  unknown,  };
+
+  /// 父单主动撤销已导致本单保护取消；如父单已有部分成交，检查剩余持仓保护。此提示不表示账户其他持仓保护已被取消，不承诺自动补保护。
+  @BuiltValueField(wireName: r'warning_code')
+  Hip3ConditionalOrderWarningCodeEnum? get warningCode;
+  // enum warningCodeEnum {  parent_cancelled_check_remaining_position_protection,  };
+
   @BuiltValueField(wireName: r'protection_group_id')
   String get protectionGroupId;
 
@@ -52,7 +64,7 @@ abstract class Hip3ConditionalOrder implements Built<Hip3ConditionalOrder, Hip3C
   String? get parentOrderId;
 
   @BuiltValueField(wireName: r'position_id')
-  String get positionId;
+  String? get positionId;
 
   @BuiltValueField(wireName: r'size_mode')
   Hip3ConditionalOrderSizeModeEnum get sizeMode;
@@ -113,6 +125,20 @@ class _$Hip3ConditionalOrderSerializer implements PrimitiveSerializer<Hip3Condit
       object.triggerStatus,
       specifiedType: const FullType(Hip3ConditionalOrderTriggerStatusEnum),
     );
+    if (object.activationStatus != null) {
+      yield r'activation_status';
+      yield serializers.serialize(
+        object.activationStatus,
+        specifiedType: const FullType(Hip3ConditionalOrderActivationStatusEnum),
+      );
+    }
+    if (object.warningCode != null) {
+      yield r'warning_code';
+      yield serializers.serialize(
+        object.warningCode,
+        specifiedType: const FullType.nullable(Hip3ConditionalOrderWarningCodeEnum),
+      );
+    }
     yield r'protection_group_id';
     yield serializers.serialize(
       object.protectionGroupId,
@@ -124,9 +150,9 @@ class _$Hip3ConditionalOrderSerializer implements PrimitiveSerializer<Hip3Condit
       specifiedType: const FullType.nullable(String),
     );
     yield r'position_id';
-    yield serializers.serialize(
+    yield object.positionId == null ? null : serializers.serialize(
       object.positionId,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType.nullable(String),
     );
     yield r'size_mode';
     yield serializers.serialize(
@@ -201,6 +227,22 @@ class _$Hip3ConditionalOrderSerializer implements PrimitiveSerializer<Hip3Condit
           ) as Hip3ConditionalOrderTriggerStatusEnum;
           result.triggerStatus = valueDes;
           break;
+        case r'activation_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3ConditionalOrderActivationStatusEnum),
+          ) as Hip3ConditionalOrderActivationStatusEnum?;
+          if (valueDes == null) continue;
+          result.activationStatus = valueDes;
+          break;
+        case r'warning_code':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3ConditionalOrderWarningCodeEnum),
+          ) as Hip3ConditionalOrderWarningCodeEnum?;
+          if (valueDes == null) continue;
+          result.warningCode = valueDes;
+          break;
         case r'protection_group_id':
           final valueDes = serializers.deserialize(
             value,
@@ -219,8 +261,9 @@ class _$Hip3ConditionalOrderSerializer implements PrimitiveSerializer<Hip3Condit
         case r'position_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
           result.positionId = valueDes;
           break;
         case r'size_mode':
@@ -345,6 +388,55 @@ class Hip3ConditionalOrderTriggerStatusEnum extends EnumClass {
 
   static BuiltSet<Hip3ConditionalOrderTriggerStatusEnum> get values => _$hip3ConditionalOrderTriggerStatusEnumValues;
   static Hip3ConditionalOrderTriggerStatusEnum valueOf(String name) => _$hip3ConditionalOrderTriggerStatusEnumValueOf(name);
+}
+
+class Hip3ConditionalOrderActivationStatusEnum extends EnumClass {
+
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueEnumConst(wireName: r'pending_submission')
+  static const Hip3ConditionalOrderActivationStatusEnum pendingSubmission = _$hip3ConditionalOrderActivationStatusEnum_pendingSubmission;
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueEnumConst(wireName: r'waiting_for_parent')
+  static const Hip3ConditionalOrderActivationStatusEnum waitingForParent = _$hip3ConditionalOrderActivationStatusEnum_waitingForParent;
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueEnumConst(wireName: r'pending_confirmation')
+  static const Hip3ConditionalOrderActivationStatusEnum pendingConfirmation = _$hip3ConditionalOrderActivationStatusEnum_pendingConfirmation;
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueEnumConst(wireName: r'active')
+  static const Hip3ConditionalOrderActivationStatusEnum active = _$hip3ConditionalOrderActivationStatusEnum_active;
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueEnumConst(wireName: r'inactive')
+  static const Hip3ConditionalOrderActivationStatusEnum inactive = _$hip3ConditionalOrderActivationStatusEnum_inactive;
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueEnumConst(wireName: r'unknown')
+  static const Hip3ConditionalOrderActivationStatusEnum unknown = _$hip3ConditionalOrderActivationStatusEnum_unknown;
+  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const Hip3ConditionalOrderActivationStatusEnum unknownDefaultOpenApi = _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi;
+
+  static Serializer<Hip3ConditionalOrderActivationStatusEnum> get serializer => _$hip3ConditionalOrderActivationStatusEnumSerializer;
+
+  const Hip3ConditionalOrderActivationStatusEnum._(String name): super(name);
+
+  static BuiltSet<Hip3ConditionalOrderActivationStatusEnum> get values => _$hip3ConditionalOrderActivationStatusEnumValues;
+  static Hip3ConditionalOrderActivationStatusEnum valueOf(String name) => _$hip3ConditionalOrderActivationStatusEnumValueOf(name);
+}
+
+class Hip3ConditionalOrderWarningCodeEnum extends EnumClass {
+
+  /// 父单主动撤销已导致本单保护取消；如父单已有部分成交，检查剩余持仓保护。此提示不表示账户其他持仓保护已被取消，不承诺自动补保护。
+  @BuiltValueEnumConst(wireName: r'parent_cancelled_check_remaining_position_protection')
+  static const Hip3ConditionalOrderWarningCodeEnum parentCancelledCheckRemainingPositionProtection = _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection;
+  /// 父单主动撤销已导致本单保护取消；如父单已有部分成交，检查剩余持仓保护。此提示不表示账户其他持仓保护已被取消，不承诺自动补保护。
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const Hip3ConditionalOrderWarningCodeEnum unknownDefaultOpenApi = _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi;
+
+  static Serializer<Hip3ConditionalOrderWarningCodeEnum> get serializer => _$hip3ConditionalOrderWarningCodeEnumSerializer;
+
+  const Hip3ConditionalOrderWarningCodeEnum._(String name): super(name);
+
+  static BuiltSet<Hip3ConditionalOrderWarningCodeEnum> get values => _$hip3ConditionalOrderWarningCodeEnumValues;
+  static Hip3ConditionalOrderWarningCodeEnum valueOf(String name) => _$hip3ConditionalOrderWarningCodeEnumValueOf(name);
 }
 
 class Hip3ConditionalOrderSizeModeEnum extends EnumClass {

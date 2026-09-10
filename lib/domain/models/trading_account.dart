@@ -1,4 +1,5 @@
 import 'decimal_value.dart';
+import 'portfolio_read_status.dart';
 
 enum TradingAccountKind { app, bstocks, hip3, unknown }
 
@@ -27,6 +28,9 @@ final class TradingAccount {
     this.totalValueUsd,
     this.availableUsd,
     this.marginUsedUsd,
+    this.internalLedger = false,
+    this.reconciled = false,
+    this.readStatus = const PortfolioReadStatus(),
   });
   final TradingAccountKind kind;
   final String? label;
@@ -36,4 +40,7 @@ final class TradingAccount {
   final DecimalValue? availableUsd;
   final DecimalValue? marginUsedUsd;
   final List<TokenBalance> balances;
+  final bool internalLedger;
+  final bool reconciled;
+  final PortfolioReadStatus readStatus;
 }

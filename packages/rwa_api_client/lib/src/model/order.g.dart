@@ -97,6 +97,8 @@ class _$Order extends Order {
   @override
   final OrderWalletActionBlockerEnum? walletActionBlocker;
   @override
+  final String? settlementAsset;
+  @override
   final String? productId;
   @override
   final String? hip3ActionId;
@@ -166,6 +168,7 @@ class _$Order extends Order {
       {required this.kind,
       this.nextAction,
       this.walletActionBlocker,
+      this.settlementAsset,
       this.productId,
       this.hip3ActionId,
       this.timeInForce,
@@ -212,6 +215,7 @@ class _$Order extends Order {
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
+        settlementAsset == other.settlementAsset &&
         productId == other.productId &&
         hip3ActionId == other.hip3ActionId &&
         timeInForce == other.timeInForce &&
@@ -251,6 +255,7 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
+    _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, hip3ActionId.hashCode);
     _$hash = $jc(_$hash, timeInForce.hashCode);
@@ -292,6 +297,7 @@ class _$Order extends Order {
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
+          ..add('settlementAsset', settlementAsset)
           ..add('productId', productId)
           ..add('hip3ActionId', hip3ActionId)
           ..add('timeInForce', timeInForce)
@@ -343,6 +349,11 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _$this._walletActionBlocker;
   set walletActionBlocker(OrderWalletActionBlockerEnum? walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
+
+  String? _settlementAsset;
+  String? get settlementAsset => _$this._settlementAsset;
+  set settlementAsset(String? settlementAsset) =>
+      _$this._settlementAsset = settlementAsset;
 
   String? _productId;
   String? get productId => _$this._productId;
@@ -491,6 +502,7 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _kind = $v.kind;
       _nextAction = $v.nextAction;
       _walletActionBlocker = $v.walletActionBlocker;
+      _settlementAsset = $v.settlementAsset;
       _productId = $v.productId;
       _hip3ActionId = $v.hip3ActionId;
       _timeInForce = $v.timeInForce;
@@ -548,6 +560,7 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
             nextAction: nextAction,
             walletActionBlocker: walletActionBlocker,
+            settlementAsset: settlementAsset,
             productId: productId,
             hip3ActionId: hip3ActionId,
             timeInForce: timeInForce,

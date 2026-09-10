@@ -10,6 +10,202 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get hip3ConfirmSetTp => 'Set take profit';
+
+  @override
+  String get hip3ConfirmSetSl => 'Set stop loss';
+
+  @override
+  String get hip3ConfirmCancelTp => 'Cancel take profit';
+
+  @override
+  String get hip3ConfirmCancelSl => 'Cancel stop loss';
+
+  @override
+  String get hip3ConfirmClose => 'Close position';
+
+  @override
+  String get hip3ConfirmLeverageTitle => 'Adjust leverage';
+
+  @override
+  String get hip3ConfirmTitle => 'Confirm HIP3 action';
+
+  @override
+  String get hip3ConfirmReview =>
+      'Review this step before signing. Earlier completed steps remain effective if you decline.';
+
+  @override
+  String get hip3ConfirmDecline => 'Decline signature';
+
+  @override
+  String get hip3ConfirmSign => 'Confirm and sign';
+
+  @override
+  String get hip3ConfirmLeverage => 'Leverage';
+
+  @override
+  String get hip3ConfirmMargin => 'Margin mode';
+
+  @override
+  String get hip3ConfirmScope => 'Protection to cancel';
+
+  @override
+  String get hip3ConfirmCoverage => 'Protection coverage';
+
+  @override
+  String get hip3ConfirmQuantity => 'Protected quantity';
+
+  @override
+  String get hip3ConfirmTpTrigger => 'Take-profit trigger price';
+
+  @override
+  String get hip3ConfirmTpReference => 'Take-profit price reference';
+
+  @override
+  String get hip3ConfirmTpExecution => 'Take-profit execution';
+
+  @override
+  String get hip3ConfirmTpLimit => 'Take-profit limit price';
+
+  @override
+  String get hip3ConfirmSlTrigger => 'Stop-loss trigger price';
+
+  @override
+  String get hip3ConfirmSlReference => 'Stop-loss price reference';
+
+  @override
+  String get hip3ConfirmSlExecution => 'Stop-loss execution';
+
+  @override
+  String get hip3ConfirmSlLimit => 'Stop-loss limit price';
+
+  @override
+  String get hip3ConfirmDirection => 'Closing order direction';
+
+  @override
+  String get hip3ConfirmCloseQuantity => 'Close quantity';
+
+  @override
+  String get hip3ConfirmRemaining => 'Remaining quantity';
+
+  @override
+  String get hip3ConfirmEstimate => 'Estimated execution price';
+
+  @override
+  String get hip3ConfirmFee => 'Estimated fee (USDC)';
+
+  @override
+  String get hip3ConfirmPnl => 'Estimated realized PnL (USDC)';
+
+  @override
+  String get hip3ConfirmSlippage => 'Maximum slippage (%)';
+
+  @override
+  String get hip3ConfirmEntire => 'Entire position at trigger time';
+
+  @override
+  String get hip3ConfirmFixed => 'Fixed quantity';
+
+  @override
+  String get hip3ConfirmPercent => 'Percentage of position';
+
+  @override
+  String get hip3ConfirmBuyClose => 'Buy to close short position';
+
+  @override
+  String get hip3ConfirmSellClose => 'Sell to close long position';
+
+  @override
+  String get hip3ConfirmMarket => 'Market';
+
+  @override
+  String get hip3ConfirmLimit => 'Limit';
+
+  @override
+  String get hip3ConfirmMark => 'Mark price';
+
+  @override
+  String get hip3ConfirmCross => 'Cross';
+
+  @override
+  String get hip3ConfirmIsolated => 'Isolated';
+
+  @override
+  String get hip3ConfirmBoth => 'Take profit and stop loss';
+
+  @override
+  String hip3ConfirmValidUntil(String time) {
+    return 'Valid until $time (local time)';
+  }
+
+  @override
+  String get hip3PendingTitle => 'Unfinished HIP3 actions';
+
+  @override
+  String get hip3PendingRefresh => 'Refresh actions';
+
+  @override
+  String get hip3PendingLoading => 'Loading unfinished actions…';
+
+  @override
+  String get hip3PendingLoadError =>
+      'Could not load actions. Refresh to try again.';
+
+  @override
+  String get hip3PendingEmpty => 'No unfinished position actions on this page.';
+
+  @override
+  String get hip3PendingMore => 'Load more actions';
+
+  @override
+  String get hip3PendingContinue => 'Continue action';
+
+  @override
+  String get hip3PendingCheck => 'Check progress';
+
+  @override
+  String get hip3PendingBusy => 'Checking action…';
+
+  @override
+  String get hip3PendingReview =>
+      'Needs manual review. Do not create a replacement action. Contact support with the action ID.';
+
+  @override
+  String get hip3PendingSignature => 'Waiting for your signature';
+
+  @override
+  String get hip3PendingProcessing => 'Checking the exchange result';
+
+  @override
+  String get hip3PendingUnavailable => 'This action cannot be resumed here.';
+
+  @override
+  String get hip3PendingError =>
+      'Could not continue. Refresh and retry the same action.';
+
+  @override
+  String get hip3PendingStillActive =>
+      'The action is still unfinished. Continue this action instead of creating another.';
+
+  @override
+  String get hip3PendingComplete => 'Action confirmed';
+
+  @override
+  String get hip3PendingSetTpsl => 'Set or update TP/SL';
+
+  @override
+  String get hip3PendingClearTpsl => 'Cancel TP/SL';
+
+  @override
+  String get hip3PendingLeverage => 'Adjust leverage';
+
+  @override
+  String get hip3PendingClose => 'Close position';
+
+  @override
+  String get hip3PendingEffects => 'Earlier steps have already taken effect.';
+
+  @override
   String get appTitle => 'RWA Interface';
 
   @override
@@ -146,6 +342,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String get marketsUnavailable => 'Markets unavailable';
 
   @override
+  String get hip3ChartLoading => 'Loading price history…';
+
+  @override
+  String get hip3ChartInspect => 'Touch or drag the chart to inspect a candle.';
+
+  @override
+  String get hip3ChartVolume => 'Volume';
+
+  @override
+  String hip3ChartUnits(String symbol) {
+    return 'OHLC in USDC · Volume in $symbol';
+  }
+
+  @override
+  String get hip3ChartHistoryLoad => 'Load earlier candles';
+
+  @override
+  String get hip3ChartHistoryLoading => 'Loading earlier candles…';
+
+  @override
+  String get hip3ChartHistoryRetry => 'Retry earlier candles';
+
+  @override
+  String get hip3ChartHistoryError =>
+      'Earlier candles could not load. Your chart is unchanged.';
+
+  @override
+  String get hip3ChartHistoryEmpty =>
+      'No candles in that earlier window. You can continue further back.';
+
+  @override
+  String get hip3ChartHistoryEnd => 'Reached the available history limit.';
+
+  @override
+  String get hip3ChartError => 'Could not load price history.';
+
+  @override
+  String get hip3ChartEmpty => 'No trades in this period.';
+
+  @override
+  String get hip3ChartRetry => 'Refresh chart';
+
+  @override
+  String get hip3ChartStale =>
+      'Price history may be out of date. Refresh to update.';
+
+  @override
+  String get hip3ChartLine => 'Line chart';
+
+  @override
+  String get hip3ChartCandles => 'Candlestick chart';
+
+  @override
+  String get hip3ChartReferenceUnavailable =>
+      'Reference price history is not available.';
+
+  @override
   String get noProductsYet => 'No products yet';
 
   @override
@@ -176,10 +429,167 @@ class AppLocalizationsEn extends AppLocalizations {
   String get price => 'Price';
 
   @override
+  String get hip3OrderDetailTitle => 'HIP3 order details';
+
+  @override
+  String get hip3OrderHistoryTitle => 'HIP3 order records';
+
+  @override
+  String get hip3OrderHistoryEmpty => 'No HIP3 orders were returned.';
+
+  @override
+  String get hip3OrderLoadMore => 'Load more orders';
+
+  @override
+  String get hip3OrderLoading => 'Loading order details';
+
+  @override
+  String get hip3OrderLoadError =>
+      'Could not load order records. Retry to fetch the latest data.';
+
+  @override
+  String get hip3OrderRetry => 'Retry';
+
+  @override
+  String get hip3OrderRefresh => 'Refresh orders';
+
+  @override
+  String get hip3OrderNotHip3 =>
+      'HIP3 order details are unavailable for this order.';
+
+  @override
+  String get hip3OrderUnavailable => 'Unavailable';
+
+  @override
+  String get hip3OrderUnitUnavailable => 'unit unavailable';
+
+  @override
+  String get hip3OrderSummary => 'Order totals';
+
+  @override
+  String get hip3OrderDirection => 'Order direction';
+
+  @override
+  String hip3OrderSide(String side) {
+    String _temp0 = intl.Intl.selectLogic(side, {
+      'buy': 'Buy',
+      'sell': 'Sell',
+      'long': 'Long',
+      'short': 'Short',
+      'other': 'Unavailable',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get hip3OrderFilledQuantity => 'Total filled quantity';
+
+  @override
+  String get hip3OrderAveragePrice => 'Average fill price';
+
+  @override
+  String get hip3OrderTotalFee => 'Total fee';
+
+  @override
+  String get hip3OrderRealizedPnl => 'Order realized PnL';
+
+  @override
+  String get hip3OrderSummaryNote =>
+      'Totals are reported by the order API, not calculated from the records below.';
+
+  @override
+  String get hip3OrderFillsTitle => 'Individual fills';
+
+  @override
+  String hip3OrderFillsCoverage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'This response contains $count fill records',
+      one: 'This response contains 1 fill record',
+    );
+    return '$_temp0 for this order. Earlier or missing records cannot be requested separately; completeness is not confirmed.';
+  }
+
+  @override
+  String get hip3OrderReturnedRange => 'Returned execution times';
+
+  @override
+  String get hip3OrderObservedAt => 'Provider observation time';
+
+  @override
+  String get hip3OrderFillMissingFields =>
+      'Buy/sell describes each execution, not whether a position opened or closed. Fill PnL is the provider’s raw closed PnL; fees are shown separately, not deducted again. Missing facts or currencies remain unavailable.';
+
+  @override
+  String get hip3OrderFillsOmitted =>
+      'Fill details were not provided by the API. This does not mean the order has no executions.';
+
+  @override
+  String get hip3OrderFillsEmpty =>
+      'No individual fills were returned. This does not prove that no executions occurred.';
+
+  @override
+  String hip3OrderFillNumber(int index) {
+    return 'Fill $index';
+  }
+
+  @override
+  String get hip3OrderFillTime => 'Execution time';
+
+  @override
+  String get hip3OrderFillDirection => 'Fill direction';
+
+  @override
+  String get hip3OrderFillEffectLabel => 'Position effect';
+
+  @override
+  String hip3OrderFillEffect(String effect) {
+    String _temp0 = intl.Intl.selectLogic(effect, {
+      'open_long': 'Open long',
+      'close_long': 'Close long',
+      'open_short': 'Open short',
+      'close_short': 'Close short',
+      'long_to_short': 'Long to short',
+      'short_to_long': 'Short to long',
+      'other': 'Unknown',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get hip3OrderFillQuantity => 'Fill quantity';
+
+  @override
+  String get hip3OrderFillFee => 'Fill fee';
+
+  @override
+  String get hip3OrderFillPnl => 'Fill closed PnL';
+
+  @override
+  String get hip3OrderFillId => 'Fill ID';
+
+  @override
+  String get hip3OrderProviderTradeId => 'Provider trade ID';
+
+  @override
+  String get hip3OrderProviderHash => 'Provider transaction hash';
+
+  @override
   String get add => 'Add';
 
   @override
   String get takeProfitStopLoss => 'Take profit/stop loss';
+
+  @override
+  String get hip3OrderTpSl => 'Order TP/SL';
+
+  @override
+  String get hip3PositionTpSl => 'Position TP/SL';
+
+  @override
+  String get hip3PositionProtectionScope =>
+      'This editor manages position TP/SL only. Opening-order TP/SL is separate; check its activation and quantity in Orders. Empty fields here do not mean all protection is absent.';
 
   @override
   String get bstocksTpSlUnavailable =>
@@ -563,4 +973,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tradePerpPositionType => 'HIP-3 Perpetual Position';
+
+  @override
+  String get portfolioPartialData =>
+      'Some assets could not be read or valued. Shown amounts are a subtotal.';
+
+  @override
+  String get portfolioStaleData =>
+      'Showing an older snapshot. Balances and positions may have changed.';
+
+  @override
+  String get portfolioUnverifiedData =>
+      'Data completeness is not confirmed. Refresh before relying on these amounts.';
+
+  @override
+  String get portfolioLoadMore => 'Load more holdings';
+
+  @override
+  String get portfolioRefresh => 'Refresh assets';
+
+  @override
+  String get portfolioHoldingsUnconfirmed =>
+      'Holdings could not be fully confirmed';
+
+  @override
+  String get portfolioMoreHoldings =>
+      'More holdings are available on the next page.';
+
+  @override
+  String get portfolioAllocationUnavailable =>
+      'Asset allocation is not available yet.';
+
+  @override
+  String get portfolioUnifiedCollateral =>
+      'Unified-account collateral is shared by spot and perpetuals and must not be counted twice. Position value is not additional equity.';
+
+  @override
+  String get portfolioHistoryUnavailable =>
+      'Portfolio history is not available yet. No estimated trend is shown.';
+
+  @override
+  String get portfolioLedgerNotice =>
+      'These are internal ledger balances, not additional on-chain assets. They are not added to portfolio value.';
 }
