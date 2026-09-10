@@ -28,6 +28,9 @@ import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
+
+import 'hip3_market_chart.dart';
+
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
@@ -152,11 +155,13 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         : activeProduct?.isFavorite ?? false;
     final favoritesCommand = ref.watch(favoritesCommandProvider);
     final snapshotState = ref.watch(marketSnapshotProvider(productRef));
-    final candlesState = ref.watch(
-      marketCandlesProvider((product: productRef, interval: '1d')),
-    );
-    final snapshot = snapshotState.value;
-    final candles = candlesState.value;
+    final candlesState = productKind == MarketProductKind.perp
+        ? null
+        : ref.watch(
+            marketCandlesProvider((product: productRef, interval: '1d')),
+          );
+    final snapshot = snapshotState.hasError ? null : snapshotState.value;
+    final candles = candlesState?.value;
     ref.listen<CommandState<OrderIntent, ResourceResult<TradingOrder>>>(
       orderCommandProvider,
       (_, next) {
@@ -207,13 +212,45 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       _toggleFavorite(productRef, isFavorite),
                 ),
                 const SizedBox(height: 12),
-                _Chart(
-                  style: chartStyle,
-                  candles: candles,
-                  onStyleChanged: (next) => setState(() => chartStyle = next),
-                ),
+                if (productKind == MarketProductKind.perp &&
+                    snapshotState.hasError)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context).marketsUnavailable,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: AppLocalizations.of(context).hip3ChartRetry,
+                        onPressed: () =>
+                            ref.invalidate(marketSnapshotProvider(productRef)),
+                        icon: const Icon(Icons.refresh),
+                      ),
+                    ],
+                  ),
+                if (productKind == MarketProductKind.perp)
+                  Hip3MarketChart(
+                    key: ValueKey(productRef),
+                    product: productRef,
+                  )
+                else
+                  _Chart(
+                    style: chartStyle,
+                    candles: candles,
+                    onStyleChanged: (next) => setState(() => chartStyle = next),
+                  ),
                 const SizedBox(height: 16),
-                _Statistics(candles: candles, loading: candlesState.isLoading),
+                if (productKind == MarketProductKind.perp)
+                  _Hip3Statistics(
+                    snapshot: snapshot,
+                    loading: snapshotState.isLoading,
+                  )
+                else
+                  _Statistics(
+                    candles: candles,
+                    loading: candlesState?.isLoading ?? false,
+                  ),
                 const SizedBox(height: 16),
                 _Details(
                   activeTab: detailTab,
@@ -434,6 +471,10 @@ class _ProductHeader extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final price = snapshot?.price;
     final change = snapshot?.change24hPercent;
+    final changeColor =
+        kind == MarketProductKind.perp && change?.value.startsWith('-') == true
+        ? semantic.loss
+        : semantic.success;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -514,7 +555,7 @@ class _ProductHeader extends StatelessWidget {
               Text(
                 price == null ? '—' : TokenAmountFormatter.formatUsd(price),
                 style: TextStyle(
-                  color: price == null ? null : semantic.success,
+                  color: price == null ? null : changeColor,
                   fontWeight: FontWeight.w700,
                   fontSize: 24,
                   height: 30 / 24,
@@ -527,20 +568,21 @@ class _ProductHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: semantic.success.withValues(alpha: .1),
+                  color: changeColor.withValues(alpha: .1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   TokenAmountFormatter.formatPercent(change),
                   style: TextStyle(
-                    color: semantic.success,
+                    color: changeColor,
                     fontSize: 12,
                     height: 16 / 12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-            if (chartStyle == TradeChartStyle.reference) ...[
+            if (kind == MarketProductKind.bstock &&
+                chartStyle == TradeChartStyle.reference) ...[
               const SizedBox(width: 8),
               const Text(r'US Stock $175.22', style: TextStyle(fontSize: 12)),
             ],
@@ -821,6 +863,58 @@ class _DashedLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _DashedLinePainter oldDelegate) =>
       oldDelegate.color != color;
+}
+
+class _Hip3Statistics extends StatelessWidget {
+  const _Hip3Statistics({required this.snapshot, required this.loading});
+  final MarketSnapshot? snapshot;
+  final bool loading;
+  @override
+  Widget build(BuildContext context) => Wrap(
+    spacing: 16,
+    runSpacing: 12,
+    children: [
+      _Metric(
+        '24h High',
+        snapshot?.high24h == null
+            ? '—'
+            : TokenAmountFormatter.formatUsd(snapshot!.high24h!),
+        loading: loading,
+      ),
+      _Metric(
+        '24h Low',
+        snapshot?.low24h == null
+            ? '—'
+            : TokenAmountFormatter.formatUsd(snapshot!.low24h!),
+        loading: loading,
+      ),
+      // Funding is a signed rate, never a fabricated dollar payment.
+      _Metric(
+        'Funding rate',
+        snapshot?.fundingRate?.value ?? '—',
+        loading: loading,
+      ),
+      _Metric(
+        '24h Volume',
+        snapshot?.volume24h?.value ?? '—',
+        loading: loading,
+      ),
+      _Metric(
+        '24h Turnover',
+        snapshot?.turnover24h == null
+            ? '—'
+            : TokenAmountFormatter.formatUsd(snapshot!.turnover24h!),
+        loading: loading,
+      ),
+      _Metric(
+        'Open interest',
+        snapshot?.openInterestUsd == null
+            ? '—'
+            : TokenAmountFormatter.formatUsd(snapshot!.openInterestUsd!),
+        loading: loading,
+      ),
+    ],
+  );
 }
 
 class _Statistics extends StatelessWidget {

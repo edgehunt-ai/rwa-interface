@@ -74,6 +74,16 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       bids: book.bids.map(_bookEntry).toList(),
       asks: book.asks.map(_bookEntry).toList(),
       asOf: book.updatedAt?.toUtc() ?? product.quote.updatedAt?.toUtc(),
+      high24h: _decimal(product.stats?.high24h),
+      low24h: _decimal(product.stats?.low24h),
+      volume24h: _decimal(product.stats?.volume24h),
+      turnover24h: _decimal(product.stats?.turnover24hUsd),
+      fundingRate: _decimal(product.stats?.fundingRate),
+      openInterestUsd: _decimal(product.stats?.openInterestUsd),
+      referencePrice: _decimal(product.stats?.referencePrice),
+      referenceLabel: product.stats?.referenceLabel,
+      basisPercent: _decimal(product.stats?.relativePercent),
+      spreadPercent: _decimal(product.stats?.spreadPercent),
     );
   }
 
@@ -81,6 +91,8 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   Future<CandleChart> getCandles(
     MarketProductRef ref, {
     String? interval,
+    DateTime? from,
+    DateTime? to,
   }) async {
     final charts = _charts;
     if (charts == null) throw StateError('ChartsService is not configured');
@@ -88,10 +100,16 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       ref.symbol,
       _apiKind(ref.kind),
       interval: interval,
+      from: from,
+      to: to,
     );
     return CandleChart(
       symbol: value.symbol,
       range: value.range.name,
+      fetchedAt: DateTime.now().toUtc(),
+      interval: value.interval ?? interval,
+      from: value.from?.toUtc(),
+      to: value.to?.toUtc(),
       points: value.points
           .map(
             (point) => Candle(
@@ -137,6 +155,11 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     tradable: true,
     change24hPercent: _decimal(value.change24hPercent, unit: 'percent'),
     volume24h: _decimal(value.volume24h, unit: value.volume24hUnit),
+    turnover24hUsd: _decimal(
+      value.turnover24hUsd,
+      asset: 'USD',
+      unit: 'notional',
+    ),
     isFavorite: value.isFavorite ?? false,
   );
 

@@ -5,6 +5,8 @@ abstract interface class ChartsService {
     String symbol,
     api.ProductKind kind, {
     String? interval,
+    DateTime? from,
+    DateTime? to,
   });
   Future<api.MarketSessionInfo> getMarketSessions();
   Future<api.ReferencePrice> getReferencePrice(String symbol);
