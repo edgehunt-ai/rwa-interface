@@ -84,6 +84,7 @@ void main() {
       expect(find.text('NVDA'), findsOneWidget);
       expect(find.byType(SkeletonBlock), findsWidgets);
 
+      await tester.pump(const Duration(milliseconds: 300));
       repository.completeSearch();
       await tester.pumpAndSettle();
 
@@ -113,6 +114,7 @@ void main() {
       expect(find.text('NVDA'), findsOneWidget);
       expect(find.byType(SkeletonBlock), findsWidgets);
 
+      await tester.pump(const Duration(milliseconds: 300));
       repository.completeSearch();
       await tester.pumpAndSettle();
 
@@ -120,6 +122,43 @@ void main() {
       expect(find.text('TSLA'), findsOneWidget);
     },
   );
+
+  for (final searchScreen in <Widget>[
+    const MarketDiscoverySearchScreen(),
+    const MarketSearchScreen(),
+  ]) {
+    testWidgets('${searchScreen.runtimeType} debounces remote searches', (
+      tester,
+    ) async {
+      final repository = _RecordingMarketsRepository();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketsRepositoryProvider.overrideWithValue(repository),
+            marketSearchHistoryServiceProvider.overrideWithValue(
+              _MarketSearchHistoryService(),
+            ),
+          ],
+          child: MaterialApp(theme: AppTheme.light, home: searchScreen),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'n');
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.enterText(find.byType(TextField), 'nv');
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.enterText(find.byType(TextField), 'nvd');
+      await tester.pump(const Duration(milliseconds: 299));
+
+      expect(repository.queries.whereType<String>(), isEmpty);
+
+      await tester.pump(const Duration(milliseconds: 1));
+      await tester.pump();
+
+      expect(repository.queries.whereType<String>(), ['nvd']);
+    });
+  }
 
   testWidgets('all stocks loads the next cursor page while scrolling', (
     tester,
@@ -265,6 +304,32 @@ final class _ProgressiveMarketsRepository implements MarketsRepository {
   void completeSearch() => _searchResults.complete(
     DomainPage(items: [_product('NVDA', 'NVIDIA'), _product('TSLA', 'Tesla')]),
   );
+
+  MarketProduct _product(String symbol, String name) => MarketProduct(
+    symbol: symbol,
+    name: name,
+    kind: MarketProductKind.bstock,
+    price: DecimalValue('120', asset: 'USD', unit: 'price'),
+    settlementAsset: 'USDC',
+    network: 'Arbitrum',
+    tradable: true,
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _RecordingMarketsRepository implements MarketsRepository {
+  final queries = <String?>[];
+
+  @override
+  Future<DomainPage<MarketProduct>> listProducts({
+    String? query,
+    String? cursor,
+  }) async {
+    queries.add(query);
+    return DomainPage(items: [_product('NVDA', 'NVIDIA')]);
+  }
 
   MarketProduct _product(String symbol, String name) => MarketProduct(
     symbol: symbol,
