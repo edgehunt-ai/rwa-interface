@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/auth_providers.dart';
+import '../../../../app_review/app_review.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../app/providers/push_notification_providers.dart';
 import '../../../../app/config/privy_configuration.dart';
@@ -36,6 +37,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
   }
 
   Future<void> bootstrap({String? language}) async {
+    _clearAppReviewMode();
     final operation = ++_epoch;
     _activeEmail = null;
     state = const AuthenticationInitializing();
@@ -54,6 +56,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
         state = const AuthenticationUnauthenticated();
         return;
       }
+      _updateAppReviewMode(principal);
       await _establishSession(operation, principal, language: language);
     } on IdentityFailure catch (failure) {
       if (_isCurrent(operation)) state = AuthenticationFailed(failure);
@@ -67,6 +70,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
   }
 
   Future<void> requestEmailCode(String value) async {
+    _clearAppReviewMode();
     final email = _normalizeEmail(value);
     if (email == null) {
       state = const AuthenticationUnauthenticated(
@@ -124,6 +128,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
         code: submittedCode,
       );
       if (!_isCurrent(operation)) return;
+      _updateAppReviewMode(principal);
       await _establishSession(operation, principal, language: language);
       if (_isCurrent(operation) && state is AuthenticationAuthenticated) {
         _activeEmail = null;
@@ -164,6 +169,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     Future<WalletConnection> Function() connect, {
     String? language,
   }) async {
+    _clearAppReviewMode();
     final operation = ++_epoch;
     state = const AuthenticationAuthenticating();
     try {
@@ -171,6 +177,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       _walletConnection = connection;
       final principal = await _gateway.loginWithWallet(connection);
       if (_isCurrent(operation)) {
+        _updateAppReviewMode(principal);
         await _establishSession(operation, principal, language: language);
       }
     } on IdentityFailure catch (failure) {
@@ -195,11 +202,13 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     Future<IdentityPrincipal> Function() login, {
     String? language,
   }) async {
+    _clearAppReviewMode();
     final operation = ++_epoch;
     state = const AuthenticationAuthenticating();
     try {
       final principal = await login();
       if (_isCurrent(operation)) {
+        _updateAppReviewMode(principal);
         await _establishSession(operation, principal, language: language);
       }
     } on IdentityFailure catch (failure) {
@@ -240,6 +249,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       await _disconnectWallet();
       _activeEmail = null;
       ref.read(sessionGenerationProvider.notifier).clearUserScope();
+      _clearAppReviewMode();
       state = AuthenticationUnauthenticated(failure: failure);
     }
   }
@@ -254,6 +264,12 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       language: language,
       generation: generation,
     );
+    if (AppReviewConfiguration.buildEnabled) {
+      final reviewConfiguration = ref.read(appReviewConfigurationProvider);
+      if (reviewConfiguration.matchesSession(session)) {
+        ref.read(appReviewModeProvider.notifier).setEnabled(true);
+      }
+    }
     await _syncWallet(session);
     await _activateNotifications(session.account.settings);
     if (_isCurrent(operation) &&
@@ -263,6 +279,19 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
   }
 
   bool get _emailEnabled => PrivyConfiguration.loginMethods.contains('email');
+
+  void _updateAppReviewMode(IdentityPrincipal principal) {
+    if (!AppReviewConfiguration.buildEnabled) return;
+    final configuration = ref.read(appReviewConfigurationProvider);
+    ref
+        .read(appReviewModeProvider.notifier)
+        .setEnabled(configuration.matchesPrincipal(principal));
+  }
+
+  void _clearAppReviewMode() {
+    if (!AppReviewConfiguration.buildEnabled) return;
+    ref.read(appReviewModeProvider.notifier).clear();
+  }
 
   String? _normalizeEmail(String value) {
     final email = value.trim().toLowerCase();
@@ -317,6 +346,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
   }
 
   Future<void> _activateNotifications(UserPreferences preferences) async {
+    if (_isAppReviewMode) return;
     try {
       await ref.read(pushNotificationCoordinatorProvider).activate(preferences);
     } catch (_) {
@@ -331,4 +361,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       // Local sign-out remains available when device deregistration is offline.
     }
   }
+
+  bool get _isAppReviewMode =>
+      AppReviewConfiguration.buildEnabled && ref.read(appReviewModeProvider);
 }

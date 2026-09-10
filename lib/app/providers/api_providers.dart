@@ -13,6 +13,7 @@ import '../../data/repositories/account_repository_impl.dart';
 import '../../data/repositories/activity_repository_impl.dart';
 import '../../data/repositories/session_repository_impl.dart';
 import '../../data/repositories/app_update_repository_impl.dart';
+import '../../app_review/app_review.dart';
 import '../../data/repositories/wallets_repository_impl.dart';
 import '../../data/repositories/realtime_repository_impl.dart';
 import '../../data/repositories/trade_intent_repository_impl.dart';
@@ -68,6 +69,9 @@ final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
   );
 });
 final accountRepositoryProvider = Provider<AccountRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewAccountRepository(ref.watch(appReviewStoreProvider));
+  }
   final source = ref.watch(apiDataSourceProvider);
   return AccountRepositoryImpl(
     GeneratedAccountService(source.client.getAccountApi()),
@@ -81,6 +85,9 @@ final appUpdateRepositoryProvider = Provider<AppUpdateRepository>((ref) {
   );
 });
 final walletsRepositoryProvider = Provider<WalletsRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewWalletsRepository(ref.watch(appReviewStoreProvider));
+  }
   final source = ref.watch(apiDataSourceProvider);
   return WalletsRepositoryImpl(
     GeneratedWalletsService(source.client.getWalletsApi()),
@@ -94,24 +101,43 @@ final marketsRepositoryProvider = Provider<MarketsRepository>((ref) {
   );
 });
 final portfolioRepositoryProvider = Provider<PortfolioRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewPortfolioRepository();
+  }
   final source = ref.watch(apiDataSourceProvider);
   return PortfolioRepositoryImpl(
     GeneratedPortfolioService(source.client.getPortfolioApi()),
   );
 });
 final fundingRepositoryProvider = Provider<FundingRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewFundingRepository(ref.watch(appReviewStoreProvider));
+  }
   final source = ref.watch(apiDataSourceProvider);
   return FundingRepositoryImpl(
     GeneratedFundingService(source.client.getFundingApi()),
   );
 });
 final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    final source = ref.watch(apiDataSourceProvider);
+    return AppReviewOrdersRepository(
+      ref.watch(appReviewStoreProvider),
+      previewDelegate: OrdersRepositoryImpl(
+        GeneratedOrdersService(source.client.getOrdersApi()),
+      ),
+      marketsDelegate: ref.watch(marketsRepositoryProvider),
+    );
+  }
   final source = ref.watch(apiDataSourceProvider);
   return OrdersRepositoryImpl(
     GeneratedOrdersService(source.client.getOrdersApi()),
   );
 });
 final tradeIntentRepositoryProvider = Provider<TradeIntentRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewTradeIntentRepository(ref.watch(appReviewStoreProvider));
+  }
   final source = ref.watch(apiDataSourceProvider);
   return TradeIntentRepositoryImpl(
     GeneratedTradeIntentService(source.client.getOrdersApi()),
@@ -128,6 +154,12 @@ final hip3TypedDataSignerProvider = Provider<Hip3TypedDataSigner>((ref) {
 final hip3OrderExecutionRepositoryProvider =
     Provider<Hip3OrderExecutionRepository>((ref) {
       ref.watch(sessionGenerationProvider);
+      if (AppReviewConfiguration.buildEnabled &&
+          ref.watch(appReviewModeProvider)) {
+        return AppReviewHip3OrderExecutionRepository(
+          ref.watch(appReviewStoreProvider),
+        );
+      }
       final source = ref.watch(apiDataSourceProvider);
       return Hip3OrderExecutionRepositoryImpl(
         ref.watch(hip3TypedDataSignerProvider),
@@ -135,6 +167,9 @@ final hip3OrderExecutionRepositoryProvider =
       );
     });
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewPositionsRepository();
+  }
   final source = ref.watch(apiDataSourceProvider);
   return PositionsRepositoryImpl(
     GeneratedPositionsService(
@@ -145,6 +180,9 @@ final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
   );
 });
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewActivityRepository(ref.watch(appReviewStoreProvider));
+  }
   final source = ref.watch(apiDataSourceProvider);
   return ActivityRepositoryImpl(
     GeneratedActivityService(source.client.getActivityApi()),
@@ -154,5 +192,8 @@ final realtimeServiceProvider = Provider<RealtimeService>((ref) {
   return DioRealtimeService(ref.watch(apiDataSourceProvider).dio);
 });
 final realtimeRepositoryProvider = Provider<RealtimeRepository>((ref) {
+  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
+    return AppReviewRealtimeRepository();
+  }
   return RealtimeRepositoryImpl(ref.watch(realtimeServiceProvider));
 });

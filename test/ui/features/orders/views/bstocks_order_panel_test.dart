@@ -78,6 +78,30 @@ void main() {
     expect(find.text('USDC'), findsOneWidget);
   });
 
+  testWidgets('review summary formats fee with its settlement asset', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(
+            _SettlementFeeOrdersRepository(),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel(symbol: 'TSLA')),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('0.02 USDC'), findsWidgets);
+  });
+
   testWidgets('bStocks order form shows a skeleton while the balance loads', (
     tester,
   ) async {
@@ -500,6 +524,21 @@ final class _QuotedOrdersRepository extends _DelayedOrdersRepository {
     orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
     estimatedQuantity: DecimalValue('0.54', asset: 'NVDAB', unit: 'token'),
     fee: DecimalValue('0.02', asset: 'NVDAB', unit: 'token'),
+    settlementAsset: 'USDC',
+  );
+}
+
+final class _SettlementFeeOrdersRepository extends _DelayedOrdersRepository {
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async => OrderPreview(
+    previewId: 'settlement-fee-quote',
+    intent: intent,
+    orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+    estimatedQuantity: DecimalValue('0.54', asset: 'TSLA', unit: 'token'),
+    fee: DecimalValue('0.02', asset: 'USDC', unit: 'token'),
     settlementAsset: 'USDC',
   );
 }

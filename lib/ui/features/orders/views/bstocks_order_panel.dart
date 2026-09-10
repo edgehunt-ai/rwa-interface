@@ -483,7 +483,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       if (preview!.fee case final fee?)
         _SummaryRow(
           label: 'Estimated fee',
-          value: TokenAmountFormatter.format(fee, symbol: widget.symbol),
+          value: TokenAmountFormatter.format(
+            fee,
+            symbol: fee.asset ?? widget.symbol,
+          ),
         ),
       if (preview!.marketPrice case final marketPrice?)
         _SummaryRow(
