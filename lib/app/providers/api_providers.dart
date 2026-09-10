@@ -4,6 +4,8 @@ import '../../data/api/api_environment.dart';
 import '../../data/api/privy_access_token_provider.dart';
 import '../../data/api/rwa_api_data_source.dart';
 import '../../data/repositories/markets_repository_impl.dart';
+import '../../data/repositories/hip3_opening_repository_impl.dart';
+import '../../domain/repositories/hip3_opening_repository.dart';
 import '../../data/repositories/hip3_order_execution_repository_impl.dart';
 import '../../data/repositories/funding_repository_impl.dart';
 import '../../data/repositories/orders_repository_impl.dart';
@@ -128,6 +130,23 @@ final hip3OrderExecutionRepositoryProvider =
         GeneratedHip3OrderActionService(source.client.getOrdersApi()),
       );
     });
+final hip3OpeningRepositoryProvider = Provider<Hip3OpeningRepository>((ref) {
+  final generation = ref.watch(sessionGenerationProvider);
+  final service = GeneratedHip3PositionActionService(
+    ref.watch(apiDataSourceProvider).client.getOrdersApi(),
+  );
+  return Hip3OpeningRepositoryImpl(
+    service,
+    Hip3PositionActionExecutor(
+      service,
+      _PositionSessionSigner(ref, generation),
+      isActive: () =>
+          ref.mounted && ref.read(sessionGenerationProvider) == generation,
+    ),
+    (summary) => ref.read(hip3ConfirmationProvider.notifier).request(summary),
+  );
+});
+
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
   final generation = ref.watch(sessionGenerationProvider);
   final source = ref.watch(apiDataSourceProvider);

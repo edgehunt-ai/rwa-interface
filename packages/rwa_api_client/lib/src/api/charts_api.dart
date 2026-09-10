@@ -25,7 +25,7 @@ class ChartsApi {
   const ChartsApi(this._dio, this._serializers);
 
   /// K 线 / 价格序列
-  /// 详情页图表数据。同时返回链上产品价格序列与美股参考价序列 —— 参考价仅在 美股有报价的时段（盘前 / 开盘 / 盘后）存在，其余时段为空洞，前端据此画虚线。 
+  /// 详情页图表数据。同时返回链上产品价格序列与美股参考价序列 —— 参考价仅在 美股有报价的时段（盘前 / 开盘 / 盘后）存在，其余时段为空洞，前端据此画虚线。 HIP-3 的 points 来自该产品所属 Hyperliquid 网络及 builder DEX 的 candleSnapshot， 不得复用同 symbol 的 bStocks 或其他场所数据。网络由服务端产品配置确定，不由客户端自由改写。 上游不可用或无法确认数据新鲜度时返回错误，不返回样例曲线；成功但没有成交数据时 points 为空。 缺少参考序列时 reference_points 为空，不得用 mark/oracle 伪造美股历史。 HIP-3 请求窗口必须在当前时间以内且少于 5000 个采样间隔；最后一根可能仍在形成。 图表窗口 1h/4h/1d/1w 可分别传显式 from/to，推荐 interval 为 1m/5m/15m/1h。 range 是预设窗口标识，interval 是单根 K 线粒度；显式窗口的权威边界为响应 from/to，不能仅用 range 推断。 
   ///
   /// Parameters:
   /// * [symbol] - 股票代码

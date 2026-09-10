@@ -12,7 +12,7 @@ import 'package:one_of/one_of.dart';
 
 part 'funding_global_circuit.g.dart';
 
-/// FundingGlobalCircuit
+/// Structural union; each variant requires its own singleton `state`.
 ///
 /// Properties:
 /// * [scope] 
@@ -25,13 +25,6 @@ abstract class FundingGlobalCircuit implements Built<FundingGlobalCircuit, Fundi
   /// One Of [FundingGlobalCircuitClosed], [FundingGlobalCircuitOpen]
   OneOf get oneOf;
 
-  static const String discriminatorFieldName = r'state';
-
-  static const Map<String, Type> discriminatorMapping = {
-    r'closed': FundingGlobalCircuitClosed,
-    r'open': FundingGlobalCircuitOpen,
-  };
-
   FundingGlobalCircuit._();
 
   factory FundingGlobalCircuit([void updates(FundingGlobalCircuitBuilder b)]) = _$FundingGlobalCircuit;
@@ -41,29 +34,6 @@ abstract class FundingGlobalCircuit implements Built<FundingGlobalCircuit, Fundi
 
   @BuiltValueSerializer(custom: true)
   static Serializer<FundingGlobalCircuit> get serializer => _$FundingGlobalCircuitSerializer();
-}
-
-extension FundingGlobalCircuitDiscriminatorExt on FundingGlobalCircuit {
-    String? get discriminatorValue {
-        if (this is FundingGlobalCircuitClosed) {
-            return r'closed';
-        }
-        if (this is FundingGlobalCircuitOpen) {
-            return r'open';
-        }
-        return null;
-    }
-}
-extension FundingGlobalCircuitBuilderDiscriminatorExt on FundingGlobalCircuitBuilder {
-    String? get discriminatorValue {
-        if (this is FundingGlobalCircuitClosedBuilder) {
-            return r'closed';
-        }
-        if (this is FundingGlobalCircuitOpenBuilder) {
-            return r'open';
-        }
-        return null;
-    }
 }
 
 class _$FundingGlobalCircuitSerializer implements PrimitiveSerializer<FundingGlobalCircuit> {
@@ -98,32 +68,9 @@ class _$FundingGlobalCircuitSerializer implements PrimitiveSerializer<FundingGlo
   }) {
     final result = FundingGlobalCircuitBuilder();
     Object? oneOfDataSrc;
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex = serializedList.indexOf(FundingGlobalCircuit.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    final targetType = const FullType(OneOf, [FullType(FundingGlobalCircuitClosed), FullType(FundingGlobalCircuitOpen), ]);
     oneOfDataSrc = serialized;
-    final oneOfTypes = [FundingGlobalCircuitClosed, FundingGlobalCircuitOpen, ];
-    Object oneOfResult;
-    Type oneOfType;
-    switch (discValue) {
-      case r'closed':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(FundingGlobalCircuitClosed),
-        ) as FundingGlobalCircuitClosed;
-        oneOfType = FundingGlobalCircuitClosed;
-        break;
-      case r'open':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(FundingGlobalCircuitOpen),
-        ) as FundingGlobalCircuitOpen;
-        oneOfType = FundingGlobalCircuitOpen;
-        break;
-      default:
-        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
-    }
-    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }

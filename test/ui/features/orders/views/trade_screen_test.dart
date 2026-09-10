@@ -300,7 +300,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Long'));
     await tester.pumpAndSettle();
 
-    expect(find.text('10×'), findsWidgets);
+    expect(find.text('Long NVDA'), findsWidgets);
     expect(find.byKey(const Key('hip3-tp-sl-toggle')), findsOneWidget);
   });
 

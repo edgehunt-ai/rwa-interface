@@ -244,7 +244,9 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     ),
                     Expanded(
                       child: Text(
-                        l10n.takeProfitStopLoss,
+                        widget.position.kind == MarketProductKind.perp
+                            ? l10n.hip3PositionTpSl
+                            : l10n.takeProfitStopLoss,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
@@ -255,6 +257,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                   '${widget.position.productId ?? widget.position.symbol} · ${widget.position.side == PositionSide.long ? 'Long' : 'Short'}',
                 ),
                 if (_loadingProtection) const LinearProgressIndicator(),
+                if (widget.position.kind == MarketProductKind.perp)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(l10n.hip3PositionProtectionScope),
+                  ),
                 const SizedBox(height: 16),
                 _TpSlRiskControl(
                   title: l10n.takeProfit,

@@ -3,24 +3,24 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/multi_source_funding_transfer_request.dart';
+import 'package:rwa_api_client/src/model/legacy_funding_transfer_request.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:one_of/one_of.dart';
 
 part 'transfer_request.g.dart';
 
-/// TransferRequest
+/// Creates exactly one Transfer. Multi-source plans require a leg-scoped request and one independent authorization per leg; clients cannot batch authorization IDs or create multiple legs at once. 
 ///
 /// Properties:
 /// * [planId] 
-/// * [authorizationId] - 已绑定同一 frozen plan 且尚未消费的一次性钱包授权 ID。
+/// * [legId] - The next server-eligible leg in ordinal order for this frozen plan.
+/// * [authorizationId] - 已绑定同一 frozen single-source plan 且尚未消费的一次性钱包授权 ID。
 @BuiltValue()
 abstract class TransferRequest implements Built<TransferRequest, TransferRequestBuilder> {
-  @BuiltValueField(wireName: r'plan_id')
-  String get planId;
-
-  /// 已绑定同一 frozen plan 且尚未消费的一次性钱包授权 ID。
-  @BuiltValueField(wireName: r'authorization_id')
-  String get authorizationId;
+  /// One Of [LegacyFundingTransferRequest], [MultiSourceFundingTransferRequest]
+  OneOf get oneOf;
 
   TransferRequest._();
 
@@ -45,16 +45,6 @@ class _$TransferRequestSerializer implements PrimitiveSerializer<TransferRequest
     TransferRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'plan_id';
-    yield serializers.serialize(
-      object.planId,
-      specifiedType: const FullType(String),
-    );
-    yield r'authorization_id';
-    yield serializers.serialize(
-      object.authorizationId,
-      specifiedType: const FullType(String),
-    );
   }
 
   @override
@@ -63,41 +53,8 @@ class _$TransferRequestSerializer implements PrimitiveSerializer<TransferRequest
     TransferRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
-
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required TransferRequestBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'plan_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.planId = valueDes;
-          break;
-        case r'authorization_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.authorizationId = valueDes;
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
+    final oneOf = object.oneOf;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -107,16 +64,10 @@ class _$TransferRequestSerializer implements PrimitiveSerializer<TransferRequest
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = TransferRequestBuilder();
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
+    Object? oneOfDataSrc;
+    final targetType = const FullType(OneOf, [FullType(MultiSourceFundingTransferRequest), FullType(LegacyFundingTransferRequest), ]);
+    oneOfDataSrc = serialized;
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }

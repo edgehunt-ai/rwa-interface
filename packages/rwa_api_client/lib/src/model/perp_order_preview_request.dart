@@ -8,13 +8,13 @@ import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'perp_order_preview_request.g.dart';
 
-/// HIP-3 永续订单。只接受 `long` / `short`；市价单以 `amount` 表示 USDC 名义价值， 限价单须传 `limit_price` 和 `quantity`。杠杆、保证金模式和 `reduce_only` 仅适用于此类订单。 protection 与旧版 tp_sl 不得同时传入；不支持的能力返回 422，不得静默忽略。 
+/// HIP-3 永续订单。只接受 `long` / `short`；amount（USDC 名义价值）与 quantity 恰传其一。 限价单须传 limit_price，使用 GTC；市价单使用 IOC，slippage_percent 默认 1，范围 [0,5]。 protection 仅表示本单止盈止损，数量由本次开仓委托冻结，不接受持仓保护的 size_mode。 protection 与旧版 tp_sl 不得同时传入；不支持的能力返回 422，不得静默忽略。 
 ///
 /// Properties:
 /// * [contextId] - 可选的 HIP3 trading context；存在时精确绑定账户/产品/环境，过期返回 409。新客户端在请求前读取 context。
@@ -43,7 +43,7 @@ abstract class PerpOrderPreviewRequest implements Built<PerpOrderPreviewRequest,
   // enum timeInForceEnum {  gtc,  ioc,  alo,  };
 
   @BuiltValueField(wireName: r'protection')
-  Hip3ProtectionSpec? get protection;
+  Hip3OrderProtectionSpec? get protection;
 
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
@@ -132,7 +132,7 @@ class _$PerpOrderPreviewRequestSerializer implements PrimitiveSerializer<PerpOrd
       yield r'protection';
       yield serializers.serialize(
         object.protection,
-        specifiedType: const FullType(Hip3ProtectionSpec),
+        specifiedType: const FullType.nullable(Hip3OrderProtectionSpec),
       );
     }
     yield r'symbol';
@@ -253,8 +253,8 @@ class _$PerpOrderPreviewRequestSerializer implements PrimitiveSerializer<PerpOrd
         case r'protection':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(Hip3ProtectionSpec),
-          ) as Hip3ProtectionSpec?;
+            specifiedType: const FullType.nullable(Hip3OrderProtectionSpec),
+          ) as Hip3OrderProtectionSpec?;
           if (valueDes == null) continue;
           result.protection.replace(valueDes);
           break;

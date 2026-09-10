@@ -396,6 +396,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get takeProfitStopLoss => '止盈/止损';
 
   @override
+  String get hip3OrderTpSl => '本单止盈止损';
+
+  @override
+  String get hip3PositionTpSl => '持仓止盈止损';
+
+  @override
+  String get hip3PositionProtectionScope =>
+      '这里只管理持仓止盈止损。开仓时附带的本单止盈止损独立存在，请在订单中查看其激活状态和数量；这里为空不代表所有保护都不存在。';
+
+  @override
   String get bstocksTpSlUnavailable => 'bStocks 订单暂不支持止盈/止损。';
 
   @override

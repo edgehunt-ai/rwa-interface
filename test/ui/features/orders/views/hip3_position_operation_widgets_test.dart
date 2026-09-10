@@ -20,6 +20,82 @@ import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  for (final entry in {
+    'unknown': 'Protection status unknown — not confirmed active',
+    'pendingSubmission': 'Protection not submitted',
+    'waitingForParent': 'Protection waiting for parent fill — not active',
+    'pendingConfirmation': 'Protection activation awaiting confirmation',
+    'active': 'Protection active',
+    'inactive': 'Protection is no longer active',
+  }.entries) {
+    testWidgets('conditional order distinguishes ${entry.key}', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: buildTestApp(
+            Hip3OpenOrderCard(
+              order: _order(
+                'child',
+                conditional: true,
+                activationStatus: entry.key,
+              ),
+              onChanged: () {},
+            ),
+          ),
+        ),
+      );
+      expect(find.text(entry.value), findsOneWidget);
+      expect(find.text('Attached to order: parent'), findsOneWidget);
+      if (entry.key != 'active') {
+        expect(find.text('Protection active'), findsNothing);
+      }
+    });
+  }
+  testWidgets('cancelled child warns about remaining position protection', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: buildTestApp(
+          Hip3OpenOrderCard(
+            order: _order(
+              'child',
+              conditional: true,
+              activationStatus: 'active',
+              status: TradingOrderStatus.cancelled,
+              warningCode: 'parentCancelledCheckRemainingPositionProtection',
+            ),
+            onChanged: () {},
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Protection active'), findsNothing);
+    expect(
+      find.textContaining('Parent cancelled: this protection is inactive.'),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      isNull,
+    );
+  });
+  testWidgets('parent warns before cancellation about attached protection', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: buildTestApp(
+          Hip3OpenOrderCard(order: _order('parent'), onChanged: () {}),
+        ),
+      ),
+    );
+    expect(
+      find.textContaining(
+        'replacement protection is not created automatically',
+      ),
+      findsOneWidget,
+    );
+  });
   testWidgets('existing fixed protection keeps its quantity when reopened', (
     tester,
   ) async {
@@ -36,6 +112,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.text('Position TP/SL'), findsOneWidget);
+    expect(
+      find.textContaining(
+        'Empty fields here do not mean all protection is absent.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Order TP/SL'), findsNothing);
     final input = tester.widget<TextField>(
       find.byKey(const Key('protection-quantity')),
     );
@@ -245,7 +329,13 @@ Position _position({
   stopLossPrice: DecimalValue(short ? '110' : '90'),
 );
 
-TradingOrder _order(String id, {bool conditional = false}) => TradingOrder(
+TradingOrder _order(
+  String id, {
+  bool conditional = false,
+  String activationStatus = 'unknown',
+  String? warningCode,
+  TradingOrderStatus status = TradingOrderStatus.open,
+}) => TradingOrder(
   orderId: id,
   productId: 'xyz:TSLA',
   positionId: 'p-tsla',
@@ -253,7 +343,7 @@ TradingOrder _order(String id, {bool conditional = false}) => TradingOrder(
   kind: MarketProductKind.perp,
   side: conditional ? TradingSide.short : TradingSide.long,
   type: TradingOrderType.limit,
-  status: TradingOrderStatus.open,
+  status: status,
   createdAt: DateTime.utc(2026),
   quantity: DecimalValue('1'),
   filledQuantity: DecimalValue(conditional ? '0.25' : '0'),
@@ -266,6 +356,9 @@ TradingOrder _order(String id, {bool conditional = false}) => TradingOrder(
           executionType: 'market',
           sizeMode: 'quantity',
           quantity: '1',
+          activationStatus: activationStatus,
+          warningCode: warningCode,
+          parentOrderId: 'parent',
         )
       : null,
 );

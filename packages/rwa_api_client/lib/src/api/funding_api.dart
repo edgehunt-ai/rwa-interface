@@ -25,6 +25,7 @@ import 'package:rwa_api_client/src/model/transfer_action_submission.dart';
 import 'package:rwa_api_client/src/model/transfer_action_submission_request.dart';
 import 'package:rwa_api_client/src/model/transfer_claim_request.dart';
 import 'package:rwa_api_client/src/model/transfer_request.dart';
+import 'package:rwa_api_client/src/model/unified_funding_account.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution_create_request.dart';
 import 'package:rwa_api_client/src/model/withdrawal.dart';
@@ -965,12 +966,12 @@ class FundingApi {
     );
   }
 
-  /// 获取只读入金指引
-  /// 返回当前账号已验证 Privy EVM 钱包在指定网络和 Token 上的只读入金指引。 该请求不得创建 Deposit Intent、Operation、Outbox 或 Activity；重复请求没有业务副作用。 
+  /// 获取多链稳定币只读入金目录
+  /// 无参数调用返回当前账号已验证 Embedded EVM Wallet，以及 Ethereum、Arbitrum、Base、BSC 上 USDC/USDT 的八个精确链币组合。不可用组合仍返回 identity 和 blocker，但 响应项中不得出现 &#x60;qr_payload&#x60;；只有 available 变体携带非空 QR，避免形成可操作的错误入金指引。  兼容窗口内，旧客户端仍可同时传入完整 &#x60;chain&#x60; 和 &#x60;token&#x60;，并接收旧版单项 &#x60;DepositInstruction&#x60;；不得只传其中一个参数。两项 query 参数将在下一个 major 版本移除。 该请求不得创建 Deposit Intent、Operation、Outbox 或 Activity；重复请求没有业务副作用。 
   ///
   /// Parameters:
-  /// * [chain] 
-  /// * [token] 
+  /// * [chain] - Deprecated legacy selector; must be supplied together with `token`.
+  /// * [token] - Deprecated legacy selector; must be supplied together with `chain`.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -981,8 +982,8 @@ class FundingApi {
   /// Returns a [Future] containing a [Response] with a [DepositInstruction] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<DepositInstruction>> getDepositInstruction({ 
-    required String chain,
-    required String token,
+    @Deprecated('chain is deprecated') String? chain,
+    @Deprecated('token is deprecated') String? token,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -1010,8 +1011,8 @@ class FundingApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      r'chain': encodeQueryParameter(_serializers, chain, const FullType(String)),
-      r'token': encodeQueryParameter(_serializers, token, const FullType(String)),
+      if (chain != null) r'chain': encodeQueryParameter(_serializers, chain, const FullType(String)),
+      if (token != null) r'token': encodeQueryParameter(_serializers, token, const FullType(String)),
     };
 
     final _response = await _dio.request<Object>(
@@ -1055,7 +1056,7 @@ class FundingApi {
   }
 
   /// 资金网络与结算资产目录
-  /// 
+  /// Deprecated compatibility adapter. New clients use &#x60;GET /v1/deposit-instructions&#x60; for the account-specific eight-rail deposit directory and funding-plan responses for server-selected target/provider routes. This path remains available only during the v1 compatibility window. 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -1067,6 +1068,7 @@ class FundingApi {
   ///
   /// Returns a [Future] containing a [Response] with a [FundingCatalog] as data
   /// Throws [DioException] if API call or serialization fails
+  @Deprecated('This operation has been deprecated')
   Future<Response<FundingCatalog>> getFundingCatalog({ 
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -1284,6 +1286,85 @@ class FundingApi {
     }
 
     return Response<Transfer>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 获取非托管统一资金账户
+  /// 聚合当前账号 Embedded EVM Wallet 中受支持稳定币的余额、预留、在途和可用于补资的价值。 本接口是只读视图；读取不得创建资金计划、预留、划转、钱包动作或 Activity。 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [UnifiedFundingAccount] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<UnifiedFundingAccount>> getUnifiedFundingAccount({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/funding/account';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    UnifiedFundingAccount? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(UnifiedFundingAccount),
+      ) as UnifiedFundingAccount;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<UnifiedFundingAccount>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

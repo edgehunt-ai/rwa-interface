@@ -18,7 +18,7 @@ import 'package:one_of/one_of.dart';
 
 part 'funding_source_asset_identity.g.dart';
 
-/// One of the eight exact v1 source chain-token identities.
+/// One of the eight exact v1 source chain-token identities. Variant selection is structural: every child requires its own singleton `asset_id`, which avoids consuming that required field as a generated-client discriminator tag. 
 ///
 /// Properties:
 /// * [assetId] 
@@ -34,19 +34,6 @@ abstract class FundingSourceAssetIdentity implements Built<FundingSourceAssetIde
   /// One Of [ArbitrumUsdcFundingSourceAsset], [ArbitrumUsdtFundingSourceAsset], [BaseUsdcFundingSourceAsset], [BaseUsdtFundingSourceAsset], [BscUsdcFundingSourceAsset], [BscUsdtFundingSourceAsset], [EthereumUsdcFundingSourceAsset], [EthereumUsdtFundingSourceAsset]
   OneOf get oneOf;
 
-  static const String discriminatorFieldName = r'asset_id';
-
-  static const Map<String, Type> discriminatorMapping = {
-    r'eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': EthereumUsdcFundingSourceAsset,
-    r'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7': EthereumUsdtFundingSourceAsset,
-    r'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831': ArbitrumUsdcFundingSourceAsset,
-    r'eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9': ArbitrumUsdtFundingSourceAsset,
-    r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955': BscUsdtFundingSourceAsset,
-    r'eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d': BscUsdcFundingSourceAsset,
-    r'eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': BaseUsdcFundingSourceAsset,
-    r'eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2': BaseUsdtFundingSourceAsset,
-  };
-
   FundingSourceAssetIdentity._();
 
   factory FundingSourceAssetIdentity([void updates(FundingSourceAssetIdentityBuilder b)]) = _$FundingSourceAssetIdentity;
@@ -56,65 +43,6 @@ abstract class FundingSourceAssetIdentity implements Built<FundingSourceAssetIde
 
   @BuiltValueSerializer(custom: true)
   static Serializer<FundingSourceAssetIdentity> get serializer => _$FundingSourceAssetIdentitySerializer();
-}
-
-extension FundingSourceAssetIdentityDiscriminatorExt on FundingSourceAssetIdentity {
-    String? get discriminatorValue {
-        if (this is EthereumUsdcFundingSourceAsset) {
-            return r'eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-        }
-        if (this is EthereumUsdtFundingSourceAsset) {
-            return r'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7';
-        }
-        if (this is ArbitrumUsdcFundingSourceAsset) {
-            return r'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831';
-        }
-        if (this is ArbitrumUsdtFundingSourceAsset) {
-            return r'eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
-        }
-        if (this is BscUsdtFundingSourceAsset) {
-            return r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955';
-        }
-        if (this is BscUsdcFundingSourceAsset) {
-            return r'eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d';
-        }
-        if (this is BaseUsdcFundingSourceAsset) {
-            return r'eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
-        }
-        if (this is BaseUsdtFundingSourceAsset) {
-            return r'eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2';
-        }
-        return null;
-    }
-}
-extension FundingSourceAssetIdentityBuilderDiscriminatorExt on FundingSourceAssetIdentityBuilder {
-    String? get discriminatorValue {
-        if (this is EthereumUsdcFundingSourceAssetBuilder) {
-            return r'eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-        }
-        if (this is EthereumUsdtFundingSourceAssetBuilder) {
-            return r'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7';
-        }
-        if (this is ArbitrumUsdcFundingSourceAssetBuilder) {
-            return r'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831';
-        }
-        if (this is ArbitrumUsdtFundingSourceAssetBuilder) {
-            return r'eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9';
-        }
-        if (this is BscUsdtFundingSourceAssetBuilder) {
-            return r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955';
-        }
-        if (this is BscUsdcFundingSourceAssetBuilder) {
-            return r'eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d';
-        }
-        if (this is BaseUsdcFundingSourceAssetBuilder) {
-            return r'eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
-        }
-        if (this is BaseUsdtFundingSourceAssetBuilder) {
-            return r'eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2';
-        }
-        return null;
-    }
 }
 
 class _$FundingSourceAssetIdentitySerializer implements PrimitiveSerializer<FundingSourceAssetIdentity> {
@@ -149,74 +77,9 @@ class _$FundingSourceAssetIdentitySerializer implements PrimitiveSerializer<Fund
   }) {
     final result = FundingSourceAssetIdentityBuilder();
     Object? oneOfDataSrc;
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex = serializedList.indexOf(FundingSourceAssetIdentity.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    final targetType = const FullType(OneOf, [FullType(EthereumUsdcFundingSourceAsset), FullType(EthereumUsdtFundingSourceAsset), FullType(ArbitrumUsdcFundingSourceAsset), FullType(ArbitrumUsdtFundingSourceAsset), FullType(BaseUsdcFundingSourceAsset), FullType(BaseUsdtFundingSourceAsset), FullType(BscUsdcFundingSourceAsset), FullType(BscUsdtFundingSourceAsset), ]);
     oneOfDataSrc = serialized;
-    final oneOfTypes = [EthereumUsdcFundingSourceAsset, EthereumUsdtFundingSourceAsset, ArbitrumUsdcFundingSourceAsset, ArbitrumUsdtFundingSourceAsset, BscUsdtFundingSourceAsset, BscUsdcFundingSourceAsset, BaseUsdcFundingSourceAsset, BaseUsdtFundingSourceAsset, ];
-    Object oneOfResult;
-    Type oneOfType;
-    switch (discValue) {
-      case r'eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(EthereumUsdcFundingSourceAsset),
-        ) as EthereumUsdcFundingSourceAsset;
-        oneOfType = EthereumUsdcFundingSourceAsset;
-        break;
-      case r'eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(EthereumUsdtFundingSourceAsset),
-        ) as EthereumUsdtFundingSourceAsset;
-        oneOfType = EthereumUsdtFundingSourceAsset;
-        break;
-      case r'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(ArbitrumUsdcFundingSourceAsset),
-        ) as ArbitrumUsdcFundingSourceAsset;
-        oneOfType = ArbitrumUsdcFundingSourceAsset;
-        break;
-      case r'eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(ArbitrumUsdtFundingSourceAsset),
-        ) as ArbitrumUsdtFundingSourceAsset;
-        oneOfType = ArbitrumUsdtFundingSourceAsset;
-        break;
-      case r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(BscUsdtFundingSourceAsset),
-        ) as BscUsdtFundingSourceAsset;
-        oneOfType = BscUsdtFundingSourceAsset;
-        break;
-      case r'eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(BscUsdcFundingSourceAsset),
-        ) as BscUsdcFundingSourceAsset;
-        oneOfType = BscUsdcFundingSourceAsset;
-        break;
-      case r'eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(BaseUsdcFundingSourceAsset),
-        ) as BaseUsdcFundingSourceAsset;
-        oneOfType = BaseUsdcFundingSourceAsset;
-        break;
-      case r'eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(BaseUsdtFundingSourceAsset),
-        ) as BaseUsdtFundingSourceAsset;
-        oneOfType = BaseUsdtFundingSourceAsset;
-        break;
-      default:
-        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
-    }
-    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }
