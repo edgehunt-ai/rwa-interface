@@ -1,4 +1,4 @@
 [submodule "contracts/rwa-api-contract"]
 	path = contracts/rwa-api-contract
 	url = git@github.com:edgehunt-ai/rwa-api-contract.git
-	branch = feat/hip3-client-signed-workflows
+	branch = main

@@ -123,14 +123,12 @@ class _Summary extends StatelessWidget {
         ),
         _Fact(
           l10n.hip3OrderAveragePrice,
-          // Legacy aggregate mapping labels amounts USDC, but the order API
-          // has no currency field. Do not use that assumed unit in this view.
-          _amount(order.averageFillPrice, null, l10n),
+          _amount(order.averageFillPrice, order.settlementAsset, l10n),
         ),
         _Fact(l10n.hip3OrderTotalFee, _amount(order.fee, null, l10n)),
         _Fact(
           l10n.hip3OrderRealizedPnl,
-          _amount(order.realizedPnl, null, l10n),
+          _amount(order.realizedPnl, order.settlementAsset, l10n),
         ),
         Text(l10n.hip3OrderSummaryNote, style: text.bodySmall),
         const SizedBox(height: 24),
@@ -180,14 +178,26 @@ class _Fill extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         _Fact(l10n.hip3OrderFillTime, hip3FillTime(fill.executedAt)),
-        _Fact(l10n.hip3OrderFillDirection, missing),
+        _Fact(
+          l10n.hip3OrderFillDirection,
+          fill.side == null ? missing : l10n.hip3OrderSide(fill.side!.name),
+        ),
+        _Fact(
+          l10n.hip3OrderFillEffectLabel,
+          fill.positionEffect == null
+              ? missing
+              : l10n.hip3OrderFillEffect(fill.positionEffect!),
+        ),
         _Fact(
           l10n.hip3OrderFillQuantity,
           _amount(fill.quantity, fill.quantity.asset, l10n),
         ),
         _Fact(l10n.price, _amount(fill.price, fill.price.asset, l10n)),
         _Fact(l10n.hip3OrderFillFee, _amount(fill.fee, fill.fee.asset, l10n)),
-        _Fact(l10n.hip3OrderFillPnl, missing),
+        _Fact(
+          l10n.hip3OrderFillPnl,
+          _amount(fill.closedPnl, fill.closedPnl?.asset, l10n),
+        ),
         _Fact(l10n.hip3OrderFillId, fill.fillId),
         _Fact(l10n.hip3OrderProviderTradeId, fill.providerTradeId),
         if (fill.providerHash != null)

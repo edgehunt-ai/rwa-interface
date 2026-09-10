@@ -1049,7 +1049,7 @@ abstract class AppLocalizations {
   /// No description provided for @hip3OrderFillMissingFields.
   ///
   /// In en, this message translates to:
-  /// **'The API does not provide direction or realized PnL for individual fills. Order direction and order PnL are shown separately above.'**
+  /// **'Buy/sell describes each execution, not whether a position opened or closed. Fill PnL is the provider’s raw closed PnL; fees are shown separately, not deducted again. Missing facts or currencies remain unavailable.'**
   String get hip3OrderFillMissingFields;
 
   /// No description provided for @hip3OrderFillsOmitted.
@@ -1082,6 +1082,18 @@ abstract class AppLocalizations {
   /// **'Fill direction'**
   String get hip3OrderFillDirection;
 
+  /// No description provided for @hip3OrderFillEffectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Position effect'**
+  String get hip3OrderFillEffectLabel;
+
+  /// No description provided for @hip3OrderFillEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'{effect, select, open_long{Open long} close_long{Close long} open_short{Open short} close_short{Close short} long_to_short{Long to short} short_to_long{Short to long} other{Unknown}}'**
+  String hip3OrderFillEffect(String effect);
+
   /// No description provided for @hip3OrderFillQuantity.
   ///
   /// In en, this message translates to:
@@ -1097,7 +1109,7 @@ abstract class AppLocalizations {
   /// No description provided for @hip3OrderFillPnl.
   ///
   /// In en, this message translates to:
-  /// **'Fill realized PnL'**
+  /// **'Fill closed PnL'**
   String get hip3OrderFillPnl;
 
   /// No description provided for @hip3OrderFillId.

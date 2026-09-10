@@ -6,7 +6,75 @@ part of 'order_fill.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const OrderFillSideEnum _$orderFillSideEnum_buy =
+    const OrderFillSideEnum._('buy');
+const OrderFillSideEnum _$orderFillSideEnum_sell =
+    const OrderFillSideEnum._('sell');
+const OrderFillSideEnum _$orderFillSideEnum_unknownDefaultOpenApi =
+    const OrderFillSideEnum._('unknownDefaultOpenApi');
+
+OrderFillSideEnum _$orderFillSideEnumValueOf(String name) {
+  switch (name) {
+    case 'buy':
+      return _$orderFillSideEnum_buy;
+    case 'sell':
+      return _$orderFillSideEnum_sell;
+    case 'unknownDefaultOpenApi':
+      return _$orderFillSideEnum_unknownDefaultOpenApi;
+    default:
+      return _$orderFillSideEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<OrderFillSideEnum> _$orderFillSideEnumValues =
+    BuiltSet<OrderFillSideEnum>(const <OrderFillSideEnum>[
+  _$orderFillSideEnum_buy,
+  _$orderFillSideEnum_sell,
+  _$orderFillSideEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<OrderFillSideEnum> _$orderFillSideEnumSerializer =
+    _$OrderFillSideEnumSerializer();
+
+class _$OrderFillSideEnumSerializer
+    implements PrimitiveSerializer<OrderFillSideEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'buy': 'buy',
+    'sell': 'sell',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'buy': 'buy',
+    'sell': 'sell',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[OrderFillSideEnum];
+  @override
+  final String wireName = 'OrderFillSideEnum';
+
+  @override
+  Object serialize(Serializers serializers, OrderFillSideEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  OrderFillSideEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      OrderFillSideEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$OrderFill extends OrderFill {
+  @override
+  final OrderFillSideEnum? side;
+  @override
+  final String? positionEffect;
+  @override
+  final String? closedPnl;
+  @override
+  final String? pnlAsset;
   @override
   final String fillId;
   @override
@@ -28,7 +96,11 @@ class _$OrderFill extends OrderFill {
       (OrderFillBuilder()..update(updates))._build();
 
   _$OrderFill._(
-      {required this.fillId,
+      {this.side,
+      this.positionEffect,
+      this.closedPnl,
+      this.pnlAsset,
+      required this.fillId,
       required this.providerTradeId,
       required this.price,
       required this.quantity,
@@ -48,6 +120,10 @@ class _$OrderFill extends OrderFill {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is OrderFill &&
+        side == other.side &&
+        positionEffect == other.positionEffect &&
+        closedPnl == other.closedPnl &&
+        pnlAsset == other.pnlAsset &&
         fillId == other.fillId &&
         providerTradeId == other.providerTradeId &&
         price == other.price &&
@@ -61,6 +137,10 @@ class _$OrderFill extends OrderFill {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, side.hashCode);
+    _$hash = $jc(_$hash, positionEffect.hashCode);
+    _$hash = $jc(_$hash, closedPnl.hashCode);
+    _$hash = $jc(_$hash, pnlAsset.hashCode);
     _$hash = $jc(_$hash, fillId.hashCode);
     _$hash = $jc(_$hash, providerTradeId.hashCode);
     _$hash = $jc(_$hash, price.hashCode);
@@ -76,6 +156,10 @@ class _$OrderFill extends OrderFill {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'OrderFill')
+          ..add('side', side)
+          ..add('positionEffect', positionEffect)
+          ..add('closedPnl', closedPnl)
+          ..add('pnlAsset', pnlAsset)
           ..add('fillId', fillId)
           ..add('providerTradeId', providerTradeId)
           ..add('price', price)
@@ -90,6 +174,23 @@ class _$OrderFill extends OrderFill {
 
 class OrderFillBuilder implements Builder<OrderFill, OrderFillBuilder> {
   _$OrderFill? _$v;
+
+  OrderFillSideEnum? _side;
+  OrderFillSideEnum? get side => _$this._side;
+  set side(OrderFillSideEnum? side) => _$this._side = side;
+
+  String? _positionEffect;
+  String? get positionEffect => _$this._positionEffect;
+  set positionEffect(String? positionEffect) =>
+      _$this._positionEffect = positionEffect;
+
+  String? _closedPnl;
+  String? get closedPnl => _$this._closedPnl;
+  set closedPnl(String? closedPnl) => _$this._closedPnl = closedPnl;
+
+  String? _pnlAsset;
+  String? get pnlAsset => _$this._pnlAsset;
+  set pnlAsset(String? pnlAsset) => _$this._pnlAsset = pnlAsset;
 
   String? _fillId;
   String? get fillId => _$this._fillId;
@@ -131,6 +232,10 @@ class OrderFillBuilder implements Builder<OrderFill, OrderFillBuilder> {
   OrderFillBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _side = $v.side;
+      _positionEffect = $v.positionEffect;
+      _closedPnl = $v.closedPnl;
+      _pnlAsset = $v.pnlAsset;
       _fillId = $v.fillId;
       _providerTradeId = $v.providerTradeId;
       _price = $v.price;
@@ -160,6 +265,10 @@ class OrderFillBuilder implements Builder<OrderFill, OrderFillBuilder> {
   _$OrderFill _build() {
     final _$result = _$v ??
         _$OrderFill._(
+          side: side,
+          positionEffect: positionEffect,
+          closedPnl: closedPnl,
+          pnlAsset: pnlAsset,
           fillId: BuiltValueNullFieldError.checkNotNull(
               fillId, r'OrderFill', 'fillId'),
           providerTradeId: BuiltValueNullFieldError.checkNotNull(

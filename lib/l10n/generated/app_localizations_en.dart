@@ -519,7 +519,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hip3OrderFillMissingFields =>
-      'The API does not provide direction or realized PnL for individual fills. Order direction and order PnL are shown separately above.';
+      'Buy/sell describes each execution, not whether a position opened or closed. Fill PnL is the provider’s raw closed PnL; fees are shown separately, not deducted again. Missing facts or currencies remain unavailable.';
 
   @override
   String get hip3OrderFillsOmitted =>
@@ -541,13 +541,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3OrderFillDirection => 'Fill direction';
 
   @override
+  String get hip3OrderFillEffectLabel => 'Position effect';
+
+  @override
+  String hip3OrderFillEffect(String effect) {
+    String _temp0 = intl.Intl.selectLogic(effect, {
+      'open_long': 'Open long',
+      'close_long': 'Close long',
+      'open_short': 'Open short',
+      'close_short': 'Close short',
+      'long_to_short': 'Long to short',
+      'short_to_long': 'Short to long',
+      'other': 'Unknown',
+    });
+    return '$_temp0';
+  }
+
+  @override
   String get hip3OrderFillQuantity => 'Fill quantity';
 
   @override
   String get hip3OrderFillFee => 'Fill fee';
 
   @override
-  String get hip3OrderFillPnl => 'Fill realized PnL';
+  String get hip3OrderFillPnl => 'Fill closed PnL';
 
   @override
   String get hip3OrderFillId => 'Fill ID';
