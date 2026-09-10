@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
+import '../../../../app/providers/hip3_query_refresh.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
@@ -17,9 +18,11 @@ import '../../../../domain/models/hip3_action_summary.dart';
 final activeHip3ActionsProvider = FutureProvider.autoDispose
     .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
-      return ref
-          .watch(positionsRepositoryProvider)
-          .activeHip3Actions(cursor: cursor);
+      final repository = ref.watch(positionsRepositoryProvider);
+      return hip3RefreshingQuery(
+        ref,
+        () => repository.activeHip3Actions(cursor: cursor),
+      );
     });
 
 typedef PositionFilter = ({
@@ -31,13 +34,15 @@ typedef PositionFilter = ({
 final positionsProvider = FutureProvider.autoDispose
     .family<DomainPage<Position>, PositionFilter>((ref, filter) {
       ref.watch(sessionGenerationProvider);
-      return ref
-          .watch(positionsRepositoryProvider)
-          .list(
-            symbol: filter.symbol,
-            kind: filter.kind,
-            cursor: filter.cursor,
-          );
+      final repository = ref.watch(positionsRepositoryProvider);
+      Future<DomainPage<Position>> read() => repository.list(
+        symbol: filter.symbol,
+        kind: filter.kind,
+        cursor: filter.cursor,
+      );
+      return filter.kind == MarketProductKind.bstock
+          ? read()
+          : hip3RefreshingQuery(ref, read);
     });
 
 final positionProvider = FutureProvider.autoDispose.family<Position, String>((
@@ -45,7 +50,12 @@ final positionProvider = FutureProvider.autoDispose.family<Position, String>((
   positionId,
 ) {
   ref.watch(sessionGenerationProvider);
-  return ref.watch(positionsRepositoryProvider).get(positionId);
+  final repository = ref.watch(positionsRepositoryProvider);
+  return hip3RefreshingQuery(
+    ref,
+    () => repository.get(positionId),
+    shouldPoll: (value) => value.kind == MarketProductKind.perp,
+  );
 });
 
 final positionCommandProvider = Provider.autoDispose((ref) {
@@ -56,6 +66,7 @@ final positionCommandProvider = Provider.autoDispose((ref) {
 final positionLeverageContextProvider = FutureProvider.autoDispose
     .family<PositionLeverageContext, String>((ref, productId) {
       ref.watch(sessionGenerationProvider);
+      ref.watch(hip3QueryRevisionProvider);
       return ref.watch(positionsRepositoryProvider).leverageContext(productId);
     }, retry: (_, _) => null);
 
@@ -106,6 +117,7 @@ final class PositionCommands {
       // A failed/paused call can still have created a recoverable server action.
       // Never refresh a different user's session after an in-flight command.
       if (_ref.mounted && _ref.read(sessionGenerationProvider) == generation) {
+        _ref.read(hip3QueryRevisionProvider.notifier).refresh();
         _ref.invalidate(activeHip3ActionsProvider);
         _ref.invalidate(hip3OpenOrdersProvider);
         _ref.invalidate(hip3OrdersProvider);

@@ -973,4 +973,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tradePerpPositionType => 'HIP-3 Perpetual Position';
+
+  @override
+  String get portfolioPartialData =>
+      'Some assets could not be read or valued. Shown amounts are a subtotal.';
+
+  @override
+  String get portfolioStaleData =>
+      'Showing an older snapshot. Balances and positions may have changed.';
+
+  @override
+  String get portfolioUnverifiedData =>
+      'Data completeness is not confirmed. Refresh before relying on these amounts.';
+
+  @override
+  String get portfolioLoadMore => 'Load more holdings';
+
+  @override
+  String get portfolioRefresh => 'Refresh assets';
+
+  @override
+  String get portfolioHoldingsUnconfirmed =>
+      'Holdings could not be fully confirmed';
+
+  @override
+  String get portfolioMoreHoldings =>
+      'More holdings are available on the next page.';
+
+  @override
+  String get portfolioAllocationUnavailable =>
+      'Asset allocation is not available yet.';
+
+  @override
+  String get portfolioUnifiedCollateral =>
+      'Unified-account collateral is shared by spot and perpetuals and must not be counted twice. Position value is not additional equity.';
+
+  @override
+  String get portfolioHistoryUnavailable =>
+      'Portfolio history is not available yet. No estimated trend is shown.';
+
+  @override
+  String get portfolioLedgerNotice =>
+      'These are internal ledger balances, not additional on-chain assets. They are not added to portfolio value.';
 }

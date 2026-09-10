@@ -222,7 +222,9 @@ void main() {
       tester.widget<TextFormField>(find.byType(TextFormField)).controller!.text,
       '4',
     );
-    expect(repo.contextCalls, 1);
+    // A failed/ambiguous command refreshes observations, without claiming the
+    // requested setting succeeded or discarding the user's input.
+    expect(repo.contextCalls, 2);
   });
 
   testWidgets('context error can reload; expired context cannot sign', (
