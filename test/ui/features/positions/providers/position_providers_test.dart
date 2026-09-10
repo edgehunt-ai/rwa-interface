@@ -298,6 +298,9 @@ final class _PositionsRepository implements PositionsRepository {
     String positionId, {
     String? quantity,
     String? percent,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    Position? expectedPosition,
     required String idempotencyKey,
   }) async {
     closeKeys.add(idempotencyKey);

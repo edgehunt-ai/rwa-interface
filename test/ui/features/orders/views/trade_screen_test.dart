@@ -13,6 +13,7 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
@@ -371,9 +372,9 @@ void main() {
 
     await tester.enterText(find.byType(TextField).at(0), '200');
     await tester.enterText(find.byType(TextField).at(1), '150');
-    expect(find.text('Drag to set'), findsNWidgets(2));
-    expect(find.text('Quantity'), findsOneWidget);
-    expect(find.text('NVDA'), findsWidgets);
+    expect(find.text('Drag to set'), findsNothing);
+    expect(find.text('Protection size'), findsOneWidget);
+    expect(find.text('Entire position (default)'), findsOneWidget);
     await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pump();
@@ -405,7 +406,7 @@ void main() {
     await tester.ensureVisible(editTpSl);
     await tester.tap(editTpSl);
     await tester.pumpAndSettle();
-    expect(find.text('Drag to set'), findsNWidgets(2));
+    expect(find.text('Protection size'), findsOneWidget);
   });
 
   testWidgets(
@@ -566,6 +567,9 @@ final class _OrderOutcomeRepository implements OrdersRepository {
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
     MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   }) => throw UnimplementedError();
 
   @override
@@ -586,8 +590,11 @@ final class _PositionsRepository implements PositionsRepository {
   Future<Position> updateTpSl(
     Position position, {
     String? takeProfit,
+    String? takeLimit,
     String? stopLoss,
     String? stopLimit,
+    String? quantity,
+    ProtectionClearScope? clearScope,
     required String idempotencyKey,
   }) async {
     tpSlUpdates.add((position.positionId, takeProfit, stopLoss));
@@ -612,6 +619,7 @@ final class _PositionsRepository implements PositionsRepository {
   @override
   Future<Position> clearTpSl(
     String positionId, {
+    ProtectionClearScope scope = ProtectionClearScope.both,
     required String idempotencyKey,
   }) => throw UnimplementedError();
 
@@ -627,6 +635,9 @@ final class _PositionsRepository implements PositionsRepository {
     String positionId, {
     String? quantity,
     String? percent,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    Position? expectedPosition,
     required String idempotencyKey,
   }) => throw UnimplementedError();
 }
@@ -648,6 +659,9 @@ final class _OpenOrderRepository implements OrdersRepository {
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
     MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   }) => Future.value(DomainPage(items: [ResourceResult(resource: _order)]));
 
   @override

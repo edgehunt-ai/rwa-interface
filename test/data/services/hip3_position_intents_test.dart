@@ -4,6 +4,7 @@ import 'package:rwa_interface/data/services/hip3_position_intents.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_operation.dart';
 
 void main() {
   final position = Position(
@@ -63,6 +64,50 @@ void main() {
       'position_version': 'v2',
       'scope': 'both',
     });
+  });
+  test('clear targets exactly the selected protection leg', () {
+    expect(
+      wire(
+        Hip3PositionIntents.clearProtection(
+          position,
+          scope: ProtectionClearScope.takeProfit,
+        ),
+      )['scope'],
+      'take_profit',
+    );
+    expect(
+      wire(
+        Hip3PositionIntents.clearProtection(
+          position,
+          scope: ProtectionClearScope.stopLoss,
+        ),
+      )['scope'],
+      'stop_loss',
+    );
+  });
+  test('fixed quantity is explicit, preserved exactly and bounded', () {
+    final protection =
+        wire(
+              Hip3PositionIntents.setProtection(
+                position,
+                takeProfit: '130',
+                quantity: '0.123456789012345678',
+              ),
+            )['protection']
+            as Map;
+    expect(protection['size_mode'], 'quantity');
+    expect(protection['quantity'], '0.123456789012345678');
+    expect(protection.containsKey('percent'), isFalse);
+    for (final bad in ['0', '-1', '1.000000000000000001']) {
+      expect(
+        () => Hip3PositionIntents.setProtection(
+          position,
+          takeProfit: '130',
+          quantity: bad,
+        ),
+        throwsArgumentError,
+      );
+    }
   });
   test('close references a frozen preview, never direct position mutation', () {
     expect(wire(Hip3PositionIntents.close('preview-1')), {

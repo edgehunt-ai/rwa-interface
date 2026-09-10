@@ -25,6 +25,30 @@ final hip3OrdersProvider = FutureProvider.autoDispose
           .list(cursor: cursor, kind: MarketProductKind.perp);
     });
 
+typedef Hip3OpenOrderQuery = ({
+  String symbol,
+  String? productId,
+  String? cursor,
+});
+
+/// Filter before pagination, never after fetching an arbitrary history page.
+final hip3OpenOrdersProvider = FutureProvider.autoDispose
+    .family<DomainPage<ResourceResult<TradingOrder>>, Hip3OpenOrderQuery>((
+      ref,
+      query,
+    ) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(ordersRepositoryProvider)
+          .list(
+            kind: MarketProductKind.perp,
+            symbol: query.symbol,
+            productId: query.productId,
+            statusGroup: 'open',
+            cursor: query.cursor,
+          );
+    });
+
 final orderProvider = FutureProvider.autoDispose
     .family<ResourceResult<TradingOrder>, String>((ref, orderId) {
       ref.watch(sessionGenerationProvider);
@@ -125,6 +149,7 @@ final class OrderCommandNotifier
       ref.invalidate(orderProvider(result.resource.orderId));
     } finally {
       ref.invalidate(hip3OrdersProvider);
+      ref.invalidate(hip3OpenOrdersProvider);
       ref.invalidate(orderProvider(order.orderId));
     }
   }

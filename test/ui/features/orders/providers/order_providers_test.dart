@@ -155,6 +155,9 @@ final class _OrdersRepository implements OrdersRepository {
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
     MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   }) async {
     listedKind = kind;
     return const DomainPage(items: []);

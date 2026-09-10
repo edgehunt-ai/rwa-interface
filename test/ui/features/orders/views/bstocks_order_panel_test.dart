@@ -459,6 +459,9 @@ final class _DelayedOrdersRepository implements OrdersRepository {
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
     String? cursor,
     MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
   }) => throw UnimplementedError();
 
   @override

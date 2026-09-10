@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'hip3_close_position_sheet.dart';
+import 'hip3_open_orders_panel.dart';
+import '../../../../domain/models/position_operation.dart';
+import '../../../../domain/models/hip3_action_pending.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
