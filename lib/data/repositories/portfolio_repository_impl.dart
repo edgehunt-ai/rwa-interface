@@ -23,6 +23,7 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
       totalValueUsd: _usd(value.totalValueUsd),
       availableToTradeUsd: _usd(value.availableToTradeUsd),
       todayPnl: _optionalUsd(value.todayPnlUsd),
+      todayPnlPercent: _optional(value.todayPnlPercent, 'percent'),
       marginInUseUsd: _optionalUsd(value.marginInUseUsd),
       stocksValueUsd: _optionalUsd(value.stocksValueUsd),
       updatedAt: value.calculatedAt.toUtc(),
@@ -97,6 +98,13 @@ Position mapPosition(api.Position value) => Position(
     api.PositionSideEnum.long => PositionSide.long,
     api.PositionSideEnum.short => PositionSide.short,
     _ => PositionSide.none,
+  },
+  productId: value.productId,
+  positionVersion: value.positionVersion,
+  marginMode: switch (value.marginMode) {
+    api.MarginMode.isolated => TradingMarginMode.isolated,
+    api.MarginMode.cross => TradingMarginMode.cross,
+    _ => null,
   },
   quantity: DecimalValue(
     value.quantity,

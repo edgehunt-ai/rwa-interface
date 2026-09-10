@@ -18,6 +18,7 @@ final class Portfolio {
     required this.totalValueUsd,
     required this.availableToTradeUsd,
     this.todayPnl,
+    this.todayPnlPercent,
     this.marginInUseUsd,
     this.stocksValueUsd,
     this.updatedAt,
@@ -27,6 +28,7 @@ final class Portfolio {
   final DecimalValue totalValueUsd;
   final DecimalValue availableToTradeUsd;
   final DecimalValue? todayPnl;
+  final DecimalValue? todayPnlPercent;
   final DecimalValue? marginInUseUsd;
   final DecimalValue? stocksValueUsd;
   final DateTime? updatedAt;
