@@ -77,6 +77,7 @@ void main() {
           ..._orderJson(status: 'submitted'),
           'order_id': 'close-1',
           'kind': 'perp',
+          'side': 'short',
         }),
       ]);
       final source = _source(adapter);
@@ -163,10 +164,12 @@ void main() {
         (await positionCommands.updateLeverage(position, '3')).leverage?.value,
         '3',
       );
-      expect(
-        (await positionCommands.close('position-1', percent: '100')).status,
-        TradingOrderStatus.submitted,
+      final closeOrder = await positionCommands.close(
+        'position-1',
+        percent: '100',
       );
+      expect(closeOrder.status, TradingOrderStatus.submitted);
+      expect(closeOrder.side, TradingSide.short);
 
       expect(signer.calls, 4);
       expect(confirmations, [
@@ -344,7 +347,8 @@ const _closePreview = <String, Object?>{
   'position_version': 'v1',
   'environment': 'testnet',
   'product_id': 'xyz:NVDA',
-  'side': 'long',
+  // Close preview side is the order direction, opposite to the long position.
+  'side': 'short',
   'type': 'market',
   'time_in_force': 'ioc',
   'quantity': '1',
