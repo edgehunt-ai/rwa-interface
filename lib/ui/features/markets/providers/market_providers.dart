@@ -27,10 +27,10 @@ final marketSnapshotProvider = FutureProvider.autoDispose
     });
 
 final marketCandlesProvider = FutureProvider.autoDispose
-    .family<CandleChart, ({MarketProductRef product, String? interval})>(
+    .family<CandleChart, ({MarketProductRef product, CandleChartRange range})>(
       (ref, query) => ref
           .watch(marketsRepositoryProvider)
-          .getCandles(query.product, interval: query.interval),
+          .getCandles(query.product, range: query.range),
     );
 
 final favoritesCommandProvider =

@@ -80,14 +80,18 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   @override
   Future<CandleChart> getCandles(
     MarketProductRef ref, {
-    String? interval,
+    required CandleChartRange range,
   }) async {
     final charts = _charts;
     if (charts == null) throw StateError('ChartsService is not configured');
+    final request = _candleRequest(range);
     final value = await charts.getCandles(
       ref.symbol,
       _apiKind(ref.kind),
-      interval: interval,
+      range: request.range,
+      from: request.from,
+      to: request.to,
+      interval: request.interval,
     );
     return CandleChart(
       symbol: value.symbol,
@@ -156,4 +160,41 @@ final class MarketsRepositoryImpl implements MarketsRepository {
 
   DecimalValue? _decimal(String? value, {String? asset, String? unit}) =>
       value == null ? null : DecimalValue(value, asset: asset, unit: unit);
+
+  _CandleRequest _candleRequest(CandleChartRange range) {
+    final now = DateTime.now().toUtc();
+    return switch (range) {
+      CandleChartRange.oneHour => _CandleRequest(
+        from: now.subtract(const Duration(hours: 1)),
+        to: now,
+        interval: '1m',
+      ),
+      CandleChartRange.fourHours => const _CandleRequest(
+        range: api.ChartRange.n4h,
+        interval: '5m',
+      ),
+      CandleChartRange.oneDay => const _CandleRequest(
+        range: api.ChartRange.n24h,
+        interval: '15m',
+      ),
+      CandleChartRange.oneWeek => const _CandleRequest(
+        range: api.ChartRange.n1w,
+        interval: '1h',
+      ),
+    };
+  }
+}
+
+final class _CandleRequest {
+  const _CandleRequest({
+    this.range,
+    this.from,
+    this.to,
+    required this.interval,
+  });
+
+  final api.ChartRange? range;
+  final DateTime? from;
+  final DateTime? to;
+  final String interval;
 }

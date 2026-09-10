@@ -11,7 +11,10 @@ abstract interface class MarketsRepository {
   });
   Future<MarketProduct> getProduct(MarketProductRef ref);
   Future<MarketSnapshot> getSnapshot(MarketProductRef ref);
-  Future<CandleChart> getCandles(MarketProductRef ref, {String? interval});
+  Future<CandleChart> getCandles(
+    MarketProductRef ref, {
+    required CandleChartRange range,
+  });
   Future<void> addFavorite(MarketProductRef ref);
   Future<void> removeFavorite(MarketProductRef ref);
   Future<void> replaceFavorites(List<MarketProductRef> refs);

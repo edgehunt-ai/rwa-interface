@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/market_snapshot.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/data/services/market_search_history_service.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
@@ -46,6 +47,34 @@ void main() {
       product,
     ]);
   });
+
+  test('keeps chart requests isolated by selected range', () async {
+    final repository = _MarketsRepository();
+    final container = ProviderContainer(
+      overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    const product = MarketProductRef(
+      symbol: 'NVDA',
+      kind: MarketProductKind.bstock,
+    );
+
+    await container.read(
+      marketCandlesProvider((product: product, range: CandleChartRange.oneHour))
+          .future,
+    );
+    await container.read(
+      marketCandlesProvider((
+        product: product,
+        range: CandleChartRange.fourHours,
+      )).future,
+    );
+
+    expect(repository.requestedRanges, [
+      CandleChartRange.oneHour,
+      CandleChartRange.fourHours,
+    ]);
+  });
 }
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {
@@ -64,11 +93,27 @@ final class _MarketSearchHistoryService implements MarketSearchHistoryService {
 }
 
 final class _MarketsRepository implements MarketsRepository {
+  final requestedRanges = <CandleChartRange>[];
+
   @override
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
   }) async => DomainPage(items: const [], nextCursor: cursor);
+
+  @override
+  Future<CandleChart> getCandles(
+    MarketProductRef ref, {
+    required CandleChartRange range,
+  }) async {
+    requestedRanges.add(range);
+    return CandleChart(
+      symbol: ref.symbol,
+      range: range.label,
+      points: const [],
+    );
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

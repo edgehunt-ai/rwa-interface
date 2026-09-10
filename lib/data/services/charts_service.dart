@@ -4,6 +4,9 @@ abstract interface class ChartsService {
   Future<api.CandleSeries> getCandles(
     String symbol,
     api.ProductKind kind, {
+    api.ChartRange? range,
+    DateTime? from,
+    DateTime? to,
     String? interval,
   });
   Future<api.MarketSessionInfo> getMarketSessions();

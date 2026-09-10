@@ -114,6 +114,45 @@ void main() {
     expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
   });
 
+  testWidgets('Trade shows a chart skeleton while switching chart ranges', (
+    tester,
+  ) async {
+    const product = MarketProductRef(
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+    );
+    final oneHour = Completer<CandleChart>();
+    final fourHours = Completer<CandleChart>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketCandlesProvider((
+            product: product,
+            range: CandleChartRange.oneHour,
+          )).overrideWith((_) => oneHour.future),
+          marketCandlesProvider((
+            product: product,
+            range: CandleChartRange.fourHours,
+          )).overrideWith((_) => fourHours.future),
+        ],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+
+    expect(find.byKey(const Key('trade-chart-skeleton')), findsOneWidget);
+    oneHour.complete(_chart(product.symbol, CandleChartRange.oneHour));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
+
+    await tester.tap(find.text('4h'));
+    await tester.pump();
+    expect(find.byKey(const Key('trade-chart-skeleton')), findsOneWidget);
+
+    fourHours.complete(_chart(product.symbol, CandleChartRange.fourHours));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('trade-chart-skeleton')), findsNothing);
+  });
+
   testWidgets(
     'Trade header renders the authoritative snapshot when available',
     (tester) async {
@@ -441,6 +480,17 @@ Position _position(MarketProductKind kind) => Position(
   quantity: DecimalValue('1', unit: 'quantity'),
   valueUsd: DecimalValue('100', asset: 'USDC', unit: 'token'),
   entryPrice: DecimalValue('175', asset: 'USDC', unit: 'price'),
+);
+
+CandleChart _chart(String symbol, CandleChartRange range) => CandleChart(
+  symbol: symbol,
+  range: range.label,
+  points: [
+    Candle(
+      at: DateTime.utc(2026),
+      close: DecimalValue('100', asset: 'USDC', unit: 'price'),
+    ),
+  ],
 );
 
 Widget _tradeWithMarkets({List<MarketProduct>? products}) => ProviderScope(

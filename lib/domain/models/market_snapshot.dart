@@ -1,5 +1,16 @@
 import 'decimal_value.dart';
 
+enum CandleChartRange {
+  oneHour('1h'),
+  fourHours('4h'),
+  oneDay('1d'),
+  oneWeek('1w');
+
+  const CandleChartRange(this.label);
+
+  final String label;
+}
+
 final class OrderBookEntry {
   const OrderBookEntry({required this.price, required this.size});
   final DecimalValue price;
