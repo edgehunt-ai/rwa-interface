@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/app/providers/hip3_query_refresh.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
@@ -79,6 +80,41 @@ void main() {
       container.read(marketListProvider(key));
   MarketListNotifier commands([MarketListQuery key = query]) =>
       container.read(marketListProvider(key).notifier);
+
+  testWidgets('refreshes all visible pages atomically and pauses offscreen', (
+    tester,
+  ) async {
+    final subscription = container.listen(marketListProvider(query), (_, _) {});
+    repo.requests[0].result.complete(page([product('TSLA')], next: 'first'));
+    await tester.pump();
+    final next = commands().loadMore();
+    repo.requests[1].result.complete(page([product('GOLD')]));
+    await next;
+    await tester.pump(const Duration(seconds: 10));
+    expect(repo.requests.length, 3);
+    expect(state().items.length, 2);
+    await tester.pump(const Duration(seconds: 60));
+    expect(repo.requests.length, 3); // no overlapping poll
+    repo.requests[2].result.complete(
+      page([product('TSLA', price: '2')], next: 'new'),
+    );
+    await tester.pump();
+    expect(repo.requests[3].cursor, 'new');
+    expect(state().items.first.price.value, '1'); // publish whole window only
+    repo.requests[3].result.complete(page([product('GOLD', price: '3')]));
+    await tester.pump();
+    expect(state().items.map((p) => p.price.value), ['2', '3']);
+    container.read(hip3ForegroundProvider.notifier).setForeground(false);
+    await tester.pump(const Duration(seconds: 60));
+    expect(repo.requests.length, 4);
+    container.read(hip3ForegroundProvider.notifier).setForeground(true);
+    await tester.pump();
+    expect(repo.requests.length, 5);
+    subscription.close();
+    repo.requests[4].result.complete(page([product('TSLA', price: '99')]));
+    await tester.pump(const Duration(seconds: 60));
+    expect(repo.requests.length, 5);
+  });
 
   test(
     'forwards all query dimensions and requests filtered first page',

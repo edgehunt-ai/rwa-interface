@@ -9,12 +9,13 @@ import 'package:built_value/serializer.dart';
 
 part 'auto_multi_source_funding_plan_request.g.dart';
 
-/// Requests deterministic automatic allocation from the current account's eligible positions. Provider, route, target, calldata, action payloads and the three-leg limit are server-owned. 
+/// Deprecated preview-bound allocation. New clients use a recoverable FundingSession. Provider, route, target, calldata, action payloads and the three-leg limit are server-owned. 
 ///
 /// Properties:
 /// * [tradePreviewId] - Immutable preview from which the target identity and required amount are derived.
 /// * [mode] 
 /// * [excludedSourcePositionIds] - Optional account-scoped opaque positions that the allocator must not use.
+@Deprecated('AutoMultiSourceFundingPlanRequest has been deprecated')
 @BuiltValue()
 abstract class AutoMultiSourceFundingPlanRequest implements Built<AutoMultiSourceFundingPlanRequest, AutoMultiSourceFundingPlanRequestBuilder> {
   /// Immutable preview from which the target identity and required amount are derived.
@@ -143,6 +144,7 @@ class _$AutoMultiSourceFundingPlanRequestSerializer implements PrimitiveSerializ
   }
 }
 
+@Deprecated('AutoMultiSourceFundingPlanRequestModeEnum has been deprecated')
 class AutoMultiSourceFundingPlanRequestModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_multi_source')

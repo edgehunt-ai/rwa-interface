@@ -19,10 +19,13 @@ final class Hip3OpeningContext {
     required this.validUntil,
     required this.operations,
     this.blocker,
+    this.venue,
+    this.settlementAsset,
   });
   final String contextId;
   final String productId;
   final String environment;
+  final String? venue, settlementAsset;
   final int? currentLeverage;
   final int maximumLeverage;
   final TradingMarginMode? currentMarginMode;

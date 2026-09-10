@@ -10,6 +10,129 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get marketFavoritesReorder => '调整收藏顺序';
+
+  @override
+  String get marketFavoritesCompleteSet => '调整全部收藏的顺序，包括其他产品类型。此操作不会添加或删除收藏。';
+
+  @override
+  String get marketFavoritesLoadingAll => '正在加载全部收藏…';
+
+  @override
+  String get marketFavoritesLoadFailed => '未能加载完整收藏列表，请重新加载后再调整顺序。';
+
+  @override
+  String get marketFavoritesOrderChanged => '排序尚未确认。正在重新加载收藏，请核对最新完整列表后重试。';
+
+  @override
+  String get marketFavoritesEmpty => '暂无可排序的收藏。';
+
+  @override
+  String get marketFavoritesSaving => '正在保存顺序…';
+
+  @override
+  String get marketFavoritesSaveOrder => '保存顺序';
+
+  @override
+  String get marketFavoriteMoveUp => '收藏上移';
+
+  @override
+  String get marketFavoriteMoveDown => '收藏下移';
+
+  @override
+  String get hip3QuoteExpiredShort => '报价已过期';
+
+  @override
+  String get hip3QuoteMark => '标记价格（Mark）';
+
+  @override
+  String get hip3QuoteOracle => 'HIP3 预言机价格（Oracle）';
+
+  @override
+  String get hip3QuoteUnknownSource => '价格来源暂不可用';
+
+  @override
+  String get hip3QuoteOracleDisclosure => 'Mark 和 HIP3 Oracle 均不是美股市场参考价。';
+
+  @override
+  String hip3QuoteObserved(String time) {
+    return '观测时间：$time';
+  }
+
+  @override
+  String get hip3QuoteTimeUnavailable => '观测时间暂不可用';
+
+  @override
+  String get hip3QuoteExpired => '报价已过期，请等待更新后再交易。';
+
+  @override
+  String get hip3QuoteFreshnessUnknown => '报价时效尚未验证';
+
+  @override
+  String get hip3QuoteCurrent => '报价仍在有效期内';
+
+  @override
+  String hip3HoldingsCoverage(int displayed, int observed) {
+    return 'HIP3 展示范围：已观察的 $observed 个持仓中，$displayed 个可在全部分页中展示。这不是全钱包视图。';
+  }
+
+  @override
+  String hip3HoldingsUnmapped(int count) {
+    return '$count 个持仓无法匹配已验证产品，尚未展示。';
+  }
+
+  @override
+  String hip3HoldingsExcluded(int count) {
+    return '$count 个已验证的非 HIP3 持仓不在此视图范围内。';
+  }
+
+  @override
+  String get marketFavoriteAdd => '添加收藏';
+
+  @override
+  String get marketFavoriteRemove => '取消收藏';
+
+  @override
+  String get marketFavoriteAdded => '已添加收藏。';
+
+  @override
+  String get marketFavoriteRemoved => '已取消收藏。';
+
+  @override
+  String get marketFavoriteFailed => '无法更新收藏，请重试。';
+
+  @override
+  String get hip3ActivityOpening => '开仓';
+
+  @override
+  String get hip3ActivityClosing => '平仓';
+
+  @override
+  String get hip3ActivityTakeProfit => '止盈';
+
+  @override
+  String get hip3ActivityStopLoss => '止损';
+
+  @override
+  String get hip3ActivityUnknown => '未分类 HIP3 订单';
+
+  @override
+  String get hip3MarketIdentityMismatch => '行情与交易账户的产品或环境不一致。请重新加载行情后再下单。';
+
+  @override
+  String get hip3MarketMainnetReadOnly =>
+      '当前为主网只读行情。App 交易仅支持测试网，不能使用此报价创建测试网订单。';
+
+  @override
+  String get hip3MarketOpeningUnavailable => '此产品当前无法开仓。请重新加载并查看最新交易能力。';
+
+  @override
+  String get hip3MarketAccountScope => '账户持仓和订单当前来自测试网，不属于此行情环境，不能按同名产品混合展示。';
+
+  @override
+  String get hip3MarketViewAccount => '查看账户资产';
+
+  @override
   String get hip3ConfirmSetTp => '设置止盈';
 
   @override

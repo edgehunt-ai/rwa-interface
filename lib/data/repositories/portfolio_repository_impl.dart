@@ -46,6 +46,7 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
   @override
   Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async {
     final value = await _service.listHoldings(cursor: cursor);
+    final coverage = value.coverage;
     return DomainPage(
       items: value.items
           .map(
@@ -63,6 +64,15 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
         value.freshness,
         value.warnings.map((notice) => notice.code.name),
         value.oldestObservationAt,
+        holdingsCoverage: coverage == null
+            ? null
+            : (
+                observedPositionCount: coverage.observedPositionCount,
+                displayedPositionCount: coverage.displayedPositionCount,
+                unmappedPositionCount: coverage.unmappedPositionCount,
+                excludedNonHip3PositionCount:
+                    coverage.excludedNonHip3PositionCount,
+              ),
       ),
     );
   }
@@ -121,8 +131,10 @@ PortfolioReadStatus _readStatus(
   api.PortfolioDataStatus completeness,
   api.PortfolioFreshness freshness,
   Iterable<String> warnings,
-  DateTime? oldest,
-) => PortfolioReadStatus(
+  DateTime? oldest, {
+  HoldingsCoverage? holdingsCoverage,
+}) => PortfolioReadStatus(
+  holdingsCoverage: holdingsCoverage,
   completeness: switch (completeness) {
     api.PortfolioDataStatus.complete => PortfolioCompleteness.complete,
     api.PortfolioDataStatus.partial => PortfolioCompleteness.partial,

@@ -626,6 +626,31 @@ class _HoldingSection extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _PortfolioDataNotice(status: status),
+          if (kind == MarketProductKind.perp)
+            if (status.holdingsCoverage case final coverage?)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.hip3HoldingsCoverage(
+                        coverage.displayedPositionCount,
+                        coverage.observedPositionCount,
+                      ),
+                    ),
+                    if (coverage.unmappedPositionCount > 0)
+                      Text(
+                        l10n.hip3HoldingsUnmapped(
+                          coverage.unmappedPositionCount,
+                        ),
+                      ),
+                    if (coverage.excludedNonHip3PositionCount
+                        case final excluded? when excluded > 0)
+                      Text(l10n.hip3HoldingsExcluded(excluded)),
+                  ],
+                ),
+              ),
           if (positions.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),

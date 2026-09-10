@@ -75,6 +75,10 @@ class _$ProductDetailTradingHoursEnumSerializer
 
 class _$ProductDetail extends ProductDetail {
   @override
+  final Hip3PublicMarket? hip3Market;
+  @override
+  final bool? isFavorite;
+  @override
   final String symbol;
   @override
   final String? name;
@@ -99,7 +103,9 @@ class _$ProductDetail extends ProductDetail {
       (ProductDetailBuilder()..update(updates))._build();
 
   _$ProductDetail._(
-      {required this.symbol,
+      {this.hip3Market,
+      this.isFavorite,
+      required this.symbol,
       this.name,
       required this.kind,
       this.title,
@@ -121,6 +127,8 @@ class _$ProductDetail extends ProductDetail {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ProductDetail &&
+        hip3Market == other.hip3Market &&
+        isFavorite == other.isFavorite &&
         symbol == other.symbol &&
         name == other.name &&
         kind == other.kind &&
@@ -136,6 +144,8 @@ class _$ProductDetail extends ProductDetail {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, hip3Market.hashCode);
+    _$hash = $jc(_$hash, isFavorite.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
@@ -153,6 +163,8 @@ class _$ProductDetail extends ProductDetail {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ProductDetail')
+          ..add('hip3Market', hip3Market)
+          ..add('isFavorite', isFavorite)
           ..add('symbol', symbol)
           ..add('name', name)
           ..add('kind', kind)
@@ -170,6 +182,16 @@ class _$ProductDetail extends ProductDetail {
 class ProductDetailBuilder
     implements Builder<ProductDetail, ProductDetailBuilder> {
   _$ProductDetail? _$v;
+
+  Hip3PublicMarketBuilder? _hip3Market;
+  Hip3PublicMarketBuilder get hip3Market =>
+      _$this._hip3Market ??= Hip3PublicMarketBuilder();
+  set hip3Market(Hip3PublicMarketBuilder? hip3Market) =>
+      _$this._hip3Market = hip3Market;
+
+  bool? _isFavorite;
+  bool? get isFavorite => _$this._isFavorite;
+  set isFavorite(bool? isFavorite) => _$this._isFavorite = isFavorite;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
@@ -219,6 +241,8 @@ class ProductDetailBuilder
   ProductDetailBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _hip3Market = $v.hip3Market?.toBuilder();
+      _isFavorite = $v.isFavorite;
       _symbol = $v.symbol;
       _name = $v.name;
       _kind = $v.kind;
@@ -252,6 +276,8 @@ class ProductDetailBuilder
     try {
       _$result = _$v ??
           _$ProductDetail._(
+            hip3Market: _hip3Market?.build(),
+            isFavorite: isFavorite,
             symbol: BuiltValueNullFieldError.checkNotNull(
                 symbol, r'ProductDetail', 'symbol'),
             name: name,
@@ -268,6 +294,9 @@ class ProductDetailBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'hip3Market';
+        _hip3Market?.build();
+
         _$failedField = 'quote';
         quote.build();
         _$failedField = 'stats';

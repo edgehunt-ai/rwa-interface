@@ -420,6 +420,15 @@ class _ActivityRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final l10n = AppLocalizations.of(context);
+    final purpose = switch (record.businessType) {
+      ActivityBusinessType.opening => l10n.hip3ActivityOpening,
+      ActivityBusinessType.closing => l10n.hip3ActivityClosing,
+      ActivityBusinessType.takeProfit => l10n.hip3ActivityTakeProfit,
+      ActivityBusinessType.stopLoss => l10n.hip3ActivityStopLoss,
+      ActivityBusinessType.unknown => l10n.hip3ActivityUnknown,
+      null => null,
+    };
     final statusColor = switch (record.status) {
       ActivityState.success => semantic.success,
       ActivityState.failed => semantic.loss,
@@ -446,7 +455,11 @@ class _ActivityRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${_statusLabel(context, record.status)} · ${record.context ?? record.type}',
+            [
+              _statusLabel(context, record.status),
+              ?purpose,
+              record.context ?? record.type,
+            ].join(' · '),
             style: TextStyle(color: statusColor),
           ),
           if (record.reference != null)

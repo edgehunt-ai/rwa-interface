@@ -27,6 +27,15 @@ void main() {
         PortfolioCompleteness.partial,
       );
       expect(holdings.portfolioStatus?.freshness, PortfolioFreshness.stale);
+      expect(holdings.portfolioStatus?.holdingsCoverage, (
+        observedPositionCount: 3,
+        displayedPositionCount: 2,
+        unmappedPositionCount: 1,
+        excludedNonHip3PositionCount: null,
+      ));
+      final merged = holdings.portfolioStatus!.merge(holdings.portfolioStatus!);
+      expect(merged.holdingsCoverage?.observedPositionCount, 3);
+      expect(merged.holdingsCoverage?.unmappedPositionCount, 1);
     },
   );
   test(
@@ -148,6 +157,13 @@ final class _Portfolio implements PortfolioService {
           ..dataStatus = api.PortfolioDataStatus.partial
           ..freshness = api.PortfolioFreshness.stale
           ..calculatedAt = DateTime.utc(2026, 9, 10)
+          ..coverage.update(
+            (c) => c
+              ..scope = api.PortfolioHoldingPageAllOfCoverageScopeEnum.hip3
+              ..observedPositionCount = 3
+              ..displayedPositionCount = 2
+              ..unmappedPositionCount = 1,
+          )
           ..hasMore = false,
       );
   @override

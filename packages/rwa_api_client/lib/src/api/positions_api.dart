@@ -104,7 +104,7 @@ class PositionsApi {
   }
 
   /// 持仓列表
-  /// 同时返回 bStocks 现货持仓与 HIP-3 合约仓位。资产页按股票分组展示， 详情页按 &#x60;symbol&#x60; + &#x60;kind&#x60; 过滤后展示单个仓位。 
+  /// 当前 HIP3 客户端交易通道读取 Testnet 合约仓位；kind&#x3D;perp，不代表 Mainnet 或全钱包所有轨道。 详情页 symbol 可传完整 product_id（如 frce:US30YFRM），按完整身份在分页前精确过滤； 裸 symbol 保留同名查询，前端已知产品身份时必须传完整 ID，不能与其他环境的公开行情合并。 
   ///
   /// Parameters:
   /// * [symbol] 

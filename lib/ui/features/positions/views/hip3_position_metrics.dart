@@ -41,6 +41,9 @@ class Hip3PositionMetrics extends StatelessWidget {
               ? unavailable
               : TokenAmountFormatter.formatPercent(
                   position.unrealizedPnlPercent!,
+                  // A detailed account metric retains the server's precision;
+                  // the formatter's compact market-label default rounds to 2dp.
+                  maxFractionDigits: position.unrealizedPnlPercent!.scale,
                 ),
         ),
         _row('Margin', money(position.margin)),

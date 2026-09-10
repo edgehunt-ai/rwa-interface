@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
+import 'package:rwa_api_client/src/model/hip3_public_market.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -13,6 +14,11 @@ part 'product_listing.g.dart';
 /// 榜单 / 分组中的单个产品行
 ///
 /// Properties:
+/// * [hip3Market] 
+/// * [priceKind] - HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
+/// * [dataStatus] - 服务端按数据源有效期判断；客户端还应随时间推移显示报价年龄。
+/// * [updatedAt] - 行情数据的观测时间，不是响应生成时间。
+/// * [validUntil] - 行情源有效期；即使响应时为 fresh，客户端超过此时刻也必须显示过期。
 /// * [symbol] 
 /// * [name] 
 /// * [kind] 
@@ -28,6 +34,27 @@ part 'product_listing.g.dart';
 /// * [isFavorite] 
 @BuiltValue()
 abstract class ProductListing implements Built<ProductListing, ProductListingBuilder> {
+  @BuiltValueField(wireName: r'hip3_market')
+  Hip3PublicMarket? get hip3Market;
+
+  /// HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
+  @BuiltValueField(wireName: r'price_kind')
+  ProductListingPriceKindEnum? get priceKind;
+  // enum priceKindEnum {  mark,  last_trade,  reference,  };
+
+  /// 服务端按数据源有效期判断；客户端还应随时间推移显示报价年龄。
+  @BuiltValueField(wireName: r'data_status')
+  ProductListingDataStatusEnum? get dataStatus;
+  // enum dataStatusEnum {  fresh,  stale,  };
+
+  /// 行情数据的观测时间，不是响应生成时间。
+  @BuiltValueField(wireName: r'updated_at')
+  DateTime? get updatedAt;
+
+  /// 行情源有效期；即使响应时为 fresh，客户端超过此时刻也必须显示过期。
+  @BuiltValueField(wireName: r'valid_until')
+  DateTime? get validUntil;
+
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -99,6 +126,41 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
     ProductListing object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.hip3Market != null) {
+      yield r'hip3_market';
+      yield serializers.serialize(
+        object.hip3Market,
+        specifiedType: const FullType(Hip3PublicMarket),
+      );
+    }
+    if (object.priceKind != null) {
+      yield r'price_kind';
+      yield serializers.serialize(
+        object.priceKind,
+        specifiedType: const FullType(ProductListingPriceKindEnum),
+      );
+    }
+    if (object.dataStatus != null) {
+      yield r'data_status';
+      yield serializers.serialize(
+        object.dataStatus,
+        specifiedType: const FullType(ProductListingDataStatusEnum),
+      );
+    }
+    if (object.updatedAt != null) {
+      yield r'updated_at';
+      yield serializers.serialize(
+        object.updatedAt,
+        specifiedType: const FullType(DateTime),
+      );
+    }
+    if (object.validUntil != null) {
+      yield r'valid_until';
+      yield serializers.serialize(
+        object.validUntil,
+        specifiedType: const FullType(DateTime),
+      );
+    }
     yield r'symbol';
     yield serializers.serialize(
       object.symbol,
@@ -207,6 +269,46 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'hip3_market':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3PublicMarket),
+          ) as Hip3PublicMarket?;
+          if (valueDes == null) continue;
+          result.hip3Market.replace(valueDes);
+          break;
+        case r'price_kind':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ProductListingPriceKindEnum),
+          ) as ProductListingPriceKindEnum?;
+          if (valueDes == null) continue;
+          result.priceKind = valueDes;
+          break;
+        case r'data_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ProductListingDataStatusEnum),
+          ) as ProductListingDataStatusEnum?;
+          if (valueDes == null) continue;
+          result.dataStatus = valueDes;
+          break;
+        case r'updated_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.updatedAt = valueDes;
+          break;
+        case r'valid_until':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.validUntil = valueDes;
+          break;
         case r'symbol':
           final valueDes = serializers.deserialize(
             value,
@@ -335,6 +437,49 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
     );
     return result.build();
   }
+}
+
+class ProductListingPriceKindEnum extends EnumClass {
+
+  /// HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
+  @BuiltValueEnumConst(wireName: r'mark')
+  static const ProductListingPriceKindEnum mark = _$productListingPriceKindEnum_mark;
+  /// HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
+  @BuiltValueEnumConst(wireName: r'last_trade')
+  static const ProductListingPriceKindEnum lastTrade = _$productListingPriceKindEnum_lastTrade;
+  /// HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
+  @BuiltValueEnumConst(wireName: r'reference')
+  static const ProductListingPriceKindEnum reference = _$productListingPriceKindEnum_reference;
+  /// HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const ProductListingPriceKindEnum unknownDefaultOpenApi = _$productListingPriceKindEnum_unknownDefaultOpenApi;
+
+  static Serializer<ProductListingPriceKindEnum> get serializer => _$productListingPriceKindEnumSerializer;
+
+  const ProductListingPriceKindEnum._(String name): super(name);
+
+  static BuiltSet<ProductListingPriceKindEnum> get values => _$productListingPriceKindEnumValues;
+  static ProductListingPriceKindEnum valueOf(String name) => _$productListingPriceKindEnumValueOf(name);
+}
+
+class ProductListingDataStatusEnum extends EnumClass {
+
+  /// 服务端按数据源有效期判断；客户端还应随时间推移显示报价年龄。
+  @BuiltValueEnumConst(wireName: r'fresh')
+  static const ProductListingDataStatusEnum fresh = _$productListingDataStatusEnum_fresh;
+  /// 服务端按数据源有效期判断；客户端还应随时间推移显示报价年龄。
+  @BuiltValueEnumConst(wireName: r'stale')
+  static const ProductListingDataStatusEnum stale = _$productListingDataStatusEnum_stale;
+  /// 服务端按数据源有效期判断；客户端还应随时间推移显示报价年龄。
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const ProductListingDataStatusEnum unknownDefaultOpenApi = _$productListingDataStatusEnum_unknownDefaultOpenApi;
+
+  static Serializer<ProductListingDataStatusEnum> get serializer => _$productListingDataStatusEnumSerializer;
+
+  const ProductListingDataStatusEnum._(String name): super(name);
+
+  static BuiltSet<ProductListingDataStatusEnum> get values => _$productListingDataStatusEnumValues;
+  static ProductListingDataStatusEnum valueOf(String name) => _$productListingDataStatusEnumValueOf(name);
 }
 
 class ProductListingProductTypeEnum extends EnumClass {

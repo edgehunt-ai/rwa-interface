@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../markets/views/hip3_quote_provenance.dart';
+
+import '../../../../app/providers/session_scope.dart';
+
 import 'hip3_close_position_sheet.dart';
 import '../../positions/views/hip3_position_metrics.dart';
 import '../../positions/views/hip3_position_leverage_sheet.dart';
@@ -63,8 +67,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   late MarketProductKind productKind;
   late String symbol;
   var _orderPanelOpen = false;
-  MarketProductRef? _favoriteOverrideRef;
-  bool? _favoriteOverride;
   @override
   void initState() {
     super.initState();
@@ -81,8 +83,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     setState(() {
       symbol = product.symbol;
       productKind = product.kind;
-      _favoriteOverrideRef = null;
-      _favoriteOverride = null;
     });
   }
 
@@ -91,27 +91,39 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     bool isFavorite,
   ) async {
     final command = ref.read(favoritesCommandProvider.notifier);
-    if (isFavorite) {
-      await command.remove(product);
-    } else {
-      await command.add(product);
-    }
-    if (!mounted) return;
-    if (ref.read(favoritesCommandProvider).hasError) {
-      AppToast.showFailure(context, 'Unable to update favorites.');
+    final session = ref.read(sessionGenerationProvider);
+    final succeeded = isFavorite
+        ? await command.remove(product)
+        : await command.add(product);
+    if (!mounted ||
+        session != ref.read(sessionGenerationProvider) ||
+        product.symbol != symbol ||
+        product.kind != productKind) {
       return;
     }
-    setState(() {
-      _favoriteOverrideRef = product;
-      _favoriteOverride = !isFavorite;
-    });
+    if (!succeeded) {
+      AppToast.showFailure(
+        context,
+        AppLocalizations.of(context).marketFavoriteFailed,
+      );
+      return;
+    }
     AppToast.showSuccess(
       context,
-      isFavorite ? 'Removed from favorites.' : 'Added to favorites.',
+      isFavorite
+          ? AppLocalizations.of(context).marketFavoriteRemoved
+          : AppLocalizations.of(context).marketFavoriteAdded,
     );
   }
 
-  Future<void> _openOrderPanel(TradingSide side) async {
+  Future<void> _openOrderPanel(
+    TradingSide side,
+    Hip3PublicMarket? market,
+  ) async {
+    if (productKind == MarketProductKind.perp &&
+        (market == null || !market.tradable)) {
+      return;
+    }
     setState(() => _orderPanelOpen = true);
     await showModalBottomSheet<void>(
       context: context,
@@ -120,6 +132,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
           ? BstocksOrderPanel(symbol: symbol, initialSide: side)
           : Hip3OrderPanel(
               symbol: symbol,
+              market: market,
               initialSide: side == TradingSide.buy
                   ? TradingSide.long
                   : TradingSide.short,
@@ -151,10 +164,12 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         activeProduct = matchingProducts.first;
       }
     }
-    final productRef = MarketProductRef(symbol: symbol, kind: productKind);
-    final isFavorite = _favoriteOverrideRef == productRef
-        ? _favoriteOverride!
-        : activeProduct?.isFavorite ?? false;
+    final productRef =
+        activeProduct?.ref ??
+        MarketProductRef(symbol: symbol, kind: productKind);
+    // The refreshed account-scoped server value owns the star. A permanent
+    // local override would survive account changes and mask later updates.
+    final isFavorite = activeProduct?.isFavorite ?? false;
     final favoritesCommand = ref.watch(favoritesCommandProvider);
     final snapshotState = ref.watch(marketSnapshotProvider(productRef));
     final candlesState = productKind == MarketProductKind.perp
@@ -166,6 +181,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
             )),
           );
     final snapshot = snapshotState.hasError ? null : snapshotState.value;
+    final hip3Market = snapshot?.hip3Market ?? activeProduct?.hip3Market;
+    final canOpen =
+        productKind == MarketProductKind.bstock ||
+        (hip3Market?.tradable ?? false);
     final candles = candlesState?.value;
     ref.listen<CommandState<OrderIntent, ResourceResult<TradingOrder>>>(
       orderCommandProvider,
@@ -217,6 +236,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       _toggleFavorite(productRef, isFavorite),
                 ),
                 const SizedBox(height: 12),
+                if (productKind == MarketProductKind.perp && snapshot != null)
+                  Hip3QuoteProvenance(snapshot: snapshot),
                 if (productKind == MarketProductKind.perp &&
                     snapshotState.hasError)
                   Row(
@@ -258,6 +279,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   ),
                 const SizedBox(height: 16),
                 _Details(
+                  market: hip3Market,
                   activeTab: detailTab,
                   onChanged: (tab) => setState(() => detailTab = tab),
                   kind: productKind,
@@ -272,8 +294,17 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
               secondaryLabel: productKind == MarketProductKind.bstock
                   ? 'Sell'
                   : 'Short',
-              onBuy: () => _openOrderPanel(TradingSide.buy),
-              onSell: () => _openOrderPanel(TradingSide.sell),
+              onBuy: canOpen
+                  ? () => _openOrderPanel(TradingSide.buy, hip3Market)
+                  : null,
+              onSell: canOpen
+                  ? () => _openOrderPanel(TradingSide.sell, hip3Market)
+                  : null,
+              unavailableReason: canOpen
+                  ? null
+                  : hip3Market?.unavailableReason == 'mainnet_read_only'
+                  ? AppLocalizations.of(context).hip3MarketMainnetReadOnly
+                  : AppLocalizations.of(context).hip3MarketOpeningUnavailable,
             ),
             if (marketHoursOpen)
               _MarketHoursSheet(
@@ -533,7 +564,9 @@ class _ProductHeader extends StatelessWidget {
             ),
             const Spacer(),
             IconButton(
-              tooltip: isFavorite ? 'Remove favorite' : 'Add favorite',
+              tooltip: isFavorite
+                  ? AppLocalizations.of(context).marketFavoriteRemove
+                  : AppLocalizations.of(context).marketFavoriteAdd,
               icon: favoriteLoading
                   ? const SizedBox(
                       key: Key('trade-favorite-loading'),

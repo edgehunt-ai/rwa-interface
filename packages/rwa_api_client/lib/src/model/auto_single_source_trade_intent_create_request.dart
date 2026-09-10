@@ -19,6 +19,7 @@ part 'auto_single_source_trade_intent_create_request.g.dart';
 /// * [fundingMode] 
 /// * [sourceAssetId] 
 /// * [executionPolicy] 
+@Deprecated('AutoSingleSourceTradeIntentCreateRequest has been deprecated')
 @BuiltValue()
 abstract class AutoSingleSourceTradeIntentCreateRequest implements Built<AutoSingleSourceTradeIntentCreateRequest, AutoSingleSourceTradeIntentCreateRequestBuilder> {
   @BuiltValueField(wireName: r'preview_id')
@@ -177,6 +178,7 @@ class _$AutoSingleSourceTradeIntentCreateRequestSerializer implements PrimitiveS
   }
 }
 
+@Deprecated('AutoSingleSourceTradeIntentCreateRequestFundingModeEnum has been deprecated')
 class AutoSingleSourceTradeIntentCreateRequestFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_single_source')

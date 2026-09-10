@@ -131,6 +131,14 @@ lib/src/model/funding_route_capability.dart
 lib/src/model/funding_route_capability_matrix.dart
 lib/src/model/funding_route_capability_status.dart
 lib/src/model/funding_route_quote.dart
+lib/src/model/funding_session.dart
+lib/src/model/funding_session_create_request.dart
+lib/src/model/funding_session_plan_request.dart
+lib/src/model/funding_session_selection_request.dart
+lib/src/model/funding_session_source_allocation.dart
+lib/src/model/funding_session_source_allocation_input.dart
+lib/src/model/funding_session_status.dart
+lib/src/model/funding_session_trade_intent_create_request.dart
 lib/src/model/funding_source_asset.dart
 lib/src/model/funding_source_asset_catalog.dart
 lib/src/model/funding_source_asset_id.dart
@@ -177,6 +185,7 @@ lib/src/model/hip3_order_protection_spec.dart
 lib/src/model/hip3_place_order_action_request.dart
 lib/src/model/hip3_preview_execution.dart
 lib/src/model/hip3_protection_spec.dart
+lib/src/model/hip3_public_market.dart
 lib/src/model/hip3_set_leverage_action_request.dart
 lib/src/model/hip3_set_tp_sl_action_request.dart
 lib/src/model/hip3_step_signing_payload.dart
@@ -185,6 +194,7 @@ lib/src/model/hip3_trading_context.dart
 lib/src/model/hip3_trading_rules.dart
 lib/src/model/hip3_trigger_spec.dart
 lib/src/model/holding_group.dart
+lib/src/model/holding_stock.dart
 lib/src/model/hyperliquid_signature.dart
 lib/src/model/ineligible_funding_position_eligibility.dart
 lib/src/model/key_value.dart
@@ -249,6 +259,7 @@ lib/src/model/portfolio_asset_source_kind.dart
 lib/src/model/portfolio_data_status.dart
 lib/src/model/portfolio_freshness.dart
 lib/src/model/portfolio_holding_page.dart
+lib/src/model/portfolio_holding_page_all_of_coverage.dart
 lib/src/model/portfolio_notice.dart
 lib/src/model/portfolio_notice_severity.dart
 lib/src/model/portfolio_price_source.dart
@@ -333,6 +344,8 @@ lib/src/model/unified_funding_position.dart
 lib/src/model/unified_funding_transfer.dart
 lib/src/model/user.dart
 lib/src/model/user_paid_wallet_action_execution_submission_request.dart
+lib/src/model/user_selected_multi_source_bstock_funding_plan.dart
+lib/src/model/user_selected_multi_source_perp_funding_plan.dart
 lib/src/model/user_settings.dart
 lib/src/model/user_settings_update.dart
 lib/src/model/wallet.dart

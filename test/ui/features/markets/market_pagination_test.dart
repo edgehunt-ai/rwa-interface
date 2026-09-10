@@ -122,7 +122,11 @@ void main() {
         };
       await mount(tester, repo, const MarketDiscoverySearchScreen());
       expect(visible(tester), containsAll(['A', 'B', 'C']));
-      await tester.ensureVisible(find.text('Load more'));
+      await Scrollable.ensureVisible(
+        tester.element(find.text('Load more')),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Load more'));
       await tester.pumpAndSettle();
       expect(

@@ -4,6 +4,9 @@ enum ActivityCategory { orders, funds, signatures, unknown }
 
 enum ActivityState { pending, success, failed, cancelled, unknown }
 
+/// Server-proven HIP3 order purpose, distinct from order type and status.
+enum ActivityBusinessType { opening, closing, takeProfit, stopLoss, unknown }
+
 final class ActivityReference {
   const ActivityReference({required this.type, required this.id});
   final String type;
@@ -22,6 +25,7 @@ final class ActivityRecord {
     this.context,
     this.reference,
     this.updatedAt,
+    this.businessType,
   });
   final String id;
   final ActivityCategory category;
@@ -33,4 +37,5 @@ final class ActivityRecord {
   final ActivityReference? reference;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final ActivityBusinessType? businessType;
 }

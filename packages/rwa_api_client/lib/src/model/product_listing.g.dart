@@ -6,6 +6,70 @@ part of 'product_listing.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const ProductListingPriceKindEnum _$productListingPriceKindEnum_mark =
+    const ProductListingPriceKindEnum._('mark');
+const ProductListingPriceKindEnum _$productListingPriceKindEnum_lastTrade =
+    const ProductListingPriceKindEnum._('lastTrade');
+const ProductListingPriceKindEnum _$productListingPriceKindEnum_reference =
+    const ProductListingPriceKindEnum._('reference');
+const ProductListingPriceKindEnum
+    _$productListingPriceKindEnum_unknownDefaultOpenApi =
+    const ProductListingPriceKindEnum._('unknownDefaultOpenApi');
+
+ProductListingPriceKindEnum _$productListingPriceKindEnumValueOf(String name) {
+  switch (name) {
+    case 'mark':
+      return _$productListingPriceKindEnum_mark;
+    case 'lastTrade':
+      return _$productListingPriceKindEnum_lastTrade;
+    case 'reference':
+      return _$productListingPriceKindEnum_reference;
+    case 'unknownDefaultOpenApi':
+      return _$productListingPriceKindEnum_unknownDefaultOpenApi;
+    default:
+      return _$productListingPriceKindEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<ProductListingPriceKindEnum>
+    _$productListingPriceKindEnumValues =
+    BuiltSet<ProductListingPriceKindEnum>(const <ProductListingPriceKindEnum>[
+  _$productListingPriceKindEnum_mark,
+  _$productListingPriceKindEnum_lastTrade,
+  _$productListingPriceKindEnum_reference,
+  _$productListingPriceKindEnum_unknownDefaultOpenApi,
+]);
+
+const ProductListingDataStatusEnum _$productListingDataStatusEnum_fresh =
+    const ProductListingDataStatusEnum._('fresh');
+const ProductListingDataStatusEnum _$productListingDataStatusEnum_stale =
+    const ProductListingDataStatusEnum._('stale');
+const ProductListingDataStatusEnum
+    _$productListingDataStatusEnum_unknownDefaultOpenApi =
+    const ProductListingDataStatusEnum._('unknownDefaultOpenApi');
+
+ProductListingDataStatusEnum _$productListingDataStatusEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'fresh':
+      return _$productListingDataStatusEnum_fresh;
+    case 'stale':
+      return _$productListingDataStatusEnum_stale;
+    case 'unknownDefaultOpenApi':
+      return _$productListingDataStatusEnum_unknownDefaultOpenApi;
+    default:
+      return _$productListingDataStatusEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<ProductListingDataStatusEnum>
+    _$productListingDataStatusEnumValues =
+    BuiltSet<ProductListingDataStatusEnum>(const <ProductListingDataStatusEnum>[
+  _$productListingDataStatusEnum_fresh,
+  _$productListingDataStatusEnum_stale,
+  _$productListingDataStatusEnum_unknownDefaultOpenApi,
+]);
+
 const ProductListingProductTypeEnum _$productListingProductTypeEnum_spot =
     const ProductListingProductTypeEnum._('spot');
 const ProductListingProductTypeEnum _$productListingProductTypeEnum_contract =
@@ -36,9 +100,79 @@ final BuiltSet<ProductListingProductTypeEnum>
   _$productListingProductTypeEnum_unknownDefaultOpenApi,
 ]);
 
+Serializer<ProductListingPriceKindEnum>
+    _$productListingPriceKindEnumSerializer =
+    _$ProductListingPriceKindEnumSerializer();
+Serializer<ProductListingDataStatusEnum>
+    _$productListingDataStatusEnumSerializer =
+    _$ProductListingDataStatusEnumSerializer();
 Serializer<ProductListingProductTypeEnum>
     _$productListingProductTypeEnumSerializer =
     _$ProductListingProductTypeEnumSerializer();
+
+class _$ProductListingPriceKindEnumSerializer
+    implements PrimitiveSerializer<ProductListingPriceKindEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'mark': 'mark',
+    'lastTrade': 'last_trade',
+    'reference': 'reference',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'mark': 'mark',
+    'last_trade': 'lastTrade',
+    'reference': 'reference',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[ProductListingPriceKindEnum];
+  @override
+  final String wireName = 'ProductListingPriceKindEnum';
+
+  @override
+  Object serialize(Serializers serializers, ProductListingPriceKindEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  ProductListingPriceKindEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ProductListingPriceKindEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$ProductListingDataStatusEnumSerializer
+    implements PrimitiveSerializer<ProductListingDataStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'fresh': 'fresh',
+    'stale': 'stale',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'fresh': 'fresh',
+    'stale': 'stale',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[ProductListingDataStatusEnum];
+  @override
+  final String wireName = 'ProductListingDataStatusEnum';
+
+  @override
+  Object serialize(Serializers serializers, ProductListingDataStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  ProductListingDataStatusEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ProductListingDataStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$ProductListingProductTypeEnumSerializer
     implements PrimitiveSerializer<ProductListingProductTypeEnum> {
@@ -74,6 +208,16 @@ class _$ProductListingProductTypeEnumSerializer
 
 class _$ProductListing extends ProductListing {
   @override
+  final Hip3PublicMarket? hip3Market;
+  @override
+  final ProductListingPriceKindEnum? priceKind;
+  @override
+  final ProductListingDataStatusEnum? dataStatus;
+  @override
+  final DateTime? updatedAt;
+  @override
+  final DateTime? validUntil;
+  @override
   final String symbol;
   @override
   final String? name;
@@ -104,7 +248,12 @@ class _$ProductListing extends ProductListing {
       (ProductListingBuilder()..update(updates))._build();
 
   _$ProductListing._(
-      {required this.symbol,
+      {this.hip3Market,
+      this.priceKind,
+      this.dataStatus,
+      this.updatedAt,
+      this.validUntil,
+      required this.symbol,
       this.name,
       required this.kind,
       this.productType,
@@ -129,6 +278,11 @@ class _$ProductListing extends ProductListing {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is ProductListing &&
+        hip3Market == other.hip3Market &&
+        priceKind == other.priceKind &&
+        dataStatus == other.dataStatus &&
+        updatedAt == other.updatedAt &&
+        validUntil == other.validUntil &&
         symbol == other.symbol &&
         name == other.name &&
         kind == other.kind &&
@@ -147,6 +301,11 @@ class _$ProductListing extends ProductListing {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, hip3Market.hashCode);
+    _$hash = $jc(_$hash, priceKind.hashCode);
+    _$hash = $jc(_$hash, dataStatus.hashCode);
+    _$hash = $jc(_$hash, updatedAt.hashCode);
+    _$hash = $jc(_$hash, validUntil.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
@@ -167,6 +326,11 @@ class _$ProductListing extends ProductListing {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'ProductListing')
+          ..add('hip3Market', hip3Market)
+          ..add('priceKind', priceKind)
+          ..add('dataStatus', dataStatus)
+          ..add('updatedAt', updatedAt)
+          ..add('validUntil', validUntil)
           ..add('symbol', symbol)
           ..add('name', name)
           ..add('kind', kind)
@@ -187,6 +351,30 @@ class _$ProductListing extends ProductListing {
 class ProductListingBuilder
     implements Builder<ProductListing, ProductListingBuilder> {
   _$ProductListing? _$v;
+
+  Hip3PublicMarketBuilder? _hip3Market;
+  Hip3PublicMarketBuilder get hip3Market =>
+      _$this._hip3Market ??= Hip3PublicMarketBuilder();
+  set hip3Market(Hip3PublicMarketBuilder? hip3Market) =>
+      _$this._hip3Market = hip3Market;
+
+  ProductListingPriceKindEnum? _priceKind;
+  ProductListingPriceKindEnum? get priceKind => _$this._priceKind;
+  set priceKind(ProductListingPriceKindEnum? priceKind) =>
+      _$this._priceKind = priceKind;
+
+  ProductListingDataStatusEnum? _dataStatus;
+  ProductListingDataStatusEnum? get dataStatus => _$this._dataStatus;
+  set dataStatus(ProductListingDataStatusEnum? dataStatus) =>
+      _$this._dataStatus = dataStatus;
+
+  DateTime? _updatedAt;
+  DateTime? get updatedAt => _$this._updatedAt;
+  set updatedAt(DateTime? updatedAt) => _$this._updatedAt = updatedAt;
+
+  DateTime? _validUntil;
+  DateTime? get validUntil => _$this._validUntil;
+  set validUntil(DateTime? validUntil) => _$this._validUntil = validUntil;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
@@ -252,6 +440,11 @@ class ProductListingBuilder
   ProductListingBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _hip3Market = $v.hip3Market?.toBuilder();
+      _priceKind = $v.priceKind;
+      _dataStatus = $v.dataStatus;
+      _updatedAt = $v.updatedAt;
+      _validUntil = $v.validUntil;
       _symbol = $v.symbol;
       _name = $v.name;
       _kind = $v.kind;
@@ -284,25 +477,43 @@ class ProductListingBuilder
   ProductListing build() => _build();
 
   _$ProductListing _build() {
-    final _$result = _$v ??
-        _$ProductListing._(
-          symbol: BuiltValueNullFieldError.checkNotNull(
-              symbol, r'ProductListing', 'symbol'),
-          name: name,
-          kind: BuiltValueNullFieldError.checkNotNull(
-              kind, r'ProductListing', 'kind'),
-          productType: productType,
-          label: label,
-          price: BuiltValueNullFieldError.checkNotNull(
-              price, r'ProductListing', 'price'),
-          change24hPercent: change24hPercent,
-          spreadVsReferencePercent: spreadVsReferencePercent,
-          volume24h: volume24h,
-          volume24hUnit: volume24hUnit,
-          turnover24hUsd: turnover24hUsd,
-          hotRank: hotRank,
-          isFavorite: isFavorite,
-        );
+    _$ProductListing _$result;
+    try {
+      _$result = _$v ??
+          _$ProductListing._(
+            hip3Market: _hip3Market?.build(),
+            priceKind: priceKind,
+            dataStatus: dataStatus,
+            updatedAt: updatedAt,
+            validUntil: validUntil,
+            symbol: BuiltValueNullFieldError.checkNotNull(
+                symbol, r'ProductListing', 'symbol'),
+            name: name,
+            kind: BuiltValueNullFieldError.checkNotNull(
+                kind, r'ProductListing', 'kind'),
+            productType: productType,
+            label: label,
+            price: BuiltValueNullFieldError.checkNotNull(
+                price, r'ProductListing', 'price'),
+            change24hPercent: change24hPercent,
+            spreadVsReferencePercent: spreadVsReferencePercent,
+            volume24h: volume24h,
+            volume24hUnit: volume24hUnit,
+            turnover24hUsd: turnover24hUsd,
+            hotRank: hotRank,
+            isFavorite: isFavorite,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'hip3Market';
+        _hip3Market?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'ProductListing', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

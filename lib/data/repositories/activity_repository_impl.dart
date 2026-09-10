@@ -36,6 +36,18 @@ final class ActivityRepositoryImpl implements ActivityRepository {
       _ => ActivityCategory.unknown,
     },
     type: value.type.name,
+    businessType: switch (value.businessType) {
+      api.ActivityRecordBusinessTypeEnum.opening =>
+        ActivityBusinessType.opening,
+      api.ActivityRecordBusinessTypeEnum.closing =>
+        ActivityBusinessType.closing,
+      api.ActivityRecordBusinessTypeEnum.takeProfit =>
+        ActivityBusinessType.takeProfit,
+      api.ActivityRecordBusinessTypeEnum.stopLoss =>
+        ActivityBusinessType.stopLoss,
+      null => null,
+      _ => ActivityBusinessType.unknown,
+    },
     status: switch (value.status) {
       api.ActivityStatus.pending => ActivityState.pending,
       api.ActivityStatus.success => ActivityState.success,

@@ -98,6 +98,234 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @marketFavoritesReorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder favorites'**
+  String get marketFavoritesReorder;
+
+  /// No description provided for @marketFavoritesCompleteSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder all favorites, including other product types. This does not add or remove favorites.'**
+  String get marketFavoritesCompleteSet;
+
+  /// No description provided for @marketFavoritesLoadingAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading all favorites…'**
+  String get marketFavoritesLoadingAll;
+
+  /// No description provided for @marketFavoritesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The full favorites list could not be loaded. Reload before changing its order.'**
+  String get marketFavoritesLoadFailed;
+
+  /// No description provided for @marketFavoritesOrderChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The order was not confirmed. Favorites are being reloaded; review the latest full list and try again.'**
+  String get marketFavoritesOrderChanged;
+
+  /// No description provided for @marketFavoritesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorites to reorder.'**
+  String get marketFavoritesEmpty;
+
+  /// No description provided for @marketFavoritesSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving order…'**
+  String get marketFavoritesSaving;
+
+  /// No description provided for @marketFavoritesSaveOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Save order'**
+  String get marketFavoritesSaveOrder;
+
+  /// No description provided for @marketFavoriteMoveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move favorite up'**
+  String get marketFavoriteMoveUp;
+
+  /// No description provided for @marketFavoriteMoveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move favorite down'**
+  String get marketFavoriteMoveDown;
+
+  /// No description provided for @hip3QuoteExpiredShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired quote'**
+  String get hip3QuoteExpiredShort;
+
+  /// No description provided for @hip3QuoteMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark price'**
+  String get hip3QuoteMark;
+
+  /// No description provided for @hip3QuoteOracle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 Oracle price'**
+  String get hip3QuoteOracle;
+
+  /// No description provided for @hip3QuoteUnknownSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Price source unavailable'**
+  String get hip3QuoteUnknownSource;
+
+  /// No description provided for @hip3QuoteOracleDisclosure.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark and HIP3 Oracle prices are not US stock-market reference prices.'**
+  String get hip3QuoteOracleDisclosure;
+
+  /// No description provided for @hip3QuoteObserved.
+  ///
+  /// In en, this message translates to:
+  /// **'Observed: {time}'**
+  String hip3QuoteObserved(String time);
+
+  /// No description provided for @hip3QuoteTimeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Observation time unavailable'**
+  String get hip3QuoteTimeUnavailable;
+
+  /// No description provided for @hip3QuoteExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote expired — wait for a fresh quote before trading.'**
+  String get hip3QuoteExpired;
+
+  /// No description provided for @hip3QuoteFreshnessUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote freshness unverified'**
+  String get hip3QuoteFreshnessUnknown;
+
+  /// No description provided for @hip3QuoteCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Within the quote validity window'**
+  String get hip3QuoteCurrent;
+
+  /// No description provided for @hip3HoldingsCoverage.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 coverage: {displayed} of {observed} observed positions can be displayed across all pages. This is not a full-wallet view.'**
+  String hip3HoldingsCoverage(int displayed, int observed);
+
+  /// No description provided for @hip3HoldingsUnmapped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} positions could not be matched to verified products and are not shown.'**
+  String hip3HoldingsUnmapped(int count);
+
+  /// No description provided for @hip3HoldingsExcluded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} verified non-HIP3 positions are outside this view.'**
+  String hip3HoldingsExcluded(int count);
+
+  /// No description provided for @marketFavoriteAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add favorite'**
+  String get marketFavoriteAdd;
+
+  /// No description provided for @marketFavoriteRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove favorite'**
+  String get marketFavoriteRemove;
+
+  /// No description provided for @marketFavoriteAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to favorites.'**
+  String get marketFavoriteAdded;
+
+  /// No description provided for @marketFavoriteRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from favorites.'**
+  String get marketFavoriteRemoved;
+
+  /// No description provided for @marketFavoriteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to update favorites. Try again.'**
+  String get marketFavoriteFailed;
+
+  /// No description provided for @hip3ActivityOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening'**
+  String get hip3ActivityOpening;
+
+  /// No description provided for @hip3ActivityClosing.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing'**
+  String get hip3ActivityClosing;
+
+  /// No description provided for @hip3ActivityTakeProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit'**
+  String get hip3ActivityTakeProfit;
+
+  /// No description provided for @hip3ActivityStopLoss.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop loss'**
+  String get hip3ActivityStopLoss;
+
+  /// No description provided for @hip3ActivityUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unclassified HIP3 order'**
+  String get hip3ActivityUnknown;
+
+  /// No description provided for @hip3MarketIdentityMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The market and trading account use different products or environments. Reload the market before placing an order.'**
+  String get hip3MarketIdentityMismatch;
+
+  /// No description provided for @hip3MarketMainnetReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Mainnet market data is read-only. App trading currently supports Testnet; this quote cannot be used for a Testnet order.'**
+  String get hip3MarketMainnetReadOnly;
+
+  /// No description provided for @hip3MarketOpeningUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening is unavailable for this market. Reload to check its current trading availability.'**
+  String get hip3MarketOpeningUnavailable;
+
+  /// No description provided for @hip3MarketAccountScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Account positions and orders currently use Testnet. They are not positions or orders for this market environment.'**
+  String get hip3MarketAccountScope;
+
+  /// No description provided for @hip3MarketViewAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'View account assets'**
+  String get hip3MarketViewAccount;
+
   /// No description provided for @hip3ConfirmSetTp.
   ///
   /// In en, this message translates to:

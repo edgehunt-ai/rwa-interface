@@ -1,4 +1,5 @@
 import 'decimal_value.dart';
+import 'market_product.dart';
 
 enum CandleChartRange {
   oneHour('1h'),
@@ -36,6 +37,10 @@ final class MarketSnapshot {
     this.referenceLabel,
     this.basisPercent,
     this.spreadPercent,
+    this.hip3Market,
+    this.priceKind,
+    this.quoteLabel,
+    this.validUntil,
   });
   final DecimalValue price;
   final DecimalValue? change24hPercent;
@@ -48,6 +53,13 @@ final class MarketSnapshot {
   final DecimalValue? fundingRate, openInterestUsd, referencePrice;
   final String? referenceLabel;
   final DecimalValue? basisPercent, spreadPercent;
+  final Hip3PublicMarket? hip3Market;
+  final String? priceKind, quoteLabel;
+  final DateTime? validUntil;
+
+  bool isStaleAt(DateTime now) =>
+      isStale ||
+      (validUntil != null && !now.toUtc().isBefore(validUntil!.toUtc()));
 }
 
 final class Candle {

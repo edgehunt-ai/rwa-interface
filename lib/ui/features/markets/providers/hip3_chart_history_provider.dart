@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/market_snapshot.dart';
 import 'hip3_chart_provider.dart';
 
@@ -44,6 +45,7 @@ class Hip3ChartHistoryNotifier extends Notifier<Hip3ChartHistoryState> {
 
   @override
   Hip3ChartHistoryState build() {
+    ref.watch(sessionGenerationProvider);
     _generation++;
     ref.onDispose(() => _generation++);
     ref.listen(hip3ChartProvider(query), (_, next) {

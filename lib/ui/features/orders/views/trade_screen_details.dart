@@ -6,14 +6,19 @@ class _Details extends ConsumerWidget {
     required this.onChanged,
     required this.kind,
     required this.symbol,
+    this.market,
   });
   final String activeTab;
   final ValueChanged<String> onChanged;
   final MarketProductKind kind;
   final String symbol;
+  final Hip3PublicMarket? market;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final scopeMatches =
+        kind != MarketProductKind.perp || market?.environment == 'testnet';
+    final positionQuerySymbol = market?.productId ?? symbol;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -66,19 +71,31 @@ class _Details extends ConsumerWidget {
             ],
           ),
         ),
-        if (activeTab == 'Open' && kind == MarketProductKind.perp)
+        if ((activeTab == 'Open' || activeTab == 'Position') && !scopeMatches)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(AppLocalizations.of(context).hip3MarketAccountScope),
+                TextButton(
+                  onPressed: () => context.pushNamed(AppRoutes.assetsName),
+                  child: Text(
+                    AppLocalizations.of(context).hip3MarketViewAccount,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (activeTab == 'Open' &&
+            kind == MarketProductKind.perp &&
+            scopeMatches)
           Hip3OpenOrdersPanel(
-            key: ValueKey('hip3-open-$symbol'),
+            key: ValueKey(
+              'hip3-open-${market!.productId}-${market!.environment}',
+            ),
             symbol: symbol,
-            productId: ref
-                .watch(
-                  positionsProvider((symbol: symbol, kind: kind, cursor: null)),
-                )
-                .value
-                ?.items
-                .where((p) => p.symbol == symbol && p.kind == kind)
-                .firstOrNull
-                ?.productId,
+            productId: market!.productId,
           ),
         if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
@@ -90,15 +107,20 @@ class _Details extends ConsumerWidget {
             kind: kind,
             symbol: symbol,
           ),
-        if (activeTab == 'Position')
+        if (activeTab == 'Position' && scopeMatches)
           _PositionTab(
             positions: ref.watch(
-              positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+              positionsProvider((
+                symbol: positionQuerySymbol,
+                kind: kind,
+                cursor: null,
+              )),
             ),
             kind: kind,
-            symbol: symbol,
+            symbol: positionQuerySymbol,
           ),
-        if (activeTab == 'Details') _DetailsCard(kind: kind, symbol: symbol),
+        if (activeTab == 'Details')
+          _DetailsCard(kind: kind, symbol: symbol, market: market),
       ],
     );
   }
@@ -386,17 +408,25 @@ class _PositionCard extends StatelessWidget {
 }
 
 class _DetailsCard extends ConsumerWidget {
-  const _DetailsCard({required this.kind, required this.symbol});
+  const _DetailsCard({required this.kind, required this.symbol, this.market});
 
   final MarketProductKind kind;
   final String symbol;
+  final Hip3PublicMarket? market;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final snapshotState = ref.watch(
-      marketSnapshotProvider(MarketProductRef(symbol: symbol, kind: kind)),
+      marketSnapshotProvider(
+        MarketProductRef(
+          symbol: symbol,
+          kind: kind,
+          productId: market?.productId,
+          environment: market?.environment,
+        ),
+      ),
     );
     final snapshot = snapshotState.hasError ? null : snapshotState.value;
     final loading = snapshotState.isLoading;
@@ -616,9 +646,11 @@ class _TradeActions extends StatelessWidget {
     required this.onSell,
     required this.primaryLabel,
     required this.secondaryLabel,
+    this.unavailableReason,
   });
-  final VoidCallback onBuy;
-  final VoidCallback onSell;
+  final VoidCallback? onBuy;
+  final VoidCallback? onSell;
+  final String? unavailableReason;
   final String primaryLabel;
   final String secondaryLabel;
   @override
@@ -627,31 +659,43 @@ class _TradeActions extends StatelessWidget {
     child: SafeArea(
       top: false,
       child: Container(
-        height: 80,
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
         color: Theme.of(context).extension<AppRwaColors>()!.canvas,
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: FilledButton(
-                onPressed: onBuy,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF04A08B),
-                  foregroundColor: Colors.white,
+            if (unavailableReason != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  unavailableReason!,
+                  key: const Key('hip3-market-unavailable'),
                 ),
-                child: Text(primaryLabel),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: FilledButton(
-                onPressed: onSell,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFE55770),
-                  foregroundColor: Colors.white,
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: onBuy,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF04A08B),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(primaryLabel),
+                  ),
                 ),
-                child: Text(secondaryLabel),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: onSell,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFE55770),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(secondaryLabel),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

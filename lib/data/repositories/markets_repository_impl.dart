@@ -1,4 +1,5 @@
 import '../../domain/models/domain_page.dart';
+import '../../domain/models/api_failure.dart';
 import '../../domain/models/stock.dart';
 import '../../domain/models/decimal_value.dart';
 import '../../domain/models/market_product.dart';
@@ -62,14 +63,31 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   @override
   Future<MarketProduct> getProduct(MarketProductRef ref) async {
     final value = await _service.getProduct(ref.symbol, _apiKind(ref.kind));
+    final market = _hip3Market(value.hip3Market);
+    _validateBinding(ref, market);
     return MarketProduct(
       symbol: value.symbol,
       name: value.name ?? value.symbol,
       kind: _kind(value.kind),
-      price: DecimalValue(value.quote.price, asset: 'USDC', unit: 'price'),
-      settlementAsset: 'USDC',
-      network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',
-      tradable: true,
+      price: DecimalValue(
+        value.quote.price,
+        asset: value.kind == api.ProductKind.bstock
+            ? 'USDC'
+            : market?.settlementAsset,
+        unit: 'price',
+      ),
+      settlementAsset: value.kind == api.ProductKind.bstock
+          ? 'USDC'
+          : market?.settlementAsset ?? '',
+      network: _network(value.kind, market),
+      tradable:
+          value.kind == api.ProductKind.bstock || (market?.tradable ?? false),
+      hip3Market: market,
+      priceKind: value.quote.priceKind?.name,
+      updatedAt: value.quote.updatedAt?.toUtc(),
+      validUntil: value.quote.validUntil?.toUtc(),
+      isStale: value.quote.dataStatus == api.QuoteDataStatusEnum.stale,
+      isFavorite: value.isFavorite ?? false,
       change24hPercent: _decimal(value.quote.change24hPercent, unit: 'percent'),
     );
   }
@@ -78,16 +96,29 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   Future<MarketSnapshot> getSnapshot(MarketProductRef ref) async {
     final kind = _apiKind(ref.kind);
     final product = await _service.getProduct(ref.symbol, kind);
+    final market = _hip3Market(product.hip3Market);
+    _validateBinding(ref, market);
     final book = await _service.getOrderBook(ref.symbol, kind);
     return MarketSnapshot(
-      price: DecimalValue(product.quote.price, asset: 'USDC', unit: 'price'),
+      price: DecimalValue(
+        product.quote.price,
+        asset: kind == api.ProductKind.bstock
+            ? 'USDC'
+            : market?.settlementAsset,
+        unit: 'price',
+      ),
+      hip3Market: market,
+      priceKind: product.quote.priceKind?.name,
+      quoteLabel: product.quote.label,
+      validUntil: product.quote.validUntil?.toUtc(),
+      isStale: product.quote.dataStatus == api.QuoteDataStatusEnum.stale,
       change24hPercent: _decimal(
         product.quote.change24hPercent,
         unit: 'percent',
       ),
       bids: book.bids.map(_bookEntry).toList(),
       asks: book.asks.map(_bookEntry).toList(),
-      asOf: book.updatedAt?.toUtc() ?? product.quote.updatedAt?.toUtc(),
+      asOf: product.quote.updatedAt?.toUtc(),
       high24h: _decimal(product.stats?.high24h),
       low24h: _decimal(product.stats?.low24h),
       volume24h: _decimal(product.stats?.volume24h),
@@ -111,6 +142,17 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   }) async {
     final charts = _charts;
     if (charts == null) throw StateError('ChartsService is not configured');
+    String? candleAsset = ref.kind == MarketProductKind.bstock ? 'USDC' : null;
+    // The chart endpoint has a symbol/kind path, so validate a frozen route
+    // identity before asking it for candles. A mainnet quote cannot silently
+    // become a testnet chart (or a different venue with the same ticker).
+    if (ref.kind == MarketProductKind.perp &&
+        (ref.productId != null || ref.environment != null)) {
+      final product = await _service.getProduct(ref.symbol, _apiKind(ref.kind));
+      final market = _hip3Market(product.hip3Market);
+      _validateBinding(ref, market);
+      candleAsset = market?.settlementAsset;
+    }
     final request = range == null ? null : _candleRequest(range);
     final value = await charts.getCandles(
       ref.symbol,
@@ -134,10 +176,10 @@ final class MarketsRepositoryImpl implements MarketsRepository {
           .map(
             (point) => Candle(
               at: point.t.toUtc(),
-              close: DecimalValue(point.c, asset: 'USDC', unit: 'price'),
-              open: _decimal(point.o, asset: 'USDC', unit: 'price'),
-              high: _decimal(point.h, asset: 'USDC', unit: 'price'),
-              low: _decimal(point.l, asset: 'USDC', unit: 'price'),
+              close: DecimalValue(point.c, asset: candleAsset, unit: 'price'),
+              open: _decimal(point.o, asset: candleAsset, unit: 'price'),
+              high: _decimal(point.h, asset: candleAsset, unit: 'price'),
+              low: _decimal(point.l, asset: candleAsset, unit: 'price'),
               volume: _decimal(point.v, unit: 'volume'),
             ),
           )
@@ -188,23 +230,71 @@ final class MarketsRepositoryImpl implements MarketsRepository {
             .toList(),
       );
 
-  MarketProduct _listing(api.ProductListing value) => MarketProduct(
-    symbol: value.symbol,
-    name: value.name ?? value.symbol,
-    kind: _kind(value.kind),
-    price: DecimalValue(value.price, asset: 'USDC', unit: 'price'),
-    settlementAsset: 'USDC',
-    network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',
-    tradable: true,
-    change24hPercent: _decimal(value.change24hPercent, unit: 'percent'),
-    volume24h: _decimal(value.volume24h, unit: value.volume24hUnit),
-    turnover24hUsd: _decimal(
-      value.turnover24hUsd,
-      asset: 'USD',
-      unit: 'notional',
-    ),
-    isFavorite: value.isFavorite ?? false,
-  );
+  MarketProduct _listing(api.ProductListing value) {
+    final market = _hip3Market(value.hip3Market);
+    return MarketProduct(
+      symbol: value.symbol,
+      name: value.name ?? value.symbol,
+      kind: _kind(value.kind),
+      price: DecimalValue(
+        value.price,
+        asset: value.kind == api.ProductKind.bstock
+            ? 'USDC'
+            : market?.settlementAsset,
+        unit: 'price',
+      ),
+      settlementAsset: value.kind == api.ProductKind.bstock
+          ? 'USDC'
+          : market?.settlementAsset ?? '',
+      network: _network(value.kind, market),
+      tradable:
+          value.kind == api.ProductKind.bstock || (market?.tradable ?? false),
+      hip3Market: market,
+      priceKind: value.priceKind?.name,
+      updatedAt: value.updatedAt?.toUtc(),
+      validUntil: value.validUntil?.toUtc(),
+      isStale: value.dataStatus == api.ProductListingDataStatusEnum.stale,
+      change24hPercent: _decimal(value.change24hPercent, unit: 'percent'),
+      volume24h: _decimal(value.volume24h, unit: value.volume24hUnit),
+      turnover24hUsd: _decimal(
+        value.turnover24hUsd,
+        asset: 'USD',
+        unit: 'notional',
+      ),
+      isFavorite: value.isFavorite ?? false,
+    );
+  }
+
+  Hip3PublicMarket? _hip3Market(api.Hip3PublicMarket? value) {
+    if (value == null) return null;
+    if (!['mainnet', 'testnet'].contains(value.environment.name) ||
+        !value.productId.startsWith('${value.venue}:') ||
+        value.settlementAsset.isEmpty) {
+      throw const CompatibilityFailure();
+    }
+    return Hip3PublicMarket(
+      productId: value.productId,
+      venue: value.venue,
+      environment: value.environment.name,
+      settlementAsset: value.settlementAsset,
+      tradable: value.tradable,
+      unavailableReason: value.unavailableReason,
+    );
+  }
+
+  String _network(api.ProductKind kind, Hip3PublicMarket? market) =>
+      kind == api.ProductKind.bstock
+      ? 'BSC'
+      : market == null
+      ? 'Hyperliquid'
+      : 'Hyperliquid · ${market.environment}';
+
+  void _validateBinding(MarketProductRef ref, Hip3PublicMarket? market) {
+    if ((ref.productId != null && ref.productId != market?.productId) ||
+        (ref.environment != null && ref.environment != market?.environment)) {
+      throw const CompatibilityFailure();
+    }
+  }
 
   OrderBookEntry _bookEntry(api.OrderBookLevel value) => OrderBookEntry(
     price: DecimalValue(value.price, asset: 'USDC', unit: 'price'),

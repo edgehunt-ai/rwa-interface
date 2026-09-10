@@ -2,25 +2,36 @@ enum PortfolioCompleteness { complete, partial, empty, unknown }
 
 enum PortfolioFreshness { live, cached, stale, unknown }
 
+/// Snapshot-wide counts computed before pagination, never summed across pages.
+typedef HoldingsCoverage = ({
+  int observedPositionCount,
+  int displayedPositionCount,
+  int unmappedPositionCount,
+  int? excludedNonHip3PositionCount,
+});
+
 final class PortfolioReadStatus {
   const PortfolioReadStatus({
     this.completeness = PortfolioCompleteness.unknown,
     this.freshness = PortfolioFreshness.unknown,
     this.warnings = const [],
     this.oldestObservationAt,
+    this.holdingsCoverage,
   });
 
   final PortfolioCompleteness completeness;
   final PortfolioFreshness freshness;
   final List<String> warnings;
   final DateTime? oldestObservationAt;
+  final HoldingsCoverage? holdingsCoverage;
 
   bool get reliable =>
       (completeness == PortfolioCompleteness.complete ||
           completeness == PortfolioCompleteness.empty) &&
       (freshness == PortfolioFreshness.live ||
           freshness == PortfolioFreshness.cached) &&
-      warnings.isEmpty;
+      warnings.isEmpty &&
+      (holdingsCoverage?.unmappedPositionCount ?? 0) == 0;
 
   PortfolioReadStatus merge(PortfolioReadStatus other) => PortfolioReadStatus(
     completeness:
@@ -52,5 +63,8 @@ final class PortfolioReadStatus {
               oldestObservationAt!.isBefore(other.oldestObservationAt!)
         ? oldestObservationAt
         : other.oldestObservationAt,
+    // Each cursor page repeats the same snapshot-wide observation, not a
+    // contribution. The latest page supplies the authoritative counts.
+    holdingsCoverage: other.holdingsCoverage ?? holdingsCoverage,
   );
 }

@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/hip3_query_refresh.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../data/services/market_search_history_service.dart';
 import '../../../../domain/models/domain_page.dart';
@@ -14,27 +13,26 @@ typedef MarketQuery = ({String? query, String? cursor});
 
 final marketProductsProvider = FutureProvider.autoDispose
     .family<DomainPage<MarketProduct>, MarketQuery>((ref, query) {
-      return ref
-          .watch(marketsRepositoryProvider)
-          .listProducts(query: query.query, cursor: query.cursor);
+      final repository = ref.watch(marketsRepositoryProvider);
+      return hip3RefreshingQuery(
+        ref,
+        () => repository.listProducts(query: query.query, cursor: query.cursor),
+      );
     });
 
 final marketProductProvider = FutureProvider.autoDispose
     .family<MarketProduct, MarketProductRef>((ref, product) {
+      ref.watch(sessionGenerationProvider);
       return ref.watch(marketsRepositoryProvider).getProduct(product);
     });
 
 final marketSnapshotProvider = FutureProvider.autoDispose
     .family<MarketSnapshot, MarketProductRef>((ref, product) async {
-      Timer? timer;
-      ref.onDispose(() => timer?.cancel());
-      try {
-        return await ref.watch(marketsRepositoryProvider).getSnapshot(product);
-      } finally {
-        if (product.kind == MarketProductKind.perp && ref.mounted) {
-          timer = Timer(const Duration(seconds: 10), ref.invalidateSelf);
-        }
+      final repository = ref.watch(marketsRepositoryProvider);
+      if (product.kind != MarketProductKind.perp) {
+        return repository.getSnapshot(product);
       }
+      return hip3RefreshingQuery(ref, () => repository.getSnapshot(product));
     });
 
 final marketCandlesProvider = FutureProvider.autoDispose
@@ -78,29 +76,72 @@ final class RecentMarketSearches extends AsyncNotifier<List<MarketProductRef>> {
 }
 
 final class FavoritesCommand extends AsyncNotifier<void> {
+  bool _pending = false;
+  int _generation = 0;
   @override
-  Future<void> build() async {
+  void build() {
     ref.watch(sessionGenerationProvider);
+    _generation++;
+    _pending = false;
   }
 
-  Future<void> add(MarketProductRef product) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(marketsRepositoryProvider).addFavorite(product),
+  Future<bool> add(MarketProductRef product) => _mutate(product, true);
+
+  Future<bool> remove(MarketProductRef product) => _mutate(product, false);
+
+  Future<bool> _mutate(MarketProductRef product, bool add) =>
+      _execute(product, () {
+        final repository = ref.read(marketsRepositoryProvider);
+        return add
+            ? repository.addFavorite(product)
+            : repository.removeFavorite(product);
+      });
+
+  Future<bool> replace(
+    List<MarketProductRef> ordered, {
+    required List<MarketProductRef> expectedFavorites,
+  }) async {
+    if (ordered.length != expectedFavorites.length ||
+        ordered.toSet().length != ordered.length ||
+        !ordered.toSet().containsAll(expectedFavorites)) {
+      return false;
+    }
+    final frozen = List<MarketProductRef>.unmodifiable(ordered);
+    return _execute(
+      null,
+      () => ref.read(marketsRepositoryProvider).replaceFavorites(frozen),
     );
-    if (!state.hasError) _invalidate(product);
   }
 
-  Future<void> remove(MarketProductRef product) async {
+  Future<bool> _execute(
+    MarketProductRef? product,
+    Future<void> Function() send,
+  ) async {
+    if (_pending) return false;
+    final generation = _generation;
+    final session = ref.read(sessionGenerationProvider);
+    _pending = true;
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(marketsRepositoryProvider).removeFavorite(product),
-    );
-    if (!state.hasError) _invalidate(product);
+    final result = await AsyncValue.guard(send);
+    if (!ref.mounted ||
+        generation != _generation ||
+        session != ref.read(sessionGenerationProvider)) {
+      return false;
+    }
+    _pending = false;
+    state = result;
+    // A lost response may still have committed. Reconcile on failure too,
+    // without treating an unconfirmed mutation as a successful star toggle.
+    _invalidate(product);
+    return !result.hasError;
   }
 
-  void _invalidate(MarketProductRef product) {
-    ref.invalidate(marketProductProvider(product));
+  void _invalidate(MarketProductRef? product) {
+    if (product == null) {
+      ref.invalidate(marketProductProvider);
+    } else {
+      ref.invalidate(marketProductProvider(product));
+    }
     ref.invalidate(marketProductsProvider);
     ref.invalidate(marketListProvider);
   }

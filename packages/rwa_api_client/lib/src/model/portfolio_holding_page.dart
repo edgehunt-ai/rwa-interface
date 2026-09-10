@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/portfolio_holding_page_all_of_coverage.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
 import 'package:built_collection/built_collection.dart';
@@ -20,6 +21,7 @@ part 'portfolio_holding_page.g.dart';
 /// Properties:
 /// * [nextCursor] - 为 `null` 表示没有更多数据
 /// * [hasMore] 
+/// * [coverage] 
 /// * [items] 
 /// * [totalEquityUsd] - Hyperliquid account equity；不以 position notional 求和。
 /// * [totalValueUsd] - Legacy optional alias retained for clients pinned to v1.0.0.
@@ -31,6 +33,9 @@ part 'portfolio_holding_page.g.dart';
 /// * [sources] 
 @BuiltValue()
 abstract class PortfolioHoldingPage implements Page, Built<PortfolioHoldingPage, PortfolioHoldingPageBuilder> {
+  @BuiltValueField(wireName: r'coverage')
+  PortfolioHoldingPageAllOfCoverage? get coverage;
+
   /// Hyperliquid account equity；不以 position notional 求和。
   @BuiltValueField(wireName: r'total_equity_usd')
   String get totalEquityUsd;
@@ -86,6 +91,13 @@ class _$PortfolioHoldingPageSerializer implements PrimitiveSerializer<PortfolioH
     PortfolioHoldingPage object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.coverage != null) {
+      yield r'coverage';
+      yield serializers.serialize(
+        object.coverage,
+        specifiedType: const FullType(PortfolioHoldingPageAllOfCoverage),
+      );
+    }
     yield r'next_cursor';
     yield object.nextCursor == null ? null : serializers.serialize(
       object.nextCursor,
@@ -168,6 +180,14 @@ class _$PortfolioHoldingPageSerializer implements PrimitiveSerializer<PortfolioH
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'coverage':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioHoldingPageAllOfCoverage),
+          ) as PortfolioHoldingPageAllOfCoverage?;
+          if (valueDes == null) continue;
+          result.coverage.replace(valueDes);
+          break;
         case r'next_cursor':
           final valueDes = serializers.deserialize(
             value,

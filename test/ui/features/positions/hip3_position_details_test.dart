@@ -17,6 +17,7 @@ import 'package:rwa_interface/ui/features/positions/views/hip3_position_leverage
 Position position({
   bool missing = false,
   PositionSide side = PositionSide.long,
+  String returnPercent = '-1.869',
 }) => Position(
   positionId: 'p-tsla',
   productId: 'xyz:TSLA',
@@ -29,7 +30,7 @@ Position position({
   entryPrice: missing ? null : DecimalValue('100.123'),
   markPrice: missing ? null : DecimalValue('99.5'),
   unrealizedPnl: missing ? null : DecimalValue('-0.623'),
-  unrealizedPnlPercent: missing ? null : DecimalValue('-1.869'),
+  unrealizedPnlPercent: missing ? null : DecimalValue(returnPercent),
   realizedPnl: DecimalValue('777'),
   margin: missing ? null : DecimalValue('33.333'),
   liquidationPrice: missing ? null : DecimalValue('67'),
@@ -49,6 +50,22 @@ PositionLeverageContext limits({bool expired = false, bool allowed = true}) =>
     );
 
 void main() {
+  testWidgets(
+    'detailed HIP3 return preserves a small signed server percentage',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Hip3PositionMetrics(
+              position: position(returnPercent: '0.000123'),
+            ),
+          ),
+        ),
+      );
+      expect(find.text('+0.000123%'), findsOneWidget);
+      expect(find.text('0%'), findsNothing);
+    },
+  );
   test('leverage validation is exact, bounded and expires', () {
     for (final value in ['1', '10']) {
       expect(limits().accepts(value, DateTime.now().toUtc()), isTrue);

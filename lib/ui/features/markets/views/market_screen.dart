@@ -13,6 +13,8 @@ import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.d
 import '../../../../domain/models/market_list_query.dart';
 import '../providers/market_list_provider.dart';
 import 'market_paged_list.dart';
+import 'favorite_order_screen.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class MarketScreen extends ConsumerStatefulWidget {
   const MarketScreen({super.key});
@@ -44,7 +46,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            if (kind == MarketProductKind.bstock) {
+            if (kind == MarketProductKind.bstock && activeTab != 'Favorites') {
               ref.invalidate(
                 marketProductsProvider((query: null, cursor: null)),
               );
@@ -130,10 +132,27 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                             onSelected: (value) =>
                                 _change(() => activeTab = value),
                           ),
+                          if (activeTab == 'Favorites')
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: TextButton.icon(
+                                icon: const Icon(Icons.swap_vert),
+                                label: Text(
+                                  AppLocalizations.of(context)
+                                      .marketFavoritesReorder,
+                                ),
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const FavoriteOrderScreen(),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                    if (kind != MarketProductKind.bstock)
+                    if (kind != MarketProductKind.bstock ||
+                        activeTab == 'Favorites')
                       MarketPagedSliver(query: listQuery)
                     else
                       SliverToBoxAdapter(

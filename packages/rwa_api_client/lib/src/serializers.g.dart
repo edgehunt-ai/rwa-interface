@@ -18,6 +18,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ActivityCategory.serializer)
       ..add(ActivityPage.serializer)
       ..add(ActivityRecord.serializer)
+      ..add(ActivityRecordBusinessTypeEnum.serializer)
       ..add(ActivityRecordChainEnum.serializer)
       ..add(ActivityRecordExplorer.serializer)
       ..add(ActivityRecordReference.serializer)
@@ -257,6 +258,15 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FundingRouteCapabilityMatrix.serializer)
       ..add(FundingRouteCapabilityStatus.serializer)
       ..add(FundingRouteQuote.serializer)
+      ..add(FundingSession.serializer)
+      ..add(FundingSessionCreateRequest.serializer)
+      ..add(FundingSessionPlanRequest.serializer)
+      ..add(FundingSessionSelectionRequest.serializer)
+      ..add(FundingSessionSourceAllocation.serializer)
+      ..add(FundingSessionSourceAllocationInput.serializer)
+      ..add(FundingSessionStatus.serializer)
+      ..add(FundingSessionTradeIntentCreateRequest.serializer)
+      ..add(FundingSessionTradeIntentCreateRequestFundingModeEnum.serializer)
       ..add(FundingSourceAsset.serializer)
       ..add(FundingSourceAssetCatalog.serializer)
       ..add(FundingSourceAssetId.serializer)
@@ -341,6 +351,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3PreviewExecutionTypeEnum.serializer)
       ..add(Hip3ProtectionSpec.serializer)
       ..add(Hip3ProtectionSpecSizeModeEnum.serializer)
+      ..add(Hip3PublicMarket.serializer)
+      ..add(Hip3PublicMarketEnvironmentEnum.serializer)
       ..add(Hip3SetLeverageActionRequest.serializer)
       ..add(Hip3SetLeverageActionRequestOperationEnum.serializer)
       ..add(Hip3SetTpSlActionRequest.serializer)
@@ -358,6 +370,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3TriggerSpecExecutionTypeEnum.serializer)
       ..add(Hip3TriggerSpecTriggerReferenceEnum.serializer)
       ..add(HoldingGroup.serializer)
+      ..add(HoldingStock.serializer)
       ..add(HyperliquidSignature.serializer)
       ..add(HyperliquidSignatureVEnum.serializer)
       ..add(IneligibleFundingPositionEligibility.serializer)
@@ -501,6 +514,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PortfolioDataStatus.serializer)
       ..add(PortfolioFreshness.serializer)
       ..add(PortfolioHoldingPage.serializer)
+      ..add(PortfolioHoldingPageAllOfCoverage.serializer)
+      ..add(PortfolioHoldingPageAllOfCoverageScopeEnum.serializer)
       ..add(PortfolioNotice.serializer)
       ..add(PortfolioNoticeSeverity.serializer)
       ..add(PortfolioPriceSource.serializer)
@@ -531,11 +546,15 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ProductDetailTradingHoursEnum.serializer)
       ..add(ProductKind.serializer)
       ..add(ProductListing.serializer)
+      ..add(ProductListingDataStatusEnum.serializer)
+      ..add(ProductListingPriceKindEnum.serializer)
       ..add(ProductListingProductTypeEnum.serializer)
       ..add(ProductPage.serializer)
       ..add(ProductRef.serializer)
       ..add(ProductType.serializer)
       ..add(Quote.serializer)
+      ..add(QuoteDataStatusEnum.serializer)
+      ..add(QuotePriceKindEnum.serializer)
       ..add(ReadyFundingWalletAction.serializer)
       ..add(RealtimeActivityEvent.serializer)
       ..add(RealtimeActivityEventEventEnum.serializer)
@@ -586,6 +605,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(TradeIntentExecutionPolicy.serializer)
       ..add(TradeIntentExecutionPolicyOrderTypeEnum.serializer)
       ..add(TradeIntentFundingLegBinding.serializer)
+      ..add(TradeIntentFundingModeEnum.serializer)
       ..add(TradeIntentNextAction.serializer)
       ..add(TradeIntentStatus.serializer)
       ..add(Transfer.serializer)
@@ -613,6 +633,16 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(UnifiedFundingTransfer.serializer)
       ..add(User.serializer)
       ..add(UserPaidWalletActionExecutionSubmissionRequest.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlan.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanAssetEnum.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanModeEnum.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanNetworkEnum.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanRailEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlan.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanAssetEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanModeEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanNetworkEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanRailEnum.serializer)
       ..add(UserSettings.serializer)
       ..add(UserSettingsLanguageEnum.serializer)
       ..add(UserSettingsUpdate.serializer)
@@ -700,6 +730,14 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltList, const [const FullType(FundingRouteBlocker)]),
           () => ListBuilder<FundingRouteBlocker>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(FundingWalletActionSummary)]),
+          () => ListBuilder<FundingWalletActionSummary>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(FundingWalletActionSummary)]),
+          () => ListBuilder<FundingWalletActionSummary>())
       ..addBuilderFactory(
           const FullType(
               BuiltList, const [const FullType(FundingWalletActionSummary)]),
@@ -867,6 +905,14 @@ Serializers _$serializers = (Serializers().toBuilder()
               BuiltList, const [const FullType(UnifiedFundingPosition)]),
           () => ListBuilder<UnifiedFundingPosition>())
       ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(FundingSessionSourceAllocation)]),
+          () => ListBuilder<FundingSessionSourceAllocation>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(UnifiedFundingPosition)]),
+          () => ListBuilder<UnifiedFundingPosition>())
+      ..addBuilderFactory(
           const FullType(
               BuiltList, const [const FullType(UnifiedFundingTransfer)]),
           () => ListBuilder<UnifiedFundingTransfer>())
@@ -896,6 +942,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(DepositRail)]),
           () => ListBuilder<DepositRail>())
+      ..addBuilderFactory(
+          const FullType(BuiltSet,
+              const [const FullType(FundingSessionSourceAllocationInput)]),
+          () => SetBuilder<FundingSessionSourceAllocationInput>())
       ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(String)]),
           () => SetBuilder<String>())

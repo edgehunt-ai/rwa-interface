@@ -4,14 +4,14 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/position.dart';
-import 'package:rwa_api_client/src/model/stock.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/holding_stock.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'holding_group.g.dart';
 
-/// 资产页中一支股票下的所有产品持仓
+/// 资产页中同一完整产品身份下的持仓；不按跨场所同名 symbol 合并。
 ///
 /// Properties:
 /// * [stock] 
@@ -20,7 +20,7 @@ part 'holding_group.g.dart';
 @BuiltValue()
 abstract class HoldingGroup implements Built<HoldingGroup, HoldingGroupBuilder> {
   @BuiltValueField(wireName: r'stock')
-  Stock get stock;
+  HoldingStock get stock;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'total_value_usd')
@@ -55,7 +55,7 @@ class _$HoldingGroupSerializer implements PrimitiveSerializer<HoldingGroup> {
     yield r'stock';
     yield serializers.serialize(
       object.stock,
-      specifiedType: const FullType(Stock),
+      specifiedType: const FullType(HoldingStock),
     );
     yield r'total_value_usd';
     yield serializers.serialize(
@@ -93,8 +93,8 @@ class _$HoldingGroupSerializer implements PrimitiveSerializer<HoldingGroup> {
         case r'stock':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(Stock),
-          ) as Stock;
+            specifiedType: const FullType(HoldingStock),
+          ) as HoldingStock;
           result.stock.replace(valueDes);
           break;
         case r'total_value_usd':
