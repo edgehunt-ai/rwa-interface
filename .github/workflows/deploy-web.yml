@@ -1,23 +1,16 @@
 name: Deploy Web
 
 on:
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: web-deploy-${{ github.event.workflow_run.head_branch || github.ref }}
+  group: web-deploy-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-  TARGET_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
   API_BASE_URL: ${{ vars.API_BASE_URL }}
   PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
   PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
@@ -25,7 +18,7 @@ env:
   PRIVY_RELYING_PARTY: ${{ vars.PRIVY_RELYING_PARTY || 'https://rwa.dxd.ink' }}
   REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
   SENTRY_DSN: ${{ vars.SENTRY_DSN }}
-  SENTRY_ENVIRONMENT: ${{ (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_run' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main') && (vars.SENTRY_ENVIRONMENT || 'production') || 'preview' }}
+  SENTRY_ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && (vars.SENTRY_ENVIRONMENT || 'production') || 'preview' }}
   SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.10' }}
   SENTRY_PROFILES_SAMPLE_RATE: ${{ vars.SENTRY_PROFILES_SAMPLE_RATE || '0.10' }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -35,17 +28,10 @@ env:
 jobs:
   deploy:
     name: Deploy Flutter Web to Vercel
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'pull_request') &&
-      github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ env.TARGET_SHA }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -118,9 +104,9 @@ jobs:
             '}' > .vercel/output/config.json
 
       - name: Deploy preview
-        if: env.TARGET_BRANCH != 'main'
+        if: github.ref != 'refs/heads/main'
         run: npx --yes vercel@latest deploy --prebuilt --yes --token="$VERCEL_TOKEN"
 
       - name: Deploy production
-        if: env.TARGET_BRANCH == 'main' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.event == 'push')
+        if: github.ref == 'refs/heads/main'
         run: npx --yes vercel@latest deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN"
