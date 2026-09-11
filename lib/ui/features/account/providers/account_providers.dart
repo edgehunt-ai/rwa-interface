@@ -5,6 +5,7 @@ import '../../../../app/providers/auth_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/auth/identity_auth_gateway.dart';
 import '../../../../domain/models/domain_page.dart';
+import '../../../../domain/models/account_deletion.dart';
 import '../../../../domain/models/registered_device.dart';
 import '../../../../domain/models/user_account.dart';
 import '../../../../domain/models/wallet.dart';
@@ -43,6 +44,30 @@ final settingsCommandProvider =
     AsyncNotifierProvider<SettingsCommand, UserPreferences?>(
       SettingsCommand.new,
     );
+
+final accountDeletionCommandProvider =
+    AsyncNotifierProvider<AccountDeletionCommand, AccountDeletion?>(
+      AccountDeletionCommand.new,
+    );
+
+final class AccountDeletionCommand extends AsyncNotifier<AccountDeletion?> {
+  final String _idempotencyKey =
+      'account-deletion-${DateTime.now().toUtc().microsecondsSinceEpoch}';
+
+  @override
+  AccountDeletion? build() => null;
+
+  Future<AccountDeletion?> request() async {
+    if (state.isLoading) return null;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref
+          .read(accountRepositoryProvider)
+          .requestAccountDeletion(idempotencyKey: _idempotencyKey),
+    );
+    return state.value;
+  }
+}
 
 final passkeyProvider =
     AsyncNotifierProvider.autoDispose<PasskeyCommand, PasskeyCredential?>(

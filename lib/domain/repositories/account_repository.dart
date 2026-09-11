@@ -1,4 +1,5 @@
 import '../models/domain_page.dart';
+import '../models/account_deletion.dart';
 import '../models/registered_device.dart';
 import '../models/user_account.dart';
 
@@ -8,4 +9,8 @@ abstract interface class AccountRepository {
   Future<DomainPage<RegisteredDevice>> listDevices({String? cursor});
   Future<RegisteredDevice> registerDevice(DeviceRegistration registration);
   Future<void> deleteDevice(String deviceId);
+  Future<AccountDeletion> requestAccountDeletion({
+    required String idempotencyKey,
+  });
+  Future<AccountDeletion> getAccountDeletion();
 }

@@ -4,6 +4,7 @@ import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/deposit.dart';
+import '../../../../domain/models/deposit_observation.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/funding_catalog.dart';
 import '../../../../domain/models/resource_result.dart';
@@ -216,6 +217,13 @@ final depositsProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<Deposit>>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
       return ref.watch(fundingRepositoryProvider).listDeposits(cursor: cursor);
+    });
+final depositObservationsProvider = FutureProvider.autoDispose
+    .family<DomainPage<DepositObservation>, String?>((ref, cursor) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(fundingRepositoryProvider)
+          .listDepositObservations(cursor: cursor);
     });
 final depositProvider = FutureProvider.autoDispose
     .family<ResourceResult<Deposit>, String>((ref, id) {

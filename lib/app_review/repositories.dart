@@ -1,6 +1,8 @@
 import '../domain/models/activity_record.dart';
+import '../domain/models/account_deletion.dart';
 import '../domain/models/decimal_value.dart';
 import '../domain/models/deposit.dart';
+import '../domain/models/deposit_observation.dart';
 import '../domain/models/domain_page.dart';
 import '../domain/models/funding_catalog.dart';
 import '../domain/models/funding_transfer.dart';
@@ -120,6 +122,22 @@ final class AppReviewAccountRepository implements AccountRepository {
 
   @override
   Future<void> deleteDevice(String deviceId) async {}
+
+  @override
+  Future<AccountDeletion> requestAccountDeletion({
+    required String idempotencyKey,
+  }) async => _reviewDeletion();
+
+  @override
+  Future<AccountDeletion> getAccountDeletion() async => _reviewDeletion();
+
+  AccountDeletion _reviewDeletion() => AccountDeletion(
+    requestId: store.id('account-deletion'),
+    state: AccountDeletionState.requested,
+    blockers: const [],
+    requestedAt: _now,
+    updatedAt: _now,
+  );
 }
 
 final class AppReviewPortfolioRepository implements PortfolioRepository {
@@ -752,6 +770,11 @@ final class AppReviewFundingRepository implements FundingRepository {
     store.withdrawals[withdrawal.withdrawalId] = withdrawal;
     return withdrawal;
   }
+
+  @override
+  Future<DomainPage<DepositObservation>> listDepositObservations({
+    String? cursor,
+  }) async => const DomainPage(items: <DepositObservation>[]);
 
   @override
   Future<Withdrawal> getWithdrawal(String id) async => store.withdrawals[id]!;

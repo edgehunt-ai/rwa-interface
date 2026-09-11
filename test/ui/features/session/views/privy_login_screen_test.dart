@@ -66,6 +66,32 @@ void main() {
 
     expect(connector.connectCalls, 1);
   });
+
+  testWidgets('places Passkey in a separate bottom login section', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(),
+          ),
+        ],
+        child: buildTestApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationUnauthenticated(),
+          ),
+        ),
+      ),
+    );
+
+    final walletBottom = tester.getBottomRight(find.text('Wallet')).dy;
+    final passkeyTop = tester.getTopLeft(find.text('Passkey')).dy;
+
+    expect(passkeyTop, greaterThan(walletBottom + 40));
+  });
 }
 
 final class _FakeWalletConnector implements WalletConnector {

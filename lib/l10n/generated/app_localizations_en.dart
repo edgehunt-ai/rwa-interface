@@ -333,6 +333,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cashBalances => 'Cash balances';
 
   @override
+  String get buy => 'Buy';
+
+  @override
+  String get sell => 'Sell';
+
+  @override
+  String get balance => 'Balance';
+
+  @override
+  String get orderValue => 'Order Value';
+
+  @override
+  String get estimatedFee => 'Estimated Fee';
+
+  @override
+  String get orderType => 'Order Type';
+
+  @override
+  String get market => 'Market';
+
+  @override
+  String get limit => 'Limit';
+
+  @override
+  String get orderSubmitted => 'Order submitted';
+
+  @override
   String get portfolioTrend => 'Portfolio trend';
 
   @override
@@ -425,9 +452,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get limitPrice => 'Limit Price';
-
-  @override
-  String get market => 'Market';
 
   @override
   String get dragToSet => 'Drag to set';
@@ -670,7 +694,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsDeleteAccountMessage =>
-      'Account deletion is not available from this version of the app.';
+      'This requests permanent deletion of your product account and eligible product data. It does not delete your wallet, blockchain assets, or blockchain history.';
+
+  @override
+  String get settingsDeleteAccountConfirm => 'Delete Account';
+
+  @override
+  String get settingsDeleteAccountAccepted =>
+      'Account deletion requested. You have been signed out.';
+
+  @override
+  String get settingsDeleteAccountRecentAuth =>
+      'For your security, sign out, sign in again, and retry account deletion.';
+
+  @override
+  String get settingsDeleteAccountBlocked =>
+      'Account deletion is blocked by open orders, positions, funds in transit, remaining assets, or a required review. Resolve them and try again.';
+
+  @override
+  String get settingsDeleteAccountFailed =>
+      'Unable to request account deletion. Try again later.';
 
   @override
   String get activityTitle => 'Activity';

@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:rwa_interface/data/repositories/account_repository_impl.dart';
 import 'package:rwa_interface/data/services/account_service.dart';
 import 'package:rwa_interface/domain/models/user_account.dart';
+import 'package:rwa_interface/domain/models/account_deletion.dart';
 
 void main() {
   test(
@@ -20,6 +21,18 @@ void main() {
       expect(devices.items.single.pushTokenRegistered, isTrue);
     },
   );
+
+  test('maps account deletion status and blockers', () async {
+    final repository = AccountRepositoryImpl(_AccountService());
+
+    final deletion = await repository.requestAccountDeletion(
+      idempotencyKey: 'delete-1',
+    );
+
+    expect(deletion.requestId, '11111111-1111-1111-1111-111111111111');
+    expect(deletion.state, AccountDeletionState.blocked);
+    expect(deletion.blockers, [AccountDeletionBlocker.openOrders]);
+  });
 }
 
 final class _AccountService implements AccountService {
@@ -27,6 +40,22 @@ final class _AccountService implements AccountService {
 
   @override
   Future<void> deleteDevice(String deviceId) async {}
+
+  @override
+  Future<api.AccountDeletionRequest> getAccountDeletion() =>
+      throw UnimplementedError();
+
+  @override
+  Future<api.AccountDeletionRequest> requestAccountDeletion({
+    required String idempotencyKey,
+  }) async => api.AccountDeletionRequest(
+    (builder) => builder
+      ..deletionRequestId = '11111111-1111-1111-1111-111111111111'
+      ..status = api.AccountDeletionStatus.blocked
+      ..blockers.add(api.AccountDeletionBlocker.openOrders)
+      ..requestedAt = DateTime.utc(2026)
+      ..updatedAt = DateTime.utc(2026),
+  );
 
   @override
   Future<api.User> getMe() => throw UnimplementedError();

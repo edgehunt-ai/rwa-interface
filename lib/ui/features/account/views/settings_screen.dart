@@ -6,6 +6,8 @@ import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
 import 'package:rwa_interface/domain/models/app_update.dart';
+import 'package:rwa_interface/domain/models/account_deletion.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/app/providers/locale_provider.dart';
 import 'package:rwa_interface/domain/models/user_account.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
@@ -80,7 +82,7 @@ class SettingsScreen extends ConsumerWidget {
             clearingCache: clearingCache,
             onClearCache: () => ref.read(cacheCommandProvider.notifier).clear(),
             onLogOut: () => _showLogOutConfirmation(context, ref),
-            onDeleteAccount: () => _showDeletionUnavailable(context),
+            onDeleteAccount: () => _showDeleteAccountConfirmation(context, ref),
           ),
         ),
       ),
@@ -234,17 +236,90 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeletionUnavailable(BuildContext context) {
+  void _showDeleteAccountConfirmation(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     showModalBottomSheet<void>(
       context: context,
-      builder: (sheetContext) => _NoticeSheet(
-        title: l10n.settingsDeleteAccount,
-        message: l10n.settingsDeleteAccountMessage,
-        actionLabel: l10n.confirm,
-        onAction: () => Navigator.of(sheetContext).pop(),
+      builder: (sheetContext) => Consumer(
+        builder: (modalContext, sheetRef, _) => _NoticeSheet(
+          title: l10n.settingsDeleteAccount,
+          message: l10n.settingsDeleteAccountMessage,
+          actions: [
+            OutlinedButton(
+              onPressed:
+                  sheetRef.watch(accountDeletionCommandProvider).isLoading
+                  ? null
+                  : () => Navigator.of(sheetContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed:
+                  sheetRef.watch(accountDeletionCommandProvider).isLoading
+                  ? null
+                  : () => _requestAccountDeletion(context, sheetContext, ref),
+              child: sheetRef.watch(accountDeletionCommandProvider).isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(l10n.settingsDeleteAccountConfirm),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _requestAccountDeletion(
+    BuildContext context,
+    BuildContext sheetContext,
+    WidgetRef ref,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final deletion = await ref
+        .read(accountDeletionCommandProvider.notifier)
+        .request();
+    if (deletion == null) {
+      final error = ref.read(accountDeletionCommandProvider).error;
+      if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+      if (context.mounted) {
+        AppToast.showFailure(context, _deletionFailureMessage(l10n, error));
+      }
+      return;
+    }
+    if (deletion.state
+        case AccountDeletionState.blocked ||
+            AccountDeletionState.manualReview ||
+            AccountDeletionState.failed ||
+            AccountDeletionState.unknown) {
+      if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+      if (context.mounted) {
+        AppToast.showFailure(context, l10n.settingsDeleteAccountBlocked);
+      }
+      return;
+    }
+
+    await ref.read(authenticationProvider.notifier).logout();
+    if (sheetContext.mounted) {
+      Navigator.of(sheetContext).pop();
+    }
+    if (!context.mounted) return;
+    AppToast.showSuccess(context, l10n.settingsDeleteAccountAccepted);
+    GoRouter.maybeOf(context)?.goNamed(AppRoutes.loginName);
+  }
+
+  String _deletionFailureMessage(AppLocalizations l10n, Object? error) {
+    if (error case ServerFailure(code: 'recent_auth_required')) {
+      return l10n.settingsDeleteAccountRecentAuth;
+    }
+    if (error case ServerFailure(statusCode: 409)) {
+      return l10n.settingsDeleteAccountBlocked;
+    }
+    return l10n.settingsDeleteAccountFailed;
   }
 }
 

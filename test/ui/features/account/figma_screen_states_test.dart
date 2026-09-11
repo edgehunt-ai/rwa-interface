@@ -6,6 +6,8 @@ import 'package:rwa_interface/app/providers/auth_providers.dart';
 import 'package:rwa_interface/app/routing/app_router.dart';
 import 'package:rwa_interface/data/services/cache_storage_service.dart';
 import 'package:rwa_interface/domain/models/product_session.dart';
+import 'package:rwa_interface/domain/models/account_deletion.dart';
+import 'package:rwa_interface/domain/repositories/account_repository.dart';
 import 'package:rwa_interface/domain/models/user_account.dart';
 import 'package:rwa_interface/domain/repositories/session_repository.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
@@ -198,6 +200,32 @@ void main() {
     expect(identity.logoutCalls, 1);
     expect(find.text('Sign up or log in\nto start exploring'), findsOneWidget);
   });
+
+  testWidgets('requests account deletion after confirmation', (tester) async {
+    final identity = FakeIdentityAuthGateway();
+    final session = _SessionRepository();
+    final account = _DeletionAccountRepository();
+    await tester.pumpWidget(
+      _settingsApp(identity, session, accountRepository: account),
+    );
+    await tester.pump();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete Account'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('permanent deletion of your product account'),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete Account'));
+    await tester.pumpAndSettle();
+
+    expect(account.deletionRequests, 1);
+    expect(identity.logoutCalls, 1);
+    expect(session.endCalls, 1);
+  });
 }
 
 Widget _settingsApp(
@@ -205,10 +233,13 @@ Widget _settingsApp(
   _SessionRepository session, {
   String language = 'en',
   CacheStorageService? cache,
+  AccountRepository? accountRepository,
 }) => ProviderScope(
   overrides: [
     identityAuthGatewayProvider.overrideWithValue(identity),
     sessionRepositoryProvider.overrideWithValue(session),
+    if (accountRepository != null)
+      accountRepositoryProvider.overrideWithValue(accountRepository),
     cacheStorageServiceProvider.overrideWithValue(
       cache ?? _CacheStorageService(),
     ),
@@ -233,6 +264,28 @@ Widget _settingsApp(
     home: const SettingsScreen(),
   ),
 );
+
+final class _DeletionAccountRepository implements AccountRepository {
+  var deletionRequests = 0;
+
+  @override
+  Future<AccountDeletion> requestAccountDeletion({
+    required String idempotencyKey,
+  }) async {
+    deletionRequests += 1;
+    final now = DateTime.utc(2026);
+    return AccountDeletion(
+      requestId: 'delete-1',
+      state: AccountDeletionState.requested,
+      blockers: const [],
+      requestedAt: now,
+      updatedAt: now,
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 final class _SessionRepository implements SessionRepository {
   var endCalls = 0;

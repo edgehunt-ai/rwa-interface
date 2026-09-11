@@ -327,6 +327,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cashBalances => '现金余额';
 
   @override
+  String get buy => '买入';
+
+  @override
+  String get sell => '卖出';
+
+  @override
+  String get balance => '余额';
+
+  @override
+  String get orderValue => '订单金额';
+
+  @override
+  String get estimatedFee => '预估费用';
+
+  @override
+  String get orderType => '订单类型';
+
+  @override
+  String get market => '市价';
+
+  @override
+  String get limit => '限价';
+
+  @override
+  String get orderSubmitted => '订单已提交';
+
+  @override
   String get portfolioTrend => '投资组合走势';
 
   @override
@@ -416,9 +443,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get limitPrice => '限价';
-
-  @override
-  String get market => '市价';
 
   @override
   String get dragToSet => '拖动设置';
@@ -649,7 +673,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsDeleteAccount => '删除账户';
 
   @override
-  String get settingsDeleteAccountMessage => '当前版本暂不支持删除账户。';
+  String get settingsDeleteAccountMessage =>
+      '此操作将申请永久删除产品账户及依法允许删除的产品数据，但不会删除钱包、链上资产或区块链历史。';
+
+  @override
+  String get settingsDeleteAccountConfirm => '删除账户';
+
+  @override
+  String get settingsDeleteAccountAccepted => '账户删除申请已提交，你已退出登录。';
+
+  @override
+  String get settingsDeleteAccountRecentAuth => '为保障安全，请退出后重新登录，再申请删除账户。';
+
+  @override
+  String get settingsDeleteAccountBlocked =>
+      '账户仍有未结订单、仓位、在途资金、可提现资产或待审核事项，请处理后重试。';
+
+  @override
+  String get settingsDeleteAccountFailed => '无法提交账户删除申请，请稍后重试。';
 
   @override
   String get activityTitle => '活动';

@@ -15,6 +15,7 @@ abstract interface class FundingService {
   Future<api.Transfer> getTransfer(String id);
   Future<api.Deposit> getDeposit(String id);
   Future<api.DepositPage> listDeposits({String? cursor});
+  Future<api.DepositObservationPage> listDepositObservations({String? cursor});
   Future<api.WithdrawalQuote> quote(
     api.WithdrawalQuoteRequest request, {
     required String idempotencyKey,

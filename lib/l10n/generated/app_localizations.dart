@@ -728,6 +728,60 @@ abstract class AppLocalizations {
   /// **'Cash balances'**
   String get cashBalances;
 
+  /// No description provided for @buy.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy'**
+  String get buy;
+
+  /// No description provided for @sell.
+  ///
+  /// In en, this message translates to:
+  /// **'Sell'**
+  String get sell;
+
+  /// No description provided for @balance.
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get balance;
+
+  /// No description provided for @orderValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Value'**
+  String get orderValue;
+
+  /// No description provided for @estimatedFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Fee'**
+  String get estimatedFee;
+
+  /// No description provided for @orderType.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Type'**
+  String get orderType;
+
+  /// No description provided for @market.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get market;
+
+  /// No description provided for @limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit'**
+  String get limit;
+
+  /// No description provided for @orderSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Order submitted'**
+  String get orderSubmitted;
+
   /// No description provided for @portfolioTrend.
   ///
   /// In en, this message translates to:
@@ -907,12 +961,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Limit Price'**
   String get limitPrice;
-
-  /// No description provided for @market.
-  ///
-  /// In en, this message translates to:
-  /// **'Market'**
-  String get market;
 
   /// No description provided for @dragToSet.
   ///
@@ -1367,8 +1415,38 @@ abstract class AppLocalizations {
   /// No description provided for @settingsDeleteAccountMessage.
   ///
   /// In en, this message translates to:
-  /// **'Account deletion is not available from this version of the app.'**
+  /// **'This requests permanent deletion of your product account and eligible product data. It does not delete your wallet, blockchain assets, or blockchain history.'**
   String get settingsDeleteAccountMessage;
+
+  /// No description provided for @settingsDeleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get settingsDeleteAccountConfirm;
+
+  /// No description provided for @settingsDeleteAccountAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion requested. You have been signed out.'**
+  String get settingsDeleteAccountAccepted;
+
+  /// No description provided for @settingsDeleteAccountRecentAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'For your security, sign out, sign in again, and retry account deletion.'**
+  String get settingsDeleteAccountRecentAuth;
+
+  /// No description provided for @settingsDeleteAccountBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion is blocked by open orders, positions, funds in transit, remaining assets, or a required review. Resolve them and try again.'**
+  String get settingsDeleteAccountBlocked;
+
+  /// No description provided for @settingsDeleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to request account deletion. Try again later.'**
+  String get settingsDeleteAccountFailed;
 
   /// No description provided for @activityTitle.
   ///

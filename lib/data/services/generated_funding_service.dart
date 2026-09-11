@@ -49,6 +49,10 @@ final class GeneratedFundingService implements FundingService {
   Future<api.DepositPage> listDeposits({String? cursor}) =>
       _body(() => _api.listDeposits(cursor: cursor));
   @override
+  Future<api.DepositObservationPage> listDepositObservations({
+    String? cursor,
+  }) => _body(() => _api.listDepositObservations(cursor: cursor));
+  @override
   Future<api.WithdrawalQuote> quote(
     api.WithdrawalQuoteRequest request, {
     required String idempotencyKey,

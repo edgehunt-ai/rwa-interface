@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
+import 'package:rwa_interface/domain/models/account_deletion.dart';
 import 'package:rwa_interface/domain/models/registered_device.dart';
 import 'package:rwa_interface/domain/models/user_account.dart';
 import 'package:rwa_interface/domain/repositories/account_repository.dart';
@@ -31,6 +32,12 @@ final class _AccountRepository implements AccountRepository {
 
   @override
   Future<void> deleteDevice(String deviceId) async {}
+  @override
+  Future<AccountDeletion> getAccountDeletion() => throw UnimplementedError();
+  @override
+  Future<AccountDeletion> requestAccountDeletion({
+    required String idempotencyKey,
+  }) => throw UnimplementedError();
   @override
   Future<DomainPage<RegisteredDevice>> listDevices({String? cursor}) async =>
       const DomainPage(items: []);

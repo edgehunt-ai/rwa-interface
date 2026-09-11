@@ -35,6 +35,16 @@ final class GeneratedAccountService implements AccountService {
     }
   }
 
+  @override
+  Future<api.AccountDeletionRequest> requestAccountDeletion({
+    required String idempotencyKey,
+  }) =>
+      _body(() => _api.requestAccountDeletion(idempotencyKey: idempotencyKey));
+
+  @override
+  Future<api.AccountDeletionRequest> getAccountDeletion() =>
+      _body(_api.getAccountDeletionRequest);
+
   Future<T> _body<T>(Future<Response<T>> Function() request) async {
     try {
       final response = await request();

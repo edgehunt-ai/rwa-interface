@@ -4,6 +4,7 @@ import '../models/funding_catalog.dart';
 import '../models/funding_transfer.dart';
 import '../models/resource_result.dart';
 import '../models/withdrawal.dart';
+import '../models/deposit_observation.dart';
 
 abstract interface class FundingRepository {
   Future<DepositDirectory> getDepositDirectory();
@@ -22,6 +23,7 @@ abstract interface class FundingRepository {
   Future<FundingTransfer> getFundingTransfer(String id);
   Future<ResourceResult<Deposit>> getDeposit(String id);
   Future<DomainPage<ResourceResult<Deposit>>> listDeposits({String? cursor});
+  Future<DomainPage<DepositObservation>> listDepositObservations({String? cursor});
   Future<WithdrawalQuote> quoteWithdrawal(
     WithdrawalIntent intent, {
     required String idempotencyKey,

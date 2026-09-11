@@ -156,6 +156,8 @@ final class _AccountRepository implements AccountRepository {
   Future<void> deleteDevice(String deviceId) async =>
       deletedDeviceIds.add(deviceId);
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  @override
   Future<UserAccount> getAccount() => throw UnimplementedError();
   @override
   Future<DomainPage<RegisteredDevice>> listDevices({String? cursor}) =>

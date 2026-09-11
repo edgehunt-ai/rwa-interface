@@ -232,6 +232,8 @@ final class _EmptyFavoritesMarkets implements MarketsRepository {
 
 final class _Account implements AccountRepository {
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  @override
   Future<UserAccount> getAccount() async => const UserAccount(
     userId: 'user-1',
     displayName: 'Ada',

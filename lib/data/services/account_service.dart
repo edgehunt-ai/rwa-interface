@@ -6,4 +6,8 @@ abstract interface class AccountService {
   Future<api.DevicePage> listDevices({String? cursor});
   Future<api.Device> registerDevice(api.DeviceRegisterRequest request);
   Future<void> deleteDevice(String deviceId);
+  Future<api.AccountDeletionRequest> requestAccountDeletion({
+    required String idempotencyKey,
+  });
+  Future<api.AccountDeletionRequest> getAccountDeletion();
 }

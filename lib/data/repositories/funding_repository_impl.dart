@@ -8,6 +8,7 @@ import '../../domain/models/funding_catalog.dart';
 import '../../domain/models/funding_transfer.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/models/withdrawal.dart';
+import '../../domain/models/deposit_observation.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../services/funding_service.dart';
 
@@ -147,6 +148,49 @@ final class FundingRepositoryImpl implements FundingRepository {
     final page = await _service.listDeposits(cursor: cursor);
     return DomainPage(
       items: page.items.map(_depositResult).toList(),
+      nextCursor: page.nextCursor,
+      hasMore: page.hasMore,
+    );
+  }
+
+  @override
+  Future<DomainPage<DepositObservation>> listDepositObservations({
+    String? cursor,
+  }) async {
+    final page = await _service.listDepositObservations(cursor: cursor);
+    return DomainPage(
+      items: page.items
+          .map(
+            (value) => DepositObservation(
+              observationId: value.observationId,
+              chain: value.chain.name,
+              asset: value.asset,
+              amount: DecimalValue(
+                value.amount,
+                asset: value.asset,
+                unit: 'token',
+              ),
+              status: switch (value.status) {
+                api.DepositObservationStatus.detected =>
+                  DepositObservationState.detected,
+                api.DepositObservationStatus.confirming =>
+                  DepositObservationState.confirming,
+                api.DepositObservationStatus.confirmed =>
+                  DepositObservationState.confirmed,
+                api.DepositObservationStatus.manualReview =>
+                  DepositObservationState.manualReview,
+                _ => DepositObservationState.unknown,
+              },
+              confirmations: value.confirmations,
+              confirmationsRequired: value.confirmationsRequired,
+              txHash: value.txHash,
+              detectedAt: value.detectedAt.toUtc(),
+              updatedAt: value.updatedAt.toUtc(),
+              confirmedAt: value.confirmedAt?.toUtc(),
+              depositId: value.depositId,
+            ),
+          )
+          .toList(growable: false),
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
     );

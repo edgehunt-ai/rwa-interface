@@ -348,12 +348,6 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                           badge: _recentMethod == 'Wallet' ? 'Recent' : null,
                           onTap: busy ? null : () => _loginWithWallet(context),
                         ),
-                        _LoginOption(
-                          asset: 'assets/figma/session/passkey.svg',
-                          label: 'Passkey',
-                          badge: _recentMethod == 'Passkey' ? 'Recent' : null,
-                          onTap: busy ? null : () => _loginWith('Passkey'),
-                        ),
                       ],
                       if (failure != null) ...[
                         const SizedBox(height: 16),
@@ -371,7 +365,18 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                           child: const Text('Try again'),
                         ),
                       ],
-                      const SizedBox(height: 36),
+                      if (!waitingForCode && !kIsWeb) ...[
+                        const SizedBox(height: 24),
+                        const Divider(color: Color(0x33FFFFFF), height: 1),
+                        const SizedBox(height: 16),
+                        _LoginOption(
+                          asset: 'assets/figma/session/passkey.svg',
+                          label: 'Passkey',
+                          badge: _recentMethod == 'Passkey' ? 'Recent' : null,
+                          onTap: busy ? null : () => _loginWith('Passkey'),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
                       SvgPicture.asset(
                         'assets/figma/session/protected_by_privy.svg',
                         width: 150,
