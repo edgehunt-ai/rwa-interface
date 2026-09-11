@@ -87,6 +87,7 @@ api.TradeIntent _intent() =>
         'limit_price': '101.25',
         'execute_before': '2026-09-10T01:00:00Z',
       },
+      'funding_mode': 'auto_multi_source',
       'funding_plan_id': 'plan-1',
       'transfer_id': null,
       'funding_legs': [
