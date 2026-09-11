@@ -128,15 +128,10 @@ class _TradeTabLabel extends StatelessWidget {
   final int? count;
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Text(label),
-      if (count != null && count! > 0) ...[
-        const SizedBox(width: 4),
-        Text('($count)'),
-      ],
-    ],
+  Widget build(BuildContext context) => Text(
+    count != null && count! > 0 ? '$label ($count)' : label,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
   );
 }
 
