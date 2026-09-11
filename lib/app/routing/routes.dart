@@ -31,10 +31,6 @@ abstract final class AppRoutes {
   ).toString();
   static const tradeName = 'trade';
   static const tradePath = '/trade';
-  static const hip3OrderHistoryName = 'hip3OrderHistory';
-  static const hip3OrderHistoryPath = '/hip3/orders';
-  static const hip3OrderDetailName = 'hip3OrderDetail';
-  static const hip3OrderDetailPath = '/hip3/orders/:orderId';
 
   /// Builds a deep-linkable trade detail location. `kind` is optional so
   /// existing `/trade` links retain the bStocks default.
