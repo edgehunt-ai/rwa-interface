@@ -1,13 +1,14 @@
 name: Release Mobile
 
 on:
-  workflow_dispatch:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - pubspec.yaml
-      - .github/workflows/release.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,6 +18,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+  TARGET_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
   API_BASE_URL: ${{ vars.API_BASE_URL }}
   PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
   PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
@@ -33,6 +36,7 @@ env:
 jobs:
   detect-release:
     name: Detect Version Release
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
       should_build: ${{ steps.version.outputs.should_build }}
@@ -46,6 +50,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ env.TARGET_SHA }}
 
       - name: Validate version and decide release
         id: version
@@ -67,8 +72,8 @@ jobs:
           if [[ ! "$version_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             prerelease="true"
           fi
-          if [[ "$prerelease" == "false" && "${GITHUB_REF_NAME}" != "main" ]]; then
-            echo "Formal releases are only allowed from the main branch; use a prerelease suffix on ${GITHUB_REF_NAME}." >&2
+          if [[ "$prerelease" == "false" && "$TARGET_BRANCH" != "main" ]]; then
+            echo "Formal releases are only allowed from the main branch; use a prerelease suffix on ${TARGET_BRANCH}." >&2
             exit 1
           fi
 
@@ -81,21 +86,21 @@ jobs:
           )"
           if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
             tagged_commit="$(git rev-list -n 1 "$tag")"
-            if [[ "$tagged_commit" != "$GITHUB_SHA" ]]; then
+            if [[ "$tagged_commit" != "$TARGET_SHA" ]]; then
               echo "Version ${version_name} already belongs to ${tagged_commit}; increment pubspec.yaml before releasing." >&2
               exit 1
             fi
-          elif [[ "${{ github.event_name }}" == "push" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          elif [[ "${{ github.event_name }}" == "workflow_run" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             should_release="true"
           fi
 
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]]; then
-            before_sha="${{ github.event.before }}"
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            before_sha="$(git rev-parse "${TARGET_SHA}^")"
             if git cat-file -e "${before_sha}:pubspec.yaml" 2>/dev/null; then
               previous_version="$(git show "${before_sha}:pubspec.yaml" | awk -F': ' '/^version: /{print $2}' | tr -d '[:space:]')"
               previous_name="${previous_version%%+*}"
               workflow_changed="false"
-              if ! git diff --quiet "$before_sha" "$GITHUB_SHA" -- .github/workflows/release.yml; then
+              if ! git diff --quiet "$before_sha" "$TARGET_SHA" -- .github/workflows/release.yml; then
                 workflow_changed="true"
               fi
               if [[ "$previous_name" == "$version_name" && "$workflow_changed" != "true" ]]; then
@@ -114,32 +119,10 @@ jobs:
             echo "prerelease=${prerelease}"
           } >> "$GITHUB_OUTPUT"
 
-  release-quality:
-    name: Release Quality Gate
-    needs: detect-release
-    if: needs.detect-release.outputs.should_build == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-      - name: Resolve dependencies
-        run: flutter pub get
-      - name: Run release-equivalent verification
-        run: >-
-          dart format --output=none --set-exit-if-changed lib test
-          && dart analyze --fatal-infos
-          && flutter test
-
   android-release:
     name: Android Release APK
     needs:
       - detect-release
-      - release-quality
     if: needs.detect-release.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -147,6 +130,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ env.TARGET_SHA }}
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -237,7 +221,6 @@ jobs:
     name: iOS Unsigned Release App
     needs:
       - detect-release
-      - release-quality
     if: needs.detect-release.outputs.should_build == 'true'
     runs-on: macos-15
     steps:
@@ -245,6 +228,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ env.TARGET_SHA }}
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -317,6 +301,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ env.TARGET_SHA }}
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
@@ -359,5 +344,5 @@ jobs:
             release-assets/rwa-interface-ios-unsigned.zip \
             --title "$TAG" \
             --notes-file release-notes.md \
-            --target "$GITHUB_SHA" \
+            --target "${{ env.TARGET_SHA }}" \
             "${release_args[@]}"
