@@ -817,7 +817,7 @@ final class AppReviewFundingRepository implements FundingRepository {
   @override
   Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(
     String id,
-  ) => SelfCustodialWithdrawalSummary(
+  ) async => SelfCustodialWithdrawalSummary(
     withdrawalId: id,
     assetSymbol: 'USDC',
     amount: _token('0', 'USDC'),
@@ -830,7 +830,7 @@ final class AppReviewFundingRepository implements FundingRepository {
     required String id,
     required String txHash,
     required String idempotencyKey,
-  }) => SelfCustodialWithdrawalSummary(
+  }) async => SelfCustodialWithdrawalSummary(
     withdrawalId: id,
     assetSymbol: 'USDC',
     amount: _token('0', 'USDC'),
