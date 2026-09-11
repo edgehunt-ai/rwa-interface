@@ -4,6 +4,7 @@ import '../domain/models/decimal_value.dart';
 import '../domain/models/deposit.dart';
 import '../domain/models/deposit_observation.dart';
 import '../domain/models/funding_session.dart';
+import '../domain/models/self_custodial_withdrawal.dart';
 import '../domain/models/domain_page.dart';
 import '../domain/models/funding_catalog.dart';
 import '../domain/models/funding_transfer.dart';
@@ -803,6 +804,31 @@ final class AppReviewFundingRepository implements FundingRepository {
   @override
   Future<DomainPage<Withdrawal>> listWithdrawals({String? cursor}) async =>
       DomainPage(items: store.withdrawals.values.toList(growable: false));
+
+  @override
+  Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(
+    String id,
+  ) => SelfCustodialWithdrawalSummary(
+    withdrawalId: id,
+    assetSymbol: 'USDC',
+    amount: _token('0', 'USDC'),
+    destinationAddress: '',
+    status: SelfCustodialWithdrawalState.awaitingSubmission,
+  );
+
+  @override
+  Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
+    required String id,
+    required String txHash,
+    required String idempotencyKey,
+  }) => SelfCustodialWithdrawalSummary(
+    withdrawalId: id,
+    assetSymbol: 'USDC',
+    amount: _token('0', 'USDC'),
+    destinationAddress: '',
+    status: SelfCustodialWithdrawalState.submitted,
+    txHash: txHash,
+  );
 }
 
 final class AppReviewTradeIntentRepository implements TradeIntentRepository {

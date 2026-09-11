@@ -473,7 +473,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                           ? l10n.orderValue
                           : type == TradingOrderType.limit
                           ? 'Quantity'
-                          : 'Amount',
+                          : l10n.amount,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colors.secondaryText,
                         fontWeight: FontWeight.w400,
@@ -612,9 +612,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   Widget _preview(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final current = preview!;
     final isBuy = current.intent.side == TradingSide.buy;
-    final action = isBuy ? 'Buy' : 'Sell';
+    final action = isBuy ? l10n.buy : l10n.sell;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final settlementAsset =
@@ -652,7 +653,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         Divider(color: colors.subtleSurface),
         const SizedBox(height: 16),
         Text(
-          '$action ${widget.symbol} · ${current.intent.type == TradingOrderType.market ? 'Market' : 'Limit'}',
+          '$action ${widget.symbol} · ${current.intent.type == TradingOrderType.market ? l10n.market : l10n.limit}',
           style: Theme.of(context).textTheme.bodyMedium
               ?.copyWith(fontWeight: FontWeight.w500),
         ),
@@ -673,10 +674,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ),
         const SizedBox(height: 12),
         _SummaryRow(
-          label: 'Order Type',
+          label: l10n.orderType,
           value: current.intent.type == TradingOrderType.market
-              ? 'Market'
-              : 'Limit',
+              ? l10n.market
+              : l10n.limit,
         ),
         if (marketPriceDisplay case final price?)
           _SummaryRow(
@@ -689,7 +690,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ),
         if (current.fee case final fee?)
           _SummaryRow(
-            label: 'Estimated Fee',
+          label: l10n.estimatedFee,
             value: TokenAmountFormatter.format(
               fee,
               symbol: fee.asset ?? widget.symbol,
@@ -698,7 +699,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         if (current.priceUpdated) ...[
           const SizedBox(height: 8),
           const Text(
-            'Price changed. Review the updated estimate before submitting.',
+                  'Price changed. Review the updated estimate before submitting.',
           ),
         ],
         if (error case final message?) ...[
@@ -713,7 +714,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 height: 48,
                 child: OutlinedButton(
                   onPressed: () => setState(() => preview = null),
-                  child: const Text('Back'),
+                  child: Text(l10n.back),
                 ),
               ),
             ),
@@ -725,7 +726,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                   style: FilledButton.styleFrom(backgroundColor: success),
                   onPressed: reviewing ? null : _submit,
                   child: Text(
-                    reviewing ? 'Submitting order…' : 'Confirm $action',
+                    reviewing ? l10n.submittingOrder : '${l10n.confirm} $action',
                   ),
                 ),
               ),
@@ -748,8 +749,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       const SizedBox(height: 8),
       Text(
         submittedOrder!.status == TradingOrderStatus.filled
-            ? 'Trade Successful'
-            : 'Order submitted',
+            ? AppLocalizations.of(context).tradeSuccessful
+            : AppLocalizations.of(context).orderSubmitted,
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.titleMedium,
       ),
@@ -768,7 +769,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         child: Text(
           submittedOrder!.status == TradingOrderStatus.filled
               ? 'View History'
-              : 'Close & View Later',
+              : AppLocalizations.of(context).closeViewLater,
         ),
       ),
     ],

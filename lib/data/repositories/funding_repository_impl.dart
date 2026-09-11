@@ -10,6 +10,7 @@ import '../../domain/models/resource_result.dart';
 import '../../domain/models/withdrawal.dart';
 import '../../domain/models/deposit_observation.dart';
 import '../../domain/models/funding_session.dart';
+import '../../domain/models/self_custodial_withdrawal.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../services/funding_service.dart';
 
@@ -288,6 +289,54 @@ final class FundingRepositoryImpl implements FundingRepository {
       hasMore: page.hasMore,
     );
   }
+
+  @override
+  Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(
+    String id,
+  ) async => _selfCustodial(await _service.getSelfCustodialWithdrawal(id));
+
+  @override
+  Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
+    required String id,
+    required String txHash,
+    required String idempotencyKey,
+  }) async => _selfCustodial(
+    await _service.submitSelfCustodialWithdrawal(
+      id,
+      api.SelfCustodialWithdrawalSubmissionRequest(
+        (request) => request..txHash = txHash,
+      ),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  SelfCustodialWithdrawalSummary _selfCustodial(
+    api.SelfCustodialWithdrawal value,
+  ) => SelfCustodialWithdrawalSummary(
+    withdrawalId: value.withdrawalId,
+    assetSymbol: value.assetSymbol,
+    amount: DecimalValue(value.amount, asset: value.assetSymbol, unit: 'token'),
+    destinationAddress: value.destinationAddress,
+    status: switch (value.status) {
+      api.SelfCustodialWithdrawalStatus.awaitingSubmission =>
+        SelfCustodialWithdrawalState.awaitingSubmission,
+      api.SelfCustodialWithdrawalStatus.submitted =>
+        SelfCustodialWithdrawalState.submitted,
+      api.SelfCustodialWithdrawalStatus.confirming =>
+        SelfCustodialWithdrawalState.confirming,
+      api.SelfCustodialWithdrawalStatus.confirmed =>
+        SelfCustodialWithdrawalState.confirmed,
+      api.SelfCustodialWithdrawalStatus.failed =>
+        SelfCustodialWithdrawalState.failed,
+      api.SelfCustodialWithdrawalStatus.noncanonical =>
+        SelfCustodialWithdrawalState.noncanonical,
+      api.SelfCustodialWithdrawalStatus.manualReview =>
+        SelfCustodialWithdrawalState.manualReview,
+      _ => SelfCustodialWithdrawalState.unknown,
+    },
+    txHash: value.txHash,
+    failureReason: value.failureReason,
+  );
 
   ResourceResult<Deposit> _depositResult(api.Deposit wire) {
     final value = wire.oneOf.value;

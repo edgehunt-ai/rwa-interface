@@ -6,6 +6,7 @@ import '../models/resource_result.dart';
 import '../models/withdrawal.dart';
 import '../models/deposit_observation.dart';
 import '../models/funding_session.dart';
+import '../models/self_custodial_withdrawal.dart';
 
 abstract interface class FundingRepository {
   Future<DepositDirectory> getDepositDirectory();
@@ -45,4 +46,10 @@ abstract interface class FundingRepository {
   });
   Future<Withdrawal> getWithdrawal(String id);
   Future<DomainPage<Withdrawal>> listWithdrawals({String? cursor});
+  Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(String id);
+  Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
+    required String id,
+    required String txHash,
+    required String idempotencyKey,
+  });
 }
