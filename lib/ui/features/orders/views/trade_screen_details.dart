@@ -14,21 +14,43 @@ class _Details extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final positionState = ref.watch(
+      positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+    );
+    final productId = positionState.value?.items
+        .where((p) => p.symbol == symbol && p.kind == kind)
+        .firstOrNull
+        ?.productId;
+    final openState = kind == MarketProductKind.perp
+        ? ref.watch(
+            hip3OpenOrdersProvider((
+              symbol: symbol,
+              productId: productId,
+              cursor: null,
+            )),
+          )
+        : ref.watch(ordersProvider(null));
+    final positionCount = positionState.value?.items.length;
+    final openCount = openState.value?.items
+        .map((item) => item.resource)
+        .where(
+          (order) =>
+              order.kind == kind && order.symbol == symbol && !order.isTerminal,
+        )
+        .length;
+    const tabs = ['Open', 'Position', 'Details'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 216,
+          width: 240,
           height: 50,
           child: Stack(
             children: [
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOutCubic,
-                left:
-                    const ['Position', 'Open', 'Details'].indexOf(activeTab) *
-                        72 +
-                    20,
+                left: tabs.indexOf(activeTab) * 80 + 24,
                 bottom: 8,
                 width: 32,
                 height: 2,
@@ -36,9 +58,9 @@ class _Details extends ConsumerWidget {
               ),
               Row(
                 children: [
-                  for (final tab in const ['Position', 'Open', 'Details'])
+                  for (final tab in tabs)
                     SizedBox(
-                      width: 72,
+                      width: 80,
                       child: TextButton(
                         onPressed: () => onChanged(tab),
                         style: TextButton.styleFrom(padding: EdgeInsets.zero),
@@ -56,7 +78,10 @@ class _Details extends ConsumerWidget {
                                   ? FontWeight.w600
                                   : FontWeight.w400,
                             ),
-                            child: Text(tab),
+                            child: _TradeTabLabel(
+                              tab,
+                              count: tab == 'Open' ? openCount : positionCount,
+                            ),
                           ),
                         ),
                       ),
@@ -70,15 +95,7 @@ class _Details extends ConsumerWidget {
           Hip3OpenOrdersPanel(
             key: ValueKey('hip3-open-$symbol'),
             symbol: symbol,
-            productId: ref
-                .watch(
-                  positionsProvider((symbol: symbol, kind: kind, cursor: null)),
-                )
-                .value
-                ?.items
-                .where((p) => p.symbol == symbol && p.kind == kind)
-                .firstOrNull
-                ?.productId,
+            productId: productId,
           ),
         if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
@@ -102,6 +119,25 @@ class _Details extends ConsumerWidget {
       ],
     );
   }
+}
+
+class _TradeTabLabel extends StatelessWidget {
+  const _TradeTabLabel(this.label, {this.count});
+
+  final String label;
+  final int? count;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(label),
+      if (count != null && count! > 0) ...[
+        const SizedBox(width: 4),
+        Text('($count)'),
+      ],
+    ],
+  );
 }
 
 class _OpenOrdersTab extends ConsumerWidget {
@@ -190,7 +226,7 @@ class _OpenOrderCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).extension<AppRwaColors>()!.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,35 +235,50 @@ class _OpenOrderCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${order.symbol}/USDT',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  '${order.symbol}/USDC',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
-              OutlinedButton(onPressed: onCancel, child: const Text('Cancel')),
+              SizedBox(
+                height: 36,
+                child: OutlinedButton(
+                  onPressed: onCancel,
+                  child: const Text('Cancel'),
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 4),
           Text(
-            '${order.side == TradingSide.buy ? 'Buy' : 'Sell'} / ${order.type == TradingOrderType.limit ? 'Limit' : 'Market'}',
-            style: const TextStyle(fontSize: 12),
+            '${order.side == TradingSide.buy ? 'Buy' : 'Sell'} · ${order.type == TradingOrderType.limit ? 'Limit' : 'Market'}',
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Divider(
+            height: 1,
+            color: Theme.of(context).extension<AppRwaColors>()!.border,
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: _OrderMetric(
+                child: _TradeMetric(
                   'Filled / Total',
                   '${filled?.value ?? '0'} / ${quantity?.value ?? '—'}',
                 ),
               ),
               Expanded(
-                child: _OrderMetric(
+                child: _TradeMetric(
                   'Price',
                   order.limitPrice == null
                       ? 'Market'
                       : TokenAmountFormatter.formatUsd(order.limitPrice!),
                 ),
               ),
-              Expanded(child: _OrderMetric('Status', order.status.name)),
+              Expanded(child: _TradeMetric('Status', order.status.name)),
             ],
           ),
         ],
@@ -236,8 +287,8 @@ class _OpenOrderCard extends StatelessWidget {
   }
 }
 
-class _OrderMetric extends StatelessWidget {
-  const _OrderMetric(this.label, this.value);
+class _TradeMetric extends StatelessWidget {
+  const _TradeMetric(this.label, this.value);
 
   final String label;
   final String value;
@@ -246,9 +297,18 @@ class _OrderMetric extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label, style: const TextStyle(fontSize: 11)),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+        ),
+      ),
       const SizedBox(height: 4),
-      Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+      Text(
+        value,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
     ],
   );
 }
@@ -304,7 +364,7 @@ class _PositionCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).extension<AppRwaColors>()!.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,6 +373,26 @@ class _PositionCard extends StatelessWidget {
             position.symbol,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
+          const SizedBox(height: 4),
+          Text(
+            kind == MarketProductKind.perp
+                ? switch (position.side) {
+                    PositionSide.long => 'Long position',
+                    PositionSide.short => 'Short position',
+                    PositionSide.none => 'Position',
+                  }
+                : 'Token position',
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Divider(
+            height: 1,
+            color: Theme.of(context).extension<AppRwaColors>()!.border,
+          ),
+          const SizedBox(height: 6),
           if (kind == MarketProductKind.perp)
             Hip3PositionMetrics(
               position: position,
@@ -348,11 +428,14 @@ class _PositionCard extends StatelessWidget {
               'Market Price',
               TokenAmountFormatter.formatUsd(position.markPrice!),
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(36),
+                  ),
                   onPressed: kind == MarketProductKind.bstock
                       ? () => context.pushNamed(AppRoutes.withdrawalSelectName)
                       : () => showModalBottomSheet<void>(
@@ -369,6 +452,9 @@ class _PositionCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(36),
+                  ),
                   onPressed: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,

@@ -393,6 +393,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get slippage => '滑点';
 
   @override
+  String get validOrderValue => '请输入有效的订单金额。';
+
+  @override
+  String get validLimitPrice => '请输入有效的限价。';
+
+  @override
+  String get prepareOrderFailed => '无法准备订单，请重试。';
+
+  @override
+  String get prepareFundingFailed => '无法准备资金，请重试。';
+
+  @override
+  String get willReceive => '预计到账';
+
+  @override
+  String get slippageTolerance => '滑点容差';
+
+  @override
+  String get maximumSlippage => '最大滑点';
+
+  @override
+  String get editSlippage => '编辑滑点';
+
+  @override
+  String get priceChangedReview => '价格已变化，请确认更新后的预估值再提交。';
+
+  @override
+  String get viewHistory => '查看历史';
+
+  @override
+  String get chooseMarginLeverage => '请选择支持的保证金模式和杠杆后再请求签名。';
+
+  @override
+  String get settingsNotConfirmed => '设置尚未确认。请继续相同请求后再开仓。';
+
+  @override
+  String get enterOrderValue => '请输入订单金额。';
+
+  @override
+  String get enterValidOrderValues => '请输入有效的订单参数。';
+
+  @override
+  String get orderQuoteUnavailable => '报价不可用或已过期，请返回并重新请求报价。';
+
+  @override
+  String get walletConnectRequired => '请连接此订单要求的钱包。';
+
+  @override
+  String get signatureCancelled => '签名请求已取消。';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get close => '关闭';
+
+  @override
   String get portfolioTrend => '投资组合走势';
 
   @override

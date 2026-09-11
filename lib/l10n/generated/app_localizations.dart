@@ -860,6 +860,120 @@ abstract class AppLocalizations {
   /// **'Slippage'**
   String get slippage;
 
+  /// No description provided for @validOrderValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid order value.'**
+  String get validOrderValue;
+
+  /// No description provided for @validLimitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid limit price.'**
+  String get validLimitPrice;
+
+  /// No description provided for @prepareOrderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to prepare this order. Try again.'**
+  String get prepareOrderFailed;
+
+  /// No description provided for @prepareFundingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to prepare funding for this order. Try again.'**
+  String get prepareFundingFailed;
+
+  /// No description provided for @willReceive.
+  ///
+  /// In en, this message translates to:
+  /// **'Will receive'**
+  String get willReceive;
+
+  /// No description provided for @slippageTolerance.
+  ///
+  /// In en, this message translates to:
+  /// **'Slippage tolerance'**
+  String get slippageTolerance;
+
+  /// No description provided for @maximumSlippage.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum slippage'**
+  String get maximumSlippage;
+
+  /// No description provided for @editSlippage.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit slippage'**
+  String get editSlippage;
+
+  /// No description provided for @priceChangedReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Price changed. Review the updated estimate before submitting.'**
+  String get priceChangedReview;
+
+  /// No description provided for @viewHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'View History'**
+  String get viewHistory;
+
+  /// No description provided for @chooseMarginLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a supported margin mode and leverage before requesting a signature.'**
+  String get chooseMarginLeverage;
+
+  /// No description provided for @settingsNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings are not confirmed. Resume the same request before opening an order.'**
+  String get settingsNotConfirmed;
+
+  /// No description provided for @enterOrderValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an order value.'**
+  String get enterOrderValue;
+
+  /// No description provided for @enterValidOrderValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid order values.'**
+  String get enterValidOrderValues;
+
+  /// No description provided for @orderQuoteUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This quote is unavailable or expired. Go back and request a new quote.'**
+  String get orderQuoteUnavailable;
+
+  /// No description provided for @walletConnectRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect the wallet requested for this order.'**
+  String get walletConnectRequired;
+
+  /// No description provided for @signatureCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature request was cancelled.'**
+  String get signatureCancelled;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
   /// No description provided for @portfolioTrend.
   ///
   /// In en, this message translates to:

@@ -399,6 +399,69 @@ class AppLocalizationsEn extends AppLocalizations {
   String get slippage => 'Slippage';
 
   @override
+  String get validOrderValue => 'Enter a valid order value.';
+
+  @override
+  String get validLimitPrice => 'Enter a valid limit price.';
+
+  @override
+  String get prepareOrderFailed => 'Unable to prepare this order. Try again.';
+
+  @override
+  String get prepareFundingFailed =>
+      'Unable to prepare funding for this order. Try again.';
+
+  @override
+  String get willReceive => 'Will receive';
+
+  @override
+  String get slippageTolerance => 'Slippage tolerance';
+
+  @override
+  String get maximumSlippage => 'Maximum slippage';
+
+  @override
+  String get editSlippage => 'Edit slippage';
+
+  @override
+  String get priceChangedReview =>
+      'Price changed. Review the updated estimate before submitting.';
+
+  @override
+  String get viewHistory => 'View History';
+
+  @override
+  String get chooseMarginLeverage =>
+      'Choose a supported margin mode and leverage before requesting a signature.';
+
+  @override
+  String get settingsNotConfirmed =>
+      'Settings are not confirmed. Resume the same request before opening an order.';
+
+  @override
+  String get enterOrderValue => 'Enter an order value.';
+
+  @override
+  String get enterValidOrderValues => 'Enter valid order values.';
+
+  @override
+  String get orderQuoteUnavailable =>
+      'This quote is unavailable or expired. Go back and request a new quote.';
+
+  @override
+  String get walletConnectRequired =>
+      'Connect the wallet requested for this order.';
+
+  @override
+  String get signatureCancelled => 'Signature request was cancelled.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get close => 'Close';
+
+  @override
   String get portfolioTrend => 'Portfolio trend';
 
   @override

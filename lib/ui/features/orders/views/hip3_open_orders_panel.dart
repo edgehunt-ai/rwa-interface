@@ -5,6 +5,10 @@ import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/repositories/hip3_order_execution_repository.dart';
+import '../../../core/feedback/design_state_feedback.dart';
+import '../../../core/feedback/empty_state.dart';
+import '../../../core/feedback/loading_skeleton.dart';
+import '../../../core/theme/app_theme.dart';
 import '../providers/order_providers.dart';
 
 class Hip3OpenOrdersPanel extends ConsumerStatefulWidget {
@@ -77,17 +81,19 @@ class _PanelState extends ConsumerState<Hip3OpenOrdersPanel> {
             label: const Text('Refresh orders'),
           ),
         ),
-        if (loading) const LinearProgressIndicator(),
+        if (loading) const LoadingSkeleton(rows: 2),
         if (failed || invalidCursor) ...[
-          const Text(
-            'Could not load all open orders. Retry to refresh the complete list.',
+          DesignStateFeedback(
+            state: DesignState.failure,
+            title: 'Open orders unavailable',
+            message: 'Try again to refresh open orders.',
+            onRetry: _refresh,
           ),
-          TextButton(onPressed: _refresh, child: const Text('Retry')),
         ],
         if (!loading && !failed && orders.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text('No open orders for this product.'),
+          const EmptyState(
+            title: 'No open orders',
+            description: 'Open orders for this product will appear here.',
           ),
         for (final order in orders.values)
           Hip3OpenOrderCard(
@@ -189,77 +195,95 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
             filled.isFinite
         ? (filled / total).clamp(0.0, 1.0)
         : null;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(child: Text('${order.symbol}/USDC · $side')),
-                OutlinedButton(
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${order.symbol}/USDC',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              SizedBox(
+                height: 32,
+                child: OutlinedButton(
                   onPressed: _busy || order.isTerminal ? null : _cancel,
                   child: Text(_busy ? 'Cancelling…' : 'Cancel'),
                 ),
-              ],
-            ),
-            Text(role, style: Theme.of(context).textTheme.titleMedium),
-            Text(order.createdAt.toLocal().toString()),
-            if (conditional != null) ...[
-              Text(
-                order.isTerminal
-                    ? 'Protection is no longer active'
-                    : switch (conditional.activationStatus) {
-                        'pendingSubmission' => 'Protection not submitted',
-                        'waitingForParent' =>
-                          'Protection waiting for parent fill — not active',
-                        'pendingConfirmation' =>
-                          'Protection activation awaiting confirmation',
-                        'active' => 'Protection active',
-                        'inactive' => 'Protection is no longer active',
-                        _ => 'Protection status unknown — not confirmed active',
-                      },
-              ),
-              if (conditional.parentOrderId != null)
-                Text('Attached to order: ${conditional.parentOrderId}'),
-              if (conditional.warningCode ==
-                  'parentCancelledCheckRemainingPositionProtection')
-                const Text(
-                  'Parent cancelled: this protection is inactive. Check protection for any remaining position; no replacement is created automatically.',
-                ),
-              Text(
-                'Trigger price: ${conditional.triggerPrice.value} USDC · ${conditional.triggerReference}',
-              ),
-              Text(
-                'Trigger status: ${conditional.triggerStatus} · ${conditional.executionType}',
-              ),
-              Text(
-                conditional.sizeMode == 'entirePosition'
-                    ? 'Entire position protection'
-                    : 'Fixed quantity: ${conditional.quantity}',
               ),
             ],
-            if (conditional == null && !order.isTerminal)
-              const Text(_parentCancelWarning),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$side · $role',
+            style: TextStyle(fontSize: 13, color: colors.secondaryText),
+          ),
+          const SizedBox(height: 12),
+          Divider(height: 1, color: colors.border),
+          const SizedBox(height: 12),
+          if (conditional != null) ...[
             Text(
-              'Filled / Total: ${order.filledQuantity?.value ?? '0'} / ${order.quantity?.value ?? conditional?.quantity ?? '—'}',
+              order.isTerminal
+                  ? 'Protection is no longer active'
+                  : switch (conditional.activationStatus) {
+                      'pendingSubmission' => 'Protection not submitted',
+                      'waitingForParent' =>
+                        'Protection waiting for parent fill — not active',
+                      'pendingConfirmation' =>
+                        'Protection activation awaiting confirmation',
+                      'active' => 'Protection active',
+                      'inactive' => 'Protection is no longer active',
+                      _ => 'Protection status unknown — not confirmed active',
+                    },
             ),
-            Text('Order price: ${order.limitPrice?.value ?? 'Market'}'),
-            Text('Status: ${order.status.name}'),
-            if (progress != null) ...[
-              const SizedBox(height: 8),
-              LinearProgressIndicator(
-                value: progress,
-                semanticsLabel: 'Filled',
-                semanticsValue: '${(progress * 100).toStringAsFixed(1)}%',
+            if (conditional.parentOrderId != null)
+              Text('Attached to order: ${conditional.parentOrderId}'),
+            if (conditional.warningCode ==
+                'parentCancelledCheckRemainingPositionProtection')
+              const Text(
+                'Parent cancelled: this protection is inactive. Check protection for any remaining position; no replacement is created automatically.',
               ),
-              Text('${(progress * 100).toStringAsFixed(1)}% filled'),
-            ],
-            if (_message != null)
-              Semantics(liveRegion: true, child: Text(_message!)),
+            Text(
+              'Trigger price: ${conditional.triggerPrice.value} USDC · ${conditional.triggerReference}',
+            ),
+            Text(
+              'Trigger status: ${conditional.triggerStatus} · ${conditional.executionType}',
+            ),
+            Text(
+              conditional.sizeMode == 'entirePosition'
+                  ? 'Entire position protection'
+                  : 'Fixed quantity: ${conditional.quantity}',
+            ),
           ],
-        ),
+          if (conditional == null && !order.isTerminal)
+            const Text(_parentCancelWarning),
+          Text(
+            'Filled / Total: ${order.filledQuantity?.value ?? '0'} / ${order.quantity?.value ?? conditional?.quantity ?? '—'}',
+          ),
+          Text('Order price: ${order.limitPrice?.value ?? 'Market'}'),
+          Text('Status: ${order.status.name}'),
+          if (progress != null) ...[
+            const SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: progress,
+              semanticsLabel: 'Filled',
+              semanticsValue: '${(progress * 100).toStringAsFixed(1)}%',
+            ),
+            Text('${(progress * 100).toStringAsFixed(1)}% filled'),
+          ],
+          if (_message != null)
+            Semantics(liveRegion: true, child: Text(_message!)),
+        ],
       ),
     );
   }

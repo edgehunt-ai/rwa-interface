@@ -442,6 +442,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   Widget _form(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final isShort = _side == TradingSide.short || _reduceOnly;
@@ -461,8 +462,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
               children: [
                 _Hip3SheetHeader(
                   title: _reduceOnly
-                      ? 'Close Position'
-                      : '${_side == TradingSide.long ? 'Long' : 'Short'} ${widget.symbol}',
+                      ? l10n.closePosition
+                      : '${_side == TradingSide.long ? l10n.long : l10n.short} ${widget.symbol}',
                   leverage: _leverage,
                   color: actionColor,
                   onClose: () => Navigator.of(context).pop(),
@@ -476,13 +477,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     child: Text(AppLocalizations.of(context).retryTradingRules),
                   ),
                 if (_context case final rules?) ...[
-                  Text(
-                    '${rules.environment} · ${rules.productId} · ${AppLocalizations.of(context).availableMargin} ${rules.availableMargin.value} USDC',
-                  ),
-                  Text(
-                    '${AppLocalizations.of(context).orderNotional}: ${rules.minimumNotional.value}–${rules.maximumNotional?.value ?? 'venue limit'} USDC',
-                  ),
-                  const SizedBox(height: 12),
                   if (rules.orderTypes.length > 1)
                     _Hip3SegmentedControl<TradingOrderType>(
                       values: rules.orderTypes.toList(),
@@ -507,8 +501,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Limit price (USDC)',
+                      decoration: InputDecoration(
+                        labelText: '${l10n.limitPrice} (USDC)',
                       ),
                     ),
                 ],
@@ -522,7 +516,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                         selected: _side,
                         selectedColor: actionColor,
                         label: (value) =>
-                            value == TradingSide.long ? 'Long' : 'Short',
+                            value == TradingSide.long ? l10n.long : l10n.short,
                         onChanged: (value) {
                           setState(() => _side = value);
                           _scheduleQuote();
@@ -537,7 +531,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   values: const [true, false],
                   selected: _inputNotional,
                   selectedColor: actionColor,
-                  label: (notional) => notional ? 'Amount (USDC)' : 'Quantity',
+                  label: (notional) =>
+                      notional ? '${l10n.amount} (USDC)' : l10n.quantity,
                   onChanged: (notional) {
                     if (_submitting) return;
                     setState(() {
@@ -559,18 +554,27 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   availableMargin: _context?.availableMargin.value,
                   percentage: _percentage,
                   onMarginModeTap: () {
-                    final modes = _context?.marginModes;
-                    if (modes == null ||
-                        modes.isEmpty ||
+                    final rules = _context;
+                    if (rules == null ||
                         _pendingSetting != null ||
                         _submitting) {
                       return;
                     }
-                    final next = modes.firstWhere(
-                      (mode) => mode != _marginMode,
-                      orElse: () => _marginMode,
-                    );
-                    if (next != _marginMode) _applySettings(_leverage, next);
+                    final generation = ref.read(sessionGenerationProvider);
+                    showModalBottomSheet<TradingMarginMode>(
+                      context: context,
+                      builder: (_) => Hip3MarginModeSheet(
+                        selectedMode: _marginMode,
+                        availableModes: rules.marginModes,
+                      ),
+                    ).then((mode) {
+                      if (mode != null &&
+                          mounted &&
+                          mode != _marginMode &&
+                          ref.read(sessionGenerationProvider) == generation) {
+                        _applySettings(_leverage, mode);
+                      }
+                    });
                   },
                   onLeverageTap: () async {
                     final generation = ref.read(sessionGenerationProvider);
@@ -645,7 +649,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     onPressed: _submitting
                         ? null
                         : () => _applySettings(setting.$1, setting.$2),
-                    child: const Text('Resume settings change'),
+                    child: Text(l10n.retry),
                   ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -666,12 +670,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                         : _review,
                     child: Text(
                       _submitting
-                          ? 'Preparing order...'
+                          ? l10n.preparingOrder
                           : '${_reduceOnly
-                                ? 'Close'
+                                ? l10n.close
                                 : _side == TradingSide.long
-                                ? 'Long'
-                                : 'Short'} ${widget.symbol} · ${_inputNotional ? '\$${amount.isEmpty ? '0' : amount}' : '${amount.isEmpty ? '0' : amount} ${widget.symbol}'}',
+                                ? l10n.long
+                                : l10n.short} ${widget.symbol} · ${_inputNotional ? '\$${amount.isEmpty ? '0' : amount}' : '${amount.isEmpty ? '0' : amount} ${widget.symbol}'}',
                     ),
                   ),
                 ),
@@ -694,7 +698,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           children: [
             _Hip3SheetHeader(
               title:
-                  'Review ${_preview!.intent.side == TradingSide.long ? 'Long' : 'Short'} ${_preview!.intent.symbol}',
+                  'Review ${_preview!.intent.side == TradingSide.long ? AppLocalizations.of(context).long : AppLocalizations.of(context).short} ${_preview!.intent.symbol}',
               leverage:
                   int.tryParse(_preview!.hip3Execution?.leverage.value ?? '') ??
                   _leverage,
@@ -713,11 +717,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 (_preview!.isExpired ||
                     _preview!.hip3Execution == null ||
                     _preview!.expiresAt == null))
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  'Quote unavailable or expired. Go back to refresh it.',
-                ),
+                child: Text(AppLocalizations.of(context).orderQuoteUnavailable),
               ),
             const SizedBox(height: 16),
             Row(
@@ -734,7 +736,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                             });
                             _scheduleQuote();
                           },
-                    child: const Text('Back'),
+                    child: Text(AppLocalizations.of(context).back),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -756,7 +758,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                                 ? AppLocalizations.of(context).submitting
                                 : AppLocalizations.of(context).checkingOrder)
                           : (_pendingOrderId == null
-                                ? 'Confirm'
+                                ? AppLocalizations.of(context).confirm
                                 : 'Check order status'),
                     ),
                   ),
@@ -938,7 +940,7 @@ class _Hip3RiskSummary extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  AppLocalizations.of(context).hip3OrderTpSl,
+                  'TP/SL',
                   style: TextStyle(
                     color: Theme.of(context)
                         .extension<AppRwaColors>()!
@@ -963,7 +965,7 @@ class _Hip3RiskSummary extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                showTpSl ? 'Remove' : 'Configure',
+                showTpSl ? 'Remove' : 'Add',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -1223,6 +1225,102 @@ class _Hip3AmountRail extends StatelessWidget {
           divisions: 4,
           label: '${(value * 100).round()}%',
           onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}
+
+class Hip3MarginModeSheet extends StatelessWidget {
+  const Hip3MarginModeSheet({
+    super.key,
+    required this.selectedMode,
+    required this.availableModes,
+  });
+
+  final TradingMarginMode selectedMode;
+  final Set<TradingMarginMode> availableModes;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Material(
+      color: colors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Margin mode',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              for (final mode in TradingMarginMode.values)
+                _MarginModeOption(
+                  mode: mode,
+                  selected: mode == selectedMode,
+                  enabled: availableModes.contains(mode),
+                  onTap: () => Navigator.of(context).pop(mode),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MarginModeOption extends StatelessWidget {
+  const _MarginModeOption({
+    required this.mode,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final TradingMarginMode mode;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final label = mode == TradingMarginMode.cross ? 'Cross' : 'Isolated';
+    return Semantics(
+      button: enabled,
+      selected: selected,
+      label: '$label margin mode',
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: selected ? colors.selected : colors.subtleSurface,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: enabled ? null : colors.tertiaryText,
+                  ),
+                ),
+              ),
+              if (selected) const Icon(Icons.check, size: 20),
+            ],
+          ),
         ),
       ),
     );

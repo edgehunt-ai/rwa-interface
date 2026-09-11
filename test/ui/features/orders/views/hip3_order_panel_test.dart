@@ -106,7 +106,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_app(const Hip3OrderPanel()));
     await tester.pumpAndSettle();
-    expect(find.text('Order TP/SL'), findsOneWidget);
+    expect(find.text('TP/SL'), findsOneWidget);
     expect(find.text('Position TP/SL'), findsNothing);
   });
   testWidgets(
@@ -472,6 +472,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
       await tester.pumpAndSettle();
+      expect(find.text('Margin mode'), findsOneWidget);
+      await tester.tap(find.text('Isolated').last);
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('20x'));
@@ -519,6 +522,26 @@ void main() {
       expect(find.text('Remove'), findsOneWidget);
     },
   );
+
+  testWidgets('margin mode and leverage controls open their selectors', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(const Hip3OrderPanel(), opening: _Opening()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('Margin mode'), findsOneWidget);
+    expect(find.text('Cross'), findsNWidgets(2));
+    expect(find.text('Isolated'), findsOneWidget);
+
+    await tester.tap(find.text('Cross').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('Leverage'), findsOneWidget);
+    expect(find.bySemanticsLabel('Drag to set leverage'), findsOneWidget);
+  });
 
   testWidgets('pending HIP-3 order is signed and submitted before success', (
     tester,
