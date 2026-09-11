@@ -90,16 +90,6 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
 
 Position mapPosition(api.Position value) => Position(
   positionId: value.positionId,
-  productId: value.productId,
-  positionVersion: value.positionVersion,
-  hip3ActionId: value.hip3ActionId,
-  protectionOrderIds: List.unmodifiable(value.protectionOrderIds ?? []),
-  marginMode: switch (value.marginMode) {
-    api.MarginMode.cross => PositionMarginMode.cross,
-    api.MarginMode.isolated => PositionMarginMode.isolated,
-    null => null,
-    _ => PositionMarginMode.unknown,
-  },
   symbol: value.symbol,
   kind: value.kind == api.ProductKind.bstock
       ? MarketProductKind.bstock
@@ -109,6 +99,13 @@ Position mapPosition(api.Position value) => Position(
     api.PositionSideEnum.short => PositionSide.short,
     _ => PositionSide.none,
   },
+  productId: value.productId,
+  positionVersion: value.positionVersion,
+  marginMode: switch (value.marginMode) {
+    api.MarginMode.isolated => PositionMarginMode.isolated,
+    api.MarginMode.cross => PositionMarginMode.cross,
+    _ => PositionMarginMode.unknown,
+  },
   quantity: DecimalValue(
     value.quantity,
     unit: value.quantityUnit ?? 'quantity',
@@ -117,8 +114,6 @@ Position mapPosition(api.Position value) => Position(
   entryPrice: _optional(value.entryPrice, 'price'),
   markPrice: _optional(value.markPrice, 'price'),
   unrealizedPnl: _optional(value.unrealizedPnl, 'pnl'),
-  unrealizedPnlPercent: _optional(value.unrealizedPnlPercent, 'percent'),
-  fundingPaid: _optional(value.fundingPaid, 'funding'),
   realizedPnl: _optional(value.realizedPnl, 'pnl'),
   leverage: _optional(value.leverage, 'leverage'),
   margin: _optional(value.margin, 'margin'),
