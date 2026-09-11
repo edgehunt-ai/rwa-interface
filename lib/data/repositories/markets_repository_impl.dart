@@ -3,7 +3,6 @@ import '../../domain/models/stock.dart';
 import '../../domain/models/decimal_value.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/market_snapshot.dart';
-import '../../domain/models/market_list_query.dart';
 import '../../domain/repositories/markets_repository.dart';
 import '../services/charts_service.dart';
 import '../services/markets_service.dart';
@@ -37,21 +36,8 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
-    MarketProductKind? kind,
-    MarketListGroup? group,
-    int? limit,
   }) async {
-    final page = await _service.listProducts(
-      query: query,
-      cursor: cursor,
-      group: group == null ? null : api.MarketProductGroup.valueOf(group.name),
-      productType: switch (kind) {
-        MarketProductKind.perp => api.ProductType.contract,
-        MarketProductKind.bstock => api.ProductType.spot,
-        null => null,
-      },
-      limit: limit,
-    );
+    final page = await _service.listProducts(query: query, cursor: cursor);
     return DomainPage(
       items: page.items.map(_listing).toList(),
       nextCursor: page.nextCursor,
