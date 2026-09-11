@@ -97,7 +97,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(execution.calls, 1);
       expect(
-        find.textContaining('Attached protection is not confirmed active'),
+        find.textContaining('Submitted protection is not yet active.'),
         findsOneWidget,
       );
     },

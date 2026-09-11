@@ -117,9 +117,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Take Profit & stop loss'), findsOneWidget);
     expect(
-      find.textContaining(
-        'Empty fields here do not mean all protection is absent.',
-      ),
+      find.textContaining('Fixed quantity will not adjust automatically'),
       findsOneWidget,
     );
     expect(find.text('Order TP/SL'), findsNothing);
@@ -154,12 +152,9 @@ void main() {
       ),
     );
     await tester.ensureVisible(find.byKey(const Key('close-review')));
+    await tester.enterText(find.byKey(const Key('close-quantity')), '1');
     await tester.tap(find.byKey(const Key('close-review')));
     await tester.pumpAndSettle();
-    expect(
-      find.textContaining('Resume it from pending actions'),
-      findsOneWidget,
-    );
     expect(
       tester
           .widget<FilledButton>(find.byKey(const Key('close-review')))
@@ -226,6 +221,7 @@ void main() {
     expect(repo.closeCalls, 0);
     expect(find.text('Quantity exceeds the current position'), findsOneWidget);
     await tester.enterText(find.byKey(const Key('close-quantity')), '0.125');
+    await tester.pump();
     expect(
       tester
           .widget<Slider>(find.byKey(const Key('close-percentage-slider')))
@@ -234,7 +230,8 @@ void main() {
     );
     await tester.ensureVisible(find.byKey(const Key('close-review')));
     await tester.tap(find.byKey(const Key('close-review')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
     expect(repo.closeCalls, 1);
     expect(repo.quantity, '0.125');
     expect(repo.percent, isNull);

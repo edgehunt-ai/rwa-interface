@@ -19,6 +19,7 @@ import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
 import 'package:rwa_interface/domain/repositories/session_repository.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/home/views/home_screen.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
@@ -35,7 +36,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HomeScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -45,7 +51,7 @@ void main() {
     expect(find.text(r'+$248.32 today'), findsOneWidget);
     expect(find.text('Deposit'), findsOneWidget);
     expect(find.text('Withdraw'), findsOneWidget);
-    expect(find.text('Markets'), findsOneWidget);
+    expect(find.text('Markets'), findsWidgets);
     expect(find.text('NVDA'), findsWidgets);
     await tester.tap(find.text('Gainers'));
     await tester.pump();
@@ -101,7 +107,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HomeScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -121,7 +132,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const HomeScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

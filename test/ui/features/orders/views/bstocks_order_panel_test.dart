@@ -362,7 +362,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Amount Needed'), findsOneWidget);
+    expect(find.text('Amount needed'), findsOneWidget);
     expect(find.text('100 USDT'), findsOneWidget);
     expect(find.text('In-App Transfer'), findsOneWidget);
     expect(find.text('External Deposit'), findsOneWidget);
@@ -399,7 +399,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(funding.previewIds, ['preview-1']);
-      expect(find.text('Prepare Funds'), findsOneWidget);
+      expect(find.text('Add funds from:'), findsOneWidget);
       expect(find.text('In-App Transfer'), findsOneWidget);
       expect(find.text('External Deposit'), findsOneWidget);
     },
@@ -421,7 +421,7 @@ void main() {
         ),
       );
 
-      expect(find.text('In-App transfer'), findsOneWidget);
+      expect(find.text('In-app transfer'), findsOneWidget);
       expect(find.text('USDC (server selected)'), findsOneWidget);
       await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
@@ -450,7 +450,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Preparing Trading Funds...'), findsOneWidget);
+    expect(find.text('Preparing trading funds…'), findsOneWidget);
     expect(find.text('Close & View Later'), findsOneWidget);
   });
 
@@ -511,7 +511,7 @@ void main() {
         findsNothing,
       );
       expect(orders.receivedPreviewIds, [preview.previewId]);
-      expect(find.text('Submitting Order...'), findsOneWidget);
+      expect(find.text('Submitting Order…'), findsOneWidget);
       await tester.tap(
         find.widgetWithText(OutlinedButton, 'Close & View Later'),
       );

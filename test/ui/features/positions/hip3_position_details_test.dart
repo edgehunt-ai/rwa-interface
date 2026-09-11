@@ -11,6 +11,7 @@ import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/position_leverage_context.dart';
 import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/positions/views/hip3_position_metrics.dart';
 import 'package:rwa_interface/ui/features/positions/views/hip3_position_leverage_sheet.dart';
 
@@ -77,6 +78,8 @@ void main() {
     ) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: SingleChildScrollView(
               child: Hip3PositionMetrics(position: position(side: side)),
@@ -106,6 +109,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Hip3PositionMetrics(
             position: position(missing: true, side: PositionSide.none),
@@ -130,6 +135,8 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(brightness: brightness),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: MediaQuery(
               data: MediaQueryData(
                 size: size,
@@ -160,6 +167,8 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: Hip3PositionLeverageSheet(position: position())),
         ),
       ),

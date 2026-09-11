@@ -198,7 +198,7 @@ void main() {
 
     expect(session.endCalls, 1);
     expect(identity.logoutCalls, 1);
-    expect(find.text('Sign up or log in\nto start exploring'), findsOneWidget);
+    expect(find.text('Sign up or log in to start exploring'), findsOneWidget);
   });
 
   testWidgets('requests account deletion after confirmation', (tester) async {

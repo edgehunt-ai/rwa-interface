@@ -26,7 +26,7 @@ void main() {
       await tester.pump();
       expect(repository.resumed, ['pending']);
       repository.completion.completeError(const Hip3ActionPending('pending'));
-      await tester.pumpAndSettle();
+      await tester.pump();
       expect(
         find.text(
           'The action is still unfinished. Continue this action instead of creating another.',
