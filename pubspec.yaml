@@ -69,6 +69,11 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   sentry_dart_plugin: ^3.4.0
 
+# Reown accepts connectivity_plus 7.x, but 7.1.0+ references an iOS 26 API
+# unavailable in the macos-15 GitHub Actions Xcode SDK.
+dependency_overrides:
+  connectivity_plus: 7.0.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
