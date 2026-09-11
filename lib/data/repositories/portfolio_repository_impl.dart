@@ -101,9 +101,14 @@ Position mapPosition(api.Position value) => Position(
   },
   productId: value.productId,
   positionVersion: value.positionVersion,
+  hip3ActionId: value.hip3ActionId,
+  protectionOrderIds: List.unmodifiable(
+    value.protectionOrderIds?.toList() ?? const [],
+  ),
   marginMode: switch (value.marginMode) {
     api.MarginMode.isolated => PositionMarginMode.isolated,
     api.MarginMode.cross => PositionMarginMode.cross,
+    null => null,
     _ => PositionMarginMode.unknown,
   },
   quantity: DecimalValue(
@@ -114,7 +119,9 @@ Position mapPosition(api.Position value) => Position(
   entryPrice: _optional(value.entryPrice, 'price'),
   markPrice: _optional(value.markPrice, 'price'),
   unrealizedPnl: _optional(value.unrealizedPnl, 'pnl'),
+  unrealizedPnlPercent: _optional(value.unrealizedPnlPercent, 'percent'),
   realizedPnl: _optional(value.realizedPnl, 'pnl'),
+  fundingPaid: _optional(value.fundingPaid, 'funding'),
   leverage: _optional(value.leverage, 'leverage'),
   margin: _optional(value.margin, 'margin'),
   liquidationPrice: _optional(value.liquidationPrice, 'price'),
