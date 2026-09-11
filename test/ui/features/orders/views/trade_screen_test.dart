@@ -456,6 +456,8 @@ void main() {
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
 
+    expect(find.text('24/7'), findsOneWidget);
+    expect(find.text('Perpetual'), findsNothing);
     expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
     expect(find.text('Price Exposure Only'), findsOneWidget);
   });

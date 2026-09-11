@@ -551,7 +551,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: l10n.limitPrice,
                 prefixText: r'$',
               ),

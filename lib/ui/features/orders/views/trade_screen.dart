@@ -509,10 +509,7 @@ class _ProductHeader extends StatelessWidget {
                       color: Color(0xFFFF9654),
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      kind == MarketProductKind.bstock ? '24/7' : 'Perpetual',
-                      style: const TextStyle(fontSize: 13),
-                    ),
+                    Text('24/7', style: const TextStyle(fontSize: 13)),
                   ],
                 ),
               ),
