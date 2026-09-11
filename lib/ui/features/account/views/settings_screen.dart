@@ -291,11 +291,13 @@ class SettingsScreen extends ConsumerWidget {
       }
       return;
     }
-    if (deletion.state
-        case AccountDeletionState.blocked ||
-            AccountDeletionState.manualReview ||
-            AccountDeletionState.failed ||
-            AccountDeletionState.unknown) {
+    final accepted = switch (deletion.state) {
+      AccountDeletionState.requested ||
+      AccountDeletionState.processing ||
+      AccountDeletionState.anonymized => true,
+      _ => false,
+    };
+    if (!accepted) {
       if (sheetContext.mounted) Navigator.of(sheetContext).pop();
       if (context.mounted) {
         AppToast.showFailure(context, l10n.settingsDeleteAccountBlocked);

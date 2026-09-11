@@ -60,12 +60,17 @@ final class AccountDeletionCommand extends AsyncNotifier<AccountDeletion?> {
   Future<AccountDeletion?> request() async {
     if (state.isLoading) return null;
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref
+    late final AccountDeletion deletion;
+    try {
+      deletion = await ref
           .read(accountRepositoryProvider)
-          .requestAccountDeletion(idempotencyKey: _idempotencyKey),
-    );
-    return state.value;
+          .requestAccountDeletion(idempotencyKey: _idempotencyKey);
+    } on Object catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+      return null;
+    }
+    state = AsyncData(deletion);
+    return deletion;
   }
 }
 

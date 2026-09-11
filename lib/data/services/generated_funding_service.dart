@@ -17,6 +17,31 @@ final class GeneratedFundingService implements FundingService {
   Future<api.UnifiedFundingAccount> getUnifiedFundingAccount() =>
       _body(_api.getUnifiedFundingAccount);
   @override
+  Future<api.FundingSession> createFundingSession(
+    api.FundingSessionCreateRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.createFundingSession(
+      idempotencyKey: idempotencyKey,
+      fundingSessionCreateRequest: request,
+    ),
+  );
+  @override
+  Future<api.FundingSession> getFundingSession(String id) =>
+      _body(() => _api.getFundingSession(fundingSessionId: id));
+  @override
+  Future<api.FundingSession> updateFundingSessionSelection(
+    String id,
+    api.FundingSessionSelectionRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.updateFundingSessionSelection(
+      fundingSessionId: id,
+      idempotencyKey: idempotencyKey,
+      fundingSessionSelectionRequest: request,
+    ),
+  );
+  @override
   Future<api.FundingPlan> createPlan(
     api.FundingPlanRequest request, {
     required String idempotencyKey,
