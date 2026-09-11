@@ -10,6 +10,32 @@ import 'package:rwa_interface/domain/models/realtime_envelope.dart';
 import 'package:rwa_interface/domain/repositories/realtime_repository.dart';
 
 void main() {
+  test(
+    'raw and entity subscriptions restart with a fresh scope on session change',
+    () async {
+      final service = _CountingRealtime();
+      final container = ProviderContainer(
+        overrides: [realtimeServiceProvider.overrideWithValue(service)],
+      );
+      addTearDown(container.dispose);
+      final raw = container.listen(
+        realtimeEventsProvider('hip3:orders'),
+        (_, _) {},
+      );
+      final entity = container.listen(
+        realtimeEntityProvider((channelsKey: 'hip3:positions', entityId: 'p')),
+        (_, _) {},
+      );
+      addTearDown(raw.close);
+      addTearDown(entity.close);
+      await pumpEventQueue();
+      expect(service.subscriptions, 2);
+      container.read(sessionGenerationProvider.notifier).clearUserScope();
+      await pumpEventQueue();
+      expect(service.cancellations, 2);
+      expect(service.subscriptions, 4);
+    },
+  );
   test('canonical channel key prevents order-dependent state', () {
     expect(
       canonicalChannels(['positions', 'orders', 'orders']),
@@ -74,6 +100,23 @@ void main() {
       expect(repository.subscriptions, 2);
     },
   );
+}
+
+final class _CountingRealtime implements RealtimeService {
+  int subscriptions = 0;
+  int cancellations = 0;
+  @override
+  Stream<RealtimeEnvelope> subscribe({required Set<String> channels}) {
+    late StreamController<RealtimeEnvelope> controller;
+    controller = StreamController<RealtimeEnvelope>(
+      onListen: () => subscriptions++,
+      onCancel: () {
+        cancellations++;
+        return controller.close();
+      },
+    );
+    return controller.stream;
+  }
 }
 
 final class _TypedRealtime implements RealtimeRepository {

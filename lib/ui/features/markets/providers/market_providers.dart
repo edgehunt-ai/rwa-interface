@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/hip3_query_refresh.dart';
+import '../../../../app/providers/hip3_market_live_provider.dart';
+import '../../../../app/providers/hip3_live_provider.dart';
+import '../../../../domain/services/hip3_market_overlay.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../data/services/market_search_history_service.dart';
 import '../../../../domain/models/domain_page.dart';
@@ -26,13 +29,36 @@ final marketProductProvider = FutureProvider.autoDispose
       return ref.watch(marketsRepositoryProvider).getProduct(product);
     });
 
-final marketSnapshotProvider = FutureProvider.autoDispose
+final marketSnapshotRestProvider = FutureProvider.autoDispose
     .family<MarketSnapshot, MarketProductRef>((ref, product) async {
       final repository = ref.watch(marketsRepositoryProvider);
       if (product.kind != MarketProductKind.perp) {
         return repository.getSnapshot(product);
       }
       return hip3RefreshingQuery(ref, () => repository.getSnapshot(product));
+    });
+
+/// Keep the HTTP query independent of push updates so a tick does not refetch
+/// the book or restart its polling timer/subscription.
+final marketSnapshotProvider = FutureProvider.autoDispose
+    .family<MarketSnapshot, MarketProductRef>((ref, product) async {
+      final baseline = ref.watch(marketSnapshotRestProvider(product).future);
+      final stream = hip3MarketLiveProvider((product: product, interval: null));
+      ref.listen(stream, (previous, next) {
+        if (previous?.phase == Hip3LivePhase.live &&
+            next.phase != Hip3LivePhase.live &&
+            ref.read(hip3ForegroundProvider)) {
+          ref.invalidate(marketSnapshotRestProvider(product));
+        }
+      });
+      final connection = ref.watch(stream);
+      final base = await baseline;
+      final live =
+          connection.snapshot?.prices[(
+            productId: product.productId ?? '',
+            environment: product.environment ?? '',
+          )];
+      return overlayHip3Price(base, live, DateTime.now().toUtc());
     });
 
 final marketCandlesProvider = FutureProvider.autoDispose

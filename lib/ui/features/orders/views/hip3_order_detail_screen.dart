@@ -8,6 +8,7 @@ import '../../../../domain/models/order_fill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/layout/app_page_scaffold.dart';
 import '../providers/order_providers.dart';
+import '../providers/hip3_order_detail_refresh_provider.dart';
 
 /// Queries the authoritative order resource. No execution/cancellation controls.
 class Hip3OrderDetailScreen extends ConsumerWidget {
@@ -17,6 +18,7 @@ class Hip3OrderDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    ref.watch(hip3OrderDetailRefreshProvider(orderId));
     final result = ref.watch(orderProvider(orderId));
     Future<void> refresh() async {
       ref.invalidate(orderProvider(orderId));

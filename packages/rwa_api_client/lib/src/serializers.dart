@@ -153,7 +153,9 @@ import 'package:rwa_api_client/src/model/hip3_action_step.dart';
 import 'package:rwa_api_client/src/model/hip3_action_submission_request.dart';
 import 'package:rwa_api_client/src/model/hip3_agent.dart';
 import 'package:rwa_api_client/src/model/hip3_agent_status.dart';
+import 'package:rwa_api_client/src/model/hip3_archive_coverage.dart';
 import 'package:rwa_api_client/src/model/hip3_cancel_order_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_candle_provenance.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
@@ -168,6 +170,14 @@ import 'package:rwa_api_client/src/model/hip3_eip712_message.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_typed_data.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_types.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
+import 'package:rwa_api_client/src/model/hip3_funding_history_coverage.dart';
+import 'package:rwa_api_client/src/model/hip3_funding_payment.dart';
+import 'package:rwa_api_client/src/model/hip3_funding_payment_page.dart';
+import 'package:rwa_api_client/src/model/hip3_history_range.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation_history_coverage.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation_page.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation_position.dart';
 import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation_legs_inner.dart';
@@ -177,6 +187,22 @@ import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_public_market.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_balance.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_balance_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_balance_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_candle.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_candle_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_candle_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_order_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_order_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_position_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_position_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_price.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_price_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_price_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_snapshot.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_snapshot_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_snapshot_item.dart';
 import 'package:rwa_api_client/src/model/hip3_set_leverage_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_set_tp_sl_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_step_signing_payload.dart';
@@ -502,7 +528,9 @@ part 'serializers.g.dart';
   Hip3ActionSubmissionRequest,
   Hip3Agent,
   Hip3AgentStatus,
+  Hip3ArchiveCoverage,
   Hip3CancelOrderActionRequest,
+  Hip3CandleProvenance,
   Hip3Challenge,
   Hip3ChallengeCompleteRequest,
   Hip3ChallengeRequest,
@@ -517,6 +545,14 @@ part 'serializers.g.dart';
   Hip3Eip712TypedData,
   Hip3Eip712Types,
   Hip3Environment,
+  Hip3FundingHistoryCoverage,
+  Hip3FundingPayment,
+  Hip3FundingPaymentPage,
+  Hip3HistoryRange,
+  Hip3Liquidation,
+  Hip3LiquidationHistoryCoverage,
+  Hip3LiquidationPage,
+  Hip3LiquidationPosition,
   Hip3MainnetProduct,
   Hip3OpeningProtectionConfirmation,
   Hip3OpeningProtectionConfirmationLegsInner,
@@ -525,7 +561,23 @@ part 'serializers.g.dart';
   Hip3PlaceOrderActionRequest,
   Hip3PreviewExecution,
   Hip3ProtectionSpec,
-  Hip3PublicMarket,
+  Hip3PublicMarket,$Hip3PublicMarket,
+  Hip3RealtimeBalance,
+  Hip3RealtimeBalanceEvent,
+  Hip3RealtimeBalanceItem,
+  Hip3RealtimeCandle,
+  Hip3RealtimeCandleEvent,
+  Hip3RealtimeCandleItem,
+  Hip3RealtimeOrderEvent,
+  Hip3RealtimeOrderItem,
+  Hip3RealtimePositionEvent,
+  Hip3RealtimePositionItem,
+  Hip3RealtimePrice,
+  Hip3RealtimePriceEvent,
+  Hip3RealtimePriceItem,
+  Hip3RealtimeSnapshot,
+  Hip3RealtimeSnapshotEvent,
+  Hip3RealtimeSnapshotItem,
   Hip3SetLeverageActionRequest,
   Hip3SetTpSlActionRequest,
   Hip3StepSigningPayload,
@@ -628,7 +680,7 @@ part 'serializers.g.dart';
   RealtimeActivityEvent,
   RealtimeBalanceEvent,
   RealtimeCandleEvent,
-  RealtimeCandleUpdate,
+  RealtimeCandleUpdate,$RealtimeCandleUpdate,
   RealtimeClaimEvent,
   RealtimeDepositEvent,
   RealtimeEvent,
@@ -636,7 +688,7 @@ part 'serializers.g.dart';
   RealtimeOrderEvent,
   RealtimePositionEvent,
   RealtimePriceEvent,
-  RealtimePriceUpdate,
+  RealtimePriceUpdate,$RealtimePriceUpdate,
   RealtimeResyncRequiredEvent,
   RealtimeResyncRequiredEventAllOfData,
   RealtimeSessionEvent,
@@ -735,6 +787,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<UnifiedFundingTransfer>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3LiquidationPosition)]),
+        () => ListBuilder<Hip3LiquidationPosition>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProductRef)]),
         () => ListBuilder<ProductRef>(),
       )
@@ -765,6 +821,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioAsset)]),
         () => ListBuilder<PortfolioAsset>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Liquidation)]),
+        () => ListBuilder<Hip3Liquidation>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(UnifiedFundingBlocker)]),
@@ -839,6 +899,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<PortfolioWarningCode>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3HistoryRange)]),
+        () => ListBuilder<Hip3HistoryRange>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
         () => ListBuilder<FundingWalletActionSummary>(),
       )
@@ -863,6 +927,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<Chain>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3RealtimeSnapshotItem)]),
+        () => ListBuilder<Hip3RealtimeSnapshotItem>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3ActionStep)]),
         () => ListBuilder<Hip3ActionStep>(),
       )
@@ -885,6 +953,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingSessionSourceAllocation)]),
         () => ListBuilder<FundingSessionSourceAllocation>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3FundingPayment)]),
+        () => ListBuilder<Hip3FundingPayment>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
@@ -913,9 +985,12 @@ Serializers serializers = (_$serializers.toBuilder()
       ..add(DepositAddressBase.serializer)
       ..add(DepositBase.serializer)
       ..add(DepositRailBase.serializer)
+      ..add(Hip3PublicMarket.serializer)
       ..add(OrderPreviewCommon.serializer)
       ..add(Page.serializer)
+      ..add(RealtimeCandleUpdate.serializer)
       ..add(RealtimeEventBase.serializer)
+      ..add(RealtimePriceUpdate.serializer)
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())
       ..add(const DateSerializer())

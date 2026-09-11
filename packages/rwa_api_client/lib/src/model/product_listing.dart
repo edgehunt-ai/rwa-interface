@@ -275,7 +275,7 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
             specifiedType: const FullType.nullable(Hip3PublicMarket),
           ) as Hip3PublicMarket?;
           if (valueDes == null) continue;
-          result.hip3Market.replace(valueDes);
+          result.hip3Market = valueDes;
           break;
         case r'price_kind':
           final valueDes = serializers.deserialize(

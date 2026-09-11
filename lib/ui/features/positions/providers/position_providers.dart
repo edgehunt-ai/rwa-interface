@@ -4,6 +4,7 @@ import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../app/providers/hip3_query_refresh.dart';
+import '../../../../app/providers/hip3_live_refresh.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
@@ -19,7 +20,7 @@ final activeHip3ActionsProvider = FutureProvider.autoDispose
     .family<DomainPage<Hip3ActionSummary>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
       final repository = ref.watch(positionsRepositoryProvider);
-      return hip3RefreshingQuery(
+      return hip3LiveRefreshingQuery(
         ref,
         () => repository.activeHip3Actions(cursor: cursor),
       );
@@ -42,7 +43,7 @@ final positionsProvider = FutureProvider.autoDispose
       );
       return filter.kind == MarketProductKind.bstock
           ? read()
-          : hip3RefreshingQuery(ref, read);
+          : hip3LiveRefreshingQuery(ref, read);
     });
 
 final positionProvider = FutureProvider.autoDispose.family<Position, String>((

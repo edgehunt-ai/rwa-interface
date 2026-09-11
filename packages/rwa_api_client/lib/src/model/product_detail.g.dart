@@ -183,10 +183,9 @@ class ProductDetailBuilder
     implements Builder<ProductDetail, ProductDetailBuilder> {
   _$ProductDetail? _$v;
 
-  Hip3PublicMarketBuilder? _hip3Market;
-  Hip3PublicMarketBuilder get hip3Market =>
-      _$this._hip3Market ??= Hip3PublicMarketBuilder();
-  set hip3Market(Hip3PublicMarketBuilder? hip3Market) =>
+  Hip3PublicMarket? _hip3Market;
+  Hip3PublicMarket? get hip3Market => _$this._hip3Market;
+  set hip3Market(Hip3PublicMarket? hip3Market) =>
       _$this._hip3Market = hip3Market;
 
   bool? _isFavorite;
@@ -241,7 +240,7 @@ class ProductDetailBuilder
   ProductDetailBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _hip3Market = $v.hip3Market?.toBuilder();
+      _hip3Market = $v.hip3Market;
       _isFavorite = $v.isFavorite;
       _symbol = $v.symbol;
       _name = $v.name;
@@ -276,7 +275,7 @@ class ProductDetailBuilder
     try {
       _$result = _$v ??
           _$ProductDetail._(
-            hip3Market: _hip3Market?.build(),
+            hip3Market: hip3Market,
             isFavorite: isFavorite,
             symbol: BuiltValueNullFieldError.checkNotNull(
                 symbol, r'ProductDetail', 'symbol'),
@@ -294,9 +293,6 @@ class ProductDetailBuilder
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'hip3Market';
-        _hip3Market?.build();
-
         _$failedField = 'quote';
         quote.build();
         _$failedField = 'stats';

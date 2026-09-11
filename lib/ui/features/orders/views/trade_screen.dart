@@ -249,8 +249,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       ),
                       IconButton(
                         tooltip: AppLocalizations.of(context).hip3ChartRetry,
-                        onPressed: () =>
-                            ref.invalidate(marketSnapshotProvider(productRef)),
+                        onPressed: () => ref.invalidate(
+                          marketSnapshotRestProvider(productRef),
+                        ),
                         icon: const Icon(Icons.refresh),
                       ),
                     ],

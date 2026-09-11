@@ -112,7 +112,7 @@ class _$RealtimeCandleEventSerializer implements PrimitiveSerializer<RealtimeCan
             value,
             specifiedType: const FullType(RealtimeCandleUpdate),
           ) as RealtimeCandleUpdate;
-          result.data.replace(valueDes);
+          result.data = valueDes;
           break;
         case r'event':
           final valueDes = serializers.deserialize(

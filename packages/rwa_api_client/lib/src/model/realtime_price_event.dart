@@ -112,7 +112,7 @@ class _$RealtimePriceEventSerializer implements PrimitiveSerializer<RealtimePric
             value,
             specifiedType: const FullType(RealtimePriceUpdate),
           ) as RealtimePriceUpdate;
-          result.data.replace(valueDes);
+          result.data = valueDes;
           break;
         case r'event':
           final valueDes = serializers.deserialize(

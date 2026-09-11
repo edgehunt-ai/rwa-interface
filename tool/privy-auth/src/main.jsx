@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
+import { signHip3TypedData } from './hip3-signer.mjs';
 import {
   PrivyProvider,
   useLinkWithPasskey,
   useLogin,
   usePrivy,
   useUnlinkPasskey,
+  useWallets,
 } from '@privy-io/react-auth';
 
 const state = {
@@ -18,6 +20,9 @@ const state = {
   user: null,
   getAccessToken: null,
   logout: null,
+  wallets: [],
+  walletsReady: false,
+  generation: 0,
 };
 
 let root;
@@ -59,8 +64,10 @@ function PrivyBridge() {
   const { login } = useLogin({ onComplete: settleLogin });
   const { linkWithPasskey } = useLinkWithPasskey();
   const { unlink } = useUnlinkPasskey();
+  const { wallets, ready: walletsReady } = useWallets();
 
   useEffect(() => {
+    if (state.authenticated !== authenticated || userId(state.user) !== userId(user)) state.generation++;
     state.ready = ready;
     state.authenticated = authenticated;
     state.user = user;
@@ -69,6 +76,8 @@ function PrivyBridge() {
     state.login = login;
     state.linkPasskey = linkWithPasskey;
     state.unlinkPasskey = unlink;
+    state.wallets = wallets;
+    state.walletsReady = walletsReady;
 
     if (ready && state.initialize) {
       state.initialize.resolve(authenticated ? userId(user) : null);
@@ -87,6 +96,8 @@ function PrivyBridge() {
     ready,
     unlink,
     user,
+    wallets,
+    walletsReady,
   ]);
 
   return null;
@@ -175,9 +186,19 @@ window.rwaPrivyAuth = {
     return state.getAccessToken();
   },
 
+  async signTypedDataV4(expectedSigner, encodedPayload) {
+    try {
+      return {signature: await signHip3TypedData(() => state, expectedSigner, encodedPayload)};
+    } catch (error) {
+      const allowed = ['invalidPayload', 'walletUnavailable', 'walletMismatch', 'rejected'];
+      return {errorCode: allowed.includes(error?.code) ? error.code : 'walletUnavailable'};
+    }
+  },
+
   async logout() {
-    if (state.logout) await state.logout();
+    state.generation++;
     state.authenticated = false;
     state.user = null;
+    if (state.logout) await state.logout();
   },
 };

@@ -112,7 +112,7 @@ class _Hip3MarketChartState extends ConsumerState<Hip3MarketChart> {
                       else
                         TextButton(
                           onPressed: () =>
-                              ref.invalidate(hip3ChartProvider(query)),
+                              ref.invalidate(hip3ChartRestProvider(query)),
                           child: Text(l10n.hip3ChartRetry),
                         ),
                     ],

@@ -17,8 +17,8 @@ part 'realtime_price_update.g.dart';
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [change24hPercent] - 十进制字符串，避免浮点误差
 /// * [updatedAt] 
-@BuiltValue()
-abstract class RealtimePriceUpdate implements Built<RealtimePriceUpdate, RealtimePriceUpdateBuilder> {
+@BuiltValue(instantiable: false)
+abstract class RealtimePriceUpdate  {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -37,20 +37,13 @@ abstract class RealtimePriceUpdate implements Built<RealtimePriceUpdate, Realtim
   @BuiltValueField(wireName: r'updated_at')
   DateTime get updatedAt;
 
-  RealtimePriceUpdate._();
-
-  factory RealtimePriceUpdate([void updates(RealtimePriceUpdateBuilder b)]) = _$RealtimePriceUpdate;
-
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(RealtimePriceUpdateBuilder b) => b;
-
   @BuiltValueSerializer(custom: true)
   static Serializer<RealtimePriceUpdate> get serializer => _$RealtimePriceUpdateSerializer();
 }
 
 class _$RealtimePriceUpdateSerializer implements PrimitiveSerializer<RealtimePriceUpdate> {
   @override
-  final Iterable<Type> types = const [RealtimePriceUpdate, _$RealtimePriceUpdate];
+  final Iterable<Type> types = const [RealtimePriceUpdate];
 
   @override
   final String wireName = r'RealtimePriceUpdate';
@@ -94,6 +87,46 @@ class _$RealtimePriceUpdateSerializer implements PrimitiveSerializer<RealtimePri
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  @override
+  RealtimePriceUpdate deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.deserialize(serialized, specifiedType: FullType($RealtimePriceUpdate)) as $RealtimePriceUpdate;
+  }
+}
+
+/// a concrete implementation of [RealtimePriceUpdate], since [RealtimePriceUpdate] is not instantiable
+@BuiltValue(instantiable: true)
+abstract class $RealtimePriceUpdate implements RealtimePriceUpdate, Built<$RealtimePriceUpdate, $RealtimePriceUpdateBuilder> {
+  $RealtimePriceUpdate._();
+
+  factory $RealtimePriceUpdate([void Function($RealtimePriceUpdateBuilder)? updates]) = _$$RealtimePriceUpdate;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults($RealtimePriceUpdateBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<$RealtimePriceUpdate> get serializer => _$$RealtimePriceUpdateSerializer();
+}
+
+class _$$RealtimePriceUpdateSerializer implements PrimitiveSerializer<$RealtimePriceUpdate> {
+  @override
+  final Iterable<Type> types = const [$RealtimePriceUpdate, _$$RealtimePriceUpdate];
+
+  @override
+  final String wireName = r'$RealtimePriceUpdate';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    $RealtimePriceUpdate object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.serialize(object, specifiedType: FullType(RealtimePriceUpdate))!;
   }
 
   void _deserializeProperties(
@@ -152,12 +185,12 @@ class _$RealtimePriceUpdateSerializer implements PrimitiveSerializer<RealtimePri
   }
 
   @override
-  RealtimePriceUpdate deserialize(
+  $RealtimePriceUpdate deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = RealtimePriceUpdateBuilder();
+    final result = $RealtimePriceUpdateBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

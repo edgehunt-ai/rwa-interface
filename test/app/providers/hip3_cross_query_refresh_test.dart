@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/hip3_query_refresh.dart';
+import 'package:rwa_interface/app/providers/hip3_live_provider.dart';
+import 'package:rwa_interface/app/providers/hip3_live_scope.dart';
+import 'package:rwa_interface/domain/models/hip3_live.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -19,6 +22,136 @@ import 'package:rwa_interface/ui/features/positions/providers/position_providers
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 void main() {
+  testWidgets(
+    'push refreshes real order position holdings and summary providers before polling',
+    (tester) async {
+      final venue = _Venue();
+      final container = ProviderContainer(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(_Orders(venue)),
+          positionsRepositoryProvider.overrideWithValue(_Positions(venue)),
+          portfolioRepositoryProvider.overrideWithValue(_Portfolio(venue)),
+          hip3AccountLiveProvider.overrideWith((ref) {
+            final revision = ref.watch(_pushRevision);
+            if (revision == 0) {
+              return const Hip3LiveConnection(Hip3LivePhase.disabled);
+            }
+            return Hip3LiveConnection(
+              Hip3LivePhase.live,
+              snapshot: Hip3LiveSnapshot(
+                query: Hip3LiveQuery(
+                  signer: '0x1111111111111111111111111111111111111111',
+                  environment: 'testnet',
+                  channels: {'hip3:orders', 'hip3:positions', 'hip3:balance'},
+                ),
+                cursor: 'h3.11111111111111111111111111111111.$revision',
+                completedAt: DateTime.utc(2026),
+                emittedAt: DateTime.utc(2026),
+                orders: {},
+                positions: {},
+                prices: {},
+                candles: {},
+              ),
+            );
+          }),
+        ],
+      );
+      const filter = (
+        symbol: 'xyz:TSLA',
+        kind: MarketProductKind.perp,
+        cursor: null,
+      );
+      const openQuery = (
+        symbol: 'TSLA',
+        productId: 'xyz:TSLA',
+        cursor: 'page-2',
+      );
+      final subscriptions = [
+        container.listen(hip3OrdersProvider(null), (_, _) {}),
+        container.listen(hip3OpenOrdersProvider(openQuery), (_, _) {}),
+        container.listen(positionsProvider(filter), (_, _) {}),
+        container.listen(portfolioSummaryProvider, (_, _) {}),
+        container.listen(holdingsOverviewProvider, (_, _) {}),
+      ];
+      await tester.pump();
+      expect(
+        container.read(positionsProvider(filter)).requireValue.items,
+        isEmpty,
+      );
+      venue.phase = 1;
+      container.read(_pushRevision.notifier).push();
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+      expect(
+        container
+            .read(hip3OrdersProvider(null))
+            .requireValue
+            .items
+            .single
+            .resource
+            .status,
+        TradingOrderStatus.filled,
+      );
+      expect(
+        container
+            .read(positionsProvider(filter))
+            .requireValue
+            .items
+            .single
+            .quantity
+            .value,
+        '1',
+      );
+      expect(
+        container
+            .read(holdingsOverviewProvider)
+            .requireValue
+            .items
+            .single
+            .positions
+            .single
+            .quantity
+            .value,
+        '1',
+      );
+      expect(
+        container
+            .read(portfolioSummaryProvider)
+            .requireValue
+            .totalValueUsd
+            .value,
+        '101',
+      );
+      expect(venue.commands, 0);
+      final openPage = container
+          .read(hip3OpenOrdersProvider(openQuery))
+          .requireValue;
+      expect(openPage.nextCursor, 'server-next');
+      expect(openPage.hasMore, isTrue);
+      expect(openPage.items, isEmpty);
+      expect(venue.orderQueries.where((q) => q['cursor'] != null), [
+        {
+          'cursor': 'page-2',
+          'kind': MarketProductKind.perp,
+          'symbol': 'TSLA',
+          'productId': 'xyz:TSLA',
+          'statusGroup': 'open',
+        },
+        {
+          'cursor': 'page-2',
+          'kind': MarketProductKind.perp,
+          'symbol': 'TSLA',
+          'productId': 'xyz:TSLA',
+          'statusGroup': 'open',
+        },
+      ]);
+      for (final sub in subscriptions) {
+        sub.close();
+      }
+      container.dispose();
+    },
+  );
   testWidgets(
     'later fill and close command refresh real order position and asset providers',
     (tester) async {
@@ -140,7 +273,16 @@ void main() {
   );
 }
 
+final _pushRevision = NotifierProvider<_PushRevision, int>(_PushRevision.new);
+
+class _PushRevision extends Notifier<int> {
+  @override
+  int build() => 0;
+  void push() => state++;
+}
+
 final class _Venue {
+  final orderQueries = <Map<String, Object?>>[];
   var phase = 0;
   var reads = 0;
   var commands = 0;
@@ -175,6 +317,20 @@ final class _Orders implements OrdersRepository {
     String? statusGroup,
   }) async {
     venue.reads++;
+    venue.orderQueries.add({
+      'cursor': cursor,
+      'kind': kind,
+      'symbol': symbol,
+      'productId': productId,
+      'statusGroup': statusGroup,
+    });
+    if (statusGroup == 'open') {
+      return const DomainPage(
+        items: [],
+        nextCursor: 'server-next',
+        hasMore: true,
+      );
+    }
     return DomainPage(items: [ResourceResult(resource: venue.order)]);
   }
 

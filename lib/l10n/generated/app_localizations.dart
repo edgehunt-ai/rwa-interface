@@ -98,6 +98,168 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @hip3HistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP3 history'**
+  String get hip3HistoryTitle;
+
+  /// No description provided for @hip3HistoryOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get hip3HistoryOrders;
+
+  /// No description provided for @hip3HistoryFunding.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding fees'**
+  String get hip3HistoryFunding;
+
+  /// No description provided for @hip3HistoryLiquidations.
+  ///
+  /// In en, this message translates to:
+  /// **'Liquidations'**
+  String get hip3HistoryLiquidations;
+
+  /// No description provided for @hip3HistoryLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Read from provider'**
+  String get hip3HistoryLive;
+
+  /// No description provided for @hip3HistoryArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved archive'**
+  String get hip3HistoryArchive;
+
+  /// No description provided for @hip3HistoryEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous 30 days'**
+  String get hip3HistoryEarlier;
+
+  /// No description provided for @hip3HistoryLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest 30 days'**
+  String get hip3HistoryLatest;
+
+  /// No description provided for @hip3HistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No records were returned for this window.'**
+  String get hip3HistoryEmpty;
+
+  /// No description provided for @hip3HistoryPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'History is incomplete. Missing records must not be treated as zero activity.'**
+  String get hip3HistoryPartial;
+
+  /// No description provided for @hip3HistoryRetention.
+  ///
+  /// In en, this message translates to:
+  /// **'The provider does not guarantee permanent history retention.'**
+  String get hip3HistoryRetention;
+
+  /// No description provided for @hip3HistoryMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing intervals'**
+  String get hip3HistoryMissing;
+
+  /// No description provided for @hip3HistoryReadGap.
+  ///
+  /// In en, this message translates to:
+  /// **'Read missing history'**
+  String get hip3HistoryReadGap;
+
+  /// No description provided for @hip3HistoryAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Settled amount'**
+  String get hip3HistoryAmount;
+
+  /// No description provided for @hip3HistoryUnknownAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement asset unavailable — not a USD valuation'**
+  String get hip3HistoryUnknownAsset;
+
+  /// No description provided for @hip3HistoryRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding rate'**
+  String get hip3HistoryRate;
+
+  /// No description provided for @hip3HistorySignedSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed position size'**
+  String get hip3HistorySignedSize;
+
+  /// No description provided for @hip3HistoryAccountValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider account value'**
+  String get hip3HistoryAccountValue;
+
+  /// No description provided for @hip3HistoryValueNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Account value at this event, not the loss on an individual product. No settlement currency is assumed.'**
+  String get hip3HistoryValueNotice;
+
+  /// No description provided for @hip3HistoryNativeCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Other native positions in this event'**
+  String get hip3HistoryNativeCount;
+
+  /// No description provided for @hip3HistoryEnvironment.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading environment'**
+  String get hip3HistoryEnvironment;
+
+  /// No description provided for @hip3HistoryAsOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Snapshot time'**
+  String get hip3HistoryAsOf;
+
+  /// No description provided for @hip3HistoryLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more records'**
+  String get hip3HistoryLoadMore;
+
+  /// No description provided for @hip3HistoryRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh history'**
+  String get hip3HistoryRefresh;
+
+  /// No description provided for @hip3HistoryLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'History could not be loaded. Try again.'**
+  String get hip3HistoryLoadError;
+
+  /// No description provided for @hip3HistoryCrossScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-margin account value'**
+  String get hip3HistoryCrossScope;
+
+  /// No description provided for @hip3HistoryIsolatedScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Isolated-margin account value'**
+  String get hip3HistoryIsolatedScope;
+
   /// No description provided for @marketFavoritesReorder.
   ///
   /// In en, this message translates to:

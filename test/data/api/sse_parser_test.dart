@@ -5,6 +5,65 @@ import 'package:rwa_interface/data/api/sse_parser.dart';
 
 void main() {
   test(
+    'frame bounds span chunks and reset after each complete frame',
+    () async {
+      final parser = SseParser(maxFrameCodeUnits: 16);
+      await expectLater(
+        parser
+            .bind(
+              Stream.fromIterable([
+                utf8.encode('data: 123456'),
+                utf8.encode('78901234567890'),
+              ]),
+            )
+            .toList(),
+        throwsFormatException,
+      );
+      final frames = await parser
+          .bind(
+            Stream.fromIterable(
+              List.generate(1000, (_) => utf8.encode('data: ok\n\n')),
+            ),
+          )
+          .toList();
+      expect(frames, hasLength(1000));
+    },
+  );
+
+  test('bare CR, LF, BOM and empty data frames are preserved', () async {
+    final frames = await const SseParser()
+        .bind(Stream.value(utf8.encode('\ufeffdata:\r\rdata: second\n\n')))
+        .toList();
+    expect(frames.map((frame) => frame.data), ['', 'second']);
+  });
+  test('CRLF split at every byte preserves one multiline HIP3 event', () async {
+    final bytes = utf8.encode(
+      'id: h3.test.1\r\nevent: hip3_price\r\ndata: 第一行\r\ndata: second\r\n\r\n',
+    );
+    final frames = await const SseParser()
+        .bind(Stream.fromIterable(bytes.map((b) => [b])))
+        .toList();
+    expect(frames, hasLength(1));
+    expect(frames.single.id, 'h3.test.1');
+    expect(frames.single.event, 'hip3_price');
+    expect(frames.single.data, '第一行\nsecond');
+  });
+
+  test('EOF discards a frame not terminated by an empty line', () async {
+    for (final suffix in ['', '\n', '\r', '\r\n']) {
+      final frames = await const SseParser()
+          .bind(
+            Stream.value(
+              utf8.encode(
+                'data: {"completeJsonButIncompleteFrame":true}$suffix',
+              ),
+            ),
+          )
+          .toList();
+      expect(frames, isEmpty);
+    }
+  });
+  test(
     'parses fragmented CRLF frames, multiline data, and ignores comments',
     () async {
       final chunks = Stream.fromIterable(

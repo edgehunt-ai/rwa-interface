@@ -54,6 +54,47 @@ class Repository implements MarketsRepository {
 }
 
 void main() {
+  test('long-lived candle rollover retains at most 5000 newest bars', () {
+    final old = List.generate(
+      5000,
+      (index) => point(start.add(Duration(minutes: index))),
+    );
+    final newest = point(start.add(const Duration(minutes: 5000)), '2');
+    final merged = mergeHip3Candles(old, [newest]);
+    expect(merged, hasLength(5000));
+    expect(merged.first.at, start.add(const Duration(minutes: 1)));
+    expect(merged.last, same(newest));
+    expect(old.first.at, start);
+  });
+  test('REST fallback cannot regress a newer observed bar', () {
+    Candle observedPoint(int seconds, String price) => Candle(
+      at: start,
+      close: DecimalValue(price),
+      hip3Provenance: Hip3CandleProvenance(
+        productId: 'xyz:TSLA',
+        environment: 'testnet',
+        source: 'hyperliquid_testnet',
+        observedAt: start.add(Duration(seconds: seconds)),
+        freshUntil: start.add(const Duration(minutes: 1)),
+      ),
+    );
+    final livePoint = observedPoint(20, '12');
+    expect(
+      mergeHip3Candles([livePoint], [observedPoint(10, '11')]).single,
+      same(livePoint),
+    );
+    expect(
+      mergeHip3Candles([livePoint], [point(start, '10')]).single,
+      same(livePoint),
+    );
+    expect(
+      mergeHip3Candles(
+        [livePoint],
+        [observedPoint(30, '13')],
+      ).single.close.value,
+      '13',
+    );
+  });
   late Repository repo;
   late ProviderContainer container;
   late CandleChart live;

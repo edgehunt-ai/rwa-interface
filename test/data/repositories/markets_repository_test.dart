@@ -4,6 +4,7 @@ import 'package:rwa_interface/data/repositories/markets_repository_impl.dart';
 import 'package:rwa_interface/data/services/markets_service.dart';
 import 'package:rwa_interface/data/services/charts_service.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 
 void main() {
   test(
@@ -29,8 +30,34 @@ void main() {
       expect(chart.from, from);
       expect(chart.to, to);
       expect(chart.interval, '1m');
+      expect(chart.hip3Provenance!.productId, 'xyz:TSLA');
+      expect(
+        chart.hip3Provenance!.observedAt,
+        to.subtract(const Duration(milliseconds: 123)),
+      );
+      expect(
+        chart.hip3Provenance!.freshUntil,
+        to.add(const Duration(seconds: 5)),
+      );
+      expect(chart.points.single.hip3Provenance, same(chart.hip3Provenance));
     },
   );
+  test('candle source cannot claim a different environment', () async {
+    final repository = MarketsRepositoryImpl(
+      _Markets('1'),
+      _Charts(source: 'hyperliquid_mainnet'),
+    );
+    final to = DateTime.utc(2026, 9, 10, 10);
+    await expectLater(
+      repository.getCandles(
+        const MarketProductRef(symbol: 'TSLA', kind: MarketProductKind.perp),
+        interval: '1m',
+        from: to.subtract(const Duration(hours: 1)),
+        to: to,
+      ),
+      throwsA(isA<CompatibilityFailure>()),
+    );
+  });
   test('分页映射保留 cursor，金融字符串逐字不变', () async {
     const financial = '999999999999999999.123456789012345678';
     final repository = MarketsRepositoryImpl(_Markets(financial));
@@ -41,6 +68,8 @@ void main() {
 }
 
 class _Charts implements ChartsService {
+  _Charts({this.source = 'hyperliquid_testnet'});
+  final String source;
   DateTime? from, to;
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -65,6 +94,14 @@ class _Charts implements ChartsService {
         ..interval = interval
         ..from = from
         ..to = to
+        ..hip3Provenance.update(
+          (p) => p
+            ..productId = 'xyz:TSLA'
+            ..environment = wire.Hip3Environment.testnet
+            ..source_ = source
+            ..updatedAt = to!.subtract(const Duration(milliseconds: 123))
+            ..freshUntil = to.add(const Duration(seconds: 5)),
+        )
         ..points.add(
           wire.CandlePoint(
             (p) => p

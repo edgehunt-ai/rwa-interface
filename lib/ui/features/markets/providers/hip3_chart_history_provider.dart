@@ -5,14 +5,27 @@ import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/market_snapshot.dart';
 import 'hip3_chart_provider.dart';
 
-/// Timestamp identity, ascending order, and newer snapshots win. Decimal values
-/// are never projected through double for the readout.
+/// Timestamp identity and ascending order. Known source observations take
+/// precedence over arrival order, including after live disconnect/REST fallback.
+/// Legacy data without provenance retains the existing later-argument priority.
 List<Candle> mergeHip3Candles(List<Candle> older, List<Candle> newer) {
-  final unique = {
-    for (final p in [...older, ...newer]) p.at: p,
-  };
+  final unique = <DateTime, Candle>{};
+  for (final point in [...older, ...newer]) {
+    final previous = unique[point.at]?.hip3Provenance;
+    final next = point.hip3Provenance;
+    if (previous != null &&
+        (next == null ||
+            !previous.sameSource(next) ||
+            !next.observedAt.isAfter(previous.observedAt))) {
+      continue;
+    }
+    unique[point.at] = point;
+  }
+  final sorted = unique.values.toList()..sort((a, b) => a.at.compareTo(b.at));
+  // Loading older pages already stops at this limit; live rollover must be
+  // bounded too. Retain the most recent bars rather than dropping new updates.
   return List.unmodifiable(
-    unique.values.toList()..sort((a, b) => a.at.compareTo(b.at)),
+    sorted.skip(sorted.length > 5000 ? sorted.length - 5000 : 0),
   );
 }
 
@@ -51,13 +64,14 @@ class Hip3ChartHistoryNotifier extends Notifier<Hip3ChartHistoryState> {
     ref.listen(hip3ChartProvider(query), (_, next) {
       final chart = next.value;
       if (chart == null || next.hasError || next.isLoading) return;
+      final points = mergeHip3Candles(state.points, chart.points);
       state = Hip3ChartHistoryState(
-        points: mergeHip3Candles(state.points, chart.points),
+        points: points,
         before: state.before ?? _start(chart),
         loading: state.loading,
         error: state.error,
         emptyWindow: state.emptyWindow,
-        exhausted: state.exhausted,
+        exhausted: state.exhausted || points.length >= 5000,
       );
     });
     final chart = ref.read(hip3ChartProvider(query)).value;

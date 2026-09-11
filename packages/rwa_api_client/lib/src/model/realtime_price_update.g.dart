@@ -6,7 +6,26 @@ part of 'realtime_price_update.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-class _$RealtimePriceUpdate extends RealtimePriceUpdate {
+abstract class RealtimePriceUpdateBuilder {
+  void replace(RealtimePriceUpdate other);
+  void update(void Function(RealtimePriceUpdateBuilder) updates);
+  String? get symbol;
+  set symbol(String? symbol);
+
+  ProductKind? get kind;
+  set kind(ProductKind? kind);
+
+  String? get price;
+  set price(String? price);
+
+  String? get change24hPercent;
+  set change24hPercent(String? change24hPercent);
+
+  DateTime? get updatedAt;
+  set updatedAt(DateTime? updatedAt);
+}
+
+class _$$RealtimePriceUpdate extends $RealtimePriceUpdate {
   @override
   final String symbol;
   @override
@@ -18,11 +37,11 @@ class _$RealtimePriceUpdate extends RealtimePriceUpdate {
   @override
   final DateTime updatedAt;
 
-  factory _$RealtimePriceUpdate(
-          [void Function(RealtimePriceUpdateBuilder)? updates]) =>
-      (RealtimePriceUpdateBuilder()..update(updates))._build();
+  factory _$$RealtimePriceUpdate(
+          [void Function($RealtimePriceUpdateBuilder)? updates]) =>
+      ($RealtimePriceUpdateBuilder()..update(updates))._build();
 
-  _$RealtimePriceUpdate._(
+  _$$RealtimePriceUpdate._(
       {required this.symbol,
       required this.kind,
       required this.price,
@@ -30,18 +49,18 @@ class _$RealtimePriceUpdate extends RealtimePriceUpdate {
       required this.updatedAt})
       : super._();
   @override
-  RealtimePriceUpdate rebuild(
-          void Function(RealtimePriceUpdateBuilder) updates) =>
+  $RealtimePriceUpdate rebuild(
+          void Function($RealtimePriceUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  RealtimePriceUpdateBuilder toBuilder() =>
-      RealtimePriceUpdateBuilder()..replace(this);
+  $RealtimePriceUpdateBuilder toBuilder() =>
+      $RealtimePriceUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is RealtimePriceUpdate &&
+    return other is $RealtimePriceUpdate &&
         symbol == other.symbol &&
         kind == other.kind &&
         price == other.price &&
@@ -63,7 +82,7 @@ class _$RealtimePriceUpdate extends RealtimePriceUpdate {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'RealtimePriceUpdate')
+    return (newBuiltValueToStringHelper(r'$RealtimePriceUpdate')
           ..add('symbol', symbol)
           ..add('kind', kind)
           ..add('price', price)
@@ -73,36 +92,38 @@ class _$RealtimePriceUpdate extends RealtimePriceUpdate {
   }
 }
 
-class RealtimePriceUpdateBuilder
-    implements Builder<RealtimePriceUpdate, RealtimePriceUpdateBuilder> {
-  _$RealtimePriceUpdate? _$v;
+class $RealtimePriceUpdateBuilder
+    implements
+        Builder<$RealtimePriceUpdate, $RealtimePriceUpdateBuilder>,
+        RealtimePriceUpdateBuilder {
+  _$$RealtimePriceUpdate? _$v;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
-  set symbol(String? symbol) => _$this._symbol = symbol;
+  set symbol(covariant String? symbol) => _$this._symbol = symbol;
 
   ProductKind? _kind;
   ProductKind? get kind => _$this._kind;
-  set kind(ProductKind? kind) => _$this._kind = kind;
+  set kind(covariant ProductKind? kind) => _$this._kind = kind;
 
   String? _price;
   String? get price => _$this._price;
-  set price(String? price) => _$this._price = price;
+  set price(covariant String? price) => _$this._price = price;
 
   String? _change24hPercent;
   String? get change24hPercent => _$this._change24hPercent;
-  set change24hPercent(String? change24hPercent) =>
+  set change24hPercent(covariant String? change24hPercent) =>
       _$this._change24hPercent = change24hPercent;
 
   DateTime? _updatedAt;
   DateTime? get updatedAt => _$this._updatedAt;
-  set updatedAt(DateTime? updatedAt) => _$this._updatedAt = updatedAt;
+  set updatedAt(covariant DateTime? updatedAt) => _$this._updatedAt = updatedAt;
 
-  RealtimePriceUpdateBuilder() {
-    RealtimePriceUpdate._defaults(this);
+  $RealtimePriceUpdateBuilder() {
+    $RealtimePriceUpdate._defaults(this);
   }
 
-  RealtimePriceUpdateBuilder get _$this {
+  $RealtimePriceUpdateBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _symbol = $v.symbol;
@@ -116,31 +137,31 @@ class RealtimePriceUpdateBuilder
   }
 
   @override
-  void replace(RealtimePriceUpdate other) {
-    _$v = other as _$RealtimePriceUpdate;
+  void replace(covariant $RealtimePriceUpdate other) {
+    _$v = other as _$$RealtimePriceUpdate;
   }
 
   @override
-  void update(void Function(RealtimePriceUpdateBuilder)? updates) {
+  void update(void Function($RealtimePriceUpdateBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  RealtimePriceUpdate build() => _build();
+  $RealtimePriceUpdate build() => _build();
 
-  _$RealtimePriceUpdate _build() {
+  _$$RealtimePriceUpdate _build() {
     final _$result = _$v ??
-        _$RealtimePriceUpdate._(
+        _$$RealtimePriceUpdate._(
           symbol: BuiltValueNullFieldError.checkNotNull(
-              symbol, r'RealtimePriceUpdate', 'symbol'),
+              symbol, r'$RealtimePriceUpdate', 'symbol'),
           kind: BuiltValueNullFieldError.checkNotNull(
-              kind, r'RealtimePriceUpdate', 'kind'),
+              kind, r'$RealtimePriceUpdate', 'kind'),
           price: BuiltValueNullFieldError.checkNotNull(
-              price, r'RealtimePriceUpdate', 'price'),
+              price, r'$RealtimePriceUpdate', 'price'),
           change24hPercent: BuiltValueNullFieldError.checkNotNull(
-              change24hPercent, r'RealtimePriceUpdate', 'change24hPercent'),
+              change24hPercent, r'$RealtimePriceUpdate', 'change24hPercent'),
           updatedAt: BuiltValueNullFieldError.checkNotNull(
-              updatedAt, r'RealtimePriceUpdate', 'updatedAt'),
+              updatedAt, r'$RealtimePriceUpdate', 'updatedAt'),
         );
     replace(_$result);
     return _$result;

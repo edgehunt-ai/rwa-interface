@@ -143,6 +143,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     final charts = _charts;
     if (charts == null) throw StateError('ChartsService is not configured');
     String? candleAsset = ref.kind == MarketProductKind.bstock ? 'USDC' : null;
+    Hip3PublicMarket? candleMarket;
     // The chart endpoint has a symbol/kind path, so validate a frozen route
     // identity before asking it for candles. A mainnet quote cannot silently
     // become a testnet chart (or a different venue with the same ticker).
@@ -151,6 +152,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       final product = await _service.getProduct(ref.symbol, _apiKind(ref.kind));
       final market = _hip3Market(product.hip3Market);
       _validateBinding(ref, market);
+      candleMarket = market;
       candleAsset = market?.settlementAsset;
     }
     final request = range == null ? null : _candleRequest(range);
@@ -162,6 +164,32 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       from: request?.from ?? from,
       to: request?.to ?? to,
     );
+    final observation = value.hip3Provenance;
+    Hip3CandleProvenance? provenance;
+    if (ref.kind == MarketProductKind.perp && observation != null) {
+      final environment = observation.environment.name;
+      final expectedInterval = request?.interval ?? interval;
+      if (value.symbol != ref.symbol ||
+          value.kind != api.ProductKind.perp ||
+          (expectedInterval != null && value.interval != expectedInterval) ||
+          observation.source_ != 'hyperliquid_$environment' ||
+          !observation.productId.contains(':') ||
+          !observation.freshUntil.isAfter(observation.updatedAt) ||
+          ((candleMarket?.productId ?? ref.productId) != null &&
+              observation.productId !=
+                  (candleMarket?.productId ?? ref.productId)) ||
+          ((candleMarket?.environment ?? ref.environment) != null &&
+              environment != (candleMarket?.environment ?? ref.environment))) {
+        throw const CompatibilityFailure();
+      }
+      provenance = Hip3CandleProvenance(
+        productId: observation.productId,
+        environment: environment,
+        source: observation.source_,
+        observedAt: observation.updatedAt.toUtc(),
+        freshUntil: observation.freshUntil.toUtc(),
+      );
+    }
     final reference = ref.kind == MarketProductKind.bstock
         ? await _referencePrice(charts, ref.symbol)
         : null;
@@ -169,6 +197,8 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       symbol: value.symbol,
       range: value.range.name,
       fetchedAt: DateTime.now().toUtc(),
+      hip3Market: candleMarket,
+      hip3Provenance: provenance,
       interval: value.interval ?? request?.interval ?? interval,
       from: value.from?.toUtc(),
       to: value.to?.toUtc(),
@@ -181,6 +211,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
               high: _decimal(point.h, asset: candleAsset, unit: 'price'),
               low: _decimal(point.l, asset: candleAsset, unit: 'price'),
               volume: _decimal(point.v, unit: 'volume'),
+              hip3Provenance: provenance,
             ),
           )
           .toList(),

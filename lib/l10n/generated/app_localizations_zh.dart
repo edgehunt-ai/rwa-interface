@@ -10,6 +10,87 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get hip3HistoryTitle => 'HIP3 历史';
+
+  @override
+  String get hip3HistoryOrders => '订单';
+
+  @override
+  String get hip3HistoryFunding => '资金费';
+
+  @override
+  String get hip3HistoryLiquidations => '强平';
+
+  @override
+  String get hip3HistoryLive => '查询上游';
+
+  @override
+  String get hip3HistoryArchive => '已保存归档';
+
+  @override
+  String get hip3HistoryEarlier => '前 30 天';
+
+  @override
+  String get hip3HistoryLatest => '最近 30 天';
+
+  @override
+  String get hip3HistoryEmpty => '该时间窗口未返回记录。';
+
+  @override
+  String get hip3HistoryPartial => '历史覆盖不完整，缺少记录不能视为没有发生交易。';
+
+  @override
+  String get hip3HistoryRetention => '上游不保证永久保留全部历史。';
+
+  @override
+  String get hip3HistoryMissing => '缺失区间数';
+
+  @override
+  String get hip3HistoryReadGap => '查询缺失历史';
+
+  @override
+  String get hip3HistoryAmount => '结算金额';
+
+  @override
+  String get hip3HistoryUnknownAsset => '结算币种暂不可用，此金额不是美元估值';
+
+  @override
+  String get hip3HistoryRate => '资金费率';
+
+  @override
+  String get hip3HistorySignedSize => '带方向的仓位数量';
+
+  @override
+  String get hip3HistoryAccountValue => '上游账户价值';
+
+  @override
+  String get hip3HistoryValueNotice => '这是事件对应的账户价值，不是该产品的亏损；不假定结算币种。';
+
+  @override
+  String get hip3HistoryNativeCount => '该事件中的其他原生仓位数';
+
+  @override
+  String get hip3HistoryEnvironment => '交易环境';
+
+  @override
+  String get hip3HistoryAsOf => '快照时间';
+
+  @override
+  String get hip3HistoryLoadMore => '加载更多记录';
+
+  @override
+  String get hip3HistoryRefresh => '刷新历史记录';
+
+  @override
+  String get hip3HistoryLoadError => '历史记录加载失败，请重试。';
+
+  @override
+  String get hip3HistoryCrossScope => '全仓保证金账户价值';
+
+  @override
+  String get hip3HistoryIsolatedScope => '逐仓保证金账户价值';
+
+  @override
   String get marketFavoritesReorder => '调整收藏顺序';
 
   @override

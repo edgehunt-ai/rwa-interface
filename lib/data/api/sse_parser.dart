@@ -3,22 +3,50 @@ import 'dart:convert';
 import 'sse_frame.dart';
 
 final class SseParser {
-  const SseParser();
+  const SseParser({this.maxFrameCodeUnits = 12 * 1024 * 1024})
+    : assert(maxFrameCodeUnits > 0);
+
+  // Includes room for HIP3's bounded 8 MiB snapshot plus its envelope. This
+  // bounds retained decoded text, not the size of a transport-delivered chunk.
+  final int maxFrameCodeUnits;
 
   Stream<SseFrame> bind(Stream<List<int>> bytes) async* {
-    var buffer = '';
+    final buffer = StringBuffer();
+    var frameSize = 0;
+    var skipLf = false;
+    var lineHasCharacters = false;
+    var firstCharacter = true;
     await for (final chunk in bytes.cast<List<int>>().transform(utf8.decoder)) {
-      buffer += chunk.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-      while (buffer.contains('\n\n')) {
-        final end = buffer.indexOf('\n\n');
-        final raw = buffer.substring(0, end);
-        buffer = buffer.substring(end + 2);
-        final frame = _parse(raw);
-        if (frame != null) yield frame;
+      for (final character in chunk.codeUnits) {
+        if (firstCharacter) {
+          firstCharacter = false;
+          if (character == 0xfeff) continue;
+        }
+        if (skipLf) {
+          skipLf = false;
+          if (character == 10) continue;
+        }
+        if (character == 13 || character == 10) {
+          skipLf = character == 13;
+          if (!lineHasCharacters) {
+            final frame = _parse(buffer.toString());
+            buffer.clear();
+            frameSize = 0;
+            if (frame != null) yield frame;
+            continue;
+          }
+          lineHasCharacters = false;
+          buffer.write('\n');
+        } else {
+          lineHasCharacters = true;
+          buffer.writeCharCode(character);
+        }
+        if (++frameSize > maxFrameCodeUnits) {
+          throw const FormatException('SSE frame exceeds the supported size');
+        }
       }
     }
-    final frame = _parse(buffer);
-    if (frame != null) yield frame;
+    // EOF is not an event delimiter. Never advance a cursor for a partial frame.
   }
 
   SseFrame? _parse(String raw) {

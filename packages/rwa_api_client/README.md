@@ -152,6 +152,8 @@ Class | Method | HTTP request | Description
 [*OrdersApi*](doc/OrdersApi.md) | [**getOrder**](doc/OrdersApi.md#getorder) | **GET** /v1/orders/{order_id} | 订单详情与权威状态
 [*OrdersApi*](doc/OrdersApi.md) | [**getTradeIntent**](doc/OrdersApi.md#gettradeintent) | **GET** /v1/trade-intents/{trade_intent_id} | 获取条件交易意图
 [*OrdersApi*](doc/OrdersApi.md) | [**listHip3Actions**](doc/OrdersApi.md#listhip3actions) | **GET** /v1/hip3/actions | 恢复当前账户的 HIP-3 动作
+[*OrdersApi*](doc/OrdersApi.md) | [**listHip3FundingPayments**](doc/OrdersApi.md#listhip3fundingpayments) | **GET** /v1/hip3/funding-payments | 查询当前交易钱包的 HIP-3 资金费结算事实
+[*OrdersApi*](doc/OrdersApi.md) | [**listHip3Liquidations**](doc/OrdersApi.md#listhip3liquidations) | **GET** /v1/hip3/liquidations | 查询当前交易钱包的 HIP-3 强平账本事件
 [*OrdersApi*](doc/OrdersApi.md) | [**listOrders**](doc/OrdersApi.md#listorders) | **GET** /v1/orders | 订单列表
 [*OrdersApi*](doc/OrdersApi.md) | [**previewHip3ClosePosition**](doc/OrdersApi.md#previewhip3closeposition) | **POST** /v1/positions/{position_id}/close/preview | 预览 HIP-3 全部或部分平仓
 [*OrdersApi*](doc/OrdersApi.md) | [**previewOrder**](doc/OrdersApi.md#previeworder) | **POST** /v1/orders/preview | 预览 bStocks 或 HIP-3 订单
@@ -313,7 +315,9 @@ Class | Method | HTTP request | Description
  - [Hip3ActionSubmissionRequest](doc/Hip3ActionSubmissionRequest.md)
  - [Hip3Agent](doc/Hip3Agent.md)
  - [Hip3AgentStatus](doc/Hip3AgentStatus.md)
+ - [Hip3ArchiveCoverage](doc/Hip3ArchiveCoverage.md)
  - [Hip3CancelOrderActionRequest](doc/Hip3CancelOrderActionRequest.md)
+ - [Hip3CandleProvenance](doc/Hip3CandleProvenance.md)
  - [Hip3Challenge](doc/Hip3Challenge.md)
  - [Hip3ChallengeCompleteRequest](doc/Hip3ChallengeCompleteRequest.md)
  - [Hip3ChallengeRequest](doc/Hip3ChallengeRequest.md)
@@ -328,6 +332,14 @@ Class | Method | HTTP request | Description
  - [Hip3Eip712TypedData](doc/Hip3Eip712TypedData.md)
  - [Hip3Eip712Types](doc/Hip3Eip712Types.md)
  - [Hip3Environment](doc/Hip3Environment.md)
+ - [Hip3FundingHistoryCoverage](doc/Hip3FundingHistoryCoverage.md)
+ - [Hip3FundingPayment](doc/Hip3FundingPayment.md)
+ - [Hip3FundingPaymentPage](doc/Hip3FundingPaymentPage.md)
+ - [Hip3HistoryRange](doc/Hip3HistoryRange.md)
+ - [Hip3Liquidation](doc/Hip3Liquidation.md)
+ - [Hip3LiquidationHistoryCoverage](doc/Hip3LiquidationHistoryCoverage.md)
+ - [Hip3LiquidationPage](doc/Hip3LiquidationPage.md)
+ - [Hip3LiquidationPosition](doc/Hip3LiquidationPosition.md)
  - [Hip3MainnetProduct](doc/Hip3MainnetProduct.md)
  - [Hip3OpeningProtectionConfirmation](doc/Hip3OpeningProtectionConfirmation.md)
  - [Hip3OpeningProtectionConfirmationLegsInner](doc/Hip3OpeningProtectionConfirmationLegsInner.md)
@@ -337,6 +349,22 @@ Class | Method | HTTP request | Description
  - [Hip3PreviewExecution](doc/Hip3PreviewExecution.md)
  - [Hip3ProtectionSpec](doc/Hip3ProtectionSpec.md)
  - [Hip3PublicMarket](doc/Hip3PublicMarket.md)
+ - [Hip3RealtimeBalance](doc/Hip3RealtimeBalance.md)
+ - [Hip3RealtimeBalanceEvent](doc/Hip3RealtimeBalanceEvent.md)
+ - [Hip3RealtimeBalanceItem](doc/Hip3RealtimeBalanceItem.md)
+ - [Hip3RealtimeCandle](doc/Hip3RealtimeCandle.md)
+ - [Hip3RealtimeCandleEvent](doc/Hip3RealtimeCandleEvent.md)
+ - [Hip3RealtimeCandleItem](doc/Hip3RealtimeCandleItem.md)
+ - [Hip3RealtimeOrderEvent](doc/Hip3RealtimeOrderEvent.md)
+ - [Hip3RealtimeOrderItem](doc/Hip3RealtimeOrderItem.md)
+ - [Hip3RealtimePositionEvent](doc/Hip3RealtimePositionEvent.md)
+ - [Hip3RealtimePositionItem](doc/Hip3RealtimePositionItem.md)
+ - [Hip3RealtimePrice](doc/Hip3RealtimePrice.md)
+ - [Hip3RealtimePriceEvent](doc/Hip3RealtimePriceEvent.md)
+ - [Hip3RealtimePriceItem](doc/Hip3RealtimePriceItem.md)
+ - [Hip3RealtimeSnapshot](doc/Hip3RealtimeSnapshot.md)
+ - [Hip3RealtimeSnapshotEvent](doc/Hip3RealtimeSnapshotEvent.md)
+ - [Hip3RealtimeSnapshotItem](doc/Hip3RealtimeSnapshotItem.md)
  - [Hip3SetLeverageActionRequest](doc/Hip3SetLeverageActionRequest.md)
  - [Hip3SetTpSlActionRequest](doc/Hip3SetTpSlActionRequest.md)
  - [Hip3StepSigningPayload](doc/Hip3StepSigningPayload.md)

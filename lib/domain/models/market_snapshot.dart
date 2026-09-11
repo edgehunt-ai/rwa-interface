@@ -41,6 +41,9 @@ final class MarketSnapshot {
     this.priceKind,
     this.quoteLabel,
     this.validUntil,
+    this.priceObservedAt,
+    this.priceValidUntil,
+    this.priceSource,
   });
   final DecimalValue price;
   final DecimalValue? change24hPercent;
@@ -57,6 +60,11 @@ final class MarketSnapshot {
   final String? priceKind, quoteLabel;
   final DateTime? validUntil;
 
+  /// Price-only provenance. The overall REST snapshot may still have older
+  /// statistics/orderbook data and must not be relabelled fresh by a price tick.
+  final DateTime? priceObservedAt, priceValidUntil;
+  final String? priceSource;
+
   bool isStaleAt(DateTime now) =>
       isStale ||
       (validUntil != null && !now.toUtc().isBefore(validUntil!.toUtc()));
@@ -70,6 +78,7 @@ final class Candle {
     this.high,
     this.low,
     this.volume,
+    this.hip3Provenance,
   });
   final DateTime at;
   final DecimalValue close;
@@ -77,6 +86,26 @@ final class Candle {
   final DecimalValue? high;
   final DecimalValue? low;
   final DecimalValue? volume;
+  final Hip3CandleProvenance? hip3Provenance;
+}
+
+/// Data-source observation, never the HTTP/client receipt time or exchange
+/// revision number. Used only within the same product/environment/source.
+final class Hip3CandleProvenance {
+  const Hip3CandleProvenance({
+    required this.productId,
+    required this.environment,
+    required this.source,
+    required this.observedAt,
+    required this.freshUntil,
+  });
+  final String productId, environment, source;
+  final DateTime observedAt, freshUntil;
+
+  bool sameSource(Hip3CandleProvenance other) =>
+      productId == other.productId &&
+      environment == other.environment &&
+      source == other.source;
 }
 
 enum MarketSessionKind {
@@ -115,6 +144,8 @@ final class CandleChart {
     this.interval,
     this.from,
     this.to,
+    this.hip3Market,
+    this.hip3Provenance,
   });
   final String symbol;
   final String range;
@@ -126,4 +157,6 @@ final class CandleChart {
   final DateTime? fetchedAt;
   final String? interval;
   final DateTime? from, to;
+  final Hip3PublicMarket? hip3Market;
+  final Hip3CandleProvenance? hip3Provenance;
 }

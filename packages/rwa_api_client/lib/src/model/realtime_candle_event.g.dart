@@ -131,10 +131,9 @@ class RealtimeCandleEventBuilder
         RealtimeEventBaseBuilder {
   _$RealtimeCandleEvent? _$v;
 
-  RealtimeCandleUpdateBuilder? _data;
-  RealtimeCandleUpdateBuilder get data =>
-      _$this._data ??= RealtimeCandleUpdateBuilder();
-  set data(covariant RealtimeCandleUpdateBuilder? data) => _$this._data = data;
+  RealtimeCandleUpdate? _data;
+  RealtimeCandleUpdate? get data => _$this._data;
+  set data(covariant RealtimeCandleUpdate? data) => _$this._data = data;
 
   RealtimeCandleEventEventEnum? _event;
   RealtimeCandleEventEventEnum? get event => _$this._event;
@@ -156,7 +155,7 @@ class RealtimeCandleEventBuilder
   RealtimeCandleEventBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _data = $v.data.toBuilder();
+      _data = $v.data;
       _event = $v.event;
       _eventId = $v.eventId;
       _emittedAt = $v.emittedAt;
@@ -179,29 +178,17 @@ class RealtimeCandleEventBuilder
   RealtimeCandleEvent build() => _build();
 
   _$RealtimeCandleEvent _build() {
-    _$RealtimeCandleEvent _$result;
-    try {
-      _$result = _$v ??
-          _$RealtimeCandleEvent._(
-            data: data.build(),
-            event: BuiltValueNullFieldError.checkNotNull(
-                event, r'RealtimeCandleEvent', 'event'),
-            eventId: BuiltValueNullFieldError.checkNotNull(
-                eventId, r'RealtimeCandleEvent', 'eventId'),
-            emittedAt: BuiltValueNullFieldError.checkNotNull(
-                emittedAt, r'RealtimeCandleEvent', 'emittedAt'),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'data';
-        data.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-            r'RealtimeCandleEvent', _$failedField, e.toString());
-      }
-      rethrow;
-    }
+    final _$result = _$v ??
+        _$RealtimeCandleEvent._(
+          data: BuiltValueNullFieldError.checkNotNull(
+              data, r'RealtimeCandleEvent', 'data'),
+          event: BuiltValueNullFieldError.checkNotNull(
+              event, r'RealtimeCandleEvent', 'event'),
+          eventId: BuiltValueNullFieldError.checkNotNull(
+              eventId, r'RealtimeCandleEvent', 'eventId'),
+          emittedAt: BuiltValueNullFieldError.checkNotNull(
+              emittedAt, r'RealtimeCandleEvent', 'emittedAt'),
+        );
     replace(_$result);
     return _$result;
   }

@@ -12,11 +12,14 @@ final class RealtimeRepositoryImpl implements RealtimeRepository {
             (event) => TypedRealtimeEvent(
               id: event.eventId,
               kind: event.eventName,
-              entityId:
-                  event.data['entity_id']?.toString() ??
-                  event.data['order_id']?.toString() ??
-                  event.data['position_id']?.toString(),
-              sequence: int.tryParse(event.data['sequence']?.toString() ?? ''),
+              entityId: event.entityId,
+              // HIP3 replay ordering is an exact stream-wide cursor, not an
+              // entity business version; the transport already guards it.
+              sequence: event.eventName.startsWith('hip3_')
+                  ? null
+                  : int.tryParse(
+                      event.resourceData['sequence']?.toString() ?? '',
+                    ),
               payload: event.data,
             ),
           );

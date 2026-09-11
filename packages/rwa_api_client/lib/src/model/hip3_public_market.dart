@@ -18,8 +18,8 @@ part 'hip3_public_market.g.dart';
 /// * [settlementAsset] - 来源于该场所权威产品元数据的结算资产，不从 symbol 猜测。
 /// * [tradable] 
 /// * [unavailableReason] - 不可交易的产品级原因；tradable=true 时为 null。账户级限制仍由 context 返回。
-@BuiltValue()
-abstract class Hip3PublicMarket implements Built<Hip3PublicMarket, Hip3PublicMarketBuilder> {
+@BuiltValue(instantiable: false)
+abstract class Hip3PublicMarket  {
   @BuiltValueField(wireName: r'product_id')
   String get productId;
 
@@ -41,20 +41,13 @@ abstract class Hip3PublicMarket implements Built<Hip3PublicMarket, Hip3PublicMar
   @BuiltValueField(wireName: r'unavailable_reason')
   String? get unavailableReason;
 
-  Hip3PublicMarket._();
-
-  factory Hip3PublicMarket([void updates(Hip3PublicMarketBuilder b)]) = _$Hip3PublicMarket;
-
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(Hip3PublicMarketBuilder b) => b;
-
   @BuiltValueSerializer(custom: true)
   static Serializer<Hip3PublicMarket> get serializer => _$Hip3PublicMarketSerializer();
 }
 
 class _$Hip3PublicMarketSerializer implements PrimitiveSerializer<Hip3PublicMarket> {
   @override
-  final Iterable<Type> types = const [Hip3PublicMarket, _$Hip3PublicMarket];
+  final Iterable<Type> types = const [Hip3PublicMarket];
 
   @override
   final String wireName = r'Hip3PublicMarket';
@@ -103,6 +96,46 @@ class _$Hip3PublicMarketSerializer implements PrimitiveSerializer<Hip3PublicMark
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  @override
+  Hip3PublicMarket deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.deserialize(serialized, specifiedType: FullType($Hip3PublicMarket)) as $Hip3PublicMarket;
+  }
+}
+
+/// a concrete implementation of [Hip3PublicMarket], since [Hip3PublicMarket] is not instantiable
+@BuiltValue(instantiable: true)
+abstract class $Hip3PublicMarket implements Hip3PublicMarket, Built<$Hip3PublicMarket, $Hip3PublicMarketBuilder> {
+  $Hip3PublicMarket._();
+
+  factory $Hip3PublicMarket([void Function($Hip3PublicMarketBuilder)? updates]) = _$$Hip3PublicMarket;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults($Hip3PublicMarketBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<$Hip3PublicMarket> get serializer => _$$Hip3PublicMarketSerializer();
+}
+
+class _$$Hip3PublicMarketSerializer implements PrimitiveSerializer<$Hip3PublicMarket> {
+  @override
+  final Iterable<Type> types = const [$Hip3PublicMarket, _$$Hip3PublicMarket];
+
+  @override
+  final String wireName = r'$Hip3PublicMarket';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    $Hip3PublicMarket object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.serialize(object, specifiedType: FullType(Hip3PublicMarket))!;
   }
 
   void _deserializeProperties(
@@ -169,12 +202,12 @@ class _$Hip3PublicMarketSerializer implements PrimitiveSerializer<Hip3PublicMark
   }
 
   @override
-  Hip3PublicMarket deserialize(
+  $Hip3PublicMarket deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = Hip3PublicMarketBuilder();
+    final result = $Hip3PublicMarketBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

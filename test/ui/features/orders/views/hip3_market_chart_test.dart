@@ -460,7 +460,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            hip3ChartProvider.overrideWith((ref, query) async {
+            hip3ChartRestProvider.overrideWith((ref, query) async {
               if (++calls == 1) throw StateError('offline');
               return const CandleChart(symbol: 'TSLA', range: '1h', points: []);
             }),

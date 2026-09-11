@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../app/providers/hip3_query_refresh.dart';
+import '../../../../app/providers/hip3_live_refresh.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/portfolio.dart';
 import '../../../../domain/models/trading_account.dart';
@@ -28,7 +29,7 @@ final holdingsOverviewProvider =
     FutureProvider.autoDispose<DomainPage<HoldingGroup>>((ref) {
       final repository = ref.watch(portfolioRepositoryProvider);
       final pages = ref.watch(holdingsPageCountProvider);
-      return hip3RefreshingQuery(ref, () async {
+      return hip3LiveRefreshingQuery(ref, () async {
         for (var attempt = 0; attempt < 2; attempt++) {
           final items = <HoldingGroup>[];
           final seen = <String>{};
@@ -71,7 +72,7 @@ final holdingsOverviewProvider =
 final portfolioSummaryProvider = FutureProvider.autoDispose<Portfolio>((ref) {
   ref.watch(sessionGenerationProvider);
   final repository = ref.watch(portfolioRepositoryProvider);
-  return hip3RefreshingQuery(ref, repository.getSummary);
+  return hip3LiveRefreshingQuery(ref, repository.getSummary);
 });
 
 final tradingAccountsProvider =
@@ -85,7 +86,7 @@ final holdingsProvider = FutureProvider.autoDispose
     .family<DomainPage<HoldingGroup>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
       final repository = ref.watch(portfolioRepositoryProvider);
-      return hip3RefreshingQuery(
+      return hip3LiveRefreshingQuery(
         ref,
         () => repository.listHoldings(cursor: cursor),
       );

@@ -13,6 +13,9 @@ import '../../data/repositories/portfolio_repository_impl.dart';
 import '../../data/repositories/positions_repository_impl.dart';
 import '../../data/repositories/account_repository_impl.dart';
 import '../../data/repositories/activity_repository_impl.dart';
+import '../../data/repositories/hip3_wallet_history_repository_impl.dart';
+import '../../data/services/hip3_wallet_history_service.dart';
+import '../../domain/repositories/hip3_wallet_history_repository.dart';
 import '../../data/repositories/session_repository_impl.dart';
 import '../../data/repositories/app_update_repository_impl.dart';
 import '../../app_review/app_review.dart';
@@ -46,6 +49,8 @@ import '../../domain/repositories/activity_repository.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/wallets_repository.dart';
 import '../../domain/repositories/realtime_repository.dart';
+import '../../domain/repositories/hip3_live_repository.dart';
+import '../../data/repositories/hip3_live_repository_impl.dart';
 import '../../domain/repositories/trade_intent_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/repositories/app_update_repository.dart';
@@ -232,6 +237,16 @@ final class _PositionSessionSigner implements Hip3TypedDataSigner {
   }
 }
 
+final hip3WalletHistoryRepositoryProvider =
+    Provider<Hip3WalletHistoryRepository>((ref) {
+      ref.watch(sessionGenerationProvider);
+      return Hip3WalletHistoryRepositoryImpl(
+        GeneratedHip3WalletHistoryService(
+          ref.watch(apiDataSourceProvider).client.getOrdersApi(),
+        ),
+      );
+    });
+
 final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
     return AppReviewActivityRepository(ref.watch(appReviewStoreProvider));
@@ -243,6 +258,9 @@ final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
 });
 final realtimeServiceProvider = Provider<RealtimeService>((ref) {
   return DioRealtimeService(ref.watch(apiDataSourceProvider).dio);
+});
+final hip3LiveRepositoryProvider = Provider<Hip3LiveRepository>((ref) {
+  return Hip3LiveRepositoryImpl(ref.watch(realtimeServiceProvider));
 });
 final realtimeRepositoryProvider = Provider<RealtimeRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {

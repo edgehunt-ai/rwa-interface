@@ -10,9 +10,12 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add($DepositAddressBase.serializer)
       ..add($DepositBase.serializer)
       ..add($DepositRailBase.serializer)
+      ..add($Hip3PublicMarket.serializer)
       ..add($OrderPreviewCommon.serializer)
       ..add($Page.serializer)
+      ..add($RealtimeCandleUpdate.serializer)
       ..add($RealtimeEventBase.serializer)
+      ..add($RealtimePriceUpdate.serializer)
       ..add(AccountBalance.serializer)
       ..add(AccountKind.serializer)
       ..add(ActivityCategory.serializer)
@@ -294,8 +297,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3Agent.serializer)
       ..add(Hip3AgentEnvironmentEnum.serializer)
       ..add(Hip3AgentStatus.serializer)
+      ..add(Hip3ArchiveCoverage.serializer)
       ..add(Hip3CancelOrderActionRequest.serializer)
       ..add(Hip3CancelOrderActionRequestOperationEnum.serializer)
+      ..add(Hip3CandleProvenance.serializer)
       ..add(Hip3Challenge.serializer)
       ..add(Hip3ChallengeCompleteRequest.serializer)
       ..add(Hip3ChallengeEnvironmentEnum.serializer)
@@ -337,6 +342,24 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3Eip712TypedDataPrimaryTypeEnum.serializer)
       ..add(Hip3Eip712Types.serializer)
       ..add(Hip3Environment.serializer)
+      ..add(Hip3FundingHistoryCoverage.serializer)
+      ..add(Hip3FundingHistoryCoverageSource_Enum.serializer)
+      ..add(Hip3FundingHistoryCoverageStatusEnum.serializer)
+      ..add(Hip3FundingPayment.serializer)
+      ..add(Hip3FundingPaymentPage.serializer)
+      ..add(Hip3FundingPaymentPageQuerySourceEnum.serializer)
+      ..add(Hip3FundingPaymentPageWarningsEnum.serializer)
+      ..add(Hip3HistoryRange.serializer)
+      ..add(Hip3Liquidation.serializer)
+      ..add(Hip3LiquidationAccountValueScopeEnum.serializer)
+      ..add(Hip3LiquidationHistoryCoverage.serializer)
+      ..add(Hip3LiquidationHistoryCoverageSource_Enum.serializer)
+      ..add(Hip3LiquidationHistoryCoverageStatusEnum.serializer)
+      ..add(Hip3LiquidationMarginModeEnum.serializer)
+      ..add(Hip3LiquidationPage.serializer)
+      ..add(Hip3LiquidationPageQuerySourceEnum.serializer)
+      ..add(Hip3LiquidationPageWarningsEnum.serializer)
+      ..add(Hip3LiquidationPosition.serializer)
       ..add(Hip3MainnetProduct.serializer)
       ..add(Hip3OpeningProtectionConfirmation.serializer)
       ..add(Hip3OpeningProtectionConfirmationLegsInner.serializer)
@@ -351,8 +374,36 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3PreviewExecutionTypeEnum.serializer)
       ..add(Hip3ProtectionSpec.serializer)
       ..add(Hip3ProtectionSpecSizeModeEnum.serializer)
-      ..add(Hip3PublicMarket.serializer)
       ..add(Hip3PublicMarketEnvironmentEnum.serializer)
+      ..add(Hip3RealtimeBalance.serializer)
+      ..add(Hip3RealtimeBalanceEvent.serializer)
+      ..add(Hip3RealtimeBalanceEventEventEnum.serializer)
+      ..add(Hip3RealtimeBalanceItem.serializer)
+      ..add(Hip3RealtimeBalanceItemEventEnum.serializer)
+      ..add(Hip3RealtimeBalanceScopeEnum.serializer)
+      ..add(Hip3RealtimeCandle.serializer)
+      ..add(Hip3RealtimeCandleEvent.serializer)
+      ..add(Hip3RealtimeCandleEventEventEnum.serializer)
+      ..add(Hip3RealtimeCandleItem.serializer)
+      ..add(Hip3RealtimeCandleItemEventEnum.serializer)
+      ..add(Hip3RealtimeOrderEvent.serializer)
+      ..add(Hip3RealtimeOrderEventEventEnum.serializer)
+      ..add(Hip3RealtimeOrderItem.serializer)
+      ..add(Hip3RealtimeOrderItemEventEnum.serializer)
+      ..add(Hip3RealtimePositionEvent.serializer)
+      ..add(Hip3RealtimePositionEventEventEnum.serializer)
+      ..add(Hip3RealtimePositionItem.serializer)
+      ..add(Hip3RealtimePositionItemEventEnum.serializer)
+      ..add(Hip3RealtimePrice.serializer)
+      ..add(Hip3RealtimePriceEvent.serializer)
+      ..add(Hip3RealtimePriceEventEventEnum.serializer)
+      ..add(Hip3RealtimePriceItem.serializer)
+      ..add(Hip3RealtimePriceItemEventEnum.serializer)
+      ..add(Hip3RealtimePricePriceLabelEnum.serializer)
+      ..add(Hip3RealtimeSnapshot.serializer)
+      ..add(Hip3RealtimeSnapshotEvent.serializer)
+      ..add(Hip3RealtimeSnapshotEventEventEnum.serializer)
+      ..add(Hip3RealtimeSnapshotItem.serializer)
       ..add(Hip3SetLeverageActionRequest.serializer)
       ..add(Hip3SetLeverageActionRequestOperationEnum.serializer)
       ..add(Hip3SetTpSlActionRequest.serializer)
@@ -562,7 +613,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RealtimeBalanceEventEventEnum.serializer)
       ..add(RealtimeCandleEvent.serializer)
       ..add(RealtimeCandleEventEventEnum.serializer)
-      ..add(RealtimeCandleUpdate.serializer)
       ..add(RealtimeCandleUpdateIntervalEnum.serializer)
       ..add(RealtimeClaimEvent.serializer)
       ..add(RealtimeClaimEventEventEnum.serializer)
@@ -575,7 +625,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RealtimePositionEventEventEnum.serializer)
       ..add(RealtimePriceEvent.serializer)
       ..add(RealtimePriceEventEventEnum.serializer)
-      ..add(RealtimePriceUpdate.serializer)
       ..add(RealtimeResyncRequiredEvent.serializer)
       ..add(RealtimeResyncRequiredEventAllOfData.serializer)
       ..add(RealtimeResyncRequiredEventAllOfDataReasonEnum.serializer)
@@ -771,6 +820,30 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(Hip3Eip712Field)]),
           () => ListBuilder<Hip3Eip712Field>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3FundingPayment)]),
+          () => ListBuilder<Hip3FundingPayment>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(Hip3FundingPaymentPageWarningsEnum)]),
+          () => ListBuilder<Hip3FundingPaymentPageWarningsEnum>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3HistoryRange)]),
+          () => ListBuilder<Hip3HistoryRange>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3HistoryRange)]),
+          () => ListBuilder<Hip3HistoryRange>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3Liquidation)]),
+          () => ListBuilder<Hip3Liquidation>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(Hip3LiquidationPageWarningsEnum)]),
+          () => ListBuilder<Hip3LiquidationPageWarningsEnum>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3LiquidationPosition)]),
+          () => ListBuilder<Hip3LiquidationPosition>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(Hip3OpeningProtectionConfirmationLegsInner)
           ]),
@@ -828,6 +901,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(OrderFill)]),
           () => ListBuilder<OrderFill>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioAsset)]),
+          () => ListBuilder<PortfolioAsset>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
           () => ListBuilder<PortfolioNotice>())
@@ -949,6 +1025,13 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(String)]),
           () => SetBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltSet, const [const FullType(String)]),
+          () => SetBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3RealtimeSnapshotItem)]),
+          () => ListBuilder<Hip3RealtimeSnapshotItem>())
       ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(String)]),
           () => SetBuilder<String>())

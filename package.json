@@ -10,7 +10,8 @@
     "quality:check": "dart format --output=none --set-exit-if-changed lib test && dart analyze --fatal-infos && flutter test",
     "release:verify": "npm run quality:check",
     "staging:preflight": "node scripts/check-staging-readiness.mjs",
-    "privy:web:build": "vite build --config tool/privy-auth/vite.config.mjs"
+    "privy:web:build": "vite build --config tool/privy-auth/vite.config.mjs",
+    "privy:web:test": "node --test tool/privy-auth/src/*.test.mjs"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.40.1",

@@ -18,24 +18,8 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
   final PortfolioService _service;
 
   @override
-  Future<Portfolio> getSummary() async {
-    final value = await _service.getSummary();
-    return Portfolio(
-      totalValueUsd: _usd(value.totalValueUsd),
-      availableToTradeUsd: _usd(value.availableToTradeUsd),
-      todayPnl: _optionalUsd(value.todayPnlUsd),
-      todayPnlPercent: _optional(value.todayPnlPercent, 'percent'),
-      marginInUseUsd: _optionalUsd(value.marginInUseUsd),
-      stocksValueUsd: _optionalUsd(value.stocksValueUsd),
-      updatedAt: value.calculatedAt.toUtc(),
-      readStatus: _readStatus(
-        value.dataStatus,
-        value.freshness,
-        value.warnings.map((notice) => notice.code.name),
-        value.oldestObservationAt,
-      ),
-    );
-  }
+  Future<Portfolio> getSummary() async =>
+      mapPortfolioSummary(await _service.getSummary());
 
   @override
   Future<List<TradingAccount>> listAccounts() async {
@@ -125,6 +109,29 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
       DecimalValue(value, asset: 'USD', unit: 'fiat');
   DecimalValue? _optionalUsd(String? value) =>
       value == null ? null : _usd(value);
+}
+
+/// Shared REST/realtime mapping. Does not infer missing daily PnL or revalue assets.
+Portfolio mapPortfolioSummary(api.PortfolioSummary value) {
+  DecimalValue usd(String amount) =>
+      DecimalValue(amount, asset: 'USD', unit: 'fiat');
+  DecimalValue? optionalUsd(String? amount) =>
+      amount == null ? null : usd(amount);
+  return Portfolio(
+    totalValueUsd: usd(value.totalValueUsd),
+    availableToTradeUsd: usd(value.availableToTradeUsd),
+    todayPnl: optionalUsd(value.todayPnlUsd),
+    todayPnlPercent: _optional(value.todayPnlPercent, 'percent'),
+    marginInUseUsd: optionalUsd(value.marginInUseUsd),
+    stocksValueUsd: optionalUsd(value.stocksValueUsd),
+    updatedAt: value.calculatedAt.toUtc(),
+    readStatus: _readStatus(
+      value.dataStatus,
+      value.freshness,
+      value.warnings.map((notice) => notice.code.name),
+      value.oldestObservationAt,
+    ),
+  );
 }
 
 PortfolioReadStatus _readStatus(

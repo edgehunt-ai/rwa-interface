@@ -10,6 +10,91 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get hip3HistoryTitle => 'HIP3 history';
+
+  @override
+  String get hip3HistoryOrders => 'Orders';
+
+  @override
+  String get hip3HistoryFunding => 'Funding fees';
+
+  @override
+  String get hip3HistoryLiquidations => 'Liquidations';
+
+  @override
+  String get hip3HistoryLive => 'Read from provider';
+
+  @override
+  String get hip3HistoryArchive => 'Saved archive';
+
+  @override
+  String get hip3HistoryEarlier => 'Previous 30 days';
+
+  @override
+  String get hip3HistoryLatest => 'Latest 30 days';
+
+  @override
+  String get hip3HistoryEmpty => 'No records were returned for this window.';
+
+  @override
+  String get hip3HistoryPartial =>
+      'History is incomplete. Missing records must not be treated as zero activity.';
+
+  @override
+  String get hip3HistoryRetention =>
+      'The provider does not guarantee permanent history retention.';
+
+  @override
+  String get hip3HistoryMissing => 'Missing intervals';
+
+  @override
+  String get hip3HistoryReadGap => 'Read missing history';
+
+  @override
+  String get hip3HistoryAmount => 'Settled amount';
+
+  @override
+  String get hip3HistoryUnknownAsset =>
+      'Settlement asset unavailable — not a USD valuation';
+
+  @override
+  String get hip3HistoryRate => 'Funding rate';
+
+  @override
+  String get hip3HistorySignedSize => 'Signed position size';
+
+  @override
+  String get hip3HistoryAccountValue => 'Provider account value';
+
+  @override
+  String get hip3HistoryValueNotice =>
+      'Account value at this event, not the loss on an individual product. No settlement currency is assumed.';
+
+  @override
+  String get hip3HistoryNativeCount => 'Other native positions in this event';
+
+  @override
+  String get hip3HistoryEnvironment => 'Trading environment';
+
+  @override
+  String get hip3HistoryAsOf => 'Snapshot time';
+
+  @override
+  String get hip3HistoryLoadMore => 'Load more records';
+
+  @override
+  String get hip3HistoryRefresh => 'Refresh history';
+
+  @override
+  String get hip3HistoryLoadError => 'History could not be loaded. Try again.';
+
+  @override
+  String get hip3HistoryCrossScope => 'Cross-margin account value';
+
+  @override
+  String get hip3HistoryIsolatedScope => 'Isolated-margin account value';
+
+  @override
   String get marketFavoritesReorder => 'Reorder favorites';
 
   @override

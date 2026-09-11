@@ -74,7 +74,29 @@ class _$Hip3PublicMarketEnvironmentEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$Hip3PublicMarket extends Hip3PublicMarket {
+abstract class Hip3PublicMarketBuilder {
+  void replace(Hip3PublicMarket other);
+  void update(void Function(Hip3PublicMarketBuilder) updates);
+  String? get productId;
+  set productId(String? productId);
+
+  String? get venue;
+  set venue(String? venue);
+
+  Hip3PublicMarketEnvironmentEnum? get environment;
+  set environment(Hip3PublicMarketEnvironmentEnum? environment);
+
+  String? get settlementAsset;
+  set settlementAsset(String? settlementAsset);
+
+  bool? get tradable;
+  set tradable(bool? tradable);
+
+  String? get unavailableReason;
+  set unavailableReason(String? unavailableReason);
+}
+
+class _$$Hip3PublicMarket extends $Hip3PublicMarket {
   @override
   final String productId;
   @override
@@ -88,11 +110,11 @@ class _$Hip3PublicMarket extends Hip3PublicMarket {
   @override
   final String? unavailableReason;
 
-  factory _$Hip3PublicMarket(
-          [void Function(Hip3PublicMarketBuilder)? updates]) =>
-      (Hip3PublicMarketBuilder()..update(updates))._build();
+  factory _$$Hip3PublicMarket(
+          [void Function($Hip3PublicMarketBuilder)? updates]) =>
+      ($Hip3PublicMarketBuilder()..update(updates))._build();
 
-  _$Hip3PublicMarket._(
+  _$$Hip3PublicMarket._(
       {required this.productId,
       required this.venue,
       required this.environment,
@@ -101,17 +123,17 @@ class _$Hip3PublicMarket extends Hip3PublicMarket {
       this.unavailableReason})
       : super._();
   @override
-  Hip3PublicMarket rebuild(void Function(Hip3PublicMarketBuilder) updates) =>
+  $Hip3PublicMarket rebuild(void Function($Hip3PublicMarketBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  Hip3PublicMarketBuilder toBuilder() =>
-      Hip3PublicMarketBuilder()..replace(this);
+  $Hip3PublicMarketBuilder toBuilder() =>
+      $Hip3PublicMarketBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is Hip3PublicMarket &&
+    return other is $Hip3PublicMarket &&
         productId == other.productId &&
         venue == other.venue &&
         environment == other.environment &&
@@ -135,7 +157,7 @@ class _$Hip3PublicMarket extends Hip3PublicMarket {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'Hip3PublicMarket')
+    return (newBuiltValueToStringHelper(r'$Hip3PublicMarket')
           ..add('productId', productId)
           ..add('venue', venue)
           ..add('environment', environment)
@@ -146,42 +168,44 @@ class _$Hip3PublicMarket extends Hip3PublicMarket {
   }
 }
 
-class Hip3PublicMarketBuilder
-    implements Builder<Hip3PublicMarket, Hip3PublicMarketBuilder> {
-  _$Hip3PublicMarket? _$v;
+class $Hip3PublicMarketBuilder
+    implements
+        Builder<$Hip3PublicMarket, $Hip3PublicMarketBuilder>,
+        Hip3PublicMarketBuilder {
+  _$$Hip3PublicMarket? _$v;
 
   String? _productId;
   String? get productId => _$this._productId;
-  set productId(String? productId) => _$this._productId = productId;
+  set productId(covariant String? productId) => _$this._productId = productId;
 
   String? _venue;
   String? get venue => _$this._venue;
-  set venue(String? venue) => _$this._venue = venue;
+  set venue(covariant String? venue) => _$this._venue = venue;
 
   Hip3PublicMarketEnvironmentEnum? _environment;
   Hip3PublicMarketEnvironmentEnum? get environment => _$this._environment;
-  set environment(Hip3PublicMarketEnvironmentEnum? environment) =>
+  set environment(covariant Hip3PublicMarketEnvironmentEnum? environment) =>
       _$this._environment = environment;
 
   String? _settlementAsset;
   String? get settlementAsset => _$this._settlementAsset;
-  set settlementAsset(String? settlementAsset) =>
+  set settlementAsset(covariant String? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
   bool? _tradable;
   bool? get tradable => _$this._tradable;
-  set tradable(bool? tradable) => _$this._tradable = tradable;
+  set tradable(covariant bool? tradable) => _$this._tradable = tradable;
 
   String? _unavailableReason;
   String? get unavailableReason => _$this._unavailableReason;
-  set unavailableReason(String? unavailableReason) =>
+  set unavailableReason(covariant String? unavailableReason) =>
       _$this._unavailableReason = unavailableReason;
 
-  Hip3PublicMarketBuilder() {
-    Hip3PublicMarket._defaults(this);
+  $Hip3PublicMarketBuilder() {
+    $Hip3PublicMarket._defaults(this);
   }
 
-  Hip3PublicMarketBuilder get _$this {
+  $Hip3PublicMarketBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _productId = $v.productId;
@@ -196,31 +220,31 @@ class Hip3PublicMarketBuilder
   }
 
   @override
-  void replace(Hip3PublicMarket other) {
-    _$v = other as _$Hip3PublicMarket;
+  void replace(covariant $Hip3PublicMarket other) {
+    _$v = other as _$$Hip3PublicMarket;
   }
 
   @override
-  void update(void Function(Hip3PublicMarketBuilder)? updates) {
+  void update(void Function($Hip3PublicMarketBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  Hip3PublicMarket build() => _build();
+  $Hip3PublicMarket build() => _build();
 
-  _$Hip3PublicMarket _build() {
+  _$$Hip3PublicMarket _build() {
     final _$result = _$v ??
-        _$Hip3PublicMarket._(
+        _$$Hip3PublicMarket._(
           productId: BuiltValueNullFieldError.checkNotNull(
-              productId, r'Hip3PublicMarket', 'productId'),
+              productId, r'$Hip3PublicMarket', 'productId'),
           venue: BuiltValueNullFieldError.checkNotNull(
-              venue, r'Hip3PublicMarket', 'venue'),
+              venue, r'$Hip3PublicMarket', 'venue'),
           environment: BuiltValueNullFieldError.checkNotNull(
-              environment, r'Hip3PublicMarket', 'environment'),
+              environment, r'$Hip3PublicMarket', 'environment'),
           settlementAsset: BuiltValueNullFieldError.checkNotNull(
-              settlementAsset, r'Hip3PublicMarket', 'settlementAsset'),
+              settlementAsset, r'$Hip3PublicMarket', 'settlementAsset'),
           tradable: BuiltValueNullFieldError.checkNotNull(
-              tradable, r'Hip3PublicMarket', 'tradable'),
+              tradable, r'$Hip3PublicMarket', 'tradable'),
           unavailableReason: unavailableReason,
         );
     replace(_$result);

@@ -352,10 +352,9 @@ class ProductListingBuilder
     implements Builder<ProductListing, ProductListingBuilder> {
   _$ProductListing? _$v;
 
-  Hip3PublicMarketBuilder? _hip3Market;
-  Hip3PublicMarketBuilder get hip3Market =>
-      _$this._hip3Market ??= Hip3PublicMarketBuilder();
-  set hip3Market(Hip3PublicMarketBuilder? hip3Market) =>
+  Hip3PublicMarket? _hip3Market;
+  Hip3PublicMarket? get hip3Market => _$this._hip3Market;
+  set hip3Market(Hip3PublicMarket? hip3Market) =>
       _$this._hip3Market = hip3Market;
 
   ProductListingPriceKindEnum? _priceKind;
@@ -440,7 +439,7 @@ class ProductListingBuilder
   ProductListingBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _hip3Market = $v.hip3Market?.toBuilder();
+      _hip3Market = $v.hip3Market;
       _priceKind = $v.priceKind;
       _dataStatus = $v.dataStatus;
       _updatedAt = $v.updatedAt;
@@ -477,43 +476,30 @@ class ProductListingBuilder
   ProductListing build() => _build();
 
   _$ProductListing _build() {
-    _$ProductListing _$result;
-    try {
-      _$result = _$v ??
-          _$ProductListing._(
-            hip3Market: _hip3Market?.build(),
-            priceKind: priceKind,
-            dataStatus: dataStatus,
-            updatedAt: updatedAt,
-            validUntil: validUntil,
-            symbol: BuiltValueNullFieldError.checkNotNull(
-                symbol, r'ProductListing', 'symbol'),
-            name: name,
-            kind: BuiltValueNullFieldError.checkNotNull(
-                kind, r'ProductListing', 'kind'),
-            productType: productType,
-            label: label,
-            price: BuiltValueNullFieldError.checkNotNull(
-                price, r'ProductListing', 'price'),
-            change24hPercent: change24hPercent,
-            spreadVsReferencePercent: spreadVsReferencePercent,
-            volume24h: volume24h,
-            volume24hUnit: volume24hUnit,
-            turnover24hUsd: turnover24hUsd,
-            hotRank: hotRank,
-            isFavorite: isFavorite,
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'hip3Market';
-        _hip3Market?.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-            r'ProductListing', _$failedField, e.toString());
-      }
-      rethrow;
-    }
+    final _$result = _$v ??
+        _$ProductListing._(
+          hip3Market: hip3Market,
+          priceKind: priceKind,
+          dataStatus: dataStatus,
+          updatedAt: updatedAt,
+          validUntil: validUntil,
+          symbol: BuiltValueNullFieldError.checkNotNull(
+              symbol, r'ProductListing', 'symbol'),
+          name: name,
+          kind: BuiltValueNullFieldError.checkNotNull(
+              kind, r'ProductListing', 'kind'),
+          productType: productType,
+          label: label,
+          price: BuiltValueNullFieldError.checkNotNull(
+              price, r'ProductListing', 'price'),
+          change24hPercent: change24hPercent,
+          spreadVsReferencePercent: spreadVsReferencePercent,
+          volume24h: volume24h,
+          volume24hUnit: volume24hUnit,
+          turnover24hUsd: turnover24hUsd,
+          hotRank: hotRank,
+          isFavorite: isFavorite,
+        );
     replace(_$result);
     return _$result;
   }

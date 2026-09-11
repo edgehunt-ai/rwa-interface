@@ -8,6 +8,7 @@ import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../app/providers/hip3_query_refresh.dart';
+import '../../../../app/providers/hip3_live_refresh.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/application_state.dart';
 import '../../../../domain/models/domain_page.dart';
@@ -35,7 +36,7 @@ final hip3OrdersProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
       final repository = ref.watch(ordersRepositoryProvider);
-      return hip3RefreshingQuery(
+      return hip3LiveRefreshingQuery(
         ref,
         () => repository.list(cursor: cursor, kind: MarketProductKind.perp),
       );
@@ -55,7 +56,7 @@ final hip3OpenOrdersProvider = FutureProvider.autoDispose
     ) {
       ref.watch(sessionGenerationProvider);
       final repository = ref.watch(ordersRepositoryProvider);
-      return hip3RefreshingQuery(
+      return hip3LiveRefreshingQuery(
         ref,
         () => repository.list(
           kind: MarketProductKind.perp,
