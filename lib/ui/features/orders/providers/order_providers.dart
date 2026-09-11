@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'dart:math';
 
+import '../../../../app/providers/observability_providers.dart';
 import '../../../../domain/models/hip3_opening_context.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -108,16 +109,34 @@ final class Hip3ActionCommands {
   final IdempotentCommandGuard _commands = IdempotentCommandGuard();
 
   Future<Hip3ActionSummary> cancel(String actionId) async {
-    final result = await _commands.run(
-      operation: 'cancel-hip3-action',
-      fingerprint: actionId,
-      command: (key) => _ref
-          .read(hip3OrderExecutionRepositoryProvider)
-          .cancelAction(actionId, idempotencyKey: key),
-    );
-    _ref.invalidate(hip3ActionsProvider);
-    _ref.invalidate(hip3ActionProvider(actionId));
-    return result;
+    const operation = 'cancel_hip3_action';
+    _ref
+        .read(observabilityReporterProvider)
+        .recordOperation(operation, outcome: 'started');
+    try {
+      final result = await _commands.run(
+        operation: 'cancel-hip3-action',
+        fingerprint: actionId,
+        command: (key) => _ref
+            .read(hip3OrderExecutionRepositoryProvider)
+            .cancelAction(actionId, idempotencyKey: key),
+      );
+      _ref
+          .read(observabilityReporterProvider)
+          .recordOperation(operation, outcome: 'succeeded');
+      _ref.invalidate(hip3ActionsProvider);
+      _ref.invalidate(hip3ActionProvider(actionId));
+      return result;
+    } on ApiFailure catch (failure, stackTrace) {
+      _ref
+          .read(observabilityReporterProvider)
+          .recordApiFailure(
+            operation: operation,
+            failure: failure,
+            stackTrace: stackTrace,
+          );
+      rethrow;
+    }
   }
 }
 
@@ -146,6 +165,7 @@ final class OrderCommandNotifier
     OrderIntent intent, {
     String? previewId,
   }) async {
+    const operation = 'create_order';
     final generation = ref.read(sessionGenerationProvider);
     bool isCurrent() =>
         ref.mounted && ref.read(sessionGenerationProvider) == generation;
@@ -170,6 +190,9 @@ final class OrderCommandNotifier
         .read(ordersRepositoryProvider)
         .create(intent, idempotencyKey: key, previewId: previewId);
     _inFlight = request;
+    ref
+        .read(observabilityReporterProvider)
+        .recordOperation(operation, outcome: 'started');
     try {
       final result = await request;
       if (!isCurrent()) return null;
@@ -181,8 +204,18 @@ final class OrderCommandNotifier
       ref.invalidate(ordersProvider);
       ref.invalidate(hip3OrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
+      ref
+          .read(observabilityReporterProvider)
+          .recordOperation(operation, outcome: 'succeeded');
       return result;
-    } on ApiFailure catch (failure) {
+    } on ApiFailure catch (failure, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordApiFailure(
+            operation: operation,
+            failure: failure,
+            stackTrace: stackTrace,
+          );
       if (!isCurrent()) return null;
       state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
         intent: intent,
@@ -196,8 +229,12 @@ final class OrderCommandNotifier
   }
 
   Future<void> cancel(TradingOrder order) async {
+    const operation = 'cancel_order';
     final key =
         'cancel-${order.orderId}-${DateTime.now().microsecondsSinceEpoch}';
+    ref
+        .read(observabilityReporterProvider)
+        .recordOperation(operation, outcome: 'started');
     try {
       final result =
           order.kind == MarketProductKind.perp &&
@@ -214,6 +251,18 @@ final class OrderCommandNotifier
                 .cancel(order.orderId, idempotencyKey: key);
       ref.invalidate(ordersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
+      ref
+          .read(observabilityReporterProvider)
+          .recordOperation(operation, outcome: 'succeeded');
+    } on ApiFailure catch (failure, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordApiFailure(
+            operation: operation,
+            failure: failure,
+            stackTrace: stackTrace,
+          );
+      rethrow;
     } finally {
       ref.invalidate(hip3OrdersProvider);
       ref.invalidate(hip3OpenOrdersProvider);

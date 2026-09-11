@@ -5,6 +5,7 @@ import '../../../../app/providers/auth_providers.dart';
 import '../../../../app_review/app_review.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../app/providers/push_notification_providers.dart';
+import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/config/privy_configuration.dart';
 import '../../../../domain/auth/authentication.dart';
 import '../../../../domain/auth/identity_auth_gateway.dart';
@@ -248,6 +249,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     } finally {
       await _disconnectWallet();
       _activeEmail = null;
+      await ref.read(observabilityReporterProvider).clearUser();
       ref.read(sessionGenerationProvider.notifier).clearUserScope();
       _clearAppReviewMode();
       state = AuthenticationUnauthenticated(failure: failure);
@@ -272,10 +274,19 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     }
     await _syncWallet(session);
     await _activateNotifications(session.account.settings);
-    if (_isCurrent(operation) &&
-        ref.read(sessionGenerationProvider).value == generation) {
-      state = AuthenticationAuthenticated(session, principal: principal);
+    if (!_isCurrent(operation) ||
+        ref.read(sessionGenerationProvider).value != generation) {
+      return;
     }
+    await ref
+        .read(observabilityReporterProvider)
+        .setUserId(session.account.userId);
+    if (!_isCurrent(operation) ||
+        ref.read(sessionGenerationProvider).value != generation) {
+      await ref.read(observabilityReporterProvider).clearUser();
+      return;
+    }
+    state = AuthenticationAuthenticated(session, principal: principal);
   }
 
   bool get _emailEnabled => PrivyConfiguration.loginMethods.contains('email');

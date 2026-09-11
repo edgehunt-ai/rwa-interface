@@ -12,10 +12,7 @@ class ObservabilityConfig {
 
   factory ObservabilityConfig.fromEnvironment() {
     return ObservabilityConfig.fromValues(
-      dsn: const String.fromEnvironment(
-        'SENTRY_DSN',
-        defaultValue: 'https://790a3223f0f3addb404c3c1aa2a519fd@o4512015886254080.ingest.de.sentry.io/4512016072310864',
-      ),
+      dsn: const String.fromEnvironment('SENTRY_DSN', defaultValue: ''),
       environment: const String.fromEnvironment(
         'SENTRY_ENVIRONMENT',
         defaultValue: kReleaseMode ? 'production' : 'development',

@@ -81,7 +81,8 @@ Widget/页面 → Riverpod provider/notifier → repository/use case
 
 ## 可观测性
 
-默认启用 Sentry 错误上报和采样性能监控。运行时参数通过 `--dart-define` 提供：
+提供 `SENTRY_DSN` 后启用 Sentry 错误上报和采样性能监控。运行时参数通过
+`--dart-define` 提供：
 
 ```bash
 flutter run \
@@ -92,7 +93,7 @@ flutter run \
   --dart-define=SENTRY_RELEASE=app@1.0.0+1
 ```
 
-将 `SENTRY_DSN` 设为空值可禁用遥测。禁止把 Sentry auth token 写入源码、变量、日志或 workflow；
+未设置或将 `SENTRY_DSN` 设为空值均可禁用遥测。禁止把 Sentry auth token 写入源码、变量、日志或 workflow；
 `SENTRY_AUTH_TOKEN` 只能存放在 GitHub Actions Secrets 中。
 
 Actions Variables：

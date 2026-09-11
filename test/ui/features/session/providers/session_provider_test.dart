@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/app/providers/observability_providers.dart';
+import 'package:rwa_interface/app/observability/observability_reporter.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/application_state.dart';
 import 'package:rwa_interface/domain/models/product_session.dart';
 import 'package:rwa_interface/domain/models/user_account.dart';
@@ -30,6 +33,41 @@ void main() {
     expect(state, isA<QueryData<ProductSession?>>());
     expect((state as QueryData<ProductSession?>).value, isNull);
   });
+
+  test('logout clears the Sentry user scope', () async {
+    final observability = _RecordingObservabilityReporter();
+    final container = ProviderContainer(
+      overrides: [
+        sessionRepositoryProvider.overrideWithValue(_SessionRepository()),
+        observabilityReporterProvider.overrideWithValue(observability),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(sessionProvider.notifier).logout();
+
+    expect(observability.clearCalls, 1);
+  });
+}
+
+final class _RecordingObservabilityReporter implements ObservabilityReporter {
+  var clearCalls = 0;
+
+  @override
+  Future<void> clearUser() async => clearCalls++;
+
+  @override
+  void recordApiFailure({
+    required String operation,
+    required ApiFailure failure,
+    StackTrace? stackTrace,
+  }) {}
+
+  @override
+  void recordOperation(String operation, {required String outcome}) {}
+
+  @override
+  Future<void> setUserId(String userId) async {}
 }
 
 final class _SessionRepository implements SessionRepository {

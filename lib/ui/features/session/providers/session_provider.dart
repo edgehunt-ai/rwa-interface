@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/application_state.dart';
@@ -48,6 +49,7 @@ final class SessionNotifier extends Notifier<QueryState<ProductSession?>> {
     } on AuthenticationFailure {
       // An already-expired remote session is equivalent to a local logout.
     } finally {
+      await ref.read(observabilityReporterProvider).clearUser();
       ref.read(sessionGenerationProvider.notifier).clearUserScope();
     }
   }

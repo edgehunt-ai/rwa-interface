@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
+import '../../../../app/providers/observability_providers.dart';
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../../../domain/models/withdrawal.dart';
 import '../../../../domain/models/funding_session.dart';
@@ -42,15 +46,18 @@ final class FundingTransferCommands {
   final IdempotentCommandGuard _commands = IdempotentCommandGuard();
 
   Future<FundingPlan> plan({required String tradePreviewId}) async {
-    final result = await _commands.run(
-      operation: 'funding-plan',
-      fingerprint: tradePreviewId,
-      command: (key) => _ref
-          .read(fundingRepositoryProvider)
-          .createFundingPlan(
-            tradePreviewId: tradePreviewId,
-            idempotencyKey: key,
-          ),
+    final result = await _run(
+      operation: 'funding_plan',
+      command: () => _commands.run(
+        operation: 'funding-plan',
+        fingerprint: tradePreviewId,
+        command: (key) => _ref
+            .read(fundingRepositoryProvider)
+            .createFundingPlan(
+              tradePreviewId: tradePreviewId,
+              idempotencyKey: key,
+            ),
+      ),
     );
     _ref.invalidate(fundingPlanProvider(result.planId));
     return result;
@@ -61,15 +68,19 @@ final class FundingTransferCommands {
     if (!plan.isActionable || leg == null) {
       throw StateError('Funding plan has no actionable server-selected source');
     }
-    return _ref
-        .read(walletsRepositoryProvider)
-        .authorizeFundingTransfer(
-          walletId: leg.walletId,
-          planId: plan.planId,
-          asset: leg.asset,
-          maximumAmount: leg.maximumAmount.value,
-          idempotencyKey: 'transfer-authorization-${plan.planId}-${leg.legId}',
-        );
+    return _run(
+      operation: 'funding_authorization',
+      command: () => _ref
+          .read(walletsRepositoryProvider)
+          .authorizeFundingTransfer(
+            walletId: leg.walletId,
+            planId: plan.planId,
+            asset: leg.asset,
+            maximumAmount: leg.maximumAmount.value,
+            idempotencyKey:
+                'transfer-authorization-${plan.planId}-${leg.legId}',
+          ),
+    );
   }
 
   Future<FundingTransfer> create({
@@ -79,19 +90,62 @@ final class FundingTransferCommands {
     if (!authorization.isUsable) {
       throw StateError('Funding transfer authorization is not usable');
     }
-    final result = await _commands.run(
-      operation: 'funding-transfer',
-      fingerprint: '${plan.planId}|${authorization.authorizationId}',
-      command: (key) => _ref
-          .read(fundingRepositoryProvider)
-          .createFundingTransfer(
-            planId: plan.planId,
-            legId: plan.nextActionableLeg!.legId,
-            authorizationId: authorization.authorizationId,
-            idempotencyKey: key,
-          ),
+    final result = await _run(
+      operation: 'funding_transfer',
+      command: () => _commands.run(
+        operation: 'funding-transfer',
+        fingerprint: '${plan.planId}|${authorization.authorizationId}',
+        command: (key) => _ref
+            .read(fundingRepositoryProvider)
+            .createFundingTransfer(
+              planId: plan.planId,
+              legId: plan.nextActionableLeg!.legId,
+              authorizationId: authorization.authorizationId,
+              idempotencyKey: key,
+            ),
+      ),
     );
     _ref.invalidate(fundingTransferProvider(result.transferId));
     return result;
+  }
+
+  Future<T> _run<T>({
+    required String operation,
+    required Future<T> Function() command,
+  }) {
+    _recordOperation(operation, outcome: 'started');
+    try {
+      final request = command();
+      unawaited(
+        request.then<void>(
+          (_) => _recordOperation(operation, outcome: 'succeeded'),
+          onError: (Object error, StackTrace stackTrace) {
+            _recordFailure(operation, error, stackTrace);
+          },
+        ),
+      );
+      return request;
+    } on ApiFailure catch (failure, stackTrace) {
+      _recordFailure(operation, failure, stackTrace);
+      rethrow;
+    }
+  }
+
+  void _recordOperation(String operation, {required String outcome}) {
+    if (!_ref.mounted) return;
+    _ref
+        .read(observabilityReporterProvider)
+        .recordOperation(operation, outcome: outcome);
+  }
+
+  void _recordFailure(String operation, Object error, StackTrace stackTrace) {
+    if (!_ref.mounted || error is! ApiFailure) return;
+    _ref
+        .read(observabilityReporterProvider)
+        .recordApiFailure(
+          operation: operation,
+          failure: error,
+          stackTrace: stackTrace,
+        );
   }
 }

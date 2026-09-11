@@ -5,6 +5,7 @@ import '../../data/api/privy_access_token_provider.dart';
 import '../../data/auth/identity_auth_gateway_factory.dart';
 import '../../data/auth/reown_wallet_connector.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
+import 'observability_providers.dart';
 import 'session_scope.dart';
 
 final identityAuthGatewayProvider = Provider<IdentityAuthGateway>(
@@ -28,6 +29,7 @@ final identityAccessTokenProvider = Provider<PrivyAccessTokenProvider>((ref) {
     ref.watch(identityAuthGatewayProvider),
     onExpired: () async {
       await ref.read(identityAuthGatewayProvider).logout().catchError((_) {});
+      await ref.read(observabilityReporterProvider).clearUser();
       ref.read(sessionGenerationProvider.notifier).clearUserScope();
     },
   );

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:rwa_interface/app/observability/observability_config.dart';
+import 'package:rwa_interface/app/observability/sentry_event_sanitizer.dart';
 
 typedef ApplicationRunner = FutureOr<void> Function();
 typedef MonitoringInitializer = Future<void> Function(
@@ -47,6 +48,7 @@ abstract final class SentryBootstrap {
         // ignore: experimental_member_use
         ..profilesSampleRate = config.profilesSampleRate
         ..sendDefaultPii = false
+        ..beforeSend = SentryEventSanitizer.sanitize
         ..enableAutoPerformanceTracing = true;
     }, appRunner: appRunner);
   }

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/app/providers/observability_providers.dart';
+import 'package:rwa_interface/app/observability/observability_reporter.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/hip3_action_summary.dart';
@@ -137,11 +139,13 @@ void main() {
   test(
     'failed order submission exposes a stable recoverable command state',
     () async {
+      final observability = _RecordingObservabilityReporter();
       final container = ProviderContainer(
         overrides: [
           ordersRepositoryProvider.overrideWithValue(
             _FailingOrdersRepository(),
           ),
+          observabilityReporterProvider.overrideWithValue(observability),
         ],
       );
       addTearDown(container.dispose);
@@ -157,8 +161,39 @@ void main() {
         isA<CommandFailure<OrderIntent, ResourceResult<TradingOrder>>>(),
       );
       expect((state as CommandFailure).failure, isA<NetworkFailure>());
+      expect(observability.operations, [
+        'create_order:started',
+        'create_order:failed',
+      ]);
+      expect(observability.failures, hasLength(1));
     },
   );
+}
+
+final class _RecordingObservabilityReporter implements ObservabilityReporter {
+  final List<String> operations = [];
+  final List<ApiFailure> failures = [];
+
+  @override
+  Future<void> clearUser() async {}
+
+  @override
+  void recordApiFailure({
+    required String operation,
+    required ApiFailure failure,
+    StackTrace? stackTrace,
+  }) {
+    failures.add(failure);
+    recordOperation(operation, outcome: 'failed');
+  }
+
+  @override
+  void recordOperation(String operation, {required String outcome}) {
+    operations.add('$operation:$outcome');
+  }
+
+  @override
+  Future<void> setUserId(String userId) async {}
 }
 
 OrderIntent _intent(String symbol) => OrderIntent(

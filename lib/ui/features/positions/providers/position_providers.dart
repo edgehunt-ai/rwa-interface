@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
@@ -92,6 +93,9 @@ final class PositionCommands {
   }) async {
     if (!_ref.mounted) throw const CancelledFailure();
     final generation = _ref.read(sessionGenerationProvider);
+    _ref
+        .read(observabilityReporterProvider)
+        .recordOperation(operation, outcome: 'started');
     try {
       final result = await _commands.run(
         operation: operation,
@@ -101,7 +105,21 @@ final class PositionCommands {
       if (!_ref.mounted || _ref.read(sessionGenerationProvider) != generation) {
         throw const CancelledFailure();
       }
+      _ref
+          .read(observabilityReporterProvider)
+          .recordOperation(operation, outcome: 'succeeded');
       return result;
+    } on ApiFailure catch (failure, stackTrace) {
+      if (_ref.mounted) {
+        _ref
+            .read(observabilityReporterProvider)
+            .recordApiFailure(
+              operation: operation,
+              failure: failure,
+              stackTrace: stackTrace,
+            );
+      }
+      rethrow;
     } finally {
       // A failed/paused call can still have created a recoverable server action.
       // Never refresh a different user's session after an in-flight command.
