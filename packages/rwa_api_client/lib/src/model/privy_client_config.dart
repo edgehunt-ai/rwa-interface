@@ -30,7 +30,7 @@ abstract class PrivyClientConfig implements Built<PrivyClientConfig, PrivyClient
 
   @BuiltValueField(wireName: r'login_methods')
   BuiltList<PrivyClientConfigLoginMethodsEnum> get loginMethods;
-  // enum loginMethodsEnum {  email,  apple,  google,  };
+  // enum loginMethodsEnum {  email,  apple,  google,  twitter,  telegram,  wallet,  passkey,  };
 
   @BuiltValueField(wireName: r'embedded_wallet')
   PrivyClientConfigEmbeddedWallet? get embeddedWallet;
@@ -208,6 +208,14 @@ class PrivyClientConfigLoginMethodsEnum extends EnumClass {
   static const PrivyClientConfigLoginMethodsEnum apple = _$privyClientConfigLoginMethodsEnum_apple;
   @BuiltValueEnumConst(wireName: r'google')
   static const PrivyClientConfigLoginMethodsEnum google = _$privyClientConfigLoginMethodsEnum_google;
+  @BuiltValueEnumConst(wireName: r'twitter')
+  static const PrivyClientConfigLoginMethodsEnum twitter = _$privyClientConfigLoginMethodsEnum_twitter;
+  @BuiltValueEnumConst(wireName: r'telegram')
+  static const PrivyClientConfigLoginMethodsEnum telegram = _$privyClientConfigLoginMethodsEnum_telegram;
+  @BuiltValueEnumConst(wireName: r'wallet')
+  static const PrivyClientConfigLoginMethodsEnum wallet = _$privyClientConfigLoginMethodsEnum_wallet;
+  @BuiltValueEnumConst(wireName: r'passkey')
+  static const PrivyClientConfigLoginMethodsEnum passkey = _$privyClientConfigLoginMethodsEnum_passkey;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const PrivyClientConfigLoginMethodsEnum unknownDefaultOpenApi = _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi;
 

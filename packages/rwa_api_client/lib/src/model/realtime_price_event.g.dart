@@ -130,10 +130,9 @@ class RealtimePriceEventBuilder
         RealtimeEventBaseBuilder {
   _$RealtimePriceEvent? _$v;
 
-  RealtimePriceUpdateBuilder? _data;
-  RealtimePriceUpdateBuilder get data =>
-      _$this._data ??= RealtimePriceUpdateBuilder();
-  set data(covariant RealtimePriceUpdateBuilder? data) => _$this._data = data;
+  RealtimePriceUpdate? _data;
+  RealtimePriceUpdate? get data => _$this._data;
+  set data(covariant RealtimePriceUpdate? data) => _$this._data = data;
 
   RealtimePriceEventEventEnum? _event;
   RealtimePriceEventEventEnum? get event => _$this._event;
@@ -155,7 +154,7 @@ class RealtimePriceEventBuilder
   RealtimePriceEventBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _data = $v.data.toBuilder();
+      _data = $v.data;
       _event = $v.event;
       _eventId = $v.eventId;
       _emittedAt = $v.emittedAt;
@@ -178,29 +177,17 @@ class RealtimePriceEventBuilder
   RealtimePriceEvent build() => _build();
 
   _$RealtimePriceEvent _build() {
-    _$RealtimePriceEvent _$result;
-    try {
-      _$result = _$v ??
-          _$RealtimePriceEvent._(
-            data: data.build(),
-            event: BuiltValueNullFieldError.checkNotNull(
-                event, r'RealtimePriceEvent', 'event'),
-            eventId: BuiltValueNullFieldError.checkNotNull(
-                eventId, r'RealtimePriceEvent', 'eventId'),
-            emittedAt: BuiltValueNullFieldError.checkNotNull(
-                emittedAt, r'RealtimePriceEvent', 'emittedAt'),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'data';
-        data.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-            r'RealtimePriceEvent', _$failedField, e.toString());
-      }
-      rethrow;
-    }
+    final _$result = _$v ??
+        _$RealtimePriceEvent._(
+          data: BuiltValueNullFieldError.checkNotNull(
+              data, r'RealtimePriceEvent', 'data'),
+          event: BuiltValueNullFieldError.checkNotNull(
+              event, r'RealtimePriceEvent', 'event'),
+          eventId: BuiltValueNullFieldError.checkNotNull(
+              eventId, r'RealtimePriceEvent', 'eventId'),
+          emittedAt: BuiltValueNullFieldError.checkNotNull(
+              emittedAt, r'RealtimePriceEvent', 'emittedAt'),
+        );
     replace(_$result);
     return _$result;
   }

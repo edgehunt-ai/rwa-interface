@@ -8,6 +8,7 @@ import 'package:rwa_api_client/src/model/market_stats.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/quote.dart';
 import 'package:rwa_api_client/src/model/asset_info.dart';
+import 'package:rwa_api_client/src/model/hip3_public_market.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -16,6 +17,8 @@ part 'product_detail.g.dart';
 /// ProductDetail
 ///
 /// Properties:
+/// * [hip3Market] 
+/// * [isFavorite] 
 /// * [symbol] 
 /// * [name] 
 /// * [kind] 
@@ -28,6 +31,12 @@ part 'product_detail.g.dart';
 /// * [tradingHours] - 交易时间说明
 @BuiltValue()
 abstract class ProductDetail implements Built<ProductDetail, ProductDetailBuilder> {
+  @BuiltValueField(wireName: r'hip3_market')
+  Hip3PublicMarket? get hip3Market;
+
+  @BuiltValueField(wireName: r'is_favorite')
+  bool? get isFavorite;
+
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -70,6 +79,7 @@ abstract class ProductDetail implements Built<ProductDetail, ProductDetailBuilde
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ProductDetailBuilder b) => b
+      ..isFavorite = false
       ..tradingHours = ProductDetailTradingHoursEnum.valueOf('24x7');
 
   @BuiltValueSerializer(custom: true)
@@ -88,6 +98,20 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
     ProductDetail object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.hip3Market != null) {
+      yield r'hip3_market';
+      yield serializers.serialize(
+        object.hip3Market,
+        specifiedType: const FullType(Hip3PublicMarket),
+      );
+    }
+    if (object.isFavorite != null) {
+      yield r'is_favorite';
+      yield serializers.serialize(
+        object.isFavorite,
+        specifiedType: const FullType(bool),
+      );
+    }
     yield r'symbol';
     yield serializers.serialize(
       object.symbol,
@@ -173,6 +197,22 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'hip3_market':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3PublicMarket),
+          ) as Hip3PublicMarket?;
+          if (valueDes == null) continue;
+          result.hip3Market = valueDes;
+          break;
+        case r'is_favorite':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.isFavorite = valueDes;
+          break;
         case r'symbol':
           final valueDes = serializers.deserialize(
             value,

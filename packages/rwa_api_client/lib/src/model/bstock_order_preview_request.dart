@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/bstocks_time_in_force.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,6 +19,7 @@ part 'bstock_order_preview_request.g.dart';
 /// * [kind] 
 /// * [side] 
 /// * [type] 
+/// * [timeInForce] 
 /// * [amount] - 市价买入时的 USDC 金额
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
@@ -39,6 +41,10 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   @BuiltValueField(wireName: r'type')
   OrderType get type;
   // enum typeEnum {  market,  limit,  };
+
+  @BuiltValueField(wireName: r'time_in_force')
+  BstocksTimeInForce? get timeInForce;
+  // enum timeInForceEnum {  gtc,  ioc,  };
 
   /// 市价买入时的 USDC 金额
   @BuiltValueField(wireName: r'amount')
@@ -102,6 +108,13 @@ class _$BstockOrderPreviewRequestSerializer implements PrimitiveSerializer<Bstoc
       object.type,
       specifiedType: const FullType(OrderType),
     );
+    if (object.timeInForce != null) {
+      yield r'time_in_force';
+      yield serializers.serialize(
+        object.timeInForce,
+        specifiedType: const FullType(BstocksTimeInForce),
+      );
+    }
     if (object.amount != null) {
       yield r'amount';
       yield serializers.serialize(
@@ -187,6 +200,14 @@ class _$BstockOrderPreviewRequestSerializer implements PrimitiveSerializer<Bstoc
             specifiedType: const FullType(OrderType),
           ) as OrderType;
           result.type = valueDes;
+          break;
+        case r'time_in_force':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksTimeInForce),
+          ) as BstocksTimeInForce?;
+          if (valueDes == null) continue;
+          result.timeInForce = valueDes;
           break;
         case r'amount':
           final valueDes = serializers.deserialize(

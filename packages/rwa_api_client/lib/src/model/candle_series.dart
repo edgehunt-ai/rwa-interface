@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
+import 'package:rwa_api_client/src/model/hip3_candle_provenance.dart';
 import 'package:rwa_api_client/src/model/chart_range.dart';
 import 'package:rwa_api_client/src/model/candle_point.dart';
 import 'package:rwa_api_client/src/model/session_segment.dart';
@@ -16,6 +17,7 @@ part 'candle_series.g.dart';
 /// CandleSeries
 ///
 /// Properties:
+/// * [hip3Provenance] 
 /// * [symbol] 
 /// * [kind] 
 /// * [range] 
@@ -29,6 +31,9 @@ part 'candle_series.g.dart';
 /// * [sessions] - 该区间内的时段分段，用于绘制底部色带
 @BuiltValue()
 abstract class CandleSeries implements Built<CandleSeries, CandleSeriesBuilder> {
+  @BuiltValueField(wireName: r'hip3_provenance')
+  Hip3CandleProvenance? get hip3Provenance;
+
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -92,6 +97,13 @@ class _$CandleSeriesSerializer implements PrimitiveSerializer<CandleSeries> {
     CandleSeries object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.hip3Provenance != null) {
+      yield r'hip3_provenance';
+      yield serializers.serialize(
+        object.hip3Provenance,
+        specifiedType: const FullType(Hip3CandleProvenance),
+      );
+    }
     yield r'symbol';
     yield serializers.serialize(
       object.symbol,
@@ -184,6 +196,14 @@ class _$CandleSeriesSerializer implements PrimitiveSerializer<CandleSeries> {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'hip3_provenance':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3CandleProvenance),
+          ) as Hip3CandleProvenance?;
+          if (valueDes == null) continue;
+          result.hip3Provenance.replace(valueDes);
+          break;
         case r'symbol':
           final valueDes = serializers.deserialize(
             value,

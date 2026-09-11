@@ -24,13 +24,13 @@ part 'order_preview_request.g.dart';
 /// * [kind] 
 /// * [side] 
 /// * [type] 
+/// * [timeInForce] 
 /// * [amount] - 市价单的 USDC 名义价值
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
 /// * [tpSl] 
 /// * [contextId] - 可选的 HIP3 trading context；存在时精确绑定账户/产品/环境，过期返回 409。新客户端在请求前读取 context。
-/// * [timeInForce] 
 /// * [protection] 
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
 /// * [marginMode] 

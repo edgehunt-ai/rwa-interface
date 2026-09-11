@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'realtime_resync_required_event_all_of_data.g.dart';
 
-/// RealtimeResyncRequiredEventAllOfData
+/// `event_id` binds the current high-water. After receiving this event, the client keeps its last verified UI data, closes the stream, builds a complete REST snapshot, and reconnects with this event ID. The synthetic event does not represent a business resource mutation. 
 ///
 /// Properties:
 /// * [reason] 
@@ -17,7 +17,7 @@ part 'realtime_resync_required_event_all_of_data.g.dart';
 abstract class RealtimeResyncRequiredEventAllOfData implements Built<RealtimeResyncRequiredEventAllOfData, RealtimeResyncRequiredEventAllOfDataBuilder> {
   @BuiltValueField(wireName: r'reason')
   RealtimeResyncRequiredEventAllOfDataReasonEnum get reason;
-  // enum reasonEnum {  event_retention_expired,  };
+  // enum reasonEnum {  initial_snapshot_required,  event_retention_expired,  };
 
   RealtimeResyncRequiredEventAllOfData._();
 
@@ -108,6 +108,8 @@ class _$RealtimeResyncRequiredEventAllOfDataSerializer implements PrimitiveSeria
 
 class RealtimeResyncRequiredEventAllOfDataReasonEnum extends EnumClass {
 
+  @BuiltValueEnumConst(wireName: r'initial_snapshot_required')
+  static const RealtimeResyncRequiredEventAllOfDataReasonEnum initialSnapshotRequired = _$realtimeResyncRequiredEventAllOfDataReasonEnum_initialSnapshotRequired;
   @BuiltValueEnumConst(wireName: r'event_retention_expired')
   static const RealtimeResyncRequiredEventAllOfDataReasonEnum eventRetentionExpired = _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)

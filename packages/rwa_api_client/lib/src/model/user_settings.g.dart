@@ -6,71 +6,9 @@ part of 'user_settings.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const UserSettingsLanguageEnum _$userSettingsLanguageEnum_zhCN =
-    const UserSettingsLanguageEnum._('zhCN');
-const UserSettingsLanguageEnum _$userSettingsLanguageEnum_en =
-    const UserSettingsLanguageEnum._('en');
-const UserSettingsLanguageEnum
-    _$userSettingsLanguageEnum_unknownDefaultOpenApi =
-    const UserSettingsLanguageEnum._('unknownDefaultOpenApi');
-
-UserSettingsLanguageEnum _$userSettingsLanguageEnumValueOf(String name) {
-  switch (name) {
-    case 'zhCN':
-      return _$userSettingsLanguageEnum_zhCN;
-    case 'en':
-      return _$userSettingsLanguageEnum_en;
-    case 'unknownDefaultOpenApi':
-      return _$userSettingsLanguageEnum_unknownDefaultOpenApi;
-    default:
-      return _$userSettingsLanguageEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<UserSettingsLanguageEnum> _$userSettingsLanguageEnumValues =
-    BuiltSet<UserSettingsLanguageEnum>(const <UserSettingsLanguageEnum>[
-  _$userSettingsLanguageEnum_zhCN,
-  _$userSettingsLanguageEnum_en,
-  _$userSettingsLanguageEnum_unknownDefaultOpenApi,
-]);
-
-Serializer<UserSettingsLanguageEnum> _$userSettingsLanguageEnumSerializer =
-    _$UserSettingsLanguageEnumSerializer();
-
-class _$UserSettingsLanguageEnumSerializer
-    implements PrimitiveSerializer<UserSettingsLanguageEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'zhCN': 'zh-CN',
-    'en': 'en',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'zh-CN': 'zhCN',
-    'en': 'en',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[UserSettingsLanguageEnum];
-  @override
-  final String wireName = 'UserSettingsLanguageEnum';
-
-  @override
-  Object serialize(Serializers serializers, UserSettingsLanguageEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  UserSettingsLanguageEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      UserSettingsLanguageEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
 class _$UserSettings extends UserSettings {
   @override
-  final UserSettingsLanguageEnum language;
+  final UserLanguage language;
   @override
   final bool pushEnabled;
   @override
@@ -136,10 +74,9 @@ class UserSettingsBuilder
     implements Builder<UserSettings, UserSettingsBuilder> {
   _$UserSettings? _$v;
 
-  UserSettingsLanguageEnum? _language;
-  UserSettingsLanguageEnum? get language => _$this._language;
-  set language(UserSettingsLanguageEnum? language) =>
-      _$this._language = language;
+  UserLanguage? _language;
+  UserLanguage? get language => _$this._language;
+  set language(UserLanguage? language) => _$this._language = language;
 
   bool? _pushEnabled;
   bool? get pushEnabled => _$this._pushEnabled;

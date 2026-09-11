@@ -20,9 +20,9 @@ final class AccountRepositoryImpl implements AccountRepository {
     final update = api.UserSettingsUpdate((builder) {
       if (patch.language != null) {
         builder.language = switch (patch.language) {
-          'zh-CN' => api.UserSettingsUpdateLanguageEnum.zhCN,
-          'en' => api.UserSettingsUpdateLanguageEnum.en,
-          _ => api.UserSettingsUpdateLanguageEnum.unknownDefaultOpenApi,
+          'zh-CN' => api.UserLanguage.zhCN,
+          'en' => api.UserLanguage.en,
+          _ => api.UserLanguage.unknownDefaultOpenApi,
         };
       }
       builder

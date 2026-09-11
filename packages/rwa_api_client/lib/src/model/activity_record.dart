@@ -19,6 +19,7 @@ part 'activity_record.g.dart';
 /// ActivityRecord
 ///
 /// Properties:
+/// * [businessType] - HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
 /// * [id] 
 /// * [category] 
 /// * [type] 
@@ -39,6 +40,11 @@ part 'activity_record.g.dart';
 /// * [asset] - Unit for amount, for example USDC or NVDAB.
 @BuiltValue()
 abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBuilder> {
+  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
+  @BuiltValueField(wireName: r'business_type')
+  ActivityRecordBusinessTypeEnum? get businessType;
+  // enum businessTypeEnum {  opening,  closing,  take_profit,  stop_loss,  unknown,  ,  };
+
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -126,6 +132,13 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
     ActivityRecord object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.businessType != null) {
+      yield r'business_type';
+      yield serializers.serialize(
+        object.businessType,
+        specifiedType: const FullType.nullable(ActivityRecordBusinessTypeEnum),
+      );
+    }
     yield r'id';
     yield serializers.serialize(
       object.id,
@@ -249,6 +262,14 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'business_type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ActivityRecordBusinessTypeEnum),
+          ) as ActivityRecordBusinessTypeEnum?;
+          if (valueDes == null) continue;
+          result.businessType = valueDes;
+          break;
         case r'id':
           final valueDes = serializers.deserialize(
             value,
@@ -413,6 +434,35 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
     );
     return result.build();
   }
+}
+
+class ActivityRecordBusinessTypeEnum extends EnumClass {
+
+  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
+  @BuiltValueEnumConst(wireName: r'opening')
+  static const ActivityRecordBusinessTypeEnum opening = _$activityRecordBusinessTypeEnum_opening;
+  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
+  @BuiltValueEnumConst(wireName: r'closing')
+  static const ActivityRecordBusinessTypeEnum closing = _$activityRecordBusinessTypeEnum_closing;
+  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
+  @BuiltValueEnumConst(wireName: r'take_profit')
+  static const ActivityRecordBusinessTypeEnum takeProfit = _$activityRecordBusinessTypeEnum_takeProfit;
+  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
+  @BuiltValueEnumConst(wireName: r'stop_loss')
+  static const ActivityRecordBusinessTypeEnum stopLoss = _$activityRecordBusinessTypeEnum_stopLoss;
+  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
+  @BuiltValueEnumConst(wireName: r'unknown')
+  static const ActivityRecordBusinessTypeEnum unknown = _$activityRecordBusinessTypeEnum_unknown;
+  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const ActivityRecordBusinessTypeEnum unknownDefaultOpenApi = _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi;
+
+  static Serializer<ActivityRecordBusinessTypeEnum> get serializer => _$activityRecordBusinessTypeEnumSerializer;
+
+  const ActivityRecordBusinessTypeEnum._(String name): super(name);
+
+  static BuiltSet<ActivityRecordBusinessTypeEnum> get values => _$activityRecordBusinessTypeEnumValues;
+  static ActivityRecordBusinessTypeEnum valueOf(String name) => _$activityRecordBusinessTypeEnumValueOf(name);
 }
 
 class ActivityRecordChainEnum extends EnumClass {

@@ -21,6 +21,8 @@ import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview_request.dart';
+import 'package:rwa_api_client/src/model/hip3_funding_payment_page.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation_page.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_context.dart';
 import 'package:rwa_api_client/src/model/order.dart';
 import 'package:rwa_api_client/src/model/order_page.dart';
@@ -1604,6 +1606,208 @@ class OrdersApi {
     }
 
     return Response<Hip3ActionPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 查询当前交易钱包的 HIP-3 资金费结算事实
+  /// 只读，不签名、不广播，也不记入 App 内部资金账本。钱包与环境由服务端从当前认证账户解析，客户端不得指定其他钱包。 from/to 必填、包含边界，最多31天且to不得晚于当前时间。source&#x3D;live（默认）首请求采集官方 userFunding并持久化；source&#x3D;archive只读取已保存事实，冻结数据与覆盖，不访问上游。两者后续cursor均读原快照。 必须保留相同source/from/to/product_id；limit可调整。先按完整product_id精确筛选，再按时间、产品、交易哈希降序分页。 has_more只描述当前快照的分页，不代表上游历史完整。上游分页/时间/容量限制或中途故障会返回部分事实及coverage.resume_from，客户端可从该包含边界重新查询并按id去重。 source_exhausted只表示当前请求窗口已耗尽可见来源，不保证上游长期历史保留。禁止从累计资金费快照推算流水。没有事实返回空items，不制造零金额事件。 
+  ///
+  /// Parameters:
+  /// * [from] 
+  /// * [to] 
+  /// * [source_] - live采集上游；archive只读已保存归档，不访问上游。归档缺口不代表零流水，超量须缩小窗口。后续cursor必须保持相同source。
+  /// * [productId] - 完整venue:coin，不能用仅symbol跨场所匹配。
+  /// * [limit] 
+  /// * [cursor] - 服务端不透明快照游标，绑定账户、钱包、环境及筛选窗口；不存在或不匹配返回422。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3FundingPaymentPage] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3FundingPaymentPage>> listHip3FundingPayments({ 
+    required DateTime from,
+    required DateTime to,
+    String? source_ = 'live',
+    String? productId,
+    int? limit = 100,
+    String? cursor,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/funding-payments';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (source_ != null) r'source': encodeQueryParameter(_serializers, source_, const FullType(String)),
+      r'from': encodeQueryParameter(_serializers, from, const FullType(DateTime)),
+      r'to': encodeQueryParameter(_serializers, to, const FullType(DateTime)),
+      if (productId != null) r'product_id': encodeQueryParameter(_serializers, productId, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3FundingPaymentPage? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3FundingPaymentPage),
+      ) as Hip3FundingPaymentPage;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3FundingPaymentPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 查询当前交易钱包的 HIP-3 强平账本事件
+  /// 只读，不签名、不广播、不记入 App 内部账本。账户、钱包与环境由服务端从认证身份解析，禁止客户端覆盖。 来源为 userNonFundingLedgerUpdates 中明确的 liquidation 事件，不从强平价、撤单、累计资金费或承接他人强平的成交记录推算。 from/to 包含边界，最多31天且to不得晚于当前时间。source&#x3D;live（默认）采集上游；source&#x3D;archive只读归档并冻结事实与覆盖，不访问上游。后续cursor读取同一快照；必须保留source/from/to/product_id，limit可调整。 仅返回包含至少一个HIP3仓位的事件。product_id按完整venue:coin选择事件，不裁掉该事件中其他HIP3仓位，也不改变事件级account_value范围。 结果按事件时间、交易哈希降序分页。has_more仅指快照分页；coverage描述请求窗口来源覆盖，部分结果可从resume_from包含边界重查并按id去重。 不保证上游永久历史保留。不提供来源未证明的成交价、手续费、已实现损益或结算币；provider_account_value不得当成某产品损失。 
+  ///
+  /// Parameters:
+  /// * [from] 
+  /// * [to] 
+  /// * [source_] - live采集上游；archive只读已保存归档，不访问上游。后续cursor必须保持相同source；缺口与分页独立。
+  /// * [productId] - 精确匹配事件包含的HIP3产品，保留事件整体范围。
+  /// * [limit] 
+  /// * [cursor] - 服务端不透明快照游标，绑定账户、钱包、环境和筛选窗口；不匹配返回422。
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3LiquidationPage] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3LiquidationPage>> listHip3Liquidations({ 
+    required DateTime from,
+    required DateTime to,
+    String? source_ = 'live',
+    String? productId,
+    int? limit = 100,
+    String? cursor,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/liquidations';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (source_ != null) r'source': encodeQueryParameter(_serializers, source_, const FullType(String)),
+      r'from': encodeQueryParameter(_serializers, from, const FullType(DateTime)),
+      r'to': encodeQueryParameter(_serializers, to, const FullType(DateTime)),
+      if (productId != null) r'product_id': encodeQueryParameter(_serializers, productId, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3LiquidationPage? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3LiquidationPage),
+      ) as Hip3LiquidationPage;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3LiquidationPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

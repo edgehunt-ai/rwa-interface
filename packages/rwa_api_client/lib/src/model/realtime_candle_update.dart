@@ -18,8 +18,8 @@ part 'realtime_candle_update.g.dart';
 /// * [kind] 
 /// * [interval] 
 /// * [point] 
-@BuiltValue()
-abstract class RealtimeCandleUpdate implements Built<RealtimeCandleUpdate, RealtimeCandleUpdateBuilder> {
+@BuiltValue(instantiable: false)
+abstract class RealtimeCandleUpdate  {
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
 
@@ -34,20 +34,13 @@ abstract class RealtimeCandleUpdate implements Built<RealtimeCandleUpdate, Realt
   @BuiltValueField(wireName: r'point')
   CandlePoint get point;
 
-  RealtimeCandleUpdate._();
-
-  factory RealtimeCandleUpdate([void updates(RealtimeCandleUpdateBuilder b)]) = _$RealtimeCandleUpdate;
-
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(RealtimeCandleUpdateBuilder b) => b;
-
   @BuiltValueSerializer(custom: true)
   static Serializer<RealtimeCandleUpdate> get serializer => _$RealtimeCandleUpdateSerializer();
 }
 
 class _$RealtimeCandleUpdateSerializer implements PrimitiveSerializer<RealtimeCandleUpdate> {
   @override
-  final Iterable<Type> types = const [RealtimeCandleUpdate, _$RealtimeCandleUpdate];
+  final Iterable<Type> types = const [RealtimeCandleUpdate];
 
   @override
   final String wireName = r'RealtimeCandleUpdate';
@@ -86,6 +79,46 @@ class _$RealtimeCandleUpdateSerializer implements PrimitiveSerializer<RealtimeCa
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  @override
+  RealtimeCandleUpdate deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.deserialize(serialized, specifiedType: FullType($RealtimeCandleUpdate)) as $RealtimeCandleUpdate;
+  }
+}
+
+/// a concrete implementation of [RealtimeCandleUpdate], since [RealtimeCandleUpdate] is not instantiable
+@BuiltValue(instantiable: true)
+abstract class $RealtimeCandleUpdate implements RealtimeCandleUpdate, Built<$RealtimeCandleUpdate, $RealtimeCandleUpdateBuilder> {
+  $RealtimeCandleUpdate._();
+
+  factory $RealtimeCandleUpdate([void Function($RealtimeCandleUpdateBuilder)? updates]) = _$$RealtimeCandleUpdate;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults($RealtimeCandleUpdateBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<$RealtimeCandleUpdate> get serializer => _$$RealtimeCandleUpdateSerializer();
+}
+
+class _$$RealtimeCandleUpdateSerializer implements PrimitiveSerializer<$RealtimeCandleUpdate> {
+  @override
+  final Iterable<Type> types = const [$RealtimeCandleUpdate, _$$RealtimeCandleUpdate];
+
+  @override
+  final String wireName = r'$RealtimeCandleUpdate';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    $RealtimeCandleUpdate object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.serialize(object, specifiedType: FullType(RealtimeCandleUpdate))!;
   }
 
   void _deserializeProperties(
@@ -137,12 +170,12 @@ class _$RealtimeCandleUpdateSerializer implements PrimitiveSerializer<RealtimeCa
   }
 
   @override
-  RealtimeCandleUpdate deserialize(
+  $RealtimeCandleUpdate deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = RealtimeCandleUpdateBuilder();
+    final result = $RealtimeCandleUpdateBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

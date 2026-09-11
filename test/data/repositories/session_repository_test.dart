@@ -15,7 +15,7 @@ void main() {
 
   test('maps the zh-CN wire enum to the canonical language code', () async {
     final repository = SessionRepositoryImpl(
-      _SessionService(language: api.UserSettingsLanguageEnum.zhCN),
+      _SessionService(language: api.UserLanguage.zhCN),
     );
 
     final session = await repository.createOrRestore(generation: 7);
@@ -25,9 +25,9 @@ void main() {
 }
 
 final class _SessionService implements SessionService {
-  _SessionService({this.language = api.UserSettingsLanguageEnum.en});
+  _SessionService({this.language = api.UserLanguage.en});
 
-  final api.UserSettingsLanguageEnum language;
+  final api.UserLanguage language;
 
   @override
   Future<api.SessionResponse> createSession({String? language}) async =>
@@ -54,7 +54,7 @@ final class _SessionService implements SessionService {
   );
 }
 
-api.User _user(api.UserSettingsLanguageEnum language) => api.User(
+api.User _user(api.UserLanguage language) => api.User(
   (builder) => builder
     ..userId = 'user-1'
     ..settings.update(

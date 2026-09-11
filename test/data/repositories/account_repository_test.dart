@@ -55,7 +55,7 @@ final class _AccountService implements AccountService {
     patch = update;
     return api.UserSettings(
       (builder) => builder
-        ..language = api.UserSettingsLanguageEnum.en
+        ..language = api.UserLanguage.en
         ..pushEnabled = false
         ..notifyOrderFilled = true
         ..notifyOrderFailed = true

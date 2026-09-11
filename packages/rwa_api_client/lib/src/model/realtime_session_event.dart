@@ -14,7 +14,7 @@ part 'realtime_session_event.g.dart';
 /// RealtimeSessionEvent
 ///
 /// Properties:
-/// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
+/// * [eventId] - Server-issued opaque event cursor protected by HMAC signature. It binds the protocol version, internal sequence, issued-at time, canonical channel tuple hash, and authenticated account scope hash. It contains no plaintext account ID, DID, resource data, or other PII. Clients must not parse, compare, synthesize, or modify it; they may only persist the complete value and return it unchanged. 
 /// * [emittedAt] 
 /// * [event] 
 /// * [data] 

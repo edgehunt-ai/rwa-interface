@@ -16,6 +16,18 @@ const PrivyClientConfigLoginMethodsEnum
     _$privyClientConfigLoginMethodsEnum_google =
     const PrivyClientConfigLoginMethodsEnum._('google');
 const PrivyClientConfigLoginMethodsEnum
+    _$privyClientConfigLoginMethodsEnum_twitter =
+    const PrivyClientConfigLoginMethodsEnum._('twitter');
+const PrivyClientConfigLoginMethodsEnum
+    _$privyClientConfigLoginMethodsEnum_telegram =
+    const PrivyClientConfigLoginMethodsEnum._('telegram');
+const PrivyClientConfigLoginMethodsEnum
+    _$privyClientConfigLoginMethodsEnum_wallet =
+    const PrivyClientConfigLoginMethodsEnum._('wallet');
+const PrivyClientConfigLoginMethodsEnum
+    _$privyClientConfigLoginMethodsEnum_passkey =
+    const PrivyClientConfigLoginMethodsEnum._('passkey');
+const PrivyClientConfigLoginMethodsEnum
     _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi =
     const PrivyClientConfigLoginMethodsEnum._('unknownDefaultOpenApi');
 
@@ -28,6 +40,14 @@ PrivyClientConfigLoginMethodsEnum _$privyClientConfigLoginMethodsEnumValueOf(
       return _$privyClientConfigLoginMethodsEnum_apple;
     case 'google':
       return _$privyClientConfigLoginMethodsEnum_google;
+    case 'twitter':
+      return _$privyClientConfigLoginMethodsEnum_twitter;
+    case 'telegram':
+      return _$privyClientConfigLoginMethodsEnum_telegram;
+    case 'wallet':
+      return _$privyClientConfigLoginMethodsEnum_wallet;
+    case 'passkey':
+      return _$privyClientConfigLoginMethodsEnum_passkey;
     case 'unknownDefaultOpenApi':
       return _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi;
     default:
@@ -41,6 +61,10 @@ final BuiltSet<PrivyClientConfigLoginMethodsEnum>
   _$privyClientConfigLoginMethodsEnum_email,
   _$privyClientConfigLoginMethodsEnum_apple,
   _$privyClientConfigLoginMethodsEnum_google,
+  _$privyClientConfigLoginMethodsEnum_twitter,
+  _$privyClientConfigLoginMethodsEnum_telegram,
+  _$privyClientConfigLoginMethodsEnum_wallet,
+  _$privyClientConfigLoginMethodsEnum_passkey,
   _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi,
 ]);
 
@@ -54,12 +78,20 @@ class _$PrivyClientConfigLoginMethodsEnumSerializer
     'email': 'email',
     'apple': 'apple',
     'google': 'google',
+    'twitter': 'twitter',
+    'telegram': 'telegram',
+    'wallet': 'wallet',
+    'passkey': 'passkey',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'email': 'email',
     'apple': 'apple',
     'google': 'google',
+    'twitter': 'twitter',
+    'telegram': 'telegram',
+    'wallet': 'wallet',
+    'passkey': 'passkey',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

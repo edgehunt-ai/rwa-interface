@@ -12,7 +12,9 @@ import 'package:rwa_api_client/src/api_util.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
 import 'package:rwa_api_client/src/model/activity_page.dart';
 import 'package:rwa_api_client/src/model/activity_status.dart';
+import 'package:rwa_api_client/src/model/activity_type.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
+import 'package:rwa_api_client/src/model/chain.dart';
 
 class ActivityApi {
 
@@ -23,11 +25,16 @@ class ActivityApi {
   const ActivityApi(this._dio, this._serializers);
 
   /// 交易与资金活动列表
-  /// 返回当前账号已经实际发生且具有外部证据的交易与资金活动。Deposit 只有完成链上独立核验后 才出现；Order 只有被交易场所接受并取得稳定 Provider 订单身份，或具有链上交易证明后才出现。 Session、Intent、Preview、Authorization、等待付款和内部重试不得进入用户 History。 
+  /// 返回当前账号已经实际发生且具有外部证据的交易与资金活动。Deposit 只有完成链上独立核验后 才出现；Order 只有被交易场所接受并取得稳定 Provider 订单身份，或具有链上交易证明后才出现。 Session、Intent、Preview、Authorization、等待付款和内部重试不得进入用户 History。  &#x60;cursor&#x60; 是不透明 continuation token，绑定当前账户、稳定排序快照和完整规范化 filter tuple： &#x60;category,status,type,chain,from,to,product_or_asset&#x60;。客户端使用 cursor 获取后续页时必须提交 与首请求相同的 filters；缺省值也参与绑定。cursor 与 filter 不匹配、过期或属于其他账户时 返回 400，不得跨过滤条件复用或重新解释。时间窗口采用 &#x60;[from,to)&#x60;。 
   ///
   /// Parameters:
   /// * [category] 
   /// * [status] 
+  /// * [type] 
+  /// * [chain] 
+  /// * [from] - Inclusive RFC 3339 UTC lower bound.
+  /// * [to] - Exclusive RFC 3339 UTC upper bound; must be later than `from`.
+  /// * [productOrAsset] - Exact canonical product ID, asset ID, or symbol selected by the user.
   /// * [cursor] - 上一页返回的 `next_cursor`
   /// * [limit] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -42,6 +49,11 @@ class ActivityApi {
   Future<Response<ActivityPage>> listActivity({ 
     ActivityCategory? category,
     ActivityStatus? status,
+    ActivityType? type,
+    Chain? chain,
+    DateTime? from,
+    DateTime? to,
+    String? productOrAsset,
     String? cursor,
     int? limit = 20,
     CancelToken? cancelToken,
@@ -73,6 +85,11 @@ class ActivityApi {
     final _queryParameters = <String, dynamic>{
       if (category != null) r'category': encodeQueryParameter(_serializers, category, const FullType(ActivityCategory)),
       if (status != null) r'status': encodeQueryParameter(_serializers, status, const FullType(ActivityStatus)),
+      if (type != null) r'type': encodeQueryParameter(_serializers, type, const FullType(ActivityType)),
+      if (chain != null) r'chain': encodeQueryParameter(_serializers, chain, const FullType(Chain)),
+      if (from != null) r'from': encodeQueryParameter(_serializers, from, const FullType(DateTime)),
+      if (to != null) r'to': encodeQueryParameter(_serializers, to, const FullType(DateTime)),
+      if (productOrAsset != null) r'product_or_asset': encodeQueryParameter(_serializers, productOrAsset, const FullType(String)),
       if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
       if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
     };

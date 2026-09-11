@@ -8,23 +8,26 @@ import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
 import 'package:rwa_api_client/src/model/trade_intent_execution_policy.dart';
 import 'package:rwa_api_client/src/model/auto_single_source_trade_intent_create_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_trade_intent_create_request.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
 
 part 'trade_intent_create_request.g.dart';
 
-/// Selects single- or multi-source automatic funding while keeping plan, leg and route selection server-owned.
+/// Creates a TradeIntent from a FundingSession or a deprecated immutable Preview binding.
 ///
 /// Properties:
+/// * [fundingSessionId] 
+/// * [fundingSessionVersion] 
+/// * [executionPolicy] 
+/// * [fundingMode] 
 /// * [previewId] 
 /// * [authorizationId] - Order authorization; funding Transfers require a separate authorization for each leg.
-/// * [fundingMode] 
 /// * [sourceAssetId] 
-/// * [executionPolicy] 
 @BuiltValue()
 abstract class TradeIntentCreateRequest implements Built<TradeIntentCreateRequest, TradeIntentCreateRequestBuilder> {
-  /// One Of [AutoMultiSourceTradeIntentCreateRequest], [AutoSingleSourceTradeIntentCreateRequest]
+  /// One Of [AutoMultiSourceTradeIntentCreateRequest], [AutoSingleSourceTradeIntentCreateRequest], [FundingSessionTradeIntentCreateRequest]
   OneOf get oneOf;
 
   TradeIntentCreateRequest._();
@@ -70,7 +73,7 @@ class _$TradeIntentCreateRequestSerializer implements PrimitiveSerializer<TradeI
   }) {
     final result = TradeIntentCreateRequestBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(AutoSingleSourceTradeIntentCreateRequest), FullType(AutoMultiSourceTradeIntentCreateRequest), ]);
+    final targetType = const FullType(OneOf, [FullType(FundingSessionTradeIntentCreateRequest), FullType(AutoSingleSourceTradeIntentCreateRequest), FullType(AutoMultiSourceTradeIntentCreateRequest), ]);
     oneOfDataSrc = serialized;
     result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();

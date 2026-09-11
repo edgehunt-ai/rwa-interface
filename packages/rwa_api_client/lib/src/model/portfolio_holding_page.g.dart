@@ -8,6 +8,8 @@ part of 'portfolio_holding_page.dart';
 
 class _$PortfolioHoldingPage extends PortfolioHoldingPage {
   @override
+  final PortfolioHoldingPageAllOfCoverage? coverage;
+  @override
   final String totalEquityUsd;
   @override
   final BuiltList<PortfolioSourceSummary> sources;
@@ -35,7 +37,8 @@ class _$PortfolioHoldingPage extends PortfolioHoldingPage {
       (PortfolioHoldingPageBuilder()..update(updates))._build();
 
   _$PortfolioHoldingPage._(
-      {required this.totalEquityUsd,
+      {this.coverage,
+      required this.totalEquityUsd,
       required this.sources,
       this.oldestObservationAt,
       required this.warnings,
@@ -60,6 +63,7 @@ class _$PortfolioHoldingPage extends PortfolioHoldingPage {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is PortfolioHoldingPage &&
+        coverage == other.coverage &&
         totalEquityUsd == other.totalEquityUsd &&
         sources == other.sources &&
         oldestObservationAt == other.oldestObservationAt &&
@@ -76,6 +80,7 @@ class _$PortfolioHoldingPage extends PortfolioHoldingPage {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, coverage.hashCode);
     _$hash = $jc(_$hash, totalEquityUsd.hashCode);
     _$hash = $jc(_$hash, sources.hashCode);
     _$hash = $jc(_$hash, oldestObservationAt.hashCode);
@@ -94,6 +99,7 @@ class _$PortfolioHoldingPage extends PortfolioHoldingPage {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'PortfolioHoldingPage')
+          ..add('coverage', coverage)
           ..add('totalEquityUsd', totalEquityUsd)
           ..add('sources', sources)
           ..add('oldestObservationAt', oldestObservationAt)
@@ -114,6 +120,12 @@ class PortfolioHoldingPageBuilder
         Builder<PortfolioHoldingPage, PortfolioHoldingPageBuilder>,
         PageBuilder {
   _$PortfolioHoldingPage? _$v;
+
+  PortfolioHoldingPageAllOfCoverageBuilder? _coverage;
+  PortfolioHoldingPageAllOfCoverageBuilder get coverage =>
+      _$this._coverage ??= PortfolioHoldingPageAllOfCoverageBuilder();
+  set coverage(covariant PortfolioHoldingPageAllOfCoverageBuilder? coverage) =>
+      _$this._coverage = coverage;
 
   String? _totalEquityUsd;
   String? get totalEquityUsd => _$this._totalEquityUsd;
@@ -179,6 +191,7 @@ class PortfolioHoldingPageBuilder
   PortfolioHoldingPageBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _coverage = $v.coverage?.toBuilder();
       _totalEquityUsd = $v.totalEquityUsd;
       _sources = $v.sources.toBuilder();
       _oldestObservationAt = $v.oldestObservationAt;
@@ -213,6 +226,7 @@ class PortfolioHoldingPageBuilder
     try {
       _$result = _$v ??
           _$PortfolioHoldingPage._(
+            coverage: _coverage?.build(),
             totalEquityUsd: BuiltValueNullFieldError.checkNotNull(
                 totalEquityUsd, r'PortfolioHoldingPage', 'totalEquityUsd'),
             sources: sources.build(),
@@ -233,6 +247,9 @@ class PortfolioHoldingPageBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'coverage';
+        _coverage?.build();
+
         _$failedField = 'sources';
         sources.build();
 

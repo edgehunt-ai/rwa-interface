@@ -255,7 +255,11 @@ class _$MultiSourceBstockFundingPlan extends MultiSourceBstockFundingPlan {
   @override
   final String planId;
   @override
-  final String tradePreviewId;
+  final String? tradePreviewId;
+  @override
+  final String? fundingSessionId;
+  @override
+  final int? selectionVersion;
   @override
   final MultiSourceBstockFundingPlanModeEnum mode;
   @override
@@ -291,7 +295,9 @@ class _$MultiSourceBstockFundingPlan extends MultiSourceBstockFundingPlan {
 
   _$MultiSourceBstockFundingPlan._(
       {required this.planId,
-      required this.tradePreviewId,
+      this.tradePreviewId,
+      this.fundingSessionId,
+      this.selectionVersion,
       required this.mode,
       required this.requiredTargetAmount,
       required this.targetSnapshot,
@@ -322,6 +328,8 @@ class _$MultiSourceBstockFundingPlan extends MultiSourceBstockFundingPlan {
     return other is MultiSourceBstockFundingPlan &&
         planId == other.planId &&
         tradePreviewId == other.tradePreviewId &&
+        fundingSessionId == other.fundingSessionId &&
+        selectionVersion == other.selectionVersion &&
         mode == other.mode &&
         requiredTargetAmount == other.requiredTargetAmount &&
         targetSnapshot == other.targetSnapshot &&
@@ -343,6 +351,8 @@ class _$MultiSourceBstockFundingPlan extends MultiSourceBstockFundingPlan {
     var _$hash = 0;
     _$hash = $jc(_$hash, planId.hashCode);
     _$hash = $jc(_$hash, tradePreviewId.hashCode);
+    _$hash = $jc(_$hash, fundingSessionId.hashCode);
+    _$hash = $jc(_$hash, selectionVersion.hashCode);
     _$hash = $jc(_$hash, mode.hashCode);
     _$hash = $jc(_$hash, requiredTargetAmount.hashCode);
     _$hash = $jc(_$hash, targetSnapshot.hashCode);
@@ -366,6 +376,8 @@ class _$MultiSourceBstockFundingPlan extends MultiSourceBstockFundingPlan {
     return (newBuiltValueToStringHelper(r'MultiSourceBstockFundingPlan')
           ..add('planId', planId)
           ..add('tradePreviewId', tradePreviewId)
+          ..add('fundingSessionId', fundingSessionId)
+          ..add('selectionVersion', selectionVersion)
           ..add('mode', mode)
           ..add('requiredTargetAmount', requiredTargetAmount)
           ..add('targetSnapshot', targetSnapshot)
@@ -398,6 +410,16 @@ class MultiSourceBstockFundingPlanBuilder
   String? get tradePreviewId => _$this._tradePreviewId;
   set tradePreviewId(String? tradePreviewId) =>
       _$this._tradePreviewId = tradePreviewId;
+
+  String? _fundingSessionId;
+  String? get fundingSessionId => _$this._fundingSessionId;
+  set fundingSessionId(String? fundingSessionId) =>
+      _$this._fundingSessionId = fundingSessionId;
+
+  int? _selectionVersion;
+  int? get selectionVersion => _$this._selectionVersion;
+  set selectionVersion(int? selectionVersion) =>
+      _$this._selectionVersion = selectionVersion;
 
   MultiSourceBstockFundingPlanModeEnum? _mode;
   MultiSourceBstockFundingPlanModeEnum? get mode => _$this._mode;
@@ -476,6 +498,8 @@ class MultiSourceBstockFundingPlanBuilder
     if ($v != null) {
       _planId = $v.planId;
       _tradePreviewId = $v.tradePreviewId;
+      _fundingSessionId = $v.fundingSessionId;
+      _selectionVersion = $v.selectionVersion;
       _mode = $v.mode;
       _requiredTargetAmount = $v.requiredTargetAmount;
       _targetSnapshot = $v.targetSnapshot.toBuilder();
@@ -515,10 +539,9 @@ class MultiSourceBstockFundingPlanBuilder
           _$MultiSourceBstockFundingPlan._(
             planId: BuiltValueNullFieldError.checkNotNull(
                 planId, r'MultiSourceBstockFundingPlan', 'planId'),
-            tradePreviewId: BuiltValueNullFieldError.checkNotNull(
-                tradePreviewId,
-                r'MultiSourceBstockFundingPlan',
-                'tradePreviewId'),
+            tradePreviewId: tradePreviewId,
+            fundingSessionId: fundingSessionId,
+            selectionVersion: selectionVersion,
             mode: BuiltValueNullFieldError.checkNotNull(
                 mode, r'MultiSourceBstockFundingPlan', 'mode'),
             requiredTargetAmount: BuiltValueNullFieldError.checkNotNull(

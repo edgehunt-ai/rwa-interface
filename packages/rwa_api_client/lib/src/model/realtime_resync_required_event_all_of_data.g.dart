@@ -7,6 +7,10 @@ part of 'realtime_resync_required_event_all_of_data.dart';
 // **************************************************************************
 
 const RealtimeResyncRequiredEventAllOfDataReasonEnum
+    _$realtimeResyncRequiredEventAllOfDataReasonEnum_initialSnapshotRequired =
+    const RealtimeResyncRequiredEventAllOfDataReasonEnum._(
+        'initialSnapshotRequired');
+const RealtimeResyncRequiredEventAllOfDataReasonEnum
     _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired =
     const RealtimeResyncRequiredEventAllOfDataReasonEnum._(
         'eventRetentionExpired');
@@ -18,6 +22,8 @@ const RealtimeResyncRequiredEventAllOfDataReasonEnum
 RealtimeResyncRequiredEventAllOfDataReasonEnum
     _$realtimeResyncRequiredEventAllOfDataReasonEnumValueOf(String name) {
   switch (name) {
+    case 'initialSnapshotRequired':
+      return _$realtimeResyncRequiredEventAllOfDataReasonEnum_initialSnapshotRequired;
     case 'eventRetentionExpired':
       return _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired;
     case 'unknownDefaultOpenApi':
@@ -30,6 +36,7 @@ RealtimeResyncRequiredEventAllOfDataReasonEnum
 final BuiltSet<RealtimeResyncRequiredEventAllOfDataReasonEnum>
     _$realtimeResyncRequiredEventAllOfDataReasonEnumValues = BuiltSet<
         RealtimeResyncRequiredEventAllOfDataReasonEnum>(const <RealtimeResyncRequiredEventAllOfDataReasonEnum>[
+  _$realtimeResyncRequiredEventAllOfDataReasonEnum_initialSnapshotRequired,
   _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired,
   _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi,
 ]);
@@ -42,10 +49,12 @@ class _$RealtimeResyncRequiredEventAllOfDataReasonEnumSerializer
     implements
         PrimitiveSerializer<RealtimeResyncRequiredEventAllOfDataReasonEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'initialSnapshotRequired': 'initial_snapshot_required',
     'eventRetentionExpired': 'event_retention_expired',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'initial_snapshot_required': 'initialSnapshotRequired',
     'event_retention_expired': 'eventRetentionExpired',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };

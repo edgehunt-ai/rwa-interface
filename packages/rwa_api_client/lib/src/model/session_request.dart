@@ -12,11 +12,11 @@ part 'session_request.g.dart';
 /// SessionRequest
 ///
 /// Properties:
-/// * [language] - Preferred BCP 47 language tag. Existing users update their preference when supplied.
+/// * [language] - Backward-compatible BCP 47 language negotiation hint for this session response. Persistent account settings support only `zh-CN`, `en`, `ja`, and `ko`; any other valid tag MUST NOT persist or overwrite `UserSettings.language`. Clients change the cross-device preference only through `PATCH /v1/me/settings` with `UserLanguage`. 
 /// * [device] 
 @BuiltValue()
 abstract class SessionRequest implements Built<SessionRequest, SessionRequestBuilder> {
-  /// Preferred BCP 47 language tag. Existing users update their preference when supplied.
+  /// Backward-compatible BCP 47 language negotiation hint for this session response. Persistent account settings support only `zh-CN`, `en`, `ja`, and `ko`; any other valid tag MUST NOT persist or overwrite `UserSettings.language`. Clients change the cross-device preference only through `PATCH /v1/me/settings` with `UserLanguage`. 
   @BuiltValueField(wireName: r'language')
   String? get language;
 

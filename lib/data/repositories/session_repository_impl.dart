@@ -41,8 +41,8 @@ UserAccount mapUser(api.User value) => UserAccount(
 
 UserPreferences mapSettings(api.UserSettings value) => UserPreferences(
   language: switch (value.language) {
-    api.UserSettingsLanguageEnum.zhCN => 'zh-CN',
-    api.UserSettingsLanguageEnum.en => 'en',
+    api.UserLanguage.zhCN => 'zh-CN',
+    api.UserLanguage.en => 'en',
     _ => 'en',
   },
   pushEnabled: value.pushEnabled,

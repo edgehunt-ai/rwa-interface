@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/auto_multi_source_funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_plan_request.dart';
 import 'package:rwa_api_client/src/model/auto_single_source_funding_plan_request.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
@@ -15,9 +16,11 @@ import 'package:one_of/one_of.dart';
 
 part 'funding_plan_request.g.dart';
 
-/// Accepts immutable single/multi-source preview requests or the deprecated v1.0 request during migration.
+/// Accepts session-selected funding or deprecated immutable-preview compatibility requests.
 ///
 /// Properties:
+/// * [fundingSessionId] 
+/// * [selectionVersion] 
 /// * [tradePreviewId] - Immutable preview from which the target identity and required amount are derived.
 /// * [mode] 
 /// * [sourceAssetId] - Optional exact canonical source asset constraint. If supplied, planning must not quote or select any other source.
@@ -27,7 +30,7 @@ part 'funding_plan_request.g.dart';
 /// * [amount] - 十进制字符串，避免浮点误差
 @BuiltValue()
 abstract class FundingPlanRequest implements Built<FundingPlanRequest, FundingPlanRequestBuilder> {
-  /// One Of [AutoMultiSourceFundingPlanRequest], [AutoSingleSourceFundingPlanRequest], [LegacyFundingPlanRequest]
+  /// One Of [AutoMultiSourceFundingPlanRequest], [AutoSingleSourceFundingPlanRequest], [FundingSessionPlanRequest], [LegacyFundingPlanRequest]
   OneOf get oneOf;
 
   FundingPlanRequest._();
@@ -73,7 +76,7 @@ class _$FundingPlanRequestSerializer implements PrimitiveSerializer<FundingPlanR
   }) {
     final result = FundingPlanRequestBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(AutoSingleSourceFundingPlanRequest), FullType(AutoMultiSourceFundingPlanRequest), FullType(LegacyFundingPlanRequest), ]);
+    final targetType = const FullType(OneOf, [FullType(FundingSessionPlanRequest), FullType(AutoSingleSourceFundingPlanRequest), FullType(AutoMultiSourceFundingPlanRequest), FullType(LegacyFundingPlanRequest), ]);
     oneOfDataSrc = serialized;
     result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();

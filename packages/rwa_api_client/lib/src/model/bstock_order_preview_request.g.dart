@@ -143,6 +143,8 @@ class _$BstockOrderPreviewRequest extends BstockOrderPreviewRequest {
   @override
   final OrderType type;
   @override
+  final BstocksTimeInForce? timeInForce;
+  @override
   final String? amount;
   @override
   final String? quantity;
@@ -162,6 +164,7 @@ class _$BstockOrderPreviewRequest extends BstockOrderPreviewRequest {
       required this.kind,
       required this.side,
       required this.type,
+      this.timeInForce,
       this.amount,
       this.quantity,
       this.limitPrice,
@@ -185,6 +188,7 @@ class _$BstockOrderPreviewRequest extends BstockOrderPreviewRequest {
         kind == other.kind &&
         side == other.side &&
         type == other.type &&
+        timeInForce == other.timeInForce &&
         amount == other.amount &&
         quantity == other.quantity &&
         limitPrice == other.limitPrice &&
@@ -199,6 +203,7 @@ class _$BstockOrderPreviewRequest extends BstockOrderPreviewRequest {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, side.hashCode);
     _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, limitPrice.hashCode);
@@ -215,6 +220,7 @@ class _$BstockOrderPreviewRequest extends BstockOrderPreviewRequest {
           ..add('kind', kind)
           ..add('side', side)
           ..add('type', type)
+          ..add('timeInForce', timeInForce)
           ..add('amount', amount)
           ..add('quantity', quantity)
           ..add('limitPrice', limitPrice)
@@ -244,6 +250,11 @@ class BstockOrderPreviewRequestBuilder
   OrderType? _type;
   OrderType? get type => _$this._type;
   set type(OrderType? type) => _$this._type = type;
+
+  BstocksTimeInForce? _timeInForce;
+  BstocksTimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(BstocksTimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
 
   String? _amount;
   String? get amount => _$this._amount;
@@ -277,6 +288,7 @@ class BstockOrderPreviewRequestBuilder
       _kind = $v.kind;
       _side = $v.side;
       _type = $v.type;
+      _timeInForce = $v.timeInForce;
       _amount = $v.amount;
       _quantity = $v.quantity;
       _limitPrice = $v.limitPrice;
@@ -313,6 +325,7 @@ class BstockOrderPreviewRequestBuilder
                 side, r'BstockOrderPreviewRequest', 'side'),
             type: BuiltValueNullFieldError.checkNotNull(
                 type, r'BstockOrderPreviewRequest', 'type'),
+            timeInForce: timeInForce,
             amount: amount,
             quantity: quantity,
             limitPrice: limitPrice,

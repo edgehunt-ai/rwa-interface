@@ -674,7 +674,7 @@ class MarketsApi {
   }
 
   /// 覆盖自选列表（用于排序）
-  /// 仅用于将当前用户已有自选产品整体重新排序。读取自选列表统一使用 &#x60;GET /v1/markets/products?group&#x3D;favorites&#x60;。 
+  /// 仅用于将当前用户已有自选产品整体重新排序。读取自选列表统一使用 &#x60;GET /v1/markets/products?group&#x3D;favorites&#x60;。 items 必须无重复且与当前收藏集合完全一致；集合已变化返回 409，重新读取后再排序。 收藏列表游标绑定账户、筛选与收藏快照；快照变化返回 422 cursor_snapshot_changed，客户端从首页重新读取。 
   ///
   /// Parameters:
   /// * [replaceFavoritesRequest] 

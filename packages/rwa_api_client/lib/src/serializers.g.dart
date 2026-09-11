@@ -10,14 +10,21 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add($DepositAddressBase.serializer)
       ..add($DepositBase.serializer)
       ..add($DepositRailBase.serializer)
+      ..add($Hip3PublicMarket.serializer)
       ..add($OrderPreviewCommon.serializer)
       ..add($Page.serializer)
+      ..add($RealtimeCandleUpdate.serializer)
       ..add($RealtimeEventBase.serializer)
+      ..add($RealtimePriceUpdate.serializer)
       ..add(AccountBalance.serializer)
+      ..add(AccountDeletionBlocker.serializer)
+      ..add(AccountDeletionRequest.serializer)
+      ..add(AccountDeletionStatus.serializer)
       ..add(AccountKind.serializer)
       ..add(ActivityCategory.serializer)
       ..add(ActivityPage.serializer)
       ..add(ActivityRecord.serializer)
+      ..add(ActivityRecordBusinessTypeEnum.serializer)
       ..add(ActivityRecordChainEnum.serializer)
       ..add(ActivityRecordExplorer.serializer)
       ..add(ActivityRecordReference.serializer)
@@ -48,6 +55,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ArbitrumUsdtFundingSourceAssetTokenDecimalsEnum.serializer)
       ..add(ArbitrumUsdtFundingSourceAssetTokenEnum.serializer)
       ..add(AssetInfo.serializer)
+      ..add(AssetPortfolioAllocation.serializer)
+      ..add(AssetPortfolioAllocationDimensionEnum.serializer)
+      ..add(AssetPortfolioAllocationItem.serializer)
       ..add(AutoMultiSourceFundingPlanRequest.serializer)
       ..add(AutoMultiSourceFundingPlanRequestModeEnum.serializer)
       ..add(AutoMultiSourceTradeIntentCreateRequest.serializer)
@@ -143,6 +153,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(BstockOrderWalletActionState.serializer)
       ..add(BstockOrderWalletActionStateKindEnum.serializer)
       ..add(BstockOrderWalletActionStateWalletActionBlockerEnum.serializer)
+      ..add(BstocksTimeInForce.serializer)
       ..add(CandlePoint.serializer)
       ..add(CandleSeries.serializer)
       ..add(Chain.serializer)
@@ -177,6 +188,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(DepositInstructionWalletCustodyEnum.serializer)
       ..add(DepositInstructionsResponse.serializer)
       ..add(DepositMode.serializer)
+      ..add(DepositObservation.serializer)
+      ..add(DepositObservationPage.serializer)
+      ..add(DepositObservationStatus.serializer)
       ..add(DepositPage.serializer)
       ..add(DepositRail.serializer)
       ..add(DepositRailAvailability.serializer)
@@ -257,6 +271,15 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FundingRouteCapabilityMatrix.serializer)
       ..add(FundingRouteCapabilityStatus.serializer)
       ..add(FundingRouteQuote.serializer)
+      ..add(FundingSession.serializer)
+      ..add(FundingSessionCreateRequest.serializer)
+      ..add(FundingSessionPlanRequest.serializer)
+      ..add(FundingSessionSelectionRequest.serializer)
+      ..add(FundingSessionSourceAllocation.serializer)
+      ..add(FundingSessionSourceAllocationInput.serializer)
+      ..add(FundingSessionStatus.serializer)
+      ..add(FundingSessionTradeIntentCreateRequest.serializer)
+      ..add(FundingSessionTradeIntentCreateRequestFundingModeEnum.serializer)
       ..add(FundingSourceAsset.serializer)
       ..add(FundingSourceAssetCatalog.serializer)
       ..add(FundingSourceAssetId.serializer)
@@ -284,8 +307,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3Agent.serializer)
       ..add(Hip3AgentEnvironmentEnum.serializer)
       ..add(Hip3AgentStatus.serializer)
+      ..add(Hip3ArchiveCoverage.serializer)
       ..add(Hip3CancelOrderActionRequest.serializer)
       ..add(Hip3CancelOrderActionRequestOperationEnum.serializer)
+      ..add(Hip3CandleProvenance.serializer)
       ..add(Hip3Challenge.serializer)
       ..add(Hip3ChallengeCompleteRequest.serializer)
       ..add(Hip3ChallengeEnvironmentEnum.serializer)
@@ -327,6 +352,24 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3Eip712TypedDataPrimaryTypeEnum.serializer)
       ..add(Hip3Eip712Types.serializer)
       ..add(Hip3Environment.serializer)
+      ..add(Hip3FundingHistoryCoverage.serializer)
+      ..add(Hip3FundingHistoryCoverageSource_Enum.serializer)
+      ..add(Hip3FundingHistoryCoverageStatusEnum.serializer)
+      ..add(Hip3FundingPayment.serializer)
+      ..add(Hip3FundingPaymentPage.serializer)
+      ..add(Hip3FundingPaymentPageQuerySourceEnum.serializer)
+      ..add(Hip3FundingPaymentPageWarningsEnum.serializer)
+      ..add(Hip3HistoryRange.serializer)
+      ..add(Hip3Liquidation.serializer)
+      ..add(Hip3LiquidationAccountValueScopeEnum.serializer)
+      ..add(Hip3LiquidationHistoryCoverage.serializer)
+      ..add(Hip3LiquidationHistoryCoverageSource_Enum.serializer)
+      ..add(Hip3LiquidationHistoryCoverageStatusEnum.serializer)
+      ..add(Hip3LiquidationMarginModeEnum.serializer)
+      ..add(Hip3LiquidationPage.serializer)
+      ..add(Hip3LiquidationPageQuerySourceEnum.serializer)
+      ..add(Hip3LiquidationPageWarningsEnum.serializer)
+      ..add(Hip3LiquidationPosition.serializer)
       ..add(Hip3MainnetProduct.serializer)
       ..add(Hip3OpeningProtectionConfirmation.serializer)
       ..add(Hip3OpeningProtectionConfirmationLegsInner.serializer)
@@ -341,6 +384,36 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3PreviewExecutionTypeEnum.serializer)
       ..add(Hip3ProtectionSpec.serializer)
       ..add(Hip3ProtectionSpecSizeModeEnum.serializer)
+      ..add(Hip3PublicMarketEnvironmentEnum.serializer)
+      ..add(Hip3RealtimeBalance.serializer)
+      ..add(Hip3RealtimeBalanceEvent.serializer)
+      ..add(Hip3RealtimeBalanceEventEventEnum.serializer)
+      ..add(Hip3RealtimeBalanceItem.serializer)
+      ..add(Hip3RealtimeBalanceItemEventEnum.serializer)
+      ..add(Hip3RealtimeBalanceScopeEnum.serializer)
+      ..add(Hip3RealtimeCandle.serializer)
+      ..add(Hip3RealtimeCandleEvent.serializer)
+      ..add(Hip3RealtimeCandleEventEventEnum.serializer)
+      ..add(Hip3RealtimeCandleItem.serializer)
+      ..add(Hip3RealtimeCandleItemEventEnum.serializer)
+      ..add(Hip3RealtimeOrderEvent.serializer)
+      ..add(Hip3RealtimeOrderEventEventEnum.serializer)
+      ..add(Hip3RealtimeOrderItem.serializer)
+      ..add(Hip3RealtimeOrderItemEventEnum.serializer)
+      ..add(Hip3RealtimePositionEvent.serializer)
+      ..add(Hip3RealtimePositionEventEventEnum.serializer)
+      ..add(Hip3RealtimePositionItem.serializer)
+      ..add(Hip3RealtimePositionItemEventEnum.serializer)
+      ..add(Hip3RealtimePrice.serializer)
+      ..add(Hip3RealtimePriceEvent.serializer)
+      ..add(Hip3RealtimePriceEventEventEnum.serializer)
+      ..add(Hip3RealtimePriceItem.serializer)
+      ..add(Hip3RealtimePriceItemEventEnum.serializer)
+      ..add(Hip3RealtimePricePriceLabelEnum.serializer)
+      ..add(Hip3RealtimeSnapshot.serializer)
+      ..add(Hip3RealtimeSnapshotEvent.serializer)
+      ..add(Hip3RealtimeSnapshotEventEventEnum.serializer)
+      ..add(Hip3RealtimeSnapshotItem.serializer)
       ..add(Hip3SetLeverageActionRequest.serializer)
       ..add(Hip3SetLeverageActionRequestOperationEnum.serializer)
       ..add(Hip3SetTpSlActionRequest.serializer)
@@ -358,6 +431,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3TriggerSpecExecutionTypeEnum.serializer)
       ..add(Hip3TriggerSpecTriggerReferenceEnum.serializer)
       ..add(HoldingGroup.serializer)
+      ..add(HoldingStock.serializer)
       ..add(HyperliquidSignature.serializer)
       ..add(HyperliquidSignatureVEnum.serializer)
       ..add(IneligibleFundingPositionEligibility.serializer)
@@ -421,6 +495,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(MultiSourcePerpFundingPlanModeEnum.serializer)
       ..add(MultiSourcePerpFundingPlanNetworkEnum.serializer)
       ..add(MultiSourcePerpFundingPlanRailEnum.serializer)
+      ..add(NetworkPortfolioAllocation.serializer)
+      ..add(NetworkPortfolioAllocationDimensionEnum.serializer)
+      ..add(NetworkPortfolioAllocationItem.serializer)
       ..add(NoExecutableActionTransferState.serializer)
       ..add(NonCompletedFundingTransferState.serializer)
       ..add(NonCompletedFundingTransferStateStatusEnum.serializer)
@@ -434,6 +511,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(OrderEvmActionKindEnum.serializer)
       ..add(OrderEvmActionValueEnum.serializer)
       ..add(OrderFill.serializer)
+      ..add(OrderFillSideEnum.serializer)
       ..add(OrderPage.serializer)
       ..add(OrderPreview.serializer)
       ..add(OrderPreviewRequest.serializer)
@@ -493,13 +571,20 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PerpOrderWalletActionStateWalletActionBlockerEnum.serializer)
       ..add(PortfolioAccountPage.serializer)
       ..add(PortfolioAccountPageScopeEnum.serializer)
+      ..add(PortfolioAllocation.serializer)
       ..add(PortfolioAsset.serializer)
       ..add(PortfolioAssetNetwork.serializer)
       ..add(PortfolioAssetPage.serializer)
       ..add(PortfolioAssetSourceKind.serializer)
       ..add(PortfolioDataStatus.serializer)
       ..add(PortfolioFreshness.serializer)
+      ..add(PortfolioHistory.serializer)
+      ..add(PortfolioHistoryIntervalEnum.serializer)
+      ..add(PortfolioHistoryPoint.serializer)
+      ..add(PortfolioHistoryRangeEnum.serializer)
       ..add(PortfolioHoldingPage.serializer)
+      ..add(PortfolioHoldingPageAllOfCoverage.serializer)
+      ..add(PortfolioHoldingPageAllOfCoverageScopeEnum.serializer)
       ..add(PortfolioNotice.serializer)
       ..add(PortfolioNoticeSeverity.serializer)
       ..add(PortfolioPriceSource.serializer)
@@ -530,11 +615,21 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(ProductDetailTradingHoursEnum.serializer)
       ..add(ProductKind.serializer)
       ..add(ProductListing.serializer)
+      ..add(ProductListingDataStatusEnum.serializer)
+      ..add(ProductListingPriceKindEnum.serializer)
       ..add(ProductListingProductTypeEnum.serializer)
       ..add(ProductPage.serializer)
+      ..add(ProductPortfolioAllocation.serializer)
+      ..add(ProductPortfolioAllocationDimensionEnum.serializer)
+      ..add(ProductPortfolioAllocationItem.serializer)
       ..add(ProductRef.serializer)
       ..add(ProductType.serializer)
       ..add(Quote.serializer)
+      ..add(QuoteDataStatusEnum.serializer)
+      ..add(QuotePriceKindEnum.serializer)
+      ..add(RailPortfolioAllocation.serializer)
+      ..add(RailPortfolioAllocationDimensionEnum.serializer)
+      ..add(RailPortfolioAllocationItem.serializer)
       ..add(ReadyFundingWalletAction.serializer)
       ..add(RealtimeActivityEvent.serializer)
       ..add(RealtimeActivityEventEventEnum.serializer)
@@ -542,20 +637,25 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RealtimeBalanceEventEventEnum.serializer)
       ..add(RealtimeCandleEvent.serializer)
       ..add(RealtimeCandleEventEventEnum.serializer)
-      ..add(RealtimeCandleUpdate.serializer)
       ..add(RealtimeCandleUpdateIntervalEnum.serializer)
       ..add(RealtimeClaimEvent.serializer)
       ..add(RealtimeClaimEventEventEnum.serializer)
       ..add(RealtimeDepositEvent.serializer)
       ..add(RealtimeDepositEventEventEnum.serializer)
       ..add(RealtimeEvent.serializer)
+      ..add(RealtimeEventPage.serializer)
       ..add(RealtimeOrderEvent.serializer)
       ..add(RealtimeOrderEventEventEnum.serializer)
       ..add(RealtimePositionEvent.serializer)
       ..add(RealtimePositionEventEventEnum.serializer)
       ..add(RealtimePriceEvent.serializer)
       ..add(RealtimePriceEventEventEnum.serializer)
-      ..add(RealtimePriceUpdate.serializer)
+      ..add(RealtimePrivateChannel.serializer)
+      ..add(RealtimeResourceChange.serializer)
+      ..add(RealtimeResourceChanged.serializer)
+      ..add(RealtimeResourceChangedEvent.serializer)
+      ..add(RealtimeResourceChangedEventEventEnum.serializer)
+      ..add(RealtimeResourceType.serializer)
       ..add(RealtimeResyncRequiredEvent.serializer)
       ..add(RealtimeResyncRequiredEventAllOfData.serializer)
       ..add(RealtimeResyncRequiredEventAllOfDataReasonEnum.serializer)
@@ -568,6 +668,14 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(RealtimeWithdrawalEventEventEnum.serializer)
       ..add(ReferencePrice.serializer)
       ..add(ReplaceFavoritesRequest.serializer)
+      ..add(SelfCustodialWithdrawal.serializer)
+      ..add(SelfCustodialWithdrawalChain.serializer)
+      ..add(SelfCustodialWithdrawalChainId.serializer)
+      ..add(SelfCustodialWithdrawalCreateRequest.serializer)
+      ..add(SelfCustodialWithdrawalStatus.serializer)
+      ..add(SelfCustodialWithdrawalSubmissionRequest.serializer)
+      ..add(SelfCustodialWithdrawalTransaction.serializer)
+      ..add(SelfCustodialWithdrawalTransactionValueEnum.serializer)
       ..add(Session.serializer)
       ..add(SessionKind.serializer)
       ..add(SessionRequest.serializer)
@@ -585,6 +693,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(TradeIntentExecutionPolicy.serializer)
       ..add(TradeIntentExecutionPolicyOrderTypeEnum.serializer)
       ..add(TradeIntentFundingLegBinding.serializer)
+      ..add(TradeIntentFundingModeEnum.serializer)
       ..add(TradeIntentNextAction.serializer)
       ..add(TradeIntentStatus.serializer)
       ..add(Transfer.serializer)
@@ -611,11 +720,20 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(UnifiedFundingPositionCustodyEnum.serializer)
       ..add(UnifiedFundingTransfer.serializer)
       ..add(User.serializer)
+      ..add(UserLanguage.serializer)
       ..add(UserPaidWalletActionExecutionSubmissionRequest.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlan.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanAssetEnum.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanModeEnum.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanNetworkEnum.serializer)
+      ..add(UserSelectedMultiSourceBstockFundingPlanRailEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlan.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanAssetEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanModeEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanNetworkEnum.serializer)
+      ..add(UserSelectedMultiSourcePerpFundingPlanRailEnum.serializer)
       ..add(UserSettings.serializer)
-      ..add(UserSettingsLanguageEnum.serializer)
       ..add(UserSettingsUpdate.serializer)
-      ..add(UserSettingsUpdateLanguageEnum.serializer)
       ..add(Wallet.serializer)
       ..add(WalletActionChainObservation.serializer)
       ..add(WalletActionChainObservationValueEnum.serializer)
@@ -651,11 +769,26 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
           () => ListBuilder<PortfolioNotice>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(AccountDeletionBlocker)]),
+          () => ListBuilder<AccountDeletionBlocker>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(ActivityRecord)]),
           () => ListBuilder<ActivityRecord>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(AppVersionInfo)]),
           () => ListBuilder<AppVersionInfo>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(AssetPortfolioAllocationItem)]),
+          () => ListBuilder<AssetPortfolioAllocationItem>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
+          () => ListBuilder<PortfolioNotice>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioSourceSummary)]),
+          () => ListBuilder<PortfolioSourceSummary>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(CandlePoint)]),
           () => ListBuilder<CandlePoint>())
@@ -675,6 +808,9 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltList, const [const FullType(DepositInstructionItem)]),
           () => ListBuilder<DepositInstructionItem>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(DepositObservation)]),
+          () => ListBuilder<DepositObservation>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(DepositRailBlocker)]),
           () => ListBuilder<DepositRailBlocker>())
@@ -720,6 +856,14 @@ Serializers _$serializers = (Serializers().toBuilder()
               BuiltList, const [const FullType(FundingWalletActionSummary)]),
           () => ListBuilder<FundingWalletActionSummary>())
       ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(FundingWalletActionSummary)]),
+          () => ListBuilder<FundingWalletActionSummary>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(FundingWalletActionSummary)]),
+          () => ListBuilder<FundingWalletActionSummary>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Hip3Action)]),
           () => ListBuilder<Hip3Action>())
       ..addBuilderFactory(
@@ -731,6 +875,30 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Hip3Eip712Field)]),
           () => ListBuilder<Hip3Eip712Field>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3FundingPayment)]),
+          () => ListBuilder<Hip3FundingPayment>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(Hip3FundingPaymentPageWarningsEnum)]),
+          () => ListBuilder<Hip3FundingPaymentPageWarningsEnum>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3HistoryRange)]),
+          () => ListBuilder<Hip3HistoryRange>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3HistoryRange)]),
+          () => ListBuilder<Hip3HistoryRange>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(Hip3Liquidation)]),
+          () => ListBuilder<Hip3Liquidation>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(Hip3LiquidationPageWarningsEnum)]),
+          () => ListBuilder<Hip3LiquidationPageWarningsEnum>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3LiquidationPosition)]),
+          () => ListBuilder<Hip3LiquidationPosition>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [
             const FullType(Hip3OpeningProtectionConfirmationLegsInner)
@@ -778,6 +946,17 @@ Serializers _$serializers = (Serializers().toBuilder()
               const [const FullType(Hip3TradingRulesTriggerReferencesEnum)]),
           () => ListBuilder<Hip3TradingRulesTriggerReferencesEnum>())
       ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(NetworkPortfolioAllocationItem)]),
+          () => ListBuilder<NetworkPortfolioAllocationItem>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
+          () => ListBuilder<PortfolioNotice>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioSourceSummary)]),
+          () => ListBuilder<PortfolioSourceSummary>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(Order)]),
           () => ListBuilder<Order>())
       ..addBuilderFactory(
@@ -789,6 +968,20 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(OrderFill)]),
           () => ListBuilder<OrderFill>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioAsset)]),
+          () => ListBuilder<PortfolioAsset>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioHistoryPoint)]),
+          () => ListBuilder<PortfolioHistoryPoint>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
+          () => ListBuilder<PortfolioNotice>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioSourceSummary)]),
+          () => ListBuilder<PortfolioSourceSummary>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
           () => ListBuilder<PortfolioNotice>())
@@ -837,8 +1030,33 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(ProductListing)]),
           () => ListBuilder<ProductListing>())
       ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(ProductPortfolioAllocationItem)]),
+          () => ListBuilder<ProductPortfolioAllocationItem>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
+          () => ListBuilder<PortfolioNotice>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioSourceSummary)]),
+          () => ListBuilder<PortfolioSourceSummary>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(ProductRef)]),
           () => ListBuilder<ProductRef>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(RailPortfolioAllocationItem)]),
+          () => ListBuilder<RailPortfolioAllocationItem>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
+          () => ListBuilder<PortfolioNotice>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioSourceSummary)]),
+          () => ListBuilder<PortfolioSourceSummary>())
+      ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(RealtimeEvent)]),
+          () => ListBuilder<RealtimeEvent>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(SessionSegment)]),
           () => ListBuilder<SessionSegment>())
@@ -861,6 +1079,14 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltList, const [const FullType(TradeIntentFundingLegBinding)]),
           () => ListBuilder<TradeIntentFundingLegBinding>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(UnifiedFundingPosition)]),
+          () => ListBuilder<UnifiedFundingPosition>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(FundingSessionSourceAllocation)]),
+          () => ListBuilder<FundingSessionSourceAllocation>())
       ..addBuilderFactory(
           const FullType(
               BuiltList, const [const FullType(UnifiedFundingPosition)]),
@@ -896,8 +1122,19 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(BuiltList, const [const FullType(DepositRail)]),
           () => ListBuilder<DepositRail>())
       ..addBuilderFactory(
+          const FullType(BuiltSet,
+              const [const FullType(FundingSessionSourceAllocationInput)]),
+          () => SetBuilder<FundingSessionSourceAllocationInput>())
+      ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(String)]),
           () => SetBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(BuiltSet, const [const FullType(String)]),
+          () => SetBuilder<String>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(Hip3RealtimeSnapshotItem)]),
+          () => ListBuilder<Hip3RealtimeSnapshotItem>())
       ..addBuilderFactory(
           const FullType(BuiltSet, const [const FullType(String)]),
           () => SetBuilder<String>())

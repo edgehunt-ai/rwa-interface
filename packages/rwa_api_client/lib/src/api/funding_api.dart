@@ -15,11 +15,18 @@ import 'package:rwa_api_client/src/model/create_deposit_intent_request.dart';
 import 'package:rwa_api_client/src/model/create_withdrawal_request.dart';
 import 'package:rwa_api_client/src/model/deposit.dart';
 import 'package:rwa_api_client/src/model/deposit_instruction.dart';
+import 'package:rwa_api_client/src/model/deposit_observation_page.dart';
 import 'package:rwa_api_client/src/model/deposit_page.dart';
 import 'package:rwa_api_client/src/model/funding_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_plan_request.dart';
+import 'package:rwa_api_client/src/model/funding_session.dart';
+import 'package:rwa_api_client/src/model/funding_session_create_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_selection_request.dart';
 import 'package:rwa_api_client/src/model/legacy_deposit.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_submission_request.dart';
 import 'package:rwa_api_client/src/model/transfer.dart';
 import 'package:rwa_api_client/src/model/transfer_action_submission.dart';
 import 'package:rwa_api_client/src/model/transfer_action_submission_request.dart';
@@ -239,6 +246,214 @@ class FundingApi {
     }
 
     return Response<FundingPlan>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 创建可恢复的资金准备会话
+  /// 根据订单草稿创建一个 24 小时可恢复的资金准备会话。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 20% 建议缓冲均由服务端推导；建议值不构成准入限制。 
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [fundingSessionCreateRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [FundingSession] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<FundingSession>> createFundingSession({ 
+    required String idempotencyKey,
+    required FundingSessionCreateRequest fundingSessionCreateRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/funding/sessions';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(FundingSessionCreateRequest);
+      _bodyData = _serializers.serialize(fundingSessionCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    FundingSession? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingSession),
+      ) as FundingSession;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<FundingSession>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 创建自托管提现审计意图
+  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 用户必须在 Privy wallet 中复核并原样签名、广播，客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call， 不支持原生币转账。服务端不会 approve、sign 或 broadcast，也不会返回可由后端 执行的授权或签名接口。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [selfCustodialWithdrawalCreateRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [SelfCustodialWithdrawal] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<SelfCustodialWithdrawal>> createSelfCustodialWithdrawal({ 
+    required String idempotencyKey,
+    required SelfCustodialWithdrawalCreateRequest selfCustodialWithdrawalCreateRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/self-custodial-withdrawals';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(SelfCustodialWithdrawalCreateRequest);
+      _bodyData = _serializers.serialize(selfCustodialWithdrawalCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    SelfCustodialWithdrawal? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SelfCustodialWithdrawal),
+      ) as SelfCustodialWithdrawal;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SelfCustodialWithdrawal>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -1216,6 +1431,168 @@ class FundingApi {
     );
   }
 
+  /// 获取资金准备会话
+  /// 恢复会话并重新读取当前目标余额和统一资金账户；不得复用过期余额或 Provider Quote。
+  ///
+  /// Parameters:
+  /// * [fundingSessionId] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [FundingSession] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<FundingSession>> getFundingSession({ 
+    required String fundingSessionId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/funding/sessions/{funding_session_id}'.replaceAll('{' r'funding_session_id' '}', encodeQueryParameter(_serializers, fundingSessionId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    FundingSession? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingSession),
+      ) as FundingSession;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<FundingSession>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 获取自托管提现审计状态
+  /// 返回服务端对用户自行通过 Privy wallet 签名并广播的交易所做的只读核验状态。 服务端不会 approve、sign、broadcast 或替用户执行提现；提交哈希也不构成成功证据。 
+  ///
+  /// Parameters:
+  /// * [withdrawalId] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [SelfCustodialWithdrawal] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<SelfCustodialWithdrawal>> getSelfCustodialWithdrawal({ 
+    required String withdrawalId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    SelfCustodialWithdrawal? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SelfCustodialWithdrawal),
+      ) as SelfCustodialWithdrawal;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SelfCustodialWithdrawal>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 划转详情与权威状态
   /// 
   ///
@@ -1457,6 +1834,95 @@ class FundingApi {
     );
   }
 
+  /// 获取脱敏入金观察进度
+  /// 返回当前账户可公开给客户端的脱敏链上观察摘要，用于显示 detected、confirming、 confirmed 或 manual_review 进度。响应不包含 Provider 名称、Webhook payload、RPC 原始响应、内部证据 ID 或其他 raw evidence。  &#x60;detected&#x60;、&#x60;confirming&#x60; 与 &#x60;manual_review&#x60; 都是未确认资金，不得计入余额、可交易金额、 Portfolio summary/history/allocation 或 Activity。&#x60;confirmed&#x60; 只表示链上观察达到 canonical 确认门槛；只有服务端另行创建并入账正式 Deposit 后，资金才可进入这些读模型。 
+  ///
+  /// Parameters:
+  /// * [cursor] - 上一页返回的 `next_cursor`
+  /// * [limit] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [DepositObservationPage] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<DepositObservationPage>> listDepositObservations({ 
+    String? cursor,
+    int? limit = 20,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/deposit-observations';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    DepositObservationPage? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(DepositObservationPage),
+      ) as DepositObservationPage;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<DepositObservationPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 入金记录列表
   /// 仅返回当前账号已经由链上 receipt、精确 ERC-20 Transfer、canonical block 和确认数 独立核验的正式入金记录。Webhook、补账候选、观察中状态和旧 Deposit Intent 不属于本列表。 
   ///
@@ -1624,6 +2090,218 @@ class FundingApi {
     }
 
     return Response<WithdrawalPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 提交自托管提现交易哈希
+  /// 用户在 Privy wallet 中自行签名并广播后，只提交 &#x60;tx_hash&#x60; 作为不可信链上定位符。 服务端不会 approve、sign、broadcast 或重播交易，必须独立核验 chain、from wallet、 token、recipient、amount、receipt、确认数与 canonicality 后再推进状态。哈希不存在、 不匹配或观察结果冲突时不得假定成功，进入 failed、noncanonical 或 manual_review。 
+  ///
+  /// Parameters:
+  /// * [withdrawalId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [selfCustodialWithdrawalSubmissionRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [SelfCustodialWithdrawal] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<SelfCustodialWithdrawal>> submitSelfCustodialWithdrawal({ 
+    required String withdrawalId,
+    required String idempotencyKey,
+    required SelfCustodialWithdrawalSubmissionRequest selfCustodialWithdrawalSubmissionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}/submission'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(SelfCustodialWithdrawalSubmissionRequest);
+      _bodyData = _serializers.serialize(selfCustodialWithdrawalSubmissionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    SelfCustodialWithdrawal? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SelfCustodialWithdrawal),
+      ) as SelfCustodialWithdrawal;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SelfCustodialWithdrawal>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 更新用户选择的补资来源与金额
+  /// 保存用户编辑后的来源金额并重新计算预计目标到账。20% 缓冲只用于推荐和默认值； 高于或低于推荐值均不得单独导致拒绝。低于最低缺口可以保存，但不能确认 Transfer。 
+  ///
+  /// Parameters:
+  /// * [fundingSessionId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [fundingSessionSelectionRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [FundingSession] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<FundingSession>> updateFundingSessionSelection({ 
+    required String fundingSessionId,
+    required String idempotencyKey,
+    required FundingSessionSelectionRequest fundingSessionSelectionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/funding/sessions/{funding_session_id}/selection'.replaceAll('{' r'funding_session_id' '}', encodeQueryParameter(_serializers, fundingSessionId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'PUT',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(FundingSessionSelectionRequest);
+      _bodyData = _serializers.serialize(fundingSessionSelectionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    FundingSession? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(FundingSession),
+      ) as FundingSession;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<FundingSession>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

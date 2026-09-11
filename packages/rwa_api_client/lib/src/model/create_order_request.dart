@@ -24,6 +24,7 @@ part 'create_order_request.g.dart';
 /// * [kind] 
 /// * [side] 
 /// * [type] 
+/// * [timeInForce] 
 /// * [amount] - 市价单的 USDC 名义价值
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
@@ -31,7 +32,6 @@ part 'create_order_request.g.dart';
 /// * [tpSl] 
 /// * [previewId] - 传入预览返回的报价 id 可锁定价格；过期后需重新预览
 /// * [contextId] - 必须与所引用 preview 的 context 相同；账户/环境不由客户端决定。
-/// * [timeInForce] 
 /// * [protection] 
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
 /// * [marginMode] 

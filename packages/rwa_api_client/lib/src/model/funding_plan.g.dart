@@ -6,15 +6,15 @@ part of 'funding_plan.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const FundingPlanModeEnum _$fundingPlanModeEnum_autoMultiSource =
-    const FundingPlanModeEnum._('autoMultiSource');
+const FundingPlanModeEnum _$fundingPlanModeEnum_userSelectedMultiSource =
+    const FundingPlanModeEnum._('userSelectedMultiSource');
 const FundingPlanModeEnum _$fundingPlanModeEnum_unknownDefaultOpenApi =
     const FundingPlanModeEnum._('unknownDefaultOpenApi');
 
 FundingPlanModeEnum _$fundingPlanModeEnumValueOf(String name) {
   switch (name) {
-    case 'autoMultiSource':
-      return _$fundingPlanModeEnum_autoMultiSource;
+    case 'userSelectedMultiSource':
+      return _$fundingPlanModeEnum_userSelectedMultiSource;
     case 'unknownDefaultOpenApi':
       return _$fundingPlanModeEnum_unknownDefaultOpenApi;
     default:
@@ -24,7 +24,7 @@ FundingPlanModeEnum _$fundingPlanModeEnumValueOf(String name) {
 
 final BuiltSet<FundingPlanModeEnum> _$fundingPlanModeEnumValues =
     BuiltSet<FundingPlanModeEnum>(const <FundingPlanModeEnum>[
-  _$fundingPlanModeEnum_autoMultiSource,
+  _$fundingPlanModeEnum_userSelectedMultiSource,
   _$fundingPlanModeEnum_unknownDefaultOpenApi,
 ]);
 
@@ -140,11 +140,11 @@ Serializer<FundingPlanAssetEnum> _$fundingPlanAssetEnumSerializer =
 class _$FundingPlanModeEnumSerializer
     implements PrimitiveSerializer<FundingPlanModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'autoMultiSource': 'auto_multi_source',
+    'userSelectedMultiSource': 'user_selected_multi_source',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'auto_multi_source': 'autoMultiSource',
+    'user_selected_multi_source': 'userSelectedMultiSource',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

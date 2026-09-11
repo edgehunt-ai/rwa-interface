@@ -9,6 +9,7 @@ import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
+import 'package:rwa_api_client/src/model/account_deletion_request.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/device.dart';
 import 'package:rwa_api_client/src/model/device_page.dart';
@@ -77,6 +78,85 @@ class AccountApi {
     );
 
     return _response;
+  }
+
+  /// 获取账户删除请求状态
+  /// 返回当前账户最近的删除请求。&#x60;blocked&#x60; 表示异步处理期间发现尚未解除的 blocker； &#x60;anonymized&#x60; 只表示产品账户数据已按政策匿名化，不表示链上钱包、链上资产或历史被删除。 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AccountDeletionRequest] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AccountDeletionRequest>> getAccountDeletionRequest({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/me/deletion';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AccountDeletionRequest? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(AccountDeletionRequest),
+      ) as AccountDeletionRequest;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AccountDeletionRequest>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
   }
 
   /// 当前登录账户
@@ -337,6 +417,88 @@ class AccountApi {
     }
 
     return Response<Device>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 请求删除当前产品账户
+  /// 异步且幂等地请求删除当前产品账户。服务端必须校验 Privy credential 中的 &#x60;auth_time&#x60; 满足 recent-auth 窗口；不满足时返回 &#x60;403 recent_auth_required&#x60;。 客户端重放同一 &#x60;Idempotency-Key&#x60;，或已有未终结的删除请求时，返回同一资源。  已知未结订单、仓位、资金流程、可提取余额或合规保留义务等 blocker 返回 &#x60;409&#x60;， 不得绕过。若身份、资产、订单、资金或合规 blocker 检查任一不可用，必须以 &#x60;503&#x60; fail-closed，不得假定可以删除。异步处理期间新发现的 blocker 可使已接受资源进入 &#x60;blocked&#x60; 或 &#x60;manual_review&#x60;。  本操作只删除或匿名化产品账户及依法允许处理的产品数据；它不是链上资产删除， 不会销毁、转移、签名或广播用户 Privy 钱包中的链上资产，也不会删除区块链历史。 
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [AccountDeletionRequest] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<AccountDeletionRequest>> requestAccountDeletion({ 
+    required String idempotencyKey,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/me';
+    final _options = Options(
+      method: r'DELETE',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    AccountDeletionRequest? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(AccountDeletionRequest),
+      ) as AccountDeletionRequest;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<AccountDeletionRequest>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

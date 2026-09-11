@@ -5,34 +5,41 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/realtime_deposit_event.dart';
 import 'package:rwa_api_client/src/model/realtime_position_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_candle_event.dart';
 import 'package:rwa_api_client/src/model/realtime_activity_event.dart';
 import 'package:rwa_api_client/src/model/realtime_price_event.dart';
+import 'package:rwa_api_client/src/model/realtime_resource_changed_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_position_event.dart';
 import 'package:rwa_api_client/src/model/realtime_transfer_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_order_event.dart';
 import 'package:rwa_api_client/src/model/realtime_withdrawal_event.dart';
 import 'package:rwa_api_client/src/model/realtime_session_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_price_event.dart';
 import 'package:rwa_api_client/src/model/realtime_resync_required_event.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/realtime_claim_event.dart';
 import 'package:rwa_api_client/src/model/realtime_balance_event.dart';
 import 'package:rwa_api_client/src/model/realtime_order_event.dart';
 import 'package:rwa_api_client/src/model/realtime_resync_required_event_all_of_data.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_snapshot_event.dart';
 import 'package:rwa_api_client/src/model/realtime_candle_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_balance_event.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
 
 part 'realtime_event.g.dart';
 
-/// SSE 事件载荷。`event_id` 等于 SSE 的 `id:` 值；客户端应持久化它，在重连时通过 `Last-Event-ID` 传回。前台已消费的同一业务实体事件可用于抑制重复推送通知。 
+/// JSON replay item 或 SSE `data:` 中的强类型事件载荷。`event_id` 等于 SSE `id:`，是 opaque cursor；客户端只在完整校验事件并成功完成对应只读刷新后持久化它。Delivery guarantee 为 at-least-once，重复事件用完整 `event_id` 去重，不能比较 cursor 大小。 账户 projection 只发送 `resource_changed` 与 `resync_required`；HIP3 订阅发送 `hip3_snapshot` 及 `hip3_*` typed events。其他 rich event variants 为 wire compatibility 保留，不代表相应 producer 当前已经配置或可用。 
 ///
 /// Properties:
-/// * [eventId] - 同时作为 SSE `id:` 字段发送的单调递增事件标识，用于断线续传和去重
+/// * [eventId] - Server-issued opaque event cursor protected by HMAC signature. It binds the protocol version, internal sequence, issued-at time, canonical channel tuple hash, and authenticated account scope hash. It contains no plaintext account ID, DID, resource data, or other PII. Clients must not parse, compare, synthesize, or modify it; they may only persist the complete value and return it unchanged. 
 /// * [emittedAt] 
 /// * [event] 
 /// * [data] 
 @BuiltValue()
 abstract class RealtimeEvent implements Built<RealtimeEvent, RealtimeEventBuilder> {
-  /// One Of [RealtimeActivityEvent], [RealtimeBalanceEvent], [RealtimeCandleEvent], [RealtimeClaimEvent], [RealtimeDepositEvent], [RealtimeOrderEvent], [RealtimePositionEvent], [RealtimePriceEvent], [RealtimeResyncRequiredEvent], [RealtimeSessionEvent], [RealtimeTransferEvent], [RealtimeWithdrawalEvent]
+  /// One Of [Hip3RealtimeBalanceEvent], [Hip3RealtimeCandleEvent], [Hip3RealtimeOrderEvent], [Hip3RealtimePositionEvent], [Hip3RealtimePriceEvent], [Hip3RealtimeSnapshotEvent], [RealtimeActivityEvent], [RealtimeBalanceEvent], [RealtimeCandleEvent], [RealtimeClaimEvent], [RealtimeDepositEvent], [RealtimeOrderEvent], [RealtimePositionEvent], [RealtimePriceEvent], [RealtimeResourceChangedEvent], [RealtimeResyncRequiredEvent], [RealtimeSessionEvent], [RealtimeTransferEvent], [RealtimeWithdrawalEvent]
   OneOf get oneOf;
 
   static const String discriminatorFieldName = r'event';
@@ -43,9 +50,16 @@ abstract class RealtimeEvent implements Built<RealtimeEvent, RealtimeEventBuilde
     r'candle': RealtimeCandleEvent,
     r'claim': RealtimeClaimEvent,
     r'deposit': RealtimeDepositEvent,
+    r'hip3_balance': Hip3RealtimeBalanceEvent,
+    r'hip3_candle': Hip3RealtimeCandleEvent,
+    r'hip3_order': Hip3RealtimeOrderEvent,
+    r'hip3_position': Hip3RealtimePositionEvent,
+    r'hip3_price': Hip3RealtimePriceEvent,
+    r'hip3_snapshot': Hip3RealtimeSnapshotEvent,
     r'order': RealtimeOrderEvent,
     r'position': RealtimePositionEvent,
     r'price': RealtimePriceEvent,
+    r'resource_changed': RealtimeResourceChangedEvent,
     r'resync_required': RealtimeResyncRequiredEvent,
     r'session': RealtimeSessionEvent,
     r'transfer': RealtimeTransferEvent,
@@ -80,6 +94,24 @@ extension RealtimeEventDiscriminatorExt on RealtimeEvent {
         if (this is RealtimeDepositEvent) {
             return r'deposit';
         }
+        if (this is Hip3RealtimeBalanceEvent) {
+            return r'hip3_balance';
+        }
+        if (this is Hip3RealtimeCandleEvent) {
+            return r'hip3_candle';
+        }
+        if (this is Hip3RealtimeOrderEvent) {
+            return r'hip3_order';
+        }
+        if (this is Hip3RealtimePositionEvent) {
+            return r'hip3_position';
+        }
+        if (this is Hip3RealtimePriceEvent) {
+            return r'hip3_price';
+        }
+        if (this is Hip3RealtimeSnapshotEvent) {
+            return r'hip3_snapshot';
+        }
         if (this is RealtimeOrderEvent) {
             return r'order';
         }
@@ -88,6 +120,9 @@ extension RealtimeEventDiscriminatorExt on RealtimeEvent {
         }
         if (this is RealtimePriceEvent) {
             return r'price';
+        }
+        if (this is RealtimeResourceChangedEvent) {
+            return r'resource_changed';
         }
         if (this is RealtimeResyncRequiredEvent) {
             return r'resync_required';
@@ -121,6 +156,24 @@ extension RealtimeEventBuilderDiscriminatorExt on RealtimeEventBuilder {
         if (this is RealtimeDepositEventBuilder) {
             return r'deposit';
         }
+        if (this is Hip3RealtimeBalanceEventBuilder) {
+            return r'hip3_balance';
+        }
+        if (this is Hip3RealtimeCandleEventBuilder) {
+            return r'hip3_candle';
+        }
+        if (this is Hip3RealtimeOrderEventBuilder) {
+            return r'hip3_order';
+        }
+        if (this is Hip3RealtimePositionEventBuilder) {
+            return r'hip3_position';
+        }
+        if (this is Hip3RealtimePriceEventBuilder) {
+            return r'hip3_price';
+        }
+        if (this is Hip3RealtimeSnapshotEventBuilder) {
+            return r'hip3_snapshot';
+        }
         if (this is RealtimeOrderEventBuilder) {
             return r'order';
         }
@@ -129,6 +182,9 @@ extension RealtimeEventBuilderDiscriminatorExt on RealtimeEventBuilder {
         }
         if (this is RealtimePriceEventBuilder) {
             return r'price';
+        }
+        if (this is RealtimeResourceChangedEventBuilder) {
+            return r'resource_changed';
         }
         if (this is RealtimeResyncRequiredEventBuilder) {
             return r'resync_required';
@@ -182,7 +238,7 @@ class _$RealtimeEventSerializer implements PrimitiveSerializer<RealtimeEvent> {
     final discIndex = serializedList.indexOf(RealtimeEvent.discriminatorFieldName) + 1;
     final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
     oneOfDataSrc = serialized;
-    final oneOfTypes = [RealtimeActivityEvent, RealtimeBalanceEvent, RealtimeCandleEvent, RealtimeClaimEvent, RealtimeDepositEvent, RealtimeOrderEvent, RealtimePositionEvent, RealtimePriceEvent, RealtimeResyncRequiredEvent, RealtimeSessionEvent, RealtimeTransferEvent, RealtimeWithdrawalEvent, ];
+    final oneOfTypes = [RealtimeActivityEvent, RealtimeBalanceEvent, RealtimeCandleEvent, RealtimeClaimEvent, RealtimeDepositEvent, Hip3RealtimeBalanceEvent, Hip3RealtimeCandleEvent, Hip3RealtimeOrderEvent, Hip3RealtimePositionEvent, Hip3RealtimePriceEvent, Hip3RealtimeSnapshotEvent, RealtimeOrderEvent, RealtimePositionEvent, RealtimePriceEvent, RealtimeResourceChangedEvent, RealtimeResyncRequiredEvent, RealtimeSessionEvent, RealtimeTransferEvent, RealtimeWithdrawalEvent, ];
     Object oneOfResult;
     Type oneOfType;
     switch (discValue) {
@@ -221,6 +277,48 @@ class _$RealtimeEventSerializer implements PrimitiveSerializer<RealtimeEvent> {
         ) as RealtimeDepositEvent;
         oneOfType = RealtimeDepositEvent;
         break;
+      case r'hip3_balance':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(Hip3RealtimeBalanceEvent),
+        ) as Hip3RealtimeBalanceEvent;
+        oneOfType = Hip3RealtimeBalanceEvent;
+        break;
+      case r'hip3_candle':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(Hip3RealtimeCandleEvent),
+        ) as Hip3RealtimeCandleEvent;
+        oneOfType = Hip3RealtimeCandleEvent;
+        break;
+      case r'hip3_order':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(Hip3RealtimeOrderEvent),
+        ) as Hip3RealtimeOrderEvent;
+        oneOfType = Hip3RealtimeOrderEvent;
+        break;
+      case r'hip3_position':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(Hip3RealtimePositionEvent),
+        ) as Hip3RealtimePositionEvent;
+        oneOfType = Hip3RealtimePositionEvent;
+        break;
+      case r'hip3_price':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(Hip3RealtimePriceEvent),
+        ) as Hip3RealtimePriceEvent;
+        oneOfType = Hip3RealtimePriceEvent;
+        break;
+      case r'hip3_snapshot':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(Hip3RealtimeSnapshotEvent),
+        ) as Hip3RealtimeSnapshotEvent;
+        oneOfType = Hip3RealtimeSnapshotEvent;
+        break;
       case r'order':
         oneOfResult = serializers.deserialize(
           oneOfDataSrc,
@@ -241,6 +339,13 @@ class _$RealtimeEventSerializer implements PrimitiveSerializer<RealtimeEvent> {
           specifiedType: FullType(RealtimePriceEvent),
         ) as RealtimePriceEvent;
         oneOfType = RealtimePriceEvent;
+        break;
+      case r'resource_changed':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(RealtimeResourceChangedEvent),
+        ) as RealtimeResourceChangedEvent;
+        oneOfType = RealtimeResourceChangedEvent;
         break;
       case r'resync_required':
         oneOfResult = serializers.deserialize(

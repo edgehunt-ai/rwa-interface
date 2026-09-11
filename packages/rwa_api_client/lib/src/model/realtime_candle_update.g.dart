@@ -100,7 +100,23 @@ class _$RealtimeCandleUpdateIntervalEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$RealtimeCandleUpdate extends RealtimeCandleUpdate {
+abstract class RealtimeCandleUpdateBuilder {
+  void replace(RealtimeCandleUpdate other);
+  void update(void Function(RealtimeCandleUpdateBuilder) updates);
+  String? get symbol;
+  set symbol(String? symbol);
+
+  ProductKind? get kind;
+  set kind(ProductKind? kind);
+
+  RealtimeCandleUpdateIntervalEnum? get interval;
+  set interval(RealtimeCandleUpdateIntervalEnum? interval);
+
+  CandlePointBuilder get point;
+  set point(CandlePointBuilder? point);
+}
+
+class _$$RealtimeCandleUpdate extends $RealtimeCandleUpdate {
   @override
   final String symbol;
   @override
@@ -110,29 +126,29 @@ class _$RealtimeCandleUpdate extends RealtimeCandleUpdate {
   @override
   final CandlePoint point;
 
-  factory _$RealtimeCandleUpdate(
-          [void Function(RealtimeCandleUpdateBuilder)? updates]) =>
-      (RealtimeCandleUpdateBuilder()..update(updates))._build();
+  factory _$$RealtimeCandleUpdate(
+          [void Function($RealtimeCandleUpdateBuilder)? updates]) =>
+      ($RealtimeCandleUpdateBuilder()..update(updates))._build();
 
-  _$RealtimeCandleUpdate._(
+  _$$RealtimeCandleUpdate._(
       {required this.symbol,
       required this.kind,
       required this.interval,
       required this.point})
       : super._();
   @override
-  RealtimeCandleUpdate rebuild(
-          void Function(RealtimeCandleUpdateBuilder) updates) =>
+  $RealtimeCandleUpdate rebuild(
+          void Function($RealtimeCandleUpdateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  RealtimeCandleUpdateBuilder toBuilder() =>
-      RealtimeCandleUpdateBuilder()..replace(this);
+  $RealtimeCandleUpdateBuilder toBuilder() =>
+      $RealtimeCandleUpdateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is RealtimeCandleUpdate &&
+    return other is $RealtimeCandleUpdate &&
         symbol == other.symbol &&
         kind == other.kind &&
         interval == other.interval &&
@@ -152,7 +168,7 @@ class _$RealtimeCandleUpdate extends RealtimeCandleUpdate {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'RealtimeCandleUpdate')
+    return (newBuiltValueToStringHelper(r'$RealtimeCandleUpdate')
           ..add('symbol', symbol)
           ..add('kind', kind)
           ..add('interval', interval)
@@ -161,32 +177,34 @@ class _$RealtimeCandleUpdate extends RealtimeCandleUpdate {
   }
 }
 
-class RealtimeCandleUpdateBuilder
-    implements Builder<RealtimeCandleUpdate, RealtimeCandleUpdateBuilder> {
-  _$RealtimeCandleUpdate? _$v;
+class $RealtimeCandleUpdateBuilder
+    implements
+        Builder<$RealtimeCandleUpdate, $RealtimeCandleUpdateBuilder>,
+        RealtimeCandleUpdateBuilder {
+  _$$RealtimeCandleUpdate? _$v;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
-  set symbol(String? symbol) => _$this._symbol = symbol;
+  set symbol(covariant String? symbol) => _$this._symbol = symbol;
 
   ProductKind? _kind;
   ProductKind? get kind => _$this._kind;
-  set kind(ProductKind? kind) => _$this._kind = kind;
+  set kind(covariant ProductKind? kind) => _$this._kind = kind;
 
   RealtimeCandleUpdateIntervalEnum? _interval;
   RealtimeCandleUpdateIntervalEnum? get interval => _$this._interval;
-  set interval(RealtimeCandleUpdateIntervalEnum? interval) =>
+  set interval(covariant RealtimeCandleUpdateIntervalEnum? interval) =>
       _$this._interval = interval;
 
   CandlePointBuilder? _point;
   CandlePointBuilder get point => _$this._point ??= CandlePointBuilder();
-  set point(CandlePointBuilder? point) => _$this._point = point;
+  set point(covariant CandlePointBuilder? point) => _$this._point = point;
 
-  RealtimeCandleUpdateBuilder() {
-    RealtimeCandleUpdate._defaults(this);
+  $RealtimeCandleUpdateBuilder() {
+    $RealtimeCandleUpdate._defaults(this);
   }
 
-  RealtimeCandleUpdateBuilder get _$this {
+  $RealtimeCandleUpdateBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
       _symbol = $v.symbol;
@@ -199,29 +217,29 @@ class RealtimeCandleUpdateBuilder
   }
 
   @override
-  void replace(RealtimeCandleUpdate other) {
-    _$v = other as _$RealtimeCandleUpdate;
+  void replace(covariant $RealtimeCandleUpdate other) {
+    _$v = other as _$$RealtimeCandleUpdate;
   }
 
   @override
-  void update(void Function(RealtimeCandleUpdateBuilder)? updates) {
+  void update(void Function($RealtimeCandleUpdateBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  RealtimeCandleUpdate build() => _build();
+  $RealtimeCandleUpdate build() => _build();
 
-  _$RealtimeCandleUpdate _build() {
-    _$RealtimeCandleUpdate _$result;
+  _$$RealtimeCandleUpdate _build() {
+    _$$RealtimeCandleUpdate _$result;
     try {
       _$result = _$v ??
-          _$RealtimeCandleUpdate._(
+          _$$RealtimeCandleUpdate._(
             symbol: BuiltValueNullFieldError.checkNotNull(
-                symbol, r'RealtimeCandleUpdate', 'symbol'),
+                symbol, r'$RealtimeCandleUpdate', 'symbol'),
             kind: BuiltValueNullFieldError.checkNotNull(
-                kind, r'RealtimeCandleUpdate', 'kind'),
+                kind, r'$RealtimeCandleUpdate', 'kind'),
             interval: BuiltValueNullFieldError.checkNotNull(
-                interval, r'RealtimeCandleUpdate', 'interval'),
+                interval, r'$RealtimeCandleUpdate', 'interval'),
             point: point.build(),
           );
     } catch (_) {
@@ -231,7 +249,7 @@ class RealtimeCandleUpdateBuilder
         point.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'RealtimeCandleUpdate', _$failedField, e.toString());
+            r'$RealtimeCandleUpdate', _$failedField, e.toString());
       }
       rethrow;
     }

@@ -15,6 +15,9 @@ import 'package:rwa_api_client/src/date_serializer.dart';
 import 'package:rwa_api_client/src/model/date.dart';
 
 import 'package:rwa_api_client/src/model/account_balance.dart';
+import 'package:rwa_api_client/src/model/account_deletion_blocker.dart';
+import 'package:rwa_api_client/src/model/account_deletion_request.dart';
+import 'package:rwa_api_client/src/model/account_deletion_status.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
 import 'package:rwa_api_client/src/model/activity_page.dart';
@@ -31,6 +34,8 @@ import 'package:rwa_api_client/src/model/arbitrum_deposit_rail.dart';
 import 'package:rwa_api_client/src/model/arbitrum_usdc_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/arbitrum_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/asset_info.dart';
+import 'package:rwa_api_client/src/model/asset_portfolio_allocation.dart';
+import 'package:rwa_api_client/src/model/asset_portfolio_allocation_item.dart';
 import 'package:rwa_api_client/src/model/auto_multi_source_funding_plan_request.dart';
 import 'package:rwa_api_client/src/model/auto_multi_source_trade_intent_create_request.dart';
 import 'package:rwa_api_client/src/model/auto_single_source_funding_plan_request.dart';
@@ -54,6 +59,7 @@ import 'package:rwa_api_client/src/model/bstock_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
+import 'package:rwa_api_client/src/model/bstocks_time_in_force.dart';
 import 'package:rwa_api_client/src/model/candle_point.dart';
 import 'package:rwa_api_client/src/model/candle_series.dart';
 import 'package:rwa_api_client/src/model/chain.dart';
@@ -76,6 +82,9 @@ import 'package:rwa_api_client/src/model/deposit_instruction_item.dart';
 import 'package:rwa_api_client/src/model/deposit_instruction_wallet.dart';
 import 'package:rwa_api_client/src/model/deposit_instructions_response.dart';
 import 'package:rwa_api_client/src/model/deposit_mode.dart';
+import 'package:rwa_api_client/src/model/deposit_observation.dart';
+import 'package:rwa_api_client/src/model/deposit_observation_page.dart';
+import 'package:rwa_api_client/src/model/deposit_observation_status.dart';
 import 'package:rwa_api_client/src/model/deposit_page.dart';
 import 'package:rwa_api_client/src/model/deposit_rail.dart';
 import 'package:rwa_api_client/src/model/deposit_rail_availability.dart';
@@ -122,6 +131,14 @@ import 'package:rwa_api_client/src/model/funding_route_capability.dart';
 import 'package:rwa_api_client/src/model/funding_route_capability_matrix.dart';
 import 'package:rwa_api_client/src/model/funding_route_capability_status.dart';
 import 'package:rwa_api_client/src/model/funding_route_quote.dart';
+import 'package:rwa_api_client/src/model/funding_session.dart';
+import 'package:rwa_api_client/src/model/funding_session_create_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_plan_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_selection_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_source_allocation.dart';
+import 'package:rwa_api_client/src/model/funding_session_source_allocation_input.dart';
+import 'package:rwa_api_client/src/model/funding_session_status.dart';
+import 'package:rwa_api_client/src/model/funding_session_trade_intent_create_request.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
@@ -145,7 +162,9 @@ import 'package:rwa_api_client/src/model/hip3_action_step.dart';
 import 'package:rwa_api_client/src/model/hip3_action_submission_request.dart';
 import 'package:rwa_api_client/src/model/hip3_agent.dart';
 import 'package:rwa_api_client/src/model/hip3_agent_status.dart';
+import 'package:rwa_api_client/src/model/hip3_archive_coverage.dart';
 import 'package:rwa_api_client/src/model/hip3_cancel_order_action_request.dart';
+import 'package:rwa_api_client/src/model/hip3_candle_provenance.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_complete_request.dart';
 import 'package:rwa_api_client/src/model/hip3_challenge_request.dart';
@@ -160,6 +179,14 @@ import 'package:rwa_api_client/src/model/hip3_eip712_message.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_typed_data.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_types.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
+import 'package:rwa_api_client/src/model/hip3_funding_history_coverage.dart';
+import 'package:rwa_api_client/src/model/hip3_funding_payment.dart';
+import 'package:rwa_api_client/src/model/hip3_funding_payment_page.dart';
+import 'package:rwa_api_client/src/model/hip3_history_range.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation_history_coverage.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation_page.dart';
+import 'package:rwa_api_client/src/model/hip3_liquidation_position.dart';
 import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation_legs_inner.dart';
@@ -168,6 +195,23 @@ import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/hip3_protection_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_public_market.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_balance.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_balance_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_balance_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_candle.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_candle_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_candle_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_order_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_order_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_position_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_position_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_price.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_price_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_price_item.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_snapshot.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_snapshot_event.dart';
+import 'package:rwa_api_client/src/model/hip3_realtime_snapshot_item.dart';
 import 'package:rwa_api_client/src/model/hip3_set_leverage_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_set_tp_sl_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_step_signing_payload.dart';
@@ -176,6 +220,7 @@ import 'package:rwa_api_client/src/model/hip3_trading_context.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
 import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
 import 'package:rwa_api_client/src/model/holding_group.dart';
+import 'package:rwa_api_client/src/model/holding_stock.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
 import 'package:rwa_api_client/src/model/ineligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
@@ -204,6 +249,8 @@ import 'package:rwa_api_client/src/model/multi_source_funding_plan_details.dart'
 import 'package:rwa_api_client/src/model/multi_source_funding_plan_status.dart';
 import 'package:rwa_api_client/src/model/multi_source_funding_transfer_request.dart';
 import 'package:rwa_api_client/src/model/multi_source_perp_funding_plan.dart';
+import 'package:rwa_api_client/src/model/network_portfolio_allocation.dart';
+import 'package:rwa_api_client/src/model/network_portfolio_allocation_item.dart';
 import 'package:rwa_api_client/src/model/no_executable_action_transfer_state.dart';
 import 'package:rwa_api_client/src/model/non_completed_funding_transfer_state.dart';
 import 'package:rwa_api_client/src/model/notification_queued_response.dart';
@@ -233,13 +280,17 @@ import 'package:rwa_api_client/src/model/perp_order_preview.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/perp_order_wallet_action_state.dart';
 import 'package:rwa_api_client/src/model/portfolio_account_page.dart';
+import 'package:rwa_api_client/src/model/portfolio_allocation.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_network.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_page.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
+import 'package:rwa_api_client/src/model/portfolio_history.dart';
+import 'package:rwa_api_client/src/model/portfolio_history_point.dart';
 import 'package:rwa_api_client/src/model/portfolio_holding_page.dart';
+import 'package:rwa_api_client/src/model/portfolio_holding_page_all_of_coverage.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice_severity.dart';
 import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
@@ -261,9 +312,13 @@ import 'package:rwa_api_client/src/model/product_detail.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/product_listing.dart';
 import 'package:rwa_api_client/src/model/product_page.dart';
+import 'package:rwa_api_client/src/model/product_portfolio_allocation.dart';
+import 'package:rwa_api_client/src/model/product_portfolio_allocation_item.dart';
 import 'package:rwa_api_client/src/model/product_ref.dart';
 import 'package:rwa_api_client/src/model/product_type.dart';
 import 'package:rwa_api_client/src/model/quote.dart';
+import 'package:rwa_api_client/src/model/rail_portfolio_allocation.dart';
+import 'package:rwa_api_client/src/model/rail_portfolio_allocation_item.dart';
 import 'package:rwa_api_client/src/model/ready_funding_wallet_action.dart';
 import 'package:rwa_api_client/src/model/realtime_activity_event.dart';
 import 'package:rwa_api_client/src/model/realtime_balance_event.dart';
@@ -273,10 +328,16 @@ import 'package:rwa_api_client/src/model/realtime_claim_event.dart';
 import 'package:rwa_api_client/src/model/realtime_deposit_event.dart';
 import 'package:rwa_api_client/src/model/realtime_event.dart';
 import 'package:rwa_api_client/src/model/realtime_event_base.dart';
+import 'package:rwa_api_client/src/model/realtime_event_page.dart';
 import 'package:rwa_api_client/src/model/realtime_order_event.dart';
 import 'package:rwa_api_client/src/model/realtime_position_event.dart';
 import 'package:rwa_api_client/src/model/realtime_price_event.dart';
 import 'package:rwa_api_client/src/model/realtime_price_update.dart';
+import 'package:rwa_api_client/src/model/realtime_private_channel.dart';
+import 'package:rwa_api_client/src/model/realtime_resource_change.dart';
+import 'package:rwa_api_client/src/model/realtime_resource_changed.dart';
+import 'package:rwa_api_client/src/model/realtime_resource_changed_event.dart';
+import 'package:rwa_api_client/src/model/realtime_resource_type.dart';
 import 'package:rwa_api_client/src/model/realtime_resync_required_event.dart';
 import 'package:rwa_api_client/src/model/realtime_resync_required_event_all_of_data.dart';
 import 'package:rwa_api_client/src/model/realtime_session_event.dart';
@@ -284,6 +345,13 @@ import 'package:rwa_api_client/src/model/realtime_transfer_event.dart';
 import 'package:rwa_api_client/src/model/realtime_withdrawal_event.dart';
 import 'package:rwa_api_client/src/model/reference_price.dart';
 import 'package:rwa_api_client/src/model/replace_favorites_request.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain_id.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_status.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_submission_request.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_transaction.dart';
 import 'package:rwa_api_client/src/model/session.dart';
 import 'package:rwa_api_client/src/model/session_kind.dart';
 import 'package:rwa_api_client/src/model/session_request.dart';
@@ -323,7 +391,10 @@ import 'package:rwa_api_client/src/model/unified_funding_data_status.dart';
 import 'package:rwa_api_client/src/model/unified_funding_position.dart';
 import 'package:rwa_api_client/src/model/unified_funding_transfer.dart';
 import 'package:rwa_api_client/src/model/user.dart';
+import 'package:rwa_api_client/src/model/user_language.dart';
 import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
 import 'package:rwa_api_client/src/model/wallet.dart';
@@ -351,6 +422,9 @@ part 'serializers.g.dart';
 
 @SerializersFor([
   AccountBalance,
+  AccountDeletionBlocker,
+  AccountDeletionRequest,
+  AccountDeletionStatus,
   AccountKind,
   ActivityCategory,
   ActivityPage,
@@ -367,6 +441,8 @@ part 'serializers.g.dart';
   ArbitrumUsdcFundingSourceAsset,
   ArbitrumUsdtFundingSourceAsset,
   AssetInfo,
+  AssetPortfolioAllocation,
+  AssetPortfolioAllocationItem,
   AutoMultiSourceFundingPlanRequest,
   AutoMultiSourceTradeIntentCreateRequest,
   AutoSingleSourceFundingPlanRequest,
@@ -390,6 +466,7 @@ part 'serializers.g.dart';
   BstockOrderPreview,
   BstockOrderPreviewRequest,
   BstockOrderWalletActionState,
+  BstocksTimeInForce,
   CandlePoint,
   CandleSeries,
   Chain,
@@ -412,6 +489,9 @@ part 'serializers.g.dart';
   DepositInstructionWallet,
   DepositInstructionsResponse,
   DepositMode,
+  DepositObservation,
+  DepositObservationPage,
+  DepositObservationStatus,
   DepositPage,
   DepositRail,
   DepositRailAvailability,
@@ -458,6 +538,14 @@ part 'serializers.g.dart';
   FundingRouteCapabilityMatrix,
   FundingRouteCapabilityStatus,
   FundingRouteQuote,
+  FundingSession,
+  FundingSessionCreateRequest,
+  FundingSessionPlanRequest,
+  FundingSessionSelectionRequest,
+  FundingSessionSourceAllocation,
+  FundingSessionSourceAllocationInput,
+  FundingSessionStatus,
+  FundingSessionTradeIntentCreateRequest,
   FundingSourceAsset,
   FundingSourceAssetCatalog,
   FundingSourceAssetId,
@@ -481,7 +569,9 @@ part 'serializers.g.dart';
   Hip3ActionSubmissionRequest,
   Hip3Agent,
   Hip3AgentStatus,
+  Hip3ArchiveCoverage,
   Hip3CancelOrderActionRequest,
+  Hip3CandleProvenance,
   Hip3Challenge,
   Hip3ChallengeCompleteRequest,
   Hip3ChallengeRequest,
@@ -496,6 +586,14 @@ part 'serializers.g.dart';
   Hip3Eip712TypedData,
   Hip3Eip712Types,
   Hip3Environment,
+  Hip3FundingHistoryCoverage,
+  Hip3FundingPayment,
+  Hip3FundingPaymentPage,
+  Hip3HistoryRange,
+  Hip3Liquidation,
+  Hip3LiquidationHistoryCoverage,
+  Hip3LiquidationPage,
+  Hip3LiquidationPosition,
   Hip3MainnetProduct,
   Hip3OpeningProtectionConfirmation,
   Hip3OpeningProtectionConfirmationLegsInner,
@@ -504,6 +602,23 @@ part 'serializers.g.dart';
   Hip3PlaceOrderActionRequest,
   Hip3PreviewExecution,
   Hip3ProtectionSpec,
+  Hip3PublicMarket,$Hip3PublicMarket,
+  Hip3RealtimeBalance,
+  Hip3RealtimeBalanceEvent,
+  Hip3RealtimeBalanceItem,
+  Hip3RealtimeCandle,
+  Hip3RealtimeCandleEvent,
+  Hip3RealtimeCandleItem,
+  Hip3RealtimeOrderEvent,
+  Hip3RealtimeOrderItem,
+  Hip3RealtimePositionEvent,
+  Hip3RealtimePositionItem,
+  Hip3RealtimePrice,
+  Hip3RealtimePriceEvent,
+  Hip3RealtimePriceItem,
+  Hip3RealtimeSnapshot,
+  Hip3RealtimeSnapshotEvent,
+  Hip3RealtimeSnapshotItem,
   Hip3SetLeverageActionRequest,
   Hip3SetTpSlActionRequest,
   Hip3StepSigningPayload,
@@ -512,6 +627,7 @@ part 'serializers.g.dart';
   Hip3TradingRules,
   Hip3TriggerSpec,
   HoldingGroup,
+  HoldingStock,
   HyperliquidSignature,
   IneligibleFundingPositionEligibility,
   KeyValue,
@@ -540,6 +656,8 @@ part 'serializers.g.dart';
   MultiSourceFundingPlanStatus,
   MultiSourceFundingTransferRequest,
   MultiSourcePerpFundingPlan,
+  NetworkPortfolioAllocation,
+  NetworkPortfolioAllocationItem,
   NoExecutableActionTransferState,
   NonCompletedFundingTransferState,
   NotificationQueuedResponse,
@@ -569,13 +687,17 @@ part 'serializers.g.dart';
   PerpOrderPreviewRequest,
   PerpOrderWalletActionState,
   PortfolioAccountPage,
+  PortfolioAllocation,
   PortfolioAsset,
   PortfolioAssetNetwork,
   PortfolioAssetPage,
   PortfolioAssetSourceKind,
   PortfolioDataStatus,
   PortfolioFreshness,
+  PortfolioHistory,
+  PortfolioHistoryPoint,
   PortfolioHoldingPage,
+  PortfolioHoldingPageAllOfCoverage,
   PortfolioNotice,
   PortfolioNoticeSeverity,
   PortfolioPriceSource,
@@ -597,22 +719,32 @@ part 'serializers.g.dart';
   ProductKind,
   ProductListing,
   ProductPage,
+  ProductPortfolioAllocation,
+  ProductPortfolioAllocationItem,
   ProductRef,
   ProductType,
   Quote,
+  RailPortfolioAllocation,
+  RailPortfolioAllocationItem,
   ReadyFundingWalletAction,
   RealtimeActivityEvent,
   RealtimeBalanceEvent,
   RealtimeCandleEvent,
-  RealtimeCandleUpdate,
+  RealtimeCandleUpdate,$RealtimeCandleUpdate,
   RealtimeClaimEvent,
   RealtimeDepositEvent,
   RealtimeEvent,
   RealtimeEventBase,$RealtimeEventBase,
+  RealtimeEventPage,
   RealtimeOrderEvent,
   RealtimePositionEvent,
   RealtimePriceEvent,
-  RealtimePriceUpdate,
+  RealtimePriceUpdate,$RealtimePriceUpdate,
+  RealtimePrivateChannel,
+  RealtimeResourceChange,
+  RealtimeResourceChanged,
+  RealtimeResourceChangedEvent,
+  RealtimeResourceType,
   RealtimeResyncRequiredEvent,
   RealtimeResyncRequiredEventAllOfData,
   RealtimeSessionEvent,
@@ -620,6 +752,13 @@ part 'serializers.g.dart';
   RealtimeWithdrawalEvent,
   ReferencePrice,
   ReplaceFavoritesRequest,
+  SelfCustodialWithdrawal,
+  SelfCustodialWithdrawalChain,
+  SelfCustodialWithdrawalChainId,
+  SelfCustodialWithdrawalCreateRequest,
+  SelfCustodialWithdrawalStatus,
+  SelfCustodialWithdrawalSubmissionRequest,
+  SelfCustodialWithdrawalTransaction,
   Session,
   SessionKind,
   SessionRequest,
@@ -659,7 +798,10 @@ part 'serializers.g.dart';
   UnifiedFundingPosition,
   UnifiedFundingTransfer,
   User,
+  UserLanguage,
   UserPaidWalletActionExecutionSubmissionRequest,
+  UserSelectedMultiSourceBstockFundingPlan,
+  UserSelectedMultiSourcePerpFundingPlan,
   UserSettings,
   UserSettingsUpdate,
   Wallet,
@@ -685,12 +827,8 @@ part 'serializers.g.dart';
 ])
 Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Device)]),
-        () => ListBuilder<Device>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Withdrawal)]),
-        () => ListBuilder<Withdrawal>(),
+        const FullType(BuiltList, [FullType(PortfolioHistoryPoint)]),
+        () => ListBuilder<PortfolioHistoryPoint>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3Eip712Field)]),
@@ -701,80 +839,64 @@ Serializers serializers = (_$serializers.toBuilder()
         () => SetBuilder<FundingRail>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(FundingSessionSourceAllocationInput)]),
+        () => SetBuilder<FundingSessionSourceAllocationInput>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Position)]),
         () => ListBuilder<Position>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(HoldingGroup)]),
-        () => ListBuilder<HoldingGroup>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Deposit)]),
-        () => ListBuilder<Deposit>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(OrderBookLevel)]),
         () => ListBuilder<OrderBookLevel>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3Operation)]),
-        () => ListBuilder<Hip3Operation>(),
+        const FullType(BuiltList, [FullType(AccountDeletionBlocker)]),
+        () => ListBuilder<AccountDeletionBlocker>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Order)]),
-        () => ListBuilder<Order>(),
+        const FullType(BuiltList, [FullType(AssetPortfolioAllocationItem)]),
+        () => ListBuilder<AssetPortfolioAllocationItem>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Wallet)]),
-        () => ListBuilder<Wallet>(),
+        const FullType(BuiltList, [FullType(ProductPortfolioAllocationItem)]),
+        () => ListBuilder<ProductPortfolioAllocationItem>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ActivityRecord)]),
-        () => ListBuilder<ActivityRecord>(),
+        const FullType(BuiltList, [FullType(NetworkPortfolioAllocationItem)]),
+        () => ListBuilder<NetworkPortfolioAllocationItem>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(RailPortfolioAllocationItem)]),
+        () => ListBuilder<RailPortfolioAllocationItem>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(UnifiedFundingTransfer)]),
         () => ListBuilder<UnifiedFundingTransfer>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
-        () => ListBuilder<PortfolioWarningCode>(),
+        const FullType(BuiltList, [FullType(Hip3LiquidationPosition)]),
+        () => ListBuilder<Hip3LiquidationPosition>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProductRef)]),
         () => ListBuilder<ProductRef>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(RealtimeEvent)]),
+        () => ListBuilder<RealtimeEvent>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
         () => ListBuilder<UnifiedFundingPosition>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
-        () => ListBuilder<FundingWalletActionSummary>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3TimeInForce)]),
-        () => ListBuilder<Hip3TimeInForce>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3OpeningProtectionConfirmationLegsInner)]),
-        () => ListBuilder<Hip3OpeningProtectionConfirmationLegsInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingRouteBlocker)]),
         () => ListBuilder<FundingRouteBlocker>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(CandlePoint)]),
-        () => ListBuilder<CandlePoint>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(DepositRail)]),
         () => ListBuilder<DepositRail>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(MarginMode)]),
-        () => ListBuilder<MarginMode>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(String)]),
@@ -785,40 +907,24 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<KeyValue>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Chain)]),
-        () => ListBuilder<Chain>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingPositionBlocker)]),
         () => ListBuilder<FundingPositionBlocker>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3ActionStep)]),
-        () => ListBuilder<Hip3ActionStep>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioAsset)]),
         () => ListBuilder<PortfolioAsset>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(DepositRailBlocker)]),
-        () => ListBuilder<DepositRailBlocker>(),
+        const FullType(BuiltList, [FullType(Hip3Liquidation)]),
+        () => ListBuilder<Hip3Liquidation>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(ProductListing)]),
-        () => ListBuilder<ProductListing>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(StockGroup)]),
-        () => ListBuilder<StockGroup>(),
+        const FullType(BuiltList, [FullType(DepositObservation)]),
+        () => ListBuilder<DepositObservation>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(UnifiedFundingBlocker)]),
         () => SetBuilder<UnifiedFundingBlocker>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltSet, [FullType(FundingPositionBlocker)]),
-        () => SetBuilder<FundingPositionBlocker>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AppVersionInfo)]),
@@ -837,20 +943,124 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<MultiSourceFundingLeg>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
-        () => MapBuilder<String, JsonObject?>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(TokenBalance)]),
         () => ListBuilder<TokenBalance>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(OrderFill)]),
-        () => ListBuilder<OrderFill>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioNotice)]),
         () => ListBuilder<PortfolioNotice>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+        () => ListBuilder<PortfolioSourceSummary>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Action)]),
+        () => ListBuilder<Hip3Action>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Device)]),
+        () => ListBuilder<Device>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Withdrawal)]),
+        () => ListBuilder<Withdrawal>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(HoldingGroup)]),
+        () => ListBuilder<HoldingGroup>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Deposit)]),
+        () => ListBuilder<Deposit>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3Operation)]),
+        () => ListBuilder<Hip3Operation>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Order)]),
+        () => ListBuilder<Order>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Wallet)]),
+        () => ListBuilder<Wallet>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ActivityRecord)]),
+        () => ListBuilder<ActivityRecord>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
+        () => ListBuilder<PortfolioWarningCode>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3HistoryRange)]),
+        () => ListBuilder<Hip3HistoryRange>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
+        () => ListBuilder<FundingWalletActionSummary>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3TimeInForce)]),
+        () => ListBuilder<Hip3TimeInForce>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3OpeningProtectionConfirmationLegsInner)]),
+        () => ListBuilder<Hip3OpeningProtectionConfirmationLegsInner>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(CandlePoint)]),
+        () => ListBuilder<CandlePoint>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(MarginMode)]),
+        () => ListBuilder<MarginMode>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Chain)]),
+        () => ListBuilder<Chain>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3RealtimeSnapshotItem)]),
+        () => ListBuilder<Hip3RealtimeSnapshotItem>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3ActionStep)]),
+        () => ListBuilder<Hip3ActionStep>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(DepositRailBlocker)]),
+        () => ListBuilder<DepositRailBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(ProductListing)]),
+        () => ListBuilder<ProductListing>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(StockGroup)]),
+        () => ListBuilder<StockGroup>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltSet, [FullType(FundingPositionBlocker)]),
+        () => SetBuilder<FundingPositionBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingSessionSourceAllocation)]),
+        () => ListBuilder<FundingSessionSourceAllocation>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3FundingPayment)]),
+        () => ListBuilder<Hip3FundingPayment>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltMap, [FullType(String), FullType.nullable(JsonObject)]),
+        () => MapBuilder<String, JsonObject?>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(OrderFill)]),
+        () => ListBuilder<OrderFill>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(SessionSegment)]),
@@ -865,23 +1075,18 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<String>(),
       )
       ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
-        () => ListBuilder<PortfolioSourceSummary>(),
-      )
-      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AccountBalance)]),
         () => ListBuilder<AccountBalance>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(Hip3Action)]),
-        () => ListBuilder<Hip3Action>(),
       )
       ..add(DepositAddressBase.serializer)
       ..add(DepositBase.serializer)
       ..add(DepositRailBase.serializer)
+      ..add(Hip3PublicMarket.serializer)
       ..add(OrderPreviewCommon.serializer)
       ..add(Page.serializer)
+      ..add(RealtimeCandleUpdate.serializer)
       ..add(RealtimeEventBase.serializer)
+      ..add(RealtimePriceUpdate.serializer)
       ..add(const OneOfSerializer())
       ..add(const AnyOfSerializer())
       ..add(const DateSerializer())

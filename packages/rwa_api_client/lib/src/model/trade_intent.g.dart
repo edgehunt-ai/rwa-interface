@@ -6,6 +6,75 @@ part of 'trade_intent.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const TradeIntentFundingModeEnum _$tradeIntentFundingModeEnum_autoSingleSource =
+    const TradeIntentFundingModeEnum._('autoSingleSource');
+const TradeIntentFundingModeEnum _$tradeIntentFundingModeEnum_autoMultiSource =
+    const TradeIntentFundingModeEnum._('autoMultiSource');
+const TradeIntentFundingModeEnum _$tradeIntentFundingModeEnum_fundingSession =
+    const TradeIntentFundingModeEnum._('fundingSession');
+const TradeIntentFundingModeEnum
+    _$tradeIntentFundingModeEnum_unknownDefaultOpenApi =
+    const TradeIntentFundingModeEnum._('unknownDefaultOpenApi');
+
+TradeIntentFundingModeEnum _$tradeIntentFundingModeEnumValueOf(String name) {
+  switch (name) {
+    case 'autoSingleSource':
+      return _$tradeIntentFundingModeEnum_autoSingleSource;
+    case 'autoMultiSource':
+      return _$tradeIntentFundingModeEnum_autoMultiSource;
+    case 'fundingSession':
+      return _$tradeIntentFundingModeEnum_fundingSession;
+    case 'unknownDefaultOpenApi':
+      return _$tradeIntentFundingModeEnum_unknownDefaultOpenApi;
+    default:
+      return _$tradeIntentFundingModeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<TradeIntentFundingModeEnum> _$tradeIntentFundingModeEnumValues =
+    BuiltSet<TradeIntentFundingModeEnum>(const <TradeIntentFundingModeEnum>[
+  _$tradeIntentFundingModeEnum_autoSingleSource,
+  _$tradeIntentFundingModeEnum_autoMultiSource,
+  _$tradeIntentFundingModeEnum_fundingSession,
+  _$tradeIntentFundingModeEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<TradeIntentFundingModeEnum> _$tradeIntentFundingModeEnumSerializer =
+    _$TradeIntentFundingModeEnumSerializer();
+
+class _$TradeIntentFundingModeEnumSerializer
+    implements PrimitiveSerializer<TradeIntentFundingModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'autoSingleSource': 'auto_single_source',
+    'autoMultiSource': 'auto_multi_source',
+    'fundingSession': 'funding_session',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'auto_single_source': 'autoSingleSource',
+    'auto_multi_source': 'autoMultiSource',
+    'funding_session': 'fundingSession',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[TradeIntentFundingModeEnum];
+  @override
+  final String wireName = 'TradeIntentFundingModeEnum';
+
+  @override
+  Object serialize(Serializers serializers, TradeIntentFundingModeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  TradeIntentFundingModeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      TradeIntentFundingModeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$TradeIntent extends TradeIntent {
   @override
   final String tradeIntentId;
@@ -23,6 +92,12 @@ class _$TradeIntent extends TradeIntent {
   final TradeIntentBlocker? blocker;
   @override
   final TradeIntentExecutionPolicy executionPolicy;
+  @override
+  final TradeIntentFundingModeEnum fundingMode;
+  @override
+  final String? fundingSessionId;
+  @override
+  final int? fundingSessionVersion;
   @override
   final String? fundingPlanId;
   @override
@@ -50,6 +125,9 @@ class _$TradeIntent extends TradeIntent {
       required this.nextAction,
       this.blocker,
       required this.executionPolicy,
+      required this.fundingMode,
+      this.fundingSessionId,
+      this.fundingSessionVersion,
       this.fundingPlanId,
       this.transferId,
       this.fundingLegs,
@@ -77,6 +155,9 @@ class _$TradeIntent extends TradeIntent {
         nextAction == other.nextAction &&
         blocker == other.blocker &&
         executionPolicy == other.executionPolicy &&
+        fundingMode == other.fundingMode &&
+        fundingSessionId == other.fundingSessionId &&
+        fundingSessionVersion == other.fundingSessionVersion &&
         fundingPlanId == other.fundingPlanId &&
         transferId == other.transferId &&
         fundingLegs == other.fundingLegs &&
@@ -97,6 +178,9 @@ class _$TradeIntent extends TradeIntent {
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, blocker.hashCode);
     _$hash = $jc(_$hash, executionPolicy.hashCode);
+    _$hash = $jc(_$hash, fundingMode.hashCode);
+    _$hash = $jc(_$hash, fundingSessionId.hashCode);
+    _$hash = $jc(_$hash, fundingSessionVersion.hashCode);
     _$hash = $jc(_$hash, fundingPlanId.hashCode);
     _$hash = $jc(_$hash, transferId.hashCode);
     _$hash = $jc(_$hash, fundingLegs.hashCode);
@@ -119,6 +203,9 @@ class _$TradeIntent extends TradeIntent {
           ..add('nextAction', nextAction)
           ..add('blocker', blocker)
           ..add('executionPolicy', executionPolicy)
+          ..add('fundingMode', fundingMode)
+          ..add('fundingSessionId', fundingSessionId)
+          ..add('fundingSessionVersion', fundingSessionVersion)
           ..add('fundingPlanId', fundingPlanId)
           ..add('transferId', transferId)
           ..add('fundingLegs', fundingLegs)
@@ -170,6 +257,21 @@ class TradeIntentBuilder implements Builder<TradeIntent, TradeIntentBuilder> {
   set executionPolicy(TradeIntentExecutionPolicyBuilder? executionPolicy) =>
       _$this._executionPolicy = executionPolicy;
 
+  TradeIntentFundingModeEnum? _fundingMode;
+  TradeIntentFundingModeEnum? get fundingMode => _$this._fundingMode;
+  set fundingMode(TradeIntentFundingModeEnum? fundingMode) =>
+      _$this._fundingMode = fundingMode;
+
+  String? _fundingSessionId;
+  String? get fundingSessionId => _$this._fundingSessionId;
+  set fundingSessionId(String? fundingSessionId) =>
+      _$this._fundingSessionId = fundingSessionId;
+
+  int? _fundingSessionVersion;
+  int? get fundingSessionVersion => _$this._fundingSessionVersion;
+  set fundingSessionVersion(int? fundingSessionVersion) =>
+      _$this._fundingSessionVersion = fundingSessionVersion;
+
   String? _fundingPlanId;
   String? get fundingPlanId => _$this._fundingPlanId;
   set fundingPlanId(String? fundingPlanId) =>
@@ -216,6 +318,9 @@ class TradeIntentBuilder implements Builder<TradeIntent, TradeIntentBuilder> {
       _nextAction = $v.nextAction;
       _blocker = $v.blocker;
       _executionPolicy = $v.executionPolicy.toBuilder();
+      _fundingMode = $v.fundingMode;
+      _fundingSessionId = $v.fundingSessionId;
+      _fundingSessionVersion = $v.fundingSessionVersion;
       _fundingPlanId = $v.fundingPlanId;
       _transferId = $v.transferId;
       _fundingLegs = $v.fundingLegs?.toBuilder();
@@ -260,6 +365,10 @@ class TradeIntentBuilder implements Builder<TradeIntent, TradeIntentBuilder> {
                 nextAction, r'TradeIntent', 'nextAction'),
             blocker: blocker,
             executionPolicy: executionPolicy.build(),
+            fundingMode: BuiltValueNullFieldError.checkNotNull(
+                fundingMode, r'TradeIntent', 'fundingMode'),
+            fundingSessionId: fundingSessionId,
+            fundingSessionVersion: fundingSessionVersion,
             fundingPlanId: fundingPlanId,
             transferId: transferId,
             fundingLegs: _fundingLegs?.build(),

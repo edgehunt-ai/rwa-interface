@@ -8,6 +8,8 @@ part of 'candle_series.dart';
 
 class _$CandleSeries extends CandleSeries {
   @override
+  final Hip3CandleProvenance? hip3Provenance;
+  @override
   final String symbol;
   @override
   final ProductKind kind;
@@ -34,7 +36,8 @@ class _$CandleSeries extends CandleSeries {
       (CandleSeriesBuilder()..update(updates))._build();
 
   _$CandleSeries._(
-      {required this.symbol,
+      {this.hip3Provenance,
+      required this.symbol,
       required this.kind,
       required this.range,
       this.interval,
@@ -57,6 +60,7 @@ class _$CandleSeries extends CandleSeries {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is CandleSeries &&
+        hip3Provenance == other.hip3Provenance &&
         symbol == other.symbol &&
         kind == other.kind &&
         range == other.range &&
@@ -73,6 +77,7 @@ class _$CandleSeries extends CandleSeries {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, hip3Provenance.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, range.hashCode);
@@ -91,6 +96,7 @@ class _$CandleSeries extends CandleSeries {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'CandleSeries')
+          ..add('hip3Provenance', hip3Provenance)
           ..add('symbol', symbol)
           ..add('kind', kind)
           ..add('range', range)
@@ -109,6 +115,12 @@ class _$CandleSeries extends CandleSeries {
 class CandleSeriesBuilder
     implements Builder<CandleSeries, CandleSeriesBuilder> {
   _$CandleSeries? _$v;
+
+  Hip3CandleProvenanceBuilder? _hip3Provenance;
+  Hip3CandleProvenanceBuilder get hip3Provenance =>
+      _$this._hip3Provenance ??= Hip3CandleProvenanceBuilder();
+  set hip3Provenance(Hip3CandleProvenanceBuilder? hip3Provenance) =>
+      _$this._hip3Provenance = hip3Provenance;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
@@ -168,6 +180,7 @@ class CandleSeriesBuilder
   CandleSeriesBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _hip3Provenance = $v.hip3Provenance?.toBuilder();
       _symbol = $v.symbol;
       _kind = $v.kind;
       _range = $v.range;
@@ -202,6 +215,7 @@ class CandleSeriesBuilder
     try {
       _$result = _$v ??
           _$CandleSeries._(
+            hip3Provenance: _hip3Provenance?.build(),
             symbol: BuiltValueNullFieldError.checkNotNull(
                 symbol, r'CandleSeries', 'symbol'),
             kind: BuiltValueNullFieldError.checkNotNull(
@@ -220,6 +234,9 @@ class CandleSeriesBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'hip3Provenance';
+        _hip3Provenance?.build();
+
         _$failedField = 'points';
         points.build();
         _$failedField = 'referencePoints';

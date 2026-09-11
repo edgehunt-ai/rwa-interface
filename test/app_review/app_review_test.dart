@@ -56,7 +56,7 @@ void main() {
   });
 
   test(
-        'review mode replaces supported repositories while funding uses the API',
+    'review mode replaces supported repositories while funding uses the API',
     () async {
       final container = ProviderContainer(
         overrides: [

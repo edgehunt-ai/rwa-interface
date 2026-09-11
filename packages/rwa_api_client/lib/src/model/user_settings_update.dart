@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/user_language.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -20,8 +20,8 @@ part 'user_settings_update.g.dart';
 @BuiltValue()
 abstract class UserSettingsUpdate implements Built<UserSettingsUpdate, UserSettingsUpdateBuilder> {
   @BuiltValueField(wireName: r'language')
-  UserSettingsUpdateLanguageEnum? get language;
-  // enum languageEnum {  zh-CN,  en,  };
+  UserLanguage? get language;
+  // enum languageEnum {  zh-CN,  en,  ja,  ko,  };
 
   @BuiltValueField(wireName: r'push_enabled')
   bool? get pushEnabled;
@@ -62,7 +62,7 @@ class _$UserSettingsUpdateSerializer implements PrimitiveSerializer<UserSettings
       yield r'language';
       yield serializers.serialize(
         object.language,
-        specifiedType: const FullType(UserSettingsUpdateLanguageEnum),
+        specifiedType: const FullType(UserLanguage),
       );
     }
     if (object.pushEnabled != null) {
@@ -119,8 +119,8 @@ class _$UserSettingsUpdateSerializer implements PrimitiveSerializer<UserSettings
         case r'language':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(UserSettingsUpdateLanguageEnum),
-          ) as UserSettingsUpdateLanguageEnum?;
+            specifiedType: const FullType.nullable(UserLanguage),
+          ) as UserLanguage?;
           if (valueDes == null) continue;
           result.language = valueDes;
           break;
@@ -183,22 +183,5 @@ class _$UserSettingsUpdateSerializer implements PrimitiveSerializer<UserSettings
     );
     return result.build();
   }
-}
-
-class UserSettingsUpdateLanguageEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'zh-CN')
-  static const UserSettingsUpdateLanguageEnum zhCN = _$userSettingsUpdateLanguageEnum_zhCN;
-  @BuiltValueEnumConst(wireName: r'en')
-  static const UserSettingsUpdateLanguageEnum en = _$userSettingsUpdateLanguageEnum_en;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSettingsUpdateLanguageEnum unknownDefaultOpenApi = _$userSettingsUpdateLanguageEnum_unknownDefaultOpenApi;
-
-  static Serializer<UserSettingsUpdateLanguageEnum> get serializer => _$userSettingsUpdateLanguageEnumSerializer;
-
-  const UserSettingsUpdateLanguageEnum._(String name): super(name);
-
-  static BuiltSet<UserSettingsUpdateLanguageEnum> get values => _$userSettingsUpdateLanguageEnumValues;
-  static UserSettingsUpdateLanguageEnum valueOf(String name) => _$userSettingsUpdateLanguageEnumValueOf(name);
 }
 
