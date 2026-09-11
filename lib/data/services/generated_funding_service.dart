@@ -103,6 +103,31 @@ final class GeneratedFundingService implements FundingService {
   @override
   Future<api.WithdrawalPage> listWithdrawals({String? cursor}) =>
       _body(() => _api.listWithdrawals(cursor: cursor));
+  @override
+  Future<api.SelfCustodialWithdrawal> createSelfCustodialWithdrawal(
+    api.SelfCustodialWithdrawalCreateRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.createSelfCustodialWithdrawal(
+      idempotencyKey: idempotencyKey,
+      selfCustodialWithdrawalCreateRequest: request,
+    ),
+  );
+  @override
+  Future<api.SelfCustodialWithdrawal> getSelfCustodialWithdrawal(String id) =>
+      _body(() => _api.getSelfCustodialWithdrawal(withdrawalId: id));
+  @override
+  Future<api.SelfCustodialWithdrawal> submitSelfCustodialWithdrawal(
+    String id,
+    api.SelfCustodialWithdrawalSubmissionRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.submitSelfCustodialWithdrawal(
+      withdrawalId: id,
+      idempotencyKey: idempotencyKey,
+      selfCustodialWithdrawalSubmissionRequest: request,
+    ),
+  );
 
   Future<T> _body<T>(Future<Response<T>> Function() request) async {
     try {

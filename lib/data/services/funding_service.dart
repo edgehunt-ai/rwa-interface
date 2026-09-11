@@ -36,4 +36,14 @@ abstract interface class FundingService {
   });
   Future<api.Withdrawal> getWithdrawal(String id);
   Future<api.WithdrawalPage> listWithdrawals({String? cursor});
+  Future<api.SelfCustodialWithdrawal> createSelfCustodialWithdrawal(
+    api.SelfCustodialWithdrawalCreateRequest request, {
+    required String idempotencyKey,
+  });
+  Future<api.SelfCustodialWithdrawal> getSelfCustodialWithdrawal(String id);
+  Future<api.SelfCustodialWithdrawal> submitSelfCustodialWithdrawal(
+    String id,
+    api.SelfCustodialWithdrawalSubmissionRequest request, {
+    required String idempotencyKey,
+  });
 }
