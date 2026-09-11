@@ -305,10 +305,10 @@ class SettingsScreen extends ConsumerWidget {
       return;
     }
 
-    await ref.read(authenticationProvider.notifier).logout();
     if (sheetContext.mounted) {
       Navigator.of(sheetContext).pop();
     }
+    await ref.read(authenticationProvider.notifier).logout();
     if (!context.mounted) return;
     AppToast.showSuccess(context, l10n.settingsDeleteAccountAccepted);
     GoRouter.maybeOf(context)?.goNamed(AppRoutes.loginName);

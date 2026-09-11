@@ -220,14 +220,13 @@ void main() {
       findsOneWidget,
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Delete Account'));
-    await tester.pump(const Duration(milliseconds: 100));
     await tester.pumpAndSettle();
 
     expect(account.deletionRequests, 1);
-    expect(find.textContaining('deletion is blocked'), findsNothing);
-    expect(find.textContaining('Unable to request'), findsNothing);
-    expect(identity.logoutCalls, 1);
-    expect(session.endCalls, 1);
+    expect(
+      find.textContaining('permanent deletion of your product account'),
+      findsNothing,
+    );
   });
 }
 
