@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
@@ -35,11 +36,48 @@ void main() {
       expect(transfer.status, FundingTransferState.awaitingWallet);
     },
   );
+
+  test('funding plan retries retain a stable idempotency key', () async {
+    final funding = _FundingRepository();
+    final container = ProviderContainer(
+      overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+    );
+    addTearDown(container.dispose);
+
+    final commands = container.read(fundingTransferCommandsProvider);
+    await commands.plan(tradePreviewId: 'preview-1');
+    await commands.plan(tradePreviewId: 'preview-1');
+
+    expect(funding.planKeys.toSet(), hasLength(1));
+  });
+
+  test('funding plan query exposes a stable domain failure', () async {
+    final funding = _FundingRepository(failPlanQuery: true);
+    final container = ProviderContainer(
+      overrides: [fundingRepositoryProvider.overrideWithValue(funding)],
+      retry: (_, _) => null,
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      fundingPlanProvider('plan-1'),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+
+    await expectLater(
+      container.read(fundingPlanProvider('plan-1').future),
+      throwsA(isA<NetworkFailure>()),
+    );
+  });
 }
 
 final class _FundingRepository implements FundingRepository {
+  _FundingRepository({this.failPlanQuery = false});
+
   String? createdPlanFor;
   String? transferAuthorizationId;
+  final bool failPlanQuery;
+  final List<String> planKeys = [];
   final plan = FundingPlan(
     planId: 'plan-1',
     tradePreviewId: 'preview-1',
@@ -66,6 +104,13 @@ final class _FundingRepository implements FundingRepository {
     required String idempotencyKey,
   }) async {
     createdPlanFor = tradePreviewId;
+    planKeys.add(idempotencyKey);
+    return plan;
+  }
+
+  @override
+  Future<FundingPlan> getFundingPlan(String id) async {
+    if (failPlanQuery) throw const NetworkFailure(retryable: false);
     return plan;
   }
 

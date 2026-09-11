@@ -44,7 +44,22 @@ void main() {
   testWidgets('Trade switches chart states and exposes market hours', (
     tester,
   ) async {
-    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpWidget(
+      _tradeWithMarkets(
+        marketHours: MarketHours(
+          timezone: 'America/New_York',
+          current: MarketSessionKind.regular,
+          currentLabel: 'Regular Market',
+          segments: [
+            MarketSessionSegment(
+              kind: MarketSessionKind.regular,
+              start: DateTime.utc(2026, 1, 1, 14, 30),
+              end: DateTime.utc(2026, 1, 1, 21),
+            ),
+          ],
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('NVDAB'), findsOneWidget);
@@ -62,7 +77,7 @@ void main() {
       returnContext: '/trade bStocks Details',
       finder: find.text('US Market Trading Hours'),
     );
-    expect(find.text('Regular Market'), findsOneWidget);
+    expect(find.text('Regular Market'), findsNWidgets(2));
 
     await tester.tap(find.byTooltip('Cancel'));
     await tester.pumpAndSettle();
@@ -70,20 +85,26 @@ void main() {
     expect(find.text('Details'), findsOneWidget);
   });
 
-  testWidgets(
-    'Trade details show unavailable market data without fabrication',
-    (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(child: buildTestApp(const TradeScreen())),
-      );
+  testWidgets('Trade details render bStocks snapshot disclosures', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider(_bstockProduct)
+              .overrideWith((_) async => _bstockDisclosureSnapshot()),
+        ],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.text('US Stock Reference'), findsOneWidget);
-      expect(find.text('—'), findsWidgets);
-      expect(find.text('Asset & Rights'), findsOneWidget);
-      expect(find.text('BTECH Holdings Limited'), findsOneWidget);
-      expect(find.text('No Shareholder Voting Rights'), findsOneWidget);
-    },
-  );
+    expect(find.text('US Stock Reference'), findsOneWidget);
+    expect(find.text('—'), findsWidgets);
+    expect(find.text('Asset & Rights'), findsOneWidget);
+    expect(find.text('BTECH Holdings Limited'), findsOneWidget);
+    expect(find.text('No Shareholder Voting Rights'), findsOneWidget);
+  });
 
   testWidgets('Trade shows field skeletons while market data loads', (
     tester,
@@ -396,7 +417,9 @@ void main() {
   testWidgets('Trade routes HIP-3 actions to the perpetual order panel', (
     tester,
   ) async {
-    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpWidget(
+      _tradeWithMarkets(perpSnapshot: _perpDisclosureSnapshot()),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('HIP-3 Perp'));
@@ -451,10 +474,12 @@ void main() {
   testWidgets('Trade renders HIP-3-specific price and rights disclosures', (
     tester,
   ) async {
-    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpWidget(
+      _tradeWithMarkets(perpSnapshot: _perpDisclosureSnapshot()),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('HIP-3 Perp'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('24/7'), findsOneWidget);
     expect(find.text('Perpetual'), findsNothing);
@@ -546,6 +571,7 @@ void main() {
       await tester.pumpWidget(
         _tradeWithMarkets(
           products: [_marketProduct('NVDA', MarketProductKind.perp)],
+          perpSnapshot: _perpDisclosureSnapshot(),
         ),
       );
       await tester.pumpAndSettle();
@@ -583,7 +609,7 @@ void main() {
     await tester.pump();
 
     expect(repository.tpSlUpdates, [('position-1', '200', '150')]);
-    expect(repository.lastTpSlQuantity, '0.2');
+    expect(repository.lastTpSlQuantity, percentageQuantity('3.0154', '20'));
   });
 
   testWidgets('Trade bStocks position card opens the sell panel from Close', (
@@ -750,6 +776,9 @@ Widget _tradeWithMarkets({
   List<MarketProduct>? products,
   PositionsRepository? positionsRepository,
   Locale? locale,
+  MarketHours? marketHours,
+  MarketSnapshot? bstockSnapshot,
+  MarketSnapshot? perpSnapshot,
 }) => ProviderScope(
   overrides: [
     if (positionsRepository != null)
@@ -765,8 +794,42 @@ Widget _tradeWithMarkets({
         hasMore: false,
       ),
     ),
+    if (bstockSnapshot != null)
+      marketSnapshotProvider(_bstockProduct)
+          .overrideWith((_) async => bstockSnapshot),
+    if (perpSnapshot != null)
+      marketSnapshotProvider(_perpProduct)
+          .overrideWith((_) async => perpSnapshot),
+    if (marketHours != null)
+      marketHoursProvider.overrideWith((_) async => marketHours),
   ],
   child: buildTestApp(const TradeScreen(), locale: locale),
+);
+
+const _bstockProduct = MarketProductRef(
+  symbol: 'NVDAB',
+  kind: MarketProductKind.bstock,
+);
+
+const _perpProduct = MarketProductRef(
+  symbol: 'NVDA',
+  kind: MarketProductKind.perp,
+);
+
+MarketSnapshot _bstockDisclosureSnapshot() => MarketSnapshot(
+  price: DecimalValue('100', asset: 'USDT', unit: 'price'),
+  referenceLabel: 'US Stock Reference',
+  assetTitle: 'Asset & Rights',
+  assetDescription: 'BTECH Holdings Limited',
+  assetRights: const [
+    AssetRight(label: 'Voting Rights', value: 'No Shareholder Voting Rights'),
+  ],
+);
+
+MarketSnapshot _perpDisclosureSnapshot() => MarketSnapshot(
+  price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+  assetTitle: 'HIP-3 Perpetual Contract',
+  assetDescription: 'Price Exposure Only',
 );
 
 MarketProduct _marketProduct(String symbol, MarketProductKind kind) =>

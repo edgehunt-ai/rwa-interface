@@ -177,23 +177,23 @@ const _scenarios = <_ScenarioLink>[
     {'FR-019', 'FR-022', 'SC-005'},
   ),
   _ScenarioLink(
-    'test/ui/features/funding/providers/deposit_providers_test.dart',
-    'funding transfer capability always waits for feature',
+    'test/ui/features/funding/providers/funding_transfer_providers_test.dart',
+    'funding transfer lifecycle uses a server-selected plan and authorization',
     {'FR-014', 'FR-022'},
   ),
   _ScenarioLink(
-    'test/ui/features/funding/providers/deposit_providers_test.dart',
-    'same deposit intent merges concurrency and preserves retry key',
+    'test/ui/features/funding/providers/funding_transfer_providers_test.dart',
+    'funding plan retries retain a stable idempotency key',
     {'FR-010', 'FR-013', 'SC-002'},
   ),
   _ScenarioLink(
     'test/ui/features/funding/providers/deposit_providers_test.dart',
-    'catalog, list, and detail are isolated by session generation',
+    'directory, list, and detail are isolated by session generation',
     {'FR-003', 'FR-013'},
   ),
   _ScenarioLink(
-    'test/ui/features/funding/providers/deposit_providers_test.dart',
-    'query exposes a stable domain failure',
+    'test/ui/features/funding/providers/funding_transfer_providers_test.dart',
+    'funding plan query exposes a stable domain failure',
     {'FR-019', 'FR-022', 'SC-005'},
   ),
   _ScenarioLink(
