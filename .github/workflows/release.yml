@@ -84,30 +84,36 @@ jobs:
               grep -Fxv "$tag" |
               head -n1 || true
           )"
-          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
-            tagged_commit="$(git rev-list -n 1 "$tag")"
-            if [[ "$tagged_commit" != "$TARGET_SHA" ]]; then
-              echo "Version ${version_name} already belongs to ${tagged_commit}; increment pubspec.yaml before releasing." >&2
-              exit 1
-            fi
-          elif [[ "${{ github.event_name }}" == "workflow_run" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            should_release="true"
-          fi
-
-          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
-            before_sha="$(git rev-parse "${TARGET_SHA}^")"
+          workflow_rebuild="false"
+          if before_sha="$(git rev-parse "${TARGET_SHA}^" 2>/dev/null)"; then
             if git cat-file -e "${before_sha}:pubspec.yaml" 2>/dev/null; then
               previous_version="$(git show "${before_sha}:pubspec.yaml" | awk -F': ' '/^version: /{print $2}' | tr -d '[:space:]')"
               previous_name="${previous_version%%+*}"
-              workflow_changed="false"
-              if ! git diff --quiet "$before_sha" "$TARGET_SHA" -- .github/workflows/release.yml; then
-                workflow_changed="true"
-              fi
-              if [[ "$previous_name" == "$version_name" && "$workflow_changed" != "true" ]]; then
-                should_build="false"
-                should_release="false"
+              if [[ "$previous_name" == "$version_name" ]]; then
+                if ! git diff --quiet "$before_sha" "$TARGET_SHA" -- .github/workflows/release.yml &&
+                  git diff --quiet "$before_sha" "$TARGET_SHA" -- . ':(exclude).github/workflows/**'; then
+                  workflow_rebuild="true"
+                else
+                  should_build="false"
+                  should_release="false"
+                fi
               fi
             fi
+          fi
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            tagged_commit="$(git rev-list -n 1 "$tag")"
+            if [[ "$tagged_commit" != "$TARGET_SHA" ]]; then
+              if [[ "$workflow_rebuild" == "true" ]]; then
+                echo "Release workflow changed since ${tag}; rebuilding artifacts without publishing a new release."
+                should_build="true"
+                should_release="false"
+              else
+                echo "Version ${version_name} already belongs to ${tagged_commit}; increment pubspec.yaml before releasing." >&2
+                exit 1
+              fi
+            fi
+          elif [[ "${{ github.event_name }}" == "workflow_run" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            should_release="true"
           fi
 
           {
