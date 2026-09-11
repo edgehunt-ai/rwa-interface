@@ -31,7 +31,7 @@ List<MarketProduct> marketProductsForTab(
   } else if (tab == 'Volume') {
     _sortMarketProducts(
       result,
-      (product) => product.turnover24hUsd,
+      (product) => product.volume24h,
       descending: true,
     );
   }
@@ -52,7 +52,9 @@ void _sortMarketProducts(
     if (leftValue == null && rightValue == null) return 0;
     if (leftValue == null) return 1;
     if (rightValue == null) return -1;
-    final result = leftValue.compareTo(rightValue);
+    final leftNumber = _metricValue(leftValue);
+    final rightNumber = _metricValue(rightValue);
+    final result = leftNumber.compareTo(rightNumber);
     return descending ? -result : result;
   });
 }

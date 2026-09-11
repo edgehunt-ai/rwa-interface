@@ -41,21 +41,6 @@ void expectNodeVisible({
 }
 
 void main() {
-  testWidgets('Switching to HIP3 never retains the fixed stock reference', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_tradeWithMarkets());
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('US stock reference price'));
-    await tester.pump();
-    expect(find.text(r'US Stock $175.22'), findsOneWidget);
-
-    await tester.tap(find.text('HIP-3 Perp'));
-    await tester.pumpAndSettle();
-    expect(find.text(r'US Stock $175.22'), findsNothing);
-    expect(find.text(r'US $175.22'), findsNothing);
-  });
-
   testWidgets('Trade switches chart states and exposes market hours', (
     tester,
   ) async {

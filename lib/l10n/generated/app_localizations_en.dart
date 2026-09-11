@@ -342,32 +342,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get marketsUnavailable => 'Markets unavailable';
 
   @override
-  String get hip3ChartLoading => 'Loading price history…';
-
-  @override
-  String get hip3ChartError => 'Could not load price history.';
-
-  @override
-  String get hip3ChartEmpty => 'No trades in this period.';
-
-  @override
-  String get hip3ChartRetry => 'Refresh chart';
-
-  @override
-  String get hip3ChartStale =>
-      'Price history may be out of date. Refresh to update.';
-
-  @override
-  String get hip3ChartLine => 'Line chart';
-
-  @override
-  String get hip3ChartCandles => 'Candlestick chart';
-
-  @override
-  String get hip3ChartReferenceUnavailable =>
-      'Reference price history is not available.';
-
-  @override
   String get noProductsYet => 'No products yet';
 
   @override
