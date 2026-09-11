@@ -30,11 +30,16 @@ class MarketDiscoverySearchScreen extends ConsumerStatefulWidget {
 
 class _MarketDiscoverySearchScreenState
     extends ConsumerState<MarketDiscoverySearchScreen> {
+  static const _searchDebounceDuration = Duration(milliseconds: 300);
+
   String query = '';
+  String _remoteQuery = '';
   final _controller = TextEditingController();
+  Timer? _searchDebounce;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -44,9 +49,13 @@ class _MarketDiscoverySearchScreenState
     final catalog = ref.watch(
       marketProductsProvider((query: null, cursor: null)),
     );
-    final searchResults = query.isEmpty
+    final AsyncValue<DomainPage<MarketProduct>>? searchResults = query.isEmpty
         ? null
-        : ref.watch(marketProductsProvider((query: query, cursor: null)));
+        : _searchDebounce?.isActive ?? false
+        ? const AsyncLoading()
+        : ref.watch(
+            marketProductsProvider((query: _remoteQuery, cursor: null)),
+          );
     final recentSearches = ref.watch(recentMarketSearchesProvider);
     return Scaffold(
       body: SafeArea(
@@ -73,7 +82,7 @@ class _MarketDiscoverySearchScreenState
               TextField(
                 autofocus: true,
                 controller: _controller,
-                onChanged: (value) => setState(() => query = value),
+                onChanged: _setQuery,
                 decoration: InputDecoration(
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
@@ -90,7 +99,7 @@ class _MarketDiscoverySearchScreenState
                           tooltip: 'Clear search',
                           onPressed: () {
                             _controller.clear();
-                            setState(() => query = '');
+                            _setQuery('');
                           },
                           icon: const Icon(Icons.close),
                         ),
@@ -236,6 +245,23 @@ class _MarketDiscoverySearchScreenState
       AppRoutes.tradeLocation(symbol: product.symbol, kind: product.kind.name),
     );
   }
+
+  void _setQuery(String value) {
+    if (value == query) return;
+    _searchDebounce?.cancel();
+    if (value.isEmpty) {
+      setState(() {
+        query = '';
+        _remoteQuery = '';
+      });
+      return;
+    }
+    setState(() => query = value);
+    _searchDebounce = Timer(_searchDebounceDuration, () {
+      if (!mounted) return;
+      setState(() => _remoteQuery = query);
+    });
+  }
 }
 
 List<MarketProduct> _recentProducts(
@@ -275,9 +301,13 @@ List<MarketProduct> _mergeProducts(
 }
 
 class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
+  static const _searchDebounceDuration = Duration(milliseconds: 300);
+
   String query = '';
+  String _remoteQuery = '';
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  Timer? _searchDebounce;
   final _additionalProducts = <MarketProduct>[];
   String? _nextCursor;
   bool _hasLoadedAdditionalPage = false;
@@ -285,6 +315,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -295,12 +326,15 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
     final catalog = ref.watch(
       marketProductsProvider((query: null, cursor: null)),
     );
-    final products = ref.watch(
-      marketProductsProvider((
-        query: query.isEmpty ? null : query,
-        cursor: null,
-      )),
-    );
+    final AsyncValue<DomainPage<MarketProduct>> products =
+        _searchDebounce?.isActive ?? false
+        ? const AsyncLoading()
+        : ref.watch(
+            marketProductsProvider((
+              query: _remoteQuery.isEmpty ? null : _remoteQuery,
+              cursor: null,
+            )),
+          );
     final localProducts = query.isEmpty
         ? const <MarketProduct>[]
         : _localSearch(catalog.asData?.value.items ?? const [], query);
@@ -475,12 +509,19 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
 
   void _setQuery(String value) {
     if (value == query) return;
+    _searchDebounce?.cancel();
     setState(() {
       query = value;
+      if (value.isEmpty) _remoteQuery = '';
       _additionalProducts.clear();
       _nextCursor = null;
       _hasLoadedAdditionalPage = false;
       _loadingMore = false;
+    });
+    if (value.isEmpty) return;
+    _searchDebounce = Timer(_searchDebounceDuration, () {
+      if (!mounted) return;
+      setState(() => _remoteQuery = query);
     });
   }
 
@@ -490,7 +531,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
         : firstPage.nextCursor;
     if (_loadingMore || cursor == null) return;
 
-    final requestedQuery = query;
+    final requestedQuery = _remoteQuery;
     setState(() => _loadingMore = true);
     try {
       final nextPage = await ref.read(
