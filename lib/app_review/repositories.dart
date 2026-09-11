@@ -5,6 +5,7 @@ import '../domain/models/deposit.dart';
 import '../domain/models/deposit_observation.dart';
 import '../domain/models/funding_session.dart';
 import '../domain/models/self_custodial_withdrawal.dart';
+import '../domain/models/funding_catalog_summary.dart';
 import '../domain/models/domain_page.dart';
 import '../domain/models/funding_catalog.dart';
 import '../domain/models/funding_transfer.dart';
@@ -651,6 +652,14 @@ final class AppReviewFundingRepository implements FundingRepository {
         version: 1,
         canConfirmTransfer: true,
         expiresAt: _now.add(const Duration(hours: 24)),
+      );
+
+  @override
+  Future<FundingCatalogSummary> getFundingCatalog() async =>
+      FundingCatalogSummary(
+        catalogVersion: 'review',
+        depositRailCount: 1,
+        updatedAt: _now,
       );
 
   @override

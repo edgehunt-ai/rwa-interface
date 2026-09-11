@@ -384,6 +384,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tradeSuccessful => 'Trade Successful';
 
   @override
+  String get long => 'Long';
+
+  @override
+  String get short => 'Short';
+
+  @override
+  String get closePosition => 'Close Position';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get slippage => 'Slippage';
+
+  @override
   String get portfolioTrend => 'Portfolio trend';
 
   @override

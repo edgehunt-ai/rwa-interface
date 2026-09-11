@@ -11,6 +11,7 @@ import '../../domain/models/withdrawal.dart';
 import '../../domain/models/deposit_observation.dart';
 import '../../domain/models/funding_session.dart';
 import '../../domain/models/self_custodial_withdrawal.dart';
+import '../../domain/models/funding_catalog_summary.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../services/funding_service.dart';
 
@@ -95,6 +96,16 @@ final class FundingRepositoryImpl implements FundingRepository {
       version: value.version,
       canConfirmTransfer: value.canConfirmTransfer,
       expiresAt: value.expiresAt.toUtc(),
+    );
+  }
+
+  @override
+  Future<FundingCatalogSummary> getFundingCatalog() async {
+    final value = await _service.getFundingCatalog();
+    return FundingCatalogSummary(
+      catalogVersion: value.catalogVersion,
+      depositRailCount: value.depositRails.length,
+      updatedAt: value.updatedAt.toUtc(),
     );
   }
 

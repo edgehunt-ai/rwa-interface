@@ -378,6 +378,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tradeSuccessful => '交易成功';
 
   @override
+  String get long => '做多';
+
+  @override
+  String get short => '做空';
+
+  @override
+  String get closePosition => '平仓';
+
+  @override
+  String get quantity => '数量';
+
+  @override
+  String get slippage => '滑点';
+
+  @override
   String get portfolioTrend => '投资组合走势';
 
   @override

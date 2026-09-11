@@ -400,9 +400,10 @@ class _DetailsCard extends ConsumerWidget {
     );
     final snapshot = snapshotState.value;
     final loading = snapshotState.isLoading;
-    final reference = snapshot?.price == null
+    final referencePrice = snapshot?.referencePrice ?? snapshot?.price;
+    final reference = referencePrice == null
         ? '—'
-        : TokenAmountFormatter.formatUsd(snapshot!.price);
+        : TokenAmountFormatter.formatUsd(referencePrice);
     final bid = snapshot?.bids.firstOrNull?.price == null
         ? '—'
         : TokenAmountFormatter.formatUsd(snapshot!.bids.first.price);
@@ -419,21 +420,29 @@ class _DetailsCard extends ConsumerWidget {
               Text(l10n.price, style: _sectionStyle),
               const SizedBox(height: 12),
               _MarketDetailRow(
-                kind == MarketProductKind.perp
-                    ? l10n.tradeReferencePrice
-                    : l10n.tradeUsStockReference,
+                snapshot?.referenceLabel ?? l10n.price,
                 reference,
                 loading: loading,
                 skeletonKey: const Key('trade-details-price-skeleton'),
               ),
               _MarketDetailRow(
-                kind == MarketProductKind.perp
-                    ? l10n.tradeBasis
-                    : l10n.tradePremium,
-                '—',
+                snapshot?.relativeLabel ?? l10n.tradeBasis,
+                snapshot?.basisPercent == null
+                    ? '—'
+                    : TokenAmountFormatter.formatPercent(
+                        snapshot!.basisPercent!,
+                      ),
                 loading: loading,
               ),
-              _MarketDetailRow(l10n.tradeSpread, '—', loading: loading),
+              _MarketDetailRow(
+                l10n.tradeSpread,
+                snapshot?.spreadPercent == null
+                    ? '—'
+                    : TokenAmountFormatter.formatPercent(
+                        snapshot!.spreadPercent!,
+                      ),
+                loading: loading,
+              ),
               _MarketDetailRow(
                 l10n.tradeBestBidAsk,
                 '$bid / $ask',
@@ -447,57 +456,28 @@ class _DetailsCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.tradeAssetRights, style: _sectionStyle),
+              Text(
+                snapshot?.assetTitle ?? l10n.tradeAssetRights,
+                style: _sectionStyle,
+              ),
+              if (snapshot?.assetBadge?.isNotEmpty == true) ...[
+                const SizedBox(height: 4),
+                Text(
+                  snapshot!.assetBadge!,
+                  style: TextStyle(fontSize: 12, color: colors.secondaryText),
+                ),
+              ],
               const SizedBox(height: 4),
               Text(
-                kind == MarketProductKind.perp
-                    ? l10n.tradePerpAssetRightsDescription
-                    : l10n.tradeAssetRightsDescription,
+                snapshot?.assetDescription ?? '—',
                 style: TextStyle(fontSize: 13, color: colors.secondaryText),
               ),
               const SizedBox(height: 16),
-              if (kind == MarketProductKind.perp) ...[
-                _AssetRightsRow(
-                  l10n.tradeProductType,
-                  l10n.tradePerpProductType,
-                ),
-                _AssetRightsRow(
-                  l10n.tradeUnderlyingExposure,
-                  l10n.tradePriceExposureOnly,
-                ),
-                _AssetRightsRow(
-                  l10n.tradeShareOwnership,
-                  l10n.tradeNoShareOwnership,
-                ),
-                _AssetRightsRow(l10n.tradeDividendRights, l10n.tradeNone),
-                _AssetRightsRow(
-                  l10n.tradeVotingRights,
-                  l10n.tradeVotingRightsValue,
-                ),
-                _AssetRightsRow(
-                  l10n.tradePositionType,
-                  l10n.tradePerpPositionType,
-                ),
-              ] else ...[
-                _AssetRightsRow(l10n.tradeIssuer, l10n.tradeIssuerValue),
-                _AssetRightsRow(l10n.tradeBacking, l10n.tradeBackingValue),
-                _AssetRightsRow(
-                  l10n.tradeCorporateActions,
-                  l10n.tradeCorporateActionsValue,
-                ),
-                _AssetRightsRow(
-                  l10n.tradeDividendTreatment,
-                  l10n.tradeDividendTreatmentValue,
-                ),
-                _AssetRightsRow(
-                  l10n.tradeVotingRights,
-                  l10n.tradeVotingRightsValue,
-                ),
-                _AssetRightsRow(
-                  l10n.tradeAssetLocation,
-                  l10n.tradeAssetLocationValue,
-                ),
-              ],
+              if (snapshot?.assetRights.isNotEmpty == true)
+                for (final row in snapshot!.assetRights)
+                  _AssetRightsRow(row.label, row.value)
+              else
+                const _AssetRightsRow('—', '—'),
             ],
           ),
         ),

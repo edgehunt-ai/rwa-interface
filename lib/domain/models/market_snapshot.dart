@@ -1,5 +1,12 @@
 import 'decimal_value.dart';
 
+final class AssetRight {
+  const AssetRight({required this.label, required this.value});
+
+  final String label;
+  final String value;
+}
+
 enum CandleChartRange {
   oneHour('1h'),
   fourHours('4h'),
@@ -34,8 +41,13 @@ final class MarketSnapshot {
     this.openInterestUsd,
     this.referencePrice,
     this.referenceLabel,
+    this.relativeLabel,
     this.basisPercent,
     this.spreadPercent,
+    this.assetTitle,
+    this.assetBadge,
+    this.assetDescription,
+    this.assetRights = const [],
   });
   final DecimalValue price;
   final DecimalValue? change24hPercent;
@@ -47,7 +59,10 @@ final class MarketSnapshot {
   final DecimalValue? high24h, low24h, volume24h, turnover24h;
   final DecimalValue? fundingRate, openInterestUsd, referencePrice;
   final String? referenceLabel;
+  final String? relativeLabel;
   final DecimalValue? basisPercent, spreadPercent;
+  final String? assetTitle, assetBadge, assetDescription;
+  final List<AssetRight> assetRights;
 }
 
 final class Candle {

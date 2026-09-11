@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 abstract interface class FundingService {
   Future<api.DepositInstruction> getDepositDirectory();
   Future<api.UnifiedFundingAccount> getUnifiedFundingAccount();
+  Future<api.FundingCatalog> getFundingCatalog();
   Future<api.FundingSession> createFundingSession(
     api.FundingSessionCreateRequest request, {
     required String idempotencyKey,

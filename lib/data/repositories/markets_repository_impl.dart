@@ -82,8 +82,15 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       openInterestUsd: _decimal(product.stats?.openInterestUsd),
       referencePrice: _decimal(product.stats?.referencePrice),
       referenceLabel: product.stats?.referenceLabel,
+      relativeLabel: product.stats?.relativeLabel,
       basisPercent: _decimal(product.stats?.relativePercent),
       spreadPercent: _decimal(product.stats?.spreadPercent),
+      assetTitle: product.assetInfo.title,
+      assetBadge: product.assetInfo.badge,
+      assetDescription: product.assetInfo.description,
+      assetRights: product.assetInfo.rows
+          .map((row) => AssetRight(label: row.label, value: row.value))
+          .toList(growable: false),
     );
   }
 

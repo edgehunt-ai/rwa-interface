@@ -830,6 +830,36 @@ abstract class AppLocalizations {
   /// **'Trade Successful'**
   String get tradeSuccessful;
 
+  /// No description provided for @long.
+  ///
+  /// In en, this message translates to:
+  /// **'Long'**
+  String get long;
+
+  /// No description provided for @short.
+  ///
+  /// In en, this message translates to:
+  /// **'Short'**
+  String get short;
+
+  /// No description provided for @closePosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Position'**
+  String get closePosition;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @slippage.
+  ///
+  /// In en, this message translates to:
+  /// **'Slippage'**
+  String get slippage;
+
   /// No description provided for @portfolioTrend.
   ///
   /// In en, this message translates to:
