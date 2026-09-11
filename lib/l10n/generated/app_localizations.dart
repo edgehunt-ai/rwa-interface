@@ -752,60 +752,6 @@ abstract class AppLocalizations {
   /// **'Loading price history…'**
   String get hip3ChartLoading;
 
-  /// No description provided for @hip3ChartInspect.
-  ///
-  /// In en, this message translates to:
-  /// **'Touch or drag the chart to inspect a candle.'**
-  String get hip3ChartInspect;
-
-  /// No description provided for @hip3ChartVolume.
-  ///
-  /// In en, this message translates to:
-  /// **'Volume'**
-  String get hip3ChartVolume;
-
-  /// No description provided for @hip3ChartUnits.
-  ///
-  /// In en, this message translates to:
-  /// **'OHLC in USDC · Volume in {symbol}'**
-  String hip3ChartUnits(String symbol);
-
-  /// No description provided for @hip3ChartHistoryLoad.
-  ///
-  /// In en, this message translates to:
-  /// **'Load earlier candles'**
-  String get hip3ChartHistoryLoad;
-
-  /// No description provided for @hip3ChartHistoryLoading.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading earlier candles…'**
-  String get hip3ChartHistoryLoading;
-
-  /// No description provided for @hip3ChartHistoryRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry earlier candles'**
-  String get hip3ChartHistoryRetry;
-
-  /// No description provided for @hip3ChartHistoryError.
-  ///
-  /// In en, this message translates to:
-  /// **'Earlier candles could not load. Your chart is unchanged.'**
-  String get hip3ChartHistoryError;
-
-  /// No description provided for @hip3ChartHistoryEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No candles in that earlier window. You can continue further back.'**
-  String get hip3ChartHistoryEmpty;
-
-  /// No description provided for @hip3ChartHistoryEnd.
-  ///
-  /// In en, this message translates to:
-  /// **'Reached the available history limit.'**
-  String get hip3ChartHistoryEnd;
-
   /// No description provided for @hip3ChartError.
   ///
   /// In en, this message translates to:

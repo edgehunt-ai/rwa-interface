@@ -345,37 +345,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3ChartLoading => 'Loading price history…';
 
   @override
-  String get hip3ChartInspect => 'Touch or drag the chart to inspect a candle.';
-
-  @override
-  String get hip3ChartVolume => 'Volume';
-
-  @override
-  String hip3ChartUnits(String symbol) {
-    return 'OHLC in USDC · Volume in $symbol';
-  }
-
-  @override
-  String get hip3ChartHistoryLoad => 'Load earlier candles';
-
-  @override
-  String get hip3ChartHistoryLoading => 'Loading earlier candles…';
-
-  @override
-  String get hip3ChartHistoryRetry => 'Retry earlier candles';
-
-  @override
-  String get hip3ChartHistoryError =>
-      'Earlier candles could not load. Your chart is unchanged.';
-
-  @override
-  String get hip3ChartHistoryEmpty =>
-      'No candles in that earlier window. You can continue further back.';
-
-  @override
-  String get hip3ChartHistoryEnd => 'Reached the available history limit.';
-
-  @override
   String get hip3ChartError => 'Could not load price history.';
 
   @override
