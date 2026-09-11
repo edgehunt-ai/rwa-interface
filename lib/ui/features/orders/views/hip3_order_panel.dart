@@ -104,8 +104,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     } on Object {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
         setState(
-          () => _error =
-              AppLocalizations.of(context).loadingTradingRules,
+          () => _error = AppLocalizations.of(context).loadingTradingRules,
         );
       }
     } finally {
@@ -116,14 +115,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   Future<void> _applySettings(int leverage, TradingMarginMode mode) async {
-    final context = _context;
-    if (context == null || _submitting) return;
+    final openingContext = _context;
+    if (openingContext == null || _submitting) return;
     if (leverage < 1 ||
-        leverage > context.maximumLeverage ||
-        !context.marginModes.contains(mode) ||
-        !context.operations.contains('setLeverage')) {
+        leverage > openingContext.maximumLeverage ||
+        !openingContext.marginModes.contains(mode) ||
+        !openingContext.operations.contains('setLeverage')) {
       setState(
-        () => _error = 'Choose a supported margin mode and leverage before requesting a signature.',
+        () => _error = AppLocalizations.of(context).chooseMarginLeverage,
       );
       return;
     }
@@ -140,7 +139,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       final refreshed = await ref
           .read(hip3OpeningRepositoryProvider)
           .setLeverage(
-            context.productId,
+            openingContext.productId,
             leverage,
             mode,
             idempotencyKey: _settingKey!,
@@ -158,7 +157,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     } on Object {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
         setState(
-          () => _error = 'Settings are not confirmed. Resume the same request before opening an order.',
+          () => _error = AppLocalizations.of(context).settingsNotConfirmed,
         );
       }
     } finally {
@@ -276,7 +275,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
     final rawAmount = _amount.text.trim();
     if (rawAmount.isEmpty) {
-      setState(() => _error = 'Enter an order value.');
+      setState(() => _error = AppLocalizations.of(context).enterOrderValue);
       return;
     }
     final rawLimitPrice = _limitPrice.text.trim();
@@ -316,11 +315,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       }
     } on FormatException {
       if (isCurrent()) {
-        setState(() => _error = 'Enter valid order values.');
+        setState(
+          () => _error = AppLocalizations.of(context).enterValidOrderValues,
+        );
       }
     } on Object {
       if (isCurrent()) {
-        setState(() => _error = 'Unable to prepare this order. Try again.');
+        setState(
+          () => _error = AppLocalizations.of(context).prepareOrderFailed,
+        );
       }
     } finally {
       if (isCurrent()) {
@@ -341,7 +344,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             preview.expiresAt == null ||
             preview.isExpired)) {
       setState(
-        () => _error = 'This quote is unavailable or expired. Go back and request a new quote.',
+        () => _error = AppLocalizations.of(context).orderQuoteUnavailable,
       );
       return;
     }
@@ -389,11 +392,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   String _signingError(Hip3SigningFailure failure) => switch (failure.code) {
-    Hip3SigningFailureCode.walletMismatch =>
-      'Connect the wallet requested for this order.',
+    Hip3SigningFailureCode.walletMismatch => AppLocalizations.of(
+      context,
+    ).walletConnectRequired,
     Hip3SigningFailureCode.actionExpired =>
       'This signing request expired. Prepare the order again.',
-    Hip3SigningFailureCode.rejected => 'Signature request was cancelled.',
+    Hip3SigningFailureCode.rejected => AppLocalizations.of(
+      context,
+    ).signatureCancelled,
     Hip3SigningFailureCode.actionNotReady =>
       'The order is still being prepared. Try again.',
     Hip3SigningFailureCode.walletUnavailable =>
@@ -462,7 +468,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   onClose: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(height: 16),
-                if (_contextLoading) Text(AppLocalizations.of(context).loadingTradingRules),
+                if (_contextLoading)
+                  Text(AppLocalizations.of(context).loadingTradingRules),
                 if (_context == null && !_contextLoading)
                   TextButton(
                     onPressed: _loadContext,
@@ -481,8 +488,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       values: rules.orderTypes.toList(),
                       selected: _type,
                       selectedColor: actionColor,
-                      label: (type) =>
-                          type == TradingOrderType.market ? AppLocalizations.of(context).market : AppLocalizations.of(context).limit,
+                      label: (type) => type == TradingOrderType.market
+                          ? AppLocalizations.of(context).market
+                          : AppLocalizations.of(context).limit,
                       onChanged: (type) {
                         if (_submitting) return;
                         setState(() {

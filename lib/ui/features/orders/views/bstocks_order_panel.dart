@@ -164,13 +164,13 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   Future<void> _review() async {
     final amountValue = amount.text.trim();
     if (amountValue.isEmpty || !_isDecimal(amountValue)) {
-      setState(() => error = 'Enter a valid order value.');
+      setState(() => error = AppLocalizations.of(context).validOrderValue);
       return;
     }
     if (type == TradingOrderType.limit &&
         (limitPrice.text.trim().isEmpty ||
             !_isDecimal(limitPrice.text.trim()))) {
-      setState(() => error = 'Enter a valid limit price.');
+      setState(() => error = AppLocalizations.of(context).validLimitPrice);
       return;
     }
     final intent = _intentFromFields()!;
@@ -188,7 +188,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       await _prepareConfirmation(next);
     } on Object {
       if (mounted) {
-        setState(() => error = 'Unable to prepare this order. Try again.');
+        setState(() => error = AppLocalizations.of(context).prepareOrderFailed);
       }
     } finally {
       if (mounted) {
@@ -224,7 +224,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     } on Object {
       if (mounted) {
         setState(() {
-          error = 'Unable to prepare funding for this order. Try again.';
+          error = AppLocalizations.of(context).prepareFundingFailed;
         });
       }
     }
@@ -446,7 +446,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 selected: side,
                 selectedColor: success,
                 selectedForeground: Colors.white,
-                label: (value) => value == TradingSide.buy ? l10n.buy : l10n.sell,
+                label: (value) =>
+                    value == TradingSide.buy ? l10n.buy : l10n.sell,
                 onChanged: (value) {
                   setState(() => side = value);
                   amount.clear();
@@ -559,7 +560,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ],
           const SizedBox(height: 8),
           _OutlinedSummaryRow(
-            label: 'will receive',
+            label: l10n.willReceive,
             value: _quoting
                 ? const SkeletonBlock(width: 76, height: 14, radius: 4)
                 : Text(
@@ -690,7 +691,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ),
         if (current.fee case final fee?)
           _SummaryRow(
-          label: l10n.estimatedFee,
+            label: l10n.estimatedFee,
             value: TokenAmountFormatter.format(
               fee,
               symbol: fee.asset ?? widget.symbol,
@@ -698,9 +699,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ),
         if (current.priceUpdated) ...[
           const SizedBox(height: 8),
-          const Text(
-                  'Price changed. Review the updated estimate before submitting.',
-          ),
+          Text(AppLocalizations.of(context).priceChangedReview),
         ],
         if (error case final message?) ...[
           const SizedBox(height: 8),
@@ -726,7 +725,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                   style: FilledButton.styleFrom(backgroundColor: success),
                   onPressed: reviewing ? null : _submit,
                   child: Text(
-                    reviewing ? l10n.submittingOrder : '${l10n.confirm} $action',
+                    reviewing
+                        ? l10n.submittingOrder
+                        : '${l10n.confirm} $action',
                   ),
                 ),
               ),
@@ -737,43 +738,46 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     );
   }
 
-  Widget _submitted(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Image.asset(
-        'assets/figma/trade/order_success.png',
-        width: 160,
-        height: 160,
-      ),
-      const SizedBox(height: 8),
-      Text(
-        submittedOrder!.status == TradingOrderStatus.filled
-            ? AppLocalizations.of(context).tradeSuccessful
-            : AppLocalizations.of(context).orderSubmitted,
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: 8),
-      Text(
-        submittedOrder!.status == TradingOrderStatus.filled
-            ? 'You can check the order status on the activities page.'
-            : 'Your order is being processed. Track its status in Details.',
-        textAlign: TextAlign.center,
-      ),
-      const SizedBox(height: 16),
-      FilledButton(
-        onPressed: submittedOrder!.status == TradingOrderStatus.filled
-            ? () => context.goNamed(AppRoutes.activityName)
-            : () => Navigator.of(context).pop(),
-        child: Text(
-          submittedOrder!.status == TradingOrderStatus.filled
-              ? 'View History'
-              : AppLocalizations.of(context).closeViewLater,
+  Widget _submitted(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Image.asset(
+          'assets/figma/trade/order_success.png',
+          width: 160,
+          height: 160,
         ),
-      ),
-    ],
-  );
+        const SizedBox(height: 8),
+        Text(
+          submittedOrder!.status == TradingOrderStatus.filled
+              ? AppLocalizations.of(context).tradeSuccessful
+              : AppLocalizations.of(context).orderSubmitted,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          submittedOrder!.status == TradingOrderStatus.filled
+              ? 'You can check the order status on the activities page.'
+              : 'Your order is being processed. Track its status in Details.',
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16),
+        FilledButton(
+          onPressed: submittedOrder!.status == TradingOrderStatus.filled
+              ? () => context.goNamed(AppRoutes.activityName)
+              : () => Navigator.of(context).pop(),
+          child: Text(
+            submittedOrder!.status == TradingOrderStatus.filled
+                ? l10n.viewHistory
+                : AppLocalizations.of(context).closeViewLater,
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _submitting(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
