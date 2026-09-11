@@ -26,7 +26,6 @@ part 'order.g.dart';
 /// * [kind] 
 /// * [nextAction] - 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
 /// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
-/// * [settlementAsset] - 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
 /// * [productId] - HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
 /// * [hip3ActionId] - 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
 /// * [timeInForce] 
@@ -72,10 +71,6 @@ abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'wallet_action_blocker')
   OrderWalletActionBlockerEnum? get walletActionBlocker;
   // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  not_applicable,  };
-
-  /// 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
-  @BuiltValueField(wireName: r'settlement_asset')
-  String? get settlementAsset;
 
   /// HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
   @BuiltValueField(wireName: r'product_id')
@@ -226,13 +221,6 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       object.walletActionBlocker,
       specifiedType: const FullType.nullable(OrderWalletActionBlockerEnum),
     );
-    if (object.settlementAsset != null) {
-      yield r'settlement_asset';
-      yield serializers.serialize(
-        object.settlementAsset,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
     if (object.productId != null) {
       yield r'product_id';
       yield serializers.serialize(
@@ -483,14 +471,6 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           ) as OrderWalletActionBlockerEnum?;
           if (valueDes == null) continue;
           result.walletActionBlocker = valueDes;
-          break;
-        case r'settlement_asset':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.settlementAsset = valueDes;
           break;
         case r'product_id':
           final valueDes = serializers.deserialize(

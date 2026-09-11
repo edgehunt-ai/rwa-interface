@@ -7,7 +7,6 @@ import '../../../../domain/models/hip3_opening_context.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
-import '../../../../app/providers/hip3_query_refresh.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/application_state.dart';
 import '../../../../domain/models/domain_page.dart';
@@ -21,7 +20,6 @@ import '../../../../domain/models/resource_result.dart';
 final hip3OpeningContextProvider = FutureProvider.autoDispose
     .family<Hip3OpeningContext, String>((ref, product) {
       ref.watch(sessionGenerationProvider);
-      ref.watch(hip3QueryRevisionProvider);
       return ref.watch(hip3OpeningRepositoryProvider).context(product);
     });
 
@@ -34,11 +32,9 @@ final ordersProvider = FutureProvider.autoDispose
 final hip3OrdersProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
-      final repository = ref.watch(ordersRepositoryProvider);
-      return hip3RefreshingQuery(
-        ref,
-        () => repository.list(cursor: cursor, kind: MarketProductKind.perp),
-      );
+      return ref
+          .watch(ordersRepositoryProvider)
+          .list(cursor: cursor, kind: MarketProductKind.perp);
     });
 
 typedef Hip3OpenOrderQuery = ({
@@ -54,28 +50,21 @@ final hip3OpenOrdersProvider = FutureProvider.autoDispose
       query,
     ) {
       ref.watch(sessionGenerationProvider);
-      final repository = ref.watch(ordersRepositoryProvider);
-      return hip3RefreshingQuery(
-        ref,
-        () => repository.list(
-          kind: MarketProductKind.perp,
-          symbol: query.symbol,
-          productId: query.productId,
-          statusGroup: 'open',
-          cursor: query.cursor,
-        ),
-      );
+      return ref
+          .watch(ordersRepositoryProvider)
+          .list(
+            kind: MarketProductKind.perp,
+            symbol: query.symbol,
+            productId: query.productId,
+            statusGroup: 'open',
+            cursor: query.cursor,
+          );
     });
 
 final orderProvider = FutureProvider.autoDispose
     .family<ResourceResult<TradingOrder>, String>((ref, orderId) {
       ref.watch(sessionGenerationProvider);
-      final repository = ref.watch(ordersRepositoryProvider);
-      return hip3RefreshingQuery(
-        ref,
-        () => repository.get(orderId),
-        shouldPoll: (value) => value.resource.kind == MarketProductKind.perp,
-      );
+      return ref.watch(ordersRepositoryProvider).get(orderId);
     });
 
 final orderPreviewProvider = FutureProvider.autoDispose
@@ -207,9 +196,6 @@ final class OrderCommandNotifier
   }
 
   Future<void> cancel(TradingOrder order) async {
-    final generation = ref.read(sessionGenerationProvider);
-    bool isCurrent() =>
-        ref.mounted && ref.read(sessionGenerationProvider) == generation;
     final key =
         'cancel-${order.orderId}-${DateTime.now().microsecondsSinceEpoch}';
     try {
@@ -226,19 +212,12 @@ final class OrderCommandNotifier
           : await ref
                 .read(ordersRepositoryProvider)
                 .cancel(order.orderId, idempotencyKey: key);
-      if (isCurrent()) {
-        ref.invalidate(ordersProvider);
-        ref.invalidate(orderProvider(result.resource.orderId));
-      }
+      ref.invalidate(ordersProvider);
+      ref.invalidate(orderProvider(result.resource.orderId));
     } finally {
-      if (isCurrent()) {
-        if (order.kind == MarketProductKind.perp) {
-          ref.read(hip3QueryRevisionProvider.notifier).refresh();
-        }
-        ref.invalidate(hip3OrdersProvider);
-        ref.invalidate(hip3OpenOrdersProvider);
-        ref.invalidate(orderProvider(order.orderId));
-      }
+      ref.invalidate(hip3OrdersProvider);
+      ref.invalidate(hip3OpenOrdersProvider);
+      ref.invalidate(orderProvider(order.orderId));
     }
   }
 }

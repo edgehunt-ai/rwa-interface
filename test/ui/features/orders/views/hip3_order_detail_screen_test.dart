@@ -26,25 +26,15 @@ import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.da
 import '../../../../helpers/test_app.dart';
 import '../../../../helpers/display_config.dart';
 
-TradingOrderFill fill(
-  String id,
-  int minute, {
-  String feeAsset = 'HYPE',
-  FillSide? side,
-  String? pnl,
-  String? pnlAsset,
-  String? effect,
-}) => TradingOrderFill(
-  fillId: id,
-  providerTradeId: 'trade-$id',
-  side: side,
-  positionEffect: effect,
-  closedPnl: pnl == null ? null : DecimalValue(pnl, asset: pnlAsset),
-  price: DecimalValue('101.123456789012345678'),
-  quantity: DecimalValue('0.000000000000000001', asset: 'TSLA'),
-  fee: DecimalValue('-0.000001', asset: feeAsset),
-  executedAt: DateTime.utc(2026, 9, 10, 12, minute, 1, 123),
-);
+TradingOrderFill fill(String id, int minute, {String feeAsset = 'HYPE'}) =>
+    TradingOrderFill(
+      fillId: id,
+      providerTradeId: 'trade-$id',
+      price: DecimalValue('101.123456789012345678'),
+      quantity: DecimalValue('0.000000000000000001', asset: 'TSLA'),
+      fee: DecimalValue('-0.000001', asset: feeAsset),
+      executedAt: DateTime.utc(2026, 9, 10, 12, minute, 1, 123),
+    );
 TradingOrder order(
   String id, {
   List<TradingOrderFill>? fills,
@@ -73,106 +63,6 @@ Future<void> reveal(WidgetTester tester, String text) =>
     );
 
 void main() {
-  for (final entry in {
-    'open_long': 'Open long',
-    'close_long': 'Close long',
-    'open_short': 'Open short',
-    'close_short': 'Close short',
-    'long_to_short': 'Long to short',
-    'short_to_long': 'Short to long',
-    'future_value': 'Unknown',
-  }.entries) {
-    testWidgets(
-      'renders provider position effect ${entry.key} without deriving it from buy',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              orderProvider.overrideWith(
-                (ref, id) async => ResourceResult(
-                  resource: order(
-                    id,
-                    fills: [
-                      fill('effect', 1, side: FillSide.buy, effect: entry.key),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-            child: buildTestApp(const Hip3OrderDetailScreen(orderId: 'o1')),
-          ),
-        );
-        await tester.pumpAndSettle();
-        await reveal(tester, entry.value);
-        expect(find.text(entry.value), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
-  }
-  testWidgets(
-    'execution buy and raw pnl currencies are separate from short order and fee',
-    (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            orderProvider.overrideWith(
-              (ref, id) async => ResourceResult(
-                resource: order(
-                  id,
-                  fills: [
-                    fill(
-                      'facts',
-                      1,
-                      side: FillSide.buy,
-                      pnl: '-1.25',
-                      pnlAsset: 'USDH',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-          child: buildTestApp(const Hip3OrderDetailScreen(orderId: 'o1')),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Short'), findsOneWidget);
-      await reveal(tester, 'Fill 1');
-      await reveal(tester, 'trade-facts');
-      expect(find.text('Buy'), findsOneWidget);
-      expect(find.text('-1.25 USDH'), findsOneWidget);
-      expect(find.text('-0.000001 HYPE'), findsOneWidget);
-      expect(find.text('Fill closed PnL'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
-
-  testWidgets(
-    'zero fill pnl remains zero and absent currency stays unavailable',
-    (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            orderProvider.overrideWith(
-              (ref, id) async => ResourceResult(
-                resource: order(
-                  id,
-                  fills: [fill('zero', 1, side: FillSide.sell, pnl: '0')],
-                ),
-              ),
-            ),
-          ],
-          child: buildTestApp(const Hip3OrderDetailScreen(orderId: 'o1')),
-        ),
-      );
-      await tester.pumpAndSettle();
-      await reveal(tester, 'trade-zero');
-      expect(find.text('Sell'), findsOneWidget);
-      expect(find.text('0 (unit unavailable)'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    },
-  );
-
   testWidgets('optional order detail visual capture', (tester) async {
     const output = String.fromEnvironment('HIP3_ORDER_CAPTURE');
     const font = String.fromEnvironment('HIP3_ORDER_FONT');
@@ -200,19 +90,7 @@ void main() {
           overrides: [
             orderProvider.overrideWith(
               (ref, id) async => ResourceResult(
-                resource: order(
-                  id,
-                  fills: [
-                    fill(
-                      'fill-123',
-                      1,
-                      side: FillSide.buy,
-                      effect: 'close_short',
-                      pnl: '-1.25',
-                      pnlAsset: 'USDH',
-                    ),
-                  ],
-                ),
+                resource: order(id, fills: [fill('fill-123', 1)]),
               ),
             ),
           ],
@@ -287,7 +165,7 @@ void main() {
       expect(find.text('-0.000001 HYPE'), findsWidgets);
       expect(find.text('2026-09-10 12:01:01.123 UTC'), findsWidgets);
       expect(find.text('Fill direction'), findsWidgets);
-      expect(find.text('Fill closed PnL'), findsWidgets);
+      expect(find.text('Fill realized PnL'), findsWidgets);
       expect(find.text('Unavailable'), findsWidgets);
       expect(find.text('Sell'), findsNothing);
       await reveal(tester, 'trade-older');

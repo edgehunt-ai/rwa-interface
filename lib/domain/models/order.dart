@@ -66,7 +66,6 @@ final class TradingOrder {
     this.fills,
     this.realizedPnl,
     this.providerObservedAt,
-    this.settlementAsset,
   });
   final String orderId;
   final String? productId;
@@ -94,7 +93,6 @@ final class TradingOrder {
   final List<TradingOrderFill>? fills;
   final DecimalValue? realizedPnl;
   final DateTime? providerObservedAt;
-  final String? settlementAsset;
 
   bool get isTerminal => const {
     TradingOrderStatus.filled,

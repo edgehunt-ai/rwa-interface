@@ -406,12 +406,12 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
       ? TradingOrderType.market
       : TradingOrderType.limit,
   status: _status(value.status),
-  quantity: _orderValue(value.quantity, 'quantity', value),
-  filledQuantity: _orderValue(value.filledQuantity, 'quantity', value),
-  limitPrice: _orderValue(value.limitPrice, 'price', value),
-  averageFillPrice: _orderValue(value.averageFillPrice, 'price', value),
-  orderValue: _orderValue(value.orderValue, 'notional', value),
-  fee: _orderValue(value.fee, 'fee', value),
+  quantity: _orderValue(value.quantity, 'quantity'),
+  filledQuantity: _orderValue(value.filledQuantity, 'quantity'),
+  limitPrice: _orderValue(value.limitPrice, 'price'),
+  averageFillPrice: _orderValue(value.averageFillPrice, 'price'),
+  orderValue: _orderValue(value.orderValue, 'notional'),
+  fee: _orderValue(value.fee, 'fee'),
   positionId: value.positionId,
   txHash: value.txHash,
   failureReason: value.failureReason,
@@ -419,12 +419,7 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
   updatedAt: value.updatedAt?.toUtc(),
   realizedPnl: value.realizedPnl == null
       ? null
-      : DecimalValue(
-          value.realizedPnl!,
-          asset: _knownAsset(value.settlementAsset),
-          unit: 'pnl',
-        ),
-  settlementAsset: _knownAsset(value.settlementAsset),
+      : DecimalValue(value.realizedPnl!, unit: 'pnl'),
   providerObservedAt: value.providerObservedAt?.toUtc(),
   fills: value.fills == null
       ? null
@@ -433,24 +428,8 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
             (fill) => TradingOrderFill(
               fillId: fill.fillId,
               providerTradeId: fill.providerTradeId,
-              side: switch (fill.side?.name) {
-                'buy' => FillSide.buy,
-                'sell' => FillSide.sell,
-                _ => null,
-              },
-              positionEffect: fill.positionEffect,
-              closedPnl: fill.closedPnl == null
-                  ? null
-                  : DecimalValue(
-                      fill.closedPnl!,
-                      asset: _knownAsset(fill.pnlAsset),
-                      unit: 'pnl',
-                    ),
-              price: DecimalValue(
-                fill.price,
-                asset: _knownAsset(value.settlementAsset),
-                unit: 'price',
-              ),
+              // OrderFill has no quote/settlement asset; do not guess USDC.
+              price: DecimalValue(fill.price, unit: 'price'),
               quantity: DecimalValue(
                 fill.quantity,
                 asset: value.symbol,
@@ -468,9 +447,6 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
         ),
 );
 
-String? _knownAsset(String? asset) =>
-    asset == null || asset.trim().isEmpty ? null : asset;
-
 TradingOrderStatus _status(api.OrderStatus value) => switch (value) {
   api.OrderStatus.pendingSignature => TradingOrderStatus.pendingSignature,
   api.OrderStatus.submitted => TradingOrderStatus.submitted,
@@ -484,15 +460,5 @@ TradingOrderStatus _status(api.OrderStatus value) => switch (value) {
   _ => TradingOrderStatus.unknown,
 };
 
-DecimalValue? _orderValue(String? value, String unit, api.Order order) {
-  if (value == null) return null;
-  // Preserve bStocks mapping; HIP3 units must be supplied, never assumed.
-  final asset = order.kind == api.ProductKind.perp
-      ? switch (unit) {
-          'quantity' => order.symbol,
-          'fee' => null, // No aggregate fee currency in the contract.
-          _ => _knownAsset(order.settlementAsset),
-        }
-      : 'USDC';
-  return DecimalValue(value, asset: asset, unit: unit);
-}
+DecimalValue? _orderValue(String? value, String unit) =>
+    value == null ? null : DecimalValue(value, asset: 'USDC', unit: unit);

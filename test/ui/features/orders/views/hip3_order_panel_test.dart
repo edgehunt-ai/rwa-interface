@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/app/providers/hip3_query_refresh.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
@@ -368,14 +367,6 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Confirming this order.'), findsOneWidget);
-      final container = ProviderScope.containerOf(
-        tester.element(find.byType(Hip3OrderPanel)),
-      );
-      expect(
-        container.read(hip3QueryRevisionProvider),
-        greaterThan(0),
-        reason: 'ambiguous broadcasts must refresh recoverable actions and balances too',
-      );
       expect(find.text('Order submitted'), findsNothing);
       expect(find.text('Trade Successful'), findsNothing);
     },

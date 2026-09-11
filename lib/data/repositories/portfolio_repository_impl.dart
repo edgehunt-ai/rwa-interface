@@ -4,7 +4,6 @@ import '../../domain/models/decimal_value.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/portfolio.dart';
-import '../../domain/models/portfolio_read_status.dart';
 import '../../domain/models/position.dart';
 import '../../domain/models/trading_account.dart';
 import '../../domain/repositories/portfolio_repository.dart';
@@ -28,20 +27,12 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
       marginInUseUsd: _optionalUsd(value.marginInUseUsd),
       stocksValueUsd: _optionalUsd(value.stocksValueUsd),
       updatedAt: value.calculatedAt.toUtc(),
-      readStatus: _readStatus(
-        value.dataStatus,
-        value.freshness,
-        value.warnings.map((notice) => notice.code.name),
-        value.oldestObservationAt,
-      ),
     );
   }
 
   @override
-  Future<List<TradingAccount>> listAccounts() async {
-    final page = await _service.listAccounts();
-    return page.items.map((value) => _account(value, page)).toList();
-  }
+  Future<List<TradingAccount>> listAccounts() async =>
+      (await _service.listAccounts()).items.map(_account).toList();
 
   @override
   Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async {
@@ -58,30 +49,10 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
           .toList(),
       nextCursor: value.nextCursor,
       hasMore: value.hasMore,
-      portfolioStatus: _readStatus(
-        value.dataStatus,
-        value.freshness,
-        value.warnings.map((notice) => notice.code.name),
-        value.oldestObservationAt,
-      ),
     );
   }
 
-  TradingAccount _account(
-    api.AccountBalance value,
-    api.PortfolioAccountPage page,
-  ) => TradingAccount(
-    internalLedger:
-        page.scope == api.PortfolioAccountPageScopeEnum.internalLedger,
-    reconciled: page.reconciled,
-    readStatus: _readStatus(
-      page.reconciled
-          ? api.PortfolioDataStatus.complete
-          : api.PortfolioDataStatus.partial,
-      page.freshness,
-      page.blockers.map((notice) => notice.code.name),
-      null,
-    ),
+  TradingAccount _account(api.AccountBalance value) => TradingAccount(
     kind: switch (value.account) {
       api.AccountKind.app => TradingAccountKind.app,
       api.AccountKind.bstocks => TradingAccountKind.bstocks,
@@ -116,28 +87,6 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
   DecimalValue? _optionalUsd(String? value) =>
       value == null ? null : _usd(value);
 }
-
-PortfolioReadStatus _readStatus(
-  api.PortfolioDataStatus completeness,
-  api.PortfolioFreshness freshness,
-  Iterable<String> warnings,
-  DateTime? oldest,
-) => PortfolioReadStatus(
-  completeness: switch (completeness) {
-    api.PortfolioDataStatus.complete => PortfolioCompleteness.complete,
-    api.PortfolioDataStatus.partial => PortfolioCompleteness.partial,
-    api.PortfolioDataStatus.empty => PortfolioCompleteness.empty,
-    _ => PortfolioCompleteness.unknown,
-  },
-  freshness: switch (freshness) {
-    api.PortfolioFreshness.live => PortfolioFreshness.live,
-    api.PortfolioFreshness.cached => PortfolioFreshness.cached,
-    api.PortfolioFreshness.stale => PortfolioFreshness.stale,
-    _ => PortfolioFreshness.unknown,
-  },
-  warnings: List.unmodifiable(warnings),
-  oldestObservationAt: oldest?.toUtc(),
-);
 
 Position mapPosition(api.Position value) => Position(
   positionId: value.positionId,

@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import '../../../../app/providers/hip3_query_refresh.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -386,10 +384,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (!isCurrent()) return;
       setState(() => _error = 'Unable to sign this order. Try again.');
     } finally {
-      if (isCurrent()) {
-        ref.read(hip3QueryRevisionProvider.notifier).refresh();
-        setState(() => _submitting = false);
-      }
+      if (isCurrent()) setState(() => _submitting = false);
     }
   }
 

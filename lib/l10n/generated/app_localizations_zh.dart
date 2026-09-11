@@ -500,7 +500,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hip3OrderFillMissingFields =>
-      '买入/卖出表示本次成交方向，不代表开仓/平仓。本笔盈亏为上游原始平仓盈亏；手续费单独展示，不重复扣除。缺失的事实或币种显示为不可用。';
+      '接口尚未提供逐笔方向和逐笔已实现盈亏。订单方向及订单盈亏在上方单独展示。';
 
   @override
   String get hip3OrderFillsOmitted => '接口未提供成交明细，不代表订单没有成交。';
@@ -520,30 +520,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3OrderFillDirection => '逐笔方向';
 
   @override
-  String get hip3OrderFillEffectLabel => '开平仓类型';
-
-  @override
-  String hip3OrderFillEffect(String effect) {
-    String _temp0 = intl.Intl.selectLogic(effect, {
-      'open_long': '开多',
-      'close_long': '平多',
-      'open_short': '开空',
-      'close_short': '平空',
-      'long_to_short': '多转空',
-      'short_to_long': '空转多',
-      'other': '未知',
-    });
-    return '$_temp0';
-  }
-
-  @override
   String get hip3OrderFillQuantity => '本笔成交数量';
 
   @override
   String get hip3OrderFillFee => '本笔手续费';
 
   @override
-  String get hip3OrderFillPnl => '本笔平仓盈亏';
+  String get hip3OrderFillPnl => '本笔已实现盈亏';
 
   @override
   String get hip3OrderFillId => '成交记录 ID';
@@ -936,38 +919,4 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tradePerpPositionType => 'HIP-3 永续合约持仓';
-
-  @override
-  String get portfolioPartialData => '部分资产无法读取或估值，显示金额仅为已获取部分的合计。';
-
-  @override
-  String get portfolioStaleData => '当前显示较早的快照，余额和持仓可能已变化。';
-
-  @override
-  String get portfolioUnverifiedData => '尚未确认数据完整性，请刷新后再参考这些金额。';
-
-  @override
-  String get portfolioLoadMore => '加载更多持仓';
-
-  @override
-  String get portfolioRefresh => '刷新资产';
-
-  @override
-  String get portfolioHoldingsUnconfirmed => '暂时无法完整确认持仓';
-
-  @override
-  String get portfolioMoreHoldings => '下一页还有更多持仓。';
-
-  @override
-  String get portfolioAllocationUnavailable => '暂未提供资产分类占比。';
-
-  @override
-  String get portfolioUnifiedCollateral =>
-      '统一账户抵押物由现货和永续共享，不能重复计值；仓位价值不代表额外权益。';
-
-  @override
-  String get portfolioHistoryUnavailable => '暂未提供资产历史，不显示推测的趋势曲线。';
-
-  @override
-  String get portfolioLedgerNotice => '以下为内部账本余额，并非额外链上资产，不会再次计入资产总值。';
 }

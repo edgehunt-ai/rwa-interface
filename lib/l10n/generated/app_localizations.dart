@@ -1049,7 +1049,7 @@ abstract class AppLocalizations {
   /// No description provided for @hip3OrderFillMissingFields.
   ///
   /// In en, this message translates to:
-  /// **'Buy/sell describes each execution, not whether a position opened or closed. Fill PnL is the provider’s raw closed PnL; fees are shown separately, not deducted again. Missing facts or currencies remain unavailable.'**
+  /// **'The API does not provide direction or realized PnL for individual fills. Order direction and order PnL are shown separately above.'**
   String get hip3OrderFillMissingFields;
 
   /// No description provided for @hip3OrderFillsOmitted.
@@ -1082,18 +1082,6 @@ abstract class AppLocalizations {
   /// **'Fill direction'**
   String get hip3OrderFillDirection;
 
-  /// No description provided for @hip3OrderFillEffectLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Position effect'**
-  String get hip3OrderFillEffectLabel;
-
-  /// No description provided for @hip3OrderFillEffect.
-  ///
-  /// In en, this message translates to:
-  /// **'{effect, select, open_long{Open long} close_long{Close long} open_short{Open short} close_short{Close short} long_to_short{Long to short} short_to_long{Short to long} other{Unknown}}'**
-  String hip3OrderFillEffect(String effect);
-
   /// No description provided for @hip3OrderFillQuantity.
   ///
   /// In en, this message translates to:
@@ -1109,7 +1097,7 @@ abstract class AppLocalizations {
   /// No description provided for @hip3OrderFillPnl.
   ///
   /// In en, this message translates to:
-  /// **'Fill closed PnL'**
+  /// **'Fill realized PnL'**
   String get hip3OrderFillPnl;
 
   /// No description provided for @hip3OrderFillId.
@@ -1885,72 +1873,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'HIP-3 Perpetual Position'**
   String get tradePerpPositionType;
-
-  /// No description provided for @portfolioPartialData.
-  ///
-  /// In en, this message translates to:
-  /// **'Some assets could not be read or valued. Shown amounts are a subtotal.'**
-  String get portfolioPartialData;
-
-  /// No description provided for @portfolioStaleData.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing an older snapshot. Balances and positions may have changed.'**
-  String get portfolioStaleData;
-
-  /// No description provided for @portfolioUnverifiedData.
-  ///
-  /// In en, this message translates to:
-  /// **'Data completeness is not confirmed. Refresh before relying on these amounts.'**
-  String get portfolioUnverifiedData;
-
-  /// No description provided for @portfolioLoadMore.
-  ///
-  /// In en, this message translates to:
-  /// **'Load more holdings'**
-  String get portfolioLoadMore;
-
-  /// No description provided for @portfolioRefresh.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh assets'**
-  String get portfolioRefresh;
-
-  /// No description provided for @portfolioHoldingsUnconfirmed.
-  ///
-  /// In en, this message translates to:
-  /// **'Holdings could not be fully confirmed'**
-  String get portfolioHoldingsUnconfirmed;
-
-  /// No description provided for @portfolioMoreHoldings.
-  ///
-  /// In en, this message translates to:
-  /// **'More holdings are available on the next page.'**
-  String get portfolioMoreHoldings;
-
-  /// No description provided for @portfolioAllocationUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Asset allocation is not available yet.'**
-  String get portfolioAllocationUnavailable;
-
-  /// No description provided for @portfolioUnifiedCollateral.
-  ///
-  /// In en, this message translates to:
-  /// **'Unified-account collateral is shared by spot and perpetuals and must not be counted twice. Position value is not additional equity.'**
-  String get portfolioUnifiedCollateral;
-
-  /// No description provided for @portfolioHistoryUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Portfolio history is not available yet. No estimated trend is shown.'**
-  String get portfolioHistoryUnavailable;
-
-  /// No description provided for @portfolioLedgerNotice.
-  ///
-  /// In en, this message translates to:
-  /// **'These are internal ledger balances, not additional on-chain assets. They are not added to portfolio value.'**
-  String get portfolioLedgerNotice;
 }
 
 class _AppLocalizationsDelegate
