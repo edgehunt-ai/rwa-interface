@@ -4,6 +4,7 @@ import '../../domain/models/decimal_value.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/portfolio.dart';
+import '../../domain/models/portfolio_history.dart' as domain;
 import '../../domain/models/position.dart';
 import '../../domain/models/trading_account.dart';
 import '../../domain/repositories/portfolio_repository.dart';
@@ -12,7 +13,8 @@ import '../services/portfolio_service.dart';
 // The domain portfolio still exposes this optional legacy aggregate.
 // ignore_for_file: deprecated_member_use
 
-final class PortfolioRepositoryImpl implements PortfolioRepository {
+final class PortfolioRepositoryImpl
+    implements PortfolioRepository, PortfolioHistoryRepository {
   PortfolioRepositoryImpl(this._service);
   final PortfolioService _service;
 
@@ -27,6 +29,30 @@ final class PortfolioRepositoryImpl implements PortfolioRepository {
       marginInUseUsd: _optionalUsd(value.marginInUseUsd),
       stocksValueUsd: _optionalUsd(value.stocksValueUsd),
       updatedAt: value.calculatedAt.toUtc(),
+    );
+  }
+
+  @override
+  Future<domain.PortfolioHistory> getHistory(
+    domain.PortfolioHistoryRange range,
+  ) async {
+    final value = await _service.getHistory(
+      range: range.apiValue,
+      interval: range.interval,
+    );
+    return domain.PortfolioHistory(
+      range: range,
+      calculatedAt: value.calculatedAt.toUtc(),
+      points: List.unmodifiable(
+        value.points.map(
+          (point) => domain.PortfolioHistoryPoint(
+            timestamp: point.timestamp.toUtc(),
+            totalValueUsd: _usd(point.totalValueUsd),
+            pnlUsd: _optionalUsd(point.pnlUsd),
+            pnlPercent: _optional(point.pnlPercent, 'percent'),
+          ),
+        ),
+      ),
     );
   }
 

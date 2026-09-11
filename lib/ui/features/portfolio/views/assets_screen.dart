@@ -7,6 +7,7 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/domain/models/portfolio_history.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
@@ -33,6 +34,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
   var tab = _AssetTab.cash;
   var allocationExpanded = false;
   var trendExpanded = false;
+  var trendRange = PortfolioHistoryRange.oneWeek;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +54,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
     final portfolio = ref.watch(portfolioSummaryProvider);
     final accounts = ref.watch(tradingAccountsProvider);
     final holdings = ref.watch(holdingsProvider(null));
+    final history = ref.watch(portfolioHistoryProvider(trendRange));
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       bottomNavigationBar: const AppBottomNavigation(
@@ -95,6 +98,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                           children: [
                             _PortfolioSummary(
                               portfolio: value,
+                              history: history,
                               showMiniTrend: !trendExpanded,
                               onTrendTap: () =>
                                   setState(() => trendExpanded = true),
@@ -107,6 +111,10 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                                   ? Padding(
                                       padding: const EdgeInsets.only(top: 28),
                                       child: _TrendExpanded(
+                                        range: trendRange,
+                                        history: history,
+                                        onRangeChanged: (value) =>
+                                            setState(() => trendRange = value),
                                         onCollapse: () => setState(
                                           () => trendExpanded = false,
                                         ),
@@ -304,10 +312,12 @@ enum _AssetTab { cash, bstocks, perps }
 class _PortfolioSummary extends StatelessWidget {
   const _PortfolioSummary({
     required this.portfolio,
+    required this.history,
     required this.showMiniTrend,
     required this.onTrendTap,
   });
   final Portfolio portfolio;
+  final AsyncValue<PortfolioHistory?> history;
   final bool showMiniTrend;
   final VoidCallback onTrendTap;
   @override
@@ -364,10 +374,22 @@ class _PortfolioSummary extends StatelessWidget {
                 child: SizedBox(
                   width: 108,
                   height: 48,
-                  child: CustomPaint(
-                    painter: _TrendPainter(
-                      Theme.of(context).extension<AppRwaColors>()!.selected,
-                    ),
+                  child: history.when(
+                    loading: () =>
+                        const SkeletonBlock(width: 108, height: 48, radius: 4),
+                    error: (_, _) => const SizedBox.shrink(),
+                    data: (value) => value == null || value.points.isEmpty
+                        ? const SizedBox.shrink()
+                        : CustomPaint(
+                            painter: _TrendPainter(
+                              Theme.of(context)
+                                  .extension<AppRwaColors>()!
+                                  .selected,
+                              value.points
+                                  .map((point) => point.totalValueUsd)
+                                  .toList(growable: false),
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -630,7 +652,15 @@ class _AllocationEntry {
 }
 
 class _TrendExpanded extends StatelessWidget {
-  const _TrendExpanded({required this.onCollapse});
+  const _TrendExpanded({
+    required this.range,
+    required this.history,
+    required this.onRangeChanged,
+    required this.onCollapse,
+  });
+  final PortfolioHistoryRange range;
+  final AsyncValue<PortfolioHistory?> history;
+  final ValueChanged<PortfolioHistoryRange> onRangeChanged;
   final VoidCallback onCollapse;
   @override
   Widget build(BuildContext context) {
@@ -662,29 +692,136 @@ class _TrendExpanded extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        _TrendPeriodSelector(selectedColor: colors.selected),
+        _TrendPeriodSelector(
+          selectedColor: colors.selected,
+          selected: range,
+          onSelected: onRangeChanged,
+        ),
         const SizedBox(height: 8),
+        history.when(
+          loading: () => const SizedBox(
+            height: 150,
+            child: LoadingSkeleton(rows: 2, padding: EdgeInsets.zero),
+          ),
+          error: (_, _) => SizedBox(
+            height: 150,
+            child: Center(
+              child: Text(AppLocalizations.of(context).portfolioUnavailable),
+            ),
+          ),
+          data: (value) => _TrendChart(history: value),
+        ),
+      ],
+    );
+  }
+}
+
+class _TrendChart extends StatefulWidget {
+  const _TrendChart({required this.history});
+
+  final PortfolioHistory? history;
+
+  @override
+  State<_TrendChart> createState() => _TrendChartState();
+}
+
+class _TrendChartState extends State<_TrendChart> {
+  int? _selectedIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final points = widget.history?.points ?? const <PortfolioHistoryPoint>[];
+    if (points.isEmpty) {
+      return SizedBox(
+        height: 150,
+        child: Center(
+          child: Text(AppLocalizations.of(context).portfolioUnavailable),
+        ),
+      );
+    }
+    return Column(
+      children: [
         SizedBox(
           height: 126,
           width: double.infinity,
-          child: Stack(
-            children: [
-              for (final offset in [28.0, 63.0, 98.0])
-                Positioned(
-                  top: offset,
-                  left: 0,
-                  right: 0,
-                  child: Divider(height: 1, color: colors.subtleSurface),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final selectedIndex = _selectedIndex;
+              return GestureDetector(
+                key: const Key('portfolio-trend-plot'),
+                behavior: HitTestBehavior.opaque,
+                onHorizontalDragStart: (details) => _selectPoint(
+                  details.localPosition.dx,
+                  constraints.maxWidth,
+                  points.length,
                 ),
-              Positioned.fill(
-                child: CustomPaint(painter: _TrendPainter(colors.selected)),
-              ),
-              const Positioned(
-                top: 16,
-                right: 0,
-                child: Text('\$12,580', style: TextStyle(fontSize: 12)),
-              ),
-            ],
+                onHorizontalDragUpdate: (details) => _selectPoint(
+                  details.localPosition.dx,
+                  constraints.maxWidth,
+                  points.length,
+                ),
+                onHorizontalDragEnd: (_) =>
+                    setState(() => _selectedIndex = null),
+                onHorizontalDragCancel: () =>
+                    setState(() => _selectedIndex = null),
+                child: Stack(
+                  children: [
+                    for (final offset in [28.0, 63.0, 98.0])
+                      Positioned(
+                        top: offset,
+                        left: 0,
+                        right: 0,
+                        child: Divider(height: 1, color: colors.subtleSurface),
+                      ),
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _TrendPainter(
+                          colors.selected,
+                          points
+                              .map((point) => point.totalValueUsd)
+                              .toList(growable: false),
+                        ),
+                      ),
+                    ),
+                    if (selectedIndex == null)
+                      Positioned(
+                        top: 16,
+                        right: 0,
+                        child: Text(
+                          TokenAmountFormatter.formatUsd(
+                            points.last.totalValueUsd,
+                          ),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      )
+                    else ...[
+                      Positioned(
+                        left: _trendPointX(
+                          selectedIndex,
+                          points.length,
+                          constraints.maxWidth,
+                        ),
+                        top: 0,
+                        bottom: 0,
+                        child: Container(width: 1, color: colors.border),
+                      ),
+                      Positioned(
+                        left: _trendTooltipLeft(
+                          selectedIndex,
+                          points.length,
+                          constraints.maxWidth,
+                        ),
+                        top: 8,
+                        child: _PortfolioTrendTooltip(
+                          point: points[selectedIndex],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: 8),
@@ -692,11 +829,11 @@ class _TrendExpanded extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '7 days ago',
+              _trendDate(points.first.timestamp),
               style: TextStyle(fontSize: 12, color: colors.secondaryText),
             ),
             Text(
-              'Today',
+              _trendDate(points.last.timestamp),
               style: TextStyle(fontSize: 12, color: colors.secondaryText),
             ),
           ],
@@ -704,12 +841,77 @@ class _TrendExpanded extends StatelessWidget {
       ],
     );
   }
+
+  void _selectPoint(double dx, double width, int count) {
+    if (count == 0 || width <= 0) return;
+    final index = count == 1
+        ? 0
+        : (dx / width * (count - 1)).round().clamp(0, count - 1).toInt();
+    if (_selectedIndex != index) setState(() => _selectedIndex = index);
+  }
 }
 
+double _trendPointX(int index, int count, double width) =>
+    count <= 1 ? 0 : width * index / (count - 1);
+
+double _trendTooltipLeft(int index, int count, double width) {
+  const tooltipWidth = 112.0;
+  return (_trendPointX(index, count, width) - tooltipWidth / 2)
+      .clamp(0, width - tooltipWidth)
+      .toDouble();
+}
+
+class _PortfolioTrendTooltip extends StatelessWidget {
+  const _PortfolioTrendTooltip({required this.point});
+
+  final PortfolioHistoryPoint point;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      key: const Key('portfolio-trend-tooltip'),
+      width: 112,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            TokenAmountFormatter.formatUsd(point.totalValueUsd),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            _trendDateTime(point.timestamp),
+            style: TextStyle(fontSize: 10, color: colors.secondaryText),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _trendDate(DateTime value) =>
+    '${value.month.toString().padLeft(2, '0')}/${value.day.toString().padLeft(2, '0')}';
+
+String _trendDateTime(DateTime value) =>
+    '${_trendDate(value)} ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+
 class _TrendPeriodSelector extends StatelessWidget {
-  const _TrendPeriodSelector({required this.selectedColor});
+  const _TrendPeriodSelector({
+    required this.selectedColor,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final Color selectedColor;
+  final PortfolioHistoryRange selected;
+  final ValueChanged<PortfolioHistoryRange> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -720,14 +922,15 @@ class _TrendPeriodSelector extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          for (final period in const ['1D', '1W', '1M', '1Y'])
+          for (final period in PortfolioHistoryRange.values)
             _TrendPeriod(
-              label: period,
-              selected: period == '1W',
+              label: period.apiValue.toUpperCase(),
+              selected: period == selected,
               selectedColor: selectedColor,
-              textColor: period == '1W'
+              textColor: period == selected
                   ? colors.primaryText
                   : colors.secondaryText,
+              onTap: () => onSelected(period),
             ),
         ],
       ),
@@ -741,27 +944,35 @@ class _TrendPeriod extends StatelessWidget {
     required this.selected,
     required this.selectedColor,
     required this.textColor,
+    required this.onTap,
   });
 
   final String label;
   final bool selected;
   final Color selectedColor;
   final Color textColor;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(label, style: TextStyle(fontSize: 12, color: textColor)),
-      Container(
-        height: 2,
-        width: 17,
-        decoration: BoxDecoration(
-          color: selected ? selectedColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(1),
-        ),
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 12, color: textColor)),
+          Container(
+            height: 2,
+            width: 17,
+            decoration: BoxDecoration(
+              color: selected ? selectedColor : Colors.transparent,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        ],
       ),
-    ],
+    ),
   );
 }
 
@@ -1333,26 +1544,37 @@ String _sumUsd(Iterable<DecimalValue?> values) =>
     TokenAmountFormatter.sumUsd(values);
 
 class _TrendPainter extends CustomPainter {
-  const _TrendPainter(this.color);
+  const _TrendPainter(this.color, this.values);
   final Color color;
+  final List<DecimalValue> values;
   @override
   void paint(Canvas canvas, Size size) {
+    if (values.isEmpty) return;
+    final points = values.map((value) => double.parse(value.value)).toList();
+    final minimum = points.reduce((a, b) => a < b ? a : b);
+    final maximum = points.reduce((a, b) => a > b ? a : b);
+    final span = maximum - minimum;
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
-    final path = Path()
-      ..moveTo(0, size.height * .7)
-      ..quadraticBezierTo(
-        size.width * .2,
-        size.height * .25,
-        size.width * .4,
-        size.height * .55,
-      )
-      ..quadraticBezierTo(size.width * .7, 0, size.width, size.height * .3);
+    final path = Path();
+    for (var index = 0; index < points.length; index++) {
+      final x = points.length == 1
+          ? 0.0
+          : size.width * index / (points.length - 1);
+      final normalized = span == 0 ? .5 : (points[index] - minimum) / span;
+      final y = size.height - (normalized * size.height);
+      if (index == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
     canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _TrendPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.values != values;
 }

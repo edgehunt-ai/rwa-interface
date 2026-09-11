@@ -6,6 +6,7 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/domain/models/realtime_replay_page.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
 import 'package:rwa_interface/domain/repositories/realtime_repository.dart';
@@ -75,6 +76,24 @@ final class _Realtime implements RealtimeRepository {
     this.channels = channels;
     return _controller.stream;
   }
+
+  @override
+  Future<RealtimeReplayPage> replay({
+    required Set<String> channels,
+    String? cursor,
+    int limit = 50,
+  }) async => const RealtimeReplayPage(
+    items: [],
+    nextCursor: '',
+    hasMore: false,
+    resyncRequired: false,
+  );
+
+  @override
+  Stream<TypedRealtimeEvent> subscribeWithRecovery({
+    required Set<String> channels,
+    required Future<void> Function() refreshSnapshot,
+  }) => subscribe(channels: channels);
 }
 
 final class _Portfolio implements PortfolioRepository {

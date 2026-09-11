@@ -17,6 +17,7 @@ import '../domain/models/order.dart';
 import '../domain/models/order_intent.dart';
 import '../domain/models/order_preview.dart';
 import '../domain/models/portfolio.dart';
+import '../domain/models/portfolio_history.dart';
 import '../domain/models/position.dart';
 import '../domain/models/registered_device.dart';
 import '../domain/models/realtime_replay_page.dart';
@@ -234,7 +235,8 @@ final class AppReviewAccountRepository implements AccountRepository {
   );
 }
 
-final class AppReviewPortfolioRepository implements PortfolioRepository {
+final class AppReviewPortfolioRepository
+    implements PortfolioRepository, PortfolioHistoryRepository {
   static final positions = <Position>[
     Position(
       positionId: 'review-position-nvda',
@@ -353,6 +355,38 @@ final class AppReviewPortfolioRepository implements PortfolioRepository {
     accounts: accounts,
     holdings: _holdings,
   );
+
+  @override
+  Future<PortfolioHistory> getHistory(PortfolioHistoryRange range) async {
+    final step = switch (range) {
+      PortfolioHistoryRange.oneDay => const Duration(hours: 3),
+      PortfolioHistoryRange.oneWeek => const Duration(days: 1),
+      PortfolioHistoryRange.oneMonth => const Duration(days: 4),
+      PortfolioHistoryRange.oneYear => const Duration(days: 52),
+    };
+    const values = [
+      '28640.00',
+      '29120.00',
+      '28980.00',
+      '29750.00',
+      '30110.00',
+      '29940.00',
+      '30520.00',
+      '31000.00',
+    ];
+    final start = _now.subtract(step * (values.length - 1));
+    return PortfolioHistory(
+      range: range,
+      calculatedAt: _now,
+      points: List.generate(
+        values.length,
+        (index) => PortfolioHistoryPoint(
+          timestamp: start.add(step * index),
+          totalValueUsd: _usd(values[index]),
+        ),
+      ),
+    );
+  }
 
   static List<HoldingGroup> get _holdings => positions
       .map(

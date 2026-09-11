@@ -7,6 +7,7 @@ import 'package:rwa_interface/app/providers/realtime_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/data/services/realtime_service.dart';
 import 'package:rwa_interface/domain/models/realtime_envelope.dart';
+import 'package:rwa_interface/domain/models/realtime_replay_page.dart';
 import 'package:rwa_interface/domain/repositories/realtime_repository.dart';
 
 void main() {
@@ -92,6 +93,24 @@ final class _TypedRealtime implements RealtimeRepository {
     );
     return controller.stream;
   }
+
+  @override
+  Future<RealtimeReplayPage> replay({
+    required Set<String> channels,
+    String? cursor,
+    int limit = 50,
+  }) async => const RealtimeReplayPage(
+    items: [],
+    nextCursor: '',
+    hasMore: false,
+    resyncRequired: false,
+  );
+
+  @override
+  Stream<TypedRealtimeEvent> subscribeWithRecovery({
+    required Set<String> channels,
+    required Future<void> Function() refreshSnapshot,
+  }) => subscribe(channels: channels);
 }
 
 final class _EntityRealtime implements RealtimeService {

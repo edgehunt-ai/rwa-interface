@@ -53,7 +53,7 @@ void main() {
     await DioRealtimeService(
       dio,
       delay: (_) async {},
-    ).subscribe(channels: {' Positions ', 'orders', 'orders'}).first;
+    ).subscribe(channels: {' Positions ', 'orders'}).first;
     expect(adapter.channels, ['orders,positions']);
   });
 }

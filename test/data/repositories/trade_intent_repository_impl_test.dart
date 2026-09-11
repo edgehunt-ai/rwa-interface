@@ -1,3 +1,7 @@
+// The test verifies serialization of the API's preview-bound compatibility
+// request while its supported FundingSession replacement is exercised elsewhere.
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:rwa_interface/data/repositories/trade_intent_repository_impl.dart';

@@ -1,4 +1,8 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
+// Preview-bound plan creation remains available during the contract's v1
+// compatibility window. New flows use FundingSessionPlanRequest.
+// ignore_for_file: deprecated_member_use
+
 import 'package:one_of/one_of.dart';
 
 import '../../domain/models/decimal_value.dart';

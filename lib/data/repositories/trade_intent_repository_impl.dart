@@ -1,3 +1,7 @@
+// Preview-bound intent creation remains available during the contract's v1
+// compatibility window. New flows use FundingSessionTradeIntentCreateRequest.
+// ignore_for_file: deprecated_member_use
+
 import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 

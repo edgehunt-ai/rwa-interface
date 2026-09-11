@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:rwa_interface/data/repositories/portfolio_repository_impl.dart';
 import 'package:rwa_interface/data/services/portfolio_service.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
+import 'package:rwa_interface/domain/models/portfolio_history.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 
 void main() {
@@ -91,9 +92,41 @@ void main() {
       '0.123456789012345678',
     );
   });
+
+  test('maps portfolio history without losing decimal precision', () async {
+    final history = await PortfolioRepositoryImpl(_Portfolio())
+        .getHistory(PortfolioHistoryRange.oneWeek);
+    expect(history.range, PortfolioHistoryRange.oneWeek);
+    expect(history.points.single.totalValueUsd.value, '12345.678901');
+    expect(history.points.single.pnlPercent?.value, '1.234567');
+    expect(history.points.single.timestamp, DateTime.utc(2026, 1, 1));
+  });
 }
 
 final class _Portfolio implements PortfolioService {
+  @override
+  Future<api.PortfolioHistory> getHistory({
+    required String range,
+    required String interval,
+  }) async => api.PortfolioHistory(
+    (history) => history
+      ..range = api.PortfolioHistoryRangeEnum.n1w
+      ..interval = api.PortfolioHistoryIntervalEnum.n1h
+      ..dataStatus = api.PortfolioDataStatus.complete
+      ..freshness = api.PortfolioFreshness.live
+      ..calculatedAt = DateTime.utc(2026, 1, 1)
+      ..points.add(
+        api.PortfolioHistoryPoint(
+          (point) => point
+            ..timestamp = DateTime.utc(2026, 1, 1)
+            ..totalValueUsd = '12345.678901'
+            ..netExternalCashFlowUsd = '0'
+            ..pnlUsd = '123.456789'
+            ..pnlPercent = '1.234567',
+        ),
+      ),
+  );
+
   @override
   Future<api.PortfolioAccountPage> listAccounts() async =>
       api.PortfolioAccountPage((response) {

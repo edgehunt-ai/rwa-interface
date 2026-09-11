@@ -9,6 +9,7 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/domain/models/portfolio_history.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
@@ -21,11 +22,10 @@ void main() {
   testWidgets('Assets exposes API-backed allocation and type-tab states', (
     tester,
   ) async {
+    final repository = _Portfolio();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
-        ],
+        overrides: [portfolioRepositoryProvider.overrideWithValue(repository)],
         child: _assetsApp(),
       ),
     );
@@ -52,6 +52,31 @@ void main() {
     await tester.tap(find.byKey(const Key('portfolio-trend-trigger')));
     await tester.pump();
     expect(find.text('Portfolio trend'), findsOneWidget);
+    expect(repository.historyRanges, [PortfolioHistoryRange.oneWeek]);
+    await tester.ensureVisible(find.text('1M'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.ancestor(of: find.text('1M'), matching: find.byType(InkWell)),
+    );
+    await tester.pumpAndSettle();
+    expect(repository.historyRanges, [
+      PortfolioHistoryRange.oneWeek,
+      PortfolioHistoryRange.oneMonth,
+    ]);
+    expect(find.text(r'$12,580.42'), findsWidgets);
+    final plot = find.byKey(const Key('portfolio-trend-plot'));
+    await tester.ensureVisible(plot);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('portfolio-trend-tooltip')), findsNothing);
+    final rect = tester.getRect(plot);
+    final gesture = await tester.startGesture(rect.centerLeft);
+    await gesture.moveTo(rect.centerRight);
+    await tester.pump();
+    expect(find.byKey(const Key('portfolio-trend-tooltip')), findsOneWidget);
+    expect(find.text('09/11 00:00'), findsOneWidget);
+    await gesture.up();
+    await tester.pump();
+    expect(find.byKey(const Key('portfolio-trend-tooltip')), findsNothing);
   });
 
   testWidgets('Assets keeps allocation loading within its layout bounds', (
@@ -208,7 +233,29 @@ Widget _assetsApp({Locale? locale}) => MaterialApp(
   home: const AssetsScreen(),
 );
 
-final class _Portfolio implements PortfolioRepository {
+final class _Portfolio
+    implements PortfolioRepository, PortfolioHistoryRepository {
+  final historyRanges = <PortfolioHistoryRange>[];
+
+  @override
+  Future<PortfolioHistory> getHistory(PortfolioHistoryRange range) async {
+    historyRanges.add(range);
+    return PortfolioHistory(
+      range: range,
+      calculatedAt: DateTime.utc(2026, 9, 11),
+      points: [
+        PortfolioHistoryPoint(
+          timestamp: DateTime.utc(2026, 9, 4),
+          totalValueUsd: DecimalValue('12000.00', asset: 'USD', unit: 'fiat'),
+        ),
+        PortfolioHistoryPoint(
+          timestamp: DateTime.utc(2026, 9, 11),
+          totalValueUsd: DecimalValue('12580.42', asset: 'USD', unit: 'fiat'),
+        ),
+      ],
+    );
+  }
+
   @override
   Future<Portfolio> getSummary() async => Portfolio(
     totalValueUsd: DecimalValue('12580.42', asset: 'USD', unit: 'fiat'),
