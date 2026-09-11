@@ -99,6 +99,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+    expect(find.text('Order Type'), findsOneWidget);
+    expect(find.text('Back'), findsOneWidget);
     expect(find.text('0.02 USDC'), findsWidgets);
   });
 
@@ -303,6 +305,43 @@ void main() {
     expect(find.text('In-App Transfer'), findsOneWidget);
     expect(find.text('External Deposit'), findsOneWidget);
   });
+
+  testWidgets(
+    'insufficient bStocks balance opens funding routes from the order preview',
+    (tester) async {
+      final funding = _FundingPlanRepository(_readyFundingPlan);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            portfolioSummaryProvider.overrideWith(
+              (ref) async => Portfolio(
+                totalValueUsd: DecimalValue('100', asset: 'USD', unit: 'fiat'),
+                availableToTradeUsd: DecimalValue(
+                  '0',
+                  asset: 'USD',
+                  unit: 'fiat',
+                ),
+              ),
+            ),
+            ordersRepositoryProvider.overrideWithValue(
+              _DelayedOrdersRepository(),
+            ),
+            fundingRepositoryProvider.overrideWithValue(funding),
+          ],
+          child: buildTestApp(const BstocksOrderPanel()),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField).first, '100');
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+      await tester.pumpAndSettle();
+
+      expect(funding.previewIds, ['preview-1']);
+      expect(find.text('Prepare Funds'), findsOneWidget);
+      expect(find.text('In-App Transfer'), findsOneWidget);
+      expect(find.text('External Deposit'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'transfer flow renders the server-selected source through review',
@@ -686,6 +725,33 @@ final class _CompletedFundingRepository implements FundingRepository {
       amount: DecimalValue('100', asset: 'USDT', unit: 'token'),
       status: FundingTransferState.completed,
     );
+  }
+
+  @override
+  Future<FundingPlan> getFundingPlan(String id) async => FundingPlan(
+    planId: id,
+    tradePreviewId: 'funded-preview',
+    shortfall: DecimalValue('0', asset: 'USDT', unit: 'token'),
+    status: FundingPlanState.alreadyFunded,
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _FundingPlanRepository implements FundingRepository {
+  _FundingPlanRepository(this.plan);
+
+  final FundingPlan plan;
+  final previewIds = <String>[];
+
+  @override
+  Future<FundingPlan> createFundingPlan({
+    required String tradePreviewId,
+    required String idempotencyKey,
+  }) async {
+    previewIds.add(tradePreviewId);
+    return plan;
   }
 
   @override

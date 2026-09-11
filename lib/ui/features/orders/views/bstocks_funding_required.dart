@@ -10,7 +10,7 @@ class BstocksFundingRequiredSheet extends StatelessWidget {
   });
 
   final DecimalValue amountNeeded;
-  final VoidCallback onInAppTransfer;
+  final VoidCallback? onInAppTransfer;
   final VoidCallback onExternalDeposit;
 
   @override
@@ -66,7 +66,7 @@ class BstocksFundingRequiredSheet extends StatelessWidget {
             const SizedBox(height: 8),
             _FundingRoute(
               title: 'In-App Transfer',
-              detail: r'Balance: $300',
+              detail: 'Use the server-selected funding route',
               onTap: onInAppTransfer,
             ),
             const SizedBox(height: 12),
@@ -120,7 +120,7 @@ class _FundingRoute extends StatelessWidget {
   });
   final String title;
   final String detail;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => InkWell(

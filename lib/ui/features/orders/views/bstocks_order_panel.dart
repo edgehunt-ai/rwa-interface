@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
@@ -158,10 +159,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final intent = _intentFromFields()!;
     final cachedQuote = quotePreview;
     if (cachedQuote?.intent.fingerprint == intent.fingerprint) {
-      setState(() {
-        error = null;
-        preview = cachedQuote;
-      });
+      await _prepareConfirmation(cachedQuote!);
       return;
     }
     setState(() {
@@ -170,9 +168,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     });
     try {
       final next = await ref.read(orderPreviewProvider(intent).future);
-      if (mounted) {
-        setState(() => preview = next);
-      }
+      await _prepareConfirmation(next);
     } on Object {
       if (mounted) {
         setState(() => error = 'Unable to prepare this order. Try again.');
@@ -183,6 +179,100 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       }
     }
   }
+
+  Future<void> _prepareConfirmation(OrderPreview next) async {
+    if (_hasSufficientDisplayedBalance(next)) {
+      if (mounted) {
+        setState(() {
+          error = null;
+          preview = next;
+        });
+      }
+      return;
+    }
+
+    try {
+      final plan = await ref
+          .read(fundingTransferCommandsProvider)
+          .plan(tradePreviewId: next.previewId);
+      if (!mounted) return;
+      if (plan.status == FundingPlanState.alreadyFunded) {
+        setState(() {
+          error = null;
+          preview = next;
+        });
+        return;
+      }
+      await _showFundingRequired(plan: plan, orderPreview: next);
+    } on Object {
+      if (mounted) {
+        setState(() {
+          error = 'Unable to prepare funding for this order. Try again.';
+        });
+      }
+    }
+  }
+
+  bool _hasSufficientDisplayedBalance(OrderPreview next) {
+    final available = ref
+        .read(portfolioSummaryProvider)
+        .value
+        ?.availableToTradeUsd;
+    if (available == null) return true;
+    try {
+      final orderValueUsd = DecimalValue(
+        next.orderValue.value,
+        asset: 'USD',
+        unit: 'fiat',
+      );
+      return available.compareTo(orderValueUsd) >= 0;
+    } on ArgumentError {
+      return true;
+    }
+  }
+
+  Future<void> _showFundingRequired({
+    required FundingPlan plan,
+    required OrderPreview orderPreview,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => BstocksFundingRequiredSheet(
+        amountNeeded: plan.shortfall,
+        onInAppTransfer: plan.isActionable
+            ? () {
+                Navigator.of(sheetContext).pop();
+                _showTransfer(plan: plan, orderPreview: orderPreview);
+              }
+            : null,
+        onExternalDeposit: () {
+          Navigator.of(sheetContext).pop();
+          GoRouter.of(context).pushNamed(
+            AppRoutes.depositName,
+            queryParameters: const {'chain': 'BSC', 'token': 'USDT'},
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _showTransfer({
+    required FundingPlan plan,
+    required OrderPreview orderPreview,
+  }) => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => BstocksTransferFlowSheet(
+      amountNeeded: plan.shortfall,
+      plan: plan,
+      orderPreview: orderPreview,
+      symbol: widget.symbol,
+      onClose: () => Navigator.of(context).pop(),
+    ),
+  );
 
   OrderIntent? _intentFromFields() {
     final amountValue = amount.text.trim();
@@ -487,79 +577,130 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     );
   }
 
-  Widget _preview(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        '${side == TradingSide.buy ? 'Buy' : 'Sell'} ${widget.symbol}',
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
-      const SizedBox(height: 16),
-      _SummaryRow(
-        label: '${side == TradingSide.buy ? 'Buy' : 'Sell'} ${widget.symbol}',
-        value: type == TradingOrderType.market ? 'Market' : 'Limit',
-      ),
-      _SummaryRow(
-        label: 'Order value',
-        value: TokenAmountFormatter.format(
-          preview!.orderValue,
-          symbol:
-              preview!.orderValue.asset ?? preview!.settlementAsset ?? 'USDT',
-        ),
-      ),
-      if (preview!.estimatedQuantity case final quantity?)
-        _SummaryRow(
-          label: 'Estimated receive',
-          value: TokenAmountFormatter.format(quantity, symbol: widget.symbol),
-        ),
-      if (preview!.fee case final fee?)
-        _SummaryRow(
-          label: 'Estimated fee',
-          value: TokenAmountFormatter.format(
-            fee,
-            symbol: fee.asset ?? widget.symbol,
-          ),
-        ),
-      if (preview!.marketPrice case final marketPrice?)
-        _SummaryRow(
-          label: AppLocalizations.of(context).marketPrice,
-          value: TokenAmountFormatter.formatUsd(marketPrice),
-        ),
-      if (preview!.estimatedPrice case final estimatedPrice?)
-        _SummaryRow(
-          label: AppLocalizations.of(context).estimatedPrice,
-          value: TokenAmountFormatter.formatUsd(estimatedPrice),
-        ),
-      if (preview!.priceUpdated)
-        const Text(
-          'Price changed. Review the updated estimate before submitting.',
-        ),
-      const SizedBox(height: 16),
-      FilledButton(
-        onPressed: reviewing ? null : _submit,
-        child: Text(
-          reviewing
-              ? 'Submitting order…'
-              : 'Confirm ${side == TradingSide.buy ? 'Buy' : 'Sell'}',
-        ),
-      ),
-      if (error != null)
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            error!,
-            style: TextStyle(
-              color: Theme.of(context).extension<AppSemanticColors>()!.loss,
+  Widget _preview(BuildContext context) {
+    final current = preview!;
+    final isBuy = current.intent.side == TradingSide.buy;
+    final action = isBuy ? 'Buy' : 'Sell';
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final success = Theme.of(context).extension<AppSemanticColors>()!.success;
+    final settlementAsset =
+        current.orderValue.asset ?? current.settlementAsset ?? 'USDT';
+    final marketPrice = current.marketPrice;
+    final marketPriceDisplay = marketPrice == null
+        ? null
+        : switch (current.estimatedPrice) {
+            final estimatedPrice?
+                when estimatedPrice.value != marketPrice.value =>
+              '${TokenAmountFormatter.formatUsd(marketPrice)} → ${TokenAmountFormatter.formatUsd(estimatedPrice)}',
+            _ => TokenAmountFormatter.formatUsd(marketPrice),
+          };
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: Container(
+            width: 32,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colors.secondaryText.withValues(alpha: 0.45),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
         ),
-      TextButton(
-        onPressed: () => setState(() => preview = null),
-        child: const Text('Back'),
-      ),
-    ],
-  );
+        const SizedBox(height: 16),
+        Text(
+          '$action ${widget.symbol}',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        Divider(color: colors.subtleSurface),
+        const SizedBox(height: 16),
+        Text(
+          '$action ${widget.symbol} · ${current.intent.type == TradingOrderType.market ? 'Market' : 'Limit'}',
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        _BstocksConfirmationConversion(
+          payment: TokenAmountFormatter.format(
+            current.orderValue,
+            symbol: settlementAsset,
+          ),
+          paymentAsset: settlementAsset,
+          receive: current.estimatedQuantity == null
+              ? '—'
+              : TokenAmountFormatter.format(
+                  current.estimatedQuantity!,
+                  symbol: widget.symbol,
+                ),
+          receiveAsset: widget.symbol,
+        ),
+        const SizedBox(height: 12),
+        _SummaryRow(
+          label: 'Order Type',
+          value: current.intent.type == TradingOrderType.market
+              ? 'Market'
+              : 'Limit',
+        ),
+        if (marketPriceDisplay case final price?)
+          _SummaryRow(
+            label: AppLocalizations.of(context).marketPrice,
+            value: price,
+          ),
+        _SummaryRow(
+          label: 'Slippage',
+          value: '${current.intent.slippage?.value ?? slippage}%',
+        ),
+        if (current.fee case final fee?)
+          _SummaryRow(
+            label: 'Estimated Fee',
+            value: TokenAmountFormatter.format(
+              fee,
+              symbol: fee.asset ?? widget.symbol,
+            ),
+          ),
+        if (current.priceUpdated) ...[
+          const SizedBox(height: 8),
+          const Text(
+            'Price changed. Review the updated estimate before submitting.',
+          ),
+        ],
+        if (error case final message?) ...[
+          const SizedBox(height: 8),
+          _OrderFailureNotice(message: message),
+        ],
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: () => setState(() => preview = null),
+                  child: const Text('Back'),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 48,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(backgroundColor: success),
+                  onPressed: reviewing ? null : _submit,
+                  child: Text(
+                    reviewing ? 'Submitting order…' : 'Confirm $action',
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   Widget _submitted(BuildContext context) => Column(
     mainAxisSize: MainAxisSize.min,
@@ -1036,12 +1177,178 @@ class _SummaryRow extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(child: Text(label)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            softWrap: true,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
       ],
     ),
   );
+}
+
+class _BstocksConfirmationConversion extends StatelessWidget {
+  const _BstocksConfirmationConversion({
+    required this.payment,
+    required this.paymentAsset,
+    required this.receive,
+    required this.receiveAsset,
+  });
+
+  final String payment;
+  final String paymentAsset;
+  final String receive;
+  final String receiveAsset;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+    alignment: Alignment.center,
+    children: [
+      IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(
+              child: _BstocksConfirmationAmountCard(
+                value: payment,
+                asset: paymentAsset,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _BstocksConfirmationAmountCard(
+                value: receive,
+                asset: receiveAsset,
+                alignEnd: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+      Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: Theme.of(context).extension<AppRwaColors>()!.canvas,
+          border: Border.all(
+            color: Theme.of(context).extension<AppRwaColors>()!.surface,
+            width: 4,
+          ),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.arrow_forward, size: 16),
+      ),
+    ],
+  );
+}
+
+class _BstocksConfirmationAmountCard extends StatelessWidget {
+  const _BstocksConfirmationAmountCard({
+    required this.value,
+    required this.asset,
+    this.alignEnd = false,
+  });
+
+  final String value;
+  final String asset;
+  final bool alignEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      constraints: const BoxConstraints(minHeight: 74),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.canvas,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: alignEnd
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: alignEnd
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!alignEnd) _BstocksConfirmationAssetMark(asset: asset),
+              if (!alignEnd) const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  value,
+                  textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+                  softWrap: true,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              if (alignEnd) const SizedBox(width: 4),
+              if (alignEnd) _BstocksConfirmationAssetMark(asset: asset),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            asset,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.secondaryText,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BstocksConfirmationAssetMark extends StatelessWidget {
+  const _BstocksConfirmationAssetMark({required this.asset});
+
+  final String asset;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    if (asset == 'USDT') {
+      return Image.asset(
+        'assets/figma/trade/usdt_mark.png',
+        width: 20,
+        height: 20,
+      );
+    }
+    if (asset == 'NVDAB' || asset == 'NVDA') {
+      return Container(
+        width: 20,
+        height: 20,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: colors.surface,
+          shape: BoxShape.circle,
+          border: Border.all(color: colors.border),
+        ),
+        child: SvgPicture.asset(
+          'assets/figma/trade/nvidia.svg',
+          width: 11,
+          height: 11,
+        ),
+      );
+    }
+    return Container(
+      width: 20,
+      height: 20,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: colors.surface, shape: BoxShape.circle),
+      child: Text(asset.substring(0, 1), style: const TextStyle(fontSize: 10)),
+    );
+  }
 }
 
 class _OrderFailureNotice extends StatelessWidget {

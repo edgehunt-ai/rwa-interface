@@ -670,6 +670,36 @@ final class AppReviewFundingRepository implements FundingRepository {
       status: FundingTransferState.completed,
     );
     store.fundingTransfers[transfer.transferId] = transfer;
+    final plan = store.fundingPlans[planId];
+    if (plan != null) {
+      store.fundingPlans[planId] = FundingPlan(
+        planId: plan.planId,
+        tradePreviewId: plan.tradePreviewId,
+        shortfall: plan.shortfall,
+        status: FundingPlanState.alreadyFunded,
+        sourceWalletId: plan.sourceWalletId,
+        sourceAsset: plan.sourceAsset,
+        sourceMaximum: plan.sourceMaximum,
+        blocker: plan.blocker,
+        legs: plan.legs
+            .map(
+              (leg) => FundingLeg(
+                legId: leg.legId,
+                walletId: leg.walletId,
+                asset: leg.asset,
+                maximumAmount: leg.maximumAmount,
+                outputAmount: leg.outputAmount,
+                status: leg.legId == legId
+                    ? FundingLegState.completed
+                    : leg.status,
+                transferId: leg.legId == legId
+                    ? transfer.transferId
+                    : leg.transferId,
+              ),
+            )
+            .toList(growable: false),
+      );
+    }
     return transfer;
   }
 

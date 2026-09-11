@@ -110,31 +110,45 @@ class _BstocksTransferFlowState
   );
 
   Future<void> _submitTransfer() async {
-    final plan = widget.plan;
+    var plan = widget.plan;
     setState(() {
       error = null;
       _stage = BstocksTransferFlowStage.submitting;
     });
     try {
       final commands = ref.read(fundingTransferCommandsProvider);
-      final authorization = await commands.authorize(plan);
-      final transfer = await commands.create(
-        plan: plan,
-        authorization: authorization,
-      );
-      if (!mounted) return;
-      if (transfer.status == FundingTransferState.completed) {
+      while (plan.isActionable) {
+        final authorization = await commands.authorize(plan);
+        final transfer = await commands.create(
+          plan: plan,
+          authorization: authorization,
+        );
+        if (!mounted) return;
+        if (transfer.status != FundingTransferState.completed) {
+          setState(() {
+            _stage = switch (transfer.status) {
+              FundingTransferState.failed ||
+              FundingTransferState.ambiguous ||
+              FundingTransferState.manualReview =>
+                BstocksTransferFlowStage.review,
+              _ => BstocksTransferFlowStage.fundingPending,
+            };
+            error = transfer.failureReason;
+          });
+          return;
+        }
+        plan = await ref
+            .read(fundingRepositoryProvider)
+            .getFundingPlan(plan.planId);
+        if (!mounted) return;
+      }
+      if (plan.status == FundingPlanState.alreadyFunded) {
         await _submitCompletedOrder();
         return;
       }
       setState(() {
-        _stage = switch (transfer.status) {
-          FundingTransferState.failed ||
-          FundingTransferState.ambiguous ||
-          FundingTransferState.manualReview => BstocksTransferFlowStage.review,
-          _ => BstocksTransferFlowStage.fundingPending,
-        };
-        error = transfer.failureReason;
+        _stage = BstocksTransferFlowStage.review;
+        error = plan.blocker ?? 'Funding is not ready to submit this order.';
       });
     } on Object {
       if (mounted) {
@@ -279,21 +293,24 @@ class _ServerSelectedSource extends StatelessWidget {
   final FundingPlan plan;
 
   @override
-  Widget build(BuildContext context) => ListTile(
-    contentPadding: EdgeInsets.zero,
-    leading: const Icon(Icons.account_balance_wallet_outlined),
-    title: Text('${plan.sourceAsset ?? 'Asset'} (server selected)'),
-    subtitle: const Text('Available balance'),
-    trailing: Text(
-      plan.sourceMaximum == null
-          ? 'Unavailable'
-          : TokenAmountFormatter.format(
-              plan.sourceMaximum!,
-              symbol: plan.sourceAsset ?? 'USDC',
+  Widget build(BuildContext context) {
+    final sources = plan.legs.where((leg) => leg.isActionable).toList();
+    return Column(
+      children: [
+        for (final leg in sources)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.account_balance_wallet_outlined),
+            title: Text('${leg.asset} (server selected)'),
+            subtitle: const Text('Available balance'),
+            trailing: Text(
+              TokenAmountFormatter.format(leg.maximumAmount, symbol: leg.asset),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
-      style: const TextStyle(fontWeight: FontWeight.w600),
-    ),
-  );
+          ),
+      ],
+    );
+  }
 }
 
 class _AmountOverview extends StatelessWidget {
