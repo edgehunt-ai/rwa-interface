@@ -5,6 +5,12 @@ import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../../../domain/models/withdrawal.dart';
 import '../../../../domain/models/funding_session.dart';
+import '../../../../domain/models/funding_catalog_summary.dart';
+
+final fundingCatalogProvider =
+    FutureProvider.autoDispose<FundingCatalogSummary>(
+      (ref) => ref.watch(fundingRepositoryProvider).getFundingCatalog(),
+    );
 
 final fundingSessionProvider = FutureProvider.autoDispose
     .family<FundingSessionSummary, String>(
