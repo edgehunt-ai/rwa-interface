@@ -41,6 +41,7 @@ class Hip3PositionMetrics extends StatelessWidget {
               ? unavailable
               : TokenAmountFormatter.formatPercent(
                   position.unrealizedPnlPercent!,
+                  maxFractionDigits: 6,
                 ),
         ),
         _row('Margin', money(position.margin)),
