@@ -9,6 +9,7 @@ import '../../domain/models/funding_transfer.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/models/withdrawal.dart';
 import '../../domain/models/deposit_observation.dart';
+import '../../domain/models/funding_session.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../services/funding_service.dart';
 
@@ -81,6 +82,18 @@ final class FundingRepositoryImpl implements FundingRepository {
       ),
       dataStatus: value.dataStatus.name,
       calculatedAt: value.calculatedAt.toUtc(),
+    );
+  }
+
+  @override
+  Future<FundingSessionSummary> getFundingSession(String id) async {
+    final value = await _service.getFundingSession(id);
+    return FundingSessionSummary(
+      sessionId: value.fundingSessionId,
+      status: value.status.name,
+      version: value.version,
+      canConfirmTransfer: value.canConfirmTransfer,
+      expiresAt: value.expiresAt.toUtc(),
     );
   }
 

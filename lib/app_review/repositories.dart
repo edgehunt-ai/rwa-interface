@@ -3,6 +3,7 @@ import '../domain/models/account_deletion.dart';
 import '../domain/models/decimal_value.dart';
 import '../domain/models/deposit.dart';
 import '../domain/models/deposit_observation.dart';
+import '../domain/models/funding_session.dart';
 import '../domain/models/domain_page.dart';
 import '../domain/models/funding_catalog.dart';
 import '../domain/models/funding_transfer.dart';
@@ -639,6 +640,16 @@ final class AppReviewFundingRepository implements FundingRepository {
         inTransitUsd: _usd('0.00'),
         dataStatus: 'simulated',
         calculatedAt: _now,
+      );
+
+  @override
+  Future<FundingSessionSummary> getFundingSession(String id) async =>
+      FundingSessionSummary(
+        sessionId: id,
+        status: 'active',
+        version: 1,
+        canConfirmTransfer: true,
+        expiresAt: _now.add(const Duration(hours: 24)),
       );
 
   @override

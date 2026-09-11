@@ -5,10 +5,12 @@ import '../models/funding_transfer.dart';
 import '../models/resource_result.dart';
 import '../models/withdrawal.dart';
 import '../models/deposit_observation.dart';
+import '../models/funding_session.dart';
 
 abstract interface class FundingRepository {
   Future<DepositDirectory> getDepositDirectory();
   Future<UnifiedFundingAccountSummary> getUnifiedFundingAccount();
+  Future<FundingSessionSummary> getFundingSession(String id);
   Future<FundingPlan> createFundingPlan({
     required String tradePreviewId,
     required String idempotencyKey,
