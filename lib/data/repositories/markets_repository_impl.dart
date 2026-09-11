@@ -184,11 +184,6 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     tradable: true,
     change24hPercent: _decimal(value.change24hPercent, unit: 'percent'),
     volume24h: _decimal(value.volume24h, unit: value.volume24hUnit),
-    turnover24hUsd: _decimal(
-      value.turnover24hUsd,
-      asset: 'USD',
-      unit: 'notional',
-    ),
     isFavorite: value.isFavorite ?? false,
   );
 
