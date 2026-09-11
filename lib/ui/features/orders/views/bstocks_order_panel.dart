@@ -64,8 +64,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   void _refreshAmount() {
-    final balance = ref.read(portfolioSummaryProvider).value;
-    final available = double.tryParse(balance?.availableToTradeUsd.value ?? '');
+    final available = double.tryParse(
+      _availableAmount(
+            side: side,
+            symbol: widget.symbol,
+            portfolio: ref.read(portfolioSummaryProvider).value,
+            holdings: ref.read(holdingsProvider(null)).value?.items,
+          )?.value ??
+          '',
+    );
     final entered = double.tryParse(amount.text.trim());
     final nextPercentage =
         available == null ||
@@ -79,9 +86,19 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _scheduleQuote();
   }
 
-  void _updateAmountFromPercentage(double value, Portfolio? portfolio) {
+  void _updateAmountFromPercentage(
+    double value,
+    Portfolio? portfolio,
+    List<HoldingGroup>? holdings,
+  ) {
     final available = double.tryParse(
-      portfolio?.availableToTradeUsd.value ?? '',
+      _availableAmount(
+            side: side,
+            symbol: widget.symbol,
+            portfolio: portfolio,
+            holdings: holdings,
+          )?.value ??
+          '',
     );
     if (available == null) {
       setState(() => percentage = value);
@@ -363,7 +380,19 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final enteredAmount = amount.text.trim();
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
     final portfolio = ref.watch(portfolioSummaryProvider);
-    final balance = _availableBalance(portfolio.value);
+    final holdings = ref.watch(holdingsProvider(null));
+    final availableAmount = _availableAmount(
+      side: side,
+      symbol: widget.symbol,
+      portfolio: portfolio.value,
+      holdings: holdings.value?.items,
+    );
+    final balance = availableAmount == null
+        ? null
+        : isBuy
+        ? TokenAmountFormatter.formatUsd(availableAmount)
+        : '${TokenAmountFormatter.formatValue(availableAmount)} ${widget.symbol}';
+    final balanceLoading = isBuy ? portfolio.isLoading : holdings.isLoading;
     final receive =
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
@@ -419,6 +448,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 label: (value) => value == TradingSide.buy ? 'Buy' : 'Sell',
                 onChanged: (value) {
                   setState(() => side = value);
+                  amount.clear();
                   _scheduleQuote();
                 },
               ),
@@ -456,7 +486,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        if (portfolio.isLoading)
+                        if (balanceLoading)
                           const SkeletonBlock(
                             key: Key('bstocks-balance-skeleton'),
                             width: 56,
@@ -504,8 +534,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 ),
                 _PercentageSlider(
                   value: percentage,
-                  onChanged: (value) =>
-                      _updateAmountFromPercentage(value, portfolio.value),
+                  onChanged: (value) => _updateAmountFromPercentage(
+                    value,
+                    portfolio.value,
+                    holdings.value?.items,
+                  ),
                 ),
               ],
             ),
@@ -533,7 +566,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                         ? '- ${widget.symbol}'
                         : TokenAmountFormatter.format(
                             receive,
-                            symbol: widget.symbol,
+                            symbol: receive.asset ?? widget.symbol,
                           ),
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
@@ -568,7 +601,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               child: Text(
                 reviewing
                     ? 'Preparing order…'
-                    : '${isBuy ? 'Buy' : 'Sell'} ${widget.symbol} · \$$buttonAmount',
+                    : '${isBuy ? 'Buy' : 'Sell'} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
               ),
             ),
           ),
@@ -633,7 +666,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ? '—'
               : TokenAmountFormatter.format(
                   current.estimatedQuantity!,
-                  symbol: widget.symbol,
+                  symbol: current.estimatedQuantity!.asset ?? widget.symbol,
                 ),
           receiveAsset: widget.symbol,
         ),
@@ -781,9 +814,45 @@ bool _isDecimal(String value) {
   }
 }
 
-String? _availableBalance(Portfolio? portfolio) => portfolio == null
-    ? null
-    : TokenAmountFormatter.formatUsd(portfolio.availableToTradeUsd);
+DecimalValue? _availableAmount({
+  required TradingSide side,
+  required String symbol,
+  required Portfolio? portfolio,
+  required List<HoldingGroup>? holdings,
+}) {
+  if (side == TradingSide.buy) return portfolio?.availableToTradeUsd;
+  if (holdings == null) return null;
+  final underlying = symbol.endsWith('B')
+      ? symbol.substring(0, symbol.length - 1)
+      : symbol;
+  final quantities = holdings
+      .where(
+        (holding) => holding.symbol == underlying || holding.symbol == symbol,
+      )
+      .expand((holding) => holding.positions)
+      .map((position) => position.quantity)
+      .toList(growable: false);
+  if (quantities.isEmpty) {
+    return DecimalValue('0', asset: symbol, unit: 'token');
+  }
+  final scale = quantities.fold<int>(
+    0,
+    (current, quantity) => current > quantity.scale ? current : quantity.scale,
+  );
+  var total = BigInt.zero;
+  for (final quantity in quantities) {
+    final parts = quantity.value.split('.');
+    final digits = '${parts.first}${parts.length == 1 ? '' : parts.last}'
+        .padRight(parts.first.length + scale, '0');
+    total += BigInt.parse(digits);
+  }
+  final digits = total.toString().padLeft(scale + 1, '0');
+  final value = scale == 0
+      ? digits
+      : '${digits.substring(0, digits.length - scale)}.'
+            '${digits.substring(digits.length - scale)}';
+  return DecimalValue(value, asset: symbol, unit: 'token');
+}
 
 String _formatInputAmount(double value) {
   final fixed = value.toStringAsFixed(8);

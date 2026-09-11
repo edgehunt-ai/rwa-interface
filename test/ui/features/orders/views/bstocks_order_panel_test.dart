@@ -16,6 +16,7 @@ import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
@@ -149,6 +150,67 @@ void main() {
     await tester.pump();
     expect(tester.widget<Slider>(slider).value, 0);
   });
+
+  testWidgets(
+    'sell uses the matching position quantity without a dollar sign',
+    (tester) async {
+      final position = Position(
+        positionId: 'nvda-position',
+        symbol: 'NVDA',
+        kind: MarketProductKind.bstock,
+        quantity: DecimalValue('12.5', asset: 'NVDA', unit: 'token'),
+        valueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            portfolioSummaryProvider.overrideWith(
+              (ref) async => Portfolio(
+                totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
+                availableToTradeUsd: DecimalValue(
+                  '456.78',
+                  asset: 'USD',
+                  unit: 'fiat',
+                ),
+              ),
+            ),
+            holdingsProvider(null).overrideWith(
+              (ref) async => DomainPage(
+                items: [
+                  HoldingGroup(
+                    symbol: 'NVDA',
+                    totalValueUsd: position.valueUsd,
+                    positions: [position],
+                  ),
+                ],
+              ),
+            ),
+          ],
+          child: buildTestApp(
+            const BstocksOrderPanel(
+              symbol: 'NVDAB',
+              initialSide: TradingSide.sell,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('12.5 NVDAB'), findsOneWidget);
+      expect(find.text(r'$456.78'), findsNothing);
+
+      final slider = find.byKey(const Key('bstocks-percentage-slider'));
+      tester.widget<Slider>(slider).onChanged!(40);
+      await tester.pump();
+
+      expect(
+        tester.widget<TextField>(find.byType(TextField).first).controller!.text,
+        '5',
+      );
+      expect(find.text('Sell NVDAB · 5'), findsOneWidget);
+      expect(find.text(r'Sell NVDAB · $5'), findsNothing);
+    },
+  );
 
   testWidgets('bStocks order form shows a skeleton while the balance loads', (
     tester,
