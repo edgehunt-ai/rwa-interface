@@ -152,6 +152,9 @@ void main() {
 
 final class _MarketsDelegate implements MarketsRepository {
   @override
+  Future<MarketHours> getMarketHours() async =>
+      const MarketHours(timezone: 'UTC', current: MarketSessionKind.regular);
+  @override
   Future<MarketProduct> getProduct(MarketProductRef ref) async => MarketProduct(
     symbol: ref.symbol,
     name: ref.symbol,
