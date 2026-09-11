@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
@@ -57,6 +58,7 @@ class _MarketDiscoverySearchScreenState
             marketProductsProvider((query: _remoteQuery, cursor: null)),
           );
     final recentSearches = ref.watch(recentMarketSearchesProvider);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -67,14 +69,14 @@ class _MarketDiscoverySearchScreenState
                 children: [
                   Expanded(
                     child: Text(
-                      'Search markets',
+                      l10n.searchMarkets,
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
                   TextButton(
                     onPressed: () => context.pop(),
-                    child: const Text('Cancel'),
+                    child: Text(l10n.cancel),
                   ),
                 ],
               ),
@@ -92,11 +94,11 @@ class _MarketDiscoverySearchScreenState
                       height: 20,
                     ),
                   ),
-                  hintText: 'Search ticker or company',
+                  hintText: l10n.searchTickerOrCompany,
                   suffixIcon: query.isEmpty
                       ? null
                       : IconButton(
-                          tooltip: 'Clear search',
+                          tooltip: l10n.clearSearch,
                           onPressed: () {
                             _controller.clear();
                             _setQuery('');
@@ -131,23 +133,23 @@ class _MarketDiscoverySearchScreenState
     AsyncValue<DomainPage<MarketProduct>> catalog,
     AsyncValue<List<MarketProductRef>> recentSearches,
   ) => catalog.when(
-    loading: () => const DesignStateFeedback(
+    loading: () => DesignStateFeedback(
       state: DesignState.loading,
-      title: 'Loading markets',
+      title: AppLocalizations.of(context).loadingMarkets,
     ),
     error: (_, _) => DesignStateFeedback(
       state: DesignState.failure,
-      title: 'Markets unavailable',
-      message: 'Try again when the market catalog is available.',
+      title: AppLocalizations.of(context).marketsUnavailable,
+      message: AppLocalizations.of(context).marketCatalogUnavailable,
       onRetry: () => ref.refresh(
         marketProductsProvider((query: null, cursor: null)).future,
       ),
     ),
     data: (page) {
       if (recentSearches.isLoading) {
-        return const DesignStateFeedback(
+        return DesignStateFeedback(
           state: DesignState.loading,
-          title: 'Loading recent searches',
+          title: AppLocalizations.of(context).loadingRecentSearches,
         );
       }
       final visible = _recentProducts(
@@ -156,7 +158,7 @@ class _MarketDiscoverySearchScreenState
       );
       if (visible.isEmpty) return _emptyRecentSearches();
       return _marketResultList(
-        title: 'Recent searches',
+        title: AppLocalizations.of(context).recentSearches,
         products: visible,
         showBrowseAll: true,
       );
@@ -168,36 +170,45 @@ class _MarketDiscoverySearchScreenState
     required AsyncValue<DomainPage<MarketProduct>> remoteProducts,
   }) => remoteProducts.when(
     loading: () => _marketResultList(
-      title: 'Results',
+      title: AppLocalizations.of(context).results,
       products: localProducts,
       isLoadingMore: true,
     ),
     error: (_, _) => localProducts.isNotEmpty
-        ? _marketResultList(title: 'Results', products: localProducts)
-        : const DesignStateFeedback(
+        ? _marketResultList(
+            title: AppLocalizations.of(context).results,
+            products: localProducts,
+          )
+        : DesignStateFeedback(
             state: DesignState.failure,
-            title: 'Markets unavailable',
-            message: 'Try again when the market catalog is available.',
+            title: AppLocalizations.of(context).marketsUnavailable,
+            message: AppLocalizations.of(context).marketCatalogUnavailable,
           ),
     data: (page) {
       final products = _mergeProducts(localProducts, page.items);
       if (products.isEmpty) {
-        return const DesignStateFeedback(
+        return DesignStateFeedback(
           state: DesignState.empty,
-          title: 'No matching markets',
-          message: 'Try another ticker or company name.',
+          title: AppLocalizations.of(context).noMatchingMarkets,
+          message: AppLocalizations.of(context).tryAnotherTickerOrCompany,
         );
       }
-      return _marketResultList(title: 'Results', products: products);
+      return _marketResultList(
+        title: AppLocalizations.of(context).results,
+        products: products,
+      );
     },
   );
 
   Widget _emptyRecentSearches() => ListView(
     children: [
-      Text('Recent searches', style: Theme.of(context).textTheme.titleMedium),
+      Text(
+        AppLocalizations.of(context).recentSearches,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
       const SizedBox(height: 8),
       Text(
-        'No recent searches',
+        AppLocalizations.of(context).noRecentSearches,
         style: TextStyle(
           color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
         ),
@@ -229,9 +240,9 @@ class _MarketDiscoverySearchScreenState
 
   Widget _browseAllButton() => TextButton(
     onPressed: () => context.pushNamed(AppRoutes.allStocksName),
-    child: const Align(
+    child: Align(
       alignment: Alignment.centerLeft,
-      child: Text('Browse all stocks ›'),
+      child: Text(AppLocalizations.of(context).browseAllStocks),
     ),
   );
 
@@ -338,6 +349,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
     final localProducts = query.isEmpty
         ? const <MarketProduct>[]
         : _localSearch(catalog.asData?.value.items ?? const [], query);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -349,7 +361,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                   Row(
                     children: [
                       IconButton(
-                        tooltip: 'Back',
+                        tooltip: l10n.back,
                         onPressed: () => context.pop(),
                         icon: Transform.rotate(
                           angle: 3.141592653589793,
@@ -362,7 +374,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'All stocks',
+                        l10n.allStocks,
                         style: Theme.of(context).textTheme.titleLarge
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
@@ -381,11 +393,11 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                           height: 20,
                         ),
                       ),
-                      hintText: 'Search ticker or company',
+                      hintText: l10n.searchTickerOrCompany,
                       suffixIcon: query.isEmpty
                           ? null
                           : IconButton(
-                              tooltip: 'Clear search',
+                              tooltip: l10n.clearSearch,
                               onPressed: () {
                                 _controller.clear();
                                 _setQuery('');
@@ -407,17 +419,16 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                         allProducts: localProducts,
                         showRemoteSkeleton: true,
                       )
-                    : const DesignStateFeedback(
+                    : DesignStateFeedback(
                         state: DesignState.loading,
-                        title: 'Loading stocks',
+                        title: l10n.loadingStocks,
                       ),
                 error: (_, _) => localProducts.isNotEmpty
                     ? _stockList(allProducts: localProducts)
                     : DesignStateFeedback(
                         state: DesignState.failure,
-                        title: 'Stocks unavailable',
-                        message:
-                            'Try again when the market catalog is available.',
+                        title: l10n.stocksUnavailable,
+                        message: l10n.marketCatalogUnavailable,
                         onRetry: () => ref.refresh(
                           marketProductsProvider((
                             query: query.isEmpty ? null : query,
@@ -451,12 +462,13 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
     bool showRemoteSkeleton = false,
   }) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final stocks = _stockRows(allProducts);
     if (stocks.isEmpty) {
-      return const DesignStateFeedback(
+      return DesignStateFeedback(
         state: DesignState.empty,
-        title: 'No stocks found',
-        message: 'Try another ticker or company name.',
+        title: l10n.noStocksFound,
+        message: l10n.tryAnotherTickerOrCompany,
       );
     }
     final headerCount = query.isEmpty ? 0 : 1;
@@ -484,7 +496,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
             return SizedBox(
               height: 24,
               child: Text(
-                '${stocks.length} ${stocks.length == 1 ? 'result' : 'results'}',
+                l10n.searchResultCount(stocks.length),
                 style: TextStyle(color: colors.tertiaryText),
               ),
             );

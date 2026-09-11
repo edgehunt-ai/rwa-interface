@@ -41,49 +41,62 @@ class SettingsScreen extends ConsumerWidget {
     });
     return Scaffold(
       body: SafeArea(
-        child: account.when(
-          loading: () => DesignStateFeedback(
-            state: DesignState.loading,
-            title: AppLocalizations.of(context).settingsLoading,
-          ),
-          error: (_, _) => DesignStateFeedback(
-            state: DesignState.failure,
-            title: AppLocalizations.of(context).settingsUnavailable,
-            message: AppLocalizations.of(context).settingsRetry,
-            onRetry: () => ref.refresh(accountProvider.future),
-          ),
-          data: (account) => _SettingsContent(
-            name: accountDisplayName(
-              account,
-              identityDisplayName: switch (authentication) {
-                AuthenticationAuthenticated(:final principal) =>
-                  principal.displayName,
-                _ => null,
-              },
+        child: Column(
+          children: [
+            const _SettingsHeader(),
+            const SizedBox(height: 16),
+            Expanded(
+              child: account.when(
+                loading: () => DesignStateFeedback(
+                  state: DesignState.loading,
+                  title: AppLocalizations.of(context).settingsLoading,
+                ),
+                error: (_, _) => DesignStateFeedback(
+                  state: DesignState.failure,
+                  title: AppLocalizations.of(context).settingsUnavailable,
+                  message: AppLocalizations.of(context).settingsRetry,
+                  onRetry: () => ref.refresh(accountProvider.future),
+                ),
+                data: (account) => _SettingsContent(
+                  name: accountDisplayName(
+                    account,
+                    identityDisplayName: switch (authentication) {
+                      AuthenticationAuthenticated(:final principal) =>
+                        principal.displayName,
+                      _ => null,
+                    },
+                  ),
+                  language: account.settings.language,
+                  passkey: _passkeyValue(passkey),
+                  passkeyLoading: passkey.isLoading,
+                  onPasskey: () =>
+                      _showPasskeySheet(context, ref, _passkeyValue(passkey)),
+                  onLanguage: () => _showLanguageSheet(
+                    context,
+                    ref,
+                    account.settings.language,
+                  ),
+                  onPrivateKey: () => _showPrivateKeyWarning(context),
+                  appVersion: switch (installedAppInfo) {
+                    AsyncData(:final value) => 'v${value.version}',
+                    _ => '...',
+                  },
+                  checkingForUpdate: checkingForUpdate,
+                  onCheckForUpdates: () => _checkForUpdates(context, ref),
+                  cacheSizeBytes: switch (cacheSize) {
+                    AsyncData(:final value) => value,
+                    _ => null,
+                  },
+                  clearingCache: clearingCache,
+                  onClearCache: () =>
+                      ref.read(cacheCommandProvider.notifier).clear(),
+                  onLogOut: () => _showLogOutConfirmation(context, ref),
+                  onDeleteAccount: () =>
+                      _showDeleteAccountConfirmation(context, ref),
+                ),
+              ),
             ),
-            language: account.settings.language,
-            passkey: _passkeyValue(passkey),
-            passkeyLoading: passkey.isLoading,
-            onPasskey: () =>
-                _showPasskeySheet(context, ref, _passkeyValue(passkey)),
-            onLanguage: () =>
-                _showLanguageSheet(context, ref, account.settings.language),
-            onPrivateKey: () => _showPrivateKeyWarning(context),
-            appVersion: switch (installedAppInfo) {
-              AsyncData(:final value) => 'v${value.version}',
-              _ => '...',
-            },
-            checkingForUpdate: checkingForUpdate,
-            onCheckForUpdates: () => _checkForUpdates(context, ref),
-            cacheSizeBytes: switch (cacheSize) {
-              AsyncData(:final value) => value,
-              _ => null,
-            },
-            clearingCache: clearingCache,
-            onClearCache: () => ref.read(cacheCommandProvider.notifier).clear(),
-            onLogOut: () => _showLogOutConfirmation(context, ref),
-            onDeleteAccount: () => _showDeleteAccountConfirmation(context, ref),
-          ),
+          ],
         ),
       ),
     );
@@ -331,6 +344,39 @@ PasskeyCredential? _passkeyValue(AsyncValue<PasskeyCredential?> value) =>
       _ => null,
     };
 
+class _SettingsHeader extends StatelessWidget {
+  const _SettingsHeader();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 20,
+          height: 34,
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 20),
+            tooltip: AppLocalizations.of(context).back,
+            onPressed: () => context.canPop() ? context.pop() : null,
+            icon: const Icon(Icons.chevron_left, size: 20),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            AppLocalizations.of(context).settingsTitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class _SettingsContent extends StatelessWidget {
   const _SettingsContent({
     required this.name,
@@ -369,33 +415,8 @@ class _SettingsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 20,
-              height: 34,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(width: 20),
-                tooltip: AppLocalizations.of(context).back,
-                onPressed: () => context.canPop() ? context.pop() : null,
-                icon: const Icon(Icons.chevron_left, size: 20),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                AppLocalizations.of(context).settingsTitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
         _Card(child: _AccountRow(name: name)),
         const SizedBox(height: 16),
         _Card(

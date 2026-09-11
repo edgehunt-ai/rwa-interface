@@ -8,11 +8,13 @@ Widget buildTestApp(
   Widget child, {
   TargetPlatform platform = TargetPlatform.android,
   ThemeMode themeMode = ThemeMode.light,
+  Locale? locale,
 }) {
   return MaterialApp(
     theme: AppTheme.light.copyWith(platform: platform),
     darkTheme: AppTheme.dark.copyWith(platform: platform),
     themeMode: themeMode,
+    locale: locale,
     localizationsDelegates: const [
       AppLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,

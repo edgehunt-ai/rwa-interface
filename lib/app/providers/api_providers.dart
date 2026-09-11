@@ -4,6 +4,7 @@ import '../../data/api/api_environment.dart';
 import '../../data/api/privy_access_token_provider.dart';
 import '../../data/api/rwa_api_data_source.dart';
 import '../../data/repositories/markets_repository_impl.dart';
+import '../../data/repositories/market_hours_repository_impl.dart';
 import '../../data/repositories/hip3_opening_repository_impl.dart';
 import '../../domain/repositories/hip3_opening_repository.dart';
 import '../../data/repositories/hip3_order_execution_repository_impl.dart';
@@ -36,6 +37,7 @@ import '../../data/services/package_info_service.dart';
 import '../../data/services/realtime_service.dart';
 import '../../data/services/generated_trade_intent_service.dart';
 import '../../domain/repositories/markets_repository.dart';
+import '../../domain/repositories/market_hours_repository.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../../domain/repositories/orders_repository.dart';
@@ -102,6 +104,12 @@ final marketsRepositoryProvider = Provider<MarketsRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return MarketsRepositoryImpl(
     GeneratedMarketsService(source.client.getMarketsApi()),
+    GeneratedChartsService(source.client.getChartsApi()),
+  );
+});
+final marketHoursRepositoryProvider = Provider<MarketHoursRepository>((ref) {
+  final source = ref.watch(apiDataSourceProvider);
+  return MarketHoursRepositoryImpl(
     GeneratedChartsService(source.client.getChartsApi()),
   );
 });
@@ -242,7 +250,11 @@ final activityRepositoryProvider = Provider<ActivityRepository>((ref) {
   );
 });
 final realtimeServiceProvider = Provider<RealtimeService>((ref) {
-  return DioRealtimeService(ref.watch(apiDataSourceProvider).dio);
+  final source = ref.watch(apiDataSourceProvider);
+  return DioRealtimeService(
+    source.dio,
+    systemApi: source.client.getSystemApi(),
+  );
 });
 final realtimeRepositoryProvider = Provider<RealtimeRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {

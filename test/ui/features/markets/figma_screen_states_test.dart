@@ -9,6 +9,7 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
@@ -43,16 +44,13 @@ void main() {
             _MarketSearchHistoryService(),
           ),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const MarketDiscoverySearchScreen(),
-        ),
+        child: _marketApp(const MarketDiscoverySearchScreen()),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Products'), findsOneWidget);
-    expect(find.text('Recent searches'), findsNothing);
+    expect(find.text('Recent searches'), findsOneWidget);
+    expect(find.text('No recent searches'), findsOneWidget);
   });
 
   testWidgets('market discovery restores recent searches from history', (
@@ -73,10 +71,7 @@ void main() {
             ),
           ),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const MarketDiscoverySearchScreen(),
-        ),
+        child: _marketApp(const MarketDiscoverySearchScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -96,10 +91,7 @@ void main() {
               _MarketSearchHistoryService(),
             ),
           ],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            home: const MarketDiscoverySearchScreen(),
-          ),
+          child: _marketApp(const MarketDiscoverySearchScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -123,10 +115,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-          child: MaterialApp(
-            theme: AppTheme.light,
-            home: const MarketSearchScreen(),
-          ),
+          child: _marketApp(const MarketSearchScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -150,10 +139,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const MarketSearchScreen(),
-        ),
+        child: _marketApp(const MarketSearchScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -180,7 +166,7 @@ void main() {
               _MarketSearchHistoryService(),
             ),
           ],
-          child: MaterialApp(theme: AppTheme.light, home: searchScreen),
+          child: _marketApp(searchScreen),
         ),
       );
       await tester.pumpAndSettle();
@@ -201,6 +187,13 @@ void main() {
     });
   }
 }
+
+Widget _marketApp(Widget home) => MaterialApp(
+  theme: AppTheme.light,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: home,
+);
 
 final class _MarketSearchHistoryService implements MarketSearchHistoryService {
   _MarketSearchHistoryService({List<MarketProductRef> entries = const []})

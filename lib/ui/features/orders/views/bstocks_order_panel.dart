@@ -473,7 +473,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                       type == TradingOrderType.market && isBuy
                           ? l10n.orderValue
                           : type == TradingOrderType.limit
-                          ? 'Quantity'
+                          ? l10n.quantity
                           : l10n.amount,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colors.secondaryText,
@@ -602,7 +602,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               onPressed: reviewing ? null : _review,
               child: Text(
                 reviewing
-                    ? 'Preparing order…'
+                    ? l10n.preparingOrder
                     : '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
               ),
             ),
@@ -686,7 +686,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             value: price,
           ),
         _SummaryRow(
-          label: 'Slippage',
+          label: l10n.slippage,
           value: '${current.intent.slippage?.value ?? slippage}%',
         ),
         if (current.fee case final fee?)
@@ -760,8 +760,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         const SizedBox(height: 8),
         Text(
           submittedOrder!.status == TradingOrderStatus.filled
-              ? 'You can check the order status on the activities page.'
-              : 'Your order is being processed. Track its status in Details.',
+              ? l10n.orderStatusInActivity
+              : l10n.orderProcessingInDetails,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 16),
@@ -1110,7 +1110,7 @@ class _SlippageRow extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              'Slippage',
+              AppLocalizations.of(context).slippage,
               style: TextStyle(color: colors.secondaryText),
             ),
           ),
@@ -1118,7 +1118,7 @@ class _SlippageRow extends StatelessWidget {
           const SizedBox(width: 2),
           IconButton(
             key: const Key('bstocks-edit-slippage'),
-            tooltip: 'Edit slippage',
+            tooltip: AppLocalizations.of(context).editSlippage,
             onPressed: onEdit,
             icon: const Icon(Icons.edit_outlined, size: 16),
             visualDensity: VisualDensity.compact,
@@ -1153,7 +1153,7 @@ class _SlippageSheetState extends State<_SlippageSheet> {
   void _confirm() {
     final value = double.tryParse(_controller.text.trim());
     if (value == null || !value.isFinite || value < 0 || value > 100) {
-      setState(() => _error = 'Enter a slippage percentage from 0% to 100%.');
+      setState(() => _error = AppLocalizations.of(context).invalidSlippage);
       return;
     }
     Navigator.of(context).pop(value);
@@ -1176,7 +1176,7 @@ class _SlippageSheetState extends State<_SlippageSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Slippage tolerance',
+              AppLocalizations.of(context).slippageTolerance,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
@@ -1196,7 +1196,7 @@ class _SlippageSheetState extends State<_SlippageSheet> {
                 }),
               ],
               decoration: InputDecoration(
-                labelText: 'Maximum slippage',
+                labelText: AppLocalizations.of(context).maximumSlippage,
                 suffixText: '%',
                 errorText: _error,
               ),
@@ -1225,14 +1225,14 @@ class _SlippageSheetState extends State<_SlippageSheet> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text(AppLocalizations.of(context).cancel),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: _confirm,
-                    child: const Text('Confirm'),
+                    child: Text(AppLocalizations.of(context).confirm),
                   ),
                 ),
               ],

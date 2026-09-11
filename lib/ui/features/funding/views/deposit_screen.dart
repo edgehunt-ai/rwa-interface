@@ -6,6 +6,7 @@ import 'package:qr_flutter_wc/qr_flutter_wc.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/deposit.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/copyable_text.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
@@ -30,6 +31,7 @@ class DepositRoutesSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final routes = ref.watch(depositRoutesProvider);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       top: false,
       child: Material(
@@ -57,7 +59,7 @@ class DepositRoutesSheet extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Deposit',
+                        l10n.deposit,
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
@@ -69,10 +71,10 @@ class DepositRoutesSheet extends ConsumerWidget {
                         width: 20,
                         height: 20,
                       ),
-                      label: const Text('History'),
+                      label: Text(l10n.history),
                     ),
                     IconButton(
-                      tooltip: 'Close deposit routes',
+                      tooltip: l10n.closeDepositRoutes,
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close, size: 20),
                     ),
@@ -80,7 +82,7 @@ class DepositRoutesSheet extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Choose a recommended route, or browse all supported assets.',
+                  l10n.depositChooseRoute,
                   style: TextStyle(color: colors.secondaryText),
                 ),
                 const SizedBox(height: 12),
@@ -93,7 +95,7 @@ class DepositRoutesSheet extends ConsumerWidget {
                     height: 340,
                     child: DesignStateFeedback(
                       state: DesignState.failure,
-                      title: 'Deposit routes unavailable',
+                      title: l10n.depositRoutesUnavailable,
                       message: error.toString(),
                       onRetry: () =>
                           ref.refresh(depositDirectoryProvider.future),
@@ -116,6 +118,7 @@ class _DepositRouteList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final recommendedRoutes = routes
         .where((route) => route.isRecommended)
         .toList();
@@ -125,12 +128,12 @@ class _DepositRouteList extends StatelessWidget {
     return Column(
       children: [
         if (recommendedRoutes.isEmpty && additionalRoutes.isEmpty)
-          const SizedBox(
+          SizedBox(
             height: 120,
             child: EmptyState(
               illustration: false,
-              title: 'No deposit routes available',
-              description: 'Try again later.',
+              title: l10n.noDepositRoutes,
+              description: l10n.tryAgainLater,
             ),
           )
         else
@@ -158,9 +161,10 @@ class _DepositRouteTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return Semantics(
       button: true,
-      label: 'Deposit ${route.token} on ${route.chain}',
+      label: l10n.depositOn(route.token, route.chain),
       child: InkWell(
         onTap: () {
           final router = GoRouter.of(context);
@@ -194,11 +198,13 @@ class _DepositRouteTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${route.token} on ${route.chain}',
+                      l10n.depositOn(route.token, route.chain),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      'Best for ${route.chain == 'BSC' ? 'bStocks' : 'HIP-3 Perps'}',
+                      l10n.bestFor(
+                        route.chain == 'BSC' ? 'bStocks' : l10n.hip3Perps,
+                      ),
                       style: TextStyle(
                         color: colors.secondaryText,
                         fontSize: 12,
@@ -282,6 +288,7 @@ class _AllAssetsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -301,12 +308,12 @@ class _AllAssetsTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'All supported assets',
+                  Text(
+                    l10n.allSupportedAssets,
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   Text(
-                    'Choose another available asset and network',
+                    l10n.allSupportedAssetsDescription,
                     style: TextStyle(color: colors.secondaryText, fontSize: 12),
                   ),
                 ],
@@ -372,12 +379,13 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     final token = widget.token;
     if (showSelector) return const _DepositSelector();
     if (chain == null || token == null) {
-      return const Scaffold(
+      return Scaffold(
         body: SafeArea(
           child: DesignStateFeedback(
             state: DesignState.unavailable,
-            title: 'Deposit route required',
-            message: 'Choose a supported route to receive an address.',
+            title: AppLocalizations.of(context).depositRouteRequired,
+            message: AppLocalizations.of(context)
+                .depositRouteRequiredDescription,
           ),
         ),
       );
@@ -391,14 +399,14 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
     return Scaffold(
       body: SafeArea(
         child: instruction.when(
-          loading: () => const DesignStateFeedback(
+          loading: () => DesignStateFeedback(
             state: DesignState.loading,
-            title: 'Loading deposit instructions',
+            title: AppLocalizations.of(context).loadingDepositInstructions,
           ),
           error: (_, _) => DesignStateFeedback(
             state: DesignState.failure,
-            title: 'Deposit instructions unavailable',
-            message: 'Return to deposit routes and try again.',
+            title: AppLocalizations.of(context).depositInstructionsUnavailable,
+            message: AppLocalizations.of(context).returnToDepositRoutes,
             onRetry: () {
               ref.invalidate(depositDirectoryProvider);
               ref.invalidate(depositInstructionProvider(route));
@@ -442,6 +450,7 @@ class _DepositReceivedSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       top: false,
       child: Material(
@@ -465,7 +474,7 @@ class _DepositReceivedSheet extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Deposit Assets',
+                l10n.depositAssets,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -476,7 +485,7 @@ class _DepositReceivedSheet extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Deposit received !',
+                l10n.depositReceived,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
@@ -490,7 +499,7 @@ class _DepositReceivedSheet extends StatelessWidget {
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Got it'),
+                child: Text(l10n.gotIt),
               ),
             ],
           ),
@@ -507,13 +516,14 @@ class _DepositInstructions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
         Row(
           children: [
             IconButton(
-              tooltip: 'Back to deposit routes',
+              tooltip: l10n.backToDepositRoutes,
               onPressed: () => context.pop(),
               icon: Transform.rotate(
                 angle: 3.141592653589793,
@@ -525,7 +535,7 @@ class _DepositInstructions extends StatelessWidget {
               ),
             ),
             Text(
-              'Deposit ${instruction.token}',
+              l10n.depositOn(instruction.token, instruction.chain),
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ],
@@ -547,12 +557,12 @@ class _DepositInstructions extends StatelessWidget {
               data: instruction.qrPayload,
               size: 160,
               backgroundColor: colors.subtleSurface,
-              semanticsLabel: 'Deposit QR code',
+              semanticsLabel: l10n.depositQrCode,
             ),
           ),
         ),
         const SizedBox(height: 32),
-        const Text('Deposit Address'),
+        Text(l10n.depositAddress),
         const SizedBox(height: 8),
         Container(
           constraints: const BoxConstraints(minHeight: 64),
@@ -567,7 +577,7 @@ class _DepositInstructions extends StatelessWidget {
             child: CopyableText(
               value: instruction.address,
               shorten: false,
-              semanticLabel: 'Deposit address',
+              semanticLabel: l10n.depositAddress,
             ),
           ),
         ),
@@ -585,6 +595,7 @@ class _ReadonlyRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -594,7 +605,7 @@ class _ReadonlyRoute extends StatelessWidget {
       child: Column(
         children: [
           _RouteValue(
-            label: 'Network',
+            label: l10n.network,
             value: instruction.chain,
             asset: instruction.chain == 'BSC'
                 ? 'assets/figma/funding/bnb_chain.svg'
@@ -602,7 +613,7 @@ class _ReadonlyRoute extends StatelessWidget {
           ),
           Divider(height: 1, color: colors.border),
           _RouteValue(
-            label: 'Token',
+            label: l10n.token,
             value: instruction.token,
             asset: 'assets/figma/funding/usdc.svg',
           ),
@@ -647,28 +658,29 @@ class _RouteDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Route details', style: TextStyle(color: colors.secondaryText)),
+        Text(l10n.routeDetails, style: TextStyle(color: colors.secondaryText)),
         const SizedBox(height: 4),
         Text(
-          'Send ${instruction.token} on ${instruction.chain} only.',
+          l10n.sendTokenOnChainOnly(instruction.token, instruction.chain),
           style: TextStyle(color: colors.secondaryText, fontSize: 12),
         ),
         const SizedBox(height: 12),
         _DetailRow(
-          label: 'Minimum deposit',
+          label: l10n.minimumDeposit,
           value: '${instruction.minimumAmount.value} ${instruction.token}',
         ),
         const SizedBox(height: 8),
         _DetailRow(
-          label: 'Estimated arrival',
+          label: l10n.estimatedArrival,
           value: '${instruction.estimatedArrivalSeconds}s',
         ),
         const SizedBox(height: 8),
         _DetailRow(
-          label: 'Confirmations required',
+          label: l10n.confirmationsRequired,
           value: '${instruction.confirmationsRequired}',
         ),
       ],
@@ -703,13 +715,13 @@ class _DepositSelector extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: routes.when(
-          loading: () => const DesignStateFeedback(
+          loading: () => DesignStateFeedback(
             state: DesignState.loading,
-            title: 'Loading supported assets',
+            title: AppLocalizations.of(context).loadingSupportedAssets,
           ),
           error: (_, _) => DesignStateFeedback(
             state: DesignState.failure,
-            title: 'Supported assets unavailable',
+            title: AppLocalizations.of(context).supportedAssetsUnavailable,
             onRetry: () => ref.refresh(depositDirectoryProvider.future),
           ),
           data: (value) {
@@ -719,7 +731,7 @@ class _DepositSelector extends ConsumerWidget {
                 Row(
                   children: [
                     IconButton(
-                      tooltip: 'Back to deposit routes',
+                      tooltip: AppLocalizations.of(context).backToDepositRoutes,
                       onPressed: () => context.pop(),
                       icon: Transform.rotate(
                         angle: 3.141592653589793,
@@ -731,7 +743,7 @@ class _DepositSelector extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      'Deposit crypto',
+                      AppLocalizations.of(context).depositCrypto,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ],
@@ -749,8 +761,8 @@ class _DepositSelector extends ConsumerWidget {
                     height: 160,
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'No additional deposit routes available',
+                  Text(
+                    AppLocalizations.of(context).noAdditionalDepositRoutes,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),

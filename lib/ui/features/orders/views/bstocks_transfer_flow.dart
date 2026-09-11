@@ -61,53 +61,60 @@ class _BstocksTransferFlowState
     ),
   );
 
-  Widget _source(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      const _TransferHeader(step: '2', title: 'Transfer'),
-      const Divider(),
-      const Text('In-App transfer'),
-      const SizedBox(height: 8),
-      _ServerSelectedSource(plan: widget.plan),
-      if (error case final value?)
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(value, style: const TextStyle(color: Colors.red)),
+  Widget _source(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _TransferHeader(step: '2', title: l10n.transfer),
+        const Divider(),
+        Text(l10n.inAppTransferLowercase),
+        const SizedBox(height: 8),
+        _ServerSelectedSource(plan: widget.plan),
+        if (error case final value?)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(value, style: const TextStyle(color: Colors.red)),
+          ),
+        _AmountOverview(amount: widget.amountNeeded),
+        _TransferDetails(plan: widget.plan),
+        const SizedBox(height: 16),
+        _Actions(
+          primary: l10n.confirm,
+          onBack: widget.onClose,
+          onPrimary: widget.plan.isActionable
+              ? () => setState(() => _stage = BstocksTransferFlowStage.review)
+              : null,
         ),
-      _AmountOverview(amount: widget.amountNeeded),
-      _TransferDetails(plan: widget.plan),
-      const SizedBox(height: 16),
-      _Actions(
-        primary: 'Confirm',
-        onBack: widget.onClose,
-        onPrimary: widget.plan.isActionable
-            ? () => setState(() => _stage = BstocksTransferFlowStage.review)
-            : null,
-      ),
-    ],
-  );
+      ],
+    );
+  }
 
-  Widget _review(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _TransferHeader(step: '3', title: 'Buy ${widget.symbol}'),
-      const Divider(),
-      Text('Buy ${widget.symbol} · Market'),
-      const SizedBox(height: 12),
-      const _UnifiedFundingAccountSummary(),
-      _ConversionOverview(plan: widget.plan, preview: widget.orderPreview),
-      const SizedBox(height: 16),
-      _ReviewDetails(preview: widget.orderPreview),
-      const SizedBox(height: 16),
-      _Actions(
-        primary: 'Confirm Buy',
-        onBack: () => setState(() => _stage = BstocksTransferFlowStage.source),
-        onPrimary: _submitTransfer,
-      ),
-    ],
-  );
+  Widget _review(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _TransferHeader(step: '3', title: l10n.buySymbol(widget.symbol)),
+        const Divider(),
+        Text(l10n.buySymbolMarket(widget.symbol)),
+        const SizedBox(height: 12),
+        const _UnifiedFundingAccountSummary(),
+        _ConversionOverview(plan: widget.plan, preview: widget.orderPreview),
+        const SizedBox(height: 16),
+        _ReviewDetails(preview: widget.orderPreview),
+        const SizedBox(height: 16),
+        _Actions(
+          primary: '${l10n.confirm} ${l10n.buy}',
+          onBack: () =>
+              setState(() => _stage = BstocksTransferFlowStage.source),
+          onPrimary: _submitTransfer,
+        ),
+      ],
+    );
+  }
 
   Future<void> _submitTransfer() async {
     var plan = widget.plan;
@@ -148,13 +155,13 @@ class _BstocksTransferFlowState
       }
       setState(() {
         _stage = BstocksTransferFlowStage.review;
-        error = plan.blocker ?? 'Funding is not ready to submit this order.';
+        error = plan.blocker ?? AppLocalizations.of(context).fundingNotReady;
       });
     } on Object {
       if (mounted) {
         setState(() {
           _stage = BstocksTransferFlowStage.review;
-          error = 'Unable to authorize or start this transfer. Try again.';
+          error = AppLocalizations.of(context).transferStartFailed;
         });
       }
     }
@@ -171,104 +178,115 @@ class _BstocksTransferFlowState
         _stage = result == null
             ? BstocksTransferFlowStage.review
             : BstocksTransferFlowStage.tradeSuccess;
-        error = result == null ? 'Order was not submitted. Try again.' : null;
+        error = result == null
+            ? AppLocalizations.of(context).orderSubmissionFailed
+            : null;
       });
     } on Object {
       if (mounted) {
         setState(() {
           _stage = BstocksTransferFlowStage.review;
-          error = 'Order was not submitted. Try again.';
+          error = AppLocalizations.of(context).orderSubmissionFailed;
         });
       }
     }
   }
 
-  Widget _fundingPending(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      const _TransferHeader(step: '2', title: 'Transfer'),
-      const Divider(),
-      Image.asset(
-        'assets/figma/trade/funding_pending.png',
-        width: 160,
-        height: 160,
-      ),
-      Text(
-        'Preparing Trading Funds...',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: 8),
-      Text(
-        'Bridge in progress. Estimated time: 1–3 min\nYou can track the progress on the Details page.',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
-          fontSize: 12,
+  Widget _fundingPending(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _TransferHeader(step: '2', title: l10n.transfer),
+        const Divider(),
+        Image.asset(
+          'assets/figma/trade/funding_pending.png',
+          width: 160,
+          height: 160,
         ),
-      ),
-      const SizedBox(height: 16),
-      OutlinedButton(
-        onPressed: widget.onClose,
-        child: const Text('Close & View Later'),
-      ),
-    ],
-  );
-
-  Widget _submitting(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _TransferHeader(step: '3', title: 'Buy ${widget.symbol}'),
-      const Divider(),
-      Image.asset(
-        'assets/figma/trade/order_submitting.png',
-        width: 160,
-        height: 160,
-      ),
-      Text(
-        'Submitting Order...',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: 8),
-      Text(
-        'This may take a few moments.\nYou can track the progress on the Details page.',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
-          fontSize: 12,
+        Text(
+          l10n.preparingTradingFunds,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
         ),
-      ),
-      const SizedBox(height: 16),
-      OutlinedButton(
-        onPressed: widget.onClose,
-        child: const Text('Close & View Later'),
-      ),
-    ],
-  );
+        const SizedBox(height: 8),
+        Text(
+          l10n.bridgeInProgress,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 16),
+        OutlinedButton(
+          onPressed: widget.onClose,
+          child: Text(l10n.closeViewLater),
+        ),
+      ],
+    );
+  }
 
-  Widget _tradeSuccess(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _TransferHeader(step: '3', title: 'Buy ${widget.symbol}'),
-      const Divider(),
-      const Icon(Icons.check_circle_outline, size: 64),
-      const SizedBox(height: 12),
-      Text(
-        'Trade Successful',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
-      const SizedBox(height: 16),
-      OutlinedButton(
-        onPressed: widget.onClose,
-        child: const Text('Close & View Later'),
-      ),
-    ],
-  );
+  Widget _submitting(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _TransferHeader(step: '3', title: l10n.buySymbol(widget.symbol)),
+        const Divider(),
+        Image.asset(
+          'assets/figma/trade/order_submitting.png',
+          width: 160,
+          height: 160,
+        ),
+        Text(
+          l10n.submittingOrder,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.submittingOrderDescription,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 16),
+        OutlinedButton(
+          onPressed: widget.onClose,
+          child: Text(l10n.closeViewLater),
+        ),
+      ],
+    );
+  }
+
+  Widget _tradeSuccess(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _TransferHeader(step: '3', title: l10n.buySymbol(widget.symbol)),
+        const Divider(),
+        const Icon(Icons.check_circle_outline, size: 64),
+        const SizedBox(height: 12),
+        Text(
+          l10n.tradeSuccessful,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 16),
+        OutlinedButton(
+          onPressed: widget.onClose,
+          child: Text(l10n.closeViewLater),
+        ),
+      ],
+    );
+  }
 }
 
 class _TransferHeader extends StatelessWidget {
@@ -301,8 +319,8 @@ class _ServerSelectedSource extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.account_balance_wallet_outlined),
-            title: Text('${leg.asset} (server selected)'),
-            subtitle: const Text('Available balance'),
+            title: Text(AppLocalizations.of(context).serverSelected(leg.asset)),
+            subtitle: Text(AppLocalizations.of(context).availableBalance),
             trailing: Text(
               TokenAmountFormatter.format(leg.maximumAmount, symbol: leg.asset),
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -327,11 +345,11 @@ class _AmountOverview extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _AmountValue(
-          label: 'Amount Needed',
+          label: AppLocalizations.of(context).amountNeeded,
           value: TokenAmountFormatter.format(amount, symbol: 'USDT'),
         ),
         _AmountValue(
-          label: 'Transfer amount',
+          label: AppLocalizations.of(context).transferAmount,
           value: '~${TokenAmountFormatter.format(amount, symbol: 'USDT')}',
         ),
       ],
@@ -351,7 +369,7 @@ class _UnifiedFundingAccountSummary extends ConsumerWidget {
       data: (value) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: _SummaryRow(
-          label: 'Available to fund',
+          label: AppLocalizations.of(context).availableToFund,
           value: TokenAmountFormatter.formatUsd(value.availableToFundUsd),
         ),
       ),
@@ -517,16 +535,16 @@ class _TransferDetails extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     children: [
       _SummaryRow(
-        label: 'Shortfall',
+        label: AppLocalizations.of(context).shortfall,
         value: TokenAmountFormatter.format(
           plan.shortfall,
           symbol: plan.shortfall.asset ?? plan.sourceAsset ?? '—',
         ),
       ),
       _SummaryRow(
-        label: 'Available balance',
+        label: AppLocalizations.of(context).availableBalance,
         value: plan.sourceMaximum == null
-            ? 'Unavailable'
+            ? AppLocalizations.of(context).availableBalanceUnavailable
             : TokenAmountFormatter.format(
                 plan.sourceMaximum!,
                 symbol: plan.sourceMaximum!.asset ?? plan.sourceAsset ?? '—',
@@ -544,19 +562,19 @@ class _ReviewDetails extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     children: [
       _SummaryRow(
-        label: 'Order Type',
+        label: AppLocalizations.of(context).orderType,
         value: preview.intent.type == TradingOrderType.market
-            ? 'Market'
-            : 'Limit',
+            ? AppLocalizations.of(context).market
+            : AppLocalizations.of(context).limit,
       ),
       if (preview.marketPrice case final price?)
         _SummaryRow(
-          label: 'Market price',
+          label: AppLocalizations.of(context).marketPrice,
           value: TokenAmountFormatter.formatUsd(price),
         ),
       if (preview.fee case final fee?)
         _SummaryRow(
-          label: 'Estimated fee',
+          label: AppLocalizations.of(context).estimatedFee,
           value: TokenAmountFormatter.format(
             fee,
             symbol: fee.asset ?? preview.intent.symbol,
@@ -579,7 +597,10 @@ class _Actions extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       Expanded(
-        child: OutlinedButton(onPressed: onBack, child: const Text('Back')),
+        child: OutlinedButton(
+          onPressed: onBack,
+          child: Text(AppLocalizations.of(context).back),
+        ),
       ),
       const SizedBox(width: 12),
       Expanded(

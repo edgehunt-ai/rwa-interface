@@ -43,52 +43,64 @@ class _Details extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 240,
           height: 50,
-          child: Stack(
-            children: [
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOutCubic,
-                left: tabs.indexOf(activeTab) * 80 + 24,
-                bottom: 8,
-                width: 32,
-                height: 2,
-                child: const ColoredBox(color: Color(0xFFFF5BD6)),
-              ),
-              Row(
+          width: double.infinity,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final tabWidth = constraints.maxWidth / tabs.length;
+              return Stack(
                 children: [
-                  for (final tab in tabs)
-                    SizedBox(
-                      width: 80,
-                      child: TextButton(
-                        onPressed: () => onChanged(tab),
-                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 180),
-                            curve: Curves.easeOutCubic,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: activeTab == tab
-                                  ? colors.primaryText
-                                  : colors.secondaryText,
-                              fontWeight: activeTab == tab
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    left:
+                        tabs.indexOf(activeTab) * tabWidth +
+                        (tabWidth - 32) / 2,
+                    bottom: 8,
+                    width: 32,
+                    height: 2,
+                    child: const ColoredBox(color: Color(0xFFFF5BD6)),
+                  ),
+                  Row(
+                    children: [
+                      for (final tab in tabs)
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => onChanged(tab),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
                             ),
-                            child: _TradeTabLabel(
-                              tab,
-                              count: tab == 'Open' ? openCount : positionCount,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 180),
+                                curve: Curves.easeOutCubic,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: activeTab == tab
+                                      ? colors.primaryText
+                                      : colors.secondaryText,
+                                  fontWeight: activeTab == tab
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                                child: _TradeTabLabel(
+                                  tab,
+                                  count: switch (tab) {
+                                    'Open' => openCount,
+                                    'Position' => positionCount,
+                                    _ => null,
+                                  },
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
+                    ],
+                  ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         ),
         if (activeTab == 'Open' && kind == MarketProductKind.perp)
@@ -128,11 +140,20 @@ class _TradeTabLabel extends StatelessWidget {
   final int? count;
 
   @override
-  Widget build(BuildContext context) => Text(
-    count != null && count! > 0 ? '$label ($count)' : label,
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
-  );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final localized = switch (label) {
+      'Open' => l10n.openTab,
+      'Position' => l10n.position,
+      'Details' => l10n.details,
+      _ => label,
+    };
+    return Text(
+      count != null && count! > 0 ? '$localized ($count)' : localized,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
 }
 
 class _OpenOrdersTab extends ConsumerWidget {
@@ -147,63 +168,69 @@ class _OpenOrdersTab extends ConsumerWidget {
   final String symbol;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => orders.when(
-    loading: () => const LoadingSkeleton(rows: 2),
-    error: (_, _) => DesignStateFeedback(
-      state: DesignState.failure,
-      title: 'Open orders unavailable',
-      message: 'Try again to refresh open orders.',
-      onRetry: () => ref.refresh(
-        kind == MarketProductKind.perp
-            ? hip3OrdersProvider(null).future
-            : ordersProvider(null).future,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return orders.when(
+      loading: () => const LoadingSkeleton(rows: 2),
+      error: (_, _) => DesignStateFeedback(
+        state: DesignState.failure,
+        title: l10n.openOrdersUnavailable,
+        message: l10n.openOrdersRefreshHint,
+        onRetry: () => ref.refresh(
+          kind == MarketProductKind.perp
+              ? hip3OrdersProvider(null).future
+              : ordersProvider(null).future,
+        ),
       ),
-    ),
-    data: (page) {
-      final openOrders = page.items
-          .map((item) => item.resource)
-          .where(
-            (order) =>
-                order.kind == kind &&
-                order.symbol == symbol &&
-                !order.isTerminal,
-          )
-          .toList(growable: false);
-      if (openOrders.isEmpty) {
-        return const EmptyState(
-          title: 'No open orders',
-          description: 'Open orders for this product will appear here.',
+      data: (page) {
+        final openOrders = page.items
+            .map((item) => item.resource)
+            .where(
+              (order) =>
+                  order.kind == kind &&
+                  order.symbol == symbol &&
+                  !order.isTerminal,
+            )
+            .toList(growable: false);
+        if (openOrders.isEmpty) {
+          return EmptyState(
+            title: l10n.noOpenOrders,
+            description: l10n.openOrdersEmptyDescription,
+          );
+        }
+        return Column(
+          children: [
+            for (final order in openOrders)
+              _OpenOrderCard(
+                order: order,
+                onCancel: () async {
+                  if (order.kind != MarketProductKind.perp) {
+                    await ref.read(orderCommandProvider.notifier).cancel(order);
+                    return;
+                  }
+                  String message;
+                  try {
+                    await ref.read(orderCommandProvider.notifier).cancel(order);
+                    message = l10n.cancellationSubmitted;
+                  } on Hip3ExecutionPending {
+                    message = l10n.cancellationPendingRefreshOrder;
+                  } on Object {
+                    message = l10n.cancellationCompleteFailed;
+                  }
+                  if (context.mounted) {
+                    if (message == l10n.cancellationSubmitted) {
+                      AppToast.showSuccess(context, message);
+                    } else {
+                      AppToast.showFailure(context, message);
+                    }
+                  }
+                },
+              ),
+          ],
         );
-      }
-      return Column(
-        children: [
-          for (final order in openOrders)
-            _OpenOrderCard(
-              order: order,
-              onCancel: () async {
-                if (order.kind != MarketProductKind.perp) {
-                  await ref.read(orderCommandProvider.notifier).cancel(order);
-                  return;
-                }
-                String message;
-                try {
-                  await ref.read(orderCommandProvider.notifier).cancel(order);
-                  message = 'Cancellation submitted. Refresh to confirm the final order status.';
-                } on Hip3ExecutionPending {
-                  message = 'Cancellation is still being confirmed. Refresh this order before retrying.';
-                } on Object {
-                  message = 'Unable to complete cancellation. Refresh the order and retry.';
-                }
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(message)));
-                }
-              },
-            ),
-        ],
-      );
-    },
-  );
+      },
+    );
+  }
 }
 
 class _OpenOrderCard extends StatelessWidget {
@@ -214,49 +241,112 @@ class _OpenOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final quantity = order.quantity;
     final filled = order.filledQuantity;
+    final total = double.tryParse(quantity?.value ?? '');
+    final filledValue = double.tryParse(filled?.value ?? '0');
+    final progress =
+        total != null &&
+            total.isFinite &&
+            total > 0 &&
+            filledValue != null &&
+            filledValue.isFinite
+        ? (filledValue / total).clamp(0.0, 1.0)
+        : null;
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final side = order.side == TradingSide.buy ? l10n.buy : l10n.sell;
+    final type = order.type == TradingOrderType.limit
+        ? l10n.limit
+        : l10n.market;
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).extension<AppRwaColors>()!.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  '${order.symbol}/USDC',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${order.symbol}/USDC',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 22 / 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 18,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: colors.border,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$side · $type',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              height: 14 / 11,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            DateFormat('yyyy/MM/dd')
+                                .format(order.createdAt.toLocal()),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              height: 14 / 11,
+                              color: colors.tertiaryText,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               SizedBox(
-                height: 36,
+                height: 28,
                 child: OutlinedButton(
                   onPressed: onCancel,
-                  child: const Text('Cancel'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    backgroundColor: colors.subtleSurface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      height: 18 / 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  child: Text(l10n.cancel),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            '${order.side == TradingSide.buy ? 'Buy' : 'Sell'} · ${order.type == TradingOrderType.limit ? 'Limit' : 'Market'}',
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Divider(
-            height: 1,
-            color: Theme.of(context).extension<AppRwaColors>()!.border,
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
@@ -267,13 +357,66 @@ class _OpenOrderCard extends StatelessWidget {
               ),
               Expanded(
                 child: _TradeMetric(
-                  'Price',
+                  l10n.price,
                   order.limitPrice == null
-                      ? 'Market'
+                      ? l10n.market
                       : TokenAmountFormatter.formatUsd(order.limitPrice!),
                 ),
               ),
-              Expanded(child: _TradeMetric('Status', order.status.name)),
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Progress',
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 14 / 11,
+                          color: colors.tertiaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 40,
+                            height: 8,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: LinearProgressIndicator(
+                                value: progress ?? 0,
+                                minHeight: 8,
+                                backgroundColor: colors.subtleSurface,
+                                valueColor: AlwaysStoppedAnimation(
+                                  colors.primaryAction,
+                                ),
+                                semanticsLabel: l10n.filled,
+                                semanticsValue: progress == null
+                                    ? null
+                                    : '${(progress * 100).round()}%',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            progress == null
+                                ? '—'
+                                : '${(progress * 100).round()}%',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              height: 16 / 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -295,14 +438,21 @@ class _TradeMetric extends StatelessWidget {
       Text(
         label,
         style: TextStyle(
-          fontSize: 12,
-          color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+          fontSize: 11,
+          height: 14 / 11,
+          color: Theme.of(context).extension<AppRwaColors>()!.tertiaryText,
         ),
       ),
       const SizedBox(height: 4),
       Text(
         value,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          fontSize: 12,
+          height: 16 / 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ],
   );
@@ -319,31 +469,34 @@ class _PositionTab extends ConsumerWidget {
   final String symbol;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => positions.when(
-    loading: () => const LoadingSkeleton(rows: 2),
-    error: (_, _) => DesignStateFeedback(
-      state: DesignState.failure,
-      title: 'Positions unavailable',
-      message: 'Try again to refresh your position.',
-      onRetry: () => ref.refresh(
-        positionsProvider((symbol: symbol, kind: kind, cursor: null)).future,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return positions.when(
+      loading: () => const LoadingSkeleton(rows: 2),
+      error: (_, _) => DesignStateFeedback(
+        state: DesignState.failure,
+        title: l10n.positionsUnavailable,
+        message: l10n.positionRefreshHint,
+        onRetry: () => ref.refresh(
+          positionsProvider((symbol: symbol, kind: kind, cursor: null)).future,
+        ),
       ),
-    ),
-    data: (page) {
-      if (page.items.isEmpty) {
-        return const EmptyState(
-          title: 'No open position',
-          description: 'Your position for this product will appear here.',
+      data: (page) {
+        if (page.items.isEmpty) {
+          return EmptyState(
+            title: l10n.noOpenPosition,
+            description: l10n.openPositionDescription,
+          );
+        }
+        return Column(
+          children: [
+            for (final position in page.items)
+              _PositionCard(position, kind: kind),
+          ],
         );
-      }
-      return Column(
-        children: [
-          for (final position in page.items)
-            _PositionCard(position, kind: kind),
-        ],
-      );
-    },
-  );
+      },
+    );
+  }
 }
 
 class _PositionCard extends StatelessWidget {
@@ -352,116 +505,503 @@ class _PositionCard extends StatelessWidget {
   final MarketProductKind kind;
 
   @override
+  Widget build(BuildContext context) => switch (kind) {
+    MarketProductKind.perp => _Hip3PositionSummaryCard(position: position),
+    _ => _BstocksPositionSummaryCard(position: position),
+  };
+}
+
+class _BstocksPositionSummaryCard extends StatelessWidget {
+  const _BstocksPositionSummaryCard({required this.position});
+
+  final Position position;
+
+  @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final l10n = AppLocalizations.of(context);
     final pnl = position.unrealizedPnl ?? position.realizedPnl;
+    final pnlColor = _valueColor(
+      value: pnl,
+      colors: colors,
+      semantic: semantic,
+    );
+
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).extension<AppRwaColors>()!.surface,
-        borderRadius: BorderRadius.circular(8),
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${position.symbol}/USDT',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 22 / 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.tokenPosition,
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 14 / 11,
+                        fontWeight: FontWeight.w500,
+                        color: colors.secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              _Hip3SourceChip(
+                label: 'bStocks · BSC',
+                backgroundColor: const Color(0x1AF3BA2F),
+                leading: SvgPicture.asset(
+                  'assets/figma/funding/bnb_chain.svg',
+                  width: 14,
+                  height: 14,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           Text(
-            position.symbol,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            l10n.unrealizedPnl,
+            style: TextStyle(
+              fontSize: 11,
+              height: 14 / 11,
+              color: colors.tertiaryText,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(
-            kind == MarketProductKind.perp
-                ? switch (position.side) {
-                    PositionSide.long => 'Long position',
-                    PositionSide.short => 'Short position',
-                    PositionSide.none => 'Position',
-                  }
-                : 'Token position',
-            style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Divider(
-            height: 1,
-            color: Theme.of(context).extension<AppRwaColors>()!.border,
-          ),
-          const SizedBox(height: 6),
-          if (kind == MarketProductKind.perp)
-            Hip3PositionMetrics(
-              position: position,
-              onEditLeverage: position.productId == null
-                  ? null
-                  : () => showModalBottomSheet<void>(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (_) =>
-                          Hip3PositionLeverageSheet(position: position),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                _formatSignedUsd(pnl),
+                style: TextStyle(
+                  fontSize: 20,
+                  height: 26 / 20,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                  color: pnlColor,
+                ),
+              ),
+              if (position.unrealizedPnlPercent != null) ...[
+                const SizedBox(width: 4),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    TokenAmountFormatter.formatPercent(
+                      position.unrealizedPnlPercent!,
                     ),
-            ),
-          if (kind != MarketProductKind.perp && pnl != null)
-            _DetailRow('Unrealized PnL', TokenAmountFormatter.formatUsd(pnl)),
-          _DetailRow(
-            'Value',
-            TokenAmountFormatter.formatUsd(position.valueUsd),
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 16 / 12,
+                      fontWeight: FontWeight.w600,
+                      color: pnlColor,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
-          _DetailRow(
-            'Token amount',
-            TokenAmountFormatter.format(
-              position.quantity,
-              symbol: position.symbol,
+          const SizedBox(height: 16),
+          _Hip3MetricRow(
+            metrics: [
+              _Hip3Metric(l10n.value, _formatUsd(position.valueUsd)),
+              _Hip3Metric(l10n.marketPrice, _formatUsd(position.markPrice)),
+              _Hip3Metric(l10n.entryPrice, _formatUsd(position.entryPrice)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: _Hip3ActionButton(
+              label: l10n.close,
+              foregroundColor: semantic.loss,
+              onPressed: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => BstocksOrderPanel(
+                  symbol: position.symbol,
+                  initialSide: TradingSide.sell,
+                ),
+              ),
             ),
           ),
-          if (kind != MarketProductKind.perp && position.entryPrice != null)
-            _DetailRow(
-              'Entry Price',
-              TokenAmountFormatter.formatUsd(position.entryPrice!),
+        ],
+      ),
+    );
+  }
+}
+
+class _Hip3PositionSummaryCard extends StatelessWidget {
+  const _Hip3PositionSummaryCard({required this.position});
+
+  final Position position;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final l10n = AppLocalizations.of(context);
+    final pnl = position.unrealizedPnl;
+    final pnlColor = _valueColor(
+      value: pnl,
+      colors: colors,
+      semantic: semantic,
+    );
+    final source = position.productId?.split(':').first.trim().toUpperCase();
+    final marginMode = switch (position.marginMode) {
+      PositionMarginMode.cross => l10n.cross,
+      PositionMarginMode.isolated => l10n.isolated,
+      _ => null,
+    };
+    final margin = [
+      if (position.margin != null)
+        TokenAmountFormatter.formatValue(position.margin!),
+      ?marginMode,
+    ].join('・');
+
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${position.symbol}/USDC',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 22 / 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${switch (position.side) {
+                        PositionSide.long => l10n.long,
+                        PositionSide.short => l10n.short,
+                        PositionSide.none => '—',
+                      }} · ${position.leverage == null ? '—' : '${TokenAmountFormatter.formatValue(position.leverage!)}x'}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 14 / 11,
+                        fontWeight: FontWeight.w500,
+                        color: pnlColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (source != null && source.isNotEmpty) ...[
+                    _Hip3SourceChip(
+                      label: source,
+                      backgroundColor: colors.subtleSurface.withValues(
+                        alpha: 0.1,
+                      ),
+                      borderColor: colors.border,
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  _Hip3SourceChip(
+                    label: 'HIP-3 · ARB',
+                    backgroundColor: const Color(0x1A4F9EE9),
+                    leading: SvgPicture.asset(
+                      'assets/figma/funding/arbitrum.svg',
+                      width: 14,
+                      height: 14,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.unrealizedPnl,
+            style: TextStyle(
+              fontSize: 11,
+              height: 14 / 11,
+              color: colors.tertiaryText,
             ),
-          if (kind != MarketProductKind.perp && position.markPrice != null)
-            _DetailRow(
-              'Market Price',
-              TokenAmountFormatter.formatUsd(position.markPrice!),
-            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                _formatSignedUsd(pnl),
+                style: TextStyle(
+                  fontSize: 20,
+                  height: 26 / 20,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                  color: pnlColor,
+                ),
+              ),
+              if (position.unrealizedPnlPercent != null) ...[
+                const SizedBox(width: 4),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    TokenAmountFormatter.formatPercent(
+                      position.unrealizedPnlPercent!,
+                    ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 16 / 12,
+                      fontWeight: FontWeight.w600,
+                      color: pnlColor,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          _Hip3MetricRow(
+            metrics: [
+              _Hip3Metric(l10n.value, _formatUsd(position.valueUsd)),
+              _Hip3Metric(l10n.marketPrice, _formatUsd(position.markPrice)),
+              _Hip3Metric(l10n.entryPrice, _formatUsd(position.entryPrice)),
+            ],
+          ),
           const SizedBox(height: 12),
+          _Hip3MetricRow(
+            metrics: [
+              _Hip3Metric(
+                l10n.cumulativeFunding,
+                _formatSignedUsd(position.fundingPaid),
+                valueColor: _valueColor(
+                  value: position.fundingPaid,
+                  colors: colors,
+                  semantic: semantic,
+                ),
+              ),
+              _Hip3Metric(
+                'Liq.Price',
+                position.liquidationPrice == null
+                    ? '—'
+                    : '~${_formatUsd(position.liquidationPrice)}',
+              ),
+              _Hip3Metric(l10n.margin, margin.isEmpty ? '—' : margin),
+            ],
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(36),
-                  ),
-                  onPressed: kind == MarketProductKind.bstock
-                      ? () => context.pushNamed(AppRoutes.withdrawalSelectName)
-                      : () => showModalBottomSheet<void>(
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (_) =>
-                              Hip3ClosePositionSheet(position: position),
-                        ),
-                  child: Text(
-                    kind == MarketProductKind.bstock ? 'Transfer' : 'Close',
+                child: _Hip3ActionButton(
+                  label: l10n.close,
+                  foregroundColor: semantic.loss,
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => Hip3ClosePositionSheet(position: position),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(36),
-                  ),
+                child: _Hip3ActionButton(
+                  label: l10n.editTpSl,
                   onPressed: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
                     builder: (_) => PositionTpSlSheet(position: position),
                   ),
-                  child: const Text('Edit TP/SL'),
                 ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+Color _valueColor({
+  required DecimalValue? value,
+  required AppRwaColors colors,
+  required AppSemanticColors semantic,
+}) {
+  if (value == null) return colors.primaryText;
+  return value.value.startsWith('-') ? semantic.loss : semantic.success;
+}
+
+String _formatUsd(DecimalValue? value) =>
+    value == null ? '—' : TokenAmountFormatter.formatUsd(value);
+
+String _formatSignedUsd(DecimalValue? value) {
+  if (value == null) return '—';
+  final formatted = TokenAmountFormatter.formatUsd(value);
+  return value.value.startsWith('-') || value.value == '0'
+      ? formatted
+      : '+$formatted';
+}
+
+class _Hip3SourceChip extends StatelessWidget {
+  const _Hip3SourceChip({
+    required this.label,
+    this.leading,
+    this.backgroundColor,
+    this.borderColor,
+  });
+
+  final String label;
+  final Widget? leading;
+  final Color? backgroundColor;
+  final Color? borderColor;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    decoration: BoxDecoration(
+      color: backgroundColor ?? Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+      border: borderColor == null ? null : Border.all(color: borderColor!),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (leading != null) ...[leading!, const SizedBox(width: 4)],
+        Text(label, style: const TextStyle(fontSize: 11, height: 14 / 11)),
+      ],
+    ),
+  );
+}
+
+class _Hip3Metric {
+  const _Hip3Metric(this.label, this.value, {this.valueColor});
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+}
+
+class _Hip3MetricRow extends StatelessWidget {
+  const _Hip3MetricRow({required this.metrics});
+
+  final List<_Hip3Metric> metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Row(
+      children: [
+        for (var index = 0; index < metrics.length; index++)
+          Expanded(
+            child: Align(
+              alignment: index == metrics.length - 1
+                  ? AlignmentDirectional.centerEnd
+                  : AlignmentDirectional.centerStart,
+              child: Column(
+                crossAxisAlignment: index == metrics.length - 1
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    metrics[index].label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      height: 14 / 11,
+                      color: colors.tertiaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    metrics[index].value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: index == metrics.length - 1
+                        ? TextAlign.end
+                        : TextAlign.start,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 16 / 12,
+                      fontWeight: FontWeight.w600,
+                      color: metrics[index].valueColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _Hip3ActionButton extends StatelessWidget {
+  const _Hip3ActionButton({
+    required this.label,
+    required this.onPressed,
+    this.foregroundColor,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final Color? foregroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(0, 36),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        backgroundColor: colors.subtleSurface,
+        foregroundColor: foregroundColor ?? colors.primaryText,
+        side: BorderSide(color: colors.border),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        textStyle: const TextStyle(
+          fontSize: 13,
+          height: 18 / 13,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
   }
 }
@@ -565,25 +1105,6 @@ class _DetailsCard extends ConsumerWidget {
       ],
     );
   }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow(this.label, this.value);
-  final String label;
-  final String value;
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      children: [
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
-        Text(
-          value,
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
-      ],
-    ),
-  );
 }
 
 class _MarketDetailRow extends StatelessWidget {
@@ -706,13 +1227,14 @@ class _TradeActions extends StatelessWidget {
   );
 }
 
-class _MarketHoursSheet extends StatelessWidget {
-  const _MarketHoursSheet({required this.onClose});
+class MarketHoursSheet extends ConsumerWidget {
+  const MarketHoursSheet({super.key, required this.onClose});
   final VoidCallback onClose;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final state = ref.watch(marketHoursProvider);
     return ColoredBox(
       color: Colors.black54,
       child: Align(
@@ -753,51 +1275,50 @@ class _MarketHoursSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Text(
-                    l10n.tradeMarketHoursDescription,
-                    style: TextStyle(fontSize: 15, color: colors.secondaryText),
-                  ),
-                  const SizedBox(height: 20),
-                  _MarketSession(
-                    asset: 'assets/figma/trade/session_pre_after.svg',
-                    title: l10n.tradePreMarket,
-                    schedule: '16:00 - 21:30 UTC+8',
-                    liquidity: l10n.tradeMediumLiquidity,
-                    activeBars: 2,
-                    liquidityTone: _LiquidityTone.medium,
-                  ),
-                  _MarketSession(
-                    asset: 'assets/figma/trade/session_regular.svg',
-                    title: l10n.tradeRegularMarket,
-                    schedule: '21:30 - 04:00 UTC+8',
-                    liquidity: l10n.tradeHighLiquidity,
-                    activeBars: 3,
-                    liquidityTone: _LiquidityTone.high,
-                  ),
-                  _MarketSession(
-                    asset: 'assets/figma/trade/session_pre_after.svg',
-                    title: l10n.tradeAfterHours,
-                    schedule: '04:00 - 08:00 UTC+8',
-                    liquidity: l10n.tradeMediumLiquidity,
-                    activeBars: 2,
-                    liquidityTone: _LiquidityTone.medium,
-                  ),
-                  _MarketSession(
-                    asset: 'assets/figma/trade/session_overnight.svg',
-                    title: l10n.tradeOvernight,
-                    schedule: '08:00 - 16:00 UTC+8',
-                    liquidity: l10n.tradeMediumLiquidity,
-                    activeBars: 2,
-                    liquidityTone: _LiquidityTone.medium,
-                    note: l10n.tradeMarketOpensIn,
-                  ),
-                  _MarketSession(
-                    asset: 'assets/figma/trade/session_closed.svg',
-                    title: l10n.tradeMarketClosed,
-                    schedule: l10n.tradeMarketClosedSchedule,
-                    liquidity: l10n.tradeLowLiquidity,
-                    activeBars: 1,
-                    liquidityTone: _LiquidityTone.low,
+                  state.when(
+                    loading: () => const LoadingSkeleton(rows: 5),
+                    error: (_, _) => DesignStateFeedback(
+                      state: DesignState.failure,
+                      title: l10n.marketHoursUnavailable,
+                      message: l10n.marketHoursRefreshHint,
+                      onRetry: () => ref.refresh(marketHoursProvider.future),
+                    ),
+                    data: (hours) => hours.segments.isEmpty
+                        ? EmptyState(
+                            title: l10n.marketHoursUnavailable,
+                            description: l10n.noMarketSessionData,
+                          )
+                        : Column(
+                            children: [
+                              Text(
+                                hours.currentDescription ??
+                                    hours.currentLabel ??
+                                    _sessionLabel(l10n, hours.current),
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: colors.secondaryText,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              for (final segment in hours.segments)
+                                _MarketSession(
+                                  asset: _sessionAsset(segment.kind),
+                                  title:
+                                      segment.label ??
+                                      _sessionLabel(l10n, segment.kind),
+                                  schedule: _sessionSchedule(
+                                    segment,
+                                    hours.timezone,
+                                  ),
+                                  liquidity: _sessionLiquidity(
+                                    segment.kind,
+                                    l10n,
+                                  ),
+                                  activeBars: _sessionBars(segment.kind),
+                                  liquidityTone: _sessionTone(segment.kind),
+                                ),
+                            ],
+                          ),
                   ),
                 ],
               ),
@@ -809,6 +1330,40 @@ class _MarketHoursSheet extends StatelessWidget {
   }
 }
 
+String _sessionAsset(MarketSessionKind kind) => switch (kind) {
+  MarketSessionKind.regular => 'assets/figma/trade/session_regular.svg',
+  MarketSessionKind.overnight => 'assets/figma/trade/session_overnight.svg',
+  MarketSessionKind.weekend ||
+  MarketSessionKind.holiday => 'assets/figma/trade/session_closed.svg',
+  _ => 'assets/figma/trade/session_pre_after.svg',
+};
+
+String _sessionSchedule(MarketSessionSegment segment, String timezone) {
+  String format(DateTime value) =>
+      '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+  return '${format(segment.start)} - ${format(segment.end)} $timezone';
+}
+
+String _sessionLiquidity(MarketSessionKind kind, AppLocalizations l10n) =>
+    switch (kind) {
+      MarketSessionKind.regular => l10n.tradeHighLiquidity,
+      MarketSessionKind.weekend ||
+      MarketSessionKind.holiday => l10n.tradeLowLiquidity,
+      _ => l10n.tradeMediumLiquidity,
+    };
+
+int _sessionBars(MarketSessionKind kind) => switch (kind) {
+  MarketSessionKind.regular => 3,
+  MarketSessionKind.weekend || MarketSessionKind.holiday => 1,
+  _ => 2,
+};
+
+_LiquidityTone _sessionTone(MarketSessionKind kind) => switch (kind) {
+  MarketSessionKind.regular => _LiquidityTone.high,
+  MarketSessionKind.weekend || MarketSessionKind.holiday => _LiquidityTone.low,
+  _ => _LiquidityTone.medium,
+};
+
 class _MarketSession extends StatelessWidget {
   const _MarketSession({
     required this.asset,
@@ -817,7 +1372,6 @@ class _MarketSession extends StatelessWidget {
     required this.liquidity,
     required this.activeBars,
     required this.liquidityTone,
-    this.note,
   });
 
   final String asset;
@@ -826,7 +1380,6 @@ class _MarketSession extends StatelessWidget {
   final String liquidity;
   final int activeBars;
   final _LiquidityTone liquidityTone;
-  final String? note;
 
   @override
   Widget build(BuildContext context) {
@@ -876,14 +1429,6 @@ class _MarketSession extends StatelessWidget {
                   schedule,
                   style: TextStyle(fontSize: 12, color: colors.secondaryText),
                 ),
-                if (note != null)
-                  Text(
-                    note!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
               ],
             ),
           ),

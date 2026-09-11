@@ -2,13 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
+import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/portfolio/views/assets_screen.dart';
 
@@ -21,7 +26,7 @@ void main() {
         overrides: [
           portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
         ],
-        child: MaterialApp(theme: AppTheme.light, home: const AssetsScreen()),
+        child: _assetsApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -60,7 +65,7 @@ void main() {
             _LoadingAccountsPortfolio(accounts),
           ),
         ],
-        child: MaterialApp(theme: AppTheme.light, home: const AssetsScreen()),
+        child: _assetsApp(),
       ),
     );
     await tester.pump();
@@ -69,6 +74,32 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Allocation'), findsOneWidget);
     accounts.complete(const []);
+  });
+
+  testWidgets('Assets keeps its title visible while portfolio data loads', (
+    tester,
+  ) async {
+    final summary = Completer<Portfolio>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            _LoadingSummaryPortfolio(summary),
+          ),
+        ],
+        child: _assetsApp(),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Assets'), findsWidgets);
+    expect(find.byType(SkeletonBlock), findsWidgets);
+    summary.complete(
+      Portfolio(
+        totalValueUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+        availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+      ),
+    );
   });
 
   testWidgets('Assets derives allocation from available account balances', (
@@ -81,7 +112,7 @@ void main() {
             _BalanceOnlyPortfolio(),
           ),
         ],
-        child: MaterialApp(theme: AppTheme.light, home: const AssetsScreen()),
+        child: _assetsApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -93,13 +124,66 @@ void main() {
     );
   });
 
+  testWidgets('Assets bStocks rows match the holding design content', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            _BstockHoldingsPortfolio(),
+          ),
+        ],
+        child: _assetsApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('bStocks'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVIDIA'), findsOneWidget);
+    expect(find.text('bStocks'), findsWidgets);
+    expect(find.text('3.0154 NVDAB'), findsOneWidget);
+    expect(find.text('Holding return'), findsOneWidget);
+    expect(find.text(r'+$16 (+3%)'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is SvgPicture &&
+            widget.bytesLoader.toString().contains('venue_bnb.svg'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Assets localizes the bStocks holding return label', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            _BstockHoldingsPortfolio(),
+          ),
+        ],
+        child: _assetsApp(locale: const Locale('zh')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('bStocks'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('持仓收益'), findsOneWidget);
+    expect(find.text('Holding return'), findsNothing);
+  });
+
   testWidgets('Assets shows the Figma empty portfolio state', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           portfolioRepositoryProvider.overrideWithValue(_EmptyPortfolio()),
         ],
-        child: MaterialApp(theme: AppTheme.light, home: const AssetsScreen()),
+        child: _assetsApp(),
       ),
     );
     await tester.pumpAndSettle();
@@ -107,7 +191,7 @@ void main() {
     expect(find.text(r'$0.00'), findsOneWidget);
     expect(find.text('No assets yet'), findsOneWidget);
     expect(
-      find.text('Deposit a supported asset to start\nbuilding your portfolio.'),
+      find.text('Deposit a supported asset to start building your portfolio.'),
       findsOneWidget,
     );
     expect(find.text('Withdraw'), findsNothing);
@@ -115,6 +199,14 @@ void main() {
     expect(find.text('Cash'), findsNothing);
   });
 }
+
+Widget _assetsApp({Locale? locale}) => MaterialApp(
+  theme: AppTheme.light,
+  locale: locale,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: const AssetsScreen(),
+);
 
 final class _Portfolio implements PortfolioRepository {
   @override
@@ -176,6 +268,22 @@ final class _LoadingAccountsPortfolio implements PortfolioRepository {
       const DomainPage(items: []);
 }
 
+final class _LoadingSummaryPortfolio implements PortfolioRepository {
+  _LoadingSummaryPortfolio(this._summary);
+
+  final Completer<Portfolio> _summary;
+
+  @override
+  Future<Portfolio> getSummary() => _summary.future;
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async => const [];
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async =>
+      const DomainPage(items: []);
+}
+
 final class _BalanceOnlyPortfolio implements PortfolioRepository {
   @override
   Future<Portfolio> getSummary() async => Portfolio(
@@ -200,6 +308,40 @@ final class _BalanceOnlyPortfolio implements PortfolioRepository {
   @override
   Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async =>
       const DomainPage(items: []);
+}
+
+final class _BstockHoldingsPortfolio implements PortfolioRepository {
+  @override
+  Future<Portfolio> getSummary() async => Portfolio(
+    totalValueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
+    availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+  );
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async => const [];
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async =>
+      DomainPage(
+        items: [
+          HoldingGroup(
+            symbol: 'NVDA',
+            totalValueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
+            positions: [
+              Position(
+                positionId: 'nvda-bstock',
+                symbol: 'NVDA',
+                kind: MarketProductKind.bstock,
+                side: PositionSide.long,
+                quantity: DecimalValue('3.0154', asset: 'NVDA', unit: 'token'),
+                valueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
+                unrealizedPnl: DecimalValue('16', asset: 'USD', unit: 'fiat'),
+                unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
+              ),
+            ],
+          ),
+        ],
+      );
 }
 
 final class _EmptyPortfolio implements PortfolioRepository {

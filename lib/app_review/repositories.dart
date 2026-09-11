@@ -19,6 +19,7 @@ import '../domain/models/order_preview.dart';
 import '../domain/models/portfolio.dart';
 import '../domain/models/position.dart';
 import '../domain/models/registered_device.dart';
+import '../domain/models/realtime_replay_page.dart';
 import '../domain/models/resource_result.dart';
 import '../domain/models/trade_intent.dart';
 import '../domain/models/trading_account.dart';
@@ -47,7 +48,9 @@ final class AppReviewStore {
         notifyOrderFilled: true,
         notifyOrderFailed: true,
         notifyLiquidationWarning: true,
-      );
+      ) {
+    orders.addAll(_initialOpenOrders());
+  }
 
   UserPreferences settings;
   final orders = <String, TradingOrder>{};
@@ -66,6 +69,94 @@ DecimalValue _usd(String value) =>
 DecimalValue _token(String value, String asset) =>
     DecimalValue(value, asset: asset, unit: 'token');
 DateTime get _now => DateTime.now().toUtc();
+
+Map<String, TradingOrder> _initialOpenOrders() {
+  final createdAt = _now.subtract(const Duration(hours: 2));
+  return {
+    'review-open-bstock-nvda': TradingOrder(
+      orderId: 'review-open-bstock-nvda',
+      productId: 'bstock-nvda',
+      symbol: 'NVDA',
+      kind: MarketProductKind.bstock,
+      side: TradingSide.buy,
+      type: TradingOrderType.limit,
+      status: TradingOrderStatus.open,
+      quantity: _token('2', 'NVDA'),
+      filledQuantity: _token('0', 'NVDA'),
+      limitPrice: _usd('1215.00'),
+      orderValue: _usd('2430.00'),
+      createdAt: createdAt,
+      updatedAt: createdAt,
+    ),
+    'review-open-bstock-tsla': TradingOrder(
+      orderId: 'review-open-bstock-tsla',
+      productId: 'bstock-tsla',
+      symbol: 'TSLA',
+      kind: MarketProductKind.bstock,
+      side: TradingSide.sell,
+      type: TradingOrderType.limit,
+      status: TradingOrderStatus.partiallyFilled,
+      quantity: _token('8', 'TSLA'),
+      filledQuantity: _token('3', 'TSLA'),
+      limitPrice: _usd('265.00'),
+      orderValue: _usd('2120.00'),
+      createdAt: createdAt.subtract(const Duration(minutes: 20)),
+      updatedAt: createdAt,
+    ),
+    'review-open-hip3-nvda-tp': TradingOrder(
+      orderId: 'review-open-hip3-nvda-tp',
+      productId: 'xyz:NVDA',
+      positionId: 'review-position-xyz-nvda',
+      symbol: 'NVDA',
+      kind: MarketProductKind.perp,
+      side: TradingSide.short,
+      type: TradingOrderType.market,
+      status: TradingOrderStatus.open,
+      quantity: _token('6', 'NVDA'),
+      filledQuantity: _token('0', 'NVDA'),
+      orderValue: _usd('8340.00'),
+      conditional: ConditionalOrder(
+        role: 'takeProfit',
+        triggerPrice: _usd('1390.00'),
+        triggerStatus: 'untriggered',
+        executionType: 'market',
+        sizeMode: 'entirePosition',
+        quantity: '6',
+        triggerReference: 'mark',
+        activationStatus: 'active',
+        parentOrderId: 'review-position-xyz-nvda',
+      ),
+      createdAt: createdAt.subtract(const Duration(minutes: 40)),
+      updatedAt: createdAt,
+    ),
+    'review-open-hip3-tsla-sl': TradingOrder(
+      orderId: 'review-open-hip3-tsla-sl',
+      productId: 'xyz:TSLA',
+      positionId: 'review-position-xyz-tsla',
+      symbol: 'TSLA',
+      kind: MarketProductKind.perp,
+      side: TradingSide.long,
+      type: TradingOrderType.market,
+      status: TradingOrderStatus.open,
+      quantity: _token('15', 'TSLA'),
+      filledQuantity: _token('0', 'TSLA'),
+      orderValue: _usd('4095.00'),
+      conditional: ConditionalOrder(
+        role: 'stopLoss',
+        triggerPrice: _usd('273.00'),
+        triggerStatus: 'untriggered',
+        executionType: 'market',
+        sizeMode: 'entirePosition',
+        quantity: '15',
+        triggerReference: 'mark',
+        activationStatus: 'active',
+        parentOrderId: 'review-position-xyz-tsla',
+      ),
+      createdAt: createdAt.subtract(const Duration(minutes: 60)),
+      updatedAt: createdAt,
+    ),
+  };
+}
 
 final class AppReviewAccountRepository implements AccountRepository {
   AppReviewAccountRepository(this.store);
@@ -156,6 +247,7 @@ final class AppReviewPortfolioRepository implements PortfolioRepository {
       entryPrice: _usd('1180.00'),
       markPrice: _usd('1250.00'),
       unrealizedPnl: _usd('875.00'),
+      unrealizedPnlPercent: DecimalValue('5.93', unit: 'percent'),
       updatedAt: _now,
     ),
     Position(
@@ -169,6 +261,51 @@ final class AppReviewPortfolioRepository implements PortfolioRepository {
       entryPrice: _usd('238.00'),
       markPrice: _usd('250.00'),
       unrealizedPnl: _usd('240.00'),
+      unrealizedPnlPercent: DecimalValue('5.04', unit: 'percent'),
+      updatedAt: _now,
+    ),
+    Position(
+      positionId: 'review-position-xyz-nvda',
+      productId: 'xyz:NVDA',
+      positionVersion: 'review-nvda-v1',
+      symbol: 'NVDA',
+      kind: MarketProductKind.perp,
+      side: PositionSide.long,
+      quantity: _token('6', 'NVDA'),
+      valueUsd: _usd('7500.00'),
+      entryPrice: _usd('1195.00'),
+      markPrice: _usd('1250.00'),
+      unrealizedPnl: _usd('330.00'),
+      unrealizedPnlPercent: DecimalValue('9.17', unit: 'percent'),
+      fundingPaid: _usd('-8.40'),
+      leverage: DecimalValue('3', unit: 'multiple'),
+      margin: _usd('2500.00'),
+      marginMode: PositionMarginMode.cross,
+      liquidationPrice: _usd('865.00'),
+      takeProfitPrice: _usd('1390.00'),
+      stopLossPrice: _usd('1120.00'),
+      updatedAt: _now,
+    ),
+    Position(
+      positionId: 'review-position-xyz-tsla',
+      productId: 'xyz:TSLA',
+      positionVersion: 'review-tsla-v1',
+      symbol: 'TSLA',
+      kind: MarketProductKind.perp,
+      side: PositionSide.short,
+      quantity: _token('15', 'TSLA'),
+      valueUsd: _usd('3750.00'),
+      entryPrice: _usd('258.00'),
+      markPrice: _usd('250.00'),
+      unrealizedPnl: _usd('120.00'),
+      unrealizedPnlPercent: DecimalValue('10.91', unit: 'percent'),
+      fundingPaid: _usd('3.10'),
+      leverage: DecimalValue('3.4', unit: 'multiple'),
+      margin: _usd('1100.00'),
+      marginMode: PositionMarginMode.isolated,
+      liquidationPrice: _usd('326.00'),
+      takeProfitPrice: _usd('225.00'),
+      stopLossPrice: _usd('273.00'),
       updatedAt: _now,
     ),
   ];
@@ -192,15 +329,25 @@ final class AppReviewPortfolioRepository implements PortfolioRepository {
         ),
       ],
     ),
+    TradingAccount(
+      kind: TradingAccountKind.hip3,
+      label: 'HIP3 Perps',
+      address: '0x0000000000000000000000000000000000000001',
+      chain: 'Arbitrum',
+      totalValueUsd: _usd('6000.00'),
+      availableUsd: _usd('2400.00'),
+      marginUsedUsd: _usd('3600.00'),
+      balances: const [],
+    ),
   ];
 
   @override
   Future<Portfolio> getSummary() async => Portfolio(
-    totalValueUsd: _usd('25000.00'),
-    availableToTradeUsd: _usd('4375.00'),
-    todayPnl: _usd('324.80'),
-    todayPnlPercent: DecimalValue('1.32', unit: 'percent'),
-    marginInUseUsd: _usd('0.00'),
+    totalValueUsd: _usd('31000.00'),
+    availableToTradeUsd: _usd('6775.00'),
+    todayPnl: _usd('774.80'),
+    todayPnlPercent: DecimalValue('2.56', unit: 'percent'),
+    marginInUseUsd: _usd('3600.00'),
     stocksValueUsd: _usd('20625.00'),
     updatedAt: _now,
     accounts: accounts,
@@ -594,6 +741,12 @@ final class AppReviewOrdersRepository implements OrdersRepository {
         .where((order) => kind == null || order.kind == kind)
         .where((order) => symbol == null || order.symbol == symbol)
         .where((order) => productId == null || order.productId == productId)
+        .where(
+          (order) =>
+              statusGroup != 'open' ||
+              order.status == TradingOrderStatus.open ||
+              order.status == TradingOrderStatus.partiallyFilled,
+        )
         .map((order) => ResourceResult(resource: order))
         .toList(growable: false),
   );
@@ -606,7 +759,33 @@ final class AppReviewOrdersRepository implements OrdersRepository {
   Future<ResourceResult<TradingOrder>> cancel(
     String orderId, {
     required String idempotencyKey,
-  }) async => get(orderId);
+  }) async {
+    final current = store.orders[orderId]!;
+    final cancelled = TradingOrder(
+      orderId: current.orderId,
+      productId: current.productId,
+      conditional: current.conditional,
+      clientOrderId: current.clientOrderId,
+      symbol: current.symbol,
+      kind: current.kind,
+      side: current.side,
+      type: current.type,
+      status: TradingOrderStatus.cancelled,
+      quantity: current.quantity,
+      filledQuantity: current.filledQuantity,
+      limitPrice: current.limitPrice,
+      averageFillPrice: current.averageFillPrice,
+      orderValue: current.orderValue,
+      fee: current.fee,
+      positionId: current.positionId,
+      txHash: current.txHash,
+      failureReason: current.failureReason,
+      createdAt: current.createdAt,
+      updatedAt: _now,
+    );
+    store.orders[orderId] = cancelled;
+    return ResourceResult(resource: cancelled);
+  }
 }
 
 final class AppReviewFundingRepository implements FundingRepository {
@@ -917,4 +1096,22 @@ final class AppReviewRealtimeRepository implements RealtimeRepository {
   @override
   Stream<TypedRealtimeEvent> subscribe({required Set<String> channels}) =>
       const Stream.empty();
+
+  @override
+  Future<RealtimeReplayPage> replay({
+    required Set<String> channels,
+    String? cursor,
+    int limit = 50,
+  }) async => const RealtimeReplayPage(
+    items: [],
+    nextCursor: '',
+    hasMore: false,
+    resyncRequired: false,
+  );
+
+  @override
+  Stream<TypedRealtimeEvent> subscribeWithRecovery({
+    required Set<String> channels,
+    required Future<void> Function() refreshSnapshot,
+  }) => const Stream.empty();
 }

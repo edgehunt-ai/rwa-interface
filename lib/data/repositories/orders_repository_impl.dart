@@ -222,6 +222,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
                   ? api.BstockOrderPreviewRequestSideEnum.buy
                   : api.BstockOrderPreviewRequestSideEnum.sell
               ..type = _type(intent.type)
+              ..timeInForce = api.BstocksTimeInForce.ioc
               ..amount = intent.amount?.value
               ..quantity = intent.quantity?.value
               ..limitPrice = intent.limitPrice?.value
@@ -271,6 +272,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
                   ? api.BstockCreateOrderRequestSideEnum.buy
                   : api.BstockCreateOrderRequestSideEnum.sell
               ..type = _type(intent.type)
+              ..timeInForce = api.BstocksTimeInForce.ioc
               ..amount = intent.amount?.value
               ..quantity = intent.quantity?.value
               ..limitPrice = intent.limitPrice?.value

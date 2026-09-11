@@ -26,6 +26,10 @@ final marketSnapshotProvider = FutureProvider.autoDispose
       return ref.watch(marketsRepositoryProvider).getSnapshot(product);
     });
 
+final marketHoursProvider = FutureProvider.autoDispose<MarketHours>((ref) {
+  return ref.watch(marketHoursRepositoryProvider).getMarketHours();
+});
+
 final marketCandlesProvider = FutureProvider.autoDispose
     .family<CandleChart, ({MarketProductRef product, CandleChartRange range})>(
       (ref, query) => ref

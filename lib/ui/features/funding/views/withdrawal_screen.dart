@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/failure_state.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
@@ -48,18 +49,27 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     final raw = amount.text.trim();
     final recipient = address.text.trim();
     if (recipient.isEmpty || raw.isEmpty) {
-      setState(() => error = 'Enter a recipient address and amount.');
+      setState(
+        () =>
+            error = AppLocalizations.of(context).enterRecipientAddressAndAmount,
+      );
       return;
     }
     if (!_isEvmAddress(recipient)) {
-      setState(() => error = 'Enter a valid wallet address.');
+      setState(
+        () => error = AppLocalizations.of(context).enterValidWalletAddress,
+      );
       return;
     }
     DecimalValue value;
     try {
       value = DecimalValue(raw, asset: widget.token, unit: 'token');
     } on FormatException {
-      setState(() => error = 'Enter a valid ${widget.token} amount.');
+      setState(
+        () =>
+            error = AppLocalizations.of(context)
+                .enterValidTokenAmount(widget.token),
+      );
       return;
     }
     setState(() {
@@ -79,7 +89,9 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
       if (mounted) setState(() => quote = next);
     } on Object {
       if (mounted) {
-        setState(() => error = 'Unable to prepare this withdrawal. Try again.');
+        setState(
+          () => error = AppLocalizations.of(context).prepareWithdrawalFailed,
+        );
       }
     } finally {
       if (mounted) setState(() => quoting = false);
@@ -194,7 +206,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
   bool _validateAddress() {
     final value = widget.address.text.trim();
     final nextError = value.isNotEmpty && !_isEvmAddress(value)
-        ? 'Enter a valid wallet address.'
+        ? AppLocalizations.of(context).enterValidWalletAddress
         : null;
     if (_addressError != nextError) {
       setState(() => _addressError = nextError);
@@ -211,6 +223,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final rawAmount = widget.amount.text.trim();
     final displayAmount = rawAmount.isEmpty ? '0.00' : rawAmount;
     final parsedAmount = _parseAmount(rawAmount);
@@ -232,7 +245,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
         _PageHeader(
-          title: 'Withdraw ${widget.token}',
+          title: l10n.withdrawToken(widget.token),
           fallbackLocation: AppRoutes.withdrawalSelectPath,
         ),
         const SizedBox(height: 40),
@@ -244,7 +257,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _FieldLabel('Recipient address'),
+              _FieldLabel(l10n.recipientAddress),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -254,7 +267,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                       controller: widget.address,
                       focusNode: _addressFocusNode,
                       decoration: InputDecoration(
-                        hintText: 'Enter wallet address',
+                        hintText: l10n.enterWalletAddress,
                         errorText: _addressError,
                         border: _withdrawalInputBorder(colors.border),
                         enabledBorder: _withdrawalInputBorder(colors.border),
@@ -298,7 +311,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                       minimumSize: const Size(42, 24),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Text('Paste', style: _strongText),
+                    child: Text(l10n.paste, style: _strongText),
                   ),
                 ],
               ),
@@ -314,11 +327,17 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _FieldLabel('Amount'),
+                  _FieldLabel(l10n.amount),
                   _FieldLabel(
                     widget.asset == null
-                        ? 'Available — ${widget.token}'
-                        : 'Available ${TokenAmountFormatter.formatValue(widget.asset!.balance, decimals: widget.asset!.decimals)} ${widget.token}',
+                        ? l10n.availableToken(widget.token)
+                        : l10n.availableTokenAmount(
+                            TokenAmountFormatter.formatValue(
+                              widget.asset!.balance,
+                              decimals: widget.asset!.decimals,
+                            ),
+                            widget.token,
+                          ),
                   ),
                 ],
               ),
@@ -389,7 +408,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
                       minimumSize: const Size(36, 16),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Text('Max', style: _strongText),
+                    child: Text(l10n.max, style: _strongText),
                   ),
                 ],
               ),
@@ -404,17 +423,17 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
             color: colors.subtleSurface,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Column(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _CompactDetail(label: 'Network fee', value: '≈ 0.10 USDC'),
-              _CompactDetail(label: 'Recipient receives', value: '— USDC'),
+              _CompactDetail(label: l10n.networkFee, value: '≈ 0.10 USDC'),
+              _CompactDetail(label: l10n.recipientReceives, value: '— USDC'),
             ],
           ),
         ),
         const SizedBox(height: 40),
         Text(
-          'Network fees may change before confirmation.',
+          l10n.networkFeesMayChange,
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: colors.secondaryText),
         ),
@@ -431,7 +450,9 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
         FilledButton(
           onPressed: canSubmit ? _review : null,
           child: Text(
-            widget.submitting ? 'Preparing withdrawal…' : 'Review withdrawal',
+            widget.submitting
+                ? l10n.preparingWithdrawal
+                : l10n.reviewWithdrawal,
           ),
         ),
       ],
@@ -468,7 +489,7 @@ class _RouteCard extends StatelessWidget {
         children: [
           Expanded(
             child: _RouteRow(
-              label: 'Token',
+              label: AppLocalizations.of(context).token,
               value: token,
               asset: _tokenIcon(token),
               raster: token == 'USDT',
@@ -477,7 +498,7 @@ class _RouteCard extends StatelessWidget {
           Divider(),
           Expanded(
             child: _RouteRow(
-              label: 'Network',
+              label: AppLocalizations.of(context).network,
               value: chain,
               asset: _networkIcon(chain),
             ),
@@ -530,6 +551,7 @@ class _WithdrawalReview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final amount = TokenAmountFormatter.format(
       quote.intent.amount,
       symbol: 'USDC',
@@ -537,10 +559,10 @@ class _WithdrawalReview extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
-        _PageHeader(title: 'Review withdrawal', onBack: onBack),
+        _PageHeader(title: l10n.reviewWithdrawal, onBack: onBack),
         const SizedBox(height: 24),
         Text(
-          'YOU ARE SENDING',
+          l10n.youAreSending,
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: colors.secondaryText),
         ),
@@ -570,19 +592,19 @@ class _WithdrawalReview extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Withdrawal details',
+                l10n.withdrawalDetails,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
               _ReviewDetail(
-                label: 'To',
+                label: l10n.to,
                 value: _shortAddress(quote.intent.address),
               ),
               const SizedBox(height: 8),
-              const _ReviewDetail(label: 'Network', value: 'Arbitrum'),
+              _ReviewDetail(label: l10n.network, value: quote.intent.chain),
               const SizedBox(height: 8),
               _ReviewDetail(
-                label: 'Network fee',
+                label: l10n.networkFee,
                 value:
                     '≈ ${TokenAmountFormatter.format(quote.totalFee, symbol: 'USDC')}',
               ),
@@ -591,7 +613,7 @@ class _WithdrawalReview extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         _BreakdownRow(
-          label: 'Recipient receives',
+          label: l10n.recipientReceives,
           value: TokenAmountFormatter.format(
             quote.estimatedReceive,
             symbol: 'USDC',
@@ -599,15 +621,15 @@ class _WithdrawalReview extends StatelessWidget {
           mutedLabel: true,
         ),
         const Divider(height: 17),
-        _BreakdownRow(label: 'Total deducted', value: amount),
+        _BreakdownRow(label: l10n.totalDeducted, value: amount),
         const SizedBox(height: 12),
         Text(
-          'The final network fee may vary slightly.',
+          l10n.finalNetworkFeeMayVary,
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: colors.secondaryText),
         ),
         const SizedBox(height: 40),
-        FilledButton(onPressed: null, child: const Text('Withdraw USDC')),
+        FilledButton(onPressed: null, child: Text(l10n.withdrawUsdc)),
       ],
     );
   }
@@ -631,14 +653,15 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final assets = ref.watch(withdrawalAssetsProvider);
     return Scaffold(
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
           children: [
-            const _PageHeader(
-              title: 'Select asset',
+            _PageHeader(
+              title: l10n.selectAsset,
               fallbackLocation: AppRoutes.assetsPath,
             ),
             const SizedBox(height: 24),
@@ -659,7 +682,7 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
                       ),
                     ),
                   ),
-                  hintText: 'Search assets',
+                  hintText: l10n.searchAssets,
                   fillColor: colors.subtleSurface,
                 ),
               ),
@@ -675,8 +698,8 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
               ),
               error: (_, _) => FailureState(
                 height: 420,
-                title: 'Unable to load assets',
-                description: 'Check your connection and try again.',
+                title: l10n.unableToLoadAssets,
+                description: l10n.checkConnectionRetry,
                 onRetry: () async {
                   ref.invalidate(tradingAccountsProvider);
                   await ref.read(tradingAccountsProvider.future);
@@ -697,11 +720,11 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
                     height: 400,
                     child: EmptyState(
                       title: query.isEmpty
-                          ? 'No assets available'
-                          : 'No matching assets',
+                          ? l10n.noAssetsAvailable
+                          : l10n.noMatchingAssets,
                       description: query.isEmpty
-                          ? 'Assets with an available balance will appear here.'
-                          : 'Try a different asset name or network.',
+                          ? l10n.assetsWithBalanceAppearHere
+                          : l10n.tryDifferentAssetOrNetwork,
                     ),
                   );
                 }

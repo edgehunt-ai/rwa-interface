@@ -35,7 +35,17 @@ void main() {
     );
 
     expect(find.byType(DesignStateFeedback), findsOneWidget);
-    expect(find.byType(SkeletonBlock), findsWidgets);
+    expect(find.byType(SkeletonBlock), findsNWidgets(20));
+  });
+
+  testWidgets('does not add a title placeholder unless requested', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(const LoadingSkeleton(rows: 1, showHeader: true)),
+    );
+
+    expect(find.byType(SkeletonBlock), findsNWidgets(5));
   });
 
   testWidgets('keeps the loading skeleton within a constrained height', (

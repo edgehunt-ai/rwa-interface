@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import '../../../../app/routing/routes.dart';
 import '../../../../app/providers/auth_providers.dart';
 import '../../../../domain/auth/authentication.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/authentication_provider.dart';
 
@@ -148,6 +149,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
     });
     final state = widget.authentication;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final waitingForCode = state is AuthenticationAwaitingCode;
     final busy =
         state is AuthenticationInitializing ||
@@ -243,8 +245,8 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                       const SizedBox(height: 12),
                       Text(
                         waitingForCode
-                            ? 'Enter confirmation code'
-                            : 'Sign up or log in\nto start exploring',
+                            ? l10n.enterConfirmationCode
+                            : l10n.signUpOrLogIn,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.black,
@@ -256,7 +258,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                       if (waitingForCode) ...[
                         const SizedBox(height: 8),
                         Text(
-                          'Please check ${state.email} for an email\nfrom privy.io and enter your code below.',
+                          l10n.emailCodeSent(state.email),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: colors.secondaryText),
@@ -283,20 +285,20 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                         ),
                         const SizedBox(height: 28),
                         Text(
-                          "Didn't get an email?",
+                          l10n.didntGetEmail,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(color: const Color(0xFF676776)),
                         ),
                         TextButton(
                           onPressed: _sendCode,
-                          child: const Text('Resend code'),
+                          child: Text(l10n.resendCode),
                         ),
                       ] else if (kIsWeb) ...[
                         _LoginOption(
                           asset: 'assets/figma/session/email.svg',
-                          label: 'Continue with Privy',
-                          badge: _recentMethod == 'Privy' ? 'Recent' : null,
+                          label: l10n.continueWithPrivy,
+                          badge: _recentMethod == 'Privy' ? l10n.recent : null,
                           onTap: _loginOnWeb,
                         ),
                       ] else ...[
@@ -314,10 +316,10 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                               : _sendCode,
                         ),
                         if (_showEmailFormatError && !_hasValidEmail)
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.only(left: 16, bottom: 12),
                             child: Text(
-                              'Enter a valid email address.',
+                              l10n.enterValidEmail,
                               style: TextStyle(
                                 color: Color(0xFFB42318),
                                 fontSize: 12,
@@ -327,25 +329,27 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                         _LoginOption(
                           asset: 'assets/figma/session/google.svg',
                           label: 'Google',
-                          badge: _recentMethod == 'Google' ? 'Recent' : null,
+                          badge: _recentMethod == 'Google' ? l10n.recent : null,
                           onTap: busy ? null : () => _loginWith('Google'),
                         ),
                         if (showApple)
                           _LoginOption(
                             asset: 'assets/figma/session/apple.svg',
                             label: 'Apple',
-                            badge: _recentMethod == 'Apple' ? 'Recent' : null,
+                            badge: _recentMethod == 'Apple'
+                                ? l10n.recent
+                                : null,
                             onTap: busy ? null : () => _loginWith('Apple'),
                           ),
                         _LoginOption(
                           asset: 'assets/figma/session/other_socials.svg',
-                          label: 'Other Socials',
+                          label: l10n.otherSocials,
                           onTap: () => _showOtherSocials(context),
                         ),
                         _LoginOption(
                           asset: 'assets/figma/session/wallet.svg',
-                          label: 'Wallet',
-                          badge: _recentMethod == 'Wallet' ? 'Recent' : null,
+                          label: l10n.wallet,
+                          badge: _recentMethod == 'Wallet' ? l10n.recent : null,
                           onTap: busy ? null : () => _loginWithWallet(context),
                         ),
                       ],
@@ -362,7 +366,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                               : () => ref
                                     .read(authenticationProvider.notifier)
                                     .bootstrap(),
-                          child: const Text('Try again'),
+                          child: Text(l10n.retry),
                         ),
                       ],
                       if (!waitingForCode && !kIsWeb) ...[
@@ -372,7 +376,9 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                         _LoginOption(
                           asset: 'assets/figma/session/passkey.svg',
                           label: 'Passkey',
-                          badge: _recentMethod == 'Passkey' ? 'Recent' : null,
+                          badge: _recentMethod == 'Passkey'
+                              ? l10n.recent
+                              : null,
                           onTap: busy ? null : () => _loginWith('Passkey'),
                         ),
                       ],
@@ -388,7 +394,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'By using this app, you agree to the Terms & Conditions.',
+                        l10n.termsAgreement,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.white,
@@ -751,6 +757,7 @@ class _OtherSocialsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       top: false,
       child: Container(
@@ -775,7 +782,7 @@ class _OtherSocialsSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Log in or sign up',
+              l10n.loginOrSignUp,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: colors.primaryText,
                 fontSize: 20,
@@ -854,25 +861,21 @@ class _LoginFailure extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final message = switch (failure.code) {
-      AuthenticationFailureCode.invalidInput => 'Enter a valid email address.',
-      AuthenticationFailureCode.invalidCode =>
-        'That code is invalid or expired.',
-      AuthenticationFailureCode.network =>
-        'Network unavailable. Check your connection and try again.',
-      AuthenticationFailureCode.browserUnavailable => 'Unable to start Google sign-in. Check that your browser and network are working, then try again.',
-      AuthenticationFailureCode.configuration =>
-        'Privy is not configured for this build.',
-      AuthenticationFailureCode.expired =>
-        'Your session expired. Please sign in again.',
-      AuthenticationFailureCode.backendSession => 'Privy sign-in succeeded, but we could not create your RWA session. Try again later.',
-      AuthenticationFailureCode.walletSync => 'You are signed in, but your wallet could not be synchronized. Try again later.',
-      AuthenticationFailureCode.methodUnavailable =>
-        'Email sign-in is not available.',
+      AuthenticationFailureCode.invalidInput => l10n.enterValidEmail,
+      AuthenticationFailureCode.invalidCode => l10n.invalidConfirmationCode,
+      AuthenticationFailureCode.network => l10n.networkUnavailableRetry,
+      AuthenticationFailureCode.browserUnavailable =>
+        l10n.browserSignInUnavailable,
+      AuthenticationFailureCode.configuration => l10n.privyNotConfigured,
+      AuthenticationFailureCode.expired => l10n.sessionExpiredLogin,
+      AuthenticationFailureCode.backendSession => l10n.backendSessionFailed,
+      AuthenticationFailureCode.walletSync => l10n.walletSyncFailed,
+      AuthenticationFailureCode.methodUnavailable => l10n.emailLoginUnavailable,
       AuthenticationFailureCode.unsupportedPlatform =>
-        'Privy sign-in is available on Android and iOS.',
-      AuthenticationFailureCode.provider =>
-        'Privy is temporarily unavailable. Please try again.',
+        l10n.privyPlatformUnsupported,
+      AuthenticationFailureCode.provider => l10n.privyUnavailable,
     };
     return Container(
       padding: const EdgeInsets.all(14),
@@ -892,7 +895,7 @@ class _LoginFailure extends StatelessWidget {
           if (failure.requestId case final requestId?) ...[
             const SizedBox(height: 6),
             Text(
-              'Support ID: $requestId',
+              l10n.supportId(requestId),
               style: Theme.of(context).textTheme.bodySmall
                   ?.copyWith(color: colors.secondaryText),
             ),

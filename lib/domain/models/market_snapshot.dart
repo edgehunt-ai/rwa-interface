@@ -7,6 +7,31 @@ final class AssetRight {
   final String value;
 }
 
+final class MarketHours {
+  const MarketHours({
+    required this.timezone,
+    required this.current,
+    this.currentLabel,
+    this.currentDescription,
+    this.nextSession,
+    this.nextTransitionAt,
+    this.secondsUntilTransition,
+    this.isHoliday = false,
+    this.holidayName,
+    this.segments = const [],
+  });
+
+  final String timezone;
+  final MarketSessionKind current;
+  final String? currentLabel, currentDescription;
+  final MarketSessionKind? nextSession;
+  final DateTime? nextTransitionAt;
+  final int? secondsUntilTransition;
+  final bool isHoliday;
+  final String? holidayName;
+  final List<MarketSessionSegment> segments;
+}
+
 enum CandleChartRange {
   oneHour('1h'),
   fourHours('4h'),

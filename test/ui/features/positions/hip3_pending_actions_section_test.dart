@@ -63,6 +63,32 @@ void main() {
     expect(find.text('继续操作'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('stays hidden while loading and when there are no actions', (
+    tester,
+  ) async {
+    final repository = _EmptyRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: Hip3PendingActionsSection()),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Unfinished HIP3 actions'), findsNothing);
+    expect(find.text('Refresh actions'), findsNothing);
+
+    repository.completion.complete(const DomainPage(items: []));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unfinished HIP3 actions'), findsNothing);
+    expect(find.text('No unfinished actions.'), findsNothing);
+  });
 }
 
 Future<void> _mount(
@@ -116,6 +142,17 @@ class _Repository implements PositionsRepository {
     resumed.add(actionId);
     return completion.future;
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _EmptyRepository implements PositionsRepository {
+  final completion = Completer<DomainPage<Hip3ActionSummary>>();
+
+  @override
+  Future<DomainPage<Hip3ActionSummary>> activeHip3Actions({String? cursor}) =>
+      completion.future;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

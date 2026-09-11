@@ -14,9 +14,9 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 
 import 'hip3_preview_details.dart';
-import 'hip3_opening_protection_fields.dart';
 import '../../../../domain/models/hip3_opening_protection.dart';
 import '../../../../domain/models/hip3_opening_context.dart';
 import '../../../../domain/models/hip3_opening_size.dart';
@@ -46,7 +46,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   final _protectionPrices = List.generate(4, (_) => TextEditingController());
   var _side = TradingSide.long;
   var _type = TradingOrderType.market;
-  var _inputNotional = true;
+  final _inputNotional = true;
   var _marginMode = TradingMarginMode.cross;
   var _leverage = 1;
   Hip3OpeningContext? _context;
@@ -103,9 +103,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       _scheduleQuote();
     } on Object {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
-        setState(
-          () => _error = AppLocalizations.of(context).loadingTradingRules,
-        );
+        setState(() => _error = null);
       }
     } finally {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
@@ -116,7 +114,17 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   Future<void> _applySettings(int leverage, TradingMarginMode mode) async {
     final openingContext = _context;
-    if (openingContext == null || _submitting) return;
+    if (_submitting) return;
+    if (openingContext == null) {
+      setState(() {
+        _leverage = leverage;
+        _marginMode = mode;
+        _quotePreview = null;
+        _error = null;
+      });
+      _scheduleQuote();
+      return;
+    }
     if (leverage < 1 ||
         leverage > openingContext.maximumLeverage ||
         !openingContext.marginModes.contains(mode) ||
@@ -239,6 +247,40 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     return Hip3OpeningProtection(takeProfit: leg(0), stopLoss: leg(2));
   }
 
+  Future<void> _editTpSl() async {
+    final result = await showModalBottomSheet<_Hip3TpSlSelection>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _Hip3TpSlSheet(
+        symbol: widget.symbol,
+        side: _side,
+        takeProfit: _protectionPrices[0].text,
+        stopLoss: _protectionPrices[2].text,
+      ),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _showTpSl = result.hasProtection;
+      _protectionPrices[0].text = result.takeProfit ?? '';
+      _protectionPrices[1].clear();
+      _protectionPrices[2].text = result.stopLoss ?? '';
+      _protectionPrices[3].clear();
+      _quotePreview = null;
+    });
+    _scheduleQuote();
+  }
+
+  void _removeTpSl() {
+    setState(() {
+      _showTpSl = false;
+      _quotePreview = null;
+      for (final controller in _protectionPrices) {
+        controller.clear();
+      }
+    });
+    _scheduleQuote();
+  }
+
   void _scheduleQuote() {
     _quoteDebounce?.cancel();
     final generation = ++_quoteGeneration;
@@ -280,7 +322,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
     final rawLimitPrice = _limitPrice.text.trim();
     if (_type == TradingOrderType.limit && rawLimitPrice.isEmpty) {
-      setState(() => _error = 'Enter a valid limit price.');
+      setState(() => _error = AppLocalizations.of(context).validLimitPrice);
       return;
     }
     try {
@@ -288,8 +330,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (intent == null) {
         setState(
           () => _error = _showTpSl
-              ? 'Enter valid order values and at least one positive protection trigger. Each protection limit needs its trigger.'
-              : 'Enter a positive quantity or order value and a valid limit price.',
+              ? AppLocalizations.of(context).hip3InvalidOrderWithProtection
+              : AppLocalizations.of(context).hip3InvalidOrderInputs,
         );
         return;
       }
@@ -369,7 +411,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       setState(() {
         _submitted = submitted?.resource;
         _error = submitted == null
-            ? 'Order was not submitted. Try again.'
+            ? AppLocalizations.of(context).orderSubmissionFailed
             : null;
       });
     } on Hip3ExecutionPending catch (pending) {
@@ -377,15 +419,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       setState(() {
         _pendingOrderId = pending.orderId;
         _error = pending.requiresReview
-            ? 'This order needs review. Do not place a replacement order.'
-            : 'Confirming this order. Retry to check the same order; do not place a replacement.';
+            ? AppLocalizations.of(context).hip3OrderNeedsReview
+            : AppLocalizations.of(context).hip3OrderConfirming;
       });
     } on Hip3SigningFailure catch (failure) {
       if (!isCurrent()) return;
       setState(() => _error = _signingError(failure));
     } on Object {
       if (!isCurrent()) return;
-      setState(() => _error = 'Unable to sign this order. Try again.');
+      setState(() => _error = AppLocalizations.of(context).prepareOrderFailed);
     } finally {
       if (isCurrent()) setState(() => _submitting = false);
     }
@@ -395,17 +437,21 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     Hip3SigningFailureCode.walletMismatch => AppLocalizations.of(
       context,
     ).walletConnectRequired,
-    Hip3SigningFailureCode.actionExpired =>
-      'This signing request expired. Prepare the order again.',
+    Hip3SigningFailureCode.actionExpired => AppLocalizations.of(
+      context,
+    ).hip3SigningRequestExpired,
     Hip3SigningFailureCode.rejected => AppLocalizations.of(
       context,
     ).signatureCancelled,
-    Hip3SigningFailureCode.actionNotReady =>
-      'The order is still being prepared. Try again.',
-    Hip3SigningFailureCode.walletUnavailable =>
-      'The signing wallet is unavailable. Reconnect and try again.',
-    Hip3SigningFailureCode.invalidPayload =>
-      'The signing request is invalid. Prepare the order again.',
+    Hip3SigningFailureCode.actionNotReady => AppLocalizations.of(
+      context,
+    ).hip3OrderStillPreparing,
+    Hip3SigningFailureCode.walletUnavailable => AppLocalizations.of(
+      context,
+    ).hip3SigningWalletUnavailable,
+    Hip3SigningFailureCode.invalidPayload => AppLocalizations.of(
+      context,
+    ).hip3SigningRequestInvalid,
   };
 
   @override
@@ -469,13 +515,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   onClose: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(height: 16),
-                if (_contextLoading)
-                  Text(AppLocalizations.of(context).loadingTradingRules),
-                if (_context == null && !_contextLoading)
-                  TextButton(
-                    onPressed: _loadContext,
-                    child: Text(AppLocalizations.of(context).retryTradingRules),
-                  ),
                 if (_context case final rules?) ...[
                   if (rules.orderTypes.length > 1)
                     _Hip3SegmentedControl<TradingOrderType>(
@@ -489,7 +528,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                         if (_submitting) return;
                         setState(() {
                           _type = type;
-                          _inputNotional = type == TradingOrderType.market;
                           _amount.clear();
                           _quotePreview = null;
                         });
@@ -527,23 +565,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   const SizedBox(height: 16),
                 ],
                 const SizedBox(height: 12),
-                _Hip3SegmentedControl<bool>(
-                  values: const [true, false],
-                  selected: _inputNotional,
-                  selectedColor: actionColor,
-                  label: (notional) =>
-                      notional ? '${l10n.amount} (USDC)' : l10n.quantity,
-                  onChanged: (notional) {
-                    if (_submitting) return;
-                    setState(() {
-                      _inputNotional = notional;
-                      _amount.clear();
-                      _quotePreview = null;
-                      _percentage = 0;
-                    });
-                  },
-                ),
-                const SizedBox(height: 12),
                 _Hip3ModeLeverageCard(
                   marginMode: _marginMode,
                   leverage: _leverage,
@@ -554,10 +575,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   availableMargin: _context?.availableMargin.value,
                   percentage: _percentage,
                   onMarginModeTap: () {
-                    final rules = _context;
-                    if (rules == null ||
-                        _pendingSetting != null ||
-                        _submitting) {
+                    if (_pendingSetting != null || _submitting) {
                       return;
                     }
                     final generation = ref.read(sessionGenerationProvider);
@@ -565,7 +583,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       context: context,
                       builder: (_) => Hip3MarginModeSheet(
                         selectedMode: _marginMode,
-                        availableModes: rules.marginModes,
+                        availableModes:
+                            _context?.marginModes ??
+                            TradingMarginMode.values.toSet(),
                       ),
                     ).then((mode) {
                       if (mode != null &&
@@ -579,9 +599,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   onLeverageTap: () async {
                     final generation = ref.read(sessionGenerationProvider);
                     final rules = _context;
-                    if (rules == null ||
-                        _submitting ||
-                        _pendingSetting != null) {
+                    if (_submitting || _pendingSetting != null) {
                       return;
                     }
                     final leverage = await showModalBottomSheet<int>(
@@ -589,7 +607,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       isScrollControlled: true,
                       builder: (_) => Hip3LeverageSheet(
                         initialLeverage: _leverage,
-                        maximumLeverage: rules.maximumLeverage,
+                        maximumLeverage: rules?.maximumLeverage ?? 20,
                       ),
                     );
                     if (leverage != null &&
@@ -605,7 +623,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                         quote!.isExpired ||
                         rules == null) {
                       setState(
-                        () => _error = 'Enter an amount to get a current maximum quantity before using the percentage slider.',
+                        () =>
+                            _error = AppLocalizations.of(context)
+                                .amountRequiredForPercentage,
                       );
                       return;
                     }
@@ -631,12 +651,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   allowProtection: !_reduceOnly,
                   onTpSlTap: () {
                     if (_reduceOnly) return;
-                    setState(() => _showTpSl = !_showTpSl);
-                    _scheduleQuote();
+                    if (_showTpSl) {
+                      _removeTpSl();
+                    } else {
+                      _editTpSl();
+                    }
                   },
                 ),
-                if (_showTpSl)
-                  Hip3OpeningProtectionFields(controllers: _protectionPrices),
                 if (_error case final error?) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -697,8 +718,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _Hip3SheetHeader(
-              title:
-                  'Review ${_preview!.intent.side == TradingSide.long ? AppLocalizations.of(context).long : AppLocalizations.of(context).short} ${_preview!.intent.symbol}',
+              title: AppLocalizations.of(context).reviewOrder(
+                _preview!.intent.side == TradingSide.long
+                    ? AppLocalizations.of(context).long
+                    : AppLocalizations.of(context).short,
+                _preview!.intent.symbol,
+              ),
               leverage:
                   int.tryParse(_preview!.hip3Execution?.leverage.value ?? '') ??
                   _leverage,
@@ -759,7 +784,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                                 : AppLocalizations.of(context).checkingOrder)
                           : (_pendingOrderId == null
                                 ? AppLocalizations.of(context).confirm
-                                : 'Check order status'),
+                                : AppLocalizations.of(context)
+                                      .checkOrderStatus),
                     ),
                   ),
                 ),
@@ -799,13 +825,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           if (_preview?.intent.openingProtection != null)
-            const Text(
-              'Attached protection is not confirmed active. Check protection orders for the current status.',
-            ),
+            Text(AppLocalizations.of(context).openingProtectionPendingNotice),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close & View Later'),
+            child: Text(AppLocalizations.of(context).closeViewLater),
           ),
         ],
       ),
@@ -901,6 +925,154 @@ class _Hip3SegmentedControl<T> extends StatelessWidget {
   }
 }
 
+class _Hip3TpSlSelection {
+  const _Hip3TpSlSelection({this.takeProfit, this.stopLoss});
+
+  final String? takeProfit;
+  final String? stopLoss;
+  bool get hasProtection => takeProfit != null || stopLoss != null;
+}
+
+class _Hip3TpSlSheet extends StatefulWidget {
+  const _Hip3TpSlSheet({
+    required this.symbol,
+    required this.side,
+    required this.takeProfit,
+    required this.stopLoss,
+  });
+
+  final String symbol;
+  final TradingSide side;
+  final String takeProfit;
+  final String stopLoss;
+
+  @override
+  State<_Hip3TpSlSheet> createState() => _Hip3TpSlSheetState();
+}
+
+class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
+  late final _takeProfit = TextEditingController(text: widget.takeProfit);
+  late final _stopLoss = TextEditingController(text: widget.stopLoss);
+  late var _takeProfitEnabled = true;
+  late var _stopLossEnabled = true;
+
+  @override
+  void dispose() {
+    _takeProfit.dispose();
+    _stopLoss.dispose();
+    super.dispose();
+  }
+
+  void _confirm() => Navigator.of(context).pop(
+    _Hip3TpSlSelection(
+      takeProfit: _takeProfitEnabled && _takeProfit.text.trim().isNotEmpty
+          ? _takeProfit.text.trim()
+          : null,
+      stopLoss: _stopLossEnabled && _stopLoss.text.trim().isNotEmpty
+          ? _stopLoss.text.trim()
+          : null,
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    return Material(
+      color: colors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: IconButton(
+                        tooltip: l10n.back,
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.chevron_left, size: 24),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.takeProfitStopLossTitle,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 28, top: 4),
+                  child: Text(
+                    '${widget.symbol}/USDT  ${widget.side == TradingSide.long ? l10n.buy : l10n.sell}',
+                    style: TextStyle(color: colors.secondaryText),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TpSlEditorCard(
+                  title: l10n.takeProfit,
+                  controller: _takeProfit,
+                  enabled: _takeProfitEnabled,
+                  inputKey: const Key('opening-protection-0'),
+                  rulerKey: const Key('take-profit-ruler'),
+                  onEnabledChanged: (value) =>
+                      setState(() => _takeProfitEnabled = value),
+                ),
+                const SizedBox(height: 12),
+                TpSlEditorCard(
+                  title: l10n.stopLoss,
+                  controller: _stopLoss,
+                  enabled: _stopLossEnabled,
+                  inputKey: const Key('opening-protection-2'),
+                  rulerKey: const Key('stop-loss-ruler'),
+                  onEnabledChanged: (value) =>
+                      setState(() => _stopLossEnabled = value),
+                ),
+                const SizedBox(height: 48),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: colors.subtleSurface,
+                          foregroundColor: colors.primaryText,
+                          side: BorderSide.none,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(l10n.back),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        key: const Key('hip3-tp-sl-confirm'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: colors.primaryAction,
+                          foregroundColor: colors.onPrimaryAction,
+                        ),
+                        onPressed: _confirm,
+                        child: Text(l10n.confirm),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Hip3RiskSummary extends StatelessWidget {
   const _Hip3RiskSummary({
     required this.settlementAsset,
@@ -920,16 +1092,20 @@ class _Hip3RiskSummary extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     children: [
       _Hip3RiskRow(
-        'Liquidation Price',
-        execution?.liquidationPrice?.value ?? 'Unavailable',
+        AppLocalizations.of(context).liquidationPrice,
+        execution?.liquidationPrice?.value ??
+            AppLocalizations.of(context).unavailable,
       ),
       const SizedBox(height: 8),
       _Hip3RiskRow(
-        'Margin Required',
+        AppLocalizations.of(context).marginRequired,
         '${execution?.marginRequired.value ?? '—'} $settlementAsset',
       ),
       if (execution case final value?)
-        _Hip3RiskRow('Maximum quantity', value.maximumQuantity.value),
+        _Hip3RiskRow(
+          AppLocalizations.of(context).maximumQuantity,
+          value.maximumQuantity.value,
+        ),
       const SizedBox(height: 8),
       if (allowProtection)
         InkWell(
@@ -940,7 +1116,7 @@ class _Hip3RiskSummary extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'TP/SL',
+                  AppLocalizations.of(context).takeProfitStopLoss,
                   style: TextStyle(
                     color: Theme.of(context)
                         .extension<AppRwaColors>()!
@@ -965,7 +1141,9 @@ class _Hip3RiskSummary extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                showTpSl ? 'Remove' : 'Add',
+                showTpSl
+                    ? AppLocalizations.of(context).remove
+                    : AppLocalizations.of(context).add,
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -1006,9 +1184,9 @@ class _Hip3SheetHeader extends StatelessWidget {
       const SizedBox(width: 4),
       _Hip3Badge('$leverage×'),
       const SizedBox(width: 4),
-      const _Hip3Badge('HIP-3 Perps'),
+      _Hip3Badge(AppLocalizations.of(context).hip3Perps),
       IconButton(
-        tooltip: 'Close',
+        tooltip: AppLocalizations.of(context).close,
         onPressed: onClose,
         icon: const Icon(Icons.keyboard_double_arrow_down, size: 24),
         padding: EdgeInsets.zero,
@@ -1088,8 +1266,8 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                       children: [
                         Text(
                           marginMode == TradingMarginMode.cross
-                              ? 'Cross'
-                              : 'Isolated',
+                              ? AppLocalizations.of(context).cross
+                              : AppLocalizations.of(context).isolated,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -1132,14 +1310,17 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      quantityInput ? 'Quantity' : 'Order Value',
+                      quantityInput
+                          ? AppLocalizations.of(context).quantity
+                          : AppLocalizations.of(context).orderValue,
                       style: TextStyle(
                         fontSize: 11,
                         color: colors.secondaryText,
                       ),
                     ),
                     Text(
-                      'Margin: ${availableMargin ?? '—'} USDC',
+                      AppLocalizations.of(context)
+                          .marginValue(availableMargin ?? '—'),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -1256,7 +1437,7 @@ class Hip3MarginModeSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Margin mode',
+                AppLocalizations.of(context).marginMode,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -1291,11 +1472,13 @@ class _MarginModeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final label = mode == TradingMarginMode.cross ? 'Cross' : 'Isolated';
+    final label = mode == TradingMarginMode.cross
+        ? AppLocalizations.of(context).cross
+        : AppLocalizations.of(context).isolated;
     return Semantics(
       button: enabled,
       selected: selected,
-      label: '$label margin mode',
+      label: AppLocalizations.of(context).marginModeLabel(label),
       child: InkWell(
         onTap: enabled ? onTap : null,
         borderRadius: BorderRadius.circular(8),
@@ -1349,6 +1532,12 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final options = [
+      for (final option in const [2, 5, 10, 20])
+        if (option <= widget.maximumLeverage) option,
+      if (![2, 5, 10, 20].contains(widget.maximumLeverage))
+        widget.maximumLeverage,
+    ];
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -1363,14 +1552,19 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
               children: [
                 Row(
                   children: [
-                    IconButton(
-                      tooltip: 'Back',
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.chevron_left, size: 20),
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: IconButton(
+                        tooltip: AppLocalizations.of(context).back,
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.chevron_left, size: 24),
+                        padding: EdgeInsets.zero,
+                      ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 8),
                     Text(
-                      'Leverage',
+                      AppLocalizations.of(context).leverage,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ],
@@ -1383,42 +1577,23 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                Semantics(
-                  label: 'Drag to set leverage',
-                  child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: colors.subtleSurface,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Slider(
-                      value: _leverage.toDouble(),
-                      min: 1,
-                      max: widget.maximumLeverage.toDouble(),
-                      divisions: widget.maximumLeverage > 1
-                          ? widget.maximumLeverage - 1
-                          : null,
-                      label: '${_leverage}x',
-                      onChanged: (value) =>
-                          setState(() => _leverage = value.round()),
-                    ),
-                  ),
+                TpSlTickRuler(
+                  semanticLabel: AppLocalizations.of(context).dragToSetLeverage,
+                  value: _leverage.toDouble(),
+                  minimum: 1,
+                  maximum: widget.maximumLeverage.toDouble(),
+                  divisions: widget.maximumLeverage - 1,
+                  onChanged: (value) =>
+                      setState(() => _leverage = value.round()),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    for (final option in {
-                      1,
-                      2,
-                      5,
-                      10,
-                      widget.maximumLeverage,
-                    }.where((n) => n <= widget.maximumLeverage)) ...[
+                    for (final (index, option) in options.indexed) ...[
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(
-                            right: option == widget.maximumLeverage ? 0 : 8,
+                            right: index == options.length - 1 ? 0 : 8,
                           ),
                           child: _LeverageOption(
                             value: option,
@@ -1435,15 +1610,24 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: colors.subtleSurface,
+                          foregroundColor: colors.primaryText,
+                          side: BorderSide.none,
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Back'),
+                        child: Text(AppLocalizations.of(context).back),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: colors.primaryAction,
+                          foregroundColor: colors.onPrimaryAction,
+                        ),
                         onPressed: () => Navigator.of(context).pop(_leverage),
-                        child: const Text('Confirm'),
+                        child: Text(AppLocalizations.of(context).confirm),
                       ),
                     ),
                   ],
@@ -1474,7 +1658,7 @@ class _LeverageOption extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: 'Set leverage to ${value}x',
+      label: AppLocalizations.of(context).setLeverageTo(value),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),

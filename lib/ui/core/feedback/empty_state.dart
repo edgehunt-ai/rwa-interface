@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 
 import '../theme/app_theme.dart';
 
@@ -94,6 +95,7 @@ class FavoritesEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -118,8 +120,8 @@ class FavoritesEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'No favorites yet',
+          Text(
+            l10n.noFavoritesYet,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 17,
@@ -130,7 +132,7 @@ class FavoritesEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Tap the star on any market to save it here.',
+            l10n.favoritesEmptyDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: colors.secondaryText,
@@ -149,7 +151,7 @@ class FavoritesEmptyState extends StatelessWidget {
                 maximumSize: const Size(200, 44),
                 backgroundColor: colors.subtleSurface,
               ),
-              child: const Text('Explore markets'),
+              child: Text(l10n.exploreMarkets),
             ),
           ),
         ],

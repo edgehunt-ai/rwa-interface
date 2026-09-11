@@ -12,6 +12,7 @@ import 'package:rwa_interface/domain/models/market_snapshot.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
+import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/product_session.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/models/stock.dart';
@@ -112,7 +113,68 @@ void main() {
       ),
       greaterThan(0),
     );
-    expect(portfolio.accounts.single.totalValueUsd?.unit, 'fiat');
+    expect(
+      portfolio.accounts
+          .firstWhere((account) => account.totalValueUsd != null)
+          .totalValueUsd
+          ?.unit,
+      'fiat',
+    );
+  });
+
+  test('review portfolio includes representative perps positions', () async {
+    final repository = AppReviewPortfolioRepository();
+    final holdings = await repository.listHoldings();
+    final perps = holdings.items
+        .expand((group) => group.positions)
+        .where((position) => position.kind == MarketProductKind.perp)
+        .toList(growable: false);
+
+    expect(perps, hasLength(2));
+    expect(
+      perps.map((position) => position.side),
+      unorderedEquals([PositionSide.long, PositionSide.short]),
+    );
+    expect(perps.every((position) => position.leverage != null), isTrue);
+    expect(perps.every((position) => position.margin != null), isTrue);
+    expect(
+      perps.every((position) => position.liquidationPrice != null),
+      isTrue,
+    );
+    expect(
+      (await repository.listAccounts()).any(
+        (account) => account.kind.name == 'hip3',
+      ),
+      isTrue,
+    );
+  });
+
+  test('review account seeds open bStocks and HIP-3 orders', () async {
+    final repository = AppReviewOrdersRepository(
+      AppReviewStore(),
+      previewDelegate: _PreviewDelegate(),
+      marketsDelegate: _MarketsDelegate(),
+    );
+
+    final bstocks = await repository.list(
+      kind: MarketProductKind.bstock,
+      statusGroup: 'open',
+    );
+    final hip3 = await repository.list(
+      kind: MarketProductKind.perp,
+      symbol: 'NVDA',
+      productId: 'xyz:NVDA',
+      statusGroup: 'open',
+    );
+
+    expect(
+      bstocks.items.map((item) => item.resource.symbol),
+      unorderedEquals(['NVDA', 'TSLA']),
+    );
+    expect(bstocks.items.every((item) => !item.resource.isTerminal), isTrue);
+    expect(hip3.items, hasLength(1));
+    expect(hip3.items.single.resource.conditional?.role, 'takeProfit');
+    expect(hip3.items.single.resource.status, TradingOrderStatus.open);
   });
 
   test('review orders use real preview but keep create local', () async {
@@ -151,9 +213,6 @@ void main() {
 }
 
 final class _MarketsDelegate implements MarketsRepository {
-  @override
-  Future<MarketHours> getMarketHours() async =>
-      const MarketHours(timezone: 'UTC', current: MarketSessionKind.regular);
   @override
   Future<MarketProduct> getProduct(MarketProductRef ref) async => MarketProduct(
     symbol: ref.symbol,

@@ -5,6 +5,7 @@ import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/hip3_action_pending.dart';
 import '../../../../domain/models/hip3_action_summary.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../core/feedback/app_toast.dart';
 import '../../portfolio/providers/portfolio_providers.dart';
 import '../providers/position_providers.dart';
 
@@ -36,49 +37,39 @@ class _PendingActionsState extends ConsumerState<_PendingActions> {
     final commands = ref.read(positionCommandProvider);
     setState(() => _busyAction = action.actionId);
     var message = l10n.hip3PendingComplete;
+    var succeeded = true;
     try {
       await commands.resumeHip3Action(action.actionId);
     } on Hip3ActionPending catch (pending) {
+      succeeded = false;
       message = pending.requiresReview
           ? l10n.hip3PendingReview
           : l10n.hip3PendingStillActive;
     } catch (_) {
+      succeeded = false;
       message = l10n.hip3PendingError;
     }
     if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
     setState(() => _busyAction = null);
     ref.invalidate(holdingsProvider);
     ref.invalidate(portfolioSummaryProvider);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    if (succeeded) {
+      AppToast.showSuccess(context, message);
+    } else {
+      AppToast.showFailure(context, message);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // Keep the command guard alive throughout confirmation and reconciliation.
     ref.watch(positionCommandProvider);
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.hip3PendingTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        TextButton.icon(
-          onPressed: _busyAction != null
-              ? null
-              : () => ref.invalidate(activeHip3ActionsProvider),
-          icon: const Icon(Icons.refresh),
-          label: Text(l10n.hip3PendingRefresh),
-        ),
-        _ActionPage(
-          cursor: null,
-          visited: const {},
-          busyAction: _busyAction,
-          onResume: _resume,
-        ),
-      ],
+    return _ActionPage(
+      cursor: null,
+      visited: const {},
+      busyAction: _busyAction,
+      onResume: _resume,
+      showSectionHeader: true,
     );
   }
 }
@@ -90,11 +81,13 @@ class _ActionPage extends ConsumerStatefulWidget {
     required this.visited,
     required this.busyAction,
     required this.onResume,
+    this.showSectionHeader = false,
   });
   final String? cursor;
   final Set<String> visited;
   final String? busyAction;
   final Future<void> Function(Hip3ActionSummary) onResume;
+  final bool showSectionHeader;
 
   @override
   ConsumerState<_ActionPage> createState() => _ActionPageState();
@@ -108,17 +101,19 @@ class _ActionPageState extends ConsumerState<_ActionPage> {
     final l10n = AppLocalizations.of(context);
     final page = ref.watch(activeHip3ActionsProvider(widget.cursor));
     return page.when(
-      loading: () => Text(l10n.hip3PendingLoading),
-      error: (_, _) => Text(l10n.hip3PendingLoadError),
+      loading: SizedBox.shrink,
+      error: (_, _) => const SizedBox.shrink(),
       data: (value) {
-        final actions = value.items.where(
-          (action) => const {
-            'setTpsl',
-            'clearTpsl',
-            'setLeverage',
-            'closePosition',
-          }.contains(action.operation),
-        );
+        final actions = value.items
+            .where(
+              (action) => const {
+                'setTpsl',
+                'clearTpsl',
+                'setLeverage',
+                'closePosition',
+              }.contains(action.operation),
+            )
+            .toList(growable: false);
         final next = value.nextCursor;
         final hasNext =
             value.hasMore &&
@@ -128,7 +123,13 @@ class _ActionPageState extends ConsumerState<_ActionPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (actions.isEmpty) Text(l10n.hip3PendingEmpty),
+            if (widget.showSectionHeader && actions.isNotEmpty) ...[
+              Text(
+                l10n.hip3PendingTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 4),
+            ],
             for (final action in actions)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),

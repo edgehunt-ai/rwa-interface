@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
 enum AppDestination { home, markets, assets, activity }
@@ -14,6 +15,7 @@ class AppBottomNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final showLabels = MediaQuery.textScalerOf(context).scale(11) <= 14;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -30,7 +32,7 @@ class AppBottomNavigation extends StatelessWidget {
               _DestinationButton(
                 destination: AppDestination.home,
                 current: current,
-                label: 'Home',
+                label: l10n.navigationHome,
                 showLabel: showLabels,
                 asset: 'assets/figma/home_markets/nav_home.svg',
                 onTap: () => context.goNamed(AppRoutes.homeName),
@@ -38,7 +40,7 @@ class AppBottomNavigation extends StatelessWidget {
               _DestinationButton(
                 destination: AppDestination.markets,
                 current: current,
-                label: 'Market',
+                label: l10n.navigationMarkets,
                 showLabel: showLabels,
                 asset: 'assets/figma/home_markets/nav_markets.svg',
                 onTap: () => context.goNamed(AppRoutes.marketsName),
@@ -46,7 +48,7 @@ class AppBottomNavigation extends StatelessWidget {
               _DestinationButton(
                 destination: AppDestination.assets,
                 current: current,
-                label: 'Assets',
+                label: l10n.navigationAssets,
                 showLabel: showLabels,
                 asset: 'assets/figma/home_markets/nav_assets.svg',
                 onTap: () => context.goNamed(AppRoutes.assetsName),
@@ -54,7 +56,7 @@ class AppBottomNavigation extends StatelessWidget {
               _DestinationButton(
                 destination: AppDestination.activity,
                 current: current,
-                label: 'Activity',
+                label: l10n.navigationActivity,
                 showLabel: showLabels,
                 asset: 'assets/figma/home_markets/nav_activity.svg',
                 onTap: () => context.goNamed(AppRoutes.activityName),

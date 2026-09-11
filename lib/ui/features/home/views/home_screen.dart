@@ -10,6 +10,7 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/failure_state.dart';
@@ -67,8 +68,9 @@ class HomeScreen extends ConsumerWidget {
                 portfolio!.when(
                   loading: () => const _HomeStateCard(),
                   error: (_, _) => FailureState(
-                    title: 'We couldn’t load your portfolio',
-                    description: 'Check your connection and try again.',
+                    title: AppLocalizations.of(context).portfolioUnavailable,
+                    description: AppLocalizations.of(context)
+                        .checkConnectionRetry,
                     onRetry: () => ref.refresh(portfolioSummaryProvider.future),
                   ),
                   data: (value) => _PortfolioCard(portfolio: value),
@@ -121,6 +123,7 @@ class _UtilityBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return SizedBox(
       height: 40,
       child: Row(
@@ -128,7 +131,7 @@ class _UtilityBar extends StatelessWidget {
         children: [
           if (onSettings != null)
             IconButton(
-              tooltip: 'Open settings',
+              tooltip: l10n.openSettings,
               onPressed: onSettings,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 40, height: 40),
@@ -174,7 +177,7 @@ class _UtilityBar extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              tooltip: 'Search markets',
+              tooltip: l10n.searchMarkets,
               onPressed: onSearch,
               padding: EdgeInsets.zero,
               icon: SvgPicture.asset(
@@ -210,7 +213,7 @@ class _PortfolioCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Portfolio',
+            AppLocalizations.of(context).homePortfolio,
             style: TextStyle(
               color: colors.secondaryText,
               fontSize: 13,
@@ -261,6 +264,7 @@ class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return Row(
       children: [
         Expanded(
@@ -271,7 +275,7 @@ class _QuickActions extends StatelessWidget {
               width: 20,
               height: 20,
             ),
-            label: const Text('Deposit'),
+            label: Text(l10n.deposit),
             style: ButtonStyle(
               backgroundColor: WidgetStatePropertyAll(colors.primaryAction),
               foregroundColor: WidgetStatePropertyAll(colors.onPrimaryAction),
@@ -292,7 +296,7 @@ class _QuickActions extends StatelessWidget {
                 width: 20,
                 height: 20,
               ),
-              label: const Text('Withdraw'),
+              label: Text(l10n.withdraw),
               style: const ButtonStyle(
                 padding: WidgetStatePropertyAll(
                   EdgeInsets.symmetric(horizontal: 16),
@@ -314,6 +318,7 @@ class _LoggedOutPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return SizedBox(
       height: 142,
       child: Material(
@@ -342,12 +347,12 @@ class _LoggedOutPrompt extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ready when you are',
+                        l10n.readyWhenYouAre,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Log in to view your portfolio and start trading.',
+                        l10n.loginToViewPortfolio,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyLarge
@@ -380,7 +385,10 @@ class _LoginAction extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     height: 48,
     width: double.infinity,
-    child: FilledButton(onPressed: onLogin, child: const Text('Log in')),
+    child: FilledButton(
+      onPressed: onLogin,
+      child: Text(AppLocalizations.of(context).logIn),
+    ),
   );
 }
 
@@ -401,6 +409,7 @@ class _MarketPreviewState extends State<_MarketPreview> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -408,7 +417,7 @@ class _MarketPreviewState extends State<_MarketPreview> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Markets',
+              l10n.marketsTitle,
               style: TextStyle(
                 color: colors.primaryText,
                 fontSize: 20,
@@ -435,8 +444,8 @@ class _MarketPreviewState extends State<_MarketPreview> {
           loading: () => const _HomeStateCard(height: 240),
           error: (_, _) => FailureState(
             height: 340,
-            title: 'We couldn’t load the markets',
-            description: 'Check your connection and try again.',
+            title: l10n.marketsLoadFailed,
+            description: l10n.checkConnectionRetry,
             onRetry: widget.onRetry,
           ),
           data: (page) {
@@ -460,9 +469,9 @@ class _MarketPreviewState extends State<_MarketPreview> {
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: const DesignStateFeedback(
+                child: DesignStateFeedback(
                   state: DesignState.empty,
-                  title: 'No products yet',
+                  title: l10n.noProductsYet,
                 ),
               );
             }

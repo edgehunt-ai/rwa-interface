@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 
 import 'app_feedback_state.dart';
 import 'failure_state.dart';
@@ -33,7 +34,9 @@ class DesignStateFeedback extends StatelessWidget {
       DesignState.partial => AppFeedbackState.empty(
         title: title,
         message: message,
-        actionLabel: onRetry == null ? null : 'Retry',
+        actionLabel: onRetry == null
+            ? null
+            : AppLocalizations.of(context).retry,
         onAction: onRetry,
       ),
       DesignState.unavailable || DesignState.failure => FailureState(

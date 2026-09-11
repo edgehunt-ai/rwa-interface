@@ -15,6 +15,33 @@ abstract final class TokenAmountFormatter {
   static String formatUsd(DecimalValue amount) =>
       '\$${_groupIntegerDigits(_trimInsignificantZeros(amount.value))}';
 
+  /// Formats large values with a compact uppercase suffix while preserving
+  /// decimal precision without converting through binary floating point.
+  static String formatCompact(DecimalValue amount, {bool usd = false}) {
+    final negative = amount.value.startsWith('-');
+    final unsigned = negative ? amount.value.substring(1) : amount.value;
+    final integerDigits = unsigned
+        .split('.')
+        .first
+        .replaceFirst(RegExp(r'^0+(?=\d)'), '');
+    final digits = integerDigits.isEmpty ? '0' : integerDigits;
+    final suffix = switch (digits.length) {
+      >= 13 => (scale: 12, label: 'T'),
+      >= 10 => (scale: 9, label: 'B'),
+      >= 7 => (scale: 6, label: 'M'),
+      >= 4 => (scale: 3, label: 'K'),
+      _ => (scale: 0, label: ''),
+    };
+    if (suffix.scale == 0) {
+      final value = _trimInsignificantZeros(unsigned);
+      return '${negative ? '-' : ''}${usd ? '\$' : ''}$value';
+    }
+
+    final scaled = _divideDecimalByPower(unsigned, suffix.scale);
+    final compact = _trimInsignificantZeros(_roundToFractionDigits(scaled, 2));
+    return '${negative ? '-' : ''}${usd ? '\$' : ''}$compact${suffix.label}';
+  }
+
   /// Formats a percentage for display with at most two fractional digits.
   ///
   /// Market API values can contain high-precision decimal values, which are
@@ -188,6 +215,20 @@ abstract final class TokenAmountFormatter {
               '${digits.substring(digits.length - maxFractionDigits)}';
     if (scaled == BigInt.zero) return rounded;
     return '${negative ? '-' : ''}$rounded';
+  }
+
+  static String _divideDecimalByPower(String value, int power) {
+    final negative = value.startsWith('-');
+    final unsigned = negative ? value.substring(1) : value;
+    final digits = unsigned.replaceFirst('.', '');
+    final decimalPlaces = unsigned.contains('.')
+        ? unsigned.length - unsigned.indexOf('.') - 1
+        : 0;
+    final targetPlaces = power + decimalPlaces;
+    final padded = digits.padLeft(targetPlaces + 1, '0');
+    final split = padded.length - targetPlaces;
+    final result = '${padded.substring(0, split)}.${padded.substring(split)}';
+    return '${negative ? '-' : ''}$result';
   }
 
   static String _groupIntegerDigits(String value) {

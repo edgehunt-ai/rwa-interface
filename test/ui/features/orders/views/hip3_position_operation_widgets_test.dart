@@ -16,6 +16,7 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
+import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 
 import '../../../../helpers/test_app.dart';
 
@@ -25,7 +26,7 @@ void main() {
     'pendingSubmission': 'Protection not submitted',
     'waitingForParent': 'Protection waiting for parent fill — not active',
     'pendingConfirmation': 'Protection activation awaiting confirmation',
-    'active': 'Protection active',
+    'active': null,
     'inactive': 'Protection is no longer active',
   }.entries) {
     testWidgets('conditional order distinguishes ${entry.key}', (tester) async {
@@ -43,9 +44,11 @@ void main() {
           ),
         ),
       );
-      expect(find.text(entry.value), findsOneWidget);
+      if (entry.value != null) {
+        expect(find.text(entry.value!), findsOneWidget);
+      }
       expect(find.text('Attached to order: parent'), findsOneWidget);
-      if (entry.key != 'active') {
+      if (entry.key == 'active') {
         expect(find.text('Protection active'), findsNothing);
       }
     });
@@ -112,7 +115,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Position TP/SL'), findsOneWidget);
+    expect(find.text('Take Profit & stop loss'), findsOneWidget);
     expect(
       find.textContaining(
         'Empty fields here do not mean all protection is absent.',
@@ -176,19 +179,28 @@ void main() {
           child: buildTestApp(Hip3ClosePositionSheet(position: position)),
         ),
       );
-      expect(find.textContaining('xyz:TSLA · Short → Buy'), findsOneWidget);
-      await tester.tap(find.text('50%'));
+      expect(find.text('Short TSLA'), findsOneWidget);
+      final slider = tester.widget<Slider>(
+        find.byKey(const Key('close-percentage-slider')),
+      );
+      expect(slider.value, 0);
+      slider.onChanged!(50);
+      await tester.pump();
+      final quantity = tester.widget<TextField>(
+        find.byKey(const Key('close-quantity')),
+      );
+      expect(quantity.controller!.text, '0.5');
       await tester.ensureVisible(find.byKey(const Key('close-review')));
       await tester.tap(find.byKey(const Key('close-review')));
       await tester.pumpAndSettle();
       expect(repo.closePosition, same(position));
-      expect(repo.percent, '50');
-      expect(repo.quantity, isNull);
+      expect(repo.percent, isNull);
+      expect(repo.quantity, '0.5');
       expect(repo.type, TradingOrderType.market);
     },
   );
 
-  testWidgets('limit close validates then sends exact quantity and limit', (
+  testWidgets('custom market close validates then sends exact quantity', (
     tester,
   ) async {
     final repo = _Positions();
@@ -198,11 +210,14 @@ void main() {
         child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
       ),
     );
-    await tester.tap(find.text('Limit'));
-    await tester.pump();
-    await tester.enterText(
-      find.byKey(const Key('close-limit-price')),
-      '125.01',
+    expect(find.byType(SegmentedButton<TradingOrderType>), findsNothing);
+    expect(find.byKey(const Key('close-limit-price')), findsNothing);
+    expect(find.text('Amount'), findsOneWidget);
+    expect(
+      tester
+          .widget<Slider>(find.byKey(const Key('close-percentage-slider')))
+          .value,
+      0,
     );
     await tester.enterText(find.byKey(const Key('close-quantity')), '2');
     await tester.ensureVisible(find.byKey(const Key('close-review')));
@@ -211,14 +226,24 @@ void main() {
     expect(repo.closeCalls, 0);
     expect(find.text('Quantity exceeds the current position'), findsOneWidget);
     await tester.enterText(find.byKey(const Key('close-quantity')), '0.125');
+    expect(
+      tester
+          .widget<Slider>(find.byKey(const Key('close-percentage-slider')))
+          .value,
+      12.5,
+    );
     await tester.ensureVisible(find.byKey(const Key('close-review')));
     await tester.tap(find.byKey(const Key('close-review')));
     await tester.pumpAndSettle();
     expect(repo.closeCalls, 1);
     expect(repo.quantity, '0.125');
     expect(repo.percent, isNull);
-    expect(repo.limitPrice, '125.01');
-    expect(repo.type, TradingOrderType.limit);
+    expect(repo.limitPrice, isNull);
+    expect(repo.type, TradingOrderType.market);
+    expect(
+      find.text('Close order submitted. Check the order for fills.'),
+      findsOneWidget,
+    );
   });
 
   for (final both in [false, true]) {
@@ -245,6 +270,31 @@ void main() {
       expect(repo.stopLoss, both ? null : '90');
     });
   }
+
+  testWidgets('position TP/SL uses the opening-order price editors', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          positionsRepositoryProvider.overrideWithValue(_Positions()),
+        ],
+        child: buildTestApp(PositionTpSlSheet(position: _position())),
+      ),
+    );
+
+    expect(find.byType(TpSlEditorCard), findsNWidgets(2));
+    expect(
+      find.byKey(const Key('position-protection-take-profit')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('position-take-profit-ruler')), findsOneWidget);
+    expect(
+      find.byKey(const Key('position-protection-stop-loss')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('position-stop-loss-ruler')), findsOneWidget);
+  });
 
   testWidgets(
     'fixed protection quantity is a real input with explicit semantics',
@@ -293,18 +343,16 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(repo.queries.single, ('TSLA', 'xyz:TSLA', 'open', null));
-      expect(find.text('TSLA/USDC · Long'), findsOneWidget);
+      expect(find.text('TSLA/USDC'), findsOneWidget);
       await tester.ensureVisible(
         find.byKey(const Key('hip3-orders-load-more')),
       );
       await tester.tap(find.byKey(const Key('hip3-orders-load-more')));
       await tester.pumpAndSettle();
       expect(repo.queries.last, ('TSLA', 'xyz:TSLA', 'open', 'page-2'));
-      expect(find.text('TSLA/USDC · Long'), findsOneWidget);
-      expect(find.text('TSLA/USDC · Short'), findsOneWidget);
-      expect(find.text('Take profit'), findsOneWidget);
-      expect(find.text('Trigger price: 130 USDC · mark'), findsOneWidget);
-      expect(find.text('25.0% filled'), findsOneWidget);
+      expect(find.text('TSLA/USDC'), findsNWidgets(2));
+      expect(find.text('TP'), findsOneWidget);
+      expect(find.text('25%'), findsOneWidget);
       expect(find.byKey(const Key('hip3-orders-load-more')), findsNothing);
       expect(tester.takeException(), isNull);
     },

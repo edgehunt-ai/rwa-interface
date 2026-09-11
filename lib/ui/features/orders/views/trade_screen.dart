@@ -1,10 +1,11 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/application_state.dart';
@@ -29,11 +30,10 @@ import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart'
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
+import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
-import 'package:rwa_interface/ui/features/positions/views/hip3_position_leverage_sheet.dart';
-import 'package:rwa_interface/ui/features/positions/views/hip3_position_metrics.dart';
 
 part 'trade_screen_details.dart';
 part 'trade_position_tp_sl_sheet.dart';
@@ -99,7 +99,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     }
     if (!mounted) return;
     if (ref.read(favoritesCommandProvider).hasError) {
-      AppToast.showFailure(context, 'Unable to update favorites.');
+      AppToast.showFailure(
+        context,
+        AppLocalizations.of(context).favoriteUpdateFailed,
+      );
       return;
     }
     setState(() {
@@ -108,7 +111,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     });
     AppToast.showSuccess(
       context,
-      isFavorite ? 'Removed from favorites.' : 'Added to favorites.',
+      isFavorite
+          ? AppLocalizations.of(context).favoriteRemoved
+          : AppLocalizations.of(context).favoriteAdded,
     );
   }
 
@@ -175,10 +180,16 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         switch (next) {
           case CommandAccepted(intent: final intent)
               when intent.kind == MarketProductKind.bstock:
-            AppToast.showSuccess(context, '$symbol Buy Successful!');
+            AppToast.showSuccess(
+              context,
+              AppLocalizations.of(context).buySucceeded(symbol),
+            );
           case CommandFailure(intent: final intent)
               when intent.kind == MarketProductKind.bstock:
-            AppToast.showFailure(context, '$symbol Buy Failed!');
+            AppToast.showFailure(
+              context,
+              AppLocalizations.of(context).buyFailed(symbol),
+            );
           default:
             break;
         }
@@ -239,7 +250,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       setState(() => chartSelection = next),
                 ),
                 const SizedBox(height: 16),
-                _Statistics(candles: candles, loading: candlesState.isLoading),
+                _Statistics(
+                  snapshot: snapshot,
+                  candles: candles,
+                  loading: snapshotState.isLoading,
+                ),
                 const SizedBox(height: 16),
                 _Details(
                   activeTab: detailTab,
@@ -251,16 +266,16 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
             ),
             _TradeActions(
               primaryLabel: productKind == MarketProductKind.bstock
-                  ? 'Buy'
-                  : 'Long',
+                  ? AppLocalizations.of(context).buy
+                  : AppLocalizations.of(context).long,
               secondaryLabel: productKind == MarketProductKind.bstock
-                  ? 'Sell'
-                  : 'Short',
+                  ? AppLocalizations.of(context).sell
+                  : AppLocalizations.of(context).short,
               onBuy: () => _openOrderPanel(TradingSide.buy),
               onSell: () => _openOrderPanel(TradingSide.sell),
             ),
             if (marketHoursOpen)
-              _MarketHoursSheet(
+              MarketHoursSheet(
                 onClose: () => setState(() => marketHoursOpen = false),
               ),
           ],
@@ -278,13 +293,14 @@ class _NavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final underlying = _underlyingSymbol(symbol);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Back',
+            tooltip: AppLocalizations.of(context).back,
             icon: const Icon(Icons.chevron_left, size: 24),
             onPressed: () => context.canPop() ? context.pop() : context.go('/'),
           ),
@@ -326,15 +342,18 @@ class _NavigationBar extends StatelessWidget {
                                 color: Color(0xFF2690E6),
                               ),
                               const SizedBox(width: 4),
-                              const Text(
-                                'Overnight 04:30',
+                              Text(
+                                l10n.overnightAt('04:30'),
                                 style: TextStyle(fontSize: 12),
                               ),
                             ],
                           ),
                         ),
                       ] else
-                        const Text('Perpetual', style: TextStyle(fontSize: 12)),
+                        Text(
+                          AppLocalizations.of(context).perpetual,
+                          style: const TextStyle(fontSize: 12),
+                        ),
                     ],
                   ),
                 ),
@@ -361,6 +380,7 @@ class _ProductSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
       height: 44,
@@ -376,7 +396,7 @@ class _ProductSwitch extends StatelessWidget {
               child: _Segment(
                 label: product.kind == MarketProductKind.bstock
                     ? 'bStocks'
-                    : 'HIP-3 Perp',
+                    : l10n.hip3Perp,
                 asset: product.kind == MarketProductKind.bstock
                     ? 'assets/figma/home_markets/venue_bnb.svg'
                     : 'assets/figma/home_markets/venue_hyperliquid.svg',
@@ -463,6 +483,7 @@ class _ProductHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final price = selectedPrice ?? snapshot?.price;
     final change = selectedChangePercent ?? snapshot?.change24hPercent;
     final changeColor = _changeColor(context, change);
@@ -516,7 +537,7 @@ class _ProductHeader extends StatelessWidget {
             ),
             const Spacer(),
             IconButton(
-              tooltip: isFavorite ? 'Remove favorite' : 'Add favorite',
+              tooltip: isFavorite ? l10n.removeFavorite : l10n.addFavorite,
               icon: favoriteLoading
                   ? const SizedBox(
                       key: Key('trade-favorite-loading'),
@@ -573,7 +594,9 @@ class _ProductHeader extends StatelessWidget {
                 referencePrice != null) ...[
               const SizedBox(width: 8),
               Text(
-                'US Stock ${TokenAmountFormatter.formatUsd(referencePrice!)}',
+                l10n.usStockPrice(
+                  TokenAmountFormatter.formatUsd(referencePrice!),
+                ),
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context)
@@ -611,6 +634,7 @@ class _Chart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final chart = candles;
@@ -661,8 +685,12 @@ class _Chart extends StatelessWidget {
                           Positioned.fill(
                             child: Semantics(
                               label: latestClose == null
-                                  ? 'Price chart unavailable'
-                                  : 'Price chart latest close ${TokenAmountFormatter.formatUsd(latestClose)}',
+                                  ? l10n.priceChartUnavailable
+                                  : l10n.priceChartLatestClose(
+                                      TokenAmountFormatter.formatUsd(
+                                        latestClose,
+                                      ),
+                                    ),
                               child: switch (style) {
                                 TradeChartStyle.line => CustomPaint(
                                   painter: _LineChartPainter(
@@ -766,19 +794,19 @@ class _Chart extends StatelessWidget {
               child: Row(
                 children: [
                   _ChartControl(
-                    tooltip: 'Line chart',
+                    tooltip: AppLocalizations.of(context).lineChart,
                     asset: 'assets/figma/trade/chart_mode_line.svg',
                     selected: style == TradeChartStyle.line,
                     onTap: () => onStyleChanged(TradeChartStyle.line),
                   ),
                   _ChartControl(
-                    tooltip: 'Candlestick chart',
+                    tooltip: AppLocalizations.of(context).candlestickChart,
                     asset: 'assets/figma/trade/chart_mode_candle.svg',
                     selected: style == TradeChartStyle.candle,
                     onTap: () => onStyleChanged(TradeChartStyle.candle),
                   ),
                   _ChartControl(
-                    tooltip: 'US stock reference price',
+                    tooltip: AppLocalizations.of(context).usStockReferencePrice,
                     asset: 'assets/figma/trade/chart_mode_reference.svg',
                     selected: style == TradeChartStyle.reference,
                     onTap: () => onStyleChanged(TradeChartStyle.reference),
@@ -868,40 +896,45 @@ class _ChartValueTooltip extends StatelessWidget {
   final DecimalValue? referencePrice;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-    decoration: BoxDecoration(
-      color: Theme.of(context).extension<AppRwaColors>()!.surface,
-      border: Border.all(color: color.withValues(alpha: .35)),
-      borderRadius: BorderRadius.circular(6),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          TokenAmountFormatter.formatUsd(price),
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
-        if (changePercent case final percent?)
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).extension<AppRwaColors>()!.surface,
+        border: Border.all(color: color.withValues(alpha: .35)),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            TokenAmountFormatter.formatPercent(percent),
-            style: TextStyle(fontSize: 10, color: color),
-          ),
-        if (referencePrice case final price?)
-          Text(
-            'US ${TokenAmountFormatter.formatUsd(price)}',
+            TokenAmountFormatter.formatUsd(price),
             style: TextStyle(
-              fontSize: 10,
-              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
             ),
           ),
-      ],
-    ),
-  );
+          if (changePercent case final percent?)
+            Text(
+              TokenAmountFormatter.formatPercent(percent),
+              style: TextStyle(fontSize: 10, color: color),
+            ),
+          if (referencePrice case final price?)
+            Text(
+              l10n.usPrice(TokenAmountFormatter.formatUsd(price)),
+              style: TextStyle(
+                fontSize: 10,
+                color: Theme.of(context)
+                    .extension<AppRwaColors>()!
+                    .secondaryText,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _SessionBand extends StatelessWidget {
@@ -955,7 +988,11 @@ class _SessionBand extends StatelessWidget {
                     builder: (context, constraints) => constraints.maxWidth < 68
                         ? const SizedBox.shrink()
                         : Text(
-                            segment.label ?? _sessionLabel(segment.kind),
+                            segment.label ??
+                                _sessionLabel(
+                                  AppLocalizations.of(context),
+                                  segment.kind,
+                                ),
                             maxLines: 1,
                             overflow: TextOverflow.clip,
                             style: TextStyle(
@@ -980,14 +1017,15 @@ class _SessionBand extends StatelessWidget {
       segment.end.isAfter(windowEnd) ? windowEnd : segment.end;
 }
 
-String _sessionLabel(MarketSessionKind kind) => switch (kind) {
-  MarketSessionKind.premarket => 'Pre-market',
-  MarketSessionKind.regular => 'Regular Market',
-  MarketSessionKind.afterHours => 'After-hours',
-  MarketSessionKind.overnight => 'Overnight',
-  MarketSessionKind.weekend => 'Weekend',
-  MarketSessionKind.holiday => 'Holiday',
-};
+String _sessionLabel(AppLocalizations l10n, MarketSessionKind kind) =>
+    switch (kind) {
+      MarketSessionKind.premarket => l10n.tradePreMarket,
+      MarketSessionKind.regular => l10n.tradeRegularMarket,
+      MarketSessionKind.afterHours => l10n.tradeAfterHours,
+      MarketSessionKind.overnight => l10n.tradeOvernight,
+      MarketSessionKind.weekend => l10n.tradeWeekend,
+      MarketSessionKind.holiday => l10n.tradeHoliday,
+    };
 
 Color _sessionColor(MarketSessionKind kind) => switch (kind) {
   MarketSessionKind.regular => const Color(0xFFB9F34A),
@@ -1344,31 +1382,42 @@ final class _ChartScale {
 }
 
 class _Statistics extends StatelessWidget {
-  const _Statistics({required this.candles, required this.loading});
+  const _Statistics({
+    required this.snapshot,
+    required this.candles,
+    required this.loading,
+  });
+  final MarketSnapshot? snapshot;
   final CandleChart? candles;
   final bool loading;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    decoration: BoxDecoration(
-      color: Theme.of(context).extension<AppRwaColors>()!.surface,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: Wrap(
-      spacing: 12,
-      runSpacing: 8,
-      alignment: WrapAlignment.spaceBetween,
-      children: [
-        _Metric('24h High', _high, loading: loading),
-        _Metric('24h Low', _low, loading: loading),
-        _Metric('24h Turnover', '—', loading: loading),
-        _Metric('24h Volume', _volume, loading: loading),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).extension<AppRwaColors>()!.surface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        alignment: WrapAlignment.spaceBetween,
+        children: [
+          _Metric(l10n.trade24hHigh, _high, loading: loading),
+          _Metric(l10n.trade24hLow, _low, loading: loading),
+          _Metric(l10n.trade24hTurnover, _turnover, loading: loading),
+          _Metric(l10n.trade24hVolume, _volume, loading: loading),
+        ],
+      ),
+    );
+  }
 
   String get _high {
+    if (snapshot?.high24h != null) {
+      return TokenAmountFormatter.formatUsd(snapshot!.high24h!);
+    }
     final points = candles?.points;
     if (points == null || points.isEmpty) return '—';
     return TokenAmountFormatter.formatUsd(
@@ -1381,6 +1430,9 @@ class _Statistics extends StatelessWidget {
   }
 
   String get _low {
+    if (snapshot?.low24h != null) {
+      return TokenAmountFormatter.formatUsd(snapshot!.low24h!);
+    }
     final points = candles?.points;
     if (points == null || points.isEmpty) return '—';
     return TokenAmountFormatter.formatUsd(
@@ -1392,7 +1444,16 @@ class _Statistics extends StatelessWidget {
     );
   }
 
-  String get _volume => candles?.points.lastOrNull?.volume?.value ?? '—';
+  String get _turnover => snapshot?.turnover24h == null
+      ? '—'
+      : TokenAmountFormatter.formatCompact(snapshot!.turnover24h!, usd: true);
+
+  String get _volume =>
+      snapshot?.volume24h == null && candles?.points.lastOrNull?.volume == null
+      ? '—'
+      : TokenAmountFormatter.formatCompact(
+          snapshot?.volume24h ?? candles!.points.last.volume!,
+        );
 }
 
 String _underlyingSymbol(String symbol) =>

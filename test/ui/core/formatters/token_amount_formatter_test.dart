@@ -71,6 +71,28 @@ void main() {
       },
     );
 
+    test('formats large values with compact suffixes', () {
+      expect(
+        TokenAmountFormatter.formatCompact(DecimalValue('12580.42'), usd: true),
+        r'$12.58K',
+      );
+      expect(
+        TokenAmountFormatter.formatCompact(DecimalValue('1234567.89')),
+        '1.23M',
+      );
+      expect(
+        TokenAmountFormatter.formatCompact(DecimalValue('9876543210')),
+        '9.88B',
+      );
+      expect(
+        TokenAmountFormatter.formatCompact(
+          DecimalValue('-12580.42'),
+          usd: true,
+        ),
+        r'-$12.58K',
+      );
+    });
+
     test('formats fixed-scale editable values without feature rounding', () {
       expect(
         TokenAmountFormatter.formatFixed(DecimalValue('188'), decimals: 2),

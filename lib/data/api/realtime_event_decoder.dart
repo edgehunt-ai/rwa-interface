@@ -13,13 +13,22 @@ final class RealtimeEventDecoder {
     try {
       final json = jsonDecode(frame.data);
       if (json is! Map<String, dynamic>) throw const FormatException();
+      if (frame.data.contains('\n')) throw const FormatException();
       final decoded = standardSerializers.deserializeWith(
         RealtimeEvent.serializer,
         json,
       );
       if (decoded == null) throw const FormatException();
-      final eventId = frame.id ?? json['event_id']?.toString();
-      final eventName = frame.event ?? json['event']?.toString();
+      final payloadEventId = json['event_id']?.toString();
+      final payloadEventName = json['event']?.toString();
+      if (frame.id != null && frame.id != payloadEventId) {
+        throw const FormatException();
+      }
+      if (frame.event != null && frame.event != payloadEventName) {
+        throw const FormatException();
+      }
+      final eventId = frame.id ?? payloadEventId;
+      final eventName = frame.event ?? payloadEventName;
       if (eventId == null || eventName == null) throw const FormatException();
       return RealtimeEnvelope(
         eventId: eventId,

@@ -5,6 +5,7 @@ import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/position.dart';
 import '../../../../domain/models/session_generation.dart';
 import '../../../../domain/models/hip3_action_pending.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../providers/position_providers.dart';
 
 class Hip3PositionLeverageSheet extends ConsumerStatefulWidget {
@@ -49,18 +50,18 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
           .updateLeverage(widget.position, _input.text.trim());
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
       setState(() {
-        _message = 'Leverage updated. Refreshing position and trading context.';
+        _message = AppLocalizations.of(context).leverageUpdated;
       });
     } on Hip3ActionPending {
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
       setState(() {
         _pending = true;
-        _message = 'Leverage is not yet confirmed. Close this panel and resume the existing action in Pending actions.';
+        _message = AppLocalizations.of(context).leveragePending;
       });
     } catch (_) {
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
       setState(() {
-        _message = 'Leverage was not confirmed. Check pending actions before trying again.';
+        _message = AppLocalizations.of(context).leverageNotConfirmed;
       });
     } finally {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
@@ -77,6 +78,7 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
     ref.watch(positionCommandProvider);
     final product = widget.position.productId;
     final sessionChanged = ref.watch(sessionGenerationProvider) != _generation;
+    final l10n = AppLocalizations.of(context);
     return SafeArea(
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
@@ -90,16 +92,14 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Change ${widget.position.symbol} leverage',
+              l10n.changeSymbolLeverage(widget.position.symbol),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
             if (sessionChanged)
-              const Text(
-                'Account changed. Close this panel and reopen the position.',
-              )
+              Text(l10n.accountChangedReopenPosition)
             else if (product == null)
-              const Text('Trading context unavailable.')
+              Text(l10n.tradingContextUnavailable)
             else
               ref
                   .watch(positionLeverageContextProvider(product))
@@ -108,16 +108,14 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
                     error: (_, _) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Trading context unavailable. Reload before changing leverage.',
-                        ),
+                        Text(l10n.tradingContextReload),
                         TextButton(
                           onPressed: _busy
                               ? null
                               : () => ref.invalidate(
                                   positionLeverageContextProvider(product),
                                 ),
-                          child: const Text('Reload'),
+                          child: Text(l10n.reload),
                         ),
                       ],
                     ),
@@ -127,21 +125,22 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Current: ${limits.current == null ? 'Unavailable' : '${limits.current!.value}×'} · Maximum: ${limits.maximum.value}×',
-                          ),
-                          const Text(
-                            'Changing leverage requires your wallet signature and keeps the current margin mode.',
-                          ),
-                          if (!limits.canChange)
-                            const Text(
-                              'Leverage changes are unavailable for this account or product.',
+                            l10n.currentMaximumLeverage(
+                              limits.current == null
+                                  ? 'Unavailable'
+                                  : '${limits.current!.value}×',
+                              '${limits.maximum.value}×',
                             ),
+                          ),
+                          Text(l10n.leverageSignatureNotice),
+                          if (!limits.canChange)
+                            Text(l10n.leverageChangesUnavailable),
                           TextFormField(
                             controller: _input,
                             enabled: !_busy && !_pending && limits.canChange,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Leverage',
+                            decoration: InputDecoration(
+                              labelText: l10n.leverage,
                             ),
                             validator: (value) =>
                                 limits.accepts(
@@ -149,7 +148,7 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
                                   DateTime.now().toUtc(),
                                 )
                                 ? null
-                                : 'Enter a whole number within the current maximum, or reload expired limits.',
+                                : l10n.validLeverageRequired,
                           ),
                           const SizedBox(height: 16),
                           TextButton(
@@ -158,7 +157,7 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
                                 : () => ref.invalidate(
                                     positionLeverageContextProvider(product),
                                   ),
-                            child: const Text('Reload limits'),
+                            child: Text(l10n.reloadLimits),
                           ),
                           FilledButton(
                             onPressed: _busy || _pending || !limits.canChange
@@ -166,8 +165,8 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
                                 : _submit,
                             child: Text(
                               _busy
-                                  ? 'Waiting for confirmation…'
-                                  : 'Review and sign',
+                                  ? l10n.waitingForConfirmation
+                                  : l10n.reviewAndSign,
                             ),
                           ),
                         ],
@@ -181,7 +180,7 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
               ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
+              child: Text(l10n.close),
             ),
           ],
         ),

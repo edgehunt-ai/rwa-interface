@@ -5,10 +5,16 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 class LoadingSkeleton extends StatelessWidget {
-  const LoadingSkeleton({super.key, this.rows = 5, this.padding});
+  const LoadingSkeleton({
+    super.key,
+    this.rows = 5,
+    this.padding,
+    this.showHeader = false,
+  });
 
   final int rows;
   final EdgeInsetsGeometry? padding;
+  final bool showHeader;
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +30,15 @@ class LoadingSkeleton extends StatelessWidget {
                   .toDouble()
             : double.infinity;
         final visibleRows = _visibleRows(availableHeight);
-        final showHeader = availableHeight >= 24 || !availableHeight.isFinite;
+        final canShowHeader =
+            showHeader && (availableHeight >= 24 || !availableHeight.isFinite);
         return Padding(
           padding: resolvedPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showHeader) const SkeletonBlock(width: 136, height: 24),
-              if (visibleRows > 0) const SizedBox(height: 20),
+              if (canShowHeader) const SkeletonBlock(width: 136, height: 24),
+              if (canShowHeader && visibleRows > 0) const SizedBox(height: 20),
               for (var index = 0; index < visibleRows; index++) ...[
                 Row(
                   children: [
@@ -71,9 +78,9 @@ class LoadingSkeleton extends StatelessWidget {
 
   int _visibleRows(double availableHeight) {
     if (!availableHeight.isFinite) return rows;
-    // Header (24) + gap (20) + first row (40); each later row adds 73.
-    if (availableHeight < 84) return 0;
-    return math.min(rows, 1 + ((availableHeight - 84) ~/ 73));
+    final headerHeight = showHeader ? 44 : 0;
+    if (availableHeight < headerHeight + 40) return 0;
+    return math.min(rows, 1 + ((availableHeight - headerHeight - 40) ~/ 73));
   }
 }
 

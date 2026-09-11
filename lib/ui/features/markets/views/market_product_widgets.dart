@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
@@ -72,6 +73,7 @@ class MarketRankingTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const tabs = ['Favorites', 'Popular', 'Gainers', 'Losers', 'Volume'];
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final scaledTextHeight = MediaQuery.textScalerOf(context).scale(14);
     final tabHeight = scaledTextHeight > 16 ? scaledTextHeight + 16 : 32.0;
@@ -102,7 +104,7 @@ class MarketRankingTabs extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(tab),
+                Text(_label(l10n, tab)),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOutCubic,
@@ -120,6 +122,15 @@ class MarketRankingTabs extends StatelessWidget {
       ),
     );
   }
+
+  String _label(AppLocalizations l10n, String tab) => switch (tab) {
+    'Favorites' => l10n.favorites,
+    'Popular' => l10n.popular,
+    'Gainers' => l10n.gainers,
+    'Losers' => l10n.losers,
+    'Volume' => l10n.volume,
+    _ => tab,
+  };
 }
 
 class MarketProductFilter extends StatelessWidget {
@@ -131,8 +142,9 @@ class MarketProductFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return PopupMenuButton<_ProductFilterChoice>(
-      tooltip: 'Filter products',
+      tooltip: l10n.filterProducts,
       color: colors.surface,
       constraints: const BoxConstraints.tightFor(width: 168),
       menuPadding: const EdgeInsets.all(4),
@@ -143,7 +155,7 @@ class MarketProductFilter extends StatelessWidget {
         _ProductFilterChoice.perp => MarketProductKind.perp,
       }),
       itemBuilder: (context) => [
-        _productItem(context, _ProductFilterChoice.all, null, 'All products'),
+        _productItem(context, _ProductFilterChoice.all, null, l10n.allProducts),
         _productItem(
           context,
           _ProductFilterChoice.bstock,
@@ -154,7 +166,7 @@ class MarketProductFilter extends StatelessWidget {
           context,
           _ProductFilterChoice.perp,
           MarketProductKind.perp,
-          'HIP-3 Perps',
+          l10n.hip3Perps,
         ),
       ],
       child: SizedBox(
@@ -182,7 +194,9 @@ class MarketProductFilter extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Flexible(child: Text(_label, overflow: TextOverflow.ellipsis)),
+              Flexible(
+                child: Text(_label(l10n), overflow: TextOverflow.ellipsis),
+              ),
               SvgPicture.asset(
                 'assets/figma/home_markets/chevron_down.svg',
                 width: 20,
@@ -195,10 +209,10 @@ class MarketProductFilter extends StatelessWidget {
     );
   }
 
-  String get _label => switch (value) {
-    null => 'All products',
+  String _label(AppLocalizations l10n) => switch (value) {
+    null => l10n.allProducts,
     MarketProductKind.bstock => 'bStocks',
-    MarketProductKind.perp => 'HIP-3 Perps',
+    MarketProductKind.perp => l10n.hip3Perps,
   };
 
   PopupMenuItem<_ProductFilterChoice> _productItem(
@@ -248,6 +262,7 @@ class MarketProductRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final l10n = AppLocalizations.of(context);
     final positive =
         !(product.change24hPercent?.value.startsWith('-') ?? false);
     final row = SizedBox(
@@ -289,7 +304,7 @@ class MarketProductRow extends StatelessWidget {
                     Text(
                       product.kind == MarketProductKind.bstock
                           ? 'bStocks'
-                          : 'HIP-3 Perps',
+                          : l10n.hip3Perps,
                       style: Theme.of(context).textTheme.bodySmall
                           ?.copyWith(color: colors.secondaryText),
                     ),
@@ -323,7 +338,7 @@ class MarketProductRow extends StatelessWidget {
     if (onTap == null) return row;
     return Semantics(
       button: true,
-      label: 'Open ${product.symbol} trade details',
+      label: l10n.openTradeDetails(product.symbol),
       child: Material(
         color: Colors.transparent,
         child: InkWell(onTap: onTap, child: row),

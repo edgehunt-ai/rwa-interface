@@ -45,11 +45,23 @@ void main() {
     expect(adapter.cancelled, isTrue);
     expect(adapter.calls, 1);
   });
+
+  test('频道按 contract canonical tuple 发送', () async {
+    final adapter = _SseAdapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://fixture.example'))
+      ..httpClientAdapter = adapter;
+    await DioRealtimeService(
+      dio,
+      delay: (_) async {},
+    ).subscribe(channels: {' Positions ', 'orders', 'orders'}).first;
+    expect(adapter.channels, ['orders,positions']);
+  });
 }
 
 final class _SseAdapter implements HttpClientAdapter {
   var calls = 0;
   final lastEventIds = <String?>[];
+  final channels = <String>[];
 
   @override
   Future<ResponseBody> fetch(
@@ -58,6 +70,7 @@ final class _SseAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     lastEventIds.add(options.headers['Last-Event-ID'] as String?);
+    channels.add(options.uri.queryParameters['channels']!);
     calls++;
     final frames = calls == 1
         ? [_priceFrame('1')]

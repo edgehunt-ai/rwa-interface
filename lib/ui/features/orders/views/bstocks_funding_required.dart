@@ -14,72 +14,79 @@ class BstocksFundingRequiredSheet extends StatelessWidget {
   final VoidCallback onExternalDeposit;
 
   @override
-  Widget build(BuildContext context) => Material(
-    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-    child: SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 32,
-                height: 4,
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Material(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .extension<AppRwaColors>()!
+                        .secondaryText,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  _Step(
+                    number: '1',
+                    label: l10n.preparingTradingFunds,
+                    active: true,
+                  ),
+                  _Step(number: '2', label: '', active: false),
+                  _Step(number: '3', label: '', active: false),
+                ],
+              ),
+              const Divider(),
+              Container(
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Theme.of(context)
                       .extension<AppRwaColors>()!
-                      .secondaryText,
-                  borderRadius: BorderRadius.circular(2),
+                      .subtleSurface,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: _SummaryRow(
+                  label: l10n.amountNeeded,
+                  value: TokenAmountFormatter.format(
+                    amountNeeded,
+                    symbol: 'USDT',
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                _Step(number: '1', label: 'Prepare Funds', active: true),
-                _Step(number: '2', label: '', active: false),
-                _Step(number: '3', label: '', active: false),
-              ],
-            ),
-            const Divider(),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .extension<AppRwaColors>()!
-                    .subtleSurface,
-                borderRadius: BorderRadius.circular(14),
+              const SizedBox(height: 16),
+              Text(l10n.addFundsFrom),
+              const SizedBox(height: 8),
+              _FundingRoute(
+                title: l10n.inAppTransfer,
+                detail: l10n.serverSelectedFundingRoute,
+                onTap: onInAppTransfer,
               ),
-              child: _SummaryRow(
-                label: 'Amount Needed',
-                value: TokenAmountFormatter.format(
-                  amountNeeded,
-                  symbol: 'USDT',
-                ),
+              const SizedBox(height: 12),
+              _FundingRoute(
+                title: l10n.externalDeposit,
+                detail: l10n.externalDepositDetail,
+                onTap: onExternalDeposit,
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Add funds from:'),
-            const SizedBox(height: 8),
-            _FundingRoute(
-              title: 'In-App Transfer',
-              detail: 'Use the server-selected funding route',
-              onTap: onInAppTransfer,
-            ),
-            const SizedBox(height: 12),
-            _FundingRoute(
-              title: 'External Deposit',
-              detail: 'Deposit USDT on BSC from another platform or wallet',
-              onTap: onExternalDeposit,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _Step extends StatelessWidget {

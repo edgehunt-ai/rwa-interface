@@ -782,18 +782,6 @@ abstract class AppLocalizations {
   /// **'Order submitted'**
   String get orderSubmitted;
 
-  /// No description provided for @loadingTradingRules.
-  ///
-  /// In en, this message translates to:
-  /// **'Loading trading rules...'**
-  String get loadingTradingRules;
-
-  /// No description provided for @retryTradingRules.
-  ///
-  /// In en, this message translates to:
-  /// **'Retry trading rules'**
-  String get retryTradingRules;
-
   /// No description provided for @availableMargin.
   ///
   /// In en, this message translates to:
@@ -847,6 +835,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close Position'**
   String get closePosition;
+
+  /// No description provided for @closeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get closeAmount;
 
   /// No description provided for @quantity.
   ///
@@ -974,6 +968,162 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get close;
 
+  /// No description provided for @checkOrderStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Check order status'**
+  String get checkOrderStatus;
+
+  /// No description provided for @invalidSlippage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a slippage percentage from 0% to 100%.'**
+  String get invalidSlippage;
+
+  /// No description provided for @liquidationPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Liquidation Price'**
+  String get liquidationPrice;
+
+  /// No description provided for @marginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin Required'**
+  String get marginRequired;
+
+  /// No description provided for @maximumQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum quantity'**
+  String get maximumQuantity;
+
+  /// No description provided for @marginMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin mode'**
+  String get marginMode;
+
+  /// No description provided for @leverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage'**
+  String get leverage;
+
+  /// No description provided for @dragToSetLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to set leverage'**
+  String get dragToSetLeverage;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @cross.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross'**
+  String get cross;
+
+  /// No description provided for @isolated.
+  ///
+  /// In en, this message translates to:
+  /// **'Isolated'**
+  String get isolated;
+
+  /// No description provided for @marginModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{mode} margin mode'**
+  String marginModeLabel(Object mode);
+
+  /// No description provided for @addFundsFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Add funds from:'**
+  String get addFundsFrom;
+
+  /// No description provided for @inAppTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'In-App Transfer'**
+  String get inAppTransfer;
+
+  /// No description provided for @externalDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'External Deposit'**
+  String get externalDeposit;
+
+  /// No description provided for @transfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get transfer;
+
+  /// No description provided for @availableBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Available balance'**
+  String get availableBalance;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get loadMore;
+
+  /// No description provided for @refreshOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh orders'**
+  String get refreshOrders;
+
+  /// No description provided for @openOrdersUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Open orders unavailable'**
+  String get openOrdersUnavailable;
+
+  /// No description provided for @noOpenOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No open orders'**
+  String get noOpenOrders;
+
+  /// No description provided for @liquidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Liquidation'**
+  String get liquidation;
+
+  /// No description provided for @protectionSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection size'**
+  String get protectionSize;
+
+  /// No description provided for @entirePositionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get entirePositionDefault;
+
+  /// No description provided for @fixedQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed quantity'**
+  String get fixedQuantity;
+
   /// No description provided for @portfolioTrend.
   ///
   /// In en, this message translates to:
@@ -1052,17 +1202,23 @@ abstract class AppLocalizations {
   /// **'Price'**
   String get price;
 
-  /// No description provided for @add.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get add;
-
   /// No description provided for @takeProfitStopLoss.
   ///
   /// In en, this message translates to:
   /// **'Take profit/stop loss'**
   String get takeProfitStopLoss;
+
+  /// No description provided for @takeProfitStopLossTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Profit & stop loss'**
+  String get takeProfitStopLossTitle;
+
+  /// No description provided for @change.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get change;
 
   /// No description provided for @hip3OrderTpSl.
   ///
@@ -1831,6 +1987,1877 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'HIP-3 Perpetual Position'**
   String get tradePerpPositionType;
+
+  /// No description provided for @navigationHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navigationHome;
+
+  /// No description provided for @navigationMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Markets'**
+  String get navigationMarkets;
+
+  /// No description provided for @navigationAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets'**
+  String get navigationAssets;
+
+  /// No description provided for @navigationActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get navigationActivity;
+
+  /// No description provided for @requestFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Request failed'**
+  String get requestFailed;
+
+  /// No description provided for @noFavoritesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No favorites yet'**
+  String get noFavoritesYet;
+
+  /// No description provided for @favoritesEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the star on any market to save it here.'**
+  String get favoritesEmptyDescription;
+
+  /// No description provided for @exploreMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore markets'**
+  String get exploreMarkets;
+
+  /// No description provided for @searchMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'Search markets'**
+  String get searchMarkets;
+
+  /// No description provided for @searchTickerOrCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Search ticker or company'**
+  String get searchTickerOrCompany;
+
+  /// No description provided for @products.
+  ///
+  /// In en, this message translates to:
+  /// **'Products'**
+  String get products;
+
+  /// No description provided for @loadingProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading products'**
+  String get loadingProducts;
+
+  /// No description provided for @pullToRefreshRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull to refresh and try again.'**
+  String get pullToRefreshRetry;
+
+  /// No description provided for @noMatchingProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching products'**
+  String get noMatchingProducts;
+
+  /// No description provided for @tryAnotherSearchOrFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another search or product filter.'**
+  String get tryAnotherSearchOrFilter;
+
+  /// No description provided for @usMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'US Market'**
+  String get usMarket;
+
+  /// No description provided for @usMarketStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'US market status'**
+  String get usMarketStatus;
+
+  /// No description provided for @marketHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Market hours'**
+  String get marketHours;
+
+  /// No description provided for @stocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Stocks'**
+  String get stocks;
+
+  /// No description provided for @browseAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse all'**
+  String get browseAll;
+
+  /// No description provided for @filterProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter products'**
+  String get filterProducts;
+
+  /// No description provided for @allProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'All products'**
+  String get allProducts;
+
+  /// No description provided for @hip3Perps.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP-3 Perps'**
+  String get hip3Perps;
+
+  /// No description provided for @openTradeDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {symbol} trade details'**
+  String openTradeDetails(Object symbol);
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
+
+  /// No description provided for @loadingRecentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading recent searches'**
+  String get loadingRecentSearches;
+
+  /// No description provided for @recentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches'**
+  String get recentSearches;
+
+  /// No description provided for @results.
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get results;
+
+  /// No description provided for @noRecentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent searches'**
+  String get noRecentSearches;
+
+  /// No description provided for @browseAllStocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse all stocks'**
+  String get browseAllStocks;
+
+  /// No description provided for @allStocks.
+  ///
+  /// In en, this message translates to:
+  /// **'All stocks'**
+  String get allStocks;
+
+  /// No description provided for @loadingStocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading stocks'**
+  String get loadingStocks;
+
+  /// No description provided for @stocksUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Stocks unavailable'**
+  String get stocksUnavailable;
+
+  /// No description provided for @marketCatalogUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again when the market catalog is available.'**
+  String get marketCatalogUnavailable;
+
+  /// No description provided for @noMatchingMarkets.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching markets'**
+  String get noMatchingMarkets;
+
+  /// No description provided for @tryAnotherTickerOrCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another ticker or company name.'**
+  String get tryAnotherTickerOrCompany;
+
+  /// No description provided for @noStocksFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No stocks found'**
+  String get noStocksFound;
+
+  /// No description provided for @searchResultCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 result} other{{count} results}}'**
+  String searchResultCount(num count);
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @closeDepositRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Close deposit routes'**
+  String get closeDepositRoutes;
+
+  /// No description provided for @depositChooseRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a recommended route, or browse all supported assets.'**
+  String get depositChooseRoute;
+
+  /// No description provided for @depositRoutesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit routes unavailable'**
+  String get depositRoutesUnavailable;
+
+  /// No description provided for @noDepositRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'No deposit routes available'**
+  String get noDepositRoutes;
+
+  /// No description provided for @tryAgainLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again later.'**
+  String get tryAgainLater;
+
+  /// No description provided for @depositOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit {token} on {chain}'**
+  String depositOn(Object token, Object chain);
+
+  /// No description provided for @bestFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Best for {product}'**
+  String bestFor(Object product);
+
+  /// No description provided for @allSupportedAssetsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another available asset and network'**
+  String get allSupportedAssetsDescription;
+
+  /// No description provided for @depositRouteRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit route required'**
+  String get depositRouteRequired;
+
+  /// No description provided for @depositRouteRequiredDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a supported route to receive an address.'**
+  String get depositRouteRequiredDescription;
+
+  /// No description provided for @loadingDepositInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading deposit instructions'**
+  String get loadingDepositInstructions;
+
+  /// No description provided for @depositInstructionsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit instructions unavailable'**
+  String get depositInstructionsUnavailable;
+
+  /// No description provided for @returnToDepositRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to deposit routes and try again.'**
+  String get returnToDepositRoutes;
+
+  /// No description provided for @depositAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit assets'**
+  String get depositAssets;
+
+  /// No description provided for @depositReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit received'**
+  String get depositReceived;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// No description provided for @backToDepositRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to deposit routes'**
+  String get backToDepositRoutes;
+
+  /// No description provided for @depositQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit QR code'**
+  String get depositQrCode;
+
+  /// No description provided for @depositAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit address'**
+  String get depositAddress;
+
+  /// No description provided for @routeDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Route details'**
+  String get routeDetails;
+
+  /// No description provided for @sendTokenOnChainOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Send {token} on {chain} only.'**
+  String sendTokenOnChainOnly(Object token, Object chain);
+
+  /// No description provided for @minimumDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum deposit'**
+  String get minimumDeposit;
+
+  /// No description provided for @estimatedArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated arrival'**
+  String get estimatedArrival;
+
+  /// No description provided for @confirmationsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmations required'**
+  String get confirmationsRequired;
+
+  /// No description provided for @loadingSupportedAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading supported assets'**
+  String get loadingSupportedAssets;
+
+  /// No description provided for @supportedAssetsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Supported assets unavailable'**
+  String get supportedAssetsUnavailable;
+
+  /// No description provided for @noAdditionalDepositRoutes.
+  ///
+  /// In en, this message translates to:
+  /// **'No additional deposit routes available'**
+  String get noAdditionalDepositRoutes;
+
+  /// No description provided for @withdrawToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw {token}'**
+  String withdrawToken(Object token);
+
+  /// No description provided for @enterRecipientAddressAndAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a recipient address and amount.'**
+  String get enterRecipientAddressAndAmount;
+
+  /// No description provided for @enterValidWalletAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid wallet address.'**
+  String get enterValidWalletAddress;
+
+  /// No description provided for @enterValidTokenAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid {token} amount.'**
+  String enterValidTokenAmount(Object token);
+
+  /// No description provided for @prepareWithdrawalFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to prepare this withdrawal. Try again.'**
+  String get prepareWithdrawalFailed;
+
+  /// No description provided for @paste.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get paste;
+
+  /// No description provided for @max.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get max;
+
+  /// No description provided for @availableToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Available {token}'**
+  String availableToken(Object token);
+
+  /// No description provided for @availableTokenAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Available {amount} {token}'**
+  String availableTokenAmount(Object amount, Object token);
+
+  /// No description provided for @networkFeesMayChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Network fees may change before confirmation.'**
+  String get networkFeesMayChange;
+
+  /// No description provided for @youAreSending.
+  ///
+  /// In en, this message translates to:
+  /// **'You are sending'**
+  String get youAreSending;
+
+  /// No description provided for @to.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get to;
+
+  /// No description provided for @finalNetworkFeeMayVary.
+  ///
+  /// In en, this message translates to:
+  /// **'The final network fee may vary slightly.'**
+  String get finalNetworkFeeMayVary;
+
+  /// No description provided for @unableToLoadAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load assets'**
+  String get unableToLoadAssets;
+
+  /// No description provided for @checkConnectionRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again.'**
+  String get checkConnectionRetry;
+
+  /// No description provided for @noAssetsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No assets available'**
+  String get noAssetsAvailable;
+
+  /// No description provided for @noMatchingAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching assets'**
+  String get noMatchingAssets;
+
+  /// No description provided for @assetsWithBalanceAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets with an available balance will appear here.'**
+  String get assetsWithBalanceAppearHere;
+
+  /// No description provided for @tryDifferentAssetOrNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different asset name or network.'**
+  String get tryDifferentAssetOrNetwork;
+
+  /// No description provided for @token.
+  ///
+  /// In en, this message translates to:
+  /// **'Token'**
+  String get token;
+
+  /// No description provided for @logIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in'**
+  String get logIn;
+
+  /// No description provided for @portfolioUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'\'t load your portfolio'**
+  String get portfolioUnavailable;
+
+  /// No description provided for @marketsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'\'t load the markets'**
+  String get marketsLoadFailed;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// No description provided for @readyWhenYouAre.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready when you are'**
+  String get readyWhenYouAre;
+
+  /// No description provided for @loginToViewPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to view your portfolio and start trading.'**
+  String get loginToViewPortfolio;
+
+  /// No description provided for @loginToViewAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to view your assets'**
+  String get loginToViewAssets;
+
+  /// No description provided for @portfolioBalancesAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Your portfolio and balances will appear here.'**
+  String get portfolioBalancesAppearHere;
+
+  /// No description provided for @noAssetsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No assets yet'**
+  String get noAssetsYet;
+
+  /// No description provided for @depositToBuildPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit a supported asset to start building your portfolio.'**
+  String get depositToBuildPortfolio;
+
+  /// No description provided for @viewPortfolioTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'View portfolio trend'**
+  String get viewPortfolioTrend;
+
+  /// No description provided for @collapseAllocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse allocation'**
+  String get collapseAllocation;
+
+  /// No description provided for @expandAllocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand allocation'**
+  String get expandAllocation;
+
+  /// No description provided for @allocationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Allocation unavailable'**
+  String get allocationUnavailable;
+
+  /// No description provided for @noCashBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'No cash balances'**
+  String get noCashBalances;
+
+  /// No description provided for @cashBalancesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash balances unavailable'**
+  String get cashBalancesUnavailable;
+
+  /// No description provided for @depositToAddCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit a supported asset to add cash here.'**
+  String get depositToAddCash;
+
+  /// No description provided for @loadingCashBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading cash balances'**
+  String get loadingCashBalances;
+
+  /// No description provided for @loadingHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading holdings'**
+  String get loadingHoldings;
+
+  /// No description provided for @holdingsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings unavailable'**
+  String get holdingsUnavailable;
+
+  /// No description provided for @holdingReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Holding return'**
+  String get holdingReturn;
+
+  /// No description provided for @noHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'No {title} holdings'**
+  String noHoldings(Object title);
+
+  /// No description provided for @buyBstockToSeeHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy a bStock to see it here.'**
+  String get buyBstockToSeeHere;
+
+  /// No description provided for @openPerpsPositionToSeeHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a Perps position to see it here.'**
+  String get openPerpsPositionToSeeHere;
+
+  /// No description provided for @perpsEquity.
+  ///
+  /// In en, this message translates to:
+  /// **'Perps equity'**
+  String get perpsEquity;
+
+  /// No description provided for @enterConfirmationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter confirmation code'**
+  String get enterConfirmationCode;
+
+  /// No description provided for @signUpOrLogIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up or log in to start exploring'**
+  String get signUpOrLogIn;
+
+  /// No description provided for @emailCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check {email} for an email from privy.io and enter your code below.'**
+  String emailCodeSent(Object email);
+
+  /// No description provided for @didntGetEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'\'t get an email?'**
+  String get didntGetEmail;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get resendCode;
+
+  /// No description provided for @continueWithPrivy.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Privy'**
+  String get continueWithPrivy;
+
+  /// No description provided for @enterValidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get enterValidEmail;
+
+  /// No description provided for @otherSocials.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Socials'**
+  String get otherSocials;
+
+  /// No description provided for @wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet'**
+  String get wallet;
+
+  /// No description provided for @recent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get recent;
+
+  /// No description provided for @loginOrSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in or sign up'**
+  String get loginOrSignUp;
+
+  /// No description provided for @termsAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'By using this app, you agree to the Terms & Conditions.'**
+  String get termsAgreement;
+
+  /// No description provided for @invalidConfirmationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'That code is invalid or expired.'**
+  String get invalidConfirmationCode;
+
+  /// No description provided for @networkUnavailableRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Network unavailable. Check your connection and try again.'**
+  String get networkUnavailableRetry;
+
+  /// No description provided for @browserSignInUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to start Google sign-in. Check that your browser and network are working, then try again.'**
+  String get browserSignInUnavailable;
+
+  /// No description provided for @privyNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Privy is not configured for this build.'**
+  String get privyNotConfigured;
+
+  /// No description provided for @sessionExpiredLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session expired. Please sign in again.'**
+  String get sessionExpiredLogin;
+
+  /// No description provided for @backendSessionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Privy sign-in succeeded, but we could not create your RWA session. Try again later.'**
+  String get backendSessionFailed;
+
+  /// No description provided for @walletSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'You are signed in, but your wallet could not be synchronized. Try again later.'**
+  String get walletSyncFailed;
+
+  /// No description provided for @emailLoginUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Email sign-in is not available.'**
+  String get emailLoginUnavailable;
+
+  /// No description provided for @privyPlatformUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Privy sign-in is available on Android and iOS.'**
+  String get privyPlatformUnsupported;
+
+  /// No description provided for @privyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Privy is temporarily unavailable. Please try again.'**
+  String get privyUnavailable;
+
+  /// No description provided for @supportId.
+  ///
+  /// In en, this message translates to:
+  /// **'Support ID: {id}'**
+  String supportId(Object id);
+
+  /// No description provided for @changeSymbolLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change {symbol} leverage'**
+  String changeSymbolLeverage(Object symbol);
+
+  /// No description provided for @accountChangedReopenPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Account changed. Close this panel and reopen the position.'**
+  String get accountChangedReopenPosition;
+
+  /// No description provided for @tradingContextUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading context unavailable.'**
+  String get tradingContextUnavailable;
+
+  /// No description provided for @tradingContextReload.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading context unavailable. Reload before changing leverage.'**
+  String get tradingContextReload;
+
+  /// No description provided for @reload.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get reload;
+
+  /// No description provided for @currentMaximumLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Current: {current} · Maximum: {maximum}'**
+  String currentMaximumLeverage(Object current, Object maximum);
+
+  /// No description provided for @leverageSignatureNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing leverage requires your wallet signature and keeps the current margin mode.'**
+  String get leverageSignatureNotice;
+
+  /// No description provided for @leverageChangesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage changes are unavailable for this account or product.'**
+  String get leverageChangesUnavailable;
+
+  /// No description provided for @validLeverageRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number within the current maximum, or reload expired limits.'**
+  String get validLeverageRequired;
+
+  /// No description provided for @reloadLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload limits'**
+  String get reloadLimits;
+
+  /// No description provided for @waitingForConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for confirmation…'**
+  String get waitingForConfirmation;
+
+  /// No description provided for @reviewAndSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and sign'**
+  String get reviewAndSign;
+
+  /// No description provided for @leverageUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage updated. Refreshing position and trading context.'**
+  String get leverageUpdated;
+
+  /// No description provided for @leveragePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage is not yet confirmed. Close this panel and resume the existing action in Pending actions.'**
+  String get leveragePending;
+
+  /// No description provided for @leverageNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage was not confirmed. Check pending actions before trying again.'**
+  String get leverageNotConfirmed;
+
+  /// No description provided for @direction.
+  ///
+  /// In en, this message translates to:
+  /// **'Direction'**
+  String get direction;
+
+  /// No description provided for @entryPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry price'**
+  String get entryPrice;
+
+  /// No description provided for @markPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark price'**
+  String get markPrice;
+
+  /// No description provided for @unrealizedPnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrealized PnL'**
+  String get unrealizedPnl;
+
+  /// No description provided for @returnOnEquity.
+  ///
+  /// In en, this message translates to:
+  /// **'Return on equity'**
+  String get returnOnEquity;
+
+  /// No description provided for @margin.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin'**
+  String get margin;
+
+  /// No description provided for @cumulativeFunding.
+  ///
+  /// In en, this message translates to:
+  /// **'Cumulative funding'**
+  String get cumulativeFunding;
+
+  /// No description provided for @fundingExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding: negative = paid; positive = received.'**
+  String get fundingExplanation;
+
+  /// No description provided for @changeLeverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change leverage'**
+  String get changeLeverage;
+
+  /// No description provided for @openOrdersRefreshHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again to refresh open orders.'**
+  String get openOrdersRefreshHint;
+
+  /// No description provided for @openOrdersEmptyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Open orders for this product will appear here.'**
+  String get openOrdersEmptyDescription;
+
+  /// No description provided for @cancelling.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelling…'**
+  String get cancelling;
+
+  /// No description provided for @cancellationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancellation is still being confirmed. Refresh before retrying.'**
+  String get cancellationPending;
+
+  /// No description provided for @cancellationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancellation was not completed. Refresh and retry; signing may still be required.'**
+  String get cancellationFailed;
+
+  /// No description provided for @parentCancelWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'If this order has attached TP/SL, cancelling the parent also cancels that protection. Check protection for any remaining position; replacement protection is not created automatically.'**
+  String get parentCancelWarning;
+
+  /// No description provided for @conditionalOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditional order'**
+  String get conditionalOrder;
+
+  /// No description provided for @protectionInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection is no longer active'**
+  String get protectionInactive;
+
+  /// No description provided for @protectionNotSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection not submitted'**
+  String get protectionNotSubmitted;
+
+  /// No description provided for @protectionWaitingForParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection waiting for parent fill — not active'**
+  String get protectionWaitingForParent;
+
+  /// No description provided for @protectionAwaitingConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection activation awaiting confirmation'**
+  String get protectionAwaitingConfirmation;
+
+  /// No description provided for @protectionActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection active'**
+  String get protectionActive;
+
+  /// No description provided for @protectionStatusUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection status unknown — not confirmed active'**
+  String get protectionStatusUnknown;
+
+  /// No description provided for @attachedToOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached to order: {id}'**
+  String attachedToOrder(Object id);
+
+  /// No description provided for @parentCancelledProtectionWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent cancelled: this protection is inactive. Check protection for any remaining position; no replacement is created automatically.'**
+  String get parentCancelledProtectionWarning;
+
+  /// No description provided for @triggerPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Trigger price: {price} USDC · {reference}'**
+  String triggerPrice(Object price, Object reference);
+
+  /// No description provided for @triggerStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Trigger status: {status} · {execution}'**
+  String triggerStatus(Object status, Object execution);
+
+  /// No description provided for @entirePositionProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Entire position protection'**
+  String get entirePositionProtection;
+
+  /// No description provided for @fixedQuantityValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed quantity: {quantity}'**
+  String fixedQuantityValue(Object quantity);
+
+  /// No description provided for @filledTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled / Total: {filled} / {total}'**
+  String filledTotal(Object filled, Object total);
+
+  /// No description provided for @orderPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Order price: {price}'**
+  String orderPrice(Object price);
+
+  /// No description provided for @orderStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status: {status}'**
+  String orderStatus(Object status);
+
+  /// No description provided for @filled.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled'**
+  String get filled;
+
+  /// No description provided for @percentFilled.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% filled'**
+  String percentFilled(Object percent);
+
+  /// No description provided for @closeOrderSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Close order submitted. Check the order for fills.'**
+  String get closeOrderSubmitted;
+
+  /// No description provided for @closeActionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Action {id} is still being confirmed. Resume it from pending actions; do not create another close.'**
+  String closeActionPending(Object id);
+
+  /// No description provided for @closeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Close was not completed. Check pending actions and refresh the position before changing this request.'**
+  String get closeFailed;
+
+  /// No description provided for @closeRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Close could not be completed. Refresh the position and retry.'**
+  String get closeRetry;
+
+  /// No description provided for @closeSymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Close {symbol}'**
+  String closeSymbol(Object symbol);
+
+  /// No description provided for @unavailableProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable product'**
+  String get unavailableProduct;
+
+  /// No description provided for @longToSell.
+  ///
+  /// In en, this message translates to:
+  /// **'Long → Sell'**
+  String get longToSell;
+
+  /// No description provided for @shortToBuy.
+  ///
+  /// In en, this message translates to:
+  /// **'Short → Buy'**
+  String get shortToBuy;
+
+  /// No description provided for @positionQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Position quantity: {quantity} {symbol}'**
+  String positionQuantity(Object quantity, Object symbol);
+
+  /// No description provided for @limitPriceUsdc.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit price (USDC)'**
+  String get limitPriceUsdc;
+
+  /// No description provided for @quantityOfPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity ({symbol})'**
+  String quantityOfPosition(Object symbol);
+
+  /// No description provided for @percentOfCurrentPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% of current position'**
+  String percentOfCurrentPosition(Object percent);
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @entryMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry: {entry} · Mark: {mark}'**
+  String entryMark(Object entry, Object mark);
+
+  /// No description provided for @liquidationValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Liquidation: {price}'**
+  String liquidationValue(Object price);
+
+  /// No description provided for @closeReviewNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduce-only. Review the server-normalized quantity, estimated PnL and fees before signing. A limit order may remain open.'**
+  String get closeReviewNotice;
+
+  /// No description provided for @preparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing…'**
+  String get preparing;
+
+  /// No description provided for @reviewClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Review close'**
+  String get reviewClose;
+
+  /// No description provided for @buySymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy {symbol}'**
+  String buySymbol(Object symbol);
+
+  /// No description provided for @buySymbolMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy {symbol} · Market'**
+  String buySymbolMarket(Object symbol);
+
+  /// No description provided for @inAppTransferLowercase.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app transfer'**
+  String get inAppTransferLowercase;
+
+  /// No description provided for @fundingNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Funding is not ready to submit this order.'**
+  String get fundingNotReady;
+
+  /// No description provided for @transferStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to authorize or start this transfer. Try again.'**
+  String get transferStartFailed;
+
+  /// No description provided for @preparingTradingFunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing trading funds…'**
+  String get preparingTradingFunds;
+
+  /// No description provided for @bridgeInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Bridge in progress. Estimated time: 1–3 min. You can track the progress on the Details page.'**
+  String get bridgeInProgress;
+
+  /// No description provided for @serverSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{asset} (server selected)'**
+  String serverSelected(Object asset);
+
+  /// No description provided for @amountNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount needed'**
+  String get amountNeeded;
+
+  /// No description provided for @transferAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer amount'**
+  String get transferAmount;
+
+  /// No description provided for @availableToFund.
+  ///
+  /// In en, this message translates to:
+  /// **'Available to fund'**
+  String get availableToFund;
+
+  /// No description provided for @shortfall.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortfall'**
+  String get shortfall;
+
+  /// No description provided for @availableBalanceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get availableBalanceUnavailable;
+
+  /// No description provided for @serverSelectedFundingRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the server-selected funding route'**
+  String get serverSelectedFundingRoute;
+
+  /// No description provided for @externalDepositDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit USDT on BSC from another platform or wallet'**
+  String get externalDepositDetail;
+
+  /// No description provided for @positionsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Positions unavailable'**
+  String get positionsUnavailable;
+
+  /// No description provided for @positionRefreshHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again to refresh your position.'**
+  String get positionRefreshHint;
+
+  /// No description provided for @noOpenPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'No open position'**
+  String get noOpenPosition;
+
+  /// No description provided for @openPositionDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your position for this product will appear here.'**
+  String get openPositionDescription;
+
+  /// No description provided for @cancellationSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancellation submitted. Refresh to confirm the final order status.'**
+  String get cancellationSubmitted;
+
+  /// No description provided for @cancellationPendingRefreshOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancellation is still being confirmed. Refresh this order before retrying.'**
+  String get cancellationPendingRefreshOrder;
+
+  /// No description provided for @cancellationCompleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to complete cancellation. Refresh the order and retry.'**
+  String get cancellationCompleteFailed;
+
+  /// No description provided for @longPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Long position'**
+  String get longPosition;
+
+  /// No description provided for @shortPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Short position'**
+  String get shortPosition;
+
+  /// No description provided for @position.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get position;
+
+  /// No description provided for @tokenPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Token position'**
+  String get tokenPosition;
+
+  /// No description provided for @value.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get value;
+
+  /// No description provided for @tokenAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Token amount'**
+  String get tokenAmount;
+
+  /// No description provided for @marketHoursUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Market hours unavailable'**
+  String get marketHoursUnavailable;
+
+  /// No description provided for @marketHoursRefreshHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again to refresh market hours.'**
+  String get marketHoursRefreshHint;
+
+  /// No description provided for @noMarketSessionData.
+  ///
+  /// In en, this message translates to:
+  /// **'No market session data is available.'**
+  String get noMarketSessionData;
+
+  /// No description provided for @perpetual.
+  ///
+  /// In en, this message translates to:
+  /// **'Perpetual'**
+  String get perpetual;
+
+  /// No description provided for @lineChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Line chart'**
+  String get lineChart;
+
+  /// No description provided for @candlestickChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Candlestick chart'**
+  String get candlestickChart;
+
+  /// No description provided for @usStockReferencePrice.
+  ///
+  /// In en, this message translates to:
+  /// **'US stock reference price'**
+  String get usStockReferencePrice;
+
+  /// No description provided for @loginToViewActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to view your activity'**
+  String get loginToViewActivity;
+
+  /// No description provided for @accountActivityAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Your orders and account activity will appear here.'**
+  String get accountActivityAppearHere;
+
+  /// No description provided for @tokenType.
+  ///
+  /// In en, this message translates to:
+  /// **'Token type'**
+  String get tokenType;
+
+  /// No description provided for @tokenDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Token details'**
+  String get tokenDetails;
+
+  /// No description provided for @cashBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash balance'**
+  String get cashBalance;
+
+  /// No description provided for @setLeverageTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Set leverage to {value}x'**
+  String setLeverageTo(Object value);
+
+  /// No description provided for @quantitySymbol.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity ({symbol})'**
+  String quantitySymbol(Object symbol);
+
+  /// No description provided for @takeProfitLimitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit limit price (USDC)'**
+  String get takeProfitLimitPrice;
+
+  /// No description provided for @stopLimitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop limit price (USDC)'**
+  String get stopLimitPrice;
+
+  /// No description provided for @protectionSizesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read existing protection sizes. Close and refresh before editing.'**
+  String get protectionSizesUnavailable;
+
+  /// No description provided for @protectionUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection update was not completed. A cancellation may already have succeeded. Retry the same edit or check pending actions before changing it.'**
+  String get protectionUpdateFailed;
+
+  /// No description provided for @protectionUpdateRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection update could not be completed. Refresh before retrying.'**
+  String get protectionUpdateRetry;
+
+  /// No description provided for @protectionSizesDiffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing protection legs have different sizes. Select the desired size for this edit.'**
+  String get protectionSizesDiffer;
+
+  /// No description provided for @fixedQuantityNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed quantity will not adjust automatically when the position changes.'**
+  String get fixedQuantityNotice;
+
+  /// No description provided for @entirePositionProtectionNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Entire position protection uses the position size at trigger time.'**
+  String get entirePositionProtectionNotice;
+
+  /// No description provided for @protectionSignatureNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Trigger execution needs no new signature. Changes and cancellations require signing. Switching a leg off cancels it; other edits may require additional signatures.'**
+  String get protectionSignatureNotice;
+
+  /// No description provided for @amountRequiredForPercentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount to get a current maximum quantity before using the percentage slider.'**
+  String get amountRequiredForPercentage;
+
+  /// No description provided for @hip3ExecutionDetailsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Execution details are unavailable. Go back and request a new quote.'**
+  String get hip3ExecutionDetailsUnavailable;
+
+  /// No description provided for @environment.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment'**
+  String get environment;
+
+  /// No description provided for @product.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get product;
+
+  /// No description provided for @feeReserveRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee reserve rate'**
+  String get feeReserveRate;
+
+  /// No description provided for @slippageLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Slippage limit'**
+  String get slippageLimit;
+
+  /// No description provided for @unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get unavailable;
+
+  /// No description provided for @whyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Why unavailable'**
+  String get whyUnavailable;
+
+  /// No description provided for @crossMarginLiquidationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-margin liquidation depends on the full account and cannot be estimated reliably here.'**
+  String get crossMarginLiquidationUnavailable;
+
+  /// No description provided for @noReliableLiquidationEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'No reliable estimate was returned.'**
+  String get noReliableLiquidationEstimate;
+
+  /// No description provided for @quoteExpiresUtc.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote expires (UTC)'**
+  String get quoteExpiresUtc;
+
+  /// No description provided for @protectionConfirmationMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection confirmation is missing or differs from your order. Go back and request a new quote.'**
+  String get protectionConfirmationMismatch;
+
+  /// No description provided for @fixedQuantityThisOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed quantity: {quantity} (this order only)'**
+  String fixedQuantityThisOrder(Object quantity);
+
+  /// No description provided for @marketPriceBound.
+  ///
+  /// In en, this message translates to:
+  /// **'Market price bound'**
+  String get marketPriceBound;
+
+  /// No description provided for @openingProtectionLeg.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} · Mark trigger {trigger} USDC · {priceType} {price} USDC'**
+  String openingProtectionLeg(
+    Object type,
+    Object trigger,
+    Object priceType,
+    Object price,
+  );
+
+  /// No description provided for @openingOrderSignatureNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed with this opening order. Triggering needs no new signature; later changes and cancellations require signing.'**
+  String get openingOrderSignatureNotice;
+
+  /// No description provided for @openingProtectionParentWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the parent is not active protection. Cancelling a partially filled parent cancels its protection; check the remaining position. No automatic replacement.'**
+  String get openingProtectionParentWarning;
+
+  /// No description provided for @priceLimitEstimateNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The price limit bounds execution; it does not guarantee a fill. Fees and margin are estimates.'**
+  String get priceLimitEstimateNotice;
+
+  /// No description provided for @takeProfitTriggerUsdc.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit trigger (USDC)'**
+  String get takeProfitTriggerUsdc;
+
+  /// No description provided for @takeProfitLimitOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Take profit limit (optional)'**
+  String get takeProfitLimitOptional;
+
+  /// No description provided for @stopLossTriggerUsdc.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop loss trigger (USDC)'**
+  String get stopLossTriggerUsdc;
+
+  /// No description provided for @stopLossLimitOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop loss limit (optional)'**
+  String get stopLossLimitOptional;
+
+  /// No description provided for @leaveBlankForMarketExecution.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank for market execution.'**
+  String get leaveBlankForMarketExecution;
+
+  /// No description provided for @openingProtectionQuantityNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed quantity equals this order, not your entire position. Sign with the opening order; triggering needs no new signature.'**
+  String get openingProtectionQuantityNotice;
+
+  /// No description provided for @openingProtectionPendingNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted protection is not yet active. If you cancel a partially filled parent order, its protection is cancelled too. Check the remaining position; protection is not replaced automatically.'**
+  String get openingProtectionPendingNotice;
+
+  /// No description provided for @favoriteUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to update favorites.'**
+  String get favoriteUpdateFailed;
+
+  /// No description provided for @favoriteAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to favorites.'**
+  String get favoriteAdded;
+
+  /// No description provided for @favoriteRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from favorites.'**
+  String get favoriteRemoved;
+
+  /// No description provided for @buySucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'{symbol} Buy Successful!'**
+  String buySucceeded(Object symbol);
+
+  /// No description provided for @buyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{symbol} Buy Failed!'**
+  String buyFailed(Object symbol);
+
+  /// No description provided for @overnightAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Overnight {time}'**
+  String overnightAt(Object time);
+
+  /// No description provided for @hip3Perp.
+  ///
+  /// In en, this message translates to:
+  /// **'HIP-3 Perp'**
+  String get hip3Perp;
+
+  /// No description provided for @addFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Add favorite'**
+  String get addFavorite;
+
+  /// No description provided for @removeFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove favorite'**
+  String get removeFavorite;
+
+  /// No description provided for @usStockPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'US Stock {price}'**
+  String usStockPrice(Object price);
+
+  /// No description provided for @usPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'US {price}'**
+  String usPrice(Object price);
+
+  /// No description provided for @priceChartUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Price chart unavailable'**
+  String get priceChartUnavailable;
+
+  /// No description provided for @priceChartLatestClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Price chart latest close {price}'**
+  String priceChartLatestClose(Object price);
+
+  /// No description provided for @tradeWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend'**
+  String get tradeWeekend;
+
+  /// No description provided for @tradeHoliday.
+  ///
+  /// In en, this message translates to:
+  /// **'Holiday'**
+  String get tradeHoliday;
+
+  /// No description provided for @trade24hHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'24h High'**
+  String get trade24hHigh;
+
+  /// No description provided for @trade24hLow.
+  ///
+  /// In en, this message translates to:
+  /// **'24h Low'**
+  String get trade24hLow;
+
+  /// No description provided for @trade24hTurnover.
+  ///
+  /// In en, this message translates to:
+  /// **'24h Turnover'**
+  String get trade24hTurnover;
+
+  /// No description provided for @trade24hVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'24h Volume'**
+  String get trade24hVolume;
+
+  /// No description provided for @openTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get openTab;
+
+  /// No description provided for @details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @positionProtectionActionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Action {id} is still being confirmed. Resume pending actions, then reopen this editor. Changes may be partially applied.'**
+  String positionProtectionActionPending(Object id);
+
+  /// No description provided for @orderStatusInActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'You can check the order status on the activities page.'**
+  String get orderStatusInActivity;
+
+  /// No description provided for @orderProcessingInDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order is being processed. Track its status in Details.'**
+  String get orderProcessingInDetails;
+
+  /// No description provided for @hip3InvalidOrderWithProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter valid order values and at least one positive protection trigger. Each protection limit needs its trigger.'**
+  String get hip3InvalidOrderWithProtection;
+
+  /// No description provided for @hip3InvalidOrderInputs.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive quantity or order value and a valid limit price.'**
+  String get hip3InvalidOrderInputs;
+
+  /// No description provided for @hip3OrderNeedsReview.
+  ///
+  /// In en, this message translates to:
+  /// **'This order needs review. Do not place a replacement order.'**
+  String get hip3OrderNeedsReview;
+
+  /// No description provided for @hip3OrderConfirming.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming this order. Retry to check the same order; do not place a replacement.'**
+  String get hip3OrderConfirming;
+
+  /// No description provided for @hip3SigningRequestExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This signing request expired. Prepare the order again.'**
+  String get hip3SigningRequestExpired;
+
+  /// No description provided for @hip3OrderStillPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'The order is still being prepared. Try again.'**
+  String get hip3OrderStillPreparing;
+
+  /// No description provided for @hip3SigningWalletUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The signing wallet is unavailable. Reconnect and try again.'**
+  String get hip3SigningWalletUnavailable;
+
+  /// No description provided for @hip3SigningRequestInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The signing request is invalid. Prepare the order again.'**
+  String get hip3SigningRequestInvalid;
+
+  /// No description provided for @reviewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Review {side} {symbol}'**
+  String reviewOrder(Object side, Object symbol);
+
+  /// No description provided for @marginValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin: {value} USDC'**
+  String marginValue(Object value);
 }
 
 class _AppLocalizationsDelegate

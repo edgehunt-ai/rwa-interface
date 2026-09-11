@@ -462,6 +462,84 @@ void main() {
     expect(find.text('Price Exposure Only'), findsOneWidget);
   });
 
+  testWidgets('Trade HIP-3 position card matches the Figma summary layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _tradeWithMarkets(
+        locale: const Locale('en'),
+        positionsRepository: _PositionsRepository(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('HIP-3 Perp'));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Position (1)'));
+    await tester.pumpAndSettle();
+
+    for (final text in [
+      'NVDA/USDC',
+      'Long · 10x',
+      'XYZ',
+      'HIP-3 · ARB',
+      'Unrealized PnL',
+      r'+$16',
+      '+3%',
+      r'$550',
+      r'$182.4',
+      r'$177.09',
+      r'+$1.05',
+      r'~$120.33',
+      '2.0154・Cross',
+      'Close',
+      'Edit TP/SL',
+    ]) {
+      expect(find.text(text), text == r'$550' ? findsWidgets : findsOneWidget);
+    }
+    expect(
+      tester.getSize(find.widgetWithText(OutlinedButton, 'Close')).height,
+      36,
+    );
+  });
+
+  testWidgets('Trade bStocks position card uses the summary-card layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _tradeWithMarkets(
+        locale: const Locale('en'),
+        positionsRepository: _PositionsRepository(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Position (1)'));
+    await tester.pumpAndSettle();
+
+    for (final text in [
+      'NVDA/USDT',
+      'Token position',
+      'bStocks · BSC',
+      'Unrealized PnL',
+      r'+$16',
+      '+3%',
+      r'$550',
+      r'$182.4',
+      r'$177.09',
+      'Close',
+    ]) {
+      expect(find.text(text), text == r'$550' ? findsWidgets : findsOneWidget);
+    }
+    expect(
+      tester.getSize(find.widgetWithText(OutlinedButton, 'Close')).height,
+      36,
+    );
+    expect(find.text('Edit TP/SL'), findsNothing);
+  });
+
   testWidgets(
     'Trade hides the market switch when only one market is available',
     (tester) async {
@@ -493,41 +571,73 @@ void main() {
 
     await tester.enterText(find.byType(TextField).at(0), '200');
     await tester.enterText(find.byType(TextField).at(1), '150');
-    expect(find.text('Drag to set'), findsNothing);
-    expect(find.text('Protection size'), findsOneWidget);
-    expect(find.text('Entire position (default)'), findsOneWidget);
+    expect(find.text('Drag to set'), findsNWidgets(2));
+    expect(find.text('Quantity'), findsOneWidget);
+    expect(find.text('NVDAB/USDT'), findsOneWidget);
+    expect(
+      find.byKey(const Key('bstocks-tp-sl-quantity-slider')),
+      findsOneWidget,
+    );
     await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pump();
 
     expect(repository.tpSlUpdates, [('position-1', '200', '150')]);
+    expect(repository.lastTpSlQuantity, '0.2');
   });
 
-  testWidgets('Trade position tab opens the TP/SL editor from its live card', (
+  testWidgets('Trade bStocks position card opens the sell panel from Close', (
     tester,
   ) async {
-    final repository = _PositionsRepository();
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
-        child: buildTestApp(const TradeScreen()),
+      _tradeWithMarkets(
+        locale: const Locale('en'),
+        positionsRepository: _PositionsRepository(),
       ),
     );
 
-    final positionTab = find.widgetWithText(TextButton, 'Position');
     await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
-    await tester.tap(positionTab);
+    await tester.tap(find.widgetWithText(TextButton, 'Position (1)'));
     await tester.pumpAndSettle();
-    expect(find.text('Token amount'), findsOneWidget);
+    expect(find.text('bStocks · BSC'), findsOneWidget);
 
-    final editTpSl = find.widgetWithText(OutlinedButton, 'Edit TP/SL');
+    final close = find.widgetWithText(OutlinedButton, 'Close');
     await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(editTpSl);
-    await tester.tap(editTpSl);
+    await tester.ensureVisible(close);
+    await tester.tap(close);
     await tester.pumpAndSettle();
-    expect(find.text('Protection size'), findsOneWidget);
+    expect(find.text('Sell NVDA'), findsWidgets);
+  });
+
+  testWidgets('Trade tab counts stay on their matching tabs without overflow', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          positionsRepositoryProvider.overrideWithValue(_PositionsRepository()),
+        ],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Position (1)'), findsOneWidget);
+    expect(find.text('Details'), findsOneWidget);
+    expect(find.text('Details (1)'), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    final widths = ['Open', 'Position (1)', 'Details']
+        .map(
+          (label) =>
+              tester.getSize(find.widgetWithText(TextButton, label)).width,
+        )
+        .toList(growable: false);
+    expect(widths[0], closeTo(widths[1], 0.01));
+    expect(widths[1], closeTo(widths[2], 0.01));
   });
 
   testWidgets(
@@ -541,7 +651,7 @@ void main() {
         ),
       );
 
-      final openTab = find.widgetWithText(TextButton, 'Open');
+      final openTab = find.widgetWithText(TextButton, 'Open (1)');
       await tester.drag(find.byType(ListView), const Offset(0, -160));
       await tester.pumpAndSettle();
       await tester.tap(openTab);
@@ -555,15 +665,38 @@ void main() {
   );
 }
 
-Position _position(MarketProductKind kind) => Position(
-  positionId: 'position-1',
-  symbol: 'NVDA',
-  kind: kind,
-  side: PositionSide.long,
-  quantity: DecimalValue('1', unit: 'quantity'),
-  valueUsd: DecimalValue('100', asset: 'USDC', unit: 'token'),
-  entryPrice: DecimalValue('175', asset: 'USDC', unit: 'price'),
-);
+Position _position(MarketProductKind kind) => switch (kind) {
+  MarketProductKind.perp => Position(
+    positionId: 'position-1',
+    productId: 'xyz:NVDA',
+    symbol: 'NVDA',
+    kind: kind,
+    side: PositionSide.long,
+    quantity: DecimalValue('3.0154', unit: 'quantity'),
+    valueUsd: DecimalValue('550', asset: 'USDC', unit: 'token'),
+    leverage: DecimalValue('10'),
+    entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
+    markPrice: DecimalValue('182.4', asset: 'USDC', unit: 'price'),
+    unrealizedPnl: DecimalValue('16', asset: 'USDC', unit: 'token'),
+    unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
+    fundingPaid: DecimalValue('1.05', asset: 'USDC', unit: 'token'),
+    liquidationPrice: DecimalValue('120.33', asset: 'USDC', unit: 'price'),
+    margin: DecimalValue('2.0154'),
+    marginMode: PositionMarginMode.cross,
+  ),
+  _ => Position(
+    positionId: 'position-1',
+    symbol: 'NVDA',
+    kind: kind,
+    side: PositionSide.long,
+    quantity: DecimalValue('3.0154', unit: 'quantity'),
+    valueUsd: DecimalValue('550', asset: 'USDC', unit: 'token'),
+    entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
+    markPrice: DecimalValue('182.4', asset: 'USDC', unit: 'price'),
+    unrealizedPnl: DecimalValue('16', asset: 'USDC', unit: 'token'),
+    unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
+  ),
+};
 
 CandleChart _chart(String symbol, CandleChartRange range) => CandleChart(
   symbol: symbol,
@@ -613,8 +746,14 @@ Finder _headerPrice(String value) => find.byWidgetPredicate(
       widget is Text && widget.data == value && widget.style?.fontSize == 24,
 );
 
-Widget _tradeWithMarkets({List<MarketProduct>? products}) => ProviderScope(
+Widget _tradeWithMarkets({
+  List<MarketProduct>? products,
+  PositionsRepository? positionsRepository,
+  Locale? locale,
+}) => ProviderScope(
   overrides: [
+    if (positionsRepository != null)
+      positionsRepositoryProvider.overrideWithValue(positionsRepository),
     marketProductsProvider((query: 'NVDA', cursor: null)).overrideWith(
       (_) async => DomainPage(
         items:
@@ -627,7 +766,7 @@ Widget _tradeWithMarkets({List<MarketProduct>? products}) => ProviderScope(
       ),
     ),
   ],
-  child: buildTestApp(const TradeScreen()),
+  child: buildTestApp(const TradeScreen(), locale: locale),
 );
 
 MarketProduct _marketProduct(String symbol, MarketProductKind kind) =>
@@ -754,6 +893,7 @@ final class _OrderOutcomeRepository implements OrdersRepository {
 
 final class _PositionsRepository implements PositionsRepository {
   final List<(String, String?, String?)> tpSlUpdates = [];
+  String? lastTpSlQuantity;
 
   @override
   Future<Position> updateTpSl(
@@ -767,6 +907,7 @@ final class _PositionsRepository implements PositionsRepository {
     required String idempotencyKey,
   }) async {
     tpSlUpdates.add((position.positionId, takeProfit, stopLoss));
+    lastTpSlQuantity = quantity;
     return position;
   }
 

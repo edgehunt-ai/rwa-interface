@@ -13,52 +13,57 @@ class Hip3PreviewDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final execution = preview.hip3Execution;
     if (execution == null) {
-      return const Text(
-        'Execution details are unavailable. Go back and request a new quote.',
-      );
+      return Text(l10n.hip3ExecutionDetailsUnavailable);
     }
     final fields = <(String, String)>[
-      ('Environment', execution.environment),
-      ('Product', execution.productId),
+      (l10n.environment, execution.environment),
+      (l10n.product, execution.productId),
       (
-        'Order type',
-        '${execution.type == TradingOrderType.market ? 'Market' : 'Limit'} · ${execution.timeInForce.toUpperCase()}',
+        l10n.orderType,
+        '${execution.type == TradingOrderType.market ? l10n.market : l10n.limit} · ${execution.timeInForce.toUpperCase()}',
       ),
-      ('Direction', preview.intent.side == TradingSide.long ? 'Long' : 'Short'),
-      ('Quantity', execution.quantity.value),
-      ('Price limit', '${execution.limitPrice.value} USDC'),
-      ('Order Value', '${execution.notional.value} USDC'),
       (
-        'Margin Mode',
-        execution.marginMode == TradingMarginMode.cross ? 'Cross' : 'Isolated',
+        l10n.direction,
+        preview.intent.side == TradingSide.long ? l10n.long : l10n.short,
       ),
-      ('Leverage', '${execution.leverage.value}x'),
-      ('Margin Required', '${execution.marginRequired.value} USDC'),
-      ('Available margin', '${execution.availableMargin.value} USDC'),
-      ('Maximum quantity', execution.maximumQuantity.value),
-      ('Estimated Fee', '${execution.estimatedFee.value} USDC'),
-      if (preview.feeRate case final rate?) ('Fee reserve rate', rate.value),
-      ('Slippage limit', '${execution.slippagePercent.value}%'),
+      (l10n.quantity, execution.quantity.value),
+      (l10n.limitPrice, '${execution.limitPrice.value} USDC'),
+      (l10n.orderValue, '${execution.notional.value} USDC'),
       (
-        'Liquidation Price',
+        l10n.marginMode,
+        execution.marginMode == TradingMarginMode.cross
+            ? l10n.cross
+            : l10n.isolated,
+      ),
+      (l10n.leverage, '${execution.leverage.value}x'),
+      (l10n.marginRequired, '${execution.marginRequired.value} USDC'),
+      (l10n.availableMargin, '${execution.availableMargin.value} USDC'),
+      (l10n.maximumQuantity, execution.maximumQuantity.value),
+      (l10n.estimatedFee, '${execution.estimatedFee.value} USDC'),
+      if (preview.feeRate case final rate?) (l10n.feeReserveRate, rate.value),
+      (l10n.slippageLimit, '${execution.slippagePercent.value}%'),
+      (
+        l10n.liquidationPrice,
         execution.liquidationPrice == null
-            ? 'Unavailable'
+            ? l10n.unavailable
             : '${execution.liquidationPrice!.value} USDC',
       ),
       if (execution.liquidationPrice == null)
         (
-          'Why unavailable',
+          l10n.whyUnavailable,
           switch (execution.liquidationPriceUnavailableReason) {
-            'cross_margin_requires_full_account_simulation' => 'Cross-margin liquidation depends on the full account and cannot be estimated reliably here.',
+            'cross_margin_requires_full_account_simulation' =>
+              l10n.crossMarginLiquidationUnavailable,
             final reason? => reason,
-            null => 'No reliable estimate was returned.',
+            null => l10n.noReliableLiquidationEstimate,
           },
         ),
       if (preview.expiresAt case final expires?)
         (
-          'Quote expires (UTC)',
+          l10n.quoteExpiresUtc,
           DateFormat('yyyy-MM-dd HH:mm:ss').format(expires.toUtc()),
         ),
     ];
@@ -85,32 +90,27 @@ class Hip3PreviewDetails extends StatelessWidget {
           ),
         const SizedBox(height: 12),
         if (!preview.openingProtectionMatchesIntent)
-          const Text(
-            'Protection confirmation is missing or differs from your order. Go back and request a new quote.',
-          ),
+          Text(l10n.protectionConfirmationMismatch),
         if (execution.openingProtection case final protection?) ...[
           Text(
-            AppLocalizations.of(context).hip3OrderTpSl,
+            l10n.hip3OrderTpSl,
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          Text(
-            'Fixed quantity: ${protection.quantity.value} (this order only)',
-          ),
+          Text(l10n.fixedQuantityThisOrder(protection.quantity.value)),
           for (final leg in protection.legs)
             Text(
-              '${leg.takeProfit ? 'Take profit' : 'Stop loss'} · Mark trigger ${leg.triggerPrice.value} USDC · ${leg.market ? 'Market price bound' : 'Limit price'} ${leg.executionPrice.value} USDC',
+              l10n.openingProtectionLeg(
+                leg.takeProfit ? l10n.takeProfit : l10n.stopLoss,
+                leg.triggerPrice.value,
+                leg.market ? l10n.marketPriceBound : l10n.limitPrice,
+                leg.executionPrice.value,
+              ),
             ),
-          const Text(
-            'Signed with this opening order. Triggering needs no new signature; later changes and cancellations require signing.',
-          ),
-          const Text(
-            'Waiting for the parent is not active protection. Cancelling a partially filled parent cancels its protection; check the remaining position. No automatic replacement.',
-          ),
+          Text(l10n.openingOrderSignatureNotice),
+          Text(l10n.openingProtectionParentWarning),
           const SizedBox(height: 12),
         ],
-        const Text(
-          'The price limit bounds execution; it does not guarantee a fill. Fees and margin are estimates.',
-        ),
+        Text(l10n.priceLimitEstimateNotice),
         if (preview.feeNote case final note?)
           Padding(padding: const EdgeInsets.only(top: 8), child: Text(note)),
         for (final detail in preview.details)

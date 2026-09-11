@@ -1,13 +1,18 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/session_scope.dart';
+import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/repositories/hip3_order_execution_repository.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/design_state_feedback.dart';
+import '../../../core/feedback/app_toast.dart';
 import '../../../core/feedback/empty_state.dart';
 import '../../../core/feedback/loading_skeleton.dart';
+import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/order_providers.dart';
 
@@ -70,30 +75,23 @@ class _PanelState extends ConsumerState<Hip3OpenOrdersPanel> {
     final next = last?.nextCursor;
     final invalidCursor =
         last?.hasMore == true && (next == null || _cursors.contains(next));
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton.icon(
-            onPressed: loading ? null : _refresh,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Refresh orders'),
-          ),
-        ),
         if (loading) const LoadingSkeleton(rows: 2),
         if (failed || invalidCursor) ...[
           DesignStateFeedback(
             state: DesignState.failure,
-            title: 'Open orders unavailable',
-            message: 'Try again to refresh open orders.',
+            title: l10n.openOrdersUnavailable,
+            message: l10n.openOrdersRefreshHint,
             onRetry: _refresh,
           ),
         ],
         if (!loading && !failed && orders.isEmpty)
-          const EmptyState(
-            title: 'No open orders',
-            description: 'Open orders for this product will appear here.',
+          EmptyState(
+            title: l10n.noOpenOrders,
+            description: l10n.openOrdersEmptyDescription,
           ),
         for (final order in orders.values)
           Hip3OpenOrderCard(
@@ -107,7 +105,7 @@ class _PanelState extends ConsumerState<Hip3OpenOrdersPanel> {
             onPressed: loading || failed
                 ? null
                 : () => setState(() => _cursors.add(next)),
-            child: const Text('Load more'),
+            child: Text(l10n.loadMore),
           ),
       ],
     );
@@ -127,8 +125,6 @@ class Hip3OpenOrderCard extends ConsumerStatefulWidget {
 }
 
 class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
-  static const _parentCancelWarning =
-      'If this order has attached TP/SL, cancelling the parent also cancels that protection. Check protection for any remaining position; replacement protection is not created automatically.';
   bool _busy = false;
   String? _message;
   Future<void> _cancel() async {
@@ -141,23 +137,23 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
       await ref.read(orderCommandProvider.notifier).cancel(widget.order);
       if (mounted) {
         if (widget.order.conditional == null) {
-          ScaffoldMessenger.of(
+          AppToast.showFailure(
             context,
-          ).showSnackBar(const SnackBar(content: Text(_parentCancelWarning)));
+            AppLocalizations.of(context).parentCancelWarning,
+          );
         }
         widget.onChanged();
       }
     } on Hip3ExecutionPending {
       if (mounted) {
         setState(
-          () => _message =
-              'Cancellation is still being confirmed. Refresh before retrying.',
+          () => _message = AppLocalizations.of(context).cancellationPending,
         );
       }
     } on Object {
       if (mounted) {
         setState(
-          () => _message = 'Cancellation was not completed. Refresh and retry; signing may still be required.',
+          () => _message = AppLocalizations.of(context).cancellationFailed,
         );
       }
     } finally {
@@ -169,18 +165,13 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
   Widget build(BuildContext context) {
     final order = widget.order;
     final conditional = order.conditional;
-    final side = switch (order.side) {
-      TradingSide.buy => 'Buy',
-      TradingSide.sell => 'Sell',
-      TradingSide.long => 'Long',
-      TradingSide.short => 'Short',
-    };
+    final l10n = AppLocalizations.of(context);
     final role = conditional == null
-        ? (order.type == TradingOrderType.limit ? 'Limit' : 'Market')
+        ? (order.type == TradingOrderType.limit ? l10n.limit : l10n.market)
         : switch (conditional.role) {
-            'takeProfit' => 'Take profit',
-            'stopLoss' => 'Stop loss',
-            _ => 'Conditional order',
+            'takeProfit' => 'TP',
+            'stopLoss' => 'SL',
+            _ => l10n.conditionalOrder,
           };
     final total = double.tryParse(
       order.quantity?.value ?? conditional?.quantity ?? '',
@@ -196,95 +187,259 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
         ? (filled / total).clamp(0.0, 1.0)
         : null;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final totalQuantity = order.quantity?.value ?? conditional?.quantity ?? '—';
+    final filledQuantity = order.filledQuantity?.value ?? '0';
+    final price =
+        order.limitPrice?.value ??
+        conditional?.triggerPrice.value ??
+        l10n.market;
+    final hasProtectionException =
+        conditional != null &&
+        (order.isTerminal || conditional.activationStatus != 'active');
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  '${order.symbol}/USDC',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${order.symbol}/USDC',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 22 / 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 18,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: colors.border,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            role,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              height: 14 / 11,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            DateFormat('yyyy/MM/dd')
+                                .format(order.createdAt.toLocal()),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              height: 14 / 11,
+                              color: colors.tertiaryText,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
               SizedBox(
-                height: 32,
+                height: 28,
                 child: OutlinedButton(
                   onPressed: _busy || order.isTerminal ? null : _cancel,
-                  child: Text(_busy ? 'Cancelling…' : 'Cancel'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 28),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    backgroundColor: colors.subtleSurface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      height: 18 / 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  child: Text(_busy ? l10n.cancelling : l10n.cancel),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            '$side · $role',
-            style: TextStyle(fontSize: 13, color: colors.secondaryText),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _OrderMetric(
+                label: 'Filled / Total',
+                value:
+                    '${_formatQuantity(filledQuantity)} / ${_formatQuantity(totalQuantity)}',
+              ),
+              _OrderMetric(label: 'Price', value: price),
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Progress',
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 14 / 11,
+                          color: colors.tertiaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 40,
+                            height: 8,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                minHeight: 8,
+                                backgroundColor: colors.subtleSurface,
+                                valueColor: AlwaysStoppedAnimation(
+                                  colors.primaryAction,
+                                ),
+                                semanticsLabel: l10n.filled,
+                                semanticsValue: progress == null
+                                    ? null
+                                    : '${(progress * 100).round()}%',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            progress == null
+                                ? '—'
+                                : '${(progress * 100).round()}%',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              height: 16 / 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Divider(height: 1, color: colors.border),
-          const SizedBox(height: 12),
-          if (conditional != null) ...[
+          if (hasProtectionException) ...[
+            const SizedBox(height: 12),
             Text(
               order.isTerminal
-                  ? 'Protection is no longer active'
+                  ? l10n.protectionInactive
                   : switch (conditional.activationStatus) {
-                      'pendingSubmission' => 'Protection not submitted',
-                      'waitingForParent' =>
-                        'Protection waiting for parent fill — not active',
+                      'pendingSubmission' => l10n.protectionNotSubmitted,
+                      'waitingForParent' => l10n.protectionWaitingForParent,
                       'pendingConfirmation' =>
-                        'Protection activation awaiting confirmation',
-                      'active' => 'Protection active',
-                      'inactive' => 'Protection is no longer active',
-                      _ => 'Protection status unknown — not confirmed active',
+                        l10n.protectionAwaitingConfirmation,
+                      'active' => l10n.protectionActive,
+                      'inactive' => l10n.protectionInactive,
+                      _ => l10n.protectionStatusUnknown,
                     },
+              style: TextStyle(fontSize: 12, color: colors.secondaryText),
             ),
-            if (conditional.parentOrderId != null)
-              Text('Attached to order: ${conditional.parentOrderId}'),
-            if (conditional.warningCode ==
-                'parentCancelledCheckRemainingPositionProtection')
-              const Text(
-                'Parent cancelled: this protection is inactive. Check protection for any remaining position; no replacement is created automatically.',
+          ],
+          if (conditional?.parentOrderId case final parentOrderId?)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                l10n.attachedToOrder(parentOrderId),
+                style: TextStyle(fontSize: 12, color: colors.secondaryText),
               ),
-            Text(
-              'Trigger price: ${conditional.triggerPrice.value} USDC · ${conditional.triggerReference}',
             ),
-            Text(
-              'Trigger status: ${conditional.triggerStatus} · ${conditional.executionType}',
+          if (conditional?.warningCode ==
+              'parentCancelledCheckRemainingPositionProtection')
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                l10n.parentCancelledProtectionWarning,
+                style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              ),
             ),
-            Text(
-              conditional.sizeMode == 'entirePosition'
-                  ? 'Entire position protection'
-                  : 'Fixed quantity: ${conditional.quantity}',
-            ),
-          ],
           if (conditional == null && !order.isTerminal)
-            const Text(_parentCancelWarning),
-          Text(
-            'Filled / Total: ${order.filledQuantity?.value ?? '0'} / ${order.quantity?.value ?? conditional?.quantity ?? '—'}',
-          ),
-          Text('Order price: ${order.limitPrice?.value ?? 'Market'}'),
-          Text('Status: ${order.status.name}'),
-          if (progress != null) ...[
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: progress,
-              semanticsLabel: 'Filled',
-              semanticsValue: '${(progress * 100).toStringAsFixed(1)}%',
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                l10n.parentCancelWarning,
+                style: TextStyle(fontSize: 12, color: colors.secondaryText),
+              ),
             ),
-            Text('${(progress * 100).toStringAsFixed(1)}% filled'),
-          ],
           if (_message != null)
-            Semantics(liveRegion: true, child: Text(_message!)),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Semantics(liveRegion: true, child: Text(_message!)),
+            ),
         ],
       ),
     );
   }
 }
+
+class _OrderMetric extends StatelessWidget {
+  const _OrderMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11,
+              height: 14 / 11,
+              color: colors.tertiaryText,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              height: 16 / 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatQuantity(String value) =>
+    TokenAmountFormatter.formatValue(DecimalValue(value));

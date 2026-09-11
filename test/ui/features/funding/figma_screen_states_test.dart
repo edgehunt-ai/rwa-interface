@@ -12,6 +12,7 @@ import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
 import 'package:rwa_interface/ui/features/funding/views/withdrawal_screen.dart';
@@ -60,8 +61,8 @@ void main() {
 
     expect(find.byType(DepositScreen), findsOneWidget);
     expect(find.text('Deposit crypto'), findsOneWidget);
-    expect(find.text('USDC on BSC'), findsOneWidget);
-    expect(find.text('USDC on Arbitrum'), findsOneWidget);
+    expect(find.text('Deposit USDC on BSC'), findsOneWidget);
+    expect(find.text('Deposit USDC on Arbitrum'), findsOneWidget);
   });
 
   testWidgets('deposit instructions render the API QR payload', (tester) async {
@@ -129,14 +130,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Deposit Assets'), findsOneWidget);
-    expect(find.text('Deposit received !'), findsOneWidget);
+    expect(find.text('Deposit assets'), findsOneWidget);
+    expect(find.text('Deposit received'), findsOneWidget);
     expect(find.text('+ 1,000 USDC (Arbitrum)'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Got it'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(FilledButton, 'Got it'));
     await tester.pumpAndSettle();
-    expect(find.text('Deposit received !'), findsNothing);
+    expect(find.text('Deposit received'), findsNothing);
   });
 
   testWidgets('withdrawal picker shows available assets', (tester) async {
@@ -239,10 +240,7 @@ void main() {
           fundingRepositoryProvider.overrideWithValue(_Funding()),
           tradingAccountsProvider.overrideWith((_) async => _accounts),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const WithdrawalScreen(),
-        ),
+        child: _fundingApp(const WithdrawalScreen()),
       ),
     );
 
@@ -286,10 +284,7 @@ void main() {
           fundingRepositoryProvider.overrideWithValue(funding),
           tradingAccountsProvider.overrideWith((_) async => _accounts),
         ],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const WithdrawalScreen(),
-        ),
+        child: _fundingApp(const WithdrawalScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -353,6 +348,13 @@ DepositInstruction _depositInstruction(DepositBalanceMonitorKey route) =>
       estimatedArrivalSeconds: 60,
       warning: 'Send ${route.token} only.',
     );
+
+Widget _fundingApp(Widget home) => MaterialApp(
+  theme: AppTheme.light,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: home,
+);
 
 final _depositRoutes = [
   DepositRoute(

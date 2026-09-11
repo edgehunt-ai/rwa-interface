@@ -28,16 +28,15 @@ import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart'
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
 
 void main() {
-  testWidgets('quantity input is labelled in product units, not dollars', (
+  testWidgets('order form uses a USDC amount input without a quantity tab', (
     tester,
   ) async {
     await tester.pumpWidget(_app(const Hip3OrderPanel()));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Quantity').first);
+    expect(find.text('Quantity'), findsNothing);
     await tester.enterText(find.byType(TextField).first, '2');
     await tester.pump();
-    expect(find.text('Long NVDA · 2 NVDA'), findsOneWidget);
-    expect(find.text(r'Long NVDA · $2'), findsNothing);
+    expect(find.text(r'Long NVDA · $2'), findsOneWidget);
   });
 
   testWidgets(
@@ -81,6 +80,8 @@ void main() {
         find.byKey(const Key('opening-protection-0')),
         '120',
       );
+      await tester.tap(find.byKey(const Key('hip3-tp-sl-confirm')));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.byType(FilledButton).first);
       await tester.tap(find.byType(FilledButton).first);
       await tester.pumpAndSettle();
@@ -106,9 +107,38 @@ void main() {
   ) async {
     await tester.pumpWidget(_app(const Hip3OrderPanel()));
     await tester.pumpAndSettle();
-    expect(find.text('TP/SL'), findsOneWidget);
+    expect(find.text('Take profit/stop loss'), findsOneWidget);
     expect(find.text('Position TP/SL'), findsNothing);
   });
+
+  testWidgets(
+    'TP/SL add opens the localized price editor and slider updates price',
+    (tester) async {
+      await tester.pumpWidget(_app(const Hip3OrderPanel()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Take profit/stop loss'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('Take Profit & stop loss'), findsOneWidget);
+
+      final takeProfit = find.byKey(const Key('opening-protection-0'));
+      await tester.enterText(takeProfit, '100');
+      await tester.pump();
+      await tester.drag(
+        find.descendant(
+          of: find.byKey(const Key('take-profit-ruler')),
+          matching: find.byType(Slider),
+        ),
+        const Offset(80, 0),
+      );
+      await tester.pump();
+      expect(
+        tester.widget<TextField>(takeProfit).controller!.text,
+        isNot('100'),
+      );
+    },
+  );
   testWidgets(
     'late execution outcomes cannot restore a previous account order',
     (tester) async {
@@ -322,7 +352,7 @@ void main() {
       );
       expect(confirm.onPressed, isNull);
       expect(
-        find.textContaining('Quote unavailable or expired'),
+        find.textContaining('This quote is unavailable or expired'),
         findsOneWidget,
       );
       await tester.pumpWidget(const SizedBox());
@@ -490,10 +520,8 @@ void main() {
         find.byKey(const Key('opening-protection-2')),
         '90',
       );
-      await tester.enterText(
-        find.byKey(const Key('opening-protection-3')),
-        '89',
-      );
+      await tester.tap(find.byKey(const Key('hip3-tp-sl-confirm')));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.ensureVisible(find.byType(FilledButton).first);
       await tester.tap(find.byType(FilledButton).first);
@@ -507,10 +535,7 @@ void main() {
         '120',
       );
       expect(orders.intent?.openingProtection?.takeProfit?.limitPrice, isNull);
-      expect(
-        orders.intent?.openingProtection?.stopLoss?.limitPrice?.value,
-        '89',
-      );
+      expect(orders.intent?.openingProtection?.stopLoss?.limitPrice, isNull);
       expect(orders.intent?.tpSl, isNull);
       expect(find.text('Review Long NVDA'), findsOneWidget);
       expect(find.text('Isolated'), findsOneWidget);
@@ -541,6 +566,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Leverage'), findsOneWidget);
     expect(find.bySemanticsLabel('Drag to set leverage'), findsOneWidget);
+  });
+
+  testWidgets('order settings remain usable when trading rules cannot load', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3OpeningContextProvider.overrideWith(
+            (ref, product) async => throw StateError('unavailable'),
+          ),
+        ],
+        child: buildTestApp(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Reload trading rules'), findsNothing);
+    expect(find.text('Loading trading rules...'), findsNothing);
+    await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('Margin mode'), findsOneWidget);
+
+    await tester.tap(find.text('Cross').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.text('Leverage'), findsOneWidget);
   });
 
   testWidgets('pending HIP-3 order is signed and submitted before success', (

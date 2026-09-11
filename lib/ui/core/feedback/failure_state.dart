@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 
 import '../theme/app_theme.dart';
 
@@ -45,6 +46,7 @@ class _FailureStateState extends State<FailureState> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     final content = Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -52,7 +54,7 @@ class _FailureStateState extends State<FailureState> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Semantics(
-              label: widget.title ?? widget.description ?? 'Request failed',
+              label: widget.title ?? widget.description ?? l10n.requestFailed,
               child: Image.asset(
                 'assets/figma/common/error_state_illustration.png',
                 width: 160,
@@ -123,7 +125,7 @@ class _FailureStateState extends State<FailureState> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Retry'),
+                      : Text(l10n.retry),
                 ),
               ),
             ],

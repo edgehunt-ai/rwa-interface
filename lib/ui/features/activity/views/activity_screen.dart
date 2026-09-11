@@ -131,13 +131,13 @@ class _LoggedOutActivity extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Log in to view your activity',
+                AppLocalizations.of(context).loginToViewActivity,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                'Your orders and account activity will appear here.',
+                AppLocalizations.of(context).accountActivityAppearHere,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium
                     ?.copyWith(color: colors.secondaryText),
@@ -147,7 +147,7 @@ class _LoggedOutActivity extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onLogin,
-                  child: const Text('Log in'),
+                  child: Text(AppLocalizations.of(context).logIn),
                 ),
               ),
             ],

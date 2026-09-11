@@ -9,6 +9,7 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
@@ -17,6 +18,7 @@ import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 import 'package:rwa_interface/ui/features/positions/views/hip3_pending_actions_section.dart';
 
@@ -50,113 +52,131 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
     final portfolio = ref.watch(portfolioSummaryProvider);
     final accounts = ref.watch(tradingAccountsProvider);
     final holdings = ref.watch(holdingsProvider(null));
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       bottomNavigationBar: const AppBottomNavigation(
         current: AppDestination.assets,
       ),
       body: SafeArea(
-        child: portfolio.when(
-          loading: () => const DesignStateFeedback(
-            state: DesignState.loading,
-            title: 'Loading assets',
-          ),
-          error: (_, _) => DesignStateFeedback(
-            state: DesignState.failure,
-            title: 'We couldn\u2019t load your assets',
-            message: 'Pull to refresh and try again.',
-            onRetry: () => ref.refresh(portfolioSummaryProvider.future),
-          ),
-          data: (value) => _isEmptyPortfolio(value)
-              ? const _EmptyAssets()
-              : RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(portfolioSummaryProvider);
-                    ref.invalidate(tradingAccountsProvider);
-                    ref.invalidate(holdingsProvider);
-                  },
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-                    children: [
-                      Text(
-                        'Assets',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 20),
-                      _PortfolioSummary(
-                        portfolio: value,
-                        showMiniTrend: !trendExpanded,
-                        onTrendTap: () => setState(() => trendExpanded = true),
-                      ),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOutCubic,
-                        alignment: Alignment.topCenter,
-                        child: trendExpanded
-                            ? Padding(
-                                padding: const EdgeInsets.only(top: 28),
-                                child: _TrendExpanded(
-                                  onCollapse: () =>
-                                      setState(() => trendExpanded = false),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: () => showDepositRoutesSheet(context),
-                              child: const Text('Deposit'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => context.pushNamed(
-                                AppRoutes.withdrawalSelectName,
-                              ),
-                              child: const Text('Withdraw'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      _Allocation(
-                        accounts: accounts,
-                        expanded: allocationExpanded,
-                        onTap: () => setState(
-                          () => allocationExpanded = !allocationExpanded,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _AssetTabs(
-                        selected: tab,
-                        onSelected: (value) => setState(() => tab = value),
-                      ),
-                      const SizedBox(height: 16),
-                      switch (tab) {
-                        _AssetTab.cash => _CashBalances(accounts: accounts),
-                        _AssetTab.bstocks => _HoldingSection(
-                          title: 'bStocks',
-                          holdings: holdings,
-                          kind: MarketProductKind.bstock,
-                        ),
-                        _AssetTab.perps => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              child: Text(
+                l10n.assetsTitle,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: portfolio.when(
+                loading: () => DesignStateFeedback(
+                  state: DesignState.loading,
+                  title: l10n.loadingAssets,
+                ),
+                error: (_, _) => DesignStateFeedback(
+                  state: DesignState.failure,
+                  title: l10n.assetsUnavailable,
+                  message: l10n.pullToRefreshRetry,
+                  onRetry: () => ref.refresh(portfolioSummaryProvider.future),
+                ),
+                data: (value) => _isEmptyPortfolio(value)
+                    ? const _EmptyAssets()
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(portfolioSummaryProvider);
+                          ref.invalidate(tradingAccountsProvider);
+                          ref.invalidate(holdingsProvider);
+                          ref.invalidate(activeHip3ActionsProvider);
+                        },
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                           children: [
-                            const Hip3PendingActionsSection(),
-                            const SizedBox(height: 20),
-                            _HoldingSection(
-                              title: 'Perps equity',
-                              holdings: holdings,
-                              kind: MarketProductKind.perp,
+                            _PortfolioSummary(
+                              portfolio: value,
+                              showMiniTrend: !trendExpanded,
+                              onTrendTap: () =>
+                                  setState(() => trendExpanded = true),
                             ),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 220),
+                              curve: Curves.easeOutCubic,
+                              alignment: Alignment.topCenter,
+                              child: trendExpanded
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 28),
+                                      child: _TrendExpanded(
+                                        onCollapse: () => setState(
+                                          () => trendExpanded = false,
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: FilledButton(
+                                    onPressed: () =>
+                                        showDepositRoutesSheet(context),
+                                    child: Text(l10n.deposit),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () => context.pushNamed(
+                                      AppRoutes.withdrawalSelectName,
+                                    ),
+                                    child: Text(l10n.withdraw),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            _Allocation(
+                              accounts: accounts,
+                              expanded: allocationExpanded,
+                              onTap: () => setState(
+                                () => allocationExpanded = !allocationExpanded,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _AssetTabs(
+                              selected: tab,
+                              onSelected: (value) =>
+                                  setState(() => tab = value),
+                            ),
+                            const SizedBox(height: 16),
+                            switch (tab) {
+                              _AssetTab.cash => _CashBalances(
+                                accounts: accounts,
+                              ),
+                              _AssetTab.bstocks => _HoldingSection(
+                                title: 'bStocks',
+                                holdings: holdings,
+                                kind: MarketProductKind.bstock,
+                              ),
+                              _AssetTab.perps => Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Hip3PendingActionsSection(),
+                                  const SizedBox(height: 20),
+                                  _HoldingSection(
+                                    title: l10n.perpsEquity,
+                                    holdings: holdings,
+                                    kind: MarketProductKind.perp,
+                                  ),
+                                ],
+                              ),
+                            },
                           ],
                         ),
-                      },
-                    ],
-                  ),
-                ),
+                      ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -175,12 +195,14 @@ class _EmptyAssets extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       children: [
-        Text('Assets', style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 28),
-        Text('Portfolio value', style: TextStyle(color: colors.secondaryText)),
+        Text(
+          l10n.portfolioValue,
+          style: TextStyle(color: colors.secondaryText),
+        ),
         const SizedBox(height: 4),
         Text(
           r'$0.00',
@@ -194,7 +216,7 @@ class _EmptyAssets extends StatelessWidget {
           width: double.infinity,
           child: FilledButton(
             onPressed: () => showDepositRoutesSheet(context),
-            child: const Text('Deposit'),
+            child: Text(l10n.deposit),
           ),
         ),
         const SizedBox(height: 42),
@@ -205,13 +227,13 @@ class _EmptyAssets extends StatelessWidget {
         ),
         const SizedBox(height: 22),
         Text(
-          'No assets yet',
+          l10n.noAssetsYet,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 14),
         Text(
-          'Deposit a supported asset to start\nbuilding your portfolio.',
+          l10n.depositToBuildPortfolio,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium
               ?.copyWith(color: colors.secondaryText),
@@ -229,10 +251,14 @@ class _LoggedOutAssets extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
-        Text('Assets', style: Theme.of(context).textTheme.headlineMedium),
+        Text(
+          l10n.assetsTitle,
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
         SizedBox(
           height: 540,
           child: Column(
@@ -246,13 +272,13 @@ class _LoggedOutAssets extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Log in to view your assets',
+                l10n.loginToViewAssets,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                'Your portfolio and balances will appear here.',
+                l10n.portfolioBalancesAppearHere,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium
                     ?.copyWith(color: colors.secondaryText),
@@ -262,7 +288,7 @@ class _LoggedOutAssets extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onLogin,
-                  child: const Text('Log in'),
+                  child: Text(l10n.logIn),
                 ),
               ),
             ],
@@ -300,7 +326,7 @@ class _PortfolioSummary extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Portfolio value',
+                  AppLocalizations.of(context).portfolioValue,
                   style: TextStyle(
                     color: Theme.of(context)
                         .extension<AppRwaColors>()!
@@ -331,7 +357,7 @@ class _PortfolioSummary extends StatelessWidget {
           if (showMiniTrend)
             Semantics(
               button: true,
-              label: 'View portfolio trend',
+              label: AppLocalizations.of(context).viewPortfolioTrend,
               child: InkWell(
                 key: const Key('portfolio-trend-trigger'),
                 onTap: onTrendTap,
@@ -370,7 +396,9 @@ class _Allocation extends StatelessWidget {
     }
     return Semantics(
       button: true,
-      label: expanded ? 'Collapse allocation' : 'Expand allocation',
+      label: expanded
+          ? AppLocalizations.of(context).collapseAllocation
+          : AppLocalizations.of(context).expandAllocation,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -380,8 +408,8 @@ class _Allocation extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Text(
-                    'Allocation',
+                  Text(
+                    AppLocalizations.of(context).allocation,
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
@@ -401,7 +429,7 @@ class _Allocation extends StatelessWidget {
                   radius: 3,
                 ),
                 error: (_, _) => Text(
-                  'Allocation unavailable',
+                  AppLocalizations.of(context).allocationUnavailable,
                   style: TextStyle(fontSize: 12, color: colors.secondaryText),
                 ),
                 data: (accounts) {
@@ -410,7 +438,7 @@ class _Allocation extends StatelessWidget {
                   );
                   if (allocation == null) {
                     return Text(
-                      'Allocation unavailable',
+                      AppLocalizations.of(context).allocationUnavailable,
                       style: TextStyle(
                         fontSize: 12,
                         color: colors.secondaryText,
@@ -444,51 +472,54 @@ class _AllocationValues extends StatelessWidget {
   final bool expanded;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          for (final entry
-              in allocation.entries
-                  .where((entry) => entry.basisPoints > 0)
-                  .indexed) ...[
-            if (entry.$1 > 0) const SizedBox(width: 4),
-            Expanded(
-              flex: entry.$2.basisPoints,
-              child: Container(
-                height: 6,
-                decoration: BoxDecoration(
-                  color: switch (entry.$2.kind) {
-                    TradingAccountKind.app => colors.primaryAction,
-                    TradingAccountKind.bstocks => colors.secondaryText,
-                    TradingAccountKind.hip3 => colors.selected,
-                    TradingAccountKind.unknown => colors.border,
-                  },
-                  borderRadius: BorderRadius.circular(3),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            for (final entry
+                in allocation.entries
+                    .where((entry) => entry.basisPoints > 0)
+                    .indexed) ...[
+              if (entry.$1 > 0) const SizedBox(width: 4),
+              Expanded(
+                flex: entry.$2.basisPoints,
+                child: Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: switch (entry.$2.kind) {
+                      TradingAccountKind.app => colors.primaryAction,
+                      TradingAccountKind.bstocks => colors.secondaryText,
+                      TradingAccountKind.hip3 => colors.selected,
+                      TradingAccountKind.unknown => colors.border,
+                    },
+                    borderRadius: BorderRadius.circular(3),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
-      ),
-      const SizedBox(height: 8),
-      Text(
-        allocation.entries
-            .map((entry) => '${entry.label} ${entry.percentLabel}')
-            .join(' · '),
-        style: TextStyle(fontSize: 12, color: colors.secondaryText),
-      ),
-      if (expanded) ...[
+        ),
         const SizedBox(height: 8),
-        for (final entry in allocation.entries)
-          _ValueRow(
-            label: '${entry.label} · ${entry.percentLabel}',
-            value: TokenAmountFormatter.formatUsd(entry.value),
-          ),
+        Text(
+          allocation.entries
+              .map((entry) => '${entry.label(l10n)} ${entry.percentLabel}')
+              .join(' · '),
+          style: TextStyle(fontSize: 12, color: colors.secondaryText),
+        ),
+        if (expanded) ...[
+          const SizedBox(height: 8),
+          for (final entry in allocation.entries)
+            _ValueRow(
+              label: '${entry.label(l10n)} · ${entry.percentLabel}',
+              value: TokenAmountFormatter.formatUsd(entry.value),
+            ),
+        ],
       ],
-    ],
-  );
+    );
+  }
 }
 
 class _PortfolioAllocation {
@@ -525,14 +556,12 @@ class _PortfolioAllocation {
     return _PortfolioAllocation([
       _AllocationEntry(
         kind: TradingAccountKind.app,
-        label: 'Cash',
         value: values[TradingAccountKind.app]!,
         percent:
             double.parse(values[TradingAccountKind.app]!.value) / total * 100,
       ),
       _AllocationEntry(
         kind: TradingAccountKind.bstocks,
-        label: 'bStocks',
         value: values[TradingAccountKind.bstocks]!,
         percent:
             double.parse(values[TradingAccountKind.bstocks]!.value) /
@@ -541,7 +570,6 @@ class _PortfolioAllocation {
       ),
       _AllocationEntry(
         kind: TradingAccountKind.hip3,
-        label: 'Perps',
         value: values[TradingAccountKind.hip3]!,
         percent:
             double.parse(values[TradingAccountKind.hip3]!.value) / total * 100,
@@ -582,18 +610,23 @@ DecimalValue _sumUsdValues(Iterable<DecimalValue?> values) {
 class _AllocationEntry {
   const _AllocationEntry({
     required this.kind,
-    required this.label,
     required this.value,
     required this.percent,
   });
 
   final TradingAccountKind kind;
-  final String label;
   final DecimalValue value;
   final double percent;
 
   int get basisPoints => (percent * 100).round();
   String get percentLabel => '${percent.toStringAsFixed(1)}%';
+
+  String label(AppLocalizations l10n) => switch (kind) {
+    TradingAccountKind.app => l10n.cash,
+    TradingAccountKind.bstocks => l10n.bstocks,
+    TradingAccountKind.hip3 => l10n.perps,
+    TradingAccountKind.unknown => l10n.allocationUnavailable,
+  };
 }
 
 class _TrendExpanded extends StatelessWidget {
@@ -609,9 +642,9 @@ class _TrendExpanded extends StatelessWidget {
           height: 32,
           child: Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Portfolio trend',
+                  AppLocalizations.of(context).portfolioTrend,
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -795,18 +828,18 @@ class _CashBalances extends ConsumerWidget {
   final AsyncValue<List<TradingAccount>> accounts;
   @override
   Widget build(BuildContext context, WidgetRef ref) => accounts.when(
-    loading: () => const SizedBox(
+    loading: () => SizedBox(
       height: 180,
       child: DesignStateFeedback(
         state: DesignState.loading,
-        title: 'Loading cash balances',
+        title: AppLocalizations.of(context).loadingCashBalances,
       ),
     ),
     error: (_, _) => SizedBox(
       height: 340,
       child: DesignStateFeedback(
         state: DesignState.failure,
-        title: 'Cash balances unavailable',
+        title: AppLocalizations.of(context).cashBalancesUnavailable,
         onRetry: () => ref.refresh(tradingAccountsProvider.future),
       ),
     ),
@@ -815,12 +848,12 @@ class _CashBalances extends ConsumerWidget {
           .expand((account) => account.balances)
           .toList(growable: false);
       if (balances.isEmpty) {
-        return const SizedBox(
+        return SizedBox(
           height: 320,
           child: DesignStateFeedback(
             state: DesignState.empty,
-            title: 'No cash balances',
-            message: 'Deposit a supported asset to add cash here.',
+            title: AppLocalizations.of(context).noCashBalances,
+            message: AppLocalizations.of(context).depositToAddCash,
           ),
         );
       }
@@ -828,7 +861,7 @@ class _CashBalances extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SectionTitle(
-            title: 'Cash balances',
+            title: AppLocalizations.of(context).cashBalances,
             value: _sumUsd(balances.map((item) => item.valueUsd)),
           ),
           for (final balance in balances) _CashRow(balance: balance),
@@ -936,8 +969,14 @@ class _CashActionSheet extends StatelessWidget {
           'Token details',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        _ValueRow(label: 'Network', value: balance.chain ?? '—'),
-        _ValueRow(label: 'Token type', value: balance.symbol),
+        _ValueRow(
+          label: AppLocalizations.of(context).network,
+          value: balance.chain ?? '—',
+        ),
+        _ValueRow(
+          label: AppLocalizations.of(context).tokenType,
+          value: balance.symbol,
+        ),
         const SizedBox(height: 16),
         Text(
           'Cash balance',
@@ -961,14 +1000,14 @@ class _CashActionSheet extends StatelessWidget {
             Expanded(
               child: FilledButton(
                 onPressed: () => showDepositRoutesSheet(context),
-                child: const Text('Deposit'),
+                child: Text(AppLocalizations.of(context).deposit),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
                 onPressed: () => context.pushNamed(AppRoutes.withdrawalName),
-                child: const Text('Withdraw'),
+                child: Text(AppLocalizations.of(context).withdraw),
               ),
             ),
           ],
@@ -989,18 +1028,18 @@ class _HoldingSection extends ConsumerWidget {
   final MarketProductKind kind;
   @override
   Widget build(BuildContext context, WidgetRef ref) => holdings.when(
-    loading: () => const SizedBox(
+    loading: () => SizedBox(
       height: 180,
       child: DesignStateFeedback(
         state: DesignState.loading,
-        title: 'Loading holdings',
+        title: AppLocalizations.of(context).loadingHoldings,
       ),
     ),
     error: (_, _) => SizedBox(
       height: 340,
       child: DesignStateFeedback(
         state: DesignState.failure,
-        title: 'Holdings unavailable',
+        title: AppLocalizations.of(context).holdingsUnavailable,
         onRetry: () => ref.refresh(holdingsProvider(null).future),
       ),
     ),
@@ -1014,10 +1053,10 @@ class _HoldingSection extends ConsumerWidget {
           height: 320,
           child: DesignStateFeedback(
             state: DesignState.empty,
-            title: 'No $title holdings',
+            title: AppLocalizations.of(context).noHoldings(title),
             message: kind == MarketProductKind.bstock
-                ? 'Buy a bStock to see it here.'
-                : 'Open a Perps position to see it here.',
+                ? AppLocalizations.of(context).buyBstockToSeeHere
+                : AppLocalizations.of(context).openPerpsPositionToSeeHere,
           ),
         );
       }
@@ -1028,7 +1067,16 @@ class _HoldingSection extends ConsumerWidget {
             title: title,
             value: _sumUsd(positions.map((item) => item.valueUsd)),
           ),
-          for (final position in positions) _HoldingRow(position: position),
+          for (final position in positions)
+            _HoldingRow(
+              position: position,
+              onTap: () => context.push(
+                AppRoutes.tradeLocation(
+                  symbol: position.symbol,
+                  kind: position.kind.name,
+                ),
+              ),
+            ),
         ],
       );
     },
@@ -1036,69 +1084,180 @@ class _HoldingSection extends ConsumerWidget {
 }
 
 class _HoldingRow extends StatelessWidget {
-  const _HoldingRow({required this.position});
+  const _HoldingRow({required this.position, required this.onTap});
   final Position position;
+  final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final pnl = position.unrealizedPnl ?? position.realizedPnl;
+    final l10n = AppLocalizations.of(context);
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          Row(
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final isBstock = position.kind == MarketProductKind.bstock;
+    final quantitySymbol = isBstock
+        ? '${_underlyingSymbol(position.symbol)}B'
+        : position.symbol;
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 76,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
             children: [
-              _TokenIcon(symbol: position.symbol),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  position.symbol,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    TokenAmountFormatter.formatUsd(position.valueUsd),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  Text(
-                    TokenAmountFormatter.format(
-                      position.quantity,
-                      symbol: position.symbol,
+              SizedBox(
+                height: 40,
+                child: Row(
+                  children: [
+                    _TokenIcon(symbol: position.symbol),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _underlyingSymbol(position.symbol),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              height: 22 / 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _companyName(position.symbol),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 16 / 12,
+                                    color: colors.secondaryText,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              SvgPicture.asset(
+                                isBstock
+                                    ? 'assets/figma/home_markets/venue_bnb.svg'
+                                    : 'assets/figma/home_markets/venue_hyperliquid.svg',
+                                width: 14,
+                                height: 14,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isBstock ? 'bStocks' : 'HIP-3',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 16 / 12,
+                                  color: colors.secondaryText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          if (pnl != null)
-            Row(
-              children: [
-                Text(
-                  position.kind == MarketProductKind.perp
-                      ? 'Unrealized P&L'
-                      : 'Holding return',
-                  style: const TextStyle(fontSize: 12),
+                    SizedBox(
+                      width: 112,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            TokenAmountFormatter.formatUsd(position.valueUsd),
+                            maxLines: 1,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              height: 22 / 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${TokenAmountFormatter.formatValue(position.quantity)} '
+                            '$quantitySymbol',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 16 / 12,
+                              color: colors.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const Spacer(),
-                Text(
-                  TokenAmountFormatter.formatUsd(pnl),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: pnl.value.startsWith('-')
-                        ? semantic.loss
-                        : semantic.success,
+              ),
+              if (pnl != null) ...[
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 16,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 52),
+                      Text(
+                        isBstock ? l10n.holdingReturn : l10n.unrealizedPnl,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 16 / 12,
+                          color: colors.secondaryText,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        [
+                          _formatSignedUsd(pnl),
+                          if (position.unrealizedPnlPercent != null)
+                            '(${TokenAmountFormatter.formatPercent(position.unrealizedPnlPercent!)})',
+                        ].join(' '),
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 16 / 12,
+                          color: pnl.value.startsWith('-')
+                              ? semantic.loss
+                              : semantic.success,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
+}
+
+String _underlyingSymbol(String symbol) =>
+    symbol.endsWith('B') ? symbol.substring(0, symbol.length - 1) : symbol;
+
+String _companyName(String symbol) => switch (_underlyingSymbol(symbol)) {
+  'NVDA' => 'NVIDIA',
+  'TSLA' => 'Tesla',
+  'AAPL' => 'Apple',
+  'MSFT' => 'Microsoft',
+  'META' => 'Meta',
+  'GOOGL' => 'Alphabet',
+  'AMD' => 'AMD',
+  'NFLX' => 'Netflix',
+  'PLTR' => 'Palantir',
+  _ => _underlyingSymbol(symbol),
+};
+
+String _formatSignedUsd(DecimalValue? value) {
+  if (value == null) return '—';
+  final formatted = TokenAmountFormatter.formatUsd(value);
+  return value.value.startsWith('-') || value.value == '0'
+      ? formatted
+      : '+$formatted';
 }
 
 class _SectionTitle extends StatelessWidget {
