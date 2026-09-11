@@ -15,6 +15,11 @@ abstract interface class FundingRepository {
     required String tradePreviewId,
     required String idempotencyKey,
   });
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  });
   Future<FundingPlan> getFundingPlan(String id);
   Future<FundingTransfer> createFundingTransfer({
     required String planId,
@@ -25,7 +30,9 @@ abstract interface class FundingRepository {
   Future<FundingTransfer> getFundingTransfer(String id);
   Future<ResourceResult<Deposit>> getDeposit(String id);
   Future<DomainPage<ResourceResult<Deposit>>> listDeposits({String? cursor});
-  Future<DomainPage<DepositObservation>> listDepositObservations({String? cursor});
+  Future<DomainPage<DepositObservation>> listDepositObservations({
+    String? cursor,
+  });
   Future<WithdrawalQuote> quoteWithdrawal(
     WithdrawalIntent intent, {
     required String idempotencyKey,

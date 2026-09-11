@@ -105,7 +105,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
         setState(
           () => _error =
-              'Unable to load trading rules. Retry before placing an order.',
+              AppLocalizations.of(context).loadingTradingRules,
         );
       }
     } finally {
@@ -462,18 +462,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   onClose: () => Navigator.of(context).pop(),
                 ),
                 const SizedBox(height: 16),
-                if (_contextLoading) const Text('Loading trading rules...'),
+                if (_contextLoading) Text(AppLocalizations.of(context).loadingTradingRules),
                 if (_context == null && !_contextLoading)
                   TextButton(
                     onPressed: _loadContext,
-                    child: const Text('Retry trading rules'),
+                    child: Text(AppLocalizations.of(context).retryTradingRules),
                   ),
                 if (_context case final rules?) ...[
                   Text(
-                    '${rules.environment} · ${rules.productId} · Available margin ${rules.availableMargin.value} USDC',
+                    '${rules.environment} · ${rules.productId} · ${AppLocalizations.of(context).availableMargin} ${rules.availableMargin.value} USDC',
                   ),
                   Text(
-                    'Order notional: ${rules.minimumNotional.value}–${rules.maximumNotional?.value ?? 'venue limit'} USDC',
+                    '${AppLocalizations.of(context).orderNotional}: ${rules.minimumNotional.value}–${rules.maximumNotional?.value ?? 'venue limit'} USDC',
                   ),
                   const SizedBox(height: 12),
                   if (rules.orderTypes.length > 1)
@@ -482,7 +482,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       selected: _type,
                       selectedColor: actionColor,
                       label: (type) =>
-                          type == TradingOrderType.market ? 'Market' : 'Limit',
+                          type == TradingOrderType.market ? AppLocalizations.of(context).market : AppLocalizations.of(context).limit,
                       onChanged: (type) {
                         if (_submitting) return;
                         setState(() {
@@ -745,8 +745,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     child: Text(
                       _submitting
                           ? (_pendingOrderId == null
-                                ? 'Submitting...'
-                                : 'Checking order...')
+                                ? AppLocalizations.of(context).submitting
+                                : AppLocalizations.of(context).checkingOrder)
                           : (_pendingOrderId == null
                                 ? 'Confirm'
                                 : 'Check order status'),
@@ -784,8 +784,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           const SizedBox(height: 12),
           Text(
             _submitted!.status == TradingOrderStatus.filled
-                ? 'Trade Successful'
-                : 'Order submitted',
+                ? AppLocalizations.of(context).tradeSuccessful
+                : AppLocalizations.of(context).orderSubmitted,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           if (_preview?.intent.openingProtection != null)

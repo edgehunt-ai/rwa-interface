@@ -15,11 +15,15 @@ final class TradeIntentCreateInput {
     required this.previewId,
     required this.authorizationId,
     required this.executionPolicy,
+    this.fundingSessionId,
+    this.fundingSessionVersion,
   });
 
   final String previewId;
   final String authorizationId;
   final TradeIntentExecutionPolicy executionPolicy;
+  final String? fundingSessionId;
+  final int? fundingSessionVersion;
 
   String get fingerprint =>
       '$previewId|$authorizationId|${executionPolicy.limitPrice.value}|'

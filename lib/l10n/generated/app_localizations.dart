@@ -782,6 +782,54 @@ abstract class AppLocalizations {
   /// **'Order submitted'**
   String get orderSubmitted;
 
+  /// No description provided for @loadingTradingRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading trading rules...'**
+  String get loadingTradingRules;
+
+  /// No description provided for @retryTradingRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry trading rules'**
+  String get retryTradingRules;
+
+  /// No description provided for @availableMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Available margin'**
+  String get availableMargin;
+
+  /// No description provided for @orderNotional.
+  ///
+  /// In en, this message translates to:
+  /// **'Order notional'**
+  String get orderNotional;
+
+  /// No description provided for @preparingOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing order…'**
+  String get preparingOrder;
+
+  /// No description provided for @submitting.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting...'**
+  String get submitting;
+
+  /// No description provided for @checkingOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking order...'**
+  String get checkingOrder;
+
+  /// No description provided for @tradeSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade Successful'**
+  String get tradeSuccessful;
+
   /// No description provided for @portfolioTrend.
   ///
   /// In en, this message translates to:

@@ -18,22 +18,42 @@ final class TradeIntentRepositoryImpl implements TradeIntentRepository {
   }) async => _map(
     await _service.create(
       api.TradeIntentCreateRequest(
-        (builder) => builder.oneOf = OneOfDynamic(
-          typeIndex: 1,
-          types: const [
-            api.AutoSingleSourceTradeIntentCreateRequest,
-            api.AutoMultiSourceTradeIntentCreateRequest,
-          ],
-          value: api.AutoMultiSourceTradeIntentCreateRequest(
-            (request) => request
-              ..previewId = input.previewId
-              ..authorizationId = input.authorizationId
-              ..fundingMode = api
-                  .AutoMultiSourceTradeIntentCreateRequestFundingModeEnum
-                  .autoMultiSource
-              ..executionPolicy.replace(_policy(input.executionPolicy)),
-          ),
-        ),
+        (builder) => builder.oneOf =
+            input.fundingSessionId != null &&
+                input.fundingSessionVersion != null
+            ? OneOfDynamic(
+                typeIndex: 2,
+                types: const [
+                  api.AutoMultiSourceTradeIntentCreateRequest,
+                  api.AutoSingleSourceTradeIntentCreateRequest,
+                  api.FundingSessionTradeIntentCreateRequest,
+                ],
+                value: api.FundingSessionTradeIntentCreateRequest(
+                  (request) => request
+                    ..fundingSessionId = input.fundingSessionId!
+                    ..fundingSessionVersion = input.fundingSessionVersion!
+                    ..fundingMode = api
+                        .FundingSessionTradeIntentCreateRequestFundingModeEnum
+                        .fundingSession
+                    ..executionPolicy.replace(_policy(input.executionPolicy)),
+                ),
+              )
+            : OneOfDynamic(
+                typeIndex: 1,
+                types: const [
+                  api.AutoSingleSourceTradeIntentCreateRequest,
+                  api.AutoMultiSourceTradeIntentCreateRequest,
+                ],
+                value: api.AutoMultiSourceTradeIntentCreateRequest(
+                  (request) => request
+                    ..previewId = input.previewId
+                    ..authorizationId = input.authorizationId
+                    ..fundingMode = api
+                        .AutoMultiSourceTradeIntentCreateRequestFundingModeEnum
+                        .autoMultiSource
+                    ..executionPolicy.replace(_policy(input.executionPolicy)),
+                ),
+              ),
       ),
       idempotencyKey: idempotencyKey,
     ),

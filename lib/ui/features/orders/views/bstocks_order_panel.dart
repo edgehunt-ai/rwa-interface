@@ -371,6 +371,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   );
 
   Widget _form(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final isBuy = side == TradingSide.buy;
@@ -420,7 +421,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ),
               const SizedBox(width: 8),
               Text(
-                '${side == TradingSide.buy ? 'Buy' : 'Sell'} ${widget.symbol}',
+                '${side == TradingSide.buy ? l10n.buy : l10n.sell} ${widget.symbol}',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const Spacer(),
@@ -445,7 +446,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 selected: side,
                 selectedColor: success,
                 selectedForeground: Colors.white,
-                label: (value) => value == TradingSide.buy ? 'Buy' : 'Sell',
+                label: (value) => value == TradingSide.buy ? l10n.buy : l10n.sell,
                 onChanged: (value) {
                   setState(() => side = value);
                   amount.clear();
@@ -469,7 +470,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                   children: [
                     Text(
                       type == TradingOrderType.market && isBuy
-                          ? 'Order Value'
+                          ? l10n.orderValue
                           : type == TradingOrderType.limit
                           ? 'Quantity'
                           : 'Amount',
@@ -482,7 +483,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Balance: ',
+                          '${l10n.balance}: ',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -551,7 +552,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 decimal: true,
               ),
               decoration: const InputDecoration(
-                labelText: 'Limit Price',
+                labelText: l10n.limitPrice,
                 prefixText: r'$',
               ),
             ),
@@ -580,10 +581,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           const SizedBox(height: 14),
           _SlippageRow(value: slippage, onEdit: _editSlippage),
           if (_quoting)
-            const _LoadingSummaryRow(label: 'Estimated Fee')
+            _LoadingSummaryRow(label: l10n.estimatedFee)
           else
             _SummaryRow(
-              label: 'Estimated Fee',
+              label: l10n.estimatedFee,
               value: fee == null
                   ? '-'
                   : TokenAmountFormatter.format(
@@ -601,7 +602,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               child: Text(
                 reviewing
                     ? 'Preparing order…'
-                    : '${isBuy ? 'Buy' : 'Sell'} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
+                    : '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
               ),
             ),
           ),

@@ -120,6 +120,28 @@ final class FundingRepositoryImpl implements FundingRepository {
   );
 
   @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) async => _fundingPlan(
+    await _service.createPlan(
+      api.FundingPlanRequest(
+        (request) => request.oneOf = OneOfDynamic(
+          typeIndex: 0,
+          types: const [api.FundingSessionPlanRequest],
+          value: api.FundingSessionPlanRequest(
+            (plan) => plan
+              ..fundingSessionId = fundingSessionId
+              ..selectionVersion = selectionVersion,
+          ),
+        ),
+      ),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  @override
   Future<FundingPlan> getFundingPlan(String id) async =>
       _fundingPlan(await _service.getPlan(id));
 

@@ -682,6 +682,16 @@ final class AppReviewFundingRepository implements FundingRepository {
   }
 
   @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) => createFundingPlan(
+    tradePreviewId: fundingSessionId,
+    idempotencyKey: idempotencyKey,
+  );
+
+  @override
   Future<FundingPlan> getFundingPlan(String id) async =>
       store.fundingPlans[id]!;
 

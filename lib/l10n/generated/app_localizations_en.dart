@@ -360,6 +360,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderSubmitted => 'Order submitted';
 
   @override
+  String get loadingTradingRules => 'Loading trading rules...';
+
+  @override
+  String get retryTradingRules => 'Retry trading rules';
+
+  @override
+  String get availableMargin => 'Available margin';
+
+  @override
+  String get orderNotional => 'Order notional';
+
+  @override
+  String get preparingOrder => 'Preparing order…';
+
+  @override
+  String get submitting => 'Submitting...';
+
+  @override
+  String get checkingOrder => 'Checking order...';
+
+  @override
+  String get tradeSuccessful => 'Trade Successful';
+
+  @override
   String get portfolioTrend => 'Portfolio trend';
 
   @override

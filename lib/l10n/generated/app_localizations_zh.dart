@@ -354,6 +354,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get orderSubmitted => '订单已提交';
 
   @override
+  String get loadingTradingRules => '正在加载交易规则…';
+
+  @override
+  String get retryTradingRules => '重试加载交易规则';
+
+  @override
+  String get availableMargin => '可用保证金';
+
+  @override
+  String get orderNotional => '订单名义价值';
+
+  @override
+  String get preparingOrder => '正在准备订单…';
+
+  @override
+  String get submitting => '正在提交…';
+
+  @override
+  String get checkingOrder => '正在检查订单…';
+
+  @override
+  String get tradeSuccessful => '交易成功';
+
+  @override
   String get portfolioTrend => '投资组合走势';
 
   @override
