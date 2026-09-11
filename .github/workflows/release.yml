@@ -27,7 +27,7 @@ env:
   REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   SENTRY_ORG: ${{ vars.SENTRY_ORG || 'dodo-k4' }}
-  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'flutter' }}
+  SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'rwa' }}
   SENTRY_DSN: ${{ vars.SENTRY_DSN }}
   SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT || 'production' }}
   SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.10' }}

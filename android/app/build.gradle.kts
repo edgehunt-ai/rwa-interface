@@ -52,7 +52,7 @@ android {
 
 sentry {
     org.set(System.getenv("SENTRY_ORG") ?: "dodo-k4")
-    projectName.set(System.getenv("SENTRY_PROJECT") ?: "flutter")
+    projectName.set(System.getenv("SENTRY_PROJECT") ?: "rwa")
     authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
     autoUploadProguardMapping.set(!System.getenv("SENTRY_AUTH_TOKEN").isNullOrBlank())
     includeProguardMapping.set(true)

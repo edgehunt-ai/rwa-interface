@@ -93,7 +93,7 @@ sentry:
   upload_source_maps: false
   upload_sources: false
   org: dodo-k4
-  project: flutter
+  project: rwa
   commits: auto
   ignore_missing: true
   log_level: error
