@@ -15,7 +15,14 @@ final withdrawalAssetsProvider =
         for (final balance in account.balances) {
           final chain = balance.chain ?? account.chain;
           if (chain == null ||
-              balance.balance.compareTo(DecimalValue('0')) <= 0) {
+              balance.balance.compareTo(
+                    DecimalValue(
+                      '0',
+                      asset: balance.balance.asset,
+                      unit: balance.balance.unit,
+                    ),
+                  ) <=
+                  0) {
             continue;
           }
           final asset = WithdrawableAsset(

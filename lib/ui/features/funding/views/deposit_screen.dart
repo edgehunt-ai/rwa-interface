@@ -89,13 +89,12 @@ class DepositRoutesSheet extends ConsumerWidget {
                     rows: 2,
                     padding: EdgeInsets.only(top: 12),
                   ),
-                  error: (_, _) => SizedBox(
+                  error: (error, _) => SizedBox(
                     height: 340,
                     child: DesignStateFeedback(
                       state: DesignState.failure,
                       title: 'Deposit routes unavailable',
-                      message:
-                          'Try again when your account connection recovers.',
+                      message: error.toString(),
                       onRetry: () =>
                           ref.refresh(depositDirectoryProvider.future),
                     ),
@@ -400,8 +399,10 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
             state: DesignState.failure,
             title: 'Deposit instructions unavailable',
             message: 'Return to deposit routes and try again.',
-            onRetry: () =>
-                ref.refresh(depositInstructionProvider(route).future),
+            onRetry: () {
+              ref.invalidate(depositDirectoryProvider);
+              ref.invalidate(depositInstructionProvider(route));
+            },
           ),
           data: (value) => _DepositInstructions(instruction: value),
         ),

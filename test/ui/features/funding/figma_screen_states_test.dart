@@ -157,7 +157,6 @@ void main() {
 
     expect(find.byType(WithdrawalScreen), findsOneWidget);
     expect(find.text('Select asset'), findsOneWidget);
-    expect(find.text('Available to withdraw'), findsOneWidget);
     expect(find.text('USD Coin · Arbitrum'), findsOneWidget);
     expect(find.text('Native'), findsNothing);
     expect(find.text('USDT'), findsNothing);
@@ -165,6 +164,70 @@ void main() {
     await tester.tap(find.text('USDC'));
     await tester.pumpAndSettle();
     expect(find.text('Withdraw USDC'), findsOneWidget);
+  });
+
+  testWidgets('withdrawal picker retry refreshes account balances', (
+    tester,
+  ) async {
+    var requests = 0;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tradingAccountsProvider.overrideWith((_) async {
+            requests += 1;
+            if (requests == 1) throw StateError('accounts unavailable');
+            return _accounts;
+          }),
+        ],
+        child: buildTestApp(const WithdrawalScreen(showSelector: true)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unable to load assets'), findsOneWidget);
+    expect(requests, 1);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Retry'));
+    await tester.pumpAndSettle();
+
+    expect(requests, 2);
+    expect(find.text('USD Coin · Arbitrum'), findsOneWidget);
+  });
+
+  testWidgets('deposit instruction retry refreshes its directory', (
+    tester,
+  ) async {
+    const route = (chain: 'Arbitrum', token: 'USDC');
+    var requests = 0;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositDirectoryProvider.overrideWith((_) async {
+            requests += 1;
+            if (requests == 1) throw StateError('directory unavailable');
+            return DepositDirectory(
+              instructions: [_depositInstruction(route)],
+              updatedAt: DateTime.utc(2026),
+            );
+          }),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => const Stream.empty()),
+        ],
+        child: buildTestApp(
+          const DepositScreen(chain: 'Arbitrum', token: 'USDC'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Deposit instructions unavailable'), findsOneWidget);
+    expect(requests, 1);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Retry'));
+    await tester.pumpAndSettle();
+
+    expect(requests, 2);
+    expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
   });
 
   testWidgets('withdrawal form validates input then presents its quote', (
@@ -184,10 +247,18 @@ void main() {
     );
 
     final reviewButton = find.widgetWithText(FilledButton, 'Review withdrawal');
+    await tester.scrollUntilVisible(
+      reviewButton,
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
     final disabledButton = tester.widget<FilledButton>(reviewButton);
     expect(disabledButton.onPressed, isNull);
 
-    await tester.enterText(find.byType(TextField).at(0), '0xrecipient');
+    await tester.enterText(
+      find.byType(TextField).at(0),
+      '0x1111111111111111111111111111111111111111',
+    );
     await tester.enterText(find.byType(TextField).at(1), '5');
     await tester.pump();
     expect(tester.widget<FilledButton>(reviewButton).onPressed, isNotNull);
@@ -203,6 +274,44 @@ void main() {
     expect(find.text('5 USDC'), findsWidgets);
     expect(find.text('4.9 USDC'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Withdraw USDC'), findsOneWidget);
+  });
+
+  testWidgets('withdrawal rejects an invalid recipient before quoting', (
+    tester,
+  ) async {
+    final funding = _CountingFunding();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(funding),
+          tradingAccountsProvider.overrideWith((_) async => _accounts),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const WithdrawalScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final addressField = find.byKey(const ValueKey('withdrawal-address-field'));
+    await tester.enterText(addressField, 'ffgg');
+    await tester.tap(find.byKey(const ValueKey('withdrawal-amount-field')));
+    await tester.pump();
+
+    expect(find.text('Enter a valid wallet address.'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(addressField).decoration!.errorText,
+      'Enter a valid wallet address.',
+    );
+    expect(funding.quoteRequests, 0);
+
+    await tester.enterText(
+      addressField,
+      '0x1111111111111111111111111111111111111111',
+    );
+    await tester.pump();
+    expect(find.text('Enter a valid wallet address.'), findsNothing);
   });
 }
 
@@ -261,7 +370,7 @@ final _depositRoutes = [
   ),
 ];
 
-final class _Funding implements FundingRepository {
+class _Funding implements FundingRepository {
   @override
   Future<WithdrawalQuote> quoteWithdrawal(
     WithdrawalIntent intent, {
@@ -276,4 +385,17 @@ final class _Funding implements FundingRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _CountingFunding extends _Funding {
+  var quoteRequests = 0;
+
+  @override
+  Future<WithdrawalQuote> quoteWithdrawal(
+    WithdrawalIntent intent, {
+    required String idempotencyKey,
+  }) {
+    quoteRequests += 1;
+    return super.quoteWithdrawal(intent, idempotencyKey: idempotencyKey);
+  }
 }
