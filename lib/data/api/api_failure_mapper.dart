@@ -7,7 +7,9 @@ final class ApiFailureMapper {
 
   ApiFailure fromDio(DioException error) {
     final response = error.response;
-    final requestId = response?.headers.value('x-request-id');
+    // Some gateways emit duplicate x-request-id values. `Headers.value()`
+    // throws when that happens, masking the original API/decoding failure.
+    final requestId = response?.headers['x-request-id']?.firstOrNull;
     if (error.type == DioExceptionType.cancel) {
       return CancelledFailure(requestId: requestId);
     }

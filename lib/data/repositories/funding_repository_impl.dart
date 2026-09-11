@@ -23,6 +23,16 @@ final class FundingRepositoryImpl implements FundingRepository {
       throw const FormatException('Expected aggregate deposit instructions');
     }
     final address = value.wallet?.address;
+    // The API intentionally returns wallet: null when there is no unique
+    // active verified wallet. In that state all rails are unavailable; this
+    // is a valid empty directory, not a malformed response.
+    if (address == null) {
+      return DepositDirectory(
+        walletAddress: null,
+        updatedAt: value.updatedAt.toUtc(),
+        instructions: const [],
+      );
+    }
     return DepositDirectory(
       walletAddress: address,
       updatedAt: value.updatedAt.toUtc(),
@@ -31,11 +41,6 @@ final class FundingRepositoryImpl implements FundingRepository {
           .whereType<api.AvailableDepositInstructionItem>()
           .map((item) {
             final identity = item.identity.oneOf.value as dynamic;
-            if (address == null) {
-              throw const FormatException(
-                'Available deposit rail omitted wallet',
-              );
-            }
             return DepositInstruction(
               chain: identity.network.name as String,
               token: identity.token.name as String,

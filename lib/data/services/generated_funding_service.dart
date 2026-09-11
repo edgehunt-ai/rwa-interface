@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../api/api_failure_mapper.dart';
@@ -80,6 +81,10 @@ final class GeneratedFundingService implements FundingService {
       if (data == null) throw const FormatException('Missing response body');
       return data;
     } on DioException catch (error) {
+      debugPrint(
+        'Funding API request failed: type=${error.type}, '
+        'message=${error.message}, error=${error.error}',
+      );
       throw _mapper.fromDio(error);
     }
   }

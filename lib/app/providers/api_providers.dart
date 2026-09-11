@@ -115,9 +115,9 @@ final portfolioRepositoryProvider = Provider<PortfolioRepository>((ref) {
   );
 });
 final fundingRepositoryProvider = Provider<FundingRepository>((ref) {
-  if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
-    return AppReviewFundingRepository(ref.watch(appReviewStoreProvider));
-  }
+  // Deposit data is read-only server configuration (wallet address, routes,
+  // and QR payloads). Keep it on the real API even in App Review mode so the
+  // Deposit sheet reflects the account's actual funding instructions.
   final source = ref.watch(apiDataSourceProvider);
   return FundingRepositoryImpl(
     GeneratedFundingService(source.client.getFundingApi()),

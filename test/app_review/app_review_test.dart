@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app_review/app_review.dart';
 import 'package:rwa_interface/data/api/api_environment.dart';
+import 'package:rwa_interface/data/repositories/funding_repository_impl.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
@@ -55,7 +56,7 @@ void main() {
   });
 
   test(
-    'review mode replaces money repositories with local implementations',
+        'review mode replaces supported repositories while funding uses the API',
     () async {
       final container = ProviderContainer(
         overrides: [
@@ -77,7 +78,7 @@ void main() {
       );
       expect(
         container.read(fundingRepositoryProvider),
-        isA<AppReviewFundingRepository>(),
+        isA<FundingRepositoryImpl>(),
       );
       expect(
         container.read(realtimeRepositoryProvider),
