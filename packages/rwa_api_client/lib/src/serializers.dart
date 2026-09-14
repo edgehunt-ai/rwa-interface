@@ -154,6 +154,12 @@ import 'package:rwa_api_client/src/model/funding_wallet_action_summary.dart';
 import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
 import 'package:rwa_api_client/src/model/gas_payment_quote.dart';
 import 'package:rwa_api_client/src/model/gas_sponsorship_decision.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_execute_request.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_execution_method.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_mode.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_preparation.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_prepare_request.dart';
 import 'package:rwa_api_client/src/model/hip3_action.dart';
 import 'package:rwa_api_client/src/model/hip3_action_create_request.dart';
 import 'package:rwa_api_client/src/model/hip3_action_page.dart';
@@ -561,6 +567,12 @@ part 'serializers.g.dart';
   GasPaymentMode,
   GasPaymentQuote,
   GasSponsorshipDecision,
+  Hip3AccountAbstraction,
+  Hip3AccountAbstractionExecuteRequest,
+  Hip3AccountAbstractionExecutionMethod,
+  Hip3AccountAbstractionMode,
+  Hip3AccountAbstractionPreparation,
+  Hip3AccountAbstractionPrepareRequest,
   Hip3Action,
   Hip3ActionCreateRequest,
   Hip3ActionPage,

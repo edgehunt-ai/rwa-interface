@@ -225,7 +225,7 @@ class _$Erc20ApprovalAction extends Erc20ApprovalAction {
   @override
   final TransferActionStatus status;
   @override
-  final GasPaymentQuote gasPayment;
+  final GasPaymentQuote? gasPayment;
   @override
   final String tokenContract;
   @override
@@ -249,7 +249,7 @@ class _$Erc20ApprovalAction extends Erc20ApprovalAction {
       required this.payloadHash,
       required this.validUntil,
       required this.status,
-      required this.gasPayment,
+      this.gasPayment,
       required this.tokenContract,
       required this.spender,
       required this.approvalAmount})
@@ -415,7 +415,7 @@ class Erc20ApprovalActionBuilder
       _payloadHash = $v.payloadHash;
       _validUntil = $v.validUntil;
       _status = $v.status;
-      _gasPayment = $v.gasPayment.toBuilder();
+      _gasPayment = $v.gasPayment?.toBuilder();
       _tokenContract = $v.tokenContract;
       _spender = $v.spender;
       _approvalAmount = $v.approvalAmount;
@@ -464,7 +464,7 @@ class Erc20ApprovalActionBuilder
                 validUntil, r'Erc20ApprovalAction', 'validUntil'),
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'Erc20ApprovalAction', 'status'),
-            gasPayment: gasPayment.build(),
+            gasPayment: _gasPayment?.build(),
             tokenContract: BuiltValueNullFieldError.checkNotNull(
                 tokenContract, r'Erc20ApprovalAction', 'tokenContract'),
             spender: BuiltValueNullFieldError.checkNotNull(
@@ -476,7 +476,7 @@ class Erc20ApprovalActionBuilder
       late String _$failedField;
       try {
         _$failedField = 'gasPayment';
-        gasPayment.build();
+        _gasPayment?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'Erc20ApprovalAction', _$failedField, e.toString());

@@ -216,7 +216,7 @@ class ChartsApi {
   }
 
   /// 美股参考价
-  /// 最近一次美股参考报价及其时段与新鲜度。HIP3 调用必须传 kind&#x3D;perp； 当前缺少获准的美股参考数据源，返回 503 hip3_reference_price_unavailable，不能以 mark/oracle/固定价格代替。 省略 kind 保留现有 bStocks 共享行为；仅有 HIP3 产品的 symbol 也不能进入静态参考价兜底。 
+  /// 最近一次美股参考报价及其时段与新鲜度。HIP3 调用可显式传 &#x60;kind&#x3D;perp&#x60;，并使用已校验的新鲜 Hyperliquid Mainnet ticker oracle；上游不可用、来源不匹配或观测过期时返回 503 hip3_reference_price_unavailable，不能以固定价格代替。对仅存在于 HIP3 目录的 symbol，省略 kind 时按 perp 解析；bStocks 仍保持原有显式或共享行为。 
   ///
   /// Parameters:
   /// * [symbol] - 股票代码

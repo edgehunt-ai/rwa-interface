@@ -163,6 +163,12 @@ lib/src/model/funding_wallet_action_summary.dart
 lib/src/model/gas_payment_mode.dart
 lib/src/model/gas_payment_quote.dart
 lib/src/model/gas_sponsorship_decision.dart
+lib/src/model/hip3_account_abstraction.dart
+lib/src/model/hip3_account_abstraction_execute_request.dart
+lib/src/model/hip3_account_abstraction_execution_method.dart
+lib/src/model/hip3_account_abstraction_mode.dart
+lib/src/model/hip3_account_abstraction_preparation.dart
+lib/src/model/hip3_account_abstraction_prepare_request.dart
 lib/src/model/hip3_action.dart
 lib/src/model/hip3_action_create_request.dart
 lib/src/model/hip3_action_page.dart

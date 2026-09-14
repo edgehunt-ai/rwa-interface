@@ -231,7 +231,7 @@ class _$OriginTransactionAction extends OriginTransactionAction {
   @override
   final TransferActionStatus status;
   @override
-  final GasPaymentQuote gasPayment;
+  final GasPaymentQuote? gasPayment;
   @override
   final String recipient;
   @override
@@ -253,7 +253,7 @@ class _$OriginTransactionAction extends OriginTransactionAction {
       required this.payloadHash,
       required this.validUntil,
       required this.status,
-      required this.gasPayment,
+      this.gasPayment,
       required this.recipient,
       required this.refundAddress})
       : super._();
@@ -411,7 +411,7 @@ class OriginTransactionActionBuilder
       _payloadHash = $v.payloadHash;
       _validUntil = $v.validUntil;
       _status = $v.status;
-      _gasPayment = $v.gasPayment.toBuilder();
+      _gasPayment = $v.gasPayment?.toBuilder();
       _recipient = $v.recipient;
       _refundAddress = $v.refundAddress;
       _$v = null;
@@ -459,7 +459,7 @@ class OriginTransactionActionBuilder
                 validUntil, r'OriginTransactionAction', 'validUntil'),
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'OriginTransactionAction', 'status'),
-            gasPayment: gasPayment.build(),
+            gasPayment: _gasPayment?.build(),
             recipient: BuiltValueNullFieldError.checkNotNull(
                 recipient, r'OriginTransactionAction', 'recipient'),
             refundAddress: BuiltValueNullFieldError.checkNotNull(
@@ -469,7 +469,7 @@ class OriginTransactionActionBuilder
       late String _$failedField;
       try {
         _$failedField = 'gasPayment';
-        gasPayment.build();
+        _gasPayment?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'OriginTransactionAction', _$failedField, e.toString());

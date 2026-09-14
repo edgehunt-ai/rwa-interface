@@ -151,7 +151,9 @@ Class | Method | HTTP request | Description
 [*OrdersApi*](doc/OrdersApi.md) | [**createOrder**](doc/OrdersApi.md#createorder) | **POST** /v1/orders | 创建订单
 [*OrdersApi*](doc/OrdersApi.md) | [**createOrderWalletActionExecution**](doc/OrdersApi.md#createorderwalletactionexecution) | **POST** /v1/orders/{order_id}/wallet-actions/{step_id}/executions | 创建订单钱包动作执行
 [*OrdersApi*](doc/OrdersApi.md) | [**createTradeIntent**](doc/OrdersApi.md#createtradeintent) | **POST** /v1/trade-intents | 创建条件交易意图
+[*OrdersApi*](doc/OrdersApi.md) | [**executeHip3AccountAbstraction**](doc/OrdersApi.md#executehip3accountabstraction) | **POST** /v1/hip3/account-abstraction/execute | 执行一次性 Unified Account 切换
 [*OrdersApi*](doc/OrdersApi.md) | [**getCurrentTradeIntent**](doc/OrdersApi.md#getcurrenttradeintent) | **GET** /v1/trade-intents/current | 获取当前活跃条件交易意图
+[*OrdersApi*](doc/OrdersApi.md) | [**getHip3AccountAbstraction**](doc/OrdersApi.md#gethip3accountabstraction) | **GET** /v1/hip3/account-abstraction | 获取当前 HIP-3 账户抽象模式
 [*OrdersApi*](doc/OrdersApi.md) | [**getHip3Action**](doc/OrdersApi.md#gethip3action) | **GET** /v1/hip3/actions/{action_id} | 查询 HIP-3 动作及下一待签步骤
 [*OrdersApi*](doc/OrdersApi.md) | [**getHip3Agent**](doc/OrdersApi.md#gethip3agent) | **GET** /v1/hip3/agent | 获取当前账户的 HIP-3 Agent Wallet
 [*OrdersApi*](doc/OrdersApi.md) | [**getHip3TradingContext**](doc/OrdersApi.md#gethip3tradingcontext) | **GET** /v1/hip3/products/{product_id}/trading-context | HIP-3 产品规则与当前账户交易上下文
@@ -161,6 +163,7 @@ Class | Method | HTTP request | Description
 [*OrdersApi*](doc/OrdersApi.md) | [**listHip3FundingPayments**](doc/OrdersApi.md#listhip3fundingpayments) | **GET** /v1/hip3/funding-payments | 查询当前交易钱包的 HIP-3 资金费结算事实
 [*OrdersApi*](doc/OrdersApi.md) | [**listHip3Liquidations**](doc/OrdersApi.md#listhip3liquidations) | **GET** /v1/hip3/liquidations | 查询当前交易钱包的 HIP-3 强平账本事件
 [*OrdersApi*](doc/OrdersApi.md) | [**listOrders**](doc/OrdersApi.md#listorders) | **GET** /v1/orders | 订单列表
+[*OrdersApi*](doc/OrdersApi.md) | [**prepareHip3AccountAbstraction**](doc/OrdersApi.md#preparehip3accountabstraction) | **POST** /v1/hip3/account-abstraction/prepare | 准备一次性切换到 Unified Account
 [*OrdersApi*](doc/OrdersApi.md) | [**previewHip3ClosePosition**](doc/OrdersApi.md#previewhip3closeposition) | **POST** /v1/positions/{position_id}/close/preview | 预览 HIP-3 全部或部分平仓
 [*OrdersApi*](doc/OrdersApi.md) | [**previewOrder**](doc/OrdersApi.md#previeworder) | **POST** /v1/orders/preview | 预览 bStocks 或 HIP-3 订单
 [*OrdersApi*](doc/OrdersApi.md) | [**submitHip3ActionStep**](doc/OrdersApi.md#submithip3actionstep) | **POST** /v1/hip3/actions/{action_id}/steps/{step_id}/submissions | 提交当前 HIP-3 步骤签名并由后端广播
@@ -325,6 +328,12 @@ Class | Method | HTTP request | Description
  - [GasPaymentMode](doc/GasPaymentMode.md)
  - [GasPaymentQuote](doc/GasPaymentQuote.md)
  - [GasSponsorshipDecision](doc/GasSponsorshipDecision.md)
+ - [Hip3AccountAbstraction](doc/Hip3AccountAbstraction.md)
+ - [Hip3AccountAbstractionExecuteRequest](doc/Hip3AccountAbstractionExecuteRequest.md)
+ - [Hip3AccountAbstractionExecutionMethod](doc/Hip3AccountAbstractionExecutionMethod.md)
+ - [Hip3AccountAbstractionMode](doc/Hip3AccountAbstractionMode.md)
+ - [Hip3AccountAbstractionPreparation](doc/Hip3AccountAbstractionPreparation.md)
+ - [Hip3AccountAbstractionPrepareRequest](doc/Hip3AccountAbstractionPrepareRequest.md)
  - [Hip3Action](doc/Hip3Action.md)
  - [Hip3ActionCreateRequest](doc/Hip3ActionCreateRequest.md)
  - [Hip3ActionPage](doc/Hip3ActionPage.md)

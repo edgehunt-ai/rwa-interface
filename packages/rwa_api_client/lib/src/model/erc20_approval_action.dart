@@ -70,7 +70,7 @@ abstract class Erc20ApprovalAction implements Built<Erc20ApprovalAction, Erc20Ap
   // enum statusEnum {  planned,  ready,  submitted,  confirmed,  failed,  ambiguous,  manual_review,  };
 
   @BuiltValueField(wireName: r'gas_payment')
-  GasPaymentQuote get gasPayment;
+  GasPaymentQuote? get gasPayment;
 
   @BuiltValueField(wireName: r'token_contract')
   String get tokenContract;
@@ -160,11 +160,13 @@ class _$Erc20ApprovalActionSerializer implements PrimitiveSerializer<Erc20Approv
       object.status,
       specifiedType: const FullType(TransferActionStatus),
     );
-    yield r'gas_payment';
-    yield serializers.serialize(
-      object.gasPayment,
-      specifiedType: const FullType(GasPaymentQuote),
-    );
+    if (object.gasPayment != null) {
+      yield r'gas_payment';
+      yield serializers.serialize(
+        object.gasPayment,
+        specifiedType: const FullType(GasPaymentQuote),
+      );
+    }
     yield r'token_contract';
     yield serializers.serialize(
       object.tokenContract,
@@ -283,8 +285,9 @@ class _$Erc20ApprovalActionSerializer implements PrimitiveSerializer<Erc20Approv
         case r'gas_payment':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(GasPaymentQuote),
-          ) as GasPaymentQuote;
+            specifiedType: const FullType.nullable(GasPaymentQuote),
+          ) as GasPaymentQuote?;
+          if (valueDes == null) continue;
           result.gasPayment.replace(valueDes);
           break;
         case r'token_contract':

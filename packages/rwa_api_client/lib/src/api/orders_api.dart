@@ -11,6 +11,10 @@ import 'package:dio/dio.dart';
 import 'package:rwa_api_client/src/api_util.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/create_order_request.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_execute_request.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_preparation.dart';
+import 'package:rwa_api_client/src/model/hip3_account_abstraction_prepare_request.dart';
 import 'package:rwa_api_client/src/model/hip3_action.dart';
 import 'package:rwa_api_client/src/model/hip3_action_create_request.dart';
 import 'package:rwa_api_client/src/model/hip3_action_page.dart';
@@ -1034,6 +1038,110 @@ class OrdersApi {
     );
   }
 
+  /// 执行一次性 Unified Account 切换
+  /// 服务端重新绑定 nonce、目标模式和 owner；Agent 或用户签名均由服务端校验后提交，完成后重新读取 Provider 状态。
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [hip3AccountAbstractionExecuteRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3AccountAbstraction] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3AccountAbstraction>> executeHip3AccountAbstraction({ 
+    required String idempotencyKey,
+    required Hip3AccountAbstractionExecuteRequest hip3AccountAbstractionExecuteRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/account-abstraction/execute';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(Hip3AccountAbstractionExecuteRequest);
+      _bodyData = _serializers.serialize(hip3AccountAbstractionExecuteRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3AccountAbstraction? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3AccountAbstraction),
+      ) as Hip3AccountAbstraction;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3AccountAbstraction>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 获取当前活跃条件交易意图
   /// 返回当前账户唯一的非终态 TradeIntent，用于页面重载、网络重连和客户端崩溃后的恢复。 不创建新意图、不推进资金或订单执行；当前没有活跃意图时返回 404。 
   ///
@@ -1102,6 +1210,85 @@ class OrdersApi {
     }
 
     return Response<TradeIntent>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 获取当前 HIP-3 账户抽象模式
+  /// 返回当前主钱包的 Hyperliquid Mainnet 账户模式；仅在 default 模式允许一次性切换到 Unified Account。
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3AccountAbstraction] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3AccountAbstraction>> getHip3AccountAbstraction({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/account-abstraction';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3AccountAbstraction? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3AccountAbstraction),
+      ) as Hip3AccountAbstraction;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3AccountAbstraction>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -1912,6 +2099,110 @@ class OrdersApi {
     }
 
     return Response<OrderPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 准备一次性切换到 Unified Account
+  /// 仅接受服务端固定的 unifiedAccount 目标。若当前有可用 HIP-3 Agent，返回 agent 执行方式； 否则返回精确的 userSetAbstraction EIP-712 payload，客户端只能对该 payload 签名。 
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [hip3AccountAbstractionPrepareRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3AccountAbstractionPreparation] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3AccountAbstractionPreparation>> prepareHip3AccountAbstraction({ 
+    required String idempotencyKey,
+    required Hip3AccountAbstractionPrepareRequest hip3AccountAbstractionPrepareRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/account-abstraction/prepare';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(Hip3AccountAbstractionPrepareRequest);
+      _bodyData = _serializers.serialize(hip3AccountAbstractionPrepareRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3AccountAbstractionPreparation? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3AccountAbstractionPreparation),
+      ) as Hip3AccountAbstractionPreparation;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3AccountAbstractionPreparation>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
