@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/market_snapshot.dart';
+import 'package:rwa_interface/domain/models/stock.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
+import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
@@ -230,49 +233,63 @@ class _StockBrowse extends ConsumerWidget {
   final VoidCallback onAll;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final products = ref.watch(
-      marketProductsProvider((query: null, cursor: null)),
-    );
-    return products.when(
-      loading: () => const SizedBox(height: 92),
-      error: (_, _) => const SizedBox.shrink(),
-      data: (page) {
-        final l10n = AppLocalizations.of(context);
-        final stocks = page.items
-            .where((product) => product.kind == MarketProductKind.bstock)
-            .take(4)
-            .toList(growable: false);
-        if (stocks.isEmpty) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final stocksState = ref.watch(marketStocksProvider);
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Text(
-                  l10n.stocks,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const Spacer(),
-                TextButton(onPressed: onAll, child: Text(l10n.browseAll)),
-              ],
+            Text(l10n.stocks, style: Theme.of(context).textTheme.titleLarge),
+            const Spacer(),
+            TextButton(onPressed: onAll, child: Text(l10n.browseAll)),
+          ],
+        ),
+        // Figma places the 92px product tiles 12px below their 24px header.
+        const SizedBox(height: 12),
+        stocksState.when(
+          loading: () => SizedBox(
+            height: 92,
+            child: DesignStateFeedback(
+              state: DesignState.loading,
+              title: l10n.loadingStocks,
             ),
-            // Figma places the 92px product tiles 12px below their 24px header.
-            const SizedBox(height: 12),
-            Wrap(
+          ),
+          error: (_, _) => SizedBox(
+            height: 92,
+            child: DesignStateFeedback(
+              state: DesignState.failure,
+              title: l10n.stocksUnavailable,
+              message: l10n.marketCatalogUnavailable,
+              onRetry: () => ref.refresh(marketStocksProvider.future),
+            ),
+          ),
+          data: (page) {
+            final stocks = page.items.take(4).toList(growable: false);
+            if (stocks.isEmpty) {
+              return SizedBox(
+                height: 92,
+                child: DesignStateFeedback(
+                  state: DesignState.empty,
+                  title: l10n.noStocksFound,
+                ),
+              );
+            }
+            return Wrap(
               spacing: 16,
               runSpacing: 8,
-              children: [for (final product in stocks) _StockTile(product)],
-            ),
-          ],
-        );
-      },
+              children: [for (final stock in stocks) _StockTile(stock)],
+            );
+          },
+        ),
+      ],
     );
   }
 }
 
 class _StockTile extends StatelessWidget {
-  const _StockTile(this.product);
-  final MarketProduct product;
+  const _StockTile(this.stock);
+  final Stock stock;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -289,18 +306,18 @@ class _StockTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              MarketAssetMark(symbol: product.symbol, size: 36),
+              MarketAssetMark(symbol: stock.symbol, size: 36),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      product.symbol,
+                      stock.symbol,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      product.name,
+                      stock.name,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: colors.secondaryText),
                     ),
@@ -310,7 +327,12 @@ class _StockTile extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          Text(product.network, style: TextStyle(color: colors.secondaryText)),
+          Text(
+            TokenAmountFormatter.formatUsd(
+              DecimalValue(stock.referencePrice, asset: 'USD', unit: 'price'),
+            ),
+            style: TextStyle(color: colors.secondaryText),
+          ),
         ],
       ),
     );

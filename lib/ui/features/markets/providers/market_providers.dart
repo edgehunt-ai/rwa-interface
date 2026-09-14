@@ -6,6 +6,7 @@ import '../../../../data/services/market_search_history_service.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/market_snapshot.dart';
+import '../../../../domain/models/stock.dart';
 
 typedef MarketQuery = ({String? query, String? cursor});
 
@@ -15,6 +16,12 @@ final marketProductsProvider = FutureProvider.autoDispose
           .watch(marketsRepositoryProvider)
           .listProducts(query: query.query, cursor: query.cursor);
     });
+
+final marketStocksProvider = FutureProvider.autoDispose<DomainPage<Stock>>((
+  ref,
+) {
+  return ref.watch(marketsRepositoryProvider).listStocks();
+});
 
 final marketProductProvider = FutureProvider.autoDispose
     .family<MarketProduct, MarketProductRef>((ref, product) {
