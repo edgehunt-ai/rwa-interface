@@ -25,12 +25,22 @@ final reownWalletConnectorProvider = Provider<WalletConnector>(
 );
 
 final identityAccessTokenProvider = Provider<PrivyAccessTokenProvider>((ref) {
+  Future<void>? expiryInFlight;
   return _IdentityAccessTokenAdapter(
     ref.watch(identityAuthGatewayProvider),
-    onExpired: () async {
-      await ref.read(identityAuthGatewayProvider).logout().catchError((_) {});
-      await ref.read(observabilityReporterProvider).clearUser();
-      ref.read(sessionGenerationProvider.notifier).clearUserScope();
+    onExpired: () {
+      return expiryInFlight ??= () async {
+        try {
+          await ref
+              .read(identityAuthGatewayProvider)
+              .logout()
+              .catchError((_) {});
+          await ref.read(observabilityReporterProvider).clearUser();
+          ref.read(sessionGenerationProvider.notifier).clearUserScope();
+        } finally {
+          expiryInFlight = null;
+        }
+      }();
     },
   );
 });

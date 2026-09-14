@@ -11,6 +11,7 @@ class PrivyAuthInterceptor extends Interceptor {
   });
 
   static const _retriedKey = 'rwa_privy_auth_retried';
+  static const _refreshTimeout = Duration(seconds: 10);
 
   final Dio _dio;
   final PrivyAccessTokenProvider _tokenProvider;
@@ -77,7 +78,9 @@ class PrivyAuthInterceptor extends Interceptor {
       return current;
     }
 
-    final refresh = _tokenProvider.refreshAccessToken();
+    final refresh = _tokenProvider
+        .refreshAccessToken()
+        .timeout(_refreshTimeout, onTimeout: () => null);
     _refreshInFlight = refresh;
     try {
       return await refresh;

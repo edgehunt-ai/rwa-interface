@@ -66,6 +66,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   var _orderPanelOpen = false;
   MarketProductRef? _favoriteOverrideRef;
   bool? _favoriteOverride;
+  var _favoriteBusy = false;
   @override
   void initState() {
     super.initState();
@@ -92,11 +93,17 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     MarketProductRef product,
     bool isFavorite,
   ) async {
-    final command = ref.read(favoritesCommandProvider.notifier);
-    if (isFavorite) {
-      await command.remove(product);
-    } else {
-      await command.add(product);
+    if (_favoriteBusy) return;
+    setState(() => _favoriteBusy = true);
+    try {
+      final command = ref.read(favoritesCommandProvider.notifier);
+      if (isFavorite) {
+        await command.remove(product);
+      } else {
+        await command.add(product);
+      }
+    } finally {
+      if (mounted) setState(() => _favoriteBusy = false);
     }
     if (!mounted) return;
     if (ref.read(favoritesCommandProvider).hasError) {
@@ -164,7 +171,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     final isFavorite = _favoriteOverrideRef == productRef
         ? _favoriteOverride!
         : activeProduct?.isFavorite ?? false;
-    final favoritesCommand = ref.watch(favoritesCommandProvider);
+    // Keep-alive: `favoritesCommandProvider` is autoDispose. Without a watch
+    // here it can be disposed mid-flight while add()/remove() is awaiting its
+    // network call, which throws when the notifier tries to write `state`
+    // afterwards and leaves `_favoriteBusy` stuck true forever.
+    ref.watch(favoritesCommandProvider);
     final snapshotState = ref.watch(marketSnapshotProvider(productRef));
     final candlesState = ref.watch(
       marketCandlesProvider((product: productRef, range: chartRange)),
@@ -232,7 +243,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       candles?.referencePrice,
                   loading: snapshotState.isLoading,
                   isFavorite: isFavorite,
-                  favoriteLoading: favoritesCommand.isLoading,
+                  favoriteLoading: _favoriteBusy,
                   onMarketHours: () => setState(() => marketHoursOpen = true),
                   onFavoriteToggle: () =>
                       _toggleFavorite(productRef, isFavorite),
