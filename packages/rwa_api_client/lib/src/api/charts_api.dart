@@ -25,12 +25,12 @@ class ChartsApi {
   const ChartsApi(this._dio, this._serializers);
 
   /// K 线 / 价格序列
-  /// 详情页图表数据。同时返回链上产品价格序列与美股参考价序列 —— 参考价仅在 美股有报价的时段（盘前 / 开盘 / 盘后）存在，其余时段为空洞，前端据此画虚线。 HIP-3 的 points 来自该产品所属 Hyperliquid 网络及 builder DEX 的 candleSnapshot， 不得复用同 symbol 的 bStocks 或其他场所数据。网络由服务端产品配置确定，不由客户端自由改写。 上游不可用或无法确认数据新鲜度时返回错误，不返回样例曲线；成功但没有成交数据时 points 为空。 缺少参考序列时 reference_points 为空，不得用 mark/oracle 伪造美股历史。 HIP-3 请求窗口必须在当前时间以内且少于 5000 个采样间隔；最后一根可能仍在形成。 图表窗口 1h/4h/1d/1w 可分别传显式 from/to，推荐 interval 为 1m/5m/15m/1h。 range 是预设窗口标识，interval 是单根 K 线粒度；显式窗口的权威边界为响应 from/to，不能仅用 range 推断。 
+  /// 详情页图表数据。同时返回链上产品价格序列与美股参考价序列 —— 参考价仅在 美股有报价的时段（盘前 / 开盘 / 盘后）存在，其余时段为空洞，前端据此画虚线。 HIP-3 的 points 来自该产品所属 Hyperliquid 网络及 builder DEX 的 candleSnapshot， 不得复用同 symbol 的 bStocks 或其他场所数据。网络由服务端产品配置确定，不由客户端自由改写。 上游不可用或无法确认数据新鲜度时返回错误，不返回样例曲线；成功但没有成交数据时 points 为空。 缺少参考序列时 reference_points 为空，不得用 mark/oracle 伪造美股历史。 HIP-3 请求窗口必须在当前时间以内且少于 5000 个采样间隔；最后一根可能仍在形成。 设计稿按钮 1h/4h/1d/1w 的 &#x60;range&#x60; 请求值分别为 1h/4h/24h/1w；&#x60;1d&#x60; 仅为 前端展示名称，不是接口值。各窗口也可分别传显式 from/to，推荐 interval 为 1m/5m/15m/1h。 range 是预设窗口标识，interval 是单根 K 线粒度；显式窗口的权威边界为响应 from/to，不能仅用 range 推断。 
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
   /// * [kind] 
-  /// * [range] - 预设区间；与 `from` / `to` 二选一
+  /// * [range] - 预设区间；与 `from` / `to` 二选一。设计稿的 1d 按钮传 `24h`；`1d` 不是合法接口值。 `15m` 仅为向后兼容保留，新页面不应使用。 
   /// * [from] 
   /// * [to] 
   /// * [interval] - 采样粒度，缺省由 `range` 推导
@@ -124,10 +124,9 @@ class ChartsApi {
   }
 
   /// 美股交易时段
-  /// 返回当前时段（盘前 / 开盘 / 盘后 / 隔夜 / 休市）、距下一次切换的倒计时， 以及给定区间内的时段分段（用于图表底部的时段色带与轴标签）。 链上产品 24×7 可交易，但不同时段的参考价新鲜度与深度不同。 HIP3 调用必须传 kind&#x3D;perp；当前未接入获准美股日历源，返回 503 hip3_reference_calendar_unavailable， 不以固定休市或下一小时作为真实交易时段。省略 kind 保留现有 bStocks 共享行为，不代表 HIP3 日历可用。 
+  /// 返回当前时段（盘前 / 开盘 / 盘后 / 隔夜 / 休市）、距下一次切换的倒计时， 以及给定区间内的时段分段（用于图表底部的时段色带与轴标签）。 该时段仅表示美股市场日历，不区分平台上的产品或交易类型，客户端无需传入 kind。 
   ///
   /// Parameters:
-  /// * [kind] 
   /// * [from] 
   /// * [to] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -140,7 +139,6 @@ class ChartsApi {
   /// Returns a [Future] containing a [Response] with a [MarketSessionInfo] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<MarketSessionInfo>> getMarketSessions({ 
-    ProductKind? kind,
     DateTime? from,
     DateTime? to,
     CancelToken? cancelToken,
@@ -170,7 +168,6 @@ class ChartsApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (kind != null) r'kind': encodeQueryParameter(_serializers, kind, const FullType(ProductKind)),
       if (from != null) r'from': encodeQueryParameter(_serializers, from, const FullType(DateTime)),
       if (to != null) r'to': encodeQueryParameter(_serializers, to, const FullType(DateTime)),
     };
@@ -216,11 +213,10 @@ class ChartsApi {
   }
 
   /// 美股参考价
-  /// 最近一次美股参考报价及其时段与新鲜度。HIP3 调用可显式传 &#x60;kind&#x3D;perp&#x60;，并使用已校验的新鲜 Hyperliquid Mainnet ticker oracle；上游不可用、来源不匹配或观测过期时返回 503 hip3_reference_price_unavailable，不能以固定价格代替。对仅存在于 HIP3 目录的 symbol，省略 kind 时按 perp 解析；bStocks 仍保持原有显式或共享行为。 
+  /// 最近一次美股参考报价及其时段与新鲜度。参考价属于美股标的， 不区分平台上的产品或交易类型，客户端无需传入 kind。 当缺少获准的美股参考数据源时，返回 503 us_equity_market_data， 不能以 HIP3 mark/oracle 或固定价格代替。 
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
-  /// * [kind] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -232,7 +228,6 @@ class ChartsApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<ReferencePrice>> getReferencePrice({ 
     required String symbol,
-    ProductKind? kind,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -259,14 +254,9 @@ class ChartsApi {
       validateStatus: validateStatus,
     );
 
-    final _queryParameters = <String, dynamic>{
-      if (kind != null) r'kind': encodeQueryParameter(_serializers, kind, const FullType(ProductKind)),
-    };
-
     final _response = await _dio.request<Object>(
       _path,
       options: _options,
-      queryParameters: _queryParameters,
       cancelToken: cancelToken,
       onSendProgress: onSendProgress,
       onReceiveProgress: onReceiveProgress,

@@ -13,6 +13,7 @@ final class GeneratedFundingService implements FundingService {
   @override
   Future<api.DepositInstruction> getDepositDirectory() =>
       _body(_api.getDepositInstruction);
+
   @override
   Future<api.UnifiedFundingAccount> getUnifiedFundingAccount() =>
       _body(_api.getUnifiedFundingAccount);

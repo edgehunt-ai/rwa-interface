@@ -4,15 +4,16 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/order_fill.dart';
-import 'package:rwa_api_client/src/model/margin_mode.dart';
-import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
+import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
+import 'package:rwa_api_client/src/model/margin_mode.dart';
+import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/order_status.dart';
+import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
-import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
 import 'package:rwa_api_client/src/model/hip3_conditional_order.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
@@ -26,6 +27,10 @@ part 'order.g.dart';
 /// * [kind] 
 /// * [nextAction] - 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
 /// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
+/// * [actionStatus] 
+/// * [submittedTransactionHash] 
+/// * [confirmedTransactionHash] 
+/// * [requiredFundingRaw] - Exact input-token maximum encoded by the immutable Router action.
 /// * [settlementAsset] - 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
 /// * [productId] - HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
 /// * [hip3ActionId] - 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
@@ -72,6 +77,20 @@ abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'wallet_action_blocker')
   OrderWalletActionBlockerEnum? get walletActionBlocker;
   // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  not_applicable,  };
+
+  @BuiltValueField(wireName: r'action_status')
+  BstocksActionStatus? get actionStatus;
+  // enum actionStatusEnum {  awaiting_signature,  submitted,  confirmed,  failed,  manual_review,  };
+
+  @BuiltValueField(wireName: r'submitted_transaction_hash')
+  String? get submittedTransactionHash;
+
+  @BuiltValueField(wireName: r'confirmed_transaction_hash')
+  String? get confirmedTransactionHash;
+
+  /// Exact input-token maximum encoded by the immutable Router action.
+  @BuiltValueField(wireName: r'required_funding_raw')
+  String? get requiredFundingRaw;
 
   /// 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
   @BuiltValueField(wireName: r'settlement_asset')
@@ -226,6 +245,34 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       object.walletActionBlocker,
       specifiedType: const FullType.nullable(OrderWalletActionBlockerEnum),
     );
+    if (object.actionStatus != null) {
+      yield r'action_status';
+      yield serializers.serialize(
+        object.actionStatus,
+        specifiedType: const FullType(BstocksActionStatus),
+      );
+    }
+    if (object.submittedTransactionHash != null) {
+      yield r'submitted_transaction_hash';
+      yield serializers.serialize(
+        object.submittedTransactionHash,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.confirmedTransactionHash != null) {
+      yield r'confirmed_transaction_hash';
+      yield serializers.serialize(
+        object.confirmedTransactionHash,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.requiredFundingRaw != null) {
+      yield r'required_funding_raw';
+      yield serializers.serialize(
+        object.requiredFundingRaw,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.settlementAsset != null) {
       yield r'settlement_asset';
       yield serializers.serialize(
@@ -483,6 +530,38 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           ) as OrderWalletActionBlockerEnum?;
           if (valueDes == null) continue;
           result.walletActionBlocker = valueDes;
+          break;
+        case r'action_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksActionStatus),
+          ) as BstocksActionStatus?;
+          if (valueDes == null) continue;
+          result.actionStatus = valueDes;
+          break;
+        case r'submitted_transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.submittedTransactionHash = valueDes;
+          break;
+        case r'confirmed_transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.confirmedTransactionHash = valueDes;
+          break;
+        case r'required_funding_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.requiredFundingRaw = valueDes;
           break;
         case r'settlement_asset':
           final valueDes = serializers.deserialize(

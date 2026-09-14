@@ -10,6 +10,8 @@ import 'package:dio/dio.dart';
 
 import 'package:rwa_api_client/src/api_util.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
+import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission.dart';
+import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission_request.dart';
 import 'package:rwa_api_client/src/model/create_order_request.dart';
 import 'package:rwa_api_client/src/model/hip3_account_abstraction.dart';
 import 'package:rwa_api_client/src/model/hip3_account_abstraction_execute_request.dart';
@@ -2413,6 +2415,114 @@ class OrdersApi {
     }
 
     return Response<OrderPreview>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// Record a submitted bStocks Router transaction
+  /// Accepts only the user wallet&#39;s transaction hash for the exact durable Router action. The server never accepts replacement calldata, target, value, receipt, block, or success claims; canonical confirmation and reorg handling are performed by the Router observer. 
+  ///
+  /// Parameters:
+  /// * [orderId] 
+  /// * [stepId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [bstocksWalletActionSubmissionRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [BstocksWalletActionSubmission] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<BstocksWalletActionSubmission>> submitBstocksWalletAction({ 
+    required String orderId,
+    required String stepId,
+    required String idempotencyKey,
+    required BstocksWalletActionSubmissionRequest bstocksWalletActionSubmissionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/orders/{order_id}/wallet-actions/{step_id}/submissions'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString()).replaceAll('{' r'step_id' '}', encodeQueryParameter(_serializers, stepId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(BstocksWalletActionSubmissionRequest);
+      _bodyData = _serializers.serialize(bstocksWalletActionSubmissionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    BstocksWalletActionSubmission? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(BstocksWalletActionSubmission),
+      ) as BstocksWalletActionSubmission;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<BstocksWalletActionSubmission>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

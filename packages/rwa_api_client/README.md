@@ -166,6 +166,7 @@ Class | Method | HTTP request | Description
 [*OrdersApi*](doc/OrdersApi.md) | [**prepareHip3AccountAbstraction**](doc/OrdersApi.md#preparehip3accountabstraction) | **POST** /v1/hip3/account-abstraction/prepare | 准备一次性切换到 Unified Account
 [*OrdersApi*](doc/OrdersApi.md) | [**previewHip3ClosePosition**](doc/OrdersApi.md#previewhip3closeposition) | **POST** /v1/positions/{position_id}/close/preview | 预览 HIP-3 全部或部分平仓
 [*OrdersApi*](doc/OrdersApi.md) | [**previewOrder**](doc/OrdersApi.md#previeworder) | **POST** /v1/orders/preview | 预览 bStocks 或 HIP-3 订单
+[*OrdersApi*](doc/OrdersApi.md) | [**submitBstocksWalletAction**](doc/OrdersApi.md#submitbstockswalletaction) | **POST** /v1/orders/{order_id}/wallet-actions/{step_id}/submissions | Record a submitted bStocks Router transaction
 [*OrdersApi*](doc/OrdersApi.md) | [**submitHip3ActionStep**](doc/OrdersApi.md#submithip3actionstep) | **POST** /v1/hip3/actions/{action_id}/steps/{step_id}/submissions | 提交当前 HIP-3 步骤签名并由后端广播
 [*PortfolioApi*](doc/PortfolioApi.md) | [**getPortfolioAllocation**](doc/PortfolioApi.md#getportfolioallocation) | **GET** /v1/portfolio/allocation | 获取资产组合配置分布
 [*PortfolioApi*](doc/PortfolioApi.md) | [**getPortfolioHistory**](doc/PortfolioApi.md#getportfoliohistory) | **GET** /v1/portfolio/history | 获取资产组合历史
@@ -205,8 +206,6 @@ Class | Method | HTTP request | Description
  - [ArbitrumConfirmedDeposit](doc/ArbitrumConfirmedDeposit.md)
  - [ArbitrumDepositAddress](doc/ArbitrumDepositAddress.md)
  - [ArbitrumDepositRail](doc/ArbitrumDepositRail.md)
- - [ArbitrumUsdcFundingSourceAsset](doc/ArbitrumUsdcFundingSourceAsset.md)
- - [ArbitrumUsdtFundingSourceAsset](doc/ArbitrumUsdtFundingSourceAsset.md)
  - [AssetInfo](doc/AssetInfo.md)
  - [AssetPortfolioAllocation](doc/AssetPortfolioAllocation.md)
  - [AssetPortfolioAllocationItem](doc/AssetPortfolioAllocationItem.md)
@@ -214,15 +213,10 @@ Class | Method | HTTP request | Description
  - [AutoMultiSourceTradeIntentCreateRequest](doc/AutoMultiSourceTradeIntentCreateRequest.md)
  - [AutoSingleSourceFundingPlanRequest](doc/AutoSingleSourceFundingPlanRequest.md)
  - [AutoSingleSourceTradeIntentCreateRequest](doc/AutoSingleSourceTradeIntentCreateRequest.md)
- - [AvailableDepositInstructionItem](doc/AvailableDepositInstructionItem.md)
  - [AvailableDepositRailAvailability](doc/AvailableDepositRailAvailability.md)
- - [BaseUsdcFundingSourceAsset](doc/BaseUsdcFundingSourceAsset.md)
- - [BaseUsdtFundingSourceAsset](doc/BaseUsdtFundingSourceAsset.md)
  - [BscConfirmedDeposit](doc/BscConfirmedDeposit.md)
  - [BscDepositAddress](doc/BscDepositAddress.md)
  - [BscDepositRail](doc/BscDepositRail.md)
- - [BscUsdcFundingSourceAsset](doc/BscUsdcFundingSourceAsset.md)
- - [BscUsdtFundingSourceAsset](doc/BscUsdtFundingSourceAsset.md)
  - [BstockCreateOrderRequest](doc/BstockCreateOrderRequest.md)
  - [BstockFundingPlan](doc/BstockFundingPlan.md)
  - [BstockFundingRail](doc/BstockFundingRail.md)
@@ -233,7 +227,10 @@ Class | Method | HTTP request | Description
  - [BstockOrderPreview](doc/BstockOrderPreview.md)
  - [BstockOrderPreviewRequest](doc/BstockOrderPreviewRequest.md)
  - [BstockOrderWalletActionState](doc/BstockOrderWalletActionState.md)
+ - [BstocksActionStatus](doc/BstocksActionStatus.md)
  - [BstocksTimeInForce](doc/BstocksTimeInForce.md)
+ - [BstocksWalletActionSubmission](doc/BstocksWalletActionSubmission.md)
+ - [BstocksWalletActionSubmissionRequest](doc/BstocksWalletActionSubmissionRequest.md)
  - [CandlePoint](doc/CandlePoint.md)
  - [CandleSeries](doc/CandleSeries.md)
  - [Chain](doc/Chain.md)
@@ -252,6 +249,7 @@ Class | Method | HTTP request | Description
  - [DepositBase](doc/DepositBase.md)
  - [DepositCreditTarget](doc/DepositCreditTarget.md)
  - [DepositInstruction](doc/DepositInstruction.md)
+ - [DepositInstructionAvailability](doc/DepositInstructionAvailability.md)
  - [DepositInstructionItem](doc/DepositInstructionItem.md)
  - [DepositInstructionWallet](doc/DepositInstructionWallet.md)
  - [DepositInstructionsResponse](doc/DepositInstructionsResponse.md)
@@ -274,8 +272,6 @@ Class | Method | HTTP request | Description
  - [DisclosuresSessionsInner](doc/DisclosuresSessionsInner.md)
  - [EligibleFundingPositionEligibility](doc/EligibleFundingPositionEligibility.md)
  - [Erc20ApprovalAction](doc/Erc20ApprovalAction.md)
- - [EthereumUsdcFundingSourceAsset](doc/EthereumUsdcFundingSourceAsset.md)
- - [EthereumUsdtFundingSourceAsset](doc/EthereumUsdtFundingSourceAsset.md)
  - [FrozenEvmTransaction](doc/FrozenEvmTransaction.md)
  - [FundingAssetIdentity](doc/FundingAssetIdentity.md)
  - [FundingAssetProvenance](doc/FundingAssetProvenance.md)
@@ -563,7 +559,6 @@ Class | Method | HTTP request | Description
  - [TransferSourceExecutionStatus](doc/TransferSourceExecutionStatus.md)
  - [TransferStatus](doc/TransferStatus.md)
  - [TransferTargetCreditStatus](doc/TransferTargetCreditStatus.md)
- - [UnavailableDepositInstructionItem](doc/UnavailableDepositInstructionItem.md)
  - [UnavailableDepositRailAvailability](doc/UnavailableDepositRailAvailability.md)
  - [UnifiedFundingAccount](doc/UnifiedFundingAccount.md)
  - [UnifiedFundingBlocker](doc/UnifiedFundingBlocker.md)

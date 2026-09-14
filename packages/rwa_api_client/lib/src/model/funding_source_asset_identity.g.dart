@@ -6,514 +6,38 @@ part of 'funding_source_asset_identity.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const FundingSourceAssetIdentityAssetIdEnum
-    _$fundingSourceAssetIdentityAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 =
-    const FundingSourceAssetIdentityAssetIdEnum._(
-        'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955');
-const FundingSourceAssetIdentityAssetIdEnum
-    _$fundingSourceAssetIdentityAssetIdEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityAssetIdEnum._('unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityAssetIdEnum
-    _$fundingSourceAssetIdentityAssetIdEnumValueOf(String name) {
-  switch (name) {
-    case 'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
-      return _$fundingSourceAssetIdentityAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityAssetIdEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityAssetIdEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityAssetIdEnum>
-    _$fundingSourceAssetIdentityAssetIdEnumValues = BuiltSet<
-        FundingSourceAssetIdentityAssetIdEnum>(const <FundingSourceAssetIdentityAssetIdEnum>[
-  _$fundingSourceAssetIdentityAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955,
-  _$fundingSourceAssetIdentityAssetIdEnum_unknownDefaultOpenApi,
-]);
-
-const FundingSourceAssetIdentityNamespaceEnum
-    _$fundingSourceAssetIdentityNamespaceEnum_eip155 =
-    const FundingSourceAssetIdentityNamespaceEnum._('eip155');
-const FundingSourceAssetIdentityNamespaceEnum
-    _$fundingSourceAssetIdentityNamespaceEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityNamespaceEnum._('unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityNamespaceEnum
-    _$fundingSourceAssetIdentityNamespaceEnumValueOf(String name) {
-  switch (name) {
-    case 'eip155':
-      return _$fundingSourceAssetIdentityNamespaceEnum_eip155;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityNamespaceEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityNamespaceEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityNamespaceEnum>
-    _$fundingSourceAssetIdentityNamespaceEnumValues = BuiltSet<
-        FundingSourceAssetIdentityNamespaceEnum>(const <FundingSourceAssetIdentityNamespaceEnum>[
-  _$fundingSourceAssetIdentityNamespaceEnum_eip155,
-  _$fundingSourceAssetIdentityNamespaceEnum_unknownDefaultOpenApi,
-]);
-
-const FundingSourceAssetIdentityNetworkEnum
-    _$fundingSourceAssetIdentityNetworkEnum_BSC =
-    const FundingSourceAssetIdentityNetworkEnum._('BSC');
-const FundingSourceAssetIdentityNetworkEnum
-    _$fundingSourceAssetIdentityNetworkEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityNetworkEnum._('unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityNetworkEnum
-    _$fundingSourceAssetIdentityNetworkEnumValueOf(String name) {
-  switch (name) {
-    case 'BSC':
-      return _$fundingSourceAssetIdentityNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityNetworkEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityNetworkEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityNetworkEnum>
-    _$fundingSourceAssetIdentityNetworkEnumValues = BuiltSet<
-        FundingSourceAssetIdentityNetworkEnum>(const <FundingSourceAssetIdentityNetworkEnum>[
-  _$fundingSourceAssetIdentityNetworkEnum_BSC,
-  _$fundingSourceAssetIdentityNetworkEnum_unknownDefaultOpenApi,
-]);
-
-const FundingSourceAssetIdentityChainIdEnum
-    _$fundingSourceAssetIdentityChainIdEnum_number56 =
-    const FundingSourceAssetIdentityChainIdEnum._('number56');
-const FundingSourceAssetIdentityChainIdEnum
-    _$fundingSourceAssetIdentityChainIdEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityChainIdEnum._('unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityChainIdEnum
-    _$fundingSourceAssetIdentityChainIdEnumValueOf(String name) {
-  switch (name) {
-    case 'number56':
-      return _$fundingSourceAssetIdentityChainIdEnum_number56;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityChainIdEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityChainIdEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityChainIdEnum>
-    _$fundingSourceAssetIdentityChainIdEnumValues = BuiltSet<
-        FundingSourceAssetIdentityChainIdEnum>(const <FundingSourceAssetIdentityChainIdEnum>[
-  _$fundingSourceAssetIdentityChainIdEnum_number56,
-  _$fundingSourceAssetIdentityChainIdEnum_unknownDefaultOpenApi,
-]);
-
-const FundingSourceAssetIdentityTokenEnum
-    _$fundingSourceAssetIdentityTokenEnum_USDT =
-    const FundingSourceAssetIdentityTokenEnum._('USDT');
-const FundingSourceAssetIdentityTokenEnum
-    _$fundingSourceAssetIdentityTokenEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityTokenEnum._('unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityTokenEnum
-    _$fundingSourceAssetIdentityTokenEnumValueOf(String name) {
-  switch (name) {
-    case 'USDT':
-      return _$fundingSourceAssetIdentityTokenEnum_USDT;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityTokenEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityTokenEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityTokenEnum>
-    _$fundingSourceAssetIdentityTokenEnumValues = BuiltSet<
-        FundingSourceAssetIdentityTokenEnum>(const <FundingSourceAssetIdentityTokenEnum>[
-  _$fundingSourceAssetIdentityTokenEnum_USDT,
-  _$fundingSourceAssetIdentityTokenEnum_unknownDefaultOpenApi,
-]);
-
-const FundingSourceAssetIdentityTokenContractEnum
-    _$fundingSourceAssetIdentityTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955 =
-    const FundingSourceAssetIdentityTokenContractEnum._(
-        'n0x55d398326f99059ff775485246999027b3197955');
-const FundingSourceAssetIdentityTokenContractEnum
-    _$fundingSourceAssetIdentityTokenContractEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityTokenContractEnum._(
-        'unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityTokenContractEnum
-    _$fundingSourceAssetIdentityTokenContractEnumValueOf(String name) {
-  switch (name) {
-    case 'n0x55d398326f99059ff775485246999027b3197955':
-      return _$fundingSourceAssetIdentityTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityTokenContractEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityTokenContractEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityTokenContractEnum>
-    _$fundingSourceAssetIdentityTokenContractEnumValues = BuiltSet<
-        FundingSourceAssetIdentityTokenContractEnum>(const <FundingSourceAssetIdentityTokenContractEnum>[
-  _$fundingSourceAssetIdentityTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955,
-  _$fundingSourceAssetIdentityTokenContractEnum_unknownDefaultOpenApi,
-]);
-
-const FundingSourceAssetIdentityTokenDecimalsEnum
-    _$fundingSourceAssetIdentityTokenDecimalsEnum_number18 =
-    const FundingSourceAssetIdentityTokenDecimalsEnum._('number18');
-const FundingSourceAssetIdentityTokenDecimalsEnum
-    _$fundingSourceAssetIdentityTokenDecimalsEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityTokenDecimalsEnum._(
-        'unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityTokenDecimalsEnum
-    _$fundingSourceAssetIdentityTokenDecimalsEnumValueOf(String name) {
-  switch (name) {
-    case 'number18':
-      return _$fundingSourceAssetIdentityTokenDecimalsEnum_number18;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityTokenDecimalsEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityTokenDecimalsEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityTokenDecimalsEnum>
-    _$fundingSourceAssetIdentityTokenDecimalsEnumValues = BuiltSet<
-        FundingSourceAssetIdentityTokenDecimalsEnum>(const <FundingSourceAssetIdentityTokenDecimalsEnum>[
-  _$fundingSourceAssetIdentityTokenDecimalsEnum_number18,
-  _$fundingSourceAssetIdentityTokenDecimalsEnum_unknownDefaultOpenApi,
-]);
-
-const FundingSourceAssetIdentityProvenanceEnum
-    _$fundingSourceAssetIdentityProvenanceEnum_binancePeg =
-    const FundingSourceAssetIdentityProvenanceEnum._('binancePeg');
-const FundingSourceAssetIdentityProvenanceEnum
-    _$fundingSourceAssetIdentityProvenanceEnum_unknownDefaultOpenApi =
-    const FundingSourceAssetIdentityProvenanceEnum._('unknownDefaultOpenApi');
-
-FundingSourceAssetIdentityProvenanceEnum
-    _$fundingSourceAssetIdentityProvenanceEnumValueOf(String name) {
-  switch (name) {
-    case 'binancePeg':
-      return _$fundingSourceAssetIdentityProvenanceEnum_binancePeg;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSourceAssetIdentityProvenanceEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingSourceAssetIdentityProvenanceEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingSourceAssetIdentityProvenanceEnum>
-    _$fundingSourceAssetIdentityProvenanceEnumValues = BuiltSet<
-        FundingSourceAssetIdentityProvenanceEnum>(const <FundingSourceAssetIdentityProvenanceEnum>[
-  _$fundingSourceAssetIdentityProvenanceEnum_binancePeg,
-  _$fundingSourceAssetIdentityProvenanceEnum_unknownDefaultOpenApi,
-]);
-
-Serializer<FundingSourceAssetIdentityAssetIdEnum>
-    _$fundingSourceAssetIdentityAssetIdEnumSerializer =
-    _$FundingSourceAssetIdentityAssetIdEnumSerializer();
-Serializer<FundingSourceAssetIdentityNamespaceEnum>
-    _$fundingSourceAssetIdentityNamespaceEnumSerializer =
-    _$FundingSourceAssetIdentityNamespaceEnumSerializer();
-Serializer<FundingSourceAssetIdentityNetworkEnum>
-    _$fundingSourceAssetIdentityNetworkEnumSerializer =
-    _$FundingSourceAssetIdentityNetworkEnumSerializer();
-Serializer<FundingSourceAssetIdentityChainIdEnum>
-    _$fundingSourceAssetIdentityChainIdEnumSerializer =
-    _$FundingSourceAssetIdentityChainIdEnumSerializer();
-Serializer<FundingSourceAssetIdentityTokenEnum>
-    _$fundingSourceAssetIdentityTokenEnumSerializer =
-    _$FundingSourceAssetIdentityTokenEnumSerializer();
-Serializer<FundingSourceAssetIdentityTokenContractEnum>
-    _$fundingSourceAssetIdentityTokenContractEnumSerializer =
-    _$FundingSourceAssetIdentityTokenContractEnumSerializer();
-Serializer<FundingSourceAssetIdentityTokenDecimalsEnum>
-    _$fundingSourceAssetIdentityTokenDecimalsEnumSerializer =
-    _$FundingSourceAssetIdentityTokenDecimalsEnumSerializer();
-Serializer<FundingSourceAssetIdentityProvenanceEnum>
-    _$fundingSourceAssetIdentityProvenanceEnumSerializer =
-    _$FundingSourceAssetIdentityProvenanceEnumSerializer();
-
-class _$FundingSourceAssetIdentityAssetIdEnumSerializer
-    implements PrimitiveSerializer<FundingSourceAssetIdentityAssetIdEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
-        'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955':
-        'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityAssetIdEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityAssetIdEnum';
-
-  @override
-  Object serialize(
-          Serializers serializers, FundingSourceAssetIdentityAssetIdEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityAssetIdEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityAssetIdEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingSourceAssetIdentityNamespaceEnumSerializer
-    implements PrimitiveSerializer<FundingSourceAssetIdentityNamespaceEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'eip155': 'eip155',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'eip155': 'eip155',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityNamespaceEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityNamespaceEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          FundingSourceAssetIdentityNamespaceEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityNamespaceEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityNamespaceEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingSourceAssetIdentityNetworkEnumSerializer
-    implements PrimitiveSerializer<FundingSourceAssetIdentityNetworkEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityNetworkEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityNetworkEnum';
-
-  @override
-  Object serialize(
-          Serializers serializers, FundingSourceAssetIdentityNetworkEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityNetworkEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityNetworkEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingSourceAssetIdentityChainIdEnumSerializer
-    implements PrimitiveSerializer<FundingSourceAssetIdentityChainIdEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'number56': 56,
-    'unknownDefaultOpenApi': 11184809,
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    56: 'number56',
-    11184809: 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityChainIdEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityChainIdEnum';
-
-  @override
-  Object serialize(
-          Serializers serializers, FundingSourceAssetIdentityChainIdEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityChainIdEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityChainIdEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingSourceAssetIdentityTokenEnumSerializer
-    implements PrimitiveSerializer<FundingSourceAssetIdentityTokenEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'USDT': 'USDT',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDT': 'USDT',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityTokenEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityTokenEnum';
-
-  @override
-  Object serialize(
-          Serializers serializers, FundingSourceAssetIdentityTokenEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityTokenEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityTokenEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingSourceAssetIdentityTokenContractEnumSerializer
-    implements
-        PrimitiveSerializer<FundingSourceAssetIdentityTokenContractEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'n0x55d398326f99059ff775485246999027b3197955':
-        '0x55d398326f99059ff775485246999027b3197955',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    '0x55d398326f99059ff775485246999027b3197955':
-        'n0x55d398326f99059ff775485246999027b3197955',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityTokenContractEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityTokenContractEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          FundingSourceAssetIdentityTokenContractEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityTokenContractEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityTokenContractEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingSourceAssetIdentityTokenDecimalsEnumSerializer
-    implements
-        PrimitiveSerializer<FundingSourceAssetIdentityTokenDecimalsEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'number18': 18,
-    'unknownDefaultOpenApi': 11184809,
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    18: 'number18',
-    11184809: 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityTokenDecimalsEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityTokenDecimalsEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          FundingSourceAssetIdentityTokenDecimalsEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityTokenDecimalsEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityTokenDecimalsEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$FundingSourceAssetIdentityProvenanceEnumSerializer
-    implements PrimitiveSerializer<FundingSourceAssetIdentityProvenanceEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'binancePeg': 'binance_peg',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'binance_peg': 'binancePeg',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    FundingSourceAssetIdentityProvenanceEnum
-  ];
-  @override
-  final String wireName = 'FundingSourceAssetIdentityProvenanceEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          FundingSourceAssetIdentityProvenanceEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingSourceAssetIdentityProvenanceEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingSourceAssetIdentityProvenanceEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
 class _$FundingSourceAssetIdentity extends FundingSourceAssetIdentity {
   @override
-  final OneOf oneOf;
+  final String assetId;
+  @override
+  final String namespace;
+  @override
+  final String network;
+  @override
+  final int chainId;
+  @override
+  final String token;
+  @override
+  final String tokenContract;
+  @override
+  final int tokenDecimals;
+  @override
+  final String provenance;
 
   factory _$FundingSourceAssetIdentity(
           [void Function(FundingSourceAssetIdentityBuilder)? updates]) =>
       (FundingSourceAssetIdentityBuilder()..update(updates))._build();
 
-  _$FundingSourceAssetIdentity._({required this.oneOf}) : super._();
+  _$FundingSourceAssetIdentity._(
+      {required this.assetId,
+      required this.namespace,
+      required this.network,
+      required this.chainId,
+      required this.token,
+      required this.tokenContract,
+      required this.tokenDecimals,
+      required this.provenance})
+      : super._();
   @override
   FundingSourceAssetIdentity rebuild(
           void Function(FundingSourceAssetIdentityBuilder) updates) =>
@@ -526,13 +50,28 @@ class _$FundingSourceAssetIdentity extends FundingSourceAssetIdentity {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is FundingSourceAssetIdentity && oneOf == other.oneOf;
+    return other is FundingSourceAssetIdentity &&
+        assetId == other.assetId &&
+        namespace == other.namespace &&
+        network == other.network &&
+        chainId == other.chainId &&
+        token == other.token &&
+        tokenContract == other.tokenContract &&
+        tokenDecimals == other.tokenDecimals &&
+        provenance == other.provenance;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, oneOf.hashCode);
+    _$hash = $jc(_$hash, assetId.hashCode);
+    _$hash = $jc(_$hash, namespace.hashCode);
+    _$hash = $jc(_$hash, network.hashCode);
+    _$hash = $jc(_$hash, chainId.hashCode);
+    _$hash = $jc(_$hash, token.hashCode);
+    _$hash = $jc(_$hash, tokenContract.hashCode);
+    _$hash = $jc(_$hash, tokenDecimals.hashCode);
+    _$hash = $jc(_$hash, provenance.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -540,7 +79,14 @@ class _$FundingSourceAssetIdentity extends FundingSourceAssetIdentity {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'FundingSourceAssetIdentity')
-          ..add('oneOf', oneOf))
+          ..add('assetId', assetId)
+          ..add('namespace', namespace)
+          ..add('network', network)
+          ..add('chainId', chainId)
+          ..add('token', token)
+          ..add('tokenContract', tokenContract)
+          ..add('tokenDecimals', tokenDecimals)
+          ..add('provenance', provenance))
         .toString();
   }
 }
@@ -550,9 +96,39 @@ class FundingSourceAssetIdentityBuilder
         Builder<FundingSourceAssetIdentity, FundingSourceAssetIdentityBuilder> {
   _$FundingSourceAssetIdentity? _$v;
 
-  OneOf? _oneOf;
-  OneOf? get oneOf => _$this._oneOf;
-  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
+  String? _assetId;
+  String? get assetId => _$this._assetId;
+  set assetId(String? assetId) => _$this._assetId = assetId;
+
+  String? _namespace;
+  String? get namespace => _$this._namespace;
+  set namespace(String? namespace) => _$this._namespace = namespace;
+
+  String? _network;
+  String? get network => _$this._network;
+  set network(String? network) => _$this._network = network;
+
+  int? _chainId;
+  int? get chainId => _$this._chainId;
+  set chainId(int? chainId) => _$this._chainId = chainId;
+
+  String? _token;
+  String? get token => _$this._token;
+  set token(String? token) => _$this._token = token;
+
+  String? _tokenContract;
+  String? get tokenContract => _$this._tokenContract;
+  set tokenContract(String? tokenContract) =>
+      _$this._tokenContract = tokenContract;
+
+  int? _tokenDecimals;
+  int? get tokenDecimals => _$this._tokenDecimals;
+  set tokenDecimals(int? tokenDecimals) =>
+      _$this._tokenDecimals = tokenDecimals;
+
+  String? _provenance;
+  String? get provenance => _$this._provenance;
+  set provenance(String? provenance) => _$this._provenance = provenance;
 
   FundingSourceAssetIdentityBuilder() {
     FundingSourceAssetIdentity._defaults(this);
@@ -561,7 +137,14 @@ class FundingSourceAssetIdentityBuilder
   FundingSourceAssetIdentityBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _oneOf = $v.oneOf;
+      _assetId = $v.assetId;
+      _namespace = $v.namespace;
+      _network = $v.network;
+      _chainId = $v.chainId;
+      _token = $v.token;
+      _tokenContract = $v.tokenContract;
+      _tokenDecimals = $v.tokenDecimals;
+      _provenance = $v.provenance;
       _$v = null;
     }
     return this;
@@ -583,8 +166,22 @@ class FundingSourceAssetIdentityBuilder
   _$FundingSourceAssetIdentity _build() {
     final _$result = _$v ??
         _$FundingSourceAssetIdentity._(
-          oneOf: BuiltValueNullFieldError.checkNotNull(
-              oneOf, r'FundingSourceAssetIdentity', 'oneOf'),
+          assetId: BuiltValueNullFieldError.checkNotNull(
+              assetId, r'FundingSourceAssetIdentity', 'assetId'),
+          namespace: BuiltValueNullFieldError.checkNotNull(
+              namespace, r'FundingSourceAssetIdentity', 'namespace'),
+          network: BuiltValueNullFieldError.checkNotNull(
+              network, r'FundingSourceAssetIdentity', 'network'),
+          chainId: BuiltValueNullFieldError.checkNotNull(
+              chainId, r'FundingSourceAssetIdentity', 'chainId'),
+          token: BuiltValueNullFieldError.checkNotNull(
+              token, r'FundingSourceAssetIdentity', 'token'),
+          tokenContract: BuiltValueNullFieldError.checkNotNull(
+              tokenContract, r'FundingSourceAssetIdentity', 'tokenContract'),
+          tokenDecimals: BuiltValueNullFieldError.checkNotNull(
+              tokenDecimals, r'FundingSourceAssetIdentity', 'tokenDecimals'),
+          provenance: BuiltValueNullFieldError.checkNotNull(
+              provenance, r'FundingSourceAssetIdentity', 'provenance'),
         );
     replace(_$result);
     return _$result;

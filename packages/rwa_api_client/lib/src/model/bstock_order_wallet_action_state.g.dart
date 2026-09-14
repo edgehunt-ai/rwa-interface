@@ -159,13 +159,27 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   @override
   final BstockOrderWalletActionStateWalletActionBlockerEnum?
       walletActionBlocker;
+  @override
+  final BstocksActionStatus? actionStatus;
+  @override
+  final String? submittedTransactionHash;
+  @override
+  final String? confirmedTransactionHash;
+  @override
+  final String? requiredFundingRaw;
 
   factory _$BstockOrderWalletActionState(
           [void Function(BstockOrderWalletActionStateBuilder)? updates]) =>
       (BstockOrderWalletActionStateBuilder()..update(updates))._build();
 
   _$BstockOrderWalletActionState._(
-      {required this.kind, this.nextAction, this.walletActionBlocker})
+      {required this.kind,
+      this.nextAction,
+      this.walletActionBlocker,
+      this.actionStatus,
+      this.submittedTransactionHash,
+      this.confirmedTransactionHash,
+      this.requiredFundingRaw})
       : super._();
   @override
   BstockOrderWalletActionState rebuild(
@@ -182,7 +196,11 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
     return other is BstockOrderWalletActionState &&
         kind == other.kind &&
         nextAction == other.nextAction &&
-        walletActionBlocker == other.walletActionBlocker;
+        walletActionBlocker == other.walletActionBlocker &&
+        actionStatus == other.actionStatus &&
+        submittedTransactionHash == other.submittedTransactionHash &&
+        confirmedTransactionHash == other.confirmedTransactionHash &&
+        requiredFundingRaw == other.requiredFundingRaw;
   }
 
   @override
@@ -191,6 +209,10 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
+    _$hash = $jc(_$hash, actionStatus.hashCode);
+    _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
+    _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
+    _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -200,7 +222,11 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
     return (newBuiltValueToStringHelper(r'BstockOrderWalletActionState')
           ..add('kind', kind)
           ..add('nextAction', nextAction)
-          ..add('walletActionBlocker', walletActionBlocker))
+          ..add('walletActionBlocker', walletActionBlocker)
+          ..add('actionStatus', actionStatus)
+          ..add('submittedTransactionHash', submittedTransactionHash)
+          ..add('confirmedTransactionHash', confirmedTransactionHash)
+          ..add('requiredFundingRaw', requiredFundingRaw))
         .toString();
   }
 }
@@ -229,6 +255,26 @@ class BstockOrderWalletActionStateBuilder
               walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
 
+  BstocksActionStatus? _actionStatus;
+  BstocksActionStatus? get actionStatus => _$this._actionStatus;
+  set actionStatus(BstocksActionStatus? actionStatus) =>
+      _$this._actionStatus = actionStatus;
+
+  String? _submittedTransactionHash;
+  String? get submittedTransactionHash => _$this._submittedTransactionHash;
+  set submittedTransactionHash(String? submittedTransactionHash) =>
+      _$this._submittedTransactionHash = submittedTransactionHash;
+
+  String? _confirmedTransactionHash;
+  String? get confirmedTransactionHash => _$this._confirmedTransactionHash;
+  set confirmedTransactionHash(String? confirmedTransactionHash) =>
+      _$this._confirmedTransactionHash = confirmedTransactionHash;
+
+  String? _requiredFundingRaw;
+  String? get requiredFundingRaw => _$this._requiredFundingRaw;
+  set requiredFundingRaw(String? requiredFundingRaw) =>
+      _$this._requiredFundingRaw = requiredFundingRaw;
+
   BstockOrderWalletActionStateBuilder() {
     BstockOrderWalletActionState._defaults(this);
   }
@@ -239,6 +285,10 @@ class BstockOrderWalletActionStateBuilder
       _kind = $v.kind;
       _nextAction = $v.nextAction?.toBuilder();
       _walletActionBlocker = $v.walletActionBlocker;
+      _actionStatus = $v.actionStatus;
+      _submittedTransactionHash = $v.submittedTransactionHash;
+      _confirmedTransactionHash = $v.confirmedTransactionHash;
+      _requiredFundingRaw = $v.requiredFundingRaw;
       _$v = null;
     }
     return this;
@@ -266,6 +316,10 @@ class BstockOrderWalletActionStateBuilder
                 kind, r'BstockOrderWalletActionState', 'kind'),
             nextAction: _nextAction?.build(),
             walletActionBlocker: walletActionBlocker,
+            actionStatus: actionStatus,
+            submittedTransactionHash: submittedTransactionHash,
+            confirmedTransactionHash: confirmedTransactionHash,
+            requiredFundingRaw: requiredFundingRaw,
           );
     } catch (_) {
       late String _$failedField;

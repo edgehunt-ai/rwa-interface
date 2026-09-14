@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
 import 'package:rwa_api_client/src/model/order_evm_action.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
@@ -16,6 +17,10 @@ part 'bstock_order_wallet_action_state.g.dart';
 /// * [kind] 
 /// * [nextAction] 
 /// * [walletActionBlocker] - Must be null when `next_action` is present; enforced by server validation.
+/// * [actionStatus] 
+/// * [submittedTransactionHash] 
+/// * [confirmedTransactionHash] 
+/// * [requiredFundingRaw] - Exact input-token maximum encoded by the immutable Router action.
 @BuiltValue()
 abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletActionState, BstockOrderWalletActionStateBuilder> {
   @BuiltValueField(wireName: r'kind')
@@ -29,6 +34,20 @@ abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletAc
   @BuiltValueField(wireName: r'wallet_action_blocker')
   BstockOrderWalletActionStateWalletActionBlockerEnum? get walletActionBlocker;
   // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  };
+
+  @BuiltValueField(wireName: r'action_status')
+  BstocksActionStatus? get actionStatus;
+  // enum actionStatusEnum {  awaiting_signature,  submitted,  confirmed,  failed,  manual_review,  };
+
+  @BuiltValueField(wireName: r'submitted_transaction_hash')
+  String? get submittedTransactionHash;
+
+  @BuiltValueField(wireName: r'confirmed_transaction_hash')
+  String? get confirmedTransactionHash;
+
+  /// Exact input-token maximum encoded by the immutable Router action.
+  @BuiltValueField(wireName: r'required_funding_raw')
+  String? get requiredFundingRaw;
 
   BstockOrderWalletActionState._();
 
@@ -68,6 +87,34 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       object.walletActionBlocker,
       specifiedType: const FullType.nullable(BstockOrderWalletActionStateWalletActionBlockerEnum),
     );
+    if (object.actionStatus != null) {
+      yield r'action_status';
+      yield serializers.serialize(
+        object.actionStatus,
+        specifiedType: const FullType(BstocksActionStatus),
+      );
+    }
+    if (object.submittedTransactionHash != null) {
+      yield r'submitted_transaction_hash';
+      yield serializers.serialize(
+        object.submittedTransactionHash,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.confirmedTransactionHash != null) {
+      yield r'confirmed_transaction_hash';
+      yield serializers.serialize(
+        object.confirmedTransactionHash,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.requiredFundingRaw != null) {
+      yield r'required_funding_raw';
+      yield serializers.serialize(
+        object.requiredFundingRaw,
+        specifiedType: const FullType(String),
+      );
+    }
   }
 
   @override
@@ -113,6 +160,38 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
           ) as BstockOrderWalletActionStateWalletActionBlockerEnum?;
           if (valueDes == null) continue;
           result.walletActionBlocker = valueDes;
+          break;
+        case r'action_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksActionStatus),
+          ) as BstocksActionStatus?;
+          if (valueDes == null) continue;
+          result.actionStatus = valueDes;
+          break;
+        case r'submitted_transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.submittedTransactionHash = valueDes;
+          break;
+        case r'confirmed_transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.confirmedTransactionHash = valueDes;
+          break;
+        case r'required_funding_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.requiredFundingRaw = valueDes;
           break;
         default:
           unhandled.add(key);

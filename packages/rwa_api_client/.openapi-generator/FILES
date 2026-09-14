@@ -39,8 +39,6 @@ lib/src/model/app_version_info.dart
 lib/src/model/arbitrum_confirmed_deposit.dart
 lib/src/model/arbitrum_deposit_address.dart
 lib/src/model/arbitrum_deposit_rail.dart
-lib/src/model/arbitrum_usdc_funding_source_asset.dart
-lib/src/model/arbitrum_usdt_funding_source_asset.dart
 lib/src/model/asset_info.dart
 lib/src/model/asset_portfolio_allocation.dart
 lib/src/model/asset_portfolio_allocation_item.dart
@@ -48,15 +46,10 @@ lib/src/model/auto_multi_source_funding_plan_request.dart
 lib/src/model/auto_multi_source_trade_intent_create_request.dart
 lib/src/model/auto_single_source_funding_plan_request.dart
 lib/src/model/auto_single_source_trade_intent_create_request.dart
-lib/src/model/available_deposit_instruction_item.dart
 lib/src/model/available_deposit_rail_availability.dart
-lib/src/model/base_usdc_funding_source_asset.dart
-lib/src/model/base_usdt_funding_source_asset.dart
 lib/src/model/bsc_confirmed_deposit.dart
 lib/src/model/bsc_deposit_address.dart
 lib/src/model/bsc_deposit_rail.dart
-lib/src/model/bsc_usdc_funding_source_asset.dart
-lib/src/model/bsc_usdt_funding_source_asset.dart
 lib/src/model/bstock_create_order_request.dart
 lib/src/model/bstock_funding_plan.dart
 lib/src/model/bstock_funding_rail.dart
@@ -67,7 +60,10 @@ lib/src/model/bstock_funding_transfer_target.dart
 lib/src/model/bstock_order_preview.dart
 lib/src/model/bstock_order_preview_request.dart
 lib/src/model/bstock_order_wallet_action_state.dart
+lib/src/model/bstocks_action_status.dart
 lib/src/model/bstocks_time_in_force.dart
+lib/src/model/bstocks_wallet_action_submission.dart
+lib/src/model/bstocks_wallet_action_submission_request.dart
 lib/src/model/candle_point.dart
 lib/src/model/candle_series.dart
 lib/src/model/chain.dart
@@ -87,6 +83,7 @@ lib/src/model/deposit_address_base.dart
 lib/src/model/deposit_base.dart
 lib/src/model/deposit_credit_target.dart
 lib/src/model/deposit_instruction.dart
+lib/src/model/deposit_instruction_availability.dart
 lib/src/model/deposit_instruction_item.dart
 lib/src/model/deposit_instruction_wallet.dart
 lib/src/model/deposit_instructions_response.dart
@@ -109,8 +106,6 @@ lib/src/model/disclosures_always_on.dart
 lib/src/model/disclosures_sessions_inner.dart
 lib/src/model/eligible_funding_position_eligibility.dart
 lib/src/model/erc20_approval_action.dart
-lib/src/model/ethereum_usdc_funding_source_asset.dart
-lib/src/model/ethereum_usdt_funding_source_asset.dart
 lib/src/model/frozen_evm_transaction.dart
 lib/src/model/funding_asset_identity.dart
 lib/src/model/funding_asset_provenance.dart
@@ -398,7 +393,6 @@ lib/src/model/transfer_request.dart
 lib/src/model/transfer_source_execution_status.dart
 lib/src/model/transfer_status.dart
 lib/src/model/transfer_target_credit_status.dart
-lib/src/model/unavailable_deposit_instruction_item.dart
 lib/src/model/unavailable_deposit_rail_availability.dart
 lib/src/model/unified_funding_account.dart
 lib/src/model/unified_funding_blocker.dart

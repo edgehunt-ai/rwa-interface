@@ -3,32 +3,53 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/available_deposit_instruction_item.dart';
 import 'package:rwa_api_client/src/model/deposit_credit_target.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_identity.dart';
-import 'package:rwa_api_client/src/model/unavailable_deposit_rail_availability.dart';
-import 'package:rwa_api_client/src/model/unavailable_deposit_instruction_item.dart';
+import 'package:rwa_api_client/src/model/deposit_instruction_availability.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:one_of/one_of.dart';
 
 part 'deposit_instruction_item.g.dart';
 
-/// Strict available/unavailable item union. Variant selection is structural: an available item has a non-empty QR payload and zero blockers; an unavailable item omits QR payload entirely and has at least one blocker. 
+/// DepositInstructionItem
 ///
 /// Properties:
 /// * [identity] 
 /// * [minDeposit] - 十进制字符串，避免浮点误差
 /// * [confirmationsRequired] 
 /// * [estimatedArrivalSeconds] 
-/// * [qrPayload] - ERC-681 payload for the response wallet and exact item identity. Clients must additionally validate the embedded recipient and identity before display. 
+/// * [qrPayload] - Present only when availability.status is available.
 /// * [creditedTo] 
 /// * [availability] 
 /// * [warning] 
 @BuiltValue()
 abstract class DepositInstructionItem implements Built<DepositInstructionItem, DepositInstructionItemBuilder> {
-  /// One Of [AvailableDepositInstructionItem], [UnavailableDepositInstructionItem]
-  OneOf get oneOf;
+  @BuiltValueField(wireName: r'identity')
+  FundingSourceAssetIdentity get identity;
+
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'min_deposit')
+  String get minDeposit;
+
+  @BuiltValueField(wireName: r'confirmations_required')
+  int get confirmationsRequired;
+
+  @BuiltValueField(wireName: r'estimated_arrival_seconds')
+  int get estimatedArrivalSeconds;
+
+  /// Present only when availability.status is available.
+  @BuiltValueField(wireName: r'qr_payload')
+  String? get qrPayload;
+
+  @BuiltValueField(wireName: r'credited_to')
+  DepositCreditTarget get creditedTo;
+  // enum creditedToEnum {  wallet,  };
+
+  @BuiltValueField(wireName: r'availability')
+  DepositInstructionAvailability get availability;
+
+  @BuiltValueField(wireName: r'warning')
+  String get warning;
 
   DepositInstructionItem._();
 
@@ -53,6 +74,48 @@ class _$DepositInstructionItemSerializer implements PrimitiveSerializer<DepositI
     DepositInstructionItem object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'identity';
+    yield serializers.serialize(
+      object.identity,
+      specifiedType: const FullType(FundingSourceAssetIdentity),
+    );
+    yield r'min_deposit';
+    yield serializers.serialize(
+      object.minDeposit,
+      specifiedType: const FullType(String),
+    );
+    yield r'confirmations_required';
+    yield serializers.serialize(
+      object.confirmationsRequired,
+      specifiedType: const FullType(int),
+    );
+    yield r'estimated_arrival_seconds';
+    yield serializers.serialize(
+      object.estimatedArrivalSeconds,
+      specifiedType: const FullType(int),
+    );
+    if (object.qrPayload != null) {
+      yield r'qr_payload';
+      yield serializers.serialize(
+        object.qrPayload,
+        specifiedType: const FullType(String),
+      );
+    }
+    yield r'credited_to';
+    yield serializers.serialize(
+      object.creditedTo,
+      specifiedType: const FullType(DepositCreditTarget),
+    );
+    yield r'availability';
+    yield serializers.serialize(
+      object.availability,
+      specifiedType: const FullType(DepositInstructionAvailability),
+    );
+    yield r'warning';
+    yield serializers.serialize(
+      object.warning,
+      specifiedType: const FullType(String),
+    );
   }
 
   @override
@@ -61,8 +124,84 @@ class _$DepositInstructionItemSerializer implements PrimitiveSerializer<DepositI
     DepositInstructionItem object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required DepositInstructionItemBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'identity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(FundingSourceAssetIdentity),
+          ) as FundingSourceAssetIdentity;
+          result.identity.replace(valueDes);
+          break;
+        case r'min_deposit':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.minDeposit = valueDes;
+          break;
+        case r'confirmations_required':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.confirmationsRequired = valueDes;
+          break;
+        case r'estimated_arrival_seconds':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.estimatedArrivalSeconds = valueDes;
+          break;
+        case r'qr_payload':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.qrPayload = valueDes;
+          break;
+        case r'credited_to':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DepositCreditTarget),
+          ) as DepositCreditTarget;
+          result.creditedTo = valueDes;
+          break;
+        case r'availability':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DepositInstructionAvailability),
+          ) as DepositInstructionAvailability;
+          result.availability.replace(valueDes);
+          break;
+        case r'warning':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.warning = valueDes;
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
   }
 
   @override
@@ -72,10 +211,16 @@ class _$DepositInstructionItemSerializer implements PrimitiveSerializer<DepositI
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = DepositInstructionItemBuilder();
-    Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(AvailableDepositInstructionItem), FullType(UnavailableDepositInstructionItem), ]);
-    oneOfDataSrc = serialized;
-    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
     return result.build();
   }
 }

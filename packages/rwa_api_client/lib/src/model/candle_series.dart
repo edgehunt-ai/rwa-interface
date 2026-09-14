@@ -43,7 +43,7 @@ abstract class CandleSeries implements Built<CandleSeries, CandleSeriesBuilder> 
 
   @BuiltValueField(wireName: r'range')
   ChartRange get range;
-  // enum rangeEnum {  15m,  4h,  24h,  1w,  };
+  // enum rangeEnum {  15m,  1h,  4h,  24h,  1w,  };
 
   @BuiltValueField(wireName: r'interval')
   String? get interval;

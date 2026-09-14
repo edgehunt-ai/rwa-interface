@@ -45,17 +45,20 @@ final class FundingRepositoryImpl implements FundingRepository {
       walletAddress: address,
       updatedAt: value.updatedAt.toUtc(),
       instructions: value.items
-          .map((wire) => wire.oneOf.value)
-          .whereType<api.AvailableDepositInstructionItem>()
+          .where(
+            (item) =>
+                item.availability.status == 'available' &&
+                item.qrPayload != null,
+          )
           .map((item) {
-            final identity = item.identity.oneOf.value as dynamic;
+            final identity = item.identity;
             return DepositInstruction(
-              chain: identity.network.name as String,
-              token: identity.token.name as String,
-              tokenContract: identity.tokenContract.name as String,
-              tokenDecimals: int.parse(identity.tokenDecimals.name as String),
+              chain: identity.network,
+              token: identity.token,
+              tokenContract: identity.tokenContract,
+              tokenDecimals: identity.tokenDecimals,
               address: address,
-              qrPayload: item.qrPayload,
+              qrPayload: item.qrPayload!,
               minimumAmount: _money(item.minDeposit)!,
               confirmationsRequired: item.confirmationsRequired,
               estimatedArrivalSeconds: item.estimatedArrivalSeconds,
@@ -396,11 +399,10 @@ final class FundingRepositoryImpl implements FundingRepository {
       final legs = (plan.multiSource as api.MultiSourceFundingPlanDetails).legs
           .map((leg) {
             final source = leg.sourcePositionSnapshot;
-            final asset = source.asset.oneOf.value as dynamic;
             return FundingLeg(
               legId: leg.legId,
               walletId: source.walletId,
-              asset: asset.token.name as String,
+              asset: source.asset.token,
               maximumAmount: _money(leg.route.maximumInputAmount)!,
               outputAmount: _money(leg.outputAmount)!,
               status: switch (leg.status.name) {

@@ -31,8 +31,6 @@ import 'package:rwa_api_client/src/model/app_version_info.dart';
 import 'package:rwa_api_client/src/model/arbitrum_confirmed_deposit.dart';
 import 'package:rwa_api_client/src/model/arbitrum_deposit_address.dart';
 import 'package:rwa_api_client/src/model/arbitrum_deposit_rail.dart';
-import 'package:rwa_api_client/src/model/arbitrum_usdc_funding_source_asset.dart';
-import 'package:rwa_api_client/src/model/arbitrum_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/asset_info.dart';
 import 'package:rwa_api_client/src/model/asset_portfolio_allocation.dart';
 import 'package:rwa_api_client/src/model/asset_portfolio_allocation_item.dart';
@@ -40,15 +38,10 @@ import 'package:rwa_api_client/src/model/auto_multi_source_funding_plan_request.
 import 'package:rwa_api_client/src/model/auto_multi_source_trade_intent_create_request.dart';
 import 'package:rwa_api_client/src/model/auto_single_source_funding_plan_request.dart';
 import 'package:rwa_api_client/src/model/auto_single_source_trade_intent_create_request.dart';
-import 'package:rwa_api_client/src/model/available_deposit_instruction_item.dart';
 import 'package:rwa_api_client/src/model/available_deposit_rail_availability.dart';
-import 'package:rwa_api_client/src/model/base_usdc_funding_source_asset.dart';
-import 'package:rwa_api_client/src/model/base_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/bsc_confirmed_deposit.dart';
 import 'package:rwa_api_client/src/model/bsc_deposit_address.dart';
 import 'package:rwa_api_client/src/model/bsc_deposit_rail.dart';
-import 'package:rwa_api_client/src/model/bsc_usdc_funding_source_asset.dart';
-import 'package:rwa_api_client/src/model/bsc_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/bstock_create_order_request.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_rail.dart';
@@ -59,7 +52,10 @@ import 'package:rwa_api_client/src/model/bstock_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
+import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
 import 'package:rwa_api_client/src/model/bstocks_time_in_force.dart';
+import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission.dart';
+import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission_request.dart';
 import 'package:rwa_api_client/src/model/candle_point.dart';
 import 'package:rwa_api_client/src/model/candle_series.dart';
 import 'package:rwa_api_client/src/model/chain.dart';
@@ -78,6 +74,7 @@ import 'package:rwa_api_client/src/model/deposit_address_base.dart';
 import 'package:rwa_api_client/src/model/deposit_base.dart';
 import 'package:rwa_api_client/src/model/deposit_credit_target.dart';
 import 'package:rwa_api_client/src/model/deposit_instruction.dart';
+import 'package:rwa_api_client/src/model/deposit_instruction_availability.dart';
 import 'package:rwa_api_client/src/model/deposit_instruction_item.dart';
 import 'package:rwa_api_client/src/model/deposit_instruction_wallet.dart';
 import 'package:rwa_api_client/src/model/deposit_instructions_response.dart';
@@ -100,8 +97,6 @@ import 'package:rwa_api_client/src/model/disclosures_always_on.dart';
 import 'package:rwa_api_client/src/model/disclosures_sessions_inner.dart';
 import 'package:rwa_api_client/src/model/eligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/erc20_approval_action.dart';
-import 'package:rwa_api_client/src/model/ethereum_usdc_funding_source_asset.dart';
-import 'package:rwa_api_client/src/model/ethereum_usdt_funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/frozen_evm_transaction.dart';
 import 'package:rwa_api_client/src/model/funding_asset_identity.dart';
 import 'package:rwa_api_client/src/model/funding_asset_provenance.dart';
@@ -389,7 +384,6 @@ import 'package:rwa_api_client/src/model/transfer_request.dart';
 import 'package:rwa_api_client/src/model/transfer_source_execution_status.dart';
 import 'package:rwa_api_client/src/model/transfer_status.dart';
 import 'package:rwa_api_client/src/model/transfer_target_credit_status.dart';
-import 'package:rwa_api_client/src/model/unavailable_deposit_instruction_item.dart';
 import 'package:rwa_api_client/src/model/unavailable_deposit_rail_availability.dart';
 import 'package:rwa_api_client/src/model/unified_funding_account.dart';
 import 'package:rwa_api_client/src/model/unified_funding_blocker.dart';
@@ -444,8 +438,6 @@ part 'serializers.g.dart';
   ArbitrumConfirmedDeposit,
   ArbitrumDepositAddress,
   ArbitrumDepositRail,
-  ArbitrumUsdcFundingSourceAsset,
-  ArbitrumUsdtFundingSourceAsset,
   AssetInfo,
   AssetPortfolioAllocation,
   AssetPortfolioAllocationItem,
@@ -453,15 +445,10 @@ part 'serializers.g.dart';
   AutoMultiSourceTradeIntentCreateRequest,
   AutoSingleSourceFundingPlanRequest,
   AutoSingleSourceTradeIntentCreateRequest,
-  AvailableDepositInstructionItem,
   AvailableDepositRailAvailability,
-  BaseUsdcFundingSourceAsset,
-  BaseUsdtFundingSourceAsset,
   BscConfirmedDeposit,
   BscDepositAddress,
   BscDepositRail,
-  BscUsdcFundingSourceAsset,
-  BscUsdtFundingSourceAsset,
   BstockCreateOrderRequest,
   BstockFundingPlan,
   BstockFundingRail,
@@ -472,7 +459,10 @@ part 'serializers.g.dart';
   BstockOrderPreview,
   BstockOrderPreviewRequest,
   BstockOrderWalletActionState,
+  BstocksActionStatus,
   BstocksTimeInForce,
+  BstocksWalletActionSubmission,
+  BstocksWalletActionSubmissionRequest,
   CandlePoint,
   CandleSeries,
   Chain,
@@ -491,6 +481,7 @@ part 'serializers.g.dart';
   DepositBase,$DepositBase,
   DepositCreditTarget,
   DepositInstruction,
+  DepositInstructionAvailability,
   DepositInstructionItem,
   DepositInstructionWallet,
   DepositInstructionsResponse,
@@ -513,8 +504,6 @@ part 'serializers.g.dart';
   DisclosuresSessionsInner,
   EligibleFundingPositionEligibility,
   Erc20ApprovalAction,
-  EthereumUsdcFundingSourceAsset,
-  EthereumUsdtFundingSourceAsset,
   FrozenEvmTransaction,
   FundingAssetIdentity,
   FundingAssetProvenance,
@@ -802,7 +791,6 @@ part 'serializers.g.dart';
   TransferSourceExecutionStatus,
   TransferStatus,
   TransferTargetCreditStatus,
-  UnavailableDepositInstructionItem,
   UnavailableDepositRailAvailability,
   UnifiedFundingAccount,
   UnifiedFundingBlocker,

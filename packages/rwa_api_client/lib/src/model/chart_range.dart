@@ -11,14 +11,22 @@ part 'chart_range.g.dart';
 
 class ChartRange extends EnumClass {
 
+  /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
   @BuiltValueEnumConst(wireName: r'15m')
   static const ChartRange n15m = _$n15m;
+  /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
+  @BuiltValueEnumConst(wireName: r'1h')
+  static const ChartRange n1h = _$n1h;
+  /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
   @BuiltValueEnumConst(wireName: r'4h')
   static const ChartRange n4h = _$n4h;
+  /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
   @BuiltValueEnumConst(wireName: r'24h')
   static const ChartRange n24h = _$n24h;
+  /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
   @BuiltValueEnumConst(wireName: r'1w')
   static const ChartRange n1w = _$n1w;
+  /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const ChartRange unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 

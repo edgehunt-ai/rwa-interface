@@ -13,6 +13,7 @@ part 'order_evm_action.g.dart';
 /// 服务端为 bStocks 订单冻结的单笔 EVM 钱包动作。`chain_id/from/to/data/value` 与 `payload_hash` 均为服务端权威值；客户端只能引用 `step_id` 创建 execution，不能回传 或覆盖交易内容。HIP-3 EIP-712 action 不属于此类型。 
 ///
 /// Properties:
+/// * [orderId] - Durable bStocks action/order identifier that owns this frozen transaction.
 /// * [stepId] 
 /// * [ordinal] 
 /// * [kind] 
@@ -26,6 +27,10 @@ part 'order_evm_action.g.dart';
 /// * [gasPayment] 
 @BuiltValue()
 abstract class OrderEvmAction implements Built<OrderEvmAction, OrderEvmActionBuilder> {
+  /// Durable bStocks action/order identifier that owns this frozen transaction.
+  @BuiltValueField(wireName: r'order_id')
+  String get orderId;
+
   @BuiltValueField(wireName: r'step_id')
   String get stepId;
 
@@ -87,6 +92,11 @@ class _$OrderEvmActionSerializer implements PrimitiveSerializer<OrderEvmAction> 
     OrderEvmAction object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'order_id';
+    yield serializers.serialize(
+      object.orderId,
+      specifiedType: const FullType(String),
+    );
     yield r'step_id';
     yield serializers.serialize(
       object.stepId,
@@ -165,6 +175,13 @@ class _$OrderEvmActionSerializer implements PrimitiveSerializer<OrderEvmAction> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'order_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.orderId = valueDes;
+          break;
         case r'step_id':
           final valueDes = serializers.deserialize(
             value,

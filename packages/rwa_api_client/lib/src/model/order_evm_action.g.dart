@@ -175,6 +175,8 @@ class _$OrderEvmActionValueEnumSerializer
 
 class _$OrderEvmAction extends OrderEvmAction {
   @override
+  final String orderId;
+  @override
   final String stepId;
   @override
   final int ordinal;
@@ -201,7 +203,8 @@ class _$OrderEvmAction extends OrderEvmAction {
       (OrderEvmActionBuilder()..update(updates))._build();
 
   _$OrderEvmAction._(
-      {required this.stepId,
+      {required this.orderId,
+      required this.stepId,
       required this.ordinal,
       required this.kind,
       required this.chainId,
@@ -224,6 +227,7 @@ class _$OrderEvmAction extends OrderEvmAction {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is OrderEvmAction &&
+        orderId == other.orderId &&
         stepId == other.stepId &&
         ordinal == other.ordinal &&
         kind == other.kind &&
@@ -240,6 +244,7 @@ class _$OrderEvmAction extends OrderEvmAction {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, orderId.hashCode);
     _$hash = $jc(_$hash, stepId.hashCode);
     _$hash = $jc(_$hash, ordinal.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
@@ -258,6 +263,7 @@ class _$OrderEvmAction extends OrderEvmAction {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'OrderEvmAction')
+          ..add('orderId', orderId)
           ..add('stepId', stepId)
           ..add('ordinal', ordinal)
           ..add('kind', kind)
@@ -276,6 +282,10 @@ class _$OrderEvmAction extends OrderEvmAction {
 class OrderEvmActionBuilder
     implements Builder<OrderEvmAction, OrderEvmActionBuilder> {
   _$OrderEvmAction? _$v;
+
+  String? _orderId;
+  String? get orderId => _$this._orderId;
+  set orderId(String? orderId) => _$this._orderId = orderId;
 
   String? _stepId;
   String? get stepId => _$this._stepId;
@@ -330,6 +340,7 @@ class OrderEvmActionBuilder
   OrderEvmActionBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _orderId = $v.orderId;
       _stepId = $v.stepId;
       _ordinal = $v.ordinal;
       _kind = $v.kind;
@@ -364,6 +375,8 @@ class OrderEvmActionBuilder
     try {
       _$result = _$v ??
           _$OrderEvmAction._(
+            orderId: BuiltValueNullFieldError.checkNotNull(
+                orderId, r'OrderEvmAction', 'orderId'),
             stepId: BuiltValueNullFieldError.checkNotNull(
                 stepId, r'OrderEvmAction', 'stepId'),
             ordinal: BuiltValueNullFieldError.checkNotNull(

@@ -97,6 +97,14 @@ class _$Order extends Order {
   @override
   final OrderWalletActionBlockerEnum? walletActionBlocker;
   @override
+  final BstocksActionStatus? actionStatus;
+  @override
+  final String? submittedTransactionHash;
+  @override
+  final String? confirmedTransactionHash;
+  @override
+  final String? requiredFundingRaw;
+  @override
   final String? settlementAsset;
   @override
   final String? productId;
@@ -168,6 +176,10 @@ class _$Order extends Order {
       {required this.kind,
       this.nextAction,
       this.walletActionBlocker,
+      this.actionStatus,
+      this.submittedTransactionHash,
+      this.confirmedTransactionHash,
+      this.requiredFundingRaw,
       this.settlementAsset,
       this.productId,
       this.hip3ActionId,
@@ -215,6 +227,10 @@ class _$Order extends Order {
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
+        actionStatus == other.actionStatus &&
+        submittedTransactionHash == other.submittedTransactionHash &&
+        confirmedTransactionHash == other.confirmedTransactionHash &&
+        requiredFundingRaw == other.requiredFundingRaw &&
         settlementAsset == other.settlementAsset &&
         productId == other.productId &&
         hip3ActionId == other.hip3ActionId &&
@@ -255,6 +271,10 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
+    _$hash = $jc(_$hash, actionStatus.hashCode);
+    _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
+    _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
+    _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, hip3ActionId.hashCode);
@@ -297,6 +317,10 @@ class _$Order extends Order {
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
+          ..add('actionStatus', actionStatus)
+          ..add('submittedTransactionHash', submittedTransactionHash)
+          ..add('confirmedTransactionHash', confirmedTransactionHash)
+          ..add('requiredFundingRaw', requiredFundingRaw)
           ..add('settlementAsset', settlementAsset)
           ..add('productId', productId)
           ..add('hip3ActionId', hip3ActionId)
@@ -349,6 +373,26 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _$this._walletActionBlocker;
   set walletActionBlocker(OrderWalletActionBlockerEnum? walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
+
+  BstocksActionStatus? _actionStatus;
+  BstocksActionStatus? get actionStatus => _$this._actionStatus;
+  set actionStatus(BstocksActionStatus? actionStatus) =>
+      _$this._actionStatus = actionStatus;
+
+  String? _submittedTransactionHash;
+  String? get submittedTransactionHash => _$this._submittedTransactionHash;
+  set submittedTransactionHash(String? submittedTransactionHash) =>
+      _$this._submittedTransactionHash = submittedTransactionHash;
+
+  String? _confirmedTransactionHash;
+  String? get confirmedTransactionHash => _$this._confirmedTransactionHash;
+  set confirmedTransactionHash(String? confirmedTransactionHash) =>
+      _$this._confirmedTransactionHash = confirmedTransactionHash;
+
+  String? _requiredFundingRaw;
+  String? get requiredFundingRaw => _$this._requiredFundingRaw;
+  set requiredFundingRaw(String? requiredFundingRaw) =>
+      _$this._requiredFundingRaw = requiredFundingRaw;
 
   String? _settlementAsset;
   String? get settlementAsset => _$this._settlementAsset;
@@ -502,6 +546,10 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _kind = $v.kind;
       _nextAction = $v.nextAction;
       _walletActionBlocker = $v.walletActionBlocker;
+      _actionStatus = $v.actionStatus;
+      _submittedTransactionHash = $v.submittedTransactionHash;
+      _confirmedTransactionHash = $v.confirmedTransactionHash;
+      _requiredFundingRaw = $v.requiredFundingRaw;
       _settlementAsset = $v.settlementAsset;
       _productId = $v.productId;
       _hip3ActionId = $v.hip3ActionId;
@@ -560,6 +608,10 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
             nextAction: nextAction,
             walletActionBlocker: walletActionBlocker,
+            actionStatus: actionStatus,
+            submittedTransactionHash: submittedTransactionHash,
+            confirmedTransactionHash: confirmedTransactionHash,
+            requiredFundingRaw: requiredFundingRaw,
             settlementAsset: settlementAsset,
             productId: productId,
             hip3ActionId: hip3ActionId,
