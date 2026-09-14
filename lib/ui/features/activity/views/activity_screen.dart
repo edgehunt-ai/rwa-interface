@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +8,7 @@ import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/activity_record.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/feedback/copyable_text.dart';
+import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
@@ -403,22 +404,7 @@ class _ActivityList extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  for (
-                    var rowIndex = 0;
-                    rowIndex < entry.value.length;
-                    rowIndex++
-                  ) ...[
-                    _ActivityRow(entry.value[rowIndex]),
-                    if (rowIndex < entry.value.length - 1)
-                      Divider(
-                        height: 1,
-                        indent: 16,
-                        endIndent: 16,
-                        color: Theme.of(context)
-                            .extension<AppRwaColors>()!
-                            .subtleSurface,
-                      ),
-                  ],
+                  for (final record in entry.value) _ActivityRow(record),
                 ],
               ),
             ),
@@ -442,55 +428,10 @@ class _ActivityRow extends StatelessWidget {
       ActivityState.pending => semantic.warning,
       _ => colors.secondaryText,
     };
-    return ListTile(
-      minTileHeight: 72,
-      minVerticalPadding: 12,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              record.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          _StatusBadge(status: record.status, color: statusColor),
-        ],
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${_statusLabel(context, record.status)} · ${record.context ?? record.type}',
-            style: TextStyle(color: statusColor),
-          ),
-          if (record.reference != null)
-            CopyableText(
-              value: record.reference!.id,
-              semanticLabel: AppLocalizations.of(context).activityCopyReference,
-            ),
-        ],
-      ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            _amount(record.amount),
-            style: TextStyle(
-              color: statusColor,
-              fontSize: 15,
-              height: 22 / 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Text(
-            DateFormat('HH:mm').format(record.createdAt.toLocal()),
-            style: Theme.of(context).textTheme.labelSmall,
-          ),
-        ],
-      ),
+    return _ExpandableActivityRow(
+      record: record,
+      statusColor: statusColor,
+      amount: _amount(record.amount),
     );
   }
 
@@ -498,23 +439,377 @@ class _ActivityRow extends StatelessWidget {
       amount == null ? '–' : TokenAmountFormatter.formatUsd(amount);
 }
 
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.status, required this.color});
-  final ActivityState status;
-  final Color color;
+class _ExpandableActivityRow extends StatefulWidget {
+  const _ExpandableActivityRow({
+    required this.record,
+    required this.statusColor,
+    required this.amount,
+  });
+  final ActivityRecord record;
+  final Color statusColor;
+  final String amount;
+
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: .12),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Text(
-      _statusLabel(context, status),
-      style: TextStyle(fontSize: 12, color: color),
-    ),
-  );
+  State<_ExpandableActivityRow> createState() => _ExpandableActivityRowState();
 }
+
+class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
+  bool expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final record = widget.record;
+    final type = _activityTypeLabel(record.type);
+    final networks = _networks(record);
+    return InkWell(
+      onTap: record.fields.isEmpty && record.txHash == null
+          ? null
+          : () => setState(() => expanded = !expanded),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 72,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                record.title,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  height: 22 / 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            _TypeBadge(label: type),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              _statusLabel(context, record.status),
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 16 / 12,
+                                color: widget.statusColor,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 1,
+                              height: 8,
+                              color: colors.subtleSurface,
+                            ),
+                            const SizedBox(width: 4),
+                            _NetworkPath(networks: networks),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        widget.amount,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          height: 22 / 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('HH:mm').format(record.createdAt.toLocal()),
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 16 / 12,
+                          color: colors.secondaryText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (expanded) _ActivityDetails(record: record),
+            Container(height: 1, color: colors.subtleSurface),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TypeBadge extends StatelessWidget {
+  const _TypeBadge({required this.label});
+  final String label;
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.subtleSurface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          height: 16 / 12,
+          color: colors.secondaryText,
+        ),
+      ),
+    );
+  }
+}
+
+class _NetworkPath extends StatelessWidget {
+  const _NetworkPath({required this.networks});
+  final List<String> networks;
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    if (networks.isEmpty) return const SizedBox.shrink();
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var index = 0; index < networks.length; index++) ...[
+          if (index > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                '→',
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 16 / 12,
+                  color: colors.secondaryText,
+                ),
+              ),
+            ),
+          _NetworkLabel(network: networks[index]),
+        ],
+      ],
+    );
+  }
+}
+
+class _NetworkLabel extends StatelessWidget {
+  const _NetworkLabel({required this.network});
+  final String network;
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final isBsc = network.toLowerCase() == 'bsc';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isBsc ? const Color(0xFFF0B90B) : const Color(0xFF8247E5),
+          ),
+          child: Icon(
+            isBsc ? Icons.currency_exchange : Icons.link,
+            size: 9,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          network,
+          style: TextStyle(
+            fontSize: 12,
+            height: 16 / 12,
+            color: colors.secondaryText,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActivityDetails extends StatelessWidget {
+  const _ActivityDetails({required this.record});
+  final ActivityRecord record;
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final fields = [...record.fields];
+    if (record.txHash != null && !_hasField(fields, 'tx hash')) {
+      fields.insert(0, ActivityField(label: 'Tx Hash', value: record.txHash!));
+    }
+    if (record.amount != null && !_hasField(fields, 'amount')) {
+      fields.add(ActivityField(label: 'Amount', value: record.amount!.value));
+    }
+    if (!_hasField(fields, 'status')) {
+      fields.add(
+        ActivityField(
+          label: 'Status',
+          value: _statusLabel(context, record.status),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        children: [
+          for (final field in fields)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _DetailRow(field: field, colors: colors),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.field, required this.colors});
+  final ActivityField field;
+  final AppRwaColors colors;
+  @override
+  Widget build(BuildContext context) {
+    final isAddress = field.value.startsWith('0x') || field.value.length > 24;
+    final displayValue = _detailValue(field);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          field.label,
+          style: TextStyle(
+            fontSize: 12,
+            height: 16 / 12,
+            fontWeight: FontWeight.w500,
+            color: colors.secondaryText,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: isAddress
+              ? _CompactCopyValue(value: field.value, label: field.label)
+              : Text(
+                  displayValue,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 16 / 12,
+                    fontWeight: FontWeight.w600,
+                    color: colors.primaryText,
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+String _detailValue(ActivityField field) {
+  final label = field.label.trim().toLowerCase();
+  final isAmount =
+      label == 'amount' || label == 'send amount' || label == 'receive amount';
+  if (!isAmount) return field.value;
+  try {
+    return TokenAmountFormatter.formatValue(DecimalValue(field.value));
+  } on FormatException {
+    return field.value;
+  }
+}
+
+class _CompactCopyValue extends StatelessWidget {
+  const _CompactCopyValue({required this.value, required this.label});
+  final String value;
+  final String label;
+
+  Future<void> _copy(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      await Clipboard.setData(ClipboardData(text: value));
+      if (context.mounted) AppToast.showSuccess(context, l10n.copySucceeded);
+    } on Object {
+      if (context.mounted) AppToast.showFailure(context, l10n.copyFailed);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Semantics(
+      button: true,
+      label: label,
+      value: value,
+      child: InkWell(
+        onTap: () => _copy(context),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                _shortAddress(value),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 16 / 12,
+                  fontWeight: FontWeight.w600,
+                  color: colors.primaryText,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.copy_outlined, size: 14, color: colors.primaryText),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _activityTypeLabel(String type) => switch (type) {
+  'deposit' => 'Deposit',
+  'transfer' => 'Transfer',
+  'bridge' => 'Transfer',
+  _ => type.isEmpty ? 'Activity' : type[0].toUpperCase() + type.substring(1),
+};
+
+List<String> _networks(ActivityRecord record) {
+  final matches = RegExp(
+    r'(BSC|Polygon|Arbitrum|Base|Ethereum|Solana)',
+    caseSensitive: false,
+  ).allMatches(record.context ?? '').map((match) => match.group(1)!).toList();
+  if (matches.isNotEmpty) return matches;
+  return record.chain == null ? const [] : [record.chain!];
+}
+
+String _shortAddress(String value) {
+  if (value.length <= 13) return value;
+  return '${value.substring(0, 6)}...${value.substring(value.length - 4)}';
+}
+
+bool _hasField(List<ActivityField> fields, String label) => fields.any(
+  (field) => field.label.trim().toLowerCase() == label.toLowerCase(),
+);
 
 String _statusLabel(BuildContext context, ActivityState status) {
   final l10n = AppLocalizations.of(context);

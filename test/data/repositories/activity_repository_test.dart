@@ -11,6 +11,10 @@ void main() {
     expect(record.amount?.value, '0.000000000000000001');
     expect(record.amount?.asset, 'USDC');
     expect(record.reference?.id, 'order-1');
+    expect(record.chain, 'BSC');
+    expect(record.txHash, '0xtx');
+    expect(record.fields.single.label, 'Network Fee');
+    expect(record.fields.single.value, 'Free');
   });
 }
 
@@ -33,6 +37,15 @@ final class _Activity implements ActivityService {
             ..title = 'Filled'
             ..amount = '0.000000000000000001'
             ..asset = 'USDC'
+            ..chain = api.ActivityRecordChainEnum.BSC
+            ..txHash = '0xtx'
+            ..fields.add(
+              api.KeyValue(
+                (field) => field
+                  ..label = 'Network Fee'
+                  ..value = 'Free',
+              ),
+            )
             ..createdAt = DateTime.utc(2026)
             ..updatedAt = DateTime.utc(2026)
             ..reference.update(

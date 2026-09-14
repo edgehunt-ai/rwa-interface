@@ -55,6 +55,20 @@ final class ActivityRepositoryImpl implements ActivityRepository {
       ),
       null => null,
     },
+    fields:
+        value.fields
+            ?.map(
+              (field) => ActivityField(
+                label: field.label,
+                value: field.value,
+                tone: field.tone?.name,
+              ),
+            )
+            .toList() ??
+        const [],
+    chain: value.chain?.name,
+    txHash: value.txHash,
+    asset: value.asset,
     createdAt: value.createdAt.toUtc(),
     updatedAt: value.updatedAt.toUtc(),
   );

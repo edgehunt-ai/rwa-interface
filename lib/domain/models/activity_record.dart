@@ -10,6 +10,13 @@ final class ActivityReference {
   final String id;
 }
 
+final class ActivityField {
+  const ActivityField({required this.label, required this.value, this.tone});
+  final String label;
+  final String value;
+  final String? tone;
+}
+
 final class ActivityRecord {
   const ActivityRecord({
     required this.id,
@@ -21,6 +28,10 @@ final class ActivityRecord {
     this.amount,
     this.context,
     this.reference,
+    this.fields = const [],
+    this.chain,
+    this.txHash,
+    this.asset,
     this.updatedAt,
   });
   final String id;
@@ -31,6 +42,10 @@ final class ActivityRecord {
   final DecimalValue? amount;
   final String? context;
   final ActivityReference? reference;
+  final List<ActivityField> fields;
+  final String? chain;
+  final String? txHash;
+  final String? asset;
   final DateTime createdAt;
   final DateTime? updatedAt;
 }
