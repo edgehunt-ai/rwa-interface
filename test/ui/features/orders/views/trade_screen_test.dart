@@ -425,7 +425,7 @@ void main() {
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Long'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Long NVDA'), findsWidgets);
     expect(find.byKey(const Key('hip3-tp-sl-toggle')), findsOneWidget);
@@ -440,7 +440,7 @@ void main() {
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Short'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Short NVDA'), findsWidgets);
   });
@@ -449,11 +449,14 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const TradeScreen())),
+      ProviderScope(
+        overrides: [authenticatedStateOverride],
+        child: buildTestApp(const TradeScreen()),
+      ),
     );
 
     await tester.tap(find.widgetWithText(FilledButton, 'Buy'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Buy NVDAB'), findsWidgets);
     expect(find.text('Limit'), findsNothing);
@@ -466,7 +469,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(FilledButton, 'Sell'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Sell NVDAB'), findsWidgets);
   });
@@ -781,6 +784,7 @@ Widget _tradeWithMarkets({
   MarketSnapshot? perpSnapshot,
 }) => ProviderScope(
   overrides: [
+    authenticatedStateOverride,
     if (positionsRepository != null)
       positionsRepositoryProvider.overrideWithValue(positionsRepository),
     marketProductsProvider((query: 'NVDA', cursor: null)).overrideWith(

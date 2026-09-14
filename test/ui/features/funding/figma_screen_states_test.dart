@@ -61,8 +61,16 @@ void main() {
 
     expect(find.byType(DepositScreen), findsOneWidget);
     expect(find.text('Deposit crypto'), findsOneWidget);
-    expect(find.text('Deposit USDC on BSC'), findsOneWidget);
-    expect(find.text('Deposit USDC on Arbitrum'), findsOneWidget);
+    expect(find.text('Choose Network'), findsOneWidget);
+    expect(find.text('Choose network first'), findsOneWidget);
+    await tester.tap(find.text('Choose Network'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('BSC'));
+    await tester.pumpAndSettle();
+    expect(find.text('BSC'), findsOneWidget);
+    await tester.tap(find.text('Choose network first'));
+    await tester.pumpAndSettle();
+    expect(find.text('USDC'), findsOneWidget);
   });
 
   testWidgets('deposit instructions render the API QR payload', (tester) async {

@@ -8,7 +8,10 @@ import '../../../helpers/test_app.dart';
 void main() {
   testWidgets('activity exposes its tabs and loading state', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const ActivityScreen())),
+      ProviderScope(
+        overrides: [authenticatedStateOverride],
+        child: buildTestApp(const ActivityScreen()),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -19,7 +22,10 @@ void main() {
   testWidgets('activity remains usable at 200% text scale', (tester) async {
     await configureDisplay(tester, textScale: 2);
     await tester.pumpWidget(
-      ProviderScope(child: buildTestApp(const ActivityScreen())),
+      ProviderScope(
+        overrides: [authenticatedStateOverride],
+        child: buildTestApp(const ActivityScreen()),
+      ),
     );
     await tester.pumpAndSettle();
 

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:rwa_interface/domain/auth/authentication.dart';
+import 'package:rwa_interface/domain/models/product_session.dart';
+import 'package:rwa_interface/domain/models/user_account.dart';
+import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
 Widget buildTestApp(
@@ -45,3 +49,26 @@ Widget buildRouterTestApp(
     routerConfig: router,
   );
 }
+
+final authenticatedStateOverride = authenticationProvider.overrideWithBuild(
+  (notifier, ref) => AuthenticationAuthenticated(
+    ProductSession(
+      sessionId: 'test-session',
+      createdAt: DateTime.utc(2026),
+      expiresAt: DateTime.utc(2030),
+      generation: 1,
+      accountCreated: true,
+      account: UserAccount(
+        userId: 'test-user',
+        settings: UserPreferences(
+          language: 'en',
+          pushEnabled: false,
+          notifyOrderFilled: true,
+          notifyOrderFailed: true,
+          notifyLiquidationWarning: true,
+        ),
+      ),
+    ),
+    principal: const IdentityPrincipal('test-user'),
+  ),
+);

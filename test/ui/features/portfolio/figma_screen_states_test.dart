@@ -18,6 +18,8 @@ import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/portfolio/views/assets_screen.dart';
 
+import '../../../helpers/test_app.dart';
+
 void main() {
   testWidgets('Assets exposes API-backed allocation and type-tab states', (
     tester,
@@ -225,12 +227,15 @@ void main() {
   });
 }
 
-Widget _assetsApp({Locale? locale}) => MaterialApp(
-  theme: AppTheme.light,
-  locale: locale,
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  home: const AssetsScreen(),
+Widget _assetsApp({Locale? locale}) => ProviderScope(
+  overrides: [authenticatedStateOverride],
+  child: MaterialApp(
+    theme: AppTheme.light,
+    locale: locale,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: const AssetsScreen(),
+  ),
 );
 
 final class _Portfolio
