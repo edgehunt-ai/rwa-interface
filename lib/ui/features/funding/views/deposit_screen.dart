@@ -698,11 +698,19 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-class _DepositSelector extends ConsumerWidget {
+class _DepositSelector extends ConsumerStatefulWidget {
   const _DepositSelector();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DepositSelector> createState() => _DepositSelectorState();
+}
+
+class _DepositSelectorState extends ConsumerState<_DepositSelector> {
+  String? _selectedChain;
+  String? _selectedToken;
+
+  @override
+  Widget build(BuildContext context) {
     final routes = ref.watch(depositRoutesProvider);
     return Scaffold(
       body: SafeArea(
@@ -717,6 +725,12 @@ class _DepositSelector extends ConsumerWidget {
             onRetry: () => ref.refresh(depositDirectoryProvider.future),
           ),
           data: (value) {
+            final chains = value.map((route) => route.chain).toSet().toList();
+            final tokens = value
+                .where((route) => route.chain == _selectedChain)
+                .map((route) => route.token)
+                .toSet()
+                .toList();
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
               children: [
@@ -740,25 +754,52 @@ class _DepositSelector extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 32),
-                for (final route in value) ...[
-                  _DepositRouteTile(route: route),
-                  const SizedBox(height: 12),
-                ],
-                if (value.isEmpty) ...[
-                  const SizedBox(height: 60),
-                  Image.asset(
+                const SizedBox(height: 40),
+                _DepositSelectionCard(
+                  chain: _selectedChain,
+                  token: _selectedToken,
+                  chains: chains,
+                  tokens: tokens,
+                  onChainSelected: (chain) => setState(() {
+                    _selectedChain = chain;
+                    _selectedToken = null;
+                  }),
+                  onTokenSelected: (token) {
+                    setState(() => _selectedToken = token);
+                    context.pushNamed(
+                      AppRoutes.depositName,
+                      queryParameters: {
+                        'chain': _selectedChain!,
+                        'token': token,
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 60),
+                Center(
+                  child: Image.asset(
                     'assets/figma/funding/deposit_empty.png',
                     width: 160,
                     height: 160,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    AppLocalizations.of(context).noAdditionalDepositRoutes,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Choose a token and network',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Your deposit address will appear here.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .extension<AppRwaColors>()!
+                        .primaryText,
+                    fontSize: 12,
                   ),
-                ],
+                ),
               ],
             );
           },
@@ -766,4 +807,139 @@ class _DepositSelector extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _DepositSelectionCard extends StatelessWidget {
+  const _DepositSelectionCard({
+    required this.chain,
+    required this.token,
+    required this.chains,
+    required this.tokens,
+    required this.onChainSelected,
+    required this.onTokenSelected,
+  });
+
+  final String? chain;
+  final String? token;
+  final List<String> chains;
+  final List<String> tokens;
+  final ValueChanged<String> onChainSelected;
+  final ValueChanged<String> onTokenSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          _SelectionRow(
+            label: AppLocalizations.of(context).network,
+            value: chain ?? 'Choose Network',
+            valueColor: chain == null ? colors.primaryText : colors.primaryText,
+            onTap: () => _showOptions(
+              context,
+              title: AppLocalizations.of(context).network,
+              options: chains,
+              onSelected: onChainSelected,
+            ),
+          ),
+          Divider(height: 1, color: colors.subtleSurface),
+          _SelectionRow(
+            label: AppLocalizations.of(context).token,
+            value: token ?? 'Choose network first',
+            valueColor: chain == null
+                ? colors.secondaryText
+                : colors.primaryText,
+            enabled: chain != null,
+            onTap: chain == null
+                ? null
+                : () => _showOptions(
+                    context,
+                    title: AppLocalizations.of(context).token,
+                    options: tokens,
+                    onSelected: onTokenSelected,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showOptions(
+    BuildContext context, {
+    required String title,
+    required List<String> options,
+    required ValueChanged<String> onSelected,
+  }) async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(title: Text(title)),
+            for (final option in options)
+              ListTile(
+                title: Text(option),
+                onTap: () => Navigator.of(context).pop(option),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (selected != null) onSelected(selected);
+  }
+}
+
+class _SelectionRow extends StatelessWidget {
+  const _SelectionRow({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+    required this.onTap,
+    this.enabled = true,
+  });
+
+  final String label;
+  final String value;
+  final Color valueColor;
+  final VoidCallback? onTap;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: enabled ? onTap : null,
+    child: SizedBox(
+      height: 51,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            SizedBox(width: 80, child: Text(label)),
+            Expanded(
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: valueColor,
+                  fontWeight: value.startsWith('Choose')
+                      ? null
+                      : FontWeight.w600,
+                ),
+              ),
+            ),
+            SvgPicture.asset(
+              'assets/figma/funding/chevron_right.svg',
+              width: 20,
+              height: 20,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
