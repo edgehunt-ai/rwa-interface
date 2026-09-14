@@ -29,6 +29,22 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   @override
   Widget build(BuildContext context) {
     final authentication = ref.watch(authenticationProvider);
+    if (authentication is AuthenticationInitializing) {
+      return Scaffold(
+        bottomNavigationBar: const AppBottomNavigation(
+          current: AppDestination.activity,
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+            child: DesignStateFeedback(
+              state: DesignState.loading,
+              title: AppLocalizations.of(context).activityLoading,
+            ),
+          ),
+        ),
+      );
+    }
     if (authentication is AuthenticationUnauthenticated) {
       return Scaffold(
         bottomNavigationBar: const AppBottomNavigation(

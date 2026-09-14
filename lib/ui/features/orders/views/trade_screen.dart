@@ -34,6 +34,7 @@ import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
+import 'package:rwa_interface/ui/features/session/views/privy_login_screen.dart';
 
 part 'trade_screen_details.dart';
 part 'trade_position_tp_sl_sheet.dart';
@@ -118,6 +119,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   }
 
   Future<void> _openOrderPanel(TradingSide side) async {
+    if (!await requireAuthentication(context, ref)) return;
+    if (!mounted) return;
     setState(() => _orderPanelOpen = true);
     await showModalBottomSheet<void>(
       context: context,

@@ -32,6 +32,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authentication = ref.watch(authenticationProvider);
     final authenticated = authentication is AuthenticationAuthenticated;
+    final initializing = authentication is AuthenticationInitializing;
     final portfolio = authenticated
         ? ref.watch(portfolioSummaryProvider)
         : null;
@@ -75,6 +76,8 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   data: (value) => _PortfolioCard(portfolio: value),
                 )
+              else if (initializing)
+                const _HomeStateCard()
               else
                 _LoggedOutPrompt(onLogin: () => _openLogin(context)),
               const SizedBox(height: 12),
@@ -91,6 +94,12 @@ class HomeScreen extends ConsumerWidget {
                               ) >
                               0,
                     )
+                  : initializing
+                  ? const SkeletonBlock(
+                      width: double.infinity,
+                      height: 48,
+                      radius: 12,
+                    )
                   : _LoginAction(onLogin: () => _openLogin(context)),
               const SizedBox(height: 12),
               _MarketPreview(
@@ -106,14 +115,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openLogin(BuildContext context) => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => Consumer(
-        builder: (context, ref, _) =>
-            PrivyLoginScreen(authentication: ref.watch(authenticationProvider)),
-      ),
-    ),
-  );
+  Future<void> _openLogin(BuildContext context) => pushLoginScreen(context);
 }
 
 class _UtilityBar extends StatelessWidget {

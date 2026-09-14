@@ -13,10 +13,6 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/authentication_provider.dart';
 
-/// Startup gate for the native Privy email authentication flow.
-///
-/// The application does not create data providers until Privy has returned an
-/// access token and the backend product session has been established.
 /// Pushes the login screen on top of the current page. On success it pops
 /// itself (see the `ref.listen` in [PrivyLoginScreen]), returning the caller
 /// to whatever page requested the login.
@@ -43,6 +39,10 @@ Future<bool> requireAuthentication(BuildContext context, WidgetRef ref) async {
   return ref.read(authenticationProvider) is AuthenticationAuthenticated;
 }
 
+/// Startup gate for the native Privy email authentication flow.
+///
+/// The application does not create data providers until Privy has returned an
+/// access token and the backend product session has been established.
 class PrivyLoginScreen extends ConsumerStatefulWidget {
   const PrivyLoginScreen({
     required this.authentication,

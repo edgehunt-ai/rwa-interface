@@ -39,6 +39,22 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
   @override
   Widget build(BuildContext context) {
     final authentication = ref.watch(authenticationProvider);
+    if (authentication is AuthenticationInitializing) {
+      return Scaffold(
+        bottomNavigationBar: const AppBottomNavigation(
+          current: AppDestination.assets,
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            child: DesignStateFeedback(
+              state: DesignState.loading,
+              title: AppLocalizations.of(context).loadingAssets,
+            ),
+          ),
+        ),
+      );
+    }
     if (authentication is AuthenticationUnauthenticated) {
       return Scaffold(
         bottomNavigationBar: const AppBottomNavigation(
