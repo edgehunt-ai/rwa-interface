@@ -135,6 +135,21 @@ void main() {
     );
   });
 
+  test('cancelling an email challenge returns to login methods', () async {
+    final gateway = FakeIdentityAuthGateway();
+    final container = _container(gateway, _SessionRepository());
+    final notifier = container.read(authenticationProvider.notifier);
+
+    await notifier.bootstrap();
+    await notifier.requestEmailCode('user@example.com');
+    notifier.cancelEmailCode();
+
+    expect(
+      container.read(authenticationProvider),
+      isA<AuthenticationUnauthenticated>(),
+    );
+  });
+
   test('invalid email is rejected before gateway invocation', () async {
     final gateway = FakeIdentityAuthGateway();
     final container = _container(gateway, _SessionRepository());

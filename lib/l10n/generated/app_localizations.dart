@@ -2741,7 +2741,7 @@ abstract class AppLocalizations {
   /// No description provided for @browserSignInUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Unable to start Google sign-in. Check that your browser and network are working, then try again.'**
+  /// **'Unable to start social sign-in. Check that your browser and network are working, then try again.'**
   String get browserSignInUnavailable;
 
   /// No description provided for @privyNotConfigured.

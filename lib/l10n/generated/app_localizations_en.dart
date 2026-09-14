@@ -1420,7 +1420,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get browserSignInUnavailable =>
-      'Unable to start Google sign-in. Check that your browser and network are working, then try again.';
+      'Unable to start social sign-in. Check that your browser and network are working, then try again.';
 
   @override
   String get privyNotConfigured => 'Privy is not configured for this build.';

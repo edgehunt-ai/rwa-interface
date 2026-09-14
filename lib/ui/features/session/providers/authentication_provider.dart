@@ -151,6 +151,12 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     }
   }
 
+  void cancelEmailCode() {
+    ++_epoch;
+    _activeEmail = null;
+    state = const AuthenticationUnauthenticated();
+  }
+
   Future<void> loginWithOAuth(String provider, {String? language}) async {
     await _loginWithProvider(
       () => _gateway.loginWithOAuth(provider),

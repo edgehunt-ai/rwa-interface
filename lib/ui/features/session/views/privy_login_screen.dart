@@ -17,6 +17,32 @@ import '../providers/authentication_provider.dart';
 ///
 /// The application does not create data providers until Privy has returned an
 /// access token and the backend product session has been established.
+/// Pushes the login screen on top of the current page. On success it pops
+/// itself (see the `ref.listen` in [PrivyLoginScreen]), returning the caller
+/// to whatever page requested the login.
+Future<void> pushLoginScreen(BuildContext context) => Navigator.of(context)
+    .push(
+      MaterialPageRoute<void>(
+        builder: (_) => Consumer(
+          builder: (context, ref, _) => PrivyLoginScreen(
+            authentication: ref.watch(authenticationProvider),
+          ),
+        ),
+      ),
+    );
+
+/// Guards an authenticated-only action: pushes the login screen when the
+/// user isn't signed in yet and reports whether they ended up authenticated,
+/// so the caller can go ahead with the action right after a successful login.
+Future<bool> requireAuthentication(BuildContext context, WidgetRef ref) async {
+  if (ref.read(authenticationProvider) is AuthenticationAuthenticated) {
+    return true;
+  }
+  await pushLoginScreen(context);
+  if (!context.mounted) return false;
+  return ref.read(authenticationProvider) is AuthenticationAuthenticated;
+}
+
 class PrivyLoginScreen extends ConsumerStatefulWidget {
   const PrivyLoginScreen({
     required this.authentication,
@@ -185,231 +211,268 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
       TargetPlatform.iOS || TargetPlatform.macOS => true,
       _ => false,
     };
-    return Scaffold(
-      body: Stack(
-        children: [
-          const Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFF7F7FA),
-                    Color(0xFFF7F7FA),
-                    Color(0xFFFFB5F2),
-                  ],
-                  stops: [0, .53, 1],
-                ),
-              ),
-            ),
-          ),
-          // The reference uses a saturated pink glow behind the legal copy.
-          // Keeping it in the background preserves the white text contrast
-          // while allowing the form itself to scroll on smaller devices.
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 300,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(0, .9),
-                  radius: 1.05,
-                  colors: [Color(0xFFE96BD5), Color(0x00FFE0FA)],
-                  stops: [0, .9],
-                ),
-              ),
-            ),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(28, 48, 28, 28),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 393),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF6FDB),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        waitingForCode
-                            ? l10n.enterConfirmationCode
-                            : l10n.signUpOrLogIn,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.black,
-                          fontSize: 20,
-                          height: 27 / 20,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      if (waitingForCode) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.emailCodeSent(state.email),
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: colors.secondaryText),
-                        ),
-                      ],
-                      const SizedBox(height: 48),
-                      if (busy) ...[
-                        const SizedBox(height: 120),
-                        const Center(
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: CircularProgressIndicator(strokeWidth: 3),
-                          ),
-                        ),
-                        const SizedBox(height: 120),
-                      ] else if (waitingForCode) ...[
-                        _VerificationCodeInput(
-                          controller: _codeController,
-                          onChanged: (value) {
-                            if (value.length == 6) _verifyCode();
-                          },
-                          onSubmitted: (_) => _verifyCode(),
-                        ),
-                        const SizedBox(height: 28),
-                        Text(
-                          l10n.didntGetEmail,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: const Color(0xFF676776)),
-                        ),
-                        TextButton(
-                          onPressed: _sendCode,
-                          child: Text(l10n.resendCode),
-                        ),
-                      ] else if (kIsWeb) ...[
-                        _LoginOption(
-                          asset: 'assets/figma/session/email.svg',
-                          label: l10n.continueWithPrivy,
-                          badge: _recentMethod == 'Privy' ? l10n.recent : null,
-                          onTap: _loginOnWeb,
-                        ),
-                      ] else ...[
-                        _EmailLoginOption(
-                          controller: _emailController,
-                          editing: showEmailInput,
-                          recent: _recentMethod == 'Email',
-                          onTap: _beginEmailLogin,
-                          onChanged: _onEmailChanged,
-                          onSubmitted: (_) => _sendCode(),
-                          emailFormatError:
-                              _showEmailFormatError && !_hasValidEmail,
-                          onSend: _emailController.text.trim().isEmpty
-                              ? null
-                              : _sendCode,
-                        ),
-                        if (_showEmailFormatError && !_hasValidEmail)
-                          Padding(
-                            padding: EdgeInsets.only(left: 16, bottom: 12),
-                            child: Text(
-                              l10n.enterValidEmail,
-                              style: TextStyle(
-                                color: Color(0xFFB42318),
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        _LoginOption(
-                          asset: 'assets/figma/session/google.svg',
-                          label: 'Google',
-                          badge: _recentMethod == 'Google' ? l10n.recent : null,
-                          onTap: busy ? null : () => _loginWith('Google'),
-                        ),
-                        if (showApple)
-                          _LoginOption(
-                            asset: 'assets/figma/session/apple.svg',
-                            label: 'Apple',
-                            badge: _recentMethod == 'Apple'
-                                ? l10n.recent
-                                : null,
-                            onTap: busy ? null : () => _loginWith('Apple'),
-                          ),
-                        _LoginOption(
-                          asset: 'assets/figma/session/other_socials.svg',
-                          label: l10n.otherSocials,
-                          onTap: () => _showOtherSocials(context),
-                        ),
-                        _LoginOption(
-                          asset: 'assets/figma/session/wallet.svg',
-                          label: l10n.wallet,
-                          badge: _recentMethod == 'Wallet' ? l10n.recent : null,
-                          onTap: busy ? null : () => _loginWithWallet(context),
-                        ),
-                      ],
-                      if (failure != null) ...[
-                        const SizedBox(height: 16),
-                        _LoginFailure(failure: failure),
-                      ],
-                      if (state is AuthenticationFailed ||
-                          state is AuthenticationUnsupported) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton(
-                          onPressed: busy
-                              ? null
-                              : () => ref
-                                    .read(authenticationProvider.notifier)
-                                    .bootstrap(),
-                          child: Text(l10n.retry),
-                        ),
-                      ],
-                      if (!waitingForCode && !kIsWeb) ...[
-                        const SizedBox(height: 24),
-                        const Divider(color: Color(0x33FFFFFF), height: 1),
-                        const SizedBox(height: 16),
-                        _LoginOption(
-                          asset: 'assets/figma/session/passkey.svg',
-                          label: 'Passkey',
-                          badge: _recentMethod == 'Passkey'
-                              ? l10n.recent
-                              : null,
-                          onTap: busy ? null : () => _loginWith('Passkey'),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      SvgPicture.asset(
-                        'assets/figma/session/protected_by_privy.svg',
-                        width: 150,
-                        height: 13,
-                        colorFilter: const ColorFilter.mode(
-                          Colors.white,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.termsAgreement,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white,
-                          shadows: const [
-                            Shadow(color: Color(0x33000000), blurRadius: 2),
-                          ],
-                        ),
-                      ),
+    return PopScope<void>(
+      canPop: !waitingForCode,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || !waitingForCode) return;
+        _codeController.clear();
+        ref.read(authenticationProvider.notifier).cancelEmailCode();
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFF7F7FA),
+                      Color(0xFFF7F7FA),
+                      Color(0xFFFFB5F2),
                     ],
+                    stops: [0, .53, 1],
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+            // The reference uses a saturated pink glow behind the legal copy.
+            // Keeping it in the background preserves the white text contrast
+            // while allowing the form itself to scroll on smaller devices.
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 300,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment(0, .9),
+                    radius: 1.05,
+                    colors: [Color(0xFFE96BD5), Color(0x00FFE0FA)],
+                    stops: [0, .9],
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(28, 48, 28, 28),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 393),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF6FDB),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          waitingForCode
+                              ? l10n.enterConfirmationCode
+                              : l10n.signUpOrLogIn,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                color: Colors.black,
+                                fontSize: 20,
+                                height: 27 / 20,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        if (waitingForCode) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.emailCodeSent(state.email),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(color: colors.secondaryText),
+                          ),
+                        ],
+                        const SizedBox(height: 48),
+                        if (busy) ...[
+                          const SizedBox(height: 120),
+                          const Center(
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(strokeWidth: 3),
+                            ),
+                          ),
+                          const SizedBox(height: 120),
+                        ] else if (waitingForCode) ...[
+                          _VerificationCodeInput(
+                            controller: _codeController,
+                            onChanged: (value) {
+                              if (value.length == 6) _verifyCode();
+                            },
+                            onSubmitted: (_) => _verifyCode(),
+                          ),
+                          const SizedBox(height: 28),
+                          Text(
+                            l10n.didntGetEmail,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: const Color(0xFF676776)),
+                          ),
+                          TextButton(
+                            onPressed: _sendCode,
+                            child: Text(l10n.resendCode),
+                          ),
+                        ] else if (kIsWeb) ...[
+                          _LoginOption(
+                            asset: 'assets/figma/session/email.svg',
+                            label: l10n.continueWithPrivy,
+                            badge: _recentMethod == 'Privy'
+                                ? l10n.recent
+                                : null,
+                            onTap: _loginOnWeb,
+                          ),
+                        ] else ...[
+                          _EmailLoginOption(
+                            controller: _emailController,
+                            editing: showEmailInput,
+                            recent: _recentMethod == 'Email',
+                            onTap: _beginEmailLogin,
+                            onChanged: _onEmailChanged,
+                            onSubmitted: (_) => _sendCode(),
+                            emailFormatError:
+                                _showEmailFormatError && !_hasValidEmail,
+                            onSend: _emailController.text.trim().isEmpty
+                                ? null
+                                : _sendCode,
+                          ),
+                          if (_showEmailFormatError && !_hasValidEmail)
+                            Padding(
+                              padding: EdgeInsets.only(left: 16, bottom: 12),
+                              child: Text(
+                                l10n.enterValidEmail,
+                                style: TextStyle(
+                                  color: Color(0xFFB42318),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          _LoginOption(
+                            asset: 'assets/figma/session/google.svg',
+                            label: 'Google',
+                            badge: _recentMethod == 'Google'
+                                ? l10n.recent
+                                : null,
+                            onTap: busy ? null : () => _loginWith('Google'),
+                          ),
+                          if (showApple)
+                            _LoginOption(
+                              asset: 'assets/figma/session/apple.svg',
+                              label: 'Apple',
+                              badge: _recentMethod == 'Apple'
+                                  ? l10n.recent
+                                  : null,
+                              onTap: busy ? null : () => _loginWith('Apple'),
+                            ),
+                          _LoginOption(
+                            asset: 'assets/figma/session/other_socials.svg',
+                            label: l10n.otherSocials,
+                            onTap: () => _showOtherSocials(context),
+                          ),
+                          _LoginOption(
+                            asset: 'assets/figma/session/wallet.svg',
+                            label: l10n.wallet,
+                            badge: _recentMethod == 'Wallet'
+                                ? l10n.recent
+                                : null,
+                            onTap: busy
+                                ? null
+                                : () => _loginWithWallet(context),
+                          ),
+                        ],
+                        if (failure != null) ...[
+                          const SizedBox(height: 16),
+                          _LoginFailure(failure: failure),
+                        ],
+                        if (state is AuthenticationFailed ||
+                            state is AuthenticationUnsupported) ...[
+                          const SizedBox(height: 12),
+                          OutlinedButton(
+                            onPressed: busy
+                                ? null
+                                : () => ref
+                                      .read(authenticationProvider.notifier)
+                                      .bootstrap(),
+                            child: Text(l10n.retry),
+                          ),
+                        ],
+                        if (!waitingForCode && !kIsWeb && !busy) ...[
+                          const SizedBox(height: 0),
+                          SizedBox(
+                            height: 30,
+                            child: Center(
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(8),
+                                onTap: busy
+                                    ? null
+                                    : () => _loginWith('Passkey'),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 6,
+                                  ),
+                                  child: Text(
+                                    'Sign in with Passkey',
+                                    style: TextStyle(
+                                      color: Color(0xFF1D1D24),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      height: 18 / 13,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        SvgPicture.asset(
+                          'assets/figma/session/protected_by_privy.svg',
+                          width: 150,
+                          height: 13,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.termsAgreement,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                shadows: const [
+                                  Shadow(
+                                    color: Color(0x33000000),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -595,71 +658,78 @@ class _VerificationCodeInputState extends State<_VerificationCodeInput> {
     final activeIndex = selectionOffset < 0 ? 0 : selectionOffset.clamp(0, 5);
     return SizedBox(
       height: 56,
-      child: Stack(
-        children: [
-          IgnorePointer(
-            child: Row(
-              children: List.generate(6, (index) {
-                final isActive = _focusNode.hasFocus && index == activeIndex;
-                return Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(right: index == 5 ? 0 : 8),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isActive
-                            ? const Color(0xFF1D1D24)
-                            : const Color(0xFFD9DBEC),
-                        width: isActive ? 1.5 : 1,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _requestFocus,
+        child: Stack(
+          children: [
+            IgnorePointer(
+              child: Row(
+                children: List.generate(6, (index) {
+                  final isActive = _focusNode.hasFocus && index == activeIndex;
+                  return Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(right: index == 5 ? 0 : 8),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isActive
+                              ? const Color(0xFF1D1D24)
+                              : const Color(0xFFD9DBEC),
+                          width: isActive ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        digits[index].trim(),
+                        style: const TextStyle(
+                          color: Color(0xFF1D1D24),
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    child: Text(
-                      digits[index].trim(),
-                      style: const TextStyle(
-                        color: Color(0xFF1D1D24),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
-          ),
-          TextField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            autofillHints: const [AutofillHints.oneTimeCode],
-            textInputAction: TextInputAction.done,
-            maxLength: 6,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: widget.onChanged,
-            onSubmitted: widget.onSubmitted,
-            // This is deliberately the only editable control. The cells above
-            // render its value, so suppress the Material input decoration and
-            // caret that would otherwise appear as a second large input box.
-            style: const TextStyle(color: Colors.transparent, fontSize: 1),
-            cursorColor: Colors.transparent,
-            showCursor: false,
-            decoration: const InputDecoration(
-              counterText: '',
-              isDense: true,
-              filled: false,
-              fillColor: Colors.transparent,
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
+            TextField(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              textInputAction: TextInputAction.done,
+              maxLength: 6,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
+              onTap: _requestFocus,
+              // This is deliberately the only editable control. The cells above
+              // render its value, so suppress the Material input decoration and
+              // caret that would otherwise appear as a second large input box.
+              style: const TextStyle(color: Colors.transparent, fontSize: 1),
+              cursorColor: Colors.transparent,
+              showCursor: false,
+              decoration: const InputDecoration(
+                counterText: '',
+                isDense: true,
+                filled: false,
+                fillColor: Colors.transparent,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+  void _requestFocus() => _focusNode.requestFocus();
 }
 
 class _RecentBadge extends StatelessWidget {

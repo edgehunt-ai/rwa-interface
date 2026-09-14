@@ -456,7 +456,7 @@
   "termsAgreement": "使用本应用即表示你同意条款与条件。",
   "invalidConfirmationCode": "验证码无效或已过期。",
   "networkUnavailableRetry": "网络不可用，请检查连接后重试。",
-  "browserSignInUnavailable": "无法启动 Google 登录。请检查浏览器和网络后重试。",
+  "browserSignInUnavailable": "无法启动社交账号登录。请检查浏览器和网络后重试。",
   "privyNotConfigured": "此构建尚未配置 Privy。",
   "sessionExpiredLogin": "你的会话已过期，请重新登录。",
   "backendSessionFailed": "Privy 登录成功，但无法创建 RWA 会话，请稍后重试。",

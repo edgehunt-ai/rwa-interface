@@ -492,7 +492,7 @@
   "termsAgreement": "By using this app, you agree to the Terms & Conditions.",
   "invalidConfirmationCode": "That code is invalid or expired.",
   "networkUnavailableRetry": "Network unavailable. Check your connection and try again.",
-  "browserSignInUnavailable": "Unable to start Google sign-in. Check that your browser and network are working, then try again.",
+  "browserSignInUnavailable": "Unable to start social sign-in. Check that your browser and network are working, then try again.",
   "privyNotConfigured": "Privy is not configured for this build.",
   "sessionExpiredLogin": "Your session expired. Please sign in again.",
   "backendSessionFailed": "Privy sign-in succeeded, but we could not create your RWA session. Try again later.",

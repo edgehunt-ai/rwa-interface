@@ -1363,7 +1363,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get networkUnavailableRetry => '网络不可用，请检查连接后重试。';
 
   @override
-  String get browserSignInUnavailable => '无法启动 Google 登录。请检查浏览器和网络后重试。';
+  String get browserSignInUnavailable => '无法启动社交账号登录。请检查浏览器和网络后重试。';
 
   @override
   String get privyNotConfigured => '此构建尚未配置 Privy。';

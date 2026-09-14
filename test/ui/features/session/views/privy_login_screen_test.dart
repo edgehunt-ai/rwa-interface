@@ -67,7 +67,7 @@ void main() {
     expect(connector.connectCalls, 1);
   });
 
-  testWidgets('places Passkey in a separate bottom login section', (
+  testWidgets('renders Passkey as a centered text action below Wallet', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
@@ -88,9 +88,67 @@ void main() {
     );
 
     final walletBottom = tester.getBottomRight(find.text('Wallet')).dy;
-    final passkeyTop = tester.getTopLeft(find.text('Passkey')).dy;
+    final passkeyFinder = find.text('Sign in with Passkey');
+    final passkeyTop = tester.getTopLeft(passkeyFinder).dy;
 
-    expect(passkeyTop, greaterThan(walletBottom + 40));
+    expect(passkeyTop, greaterThan(walletBottom + 12));
+    expect(passkeyTop, lessThan(walletBottom + 40));
+    expect(find.byIcon(Icons.lock), findsNothing);
+  });
+
+  testWidgets('hides Passkey while authentication is loading', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(),
+          ),
+        ],
+        child: buildTestApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationAuthenticating(),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Sign in with Passkey'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+
+  testWidgets('restores verification input focus after keyboard dismissal', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(),
+          ),
+        ],
+        child: buildTestApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationAwaitingCode('user@example.com'),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final input = find.byType(TextField);
+    expect(tester.widget<TextField>(input).focusNode?.hasFocus, isTrue);
+
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    expect(tester.widget<TextField>(input).focusNode?.hasFocus, isFalse);
+
+    await tester.tapAt(tester.getCenter(input));
+    await tester.pump();
+    expect(tester.widget<TextField>(input).focusNode?.hasFocus, isTrue);
   });
 }
 
