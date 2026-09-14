@@ -483,6 +483,7 @@
   "@emailCodeSent": {"placeholders": {"email": {}}},
   "didntGetEmail": "Didn''t get an email?",
   "resendCode": "Resend code",
+  "codeResent": "Code resent",
   "continueWithPrivy": "Continue with Privy",
   "enterValidEmail": "Enter a valid email address.",
   "otherSocials": "Other Socials",

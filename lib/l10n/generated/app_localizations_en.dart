@@ -1390,6 +1390,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resendCode => 'Resend code';
 
   @override
+  String get codeResent => 'Code resent';
+
+  @override
   String get continueWithPrivy => 'Continue with Privy';
 
   @override

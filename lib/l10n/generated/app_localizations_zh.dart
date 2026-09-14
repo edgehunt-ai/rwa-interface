@@ -1336,6 +1336,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get resendCode => '重新发送验证码';
 
   @override
+  String get codeResent => '验证码已重新发送';
+
+  @override
   String get continueWithPrivy => '使用 Privy 继续';
 
   @override

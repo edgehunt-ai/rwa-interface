@@ -2684,6 +2684,12 @@ abstract class AppLocalizations {
   /// **'Resend code'**
   String get resendCode;
 
+  /// No description provided for @codeResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Code resent'**
+  String get codeResent;
+
   /// No description provided for @continueWithPrivy.
   ///
   /// In en, this message translates to:

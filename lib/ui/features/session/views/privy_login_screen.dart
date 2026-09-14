@@ -10,6 +10,7 @@ import '../../../../app/routing/routes.dart';
 import '../../../../app/providers/auth_providers.dart';
 import '../../../../domain/auth/authentication.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../core/feedback/app_toast.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/authentication_provider.dart';
 
@@ -93,6 +94,17 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
     return ref
         .read(authenticationProvider.notifier)
         .requestEmailCode(_emailController.text);
+  }
+
+  Future<void> _resendCode() async {
+    _codeController.clear();
+    await _sendCode();
+    if (!mounted) return;
+    if (ref.read(authenticationProvider) case AuthenticationAwaitingCode(
+      failure: null,
+    )) {
+      AppToast.showSuccess(context, AppLocalizations.of(context).codeResent);
+    }
   }
 
   bool get _hasValidEmail => _emailPattern.hasMatch(_emailController.text);
@@ -325,7 +337,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                                 ?.copyWith(color: const Color(0xFF676776)),
                           ),
                           TextButton(
-                            onPressed: _sendCode,
+                            onPressed: _resendCode,
                             child: Text(l10n.resendCode),
                           ),
                         ] else if (kIsWeb) ...[
