@@ -141,6 +141,13 @@ final class WebPrivyIdentityAuthGateway implements IdentityAuthGateway {
   Future<IdentityPrincipal> loginWithWallet(WalletConnection connection) =>
       _loginWithPrivyModal();
 
+  @override
+  Future<void> ensureEmbeddedWallet() async {
+    // The React Privy SDK bundle provisions embedded wallets itself
+    // (create_on_login config) as part of its own login flow, so there is
+    // no separate step to trigger here.
+  }
+
   Future<IdentityPrincipal> _loginWithPrivyModal() async {
     try {
       final userId = await _call('login');

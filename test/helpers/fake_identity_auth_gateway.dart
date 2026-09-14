@@ -23,6 +23,8 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   int linkPasskeyCalls = 0;
   int unlinkPasskeyCalls = 0;
   IdentityFailure? walletLoginFailure;
+  IdentityFailure? ensureEmbeddedWalletFailure;
+  int ensureEmbeddedWalletCalls = 0;
   IdentityFailure? logoutFailure;
   Future<void>? initializeBarrier;
   IdentityConfiguration? configuration;
@@ -119,5 +121,11 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
     walletConnection = connection;
     if (walletLoginFailure case final failure?) throw failure;
     return verifiedPrincipal;
+  }
+
+  @override
+  Future<void> ensureEmbeddedWallet() async {
+    ensureEmbeddedWalletCalls++;
+    if (ensureEmbeddedWalletFailure case final failure?) throw failure;
   }
 }

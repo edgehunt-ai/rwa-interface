@@ -278,6 +278,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
         ref.read(appReviewModeProvider.notifier).setEnabled(true);
       }
     }
+    await _gateway.ensureEmbeddedWallet();
     await _syncWallet(session);
     await _activateNotifications(session.account.settings);
     if (!_isCurrent(operation) ||

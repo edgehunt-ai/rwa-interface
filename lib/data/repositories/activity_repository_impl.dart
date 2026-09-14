@@ -69,6 +69,8 @@ final class ActivityRepositoryImpl implements ActivityRepository {
     chain: value.chain?.name,
     txHash: value.txHash,
     asset: value.asset,
+    symbol: value.symbol,
+    kind: value.kind?.name,
     createdAt: value.createdAt.toUtc(),
     updatedAt: value.updatedAt.toUtc(),
   );

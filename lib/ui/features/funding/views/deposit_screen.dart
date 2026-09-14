@@ -65,7 +65,17 @@ class DepositRoutesSheet extends ConsumerWidget {
                       ),
                     ),
                     TextButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        final router = GoRouter.of(context);
+                        Navigator.of(context).pop();
+                        router.go('${AppRoutes.activityPath}?tab=cash');
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: colors.secondaryText,
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       icon: SvgPicture.asset(
                         'assets/figma/funding/activity.svg',
                         width: 20,
@@ -190,7 +200,7 @@ class _DepositRouteTile extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              _AssetMark(asset: route.token, chain: route.chain),
+              _AssetMark(asset: route.token),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -227,26 +237,12 @@ class _DepositRouteTile extends ConsumerWidget {
 }
 
 class _AssetMark extends StatelessWidget {
-  const _AssetMark({required this.asset, required this.chain});
+  const _AssetMark({required this.asset});
   final String asset;
-  final String chain;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 40,
-    height: 40,
-    child: Stack(
-      clipBehavior: Clip.none,
-      children: [
-        _tokenIcon(context),
-        Positioned(
-          right: -2,
-          bottom: -2,
-          child: SvgPicture.asset(_chainIcon(chain), width: 18, height: 18),
-        ),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) =>
+      SizedBox(width: 40, height: 40, child: _tokenIcon(context));
 
   Widget _tokenIcon(BuildContext context) {
     if (asset == 'USDC') {
@@ -275,10 +271,6 @@ class _AssetMark extends StatelessWidget {
       child: Text(asset, style: const TextStyle(fontWeight: FontWeight.w600)),
     );
   }
-
-  String _chainIcon(String value) => value == 'BSC'
-      ? 'assets/figma/funding/bnb_chain.svg'
-      : 'assets/figma/funding/arbitrum.svg';
 }
 
 class _AllAssetsTile extends StatelessWidget {

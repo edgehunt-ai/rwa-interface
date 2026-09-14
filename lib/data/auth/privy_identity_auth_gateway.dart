@@ -464,6 +464,34 @@ final class PrivyIdentityAuthGateway
   }
 
   @override
+  Future<void> ensureEmbeddedWallet() async {
+    if (!_sessionUsable) return;
+    try {
+      final user = _user ?? await _privy?.getUser();
+      if (user == null) return;
+      _user = user;
+      if (user.embeddedEthereumWallets.isNotEmpty) return;
+      switch (await user.createEthereumWallet()) {
+        case Success<EmbeddedEthereumWallet>():
+          return;
+        case Failure<EmbeddedEthereumWallet>(:final error):
+          throw _mapFailure(
+            error,
+            operation: 'create_embedded_wallet',
+            codeOperation: false,
+          );
+      }
+    } on IdentityFailure {
+      rethrow;
+    } catch (error) {
+      throw _mapUnexpectedFailure(
+        operation: 'create_embedded_wallet',
+        error: error,
+      );
+    }
+  }
+
+  @override
   Future<String?> getAccessToken() async {
     if (!_sessionUsable) return null;
     final user = _user ?? await _privy?.getUser();

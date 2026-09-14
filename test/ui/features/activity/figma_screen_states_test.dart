@@ -10,6 +10,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(child: buildTestApp(const ActivityScreen())),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Activity'), findsWidgets);
     expect(find.text('Orders'), findsOneWidget);
@@ -20,11 +21,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(child: buildTestApp(const ActivityScreen())),
     );
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    await tester.ensureVisible(find.text('Approvals'));
-    await tester.tap(find.text('Approvals'));
+    await tester.ensureVisible(find.text('Funding'));
+    await tester.tap(find.text('Funding'));
     await tester.pump();
     expect(tester.takeException(), isNull);
   });

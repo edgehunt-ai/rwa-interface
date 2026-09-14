@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/activity_record.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
@@ -17,15 +19,37 @@ import 'package:rwa_interface/ui/features/activity/providers/activity_provider.d
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 
 class ActivityScreen extends ConsumerStatefulWidget {
-  const ActivityScreen({super.key});
+  const ActivityScreen({super.key, this.initialCategory});
+
+  final ActivityCategory? initialCategory;
 
   @override
   ConsumerState<ActivityScreen> createState() => _ActivityScreenState();
 }
 
 class _ActivityScreenState extends ConsumerState<ActivityScreen> {
-  ActivityCategory? _category = ActivityCategory.orders;
+  ActivityCategory? _category;
   ActivityState? _status;
+  String? _type;
+  MarketProductKind? _productKind;
+
+  @override
+  void initState() {
+    super.initState();
+    _category = widget.initialCategory ?? ActivityCategory.orders;
+  }
+
+  @override
+  void didUpdateWidget(covariant ActivityScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategory != widget.initialCategory &&
+        widget.initialCategory != null) {
+      _category = widget.initialCategory;
+      _status = null;
+      _type = null;
+      _productKind = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,12 +101,23 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
               const SizedBox(height: 16),
               _CategoryTabs(
                 selected: _category,
-                onSelected: (value) => setState(() => _category = value),
+                onSelected: (value) => setState(() {
+                  _category = value;
+                  _status = null;
+                  _type = null;
+                  _productKind = null;
+                }),
               ),
               const SizedBox(height: 8),
               _Filters(
+                category: _category,
+                productKind: _productKind,
+                onProductChanged: (value) =>
+                    setState(() => _productKind = value),
                 status: _status,
                 onStatusChanged: (value) => setState(() => _status = value),
+                type: _type,
+                onTypeChanged: (value) => setState(() => _type = value),
               ),
               const SizedBox(height: 8),
               Expanded(
@@ -97,19 +132,32 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                     message: AppLocalizations.of(context).activityRetry,
                     onRetry: () => ref.refresh(activityProvider(filter).future),
                   ),
-                  data: (page) => page.items.isEmpty
-                      ? DesignStateFeedback(
-                          state: DesignState.empty,
-                          title: AppLocalizations.of(context)
-                              .activityEmptyTitle,
-                          message: AppLocalizations.of(context)
-                              .activityEmptyMessage,
-                        )
-                      : RefreshIndicator(
-                          onRefresh: () async =>
-                              ref.refresh(activityProvider(filter)),
-                          child: _ActivityList(records: page.items),
-                        ),
+                  data: (page) {
+                    final records = page.items
+                        .where((record) {
+                          final productMatches =
+                              _productKind == null ||
+                              record.kind == _productKind!.name;
+                          final typeMatches =
+                              _type == null ||
+                              _matchesActivityType(record, _type!);
+                          return productMatches && typeMatches;
+                        })
+                        .toList(growable: false);
+                    return records.isEmpty
+                        ? DesignStateFeedback(
+                            state: DesignState.empty,
+                            title: AppLocalizations.of(context)
+                                .activityEmptyTitle,
+                            message: AppLocalizations.of(context)
+                                .activityEmptyMessage,
+                          )
+                        : RefreshIndicator(
+                            onRefresh: () async =>
+                                ref.refresh(activityProvider(filter)),
+                            child: _ActivityList(records: records),
+                          );
+                  },
                 ),
               ),
             ],
@@ -200,11 +248,6 @@ class _CategoryTabs extends StatelessWidget {
           selected: selected == ActivityCategory.signatures,
           onTap: () => onSelected(ActivityCategory.signatures),
         ),
-        _Tab(
-          label: AppLocalizations.of(context).activityApprovals,
-          selected: selected == null,
-          onTap: () => onSelected(null),
-        ),
       ],
     ),
   );
@@ -263,53 +306,231 @@ class _Tab extends StatelessWidget {
   }
 }
 
-class _Filters extends StatelessWidget {
-  const _Filters({required this.status, required this.onStatusChanged});
-  final ActivityState? status;
-  final ValueChanged<ActivityState?> onStatusChanged;
+final class _ActivityTypeOption {
+  const _ActivityTypeOption(this.value, this.label);
+  final String value;
+  final String label;
+}
+
+List<_ActivityTypeOption> _typeOptions(
+  BuildContext context,
+  ActivityCategory? category,
+) {
+  final l10n = AppLocalizations.of(context);
+  if (category == ActivityCategory.funds) {
+    return [
+      _ActivityTypeOption('deposit', l10n.deposit),
+      _ActivityTypeOption('withdraw', l10n.withdraw),
+      _ActivityTypeOption('transfer', l10n.transfer),
+      _ActivityTypeOption('bridge', 'Bridge'),
+      _ActivityTypeOption('claim', 'Claim'),
+    ];
+  }
+  return [
+    _ActivityTypeOption('market', l10n.market),
+    _ActivityTypeOption('limit', l10n.limit),
+    _ActivityTypeOption('tpsl', 'TP/SL'),
+    _ActivityTypeOption('close', 'Close'),
+  ];
+}
+
+class _ActivityFilterOption<T> {
+  const _ActivityFilterOption({required this.value, required this.label});
+  final T value;
+  final String label;
+}
+
+class _ActivityFilterMenu<T> extends StatelessWidget {
+  const _ActivityFilterMenu({
+    required this.value,
+    required this.options,
+    required this.label,
+    required this.onChanged,
+    this.width = 120,
+  });
+
+  final T value;
+  final List<_ActivityFilterOption<T>> options;
+  final String label;
+  final ValueChanged<T> onChanged;
+  final double width;
+
   @override
   Widget build(BuildContext context) {
-    final product = _FilterButton(
-      width: 120,
-      label: AppLocalizations.of(context).activityAllProducts,
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return PopupMenuButton<T>(
+      tooltip: label,
+      color: colors.surface,
+      constraints: const BoxConstraints.tightFor(width: 168),
+      menuPadding: const EdgeInsets.all(4),
+      offset: const Offset(0, 40),
+      onSelected: onChanged,
+      itemBuilder: (context) => options
+          .map(
+            (option) => PopupMenuItem<T>(
+              value: option.value,
+              height: 40,
+              padding: EdgeInsets.zero,
+              child: Container(
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: option.value == value ? colors.selectedSoft : null,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(option.label),
+              ),
+            ),
+          )
+          .toList(growable: false),
+      child: _FilterButton(width: width, label: label),
     );
-    final type = _FilterButton(
-      width: 83,
-      label: AppLocalizations.of(context).activityType,
-    );
-    final statusButton = PopupMenuButton<ActivityState?>(
-      tooltip: AppLocalizations.of(context).activityFilterStatus,
-      onSelected: onStatusChanged,
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: null,
-          child: Text(AppLocalizations.of(context).activityAllStatuses),
+  }
+}
+
+class _FilterButton extends StatelessWidget {
+  const _FilterButton({required this.label, required this.width});
+
+  final String label;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return SizedBox(
+      width: width,
+      height: 36,
+      child: OutlinedButton(
+        onPressed: null,
+        style: OutlinedButton.styleFrom(
+          minimumSize: Size(width, 36),
+          maximumSize: Size(width, 36),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          backgroundColor: colors.surface,
+          disabledBackgroundColor: colors.surface,
+          disabledForegroundColor: colors.primaryText,
+          side: BorderSide(color: colors.border),
+          textStyle: const TextStyle(
+            fontSize: 13,
+            height: 18 / 13,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        PopupMenuItem(
-          value: ActivityState.pending,
-          child: Text(AppLocalizations.of(context).activityInProgress),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+            SvgPicture.asset(
+              'assets/figma/home_markets/chevron_down.svg',
+              width: 20,
+              height: 20,
+            ),
+          ],
         ),
-        PopupMenuItem(
-          value: ActivityState.success,
-          child: Text(AppLocalizations.of(context).activityCompleted),
-        ),
-        PopupMenuItem(
-          value: ActivityState.failed,
-          child: Text(AppLocalizations.of(context).activityFailed),
-        ),
-        PopupMenuItem(
-          value: ActivityState.cancelled,
-          child: Text(AppLocalizations.of(context).activityCancelled),
-        ),
-      ],
-      child: _FilterButton(
-        width: 93,
-        label: status == null
-            ? AppLocalizations.of(context).activityStatus
-            : _statusLabel(context, status!),
       ),
     );
-    final filters = [product, type, statusButton];
+  }
+}
+
+class _Filters extends StatelessWidget {
+  const _Filters({
+    required this.category,
+    required this.productKind,
+    required this.onProductChanged,
+    required this.status,
+    required this.onStatusChanged,
+    required this.type,
+    required this.onTypeChanged,
+  });
+  final ActivityCategory? category;
+  final MarketProductKind? productKind;
+  final ValueChanged<MarketProductKind?> onProductChanged;
+  final ActivityState? status;
+  final ValueChanged<ActivityState?> onStatusChanged;
+  final String? type;
+  final ValueChanged<String?> onTypeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final productOptions = [
+      _ActivityFilterOption<MarketProductKind?>(
+        value: null,
+        label: l10n.allProducts,
+      ),
+      const _ActivityFilterOption<MarketProductKind?>(
+        value: MarketProductKind.bstock,
+        label: 'bStocks',
+      ),
+      _ActivityFilterOption<MarketProductKind?>(
+        value: MarketProductKind.perp,
+        label: l10n.hip3Perps,
+      ),
+    ];
+    final product = _ActivityFilterMenu<MarketProductKind?>(
+      value: productKind,
+      options: productOptions,
+      label: productOptions
+          .firstWhere((option) => option.value == productKind)
+          .label,
+      onChanged: onProductChanged,
+      width: 135,
+    );
+    final typeOptions = [
+      _ActivityFilterOption<String?>(value: null, label: l10n.activityType),
+      ..._typeOptions(context, category).map(
+        (option) => _ActivityFilterOption<String?>(
+          value: option.value,
+          label: option.label,
+        ),
+      ),
+    ];
+    final typeButton = _ActivityFilterMenu<String?>(
+      value: type,
+      options: typeOptions,
+      label: type == null
+          ? l10n.activityType
+          : typeOptions.firstWhere((option) => option.value == type).label,
+      onChanged: onTypeChanged,
+      width: 83,
+    );
+    final statusOptions = [
+      _ActivityFilterOption<ActivityState?>(
+        value: null,
+        label: l10n.activityStatus,
+      ),
+      _ActivityFilterOption<ActivityState?>(
+        value: ActivityState.pending,
+        label: l10n.activityInProgress,
+      ),
+      _ActivityFilterOption<ActivityState?>(
+        value: ActivityState.success,
+        label: l10n.activityCompleted,
+      ),
+      _ActivityFilterOption<ActivityState?>(
+        value: ActivityState.failed,
+        label: l10n.activityFailed,
+      ),
+      _ActivityFilterOption<ActivityState?>(
+        value: ActivityState.cancelled,
+        label: l10n.activityCancelled,
+      ),
+    ];
+    final statusButton = _ActivityFilterMenu<ActivityState?>(
+      value: status,
+      options: statusOptions,
+      label: status == null
+          ? l10n.activityStatus
+          : _statusLabel(context, status!),
+      onChanged: onStatusChanged,
+      width: 93,
+    );
+    final filters = category == ActivityCategory.signatures
+        ? [product]
+        : [product, typeButton, statusButton];
     final isLargeText = MediaQuery.textScalerOf(context).scale(13) > 18;
     if (isLargeText) {
       return Wrap(spacing: 8, runSpacing: 8, children: filters);
@@ -318,53 +539,11 @@ class _Filters extends StatelessWidget {
       children: [
         product,
         const Spacer(),
-        type,
-        const SizedBox(width: 8),
-        statusButton,
+        for (var index = 1; index < filters.length; index++) ...[
+          if (index > 1) const SizedBox(width: 8),
+          filters[index],
+        ],
       ],
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  const _FilterButton({required this.label, this.width});
-  final String label;
-  final double? width;
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return SizedBox(
-      width: width,
-      height: 36,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          border: Border.all(color: colors.border),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colors.primaryText,
-                    fontSize: 13,
-                    height: 18 / 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const Icon(Icons.keyboard_arrow_down, size: 20),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -436,7 +615,7 @@ class _ActivityRow extends StatelessWidget {
   }
 
   String _amount(DecimalValue? amount) =>
-      amount == null ? '–' : TokenAmountFormatter.formatUsd(amount);
+      amount == null ? '-' : TokenAmountFormatter.formatUsd(amount);
 }
 
 class _ExpandableActivityRow extends StatefulWidget {
@@ -460,8 +639,13 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final record = widget.record;
-    final type = _activityTypeLabel(record.type);
+    final isOrder = record.category == ActivityCategory.orders;
+    final isFunding = record.category == ActivityCategory.signatures;
+    final type = isOrder
+        ? _orderTypeLabel(record)
+        : _activityTypeLabel(record.type);
     final networks = _networks(record);
+    final title = isOrder ? _orderTitle(record) : record.title;
     return InkWell(
       onTap: record.fields.isEmpty && record.txHash == null
           ? null
@@ -484,7 +668,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                           children: [
                             Flexible(
                               child: Text(
-                                record.title,
+                                title,
                                 style: const TextStyle(
                                   fontSize: 15,
                                   height: 22 / 15,
@@ -494,28 +678,44 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            _TypeBadge(label: type),
+                            if (isFunding) ...[
+                              _TypeBadge(
+                                label: _fundingSide(record),
+                                order: true,
+                              ),
+                              const SizedBox(width: 4),
+                              _TypeBadge(
+                                label: _fundingDirection(record),
+                                order: true,
+                                positive: true,
+                              ),
+                            ] else
+                              _TypeBadge(label: type, order: isOrder),
                           ],
                         ),
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Text(
-                              _statusLabel(context, record.status),
-                              style: TextStyle(
-                                fontSize: 12,
-                                height: 16 / 12,
-                                color: widget.statusColor,
+                            if (!isFunding) ...[
+                              Text(
+                                _statusLabel(context, record.status),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  height: 16 / 12,
+                                  color: widget.statusColor,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              width: 1,
-                              height: 8,
-                              color: colors.subtleSurface,
-                            ),
-                            const SizedBox(width: 4),
-                            _NetworkPath(networks: networks),
+                              const SizedBox(width: 4),
+                              Container(
+                                width: 1,
+                                height: 8,
+                                color: colors.subtleSurface,
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            isOrder || isFunding
+                                ? _VenueLabel(kind: record.kind)
+                                : _NetworkPath(networks: networks),
                           ],
                         ),
                       ],
@@ -557,25 +757,31 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
 }
 
 class _TypeBadge extends StatelessWidget {
-  const _TypeBadge({required this.label});
+  const _TypeBadge({required this.label, this.order = false, this.positive});
   final String label;
+  final bool order;
+  final bool? positive;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final isSell =
+        label.toLowerCase().startsWith('sell') ||
+        label.toLowerCase().startsWith('short');
+    final badgeColor = order
+        ? (positive == true
+              ? const Color(0xFF04A08B)
+              : (isSell ? const Color(0xFFDE596E) : const Color(0xFF04A08B)))
+        : colors.secondaryText;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        border: Border.all(color: colors.border),
+        color: order ? badgeColor.withValues(alpha: .12) : colors.subtleSurface,
+        border: order ? null : Border.all(color: colors.border),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 12,
-          height: 16 / 12,
-          color: colors.secondaryText,
-        ),
+        style: TextStyle(fontSize: 12, height: 16 / 12, color: badgeColor),
       ),
     );
   }
@@ -606,6 +812,38 @@ class _NetworkPath extends StatelessWidget {
             ),
           _NetworkLabel(network: networks[index]),
         ],
+      ],
+    );
+  }
+}
+
+class _VenueLabel extends StatelessWidget {
+  const _VenueLabel({required this.kind});
+  final String? kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final isPerp = kind == 'perp';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SvgPicture.asset(
+          isPerp
+              ? 'assets/figma/home_markets/venue_hyperliquid.svg'
+              : 'assets/figma/home_markets/venue_bnb.svg',
+          width: 14,
+          height: 14,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          isPerp ? 'HIP-3' : 'bStocks',
+          style: TextStyle(
+            fontSize: 12,
+            height: 16 / 12,
+            color: colors.secondaryText,
+          ),
+        ),
       ],
     );
   }
@@ -793,6 +1031,33 @@ String _activityTypeLabel(String type) => switch (type) {
   _ => type.isEmpty ? 'Activity' : type[0].toUpperCase() + type.substring(1),
 };
 
+String _orderTypeLabel(ActivityRecord record) {
+  final value = record.type.toLowerCase();
+  if (value == 'tpsl' || value == 'take_profit') return 'TP';
+  if (value == 'close' || value == 'stop_loss') return 'SL';
+  final title = record.title.toLowerCase();
+  if (title.contains('sell') || title.contains('short')) return 'Sell / Limit';
+  return 'Buy / Limit';
+}
+
+String _orderTitle(ActivityRecord record) {
+  final symbol = record.symbol?.trim();
+  if (symbol == null || symbol.isEmpty) return record.title;
+  if (symbol.contains('/')) return symbol;
+  final quote = record.asset?.trim();
+  return '$symbol/${quote == null || quote.isEmpty ? 'USDT' : quote}';
+}
+
+String _fundingSide(ActivityRecord record) {
+  final value = '${record.title} ${record.context ?? ''}'.toLowerCase();
+  return value.contains('short') || value.contains('sell') ? 'Short' : 'Long';
+}
+
+String _fundingDirection(ActivityRecord record) {
+  final value = '${record.title} ${record.context ?? ''}'.toLowerCase();
+  return value.contains('pay') || value.contains('fee') ? 'Pay' : 'Receive';
+}
+
 List<String> _networks(ActivityRecord record) {
   final matches = RegExp(
     r'(BSC|Polygon|Arbitrum|Base|Ethereum|Solana)',
@@ -819,5 +1084,22 @@ String _statusLabel(BuildContext context, ActivityState status) {
     ActivityState.failed => l10n.activityFailed,
     ActivityState.cancelled => l10n.activityCancelled,
     ActivityState.unknown => l10n.activityUnknown,
+  };
+}
+
+bool _matchesActivityType(ActivityRecord record, String selectedType) {
+  final type = record.type.toLowerCase();
+  final title = record.title.toLowerCase();
+  final context = (record.context ?? '').toLowerCase();
+  final value = '$type $title $context';
+  return switch (selectedType) {
+    'tpsl' =>
+      value.contains('tpsl') ||
+          value.contains('take_profit') ||
+          value.contains('stop_loss') ||
+          value.contains('take profit') ||
+          value.contains('stop loss'),
+    'close' => value.contains('close') || value.contains('liquidat'),
+    _ => value.contains(selectedType),
   };
 }

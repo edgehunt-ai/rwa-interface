@@ -11,6 +11,7 @@ import 'package:rwa_interface/ui/features/portfolio/views/assets_screen.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/account/views/settings_screen.dart';
 import 'package:rwa_interface/ui/features/activity/views/activity_screen.dart';
+import 'package:rwa_interface/domain/models/activity_record.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 import 'package:rwa_interface/ui/features/session/views/privy_login_screen.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -107,7 +108,11 @@ abstract final class AppRouter {
         GoRoute(
           name: AppRoutes.activityName,
           path: AppRoutes.activityPath,
-          builder: (context, state) => const ActivityScreen(),
+          builder: (context, state) => ActivityScreen(
+            initialCategory: state.uri.queryParameters['tab'] == 'cash'
+                ? ActivityCategory.funds
+                : null,
+          ),
         ),
         GoRoute(
           name: AppRoutes.detailsName,

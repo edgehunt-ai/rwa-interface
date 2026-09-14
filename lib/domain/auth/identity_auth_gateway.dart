@@ -44,6 +44,10 @@ abstract interface class IdentityAuthGateway {
 
   Future<IdentityPrincipal> loginWithWallet(WalletConnection connection);
 
+  /// Ensures the current user has at least one embedded wallet, provisioning
+  /// one with the provider when none exists yet (e.g. a brand-new signup).
+  Future<void> ensureEmbeddedWallet();
+
   Future<String?> getAccessToken();
 
   Future<String?> refreshAccessToken();

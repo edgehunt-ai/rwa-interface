@@ -890,7 +890,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activityOrders => '订单';
 
   @override
-  String get activityFunding => '入金';
+  String get activityFunding => '资金费';
 
   @override
   String get activityApprovals => '授权';

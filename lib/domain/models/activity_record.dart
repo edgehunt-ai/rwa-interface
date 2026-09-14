@@ -32,6 +32,8 @@ final class ActivityRecord {
     this.chain,
     this.txHash,
     this.asset,
+    this.symbol,
+    this.kind,
     this.updatedAt,
   });
   final String id;
@@ -46,6 +48,8 @@ final class ActivityRecord {
   final String? chain;
   final String? txHash;
   final String? asset;
+  final String? symbol;
+  final String? kind;
   final DateTime createdAt;
   final DateTime? updatedAt;
 }

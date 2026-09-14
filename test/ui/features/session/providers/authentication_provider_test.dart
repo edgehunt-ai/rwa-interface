@@ -32,6 +32,7 @@ void main() {
 
     expect(gateway.configuration?.appId, 'app-id');
     expect(repository.createCalls, 1);
+    expect(gateway.ensureEmbeddedWalletCalls, 1);
     expect(wallets.syncCalls, 1);
     expect(wallets.lastIdempotencyKey, 'wallet-sync-session-1');
     expect(
@@ -39,6 +40,59 @@ void main() {
       isA<AuthenticationAuthenticated>(),
     );
   });
+
+  test(
+    'embedded wallet is provisioned before syncing a wallet-less new signup',
+    () async {
+      final gateway = FakeIdentityAuthGateway(
+        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+      );
+      final wallets = _WalletsRepository();
+      final container = _container(
+        gateway,
+        _SessionRepository(),
+        wallets: wallets,
+      );
+
+      await container.read(authenticationProvider.notifier).bootstrap();
+
+      expect(gateway.ensureEmbeddedWalletCalls, 1);
+      expect(wallets.syncCalls, 1);
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticated>(),
+      );
+    },
+  );
+
+  test(
+    'embedded wallet provisioning failure prevents the wallet sync call',
+    () async {
+      final gateway = FakeIdentityAuthGateway(
+        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+      )..ensureEmbeddedWalletFailure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+      );
+      final wallets = _WalletsRepository();
+      final container = _container(
+        gateway,
+        _SessionRepository(),
+        wallets: wallets,
+      );
+
+      await container.read(authenticationProvider.notifier).bootstrap();
+
+      expect(gateway.ensureEmbeddedWalletCalls, 1);
+      expect(wallets.syncCalls, 0);
+      final state = container.read(authenticationProvider);
+      expect(state, isA<AuthenticationFailed>());
+      expect(
+        (state as AuthenticationFailed).failure.code,
+        AuthenticationFailureCode.provider,
+      );
+    },
+  );
 
   test('bootstrap without restored identity becomes unauthenticated', () async {
     final container = _container(

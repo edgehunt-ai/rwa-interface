@@ -46,6 +46,9 @@ final class UnsupportedIdentityAuthGateway implements IdentityAuthGateway {
   ) async => throw _failure;
 
   @override
+  Future<void> ensureEmbeddedWallet() async => throw _failure;
+
+  @override
   Future<void> logout() async {}
 
   @override
