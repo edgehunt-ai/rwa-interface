@@ -579,9 +579,13 @@ class _PortfolioAllocation {
     };
     for (final account in accounts) {
       if (kinds.contains(account.kind)) {
-        values[account.kind] =
+        final accountValue =
             account.totalValueUsd ??
             _sumUsdValues(account.balances.map((balance) => balance.valueUsd));
+        values[account.kind] = _sumUsdValues([
+          values[account.kind],
+          accountValue,
+        ]);
       }
     }
 
@@ -1073,6 +1077,17 @@ class _CashBalances extends ConsumerWidget {
     data: (items) {
       final balances = items
           .expand((account) => account.balances)
+          .where(
+            (balance) =>
+                balance.balance.compareTo(
+                  DecimalValue(
+                    '0',
+                    asset: balance.balance.asset,
+                    unit: balance.balance.unit,
+                  ),
+                ) !=
+                0,
+          )
           .toList(growable: false);
       if (balances.isEmpty) {
         return SizedBox(

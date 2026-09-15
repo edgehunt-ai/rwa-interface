@@ -39,6 +39,7 @@ void main() {
     expect(find.byKey(const Key('portfolio-trend-trigger')), findsOneWidget);
     expect(find.text('Allocation'), findsOneWidget);
     expect(find.text('Cash balances'), findsOneWidget);
+    expect(find.text('ETH'), findsNothing);
     await tester.tap(find.text('Allocation'));
     await tester.pump();
     expect(find.text('Cash · 25.8%'), findsOneWidget);
@@ -282,6 +283,13 @@ final class _Portfolio
           balance: DecimalValue('1240.2', asset: 'USDC', unit: 'token'),
           valueUsd: DecimalValue('1240.2', asset: 'USD', unit: 'fiat'),
         ),
+        TokenBalance(
+          symbol: 'ETH',
+          chain: 'Arbitrum',
+          decimals: 18,
+          balance: DecimalValue('0.000', asset: 'ETH', unit: 'token'),
+          valueUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+        ),
       ],
     ),
     TradingAccount(
@@ -354,6 +362,12 @@ final class _BalanceOnlyPortfolio implements PortfolioRepository {
           valueUsd: DecimalValue('42', asset: 'USD', unit: 'fiat'),
         ),
       ],
+    ),
+    TradingAccount(
+      kind: TradingAccountKind.app,
+      chain: 'Base',
+      totalValueUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+      balances: const [],
     ),
   ];
 
