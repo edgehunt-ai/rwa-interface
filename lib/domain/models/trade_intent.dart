@@ -4,10 +4,12 @@ final class TradeIntentExecutionPolicy {
   const TradeIntentExecutionPolicy({
     required this.limitPrice,
     required this.executeBefore,
+    this.slippagePercent,
   });
 
   final DecimalValue limitPrice;
   final DateTime executeBefore;
+  final DecimalValue? slippagePercent;
 }
 
 final class TradeIntentCreateInput {
@@ -27,6 +29,7 @@ final class TradeIntentCreateInput {
 
   String get fingerprint =>
       '$previewId|$authorizationId|${executionPolicy.limitPrice.value}|'
+      '${executionPolicy.slippagePercent?.value}|'
       '${executionPolicy.executeBefore.toUtc().toIso8601String()}';
 }
 

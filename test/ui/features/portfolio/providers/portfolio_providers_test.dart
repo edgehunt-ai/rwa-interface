@@ -33,7 +33,39 @@ void main() {
     );
     expect(repository.accountCalls, 0);
   });
+
+  test('order balances are derived from portfolio accounts', () async {
+    final container = ProviderContainer(
+      overrides: [
+        tradingAccountsProvider.overrideWith(
+          (_) async => [
+            _account(TradingAccountKind.app, '6'),
+            _account(TradingAccountKind.app, '2.5'),
+            _account(TradingAccountKind.bstocks, '3'),
+            _account(TradingAccountKind.hip3, '10'),
+          ],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      (await container.read(bstocksOrderAvailableBalanceProvider.future)).value,
+      '11.5',
+    );
+    expect(
+      (await container.read(hip3OrderAvailableBalanceProvider.future)).value,
+      '21.5',
+    );
+  });
 }
+
+TradingAccount _account(TradingAccountKind kind, String availableUsd) =>
+    TradingAccount(
+      kind: kind,
+      balances: const [],
+      availableUsd: DecimalValue(availableUsd, asset: 'USD', unit: 'fiat'),
+    );
 
 final class _PortfolioRepository implements PortfolioRepository {
   int summaryCalls = 0;

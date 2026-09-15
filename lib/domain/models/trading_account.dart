@@ -23,17 +23,21 @@ final class TradingAccount {
     required this.balances,
     this.label,
     this.address,
+    this.walletId,
     this.chain,
     this.totalValueUsd,
     this.availableUsd,
+    this.availableRequiresTransfer,
     this.marginUsedUsd,
   });
   final TradingAccountKind kind;
   final String? label;
   final String? address;
+  final String? walletId;
   final String? chain;
   final DecimalValue? totalValueUsd;
   final DecimalValue? availableUsd;
+  final bool? availableRequiresTransfer;
   final DecimalValue? marginUsedUsd;
   final List<TokenBalance> balances;
 }

@@ -21,6 +21,7 @@ void main() {
           authorizationId: 'order-authorization-1',
           executionPolicy: TradeIntentExecutionPolicy(
             limitPrice: DecimalValue('101.25', unit: 'price'),
+            slippagePercent: DecimalValue('1.25', unit: 'percent'),
             executeBefore: DateTime.utc(2026, 9, 10, 1),
           ),
         ),
@@ -34,10 +35,12 @@ void main() {
       expect(request.authorizationId, 'order-authorization-1');
       expect(request.fundingMode.name, 'autoMultiSource');
       expect(request.executionPolicy.limitPrice, '101.25');
+      expect(request.executionPolicy.slippagePercent, '1.25');
       expect(service.idempotencyKey, 'intent-key');
       expect(result.productId, 'xyz:NVDA');
       expect(result.status, 'awaiting_funding');
       expect(result.nextAction, 'authorize_funding');
+      expect(result.executionPolicy.slippagePercent?.value, '1.25');
       expect(result.fundingLegs.single.status, 'action_released');
     },
   );
@@ -89,6 +92,7 @@ api.TradeIntent _intent() =>
       'execution_policy': {
         'order_type': 'ioc',
         'limit_price': '101.25',
+        'slippage_percent': '1.25',
         'execute_before': '2026-09-10T01:00:00Z',
       },
       'funding_mode': 'auto_multi_source',

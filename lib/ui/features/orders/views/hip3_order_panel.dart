@@ -14,6 +14,7 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 
 import 'hip3_preview_details.dart';
@@ -495,6 +496,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final actionColor = isShort ? semantic.loss : semantic.success;
     final amount = _amount.text.trim();
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
+    final availableBalance = ref.watch(hip3OrderAvailableBalanceProvider);
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -572,7 +574,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   settlementAsset: settlementAsset,
                   inputAsset: _inputNotional ? settlementAsset : widget.symbol,
                   quantityInput: !_inputNotional,
-                  availableMargin: _context?.availableMargin.value,
+                  availableMargin: availableBalance.value?.value,
                   percentage: _percentage,
                   onMarginModeTap: () {
                     if (_pendingSetting != null || _submitting) {

@@ -51,15 +51,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          portfolioSummaryProvider.overrideWith(
-            (ref) async => Portfolio(
-              totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
-              availableToTradeUsd: DecimalValue(
-                '456.78',
-                asset: 'USD',
-                unit: 'fiat',
-              ),
-            ),
+          bstocksOrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
           ),
           ordersRepositoryProvider.overrideWithValue(_QuotedOrdersRepository()),
         ],
@@ -111,15 +104,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          portfolioSummaryProvider.overrideWith(
-            (ref) async => Portfolio(
-              totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
-              availableToTradeUsd: DecimalValue(
-                '456.78',
-                asset: 'USD',
-                unit: 'fiat',
-              ),
-            ),
+          bstocksOrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
           ),
         ],
         child: buildTestApp(const BstocksOrderPanel()),
@@ -164,15 +150,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            portfolioSummaryProvider.overrideWith(
-              (ref) async => Portfolio(
-                totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
-                availableToTradeUsd: DecimalValue(
-                  '456.78',
-                  asset: 'USD',
-                  unit: 'fiat',
-                ),
-              ),
+            bstocksOrderAvailableBalanceProvider.overrideWith(
+              (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
             ),
             holdingsProvider(null).overrideWith(
               (ref) async => DomainPage(
@@ -215,11 +194,13 @@ void main() {
   testWidgets('bStocks order form shows a skeleton while the balance loads', (
     tester,
   ) async {
-    final portfolio = Completer<Portfolio>();
+    final balance = Completer<DecimalValue>();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          portfolioSummaryProvider.overrideWith((_) => portfolio.future),
+          bstocksOrderAvailableBalanceProvider.overrideWith(
+            (_) => balance.future,
+          ),
         ],
         child: buildTestApp(const BstocksOrderPanel()),
       ),
@@ -228,12 +209,7 @@ void main() {
     expect(find.byKey(const Key('bstocks-balance-skeleton')), findsOneWidget);
     expect(find.text('—'), findsNothing);
 
-    portfolio.complete(
-      Portfolio(
-        totalValueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
-        availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
-      ),
-    );
+    balance.complete(DecimalValue('0', asset: 'USD', unit: 'fiat'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('bstocks-balance-skeleton')), findsNothing);
     expect(find.text(r'$0'), findsOneWidget);
@@ -375,15 +351,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            portfolioSummaryProvider.overrideWith(
-              (ref) async => Portfolio(
-                totalValueUsd: DecimalValue('100', asset: 'USD', unit: 'fiat'),
-                availableToTradeUsd: DecimalValue(
-                  '0',
-                  asset: 'USD',
-                  unit: 'fiat',
-                ),
-              ),
+            bstocksOrderAvailableBalanceProvider.overrideWith(
+              (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
             ),
             ordersRepositoryProvider.overrideWithValue(
               _DelayedOrdersRepository(),

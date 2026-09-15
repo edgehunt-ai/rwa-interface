@@ -87,9 +87,11 @@ final class PortfolioRepositoryImpl
     },
     label: value.label,
     address: value.address,
+    walletId: value.walletId,
     chain: value.chain?.name,
     totalValueUsd: _optionalUsd(value.totalValueUsd),
     availableUsd: _optionalUsd(value.availableUsd),
+    availableRequiresTransfer: value.availableRequiresTransfer,
     marginUsedUsd: _optionalUsd(value.marginUsedUsd),
     balances: value.balances
         .map(

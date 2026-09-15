@@ -171,7 +171,7 @@ Class | Method | HTTP request | Description
 [*PortfolioApi*](doc/PortfolioApi.md) | [**getPortfolioAllocation**](doc/PortfolioApi.md#getportfolioallocation) | **GET** /v1/portfolio/allocation | 获取资产组合配置分布
 [*PortfolioApi*](doc/PortfolioApi.md) | [**getPortfolioHistory**](doc/PortfolioApi.md#getportfoliohistory) | **GET** /v1/portfolio/history | 获取资产组合历史
 [*PortfolioApi*](doc/PortfolioApi.md) | [**getPortfolioSummary**](doc/PortfolioApi.md#getportfoliosummary) | **GET** /v1/portfolio/summary | 资产总览
-[*PortfolioApi*](doc/PortfolioApi.md) | [**listAccounts**](doc/PortfolioApi.md#listaccounts) | **GET** /v1/portfolio/accounts | 内部账本账户余额
+[*PortfolioApi*](doc/PortfolioApi.md) | [**listAccounts**](doc/PortfolioApi.md#listaccounts) | **GET** /v1/portfolio/accounts | 按来源分组的资产账户余额
 [*PortfolioApi*](doc/PortfolioApi.md) | [**listHoldings**](doc/PortfolioApi.md#listholdings) | **GET** /v1/portfolio/holdings | 按股票分组的持仓
 [*PortfolioApi*](doc/PortfolioApi.md) | [**listPortfolioAssets**](doc/PortfolioApi.md#listportfolioassets) | **GET** /v1/portfolio/assets | 分页列出真实用户资产
 [*PositionsApi*](doc/PositionsApi.md) | [**getPosition**](doc/PositionsApi.md#getposition) | **GET** /v1/positions/{position_id} | 仓位详情

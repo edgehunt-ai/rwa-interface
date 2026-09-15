@@ -6,9 +6,8 @@ part of 'portfolio_account_page.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const PortfolioAccountPageScopeEnum
-    _$portfolioAccountPageScopeEnum_internalLedger =
-    const PortfolioAccountPageScopeEnum._('internalLedger');
+const PortfolioAccountPageScopeEnum _$portfolioAccountPageScopeEnum_portfolio =
+    const PortfolioAccountPageScopeEnum._('portfolio');
 const PortfolioAccountPageScopeEnum
     _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi =
     const PortfolioAccountPageScopeEnum._('unknownDefaultOpenApi');
@@ -16,8 +15,8 @@ const PortfolioAccountPageScopeEnum
 PortfolioAccountPageScopeEnum _$portfolioAccountPageScopeEnumValueOf(
     String name) {
   switch (name) {
-    case 'internalLedger':
-      return _$portfolioAccountPageScopeEnum_internalLedger;
+    case 'portfolio':
+      return _$portfolioAccountPageScopeEnum_portfolio;
     case 'unknownDefaultOpenApi':
       return _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi;
     default:
@@ -28,7 +27,7 @@ PortfolioAccountPageScopeEnum _$portfolioAccountPageScopeEnumValueOf(
 final BuiltSet<PortfolioAccountPageScopeEnum>
     _$portfolioAccountPageScopeEnumValues = BuiltSet<
         PortfolioAccountPageScopeEnum>(const <PortfolioAccountPageScopeEnum>[
-  _$portfolioAccountPageScopeEnum_internalLedger,
+  _$portfolioAccountPageScopeEnum_portfolio,
   _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi,
 ]);
 
@@ -39,11 +38,11 @@ Serializer<PortfolioAccountPageScopeEnum>
 class _$PortfolioAccountPageScopeEnumSerializer
     implements PrimitiveSerializer<PortfolioAccountPageScopeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'internalLedger': 'internal_ledger',
+    'portfolio': 'portfolio',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'internal_ledger': 'internalLedger',
+    'portfolio': 'portfolio',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
@@ -72,11 +71,17 @@ class _$PortfolioAccountPage extends PortfolioAccountPage {
   @override
   final BuiltList<AccountBalance> items;
   @override
-  final bool reconciled;
+  final PortfolioDataStatus dataStatus;
   @override
   final PortfolioFreshness freshness;
   @override
-  final BuiltList<PortfolioNotice> blockers;
+  final DateTime calculatedAt;
+  @override
+  final DateTime? oldestObservationAt;
+  @override
+  final BuiltList<PortfolioNotice> warnings;
+  @override
+  final BuiltList<PortfolioSourceSummary> sources;
 
   factory _$PortfolioAccountPage(
           [void Function(PortfolioAccountPageBuilder)? updates]) =>
@@ -85,9 +90,12 @@ class _$PortfolioAccountPage extends PortfolioAccountPage {
   _$PortfolioAccountPage._(
       {required this.scope,
       required this.items,
-      required this.reconciled,
+      required this.dataStatus,
       required this.freshness,
-      required this.blockers})
+      required this.calculatedAt,
+      this.oldestObservationAt,
+      required this.warnings,
+      required this.sources})
       : super._();
   @override
   PortfolioAccountPage rebuild(
@@ -104,9 +112,12 @@ class _$PortfolioAccountPage extends PortfolioAccountPage {
     return other is PortfolioAccountPage &&
         scope == other.scope &&
         items == other.items &&
-        reconciled == other.reconciled &&
+        dataStatus == other.dataStatus &&
         freshness == other.freshness &&
-        blockers == other.blockers;
+        calculatedAt == other.calculatedAt &&
+        oldestObservationAt == other.oldestObservationAt &&
+        warnings == other.warnings &&
+        sources == other.sources;
   }
 
   @override
@@ -114,9 +125,12 @@ class _$PortfolioAccountPage extends PortfolioAccountPage {
     var _$hash = 0;
     _$hash = $jc(_$hash, scope.hashCode);
     _$hash = $jc(_$hash, items.hashCode);
-    _$hash = $jc(_$hash, reconciled.hashCode);
+    _$hash = $jc(_$hash, dataStatus.hashCode);
     _$hash = $jc(_$hash, freshness.hashCode);
-    _$hash = $jc(_$hash, blockers.hashCode);
+    _$hash = $jc(_$hash, calculatedAt.hashCode);
+    _$hash = $jc(_$hash, oldestObservationAt.hashCode);
+    _$hash = $jc(_$hash, warnings.hashCode);
+    _$hash = $jc(_$hash, sources.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -126,9 +140,12 @@ class _$PortfolioAccountPage extends PortfolioAccountPage {
     return (newBuiltValueToStringHelper(r'PortfolioAccountPage')
           ..add('scope', scope)
           ..add('items', items)
-          ..add('reconciled', reconciled)
+          ..add('dataStatus', dataStatus)
           ..add('freshness', freshness)
-          ..add('blockers', blockers))
+          ..add('calculatedAt', calculatedAt)
+          ..add('oldestObservationAt', oldestObservationAt)
+          ..add('warnings', warnings)
+          ..add('sources', sources))
         .toString();
   }
 }
@@ -146,19 +163,36 @@ class PortfolioAccountPageBuilder
       _$this._items ??= ListBuilder<AccountBalance>();
   set items(ListBuilder<AccountBalance>? items) => _$this._items = items;
 
-  bool? _reconciled;
-  bool? get reconciled => _$this._reconciled;
-  set reconciled(bool? reconciled) => _$this._reconciled = reconciled;
+  PortfolioDataStatus? _dataStatus;
+  PortfolioDataStatus? get dataStatus => _$this._dataStatus;
+  set dataStatus(PortfolioDataStatus? dataStatus) =>
+      _$this._dataStatus = dataStatus;
 
   PortfolioFreshness? _freshness;
   PortfolioFreshness? get freshness => _$this._freshness;
   set freshness(PortfolioFreshness? freshness) => _$this._freshness = freshness;
 
-  ListBuilder<PortfolioNotice>? _blockers;
-  ListBuilder<PortfolioNotice> get blockers =>
-      _$this._blockers ??= ListBuilder<PortfolioNotice>();
-  set blockers(ListBuilder<PortfolioNotice>? blockers) =>
-      _$this._blockers = blockers;
+  DateTime? _calculatedAt;
+  DateTime? get calculatedAt => _$this._calculatedAt;
+  set calculatedAt(DateTime? calculatedAt) =>
+      _$this._calculatedAt = calculatedAt;
+
+  DateTime? _oldestObservationAt;
+  DateTime? get oldestObservationAt => _$this._oldestObservationAt;
+  set oldestObservationAt(DateTime? oldestObservationAt) =>
+      _$this._oldestObservationAt = oldestObservationAt;
+
+  ListBuilder<PortfolioNotice>? _warnings;
+  ListBuilder<PortfolioNotice> get warnings =>
+      _$this._warnings ??= ListBuilder<PortfolioNotice>();
+  set warnings(ListBuilder<PortfolioNotice>? warnings) =>
+      _$this._warnings = warnings;
+
+  ListBuilder<PortfolioSourceSummary>? _sources;
+  ListBuilder<PortfolioSourceSummary> get sources =>
+      _$this._sources ??= ListBuilder<PortfolioSourceSummary>();
+  set sources(ListBuilder<PortfolioSourceSummary>? sources) =>
+      _$this._sources = sources;
 
   PortfolioAccountPageBuilder() {
     PortfolioAccountPage._defaults(this);
@@ -169,9 +203,12 @@ class PortfolioAccountPageBuilder
     if ($v != null) {
       _scope = $v.scope;
       _items = $v.items.toBuilder();
-      _reconciled = $v.reconciled;
+      _dataStatus = $v.dataStatus;
       _freshness = $v.freshness;
-      _blockers = $v.blockers.toBuilder();
+      _calculatedAt = $v.calculatedAt;
+      _oldestObservationAt = $v.oldestObservationAt;
+      _warnings = $v.warnings.toBuilder();
+      _sources = $v.sources.toBuilder();
       _$v = null;
     }
     return this;
@@ -198,11 +235,15 @@ class PortfolioAccountPageBuilder
             scope: BuiltValueNullFieldError.checkNotNull(
                 scope, r'PortfolioAccountPage', 'scope'),
             items: items.build(),
-            reconciled: BuiltValueNullFieldError.checkNotNull(
-                reconciled, r'PortfolioAccountPage', 'reconciled'),
+            dataStatus: BuiltValueNullFieldError.checkNotNull(
+                dataStatus, r'PortfolioAccountPage', 'dataStatus'),
             freshness: BuiltValueNullFieldError.checkNotNull(
                 freshness, r'PortfolioAccountPage', 'freshness'),
-            blockers: blockers.build(),
+            calculatedAt: BuiltValueNullFieldError.checkNotNull(
+                calculatedAt, r'PortfolioAccountPage', 'calculatedAt'),
+            oldestObservationAt: oldestObservationAt,
+            warnings: warnings.build(),
+            sources: sources.build(),
           );
     } catch (_) {
       late String _$failedField;
@@ -210,8 +251,10 @@ class PortfolioAccountPageBuilder
         _$failedField = 'items';
         items.build();
 
-        _$failedField = 'blockers';
-        blockers.build();
+        _$failedField = 'warnings';
+        warnings.build();
+        _$failedField = 'sources';
+        sources.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'PortfolioAccountPage', _$failedField, e.toString());

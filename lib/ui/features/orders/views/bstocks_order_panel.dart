@@ -68,7 +68,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       _availableAmount(
             side: side,
             symbol: widget.symbol,
-            portfolio: ref.read(portfolioSummaryProvider).value,
+            availableBalance: ref
+                .read(bstocksOrderAvailableBalanceProvider)
+                .value,
             holdings: ref.read(holdingsProvider(null)).value?.items,
           )?.value ??
           '',
@@ -88,14 +90,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   void _updateAmountFromPercentage(
     double value,
-    Portfolio? portfolio,
+    DecimalValue? availableBalance,
     List<HoldingGroup>? holdings,
   ) {
     final available = double.tryParse(
       _availableAmount(
             side: side,
             symbol: widget.symbol,
-            portfolio: portfolio,
+            availableBalance: availableBalance,
             holdings: holdings,
           )?.value ??
           '',
@@ -231,10 +233,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   bool _hasSufficientDisplayedBalance(OrderPreview next) {
-    final available = ref
-        .read(portfolioSummaryProvider)
-        .value
-        ?.availableToTradeUsd;
+    final available = ref.read(bstocksOrderAvailableBalanceProvider).value;
     if (available == null) return true;
     try {
       final orderValueUsd = DecimalValue(
@@ -380,12 +379,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         : widget.symbol;
     final enteredAmount = amount.text.trim();
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
-    final portfolio = ref.watch(portfolioSummaryProvider);
+    final availableBalance = ref.watch(bstocksOrderAvailableBalanceProvider);
     final holdings = ref.watch(holdingsProvider(null));
     final availableAmount = _availableAmount(
       side: side,
       symbol: widget.symbol,
-      portfolio: portfolio.value,
+      availableBalance: availableBalance.value,
       holdings: holdings.value?.items,
     );
     final balance = availableAmount == null
@@ -393,7 +392,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         : isBuy
         ? TokenAmountFormatter.formatUsd(availableAmount)
         : '${TokenAmountFormatter.formatValue(availableAmount)} ${widget.symbol}';
-    final balanceLoading = isBuy ? portfolio.isLoading : holdings.isLoading;
+    final balanceLoading = isBuy
+        ? availableBalance.isLoading
+        : holdings.isLoading;
     final receive =
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
@@ -538,7 +539,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                   value: percentage,
                   onChanged: (value) => _updateAmountFromPercentage(
                     value,
-                    portfolio.value,
+                    availableBalance.value,
                     holdings.value?.items,
                   ),
                 ),
@@ -823,10 +824,10 @@ bool _isDecimal(String value) {
 DecimalValue? _availableAmount({
   required TradingSide side,
   required String symbol,
-  required Portfolio? portfolio,
+  required DecimalValue? availableBalance,
   required List<HoldingGroup>? holdings,
 }) {
-  if (side == TradingSide.buy) return portfolio?.availableToTradeUsd;
+  if (side == TradingSide.buy) return availableBalance;
   if (holdings == null) return null;
   final underlying = symbol.endsWith('B')
       ? symbol.substring(0, symbol.length - 1)

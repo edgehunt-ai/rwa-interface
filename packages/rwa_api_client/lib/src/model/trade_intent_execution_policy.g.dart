@@ -74,6 +74,8 @@ class _$TradeIntentExecutionPolicy extends TradeIntentExecutionPolicy {
   @override
   final String limitPrice;
   @override
+  final String? slippagePercent;
+  @override
   final DateTime executeBefore;
 
   factory _$TradeIntentExecutionPolicy(
@@ -83,6 +85,7 @@ class _$TradeIntentExecutionPolicy extends TradeIntentExecutionPolicy {
   _$TradeIntentExecutionPolicy._(
       {required this.orderType,
       required this.limitPrice,
+      this.slippagePercent,
       required this.executeBefore})
       : super._();
   @override
@@ -100,6 +103,7 @@ class _$TradeIntentExecutionPolicy extends TradeIntentExecutionPolicy {
     return other is TradeIntentExecutionPolicy &&
         orderType == other.orderType &&
         limitPrice == other.limitPrice &&
+        slippagePercent == other.slippagePercent &&
         executeBefore == other.executeBefore;
   }
 
@@ -108,6 +112,7 @@ class _$TradeIntentExecutionPolicy extends TradeIntentExecutionPolicy {
     var _$hash = 0;
     _$hash = $jc(_$hash, orderType.hashCode);
     _$hash = $jc(_$hash, limitPrice.hashCode);
+    _$hash = $jc(_$hash, slippagePercent.hashCode);
     _$hash = $jc(_$hash, executeBefore.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -118,6 +123,7 @@ class _$TradeIntentExecutionPolicy extends TradeIntentExecutionPolicy {
     return (newBuiltValueToStringHelper(r'TradeIntentExecutionPolicy')
           ..add('orderType', orderType)
           ..add('limitPrice', limitPrice)
+          ..add('slippagePercent', slippagePercent)
           ..add('executeBefore', executeBefore))
         .toString();
   }
@@ -137,6 +143,11 @@ class TradeIntentExecutionPolicyBuilder
   String? get limitPrice => _$this._limitPrice;
   set limitPrice(String? limitPrice) => _$this._limitPrice = limitPrice;
 
+  String? _slippagePercent;
+  String? get slippagePercent => _$this._slippagePercent;
+  set slippagePercent(String? slippagePercent) =>
+      _$this._slippagePercent = slippagePercent;
+
   DateTime? _executeBefore;
   DateTime? get executeBefore => _$this._executeBefore;
   set executeBefore(DateTime? executeBefore) =>
@@ -151,6 +162,7 @@ class TradeIntentExecutionPolicyBuilder
     if ($v != null) {
       _orderType = $v.orderType;
       _limitPrice = $v.limitPrice;
+      _slippagePercent = $v.slippagePercent;
       _executeBefore = $v.executeBefore;
       _$v = null;
     }
@@ -177,6 +189,7 @@ class TradeIntentExecutionPolicyBuilder
               orderType, r'TradeIntentExecutionPolicy', 'orderType'),
           limitPrice: BuiltValueNullFieldError.checkNotNull(
               limitPrice, r'TradeIntentExecutionPolicy', 'limitPrice'),
+          slippagePercent: slippagePercent,
           executeBefore: BuiltValueNullFieldError.checkNotNull(
               executeBefore, r'TradeIntentExecutionPolicy', 'executeBefore'),
         );

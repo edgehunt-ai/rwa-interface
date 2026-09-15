@@ -53,11 +53,13 @@ void main() {
         path: '/v1/portfolio/accounts',
         statusCode: 200,
         body: const {
-          'scope': 'internal_ledger',
+          'scope': 'portfolio',
           'items': <Object?>[],
-          'reconciled': true,
+          'data_status': 'empty',
           'freshness': 'live',
-          'blockers': <Object?>[],
+          'calculated_at': '2026-01-01T00:00:00Z',
+          'warnings': <Object?>[],
+          'sources': <Object?>[],
         },
       ),
       ControlledResponse.json(

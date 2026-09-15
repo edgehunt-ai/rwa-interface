@@ -18,9 +18,11 @@ part 'account_balance.g.dart';
 /// * [account] 
 /// * [label] 
 /// * [address] 
+/// * [walletId] - 服务端已验证钱包标识；不接受客户端作为资产所有权输入。
 /// * [chain] 
-/// * [totalValueUsd] - 十进制字符串，避免浮点误差
-/// * [availableUsd] - 十进制字符串，避免浮点误差
+/// * [totalValueUsd] - 该账户已成功估值资产的合计。没有任何资产估值成功时为 `null`， 不得把未估值资产当作零价值计入。 
+/// * [availableUsd] - 该账户可用于下单的金额，语义由 `available_requires_transfer` 限定：  * `available_requires_transfer: false`（venue 账户，如 `hip3`）——   来自 venue 上报的 withdrawable/available collateral，可直接下单； * `available_requires_transfer: true`（钱包账户，如 `app`、`bstocks`）——   钱包中已估值稳定币的小计，下单前必须先 Transfer 到交易账户。   跨链路由存在手续费、gas 与滑点，实际可交割金额以 Funding Plan 询价为准，   该值只是上界近似，不是下单承诺。  来源缺失、报价失败或该账户无可用资产时为 `null`，不得回退为 `\"0\"`。 
+/// * [availableRequiresTransfer] - `available_usd` 是否需要先经 Transfer/Funding Plan 才能用于下单。 venue 账户为 `false`，钱包账户为 `true`。客户端不得把 `true` 的金额 展示为「立即可交易」。 
 /// * [marginUsedUsd] - 十进制字符串，避免浮点误差
 /// * [balances] 
 @BuiltValue()
@@ -35,17 +37,25 @@ abstract class AccountBalance implements Built<AccountBalance, AccountBalanceBui
   @BuiltValueField(wireName: r'address')
   String? get address;
 
+  /// 服务端已验证钱包标识；不接受客户端作为资产所有权输入。
+  @BuiltValueField(wireName: r'wallet_id')
+  String? get walletId;
+
   @BuiltValueField(wireName: r'chain')
   Chain? get chain;
   // enum chainEnum {  BSC,  Arbitrum,  Base,  Ethereum,  Hyperliquid,  Polygon,  Solana,  };
 
-  /// 十进制字符串，避免浮点误差
+  /// 该账户已成功估值资产的合计。没有任何资产估值成功时为 `null`， 不得把未估值资产当作零价值计入。 
   @BuiltValueField(wireName: r'total_value_usd')
   String? get totalValueUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// 该账户可用于下单的金额，语义由 `available_requires_transfer` 限定：  * `available_requires_transfer: false`（venue 账户，如 `hip3`）——   来自 venue 上报的 withdrawable/available collateral，可直接下单； * `available_requires_transfer: true`（钱包账户，如 `app`、`bstocks`）——   钱包中已估值稳定币的小计，下单前必须先 Transfer 到交易账户。   跨链路由存在手续费、gas 与滑点，实际可交割金额以 Funding Plan 询价为准，   该值只是上界近似，不是下单承诺。  来源缺失、报价失败或该账户无可用资产时为 `null`，不得回退为 `\"0\"`。 
   @BuiltValueField(wireName: r'available_usd')
   String? get availableUsd;
+
+  /// `available_usd` 是否需要先经 Transfer/Funding Plan 才能用于下单。 venue 账户为 `false`，钱包账户为 `true`。客户端不得把 `true` 的金额 展示为「立即可交易」。 
+  @BuiltValueField(wireName: r'available_requires_transfer')
+  bool? get availableRequiresTransfer;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'margin_used_usd')
@@ -96,6 +106,13 @@ class _$AccountBalanceSerializer implements PrimitiveSerializer<AccountBalance> 
         specifiedType: const FullType.nullable(String),
       );
     }
+    if (object.walletId != null) {
+      yield r'wallet_id';
+      yield serializers.serialize(
+        object.walletId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     if (object.chain != null) {
       yield r'chain';
       yield serializers.serialize(
@@ -107,14 +124,21 @@ class _$AccountBalanceSerializer implements PrimitiveSerializer<AccountBalance> 
       yield r'total_value_usd';
       yield serializers.serialize(
         object.totalValueUsd,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.availableUsd != null) {
       yield r'available_usd';
       yield serializers.serialize(
         object.availableUsd,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.availableRequiresTransfer != null) {
+      yield r'available_requires_transfer';
+      yield serializers.serialize(
+        object.availableRequiresTransfer,
+        specifiedType: const FullType(bool),
       );
     }
     if (object.marginUsedUsd != null) {
@@ -175,6 +199,14 @@ class _$AccountBalanceSerializer implements PrimitiveSerializer<AccountBalance> 
           if (valueDes == null) continue;
           result.address = valueDes;
           break;
+        case r'wallet_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.walletId = valueDes;
+          break;
         case r'chain':
           final valueDes = serializers.deserialize(
             value,
@@ -198,6 +230,14 @@ class _$AccountBalanceSerializer implements PrimitiveSerializer<AccountBalance> 
           ) as String?;
           if (valueDes == null) continue;
           result.availableUsd = valueDes;
+          break;
+        case r'available_requires_transfer':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.availableRequiresTransfer = valueDes;
           break;
         case r'margin_used_usd':
           final valueDes = serializers.deserialize(

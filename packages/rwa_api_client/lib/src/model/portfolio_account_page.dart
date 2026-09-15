@@ -4,41 +4,55 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
+import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/account_balance.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
+import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'portfolio_account_page.g.dart';
 
-/// 内部账本可能是链上或 venue 外部资产的业务镜像，不能与外部余额双计。 只有已对账且没有 blocker 的余额才可以参与 available-to-trade 计算。 
+/// 当前用户 Portfolio snapshot 的账户分组视图。该视图与 summary/assets 使用同一快照， 不代表可提款余额或下单承诺。 
 ///
 /// Properties:
 /// * [scope] 
 /// * [items] 
-/// * [reconciled] - 是否已与对应的外部资产来源完成对账。
+/// * [dataStatus] 
 /// * [freshness] 
-/// * [blockers] 
+/// * [calculatedAt] 
+/// * [oldestObservationAt] 
+/// * [warnings] 
+/// * [sources] 
 @BuiltValue()
 abstract class PortfolioAccountPage implements Built<PortfolioAccountPage, PortfolioAccountPageBuilder> {
   @BuiltValueField(wireName: r'scope')
   PortfolioAccountPageScopeEnum get scope;
-  // enum scopeEnum {  internal_ledger,  };
+  // enum scopeEnum {  portfolio,  };
 
   @BuiltValueField(wireName: r'items')
   BuiltList<AccountBalance> get items;
 
-  /// 是否已与对应的外部资产来源完成对账。
-  @BuiltValueField(wireName: r'reconciled')
-  bool get reconciled;
+  @BuiltValueField(wireName: r'data_status')
+  PortfolioDataStatus get dataStatus;
+  // enum dataStatusEnum {  complete,  partial,  empty,  };
 
   @BuiltValueField(wireName: r'freshness')
   PortfolioFreshness get freshness;
   // enum freshnessEnum {  live,  cached,  stale,  };
 
-  @BuiltValueField(wireName: r'blockers')
-  BuiltList<PortfolioNotice> get blockers;
+  @BuiltValueField(wireName: r'calculated_at')
+  DateTime get calculatedAt;
+
+  @BuiltValueField(wireName: r'oldest_observation_at')
+  DateTime? get oldestObservationAt;
+
+  @BuiltValueField(wireName: r'warnings')
+  BuiltList<PortfolioNotice> get warnings;
+
+  @BuiltValueField(wireName: r'sources')
+  BuiltList<PortfolioSourceSummary> get sources;
 
   PortfolioAccountPage._();
 
@@ -73,20 +87,37 @@ class _$PortfolioAccountPageSerializer implements PrimitiveSerializer<PortfolioA
       object.items,
       specifiedType: const FullType(BuiltList, [FullType(AccountBalance)]),
     );
-    yield r'reconciled';
+    yield r'data_status';
     yield serializers.serialize(
-      object.reconciled,
-      specifiedType: const FullType(bool),
+      object.dataStatus,
+      specifiedType: const FullType(PortfolioDataStatus),
     );
     yield r'freshness';
     yield serializers.serialize(
       object.freshness,
       specifiedType: const FullType(PortfolioFreshness),
     );
-    yield r'blockers';
+    yield r'calculated_at';
     yield serializers.serialize(
-      object.blockers,
+      object.calculatedAt,
+      specifiedType: const FullType(DateTime),
+    );
+    if (object.oldestObservationAt != null) {
+      yield r'oldest_observation_at';
+      yield serializers.serialize(
+        object.oldestObservationAt,
+        specifiedType: const FullType.nullable(DateTime),
+      );
+    }
+    yield r'warnings';
+    yield serializers.serialize(
+      object.warnings,
       specifiedType: const FullType(BuiltList, [FullType(PortfolioNotice)]),
+    );
+    yield r'sources';
+    yield serializers.serialize(
+      object.sources,
+      specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
     );
   }
 
@@ -125,12 +156,12 @@ class _$PortfolioAccountPageSerializer implements PrimitiveSerializer<PortfolioA
           ) as BuiltList<AccountBalance>;
           result.items.replace(valueDes);
           break;
-        case r'reconciled':
+        case r'data_status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(bool),
-          ) as bool;
-          result.reconciled = valueDes;
+            specifiedType: const FullType(PortfolioDataStatus),
+          ) as PortfolioDataStatus;
+          result.dataStatus = valueDes;
           break;
         case r'freshness':
           final valueDes = serializers.deserialize(
@@ -139,12 +170,34 @@ class _$PortfolioAccountPageSerializer implements PrimitiveSerializer<PortfolioA
           ) as PortfolioFreshness;
           result.freshness = valueDes;
           break;
-        case r'blockers':
+        case r'calculated_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(DateTime),
+          ) as DateTime;
+          result.calculatedAt = valueDes;
+          break;
+        case r'oldest_observation_at':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(DateTime),
+          ) as DateTime?;
+          if (valueDes == null) continue;
+          result.oldestObservationAt = valueDes;
+          break;
+        case r'warnings':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(BuiltList, [FullType(PortfolioNotice)]),
           ) as BuiltList<PortfolioNotice>;
-          result.blockers.replace(valueDes);
+          result.warnings.replace(valueDes);
+          break;
+        case r'sources':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioSourceSummary)]),
+          ) as BuiltList<PortfolioSourceSummary>;
+          result.sources.replace(valueDes);
           break;
         default:
           unhandled.add(key);
@@ -177,8 +230,8 @@ class _$PortfolioAccountPageSerializer implements PrimitiveSerializer<PortfolioA
 
 class PortfolioAccountPageScopeEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'internal_ledger')
-  static const PortfolioAccountPageScopeEnum internalLedger = _$portfolioAccountPageScopeEnum_internalLedger;
+  @BuiltValueEnumConst(wireName: r'portfolio')
+  static const PortfolioAccountPageScopeEnum portfolio = _$portfolioAccountPageScopeEnum_portfolio;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const PortfolioAccountPageScopeEnum unknownDefaultOpenApi = _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi;
 

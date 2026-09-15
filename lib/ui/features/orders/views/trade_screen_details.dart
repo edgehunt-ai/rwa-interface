@@ -1306,10 +1306,7 @@ class MarketHoursSheet extends ConsumerWidget {
                                   title:
                                       segment.label ??
                                       _sessionLabel(l10n, segment.kind),
-                                  schedule: _sessionSchedule(
-                                    segment,
-                                    hours.timezone,
-                                  ),
+                                  schedule: _sessionSchedule(segment),
                                   liquidity: _sessionLiquidity(
                                     segment.kind,
                                     l10n,
@@ -1338,10 +1335,18 @@ String _sessionAsset(MarketSessionKind kind) => switch (kind) {
   _ => 'assets/figma/trade/session_pre_after.svg',
 };
 
-String _sessionSchedule(MarketSessionSegment segment, String timezone) {
+String _sessionSchedule(MarketSessionSegment segment) {
+  final localStart = segment.start.toLocal();
+  final localEnd = segment.end.toLocal();
   String format(DateTime value) =>
       '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
-  return '${format(segment.start)} - ${format(segment.end)} $timezone';
+
+  final offset = localStart.timeZoneOffset;
+  final sign = offset.isNegative ? '-' : '+';
+  final absoluteOffset = offset.abs();
+  final utcOffset =
+      'UTC$sign${absoluteOffset.inHours.toString().padLeft(2, '0')}:${(absoluteOffset.inMinutes % 60).toString().padLeft(2, '0')}';
+  return '${format(localStart)} - ${format(localEnd)} $utcOffset';
 }
 
 String _sessionLiquidity(MarketSessionKind kind, AppLocalizations l10n) =>

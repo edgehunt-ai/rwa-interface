@@ -14,11 +14,15 @@ class _$AccountBalance extends AccountBalance {
   @override
   final String? address;
   @override
+  final String? walletId;
+  @override
   final Chain? chain;
   @override
   final String? totalValueUsd;
   @override
   final String? availableUsd;
+  @override
+  final bool? availableRequiresTransfer;
   @override
   final String? marginUsedUsd;
   @override
@@ -31,9 +35,11 @@ class _$AccountBalance extends AccountBalance {
       {required this.account,
       this.label,
       this.address,
+      this.walletId,
       this.chain,
       this.totalValueUsd,
       this.availableUsd,
+      this.availableRequiresTransfer,
       this.marginUsedUsd,
       required this.balances})
       : super._();
@@ -51,9 +57,11 @@ class _$AccountBalance extends AccountBalance {
         account == other.account &&
         label == other.label &&
         address == other.address &&
+        walletId == other.walletId &&
         chain == other.chain &&
         totalValueUsd == other.totalValueUsd &&
         availableUsd == other.availableUsd &&
+        availableRequiresTransfer == other.availableRequiresTransfer &&
         marginUsedUsd == other.marginUsedUsd &&
         balances == other.balances;
   }
@@ -64,9 +72,11 @@ class _$AccountBalance extends AccountBalance {
     _$hash = $jc(_$hash, account.hashCode);
     _$hash = $jc(_$hash, label.hashCode);
     _$hash = $jc(_$hash, address.hashCode);
+    _$hash = $jc(_$hash, walletId.hashCode);
     _$hash = $jc(_$hash, chain.hashCode);
     _$hash = $jc(_$hash, totalValueUsd.hashCode);
     _$hash = $jc(_$hash, availableUsd.hashCode);
+    _$hash = $jc(_$hash, availableRequiresTransfer.hashCode);
     _$hash = $jc(_$hash, marginUsedUsd.hashCode);
     _$hash = $jc(_$hash, balances.hashCode);
     _$hash = $jf(_$hash);
@@ -79,9 +89,11 @@ class _$AccountBalance extends AccountBalance {
           ..add('account', account)
           ..add('label', label)
           ..add('address', address)
+          ..add('walletId', walletId)
           ..add('chain', chain)
           ..add('totalValueUsd', totalValueUsd)
           ..add('availableUsd', availableUsd)
+          ..add('availableRequiresTransfer', availableRequiresTransfer)
           ..add('marginUsedUsd', marginUsedUsd)
           ..add('balances', balances))
         .toString();
@@ -104,6 +116,10 @@ class AccountBalanceBuilder
   String? get address => _$this._address;
   set address(String? address) => _$this._address = address;
 
+  String? _walletId;
+  String? get walletId => _$this._walletId;
+  set walletId(String? walletId) => _$this._walletId = walletId;
+
   Chain? _chain;
   Chain? get chain => _$this._chain;
   set chain(Chain? chain) => _$this._chain = chain;
@@ -116,6 +132,11 @@ class AccountBalanceBuilder
   String? _availableUsd;
   String? get availableUsd => _$this._availableUsd;
   set availableUsd(String? availableUsd) => _$this._availableUsd = availableUsd;
+
+  bool? _availableRequiresTransfer;
+  bool? get availableRequiresTransfer => _$this._availableRequiresTransfer;
+  set availableRequiresTransfer(bool? availableRequiresTransfer) =>
+      _$this._availableRequiresTransfer = availableRequiresTransfer;
 
   String? _marginUsedUsd;
   String? get marginUsedUsd => _$this._marginUsedUsd;
@@ -138,9 +159,11 @@ class AccountBalanceBuilder
       _account = $v.account;
       _label = $v.label;
       _address = $v.address;
+      _walletId = $v.walletId;
       _chain = $v.chain;
       _totalValueUsd = $v.totalValueUsd;
       _availableUsd = $v.availableUsd;
+      _availableRequiresTransfer = $v.availableRequiresTransfer;
       _marginUsedUsd = $v.marginUsedUsd;
       _balances = $v.balances.toBuilder();
       _$v = null;
@@ -170,9 +193,11 @@ class AccountBalanceBuilder
                 account, r'AccountBalance', 'account'),
             label: label,
             address: address,
+            walletId: walletId,
             chain: chain,
             totalValueUsd: totalValueUsd,
             availableUsd: availableUsd,
+            availableRequiresTransfer: availableRequiresTransfer,
             marginUsedUsd: marginUsedUsd,
             balances: balances.build(),
           );

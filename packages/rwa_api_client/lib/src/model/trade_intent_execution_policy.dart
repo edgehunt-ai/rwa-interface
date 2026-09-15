@@ -13,19 +13,24 @@ part 'trade_intent_execution_policy.g.dart';
 ///
 /// Properties:
 /// * [orderType] 
-/// * [limitPrice] - For long orders this is the maximum price; for short orders it is the minimum price.
-/// * [executeBefore] - Must be no more than 2 hours after intent creation.
+/// * [limitPrice] - Observed reference price for the requested side. The server applies slippage_percent to it and rounds the result to venue precision; the stored protective limit is returned in the TradeIntent response and is the value the worker enforces before submitting. 
+/// * [slippagePercent] - Protective slippage applied to limit_price, defaulting to 1 and restricted to [0, 5]. For long orders the protective limit is raised, for short orders it is lowered. A value of 0 keeps limit_price as an exact bound, which a market that moves at all will not satisfy. 
+/// * [executeBefore] - Must be no more than 2 hours after intent creation. While the protective limit is temporarily out of band the worker retries; it expires the intent at this deadline instead of failing it definitively. 
 @BuiltValue()
 abstract class TradeIntentExecutionPolicy implements Built<TradeIntentExecutionPolicy, TradeIntentExecutionPolicyBuilder> {
   @BuiltValueField(wireName: r'order_type')
   TradeIntentExecutionPolicyOrderTypeEnum get orderType;
   // enum orderTypeEnum {  ioc,  };
 
-  /// For long orders this is the maximum price; for short orders it is the minimum price.
+  /// Observed reference price for the requested side. The server applies slippage_percent to it and rounds the result to venue precision; the stored protective limit is returned in the TradeIntent response and is the value the worker enforces before submitting. 
   @BuiltValueField(wireName: r'limit_price')
   String get limitPrice;
 
-  /// Must be no more than 2 hours after intent creation.
+  /// Protective slippage applied to limit_price, defaulting to 1 and restricted to [0, 5]. For long orders the protective limit is raised, for short orders it is lowered. A value of 0 keeps limit_price as an exact bound, which a market that moves at all will not satisfy. 
+  @BuiltValueField(wireName: r'slippage_percent')
+  String? get slippagePercent;
+
+  /// Must be no more than 2 hours after intent creation. While the protective limit is temporarily out of band the worker retries; it expires the intent at this deadline instead of failing it definitively. 
   @BuiltValueField(wireName: r'execute_before')
   DateTime get executeBefore;
 
@@ -62,6 +67,13 @@ class _$TradeIntentExecutionPolicySerializer implements PrimitiveSerializer<Trad
       object.limitPrice,
       specifiedType: const FullType(String),
     );
+    if (object.slippagePercent != null) {
+      yield r'slippage_percent';
+      yield serializers.serialize(
+        object.slippagePercent,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'execute_before';
     yield serializers.serialize(
       object.executeBefore,
@@ -103,6 +115,14 @@ class _$TradeIntentExecutionPolicySerializer implements PrimitiveSerializer<Trad
             specifiedType: const FullType(String),
           ) as String;
           result.limitPrice = valueDes;
+          break;
+        case r'slippage_percent':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.slippagePercent = valueDes;
           break;
         case r'execute_before':
           final valueDes = serializers.deserialize(

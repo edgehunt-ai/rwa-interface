@@ -86,6 +86,7 @@ final class TradeIntentRepositoryImpl implements TradeIntentRepository {
         (builder) => builder
           ..orderType = api.TradeIntentExecutionPolicyOrderTypeEnum.ioc
           ..limitPrice = policy.limitPrice.value
+          ..slippagePercent = policy.slippagePercent?.value
           ..executeBefore = policy.executeBefore.toUtc(),
       );
 
@@ -100,6 +101,12 @@ final class TradeIntentRepositoryImpl implements TradeIntentRepository {
     executionPolicy: TradeIntentExecutionPolicy(
       limitPrice: DecimalValue(value.executionPolicy.limitPrice, unit: 'price'),
       executeBefore: value.executionPolicy.executeBefore.toUtc(),
+      slippagePercent: value.executionPolicy.slippagePercent == null
+          ? null
+          : DecimalValue(
+              value.executionPolicy.slippagePercent!,
+              unit: 'percent',
+            ),
     ),
     fundingPlanId: value.fundingPlanId,
     transferId: value.transferId,

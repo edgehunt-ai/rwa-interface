@@ -279,8 +279,8 @@ class PortfolioApi {
     );
   }
 
-  /// 内部账本账户余额
-  /// 仅返回 &#x60;internal_ledger&#x60; scope 下的三段式内部账户结构：  * &#x60;app&#x60; —— App 可用余额（聚合账户，入金默认到账处）； * &#x60;bstocks&#x60; —— BSC Wallet，bStocks 现货交易账户； * &#x60;hip3&#x60; —— HIP-3 交易账户（Hyperliquid 保证金）。  内部 ledger 可能是外部资产的业务镜像，不能与链上或 venue 余额双计。 ledger 不可用时不得回退到 Mock，也不得把错误转换为零余额。 
+  /// 按来源分组的资产账户余额
+  /// 返回当前用户 Portfolio snapshot 中按账户类型、网络和钱包地址分组的三段式账户结构：  * &#x60;app&#x60; —— App 可用余额（聚合账户，入金默认到账处）； * &#x60;bstocks&#x60; —— BSC Wallet，bStocks 现货交易账户； * &#x60;hip3&#x60; —— HIP-3 交易账户（Hyperliquid 保证金）。  账户余额来自与 &#x60;/v1/portfolio/summary&#x60; 和 &#x60;/v1/portfolio/assets&#x60; 相同的只读快照， 不读取内部账本，也不把未估值资产伪装为零价值。&#x60;total_value_usd&#x60; 仅汇总已成功估值的资产。 来源失败、缓存或未估值状态通过 &#x60;data_status&#x60;、&#x60;freshness&#x60;、&#x60;warnings&#x60; 和 &#x60;sources&#x60; 表达。  可用余额分两种口径，由每个账户的 &#x60;available_requires_transfer&#x60; 区分：  * venue 账户（&#x60;hip3&#x60;）的 &#x60;available_usd&#x60; 来自 venue 上报的 withdrawable，   可直接下单，并计入 &#x60;/v1/portfolio/summary&#x60; 的 &#x60;available_to_trade_usd&#x60;； * 钱包账户（&#x60;app&#x60;、&#x60;bstocks&#x60;）的 &#x60;available_usd&#x60; 是钱包内已估值稳定币小计，   需先 Transfer 才能下单，**不**计入 &#x60;available_to_trade_usd&#x60;。  因此当用户资产都在链上钱包、交易账户为空时，&#x60;available_to_trade_usd&#x60; 为 &#x60;\&quot;0\&quot;&#x60; 属预期结果：它表示「无需划转即可下单的金额」，而不是「用户总共有多少钱」。 客户端要展示聚合账户余额应读取本接口的 &#x60;app&#x60; 分组。 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation

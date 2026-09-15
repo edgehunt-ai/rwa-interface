@@ -711,6 +711,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           () => ListBuilder<PortfolioNotice>())
       ..addBuilderFactory(
           const FullType(
+              BuiltList, const [const FullType(PortfolioSourceSummary)]),
+          () => ListBuilder<PortfolioSourceSummary>())
+      ..addBuilderFactory(
+          const FullType(
               BuiltList, const [const FullType(AccountDeletionBlocker)]),
           () => ListBuilder<AccountDeletionBlocker>())
       ..addBuilderFactory(

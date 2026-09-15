@@ -131,13 +131,15 @@ final class _Portfolio implements PortfolioService {
   Future<api.PortfolioAccountPage> listAccounts() async =>
       api.PortfolioAccountPage((response) {
         response
-          ..scope = api.PortfolioAccountPageScopeEnum.internalLedger
-          ..reconciled = true
+          ..scope = api.PortfolioAccountPageScopeEnum.portfolio
+          ..dataStatus = api.PortfolioDataStatus.complete
           ..freshness = api.PortfolioFreshness.live;
+        response.calculatedAt = DateTime.utc(2026, 1, 1);
         response.items.add(
           api.AccountBalance(
             (account) => account
               ..account = api.AccountKind.hip3
+              ..availableRequiresTransfer = false
               ..balances.add(
                 api.TokenBalance(
                   (balance) => balance

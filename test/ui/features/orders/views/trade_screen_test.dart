@@ -78,6 +78,15 @@ void main() {
       finder: find.text('US Market Trading Hours'),
     );
     expect(find.text('Regular Market'), findsNWidgets(2));
+    expect(
+      find.text(
+        _localSchedule(
+          DateTime.utc(2026, 1, 1, 14, 30),
+          DateTime.utc(2026, 1, 1, 21),
+        ),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byTooltip('Cancel'));
     await tester.pumpAndSettle();
@@ -692,6 +701,19 @@ void main() {
       expect(repository.cancelledOrderId, 'open-order');
     },
   );
+}
+
+String _localSchedule(DateTime start, DateTime end) {
+  final localStart = start.toLocal();
+  final localEnd = end.toLocal();
+  final offset = localStart.timeZoneOffset;
+  final sign = offset.isNegative ? '-' : '+';
+  final absoluteOffset = offset.abs();
+  String time(DateTime value) =>
+      '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+  return '${time(localStart)} - ${time(localEnd)} '
+      'UTC$sign${absoluteOffset.inHours.toString().padLeft(2, '0')}:'
+      '${(absoluteOffset.inMinutes % 60).toString().padLeft(2, '0')}';
 }
 
 Position _position(MarketProductKind kind) => switch (kind) {
