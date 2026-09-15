@@ -311,10 +311,16 @@ class MarketProductRow extends StatelessWidget {
 }
 
 class MarketAssetMark extends StatelessWidget {
-  const MarketAssetMark({super.key, required this.symbol, this.size = 40});
+  const MarketAssetMark({
+    super.key,
+    required this.symbol,
+    this.size = 40,
+    this.borderRadius,
+  });
 
   final String symbol;
   final double size;
+  final double? borderRadius;
 
   static const _assets = {
     'NVDA': 'assets/figma/home_markets/nvidia.svg',
@@ -338,7 +344,10 @@ class MarketAssetMark extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: colors.surface,
-        shape: BoxShape.circle,
+        shape: borderRadius == null ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: borderRadius == null
+            ? null
+            : BorderRadius.circular(borderRadius!),
         border: Border.all(color: colors.border),
       ),
       child: asset == null

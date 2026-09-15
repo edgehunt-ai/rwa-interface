@@ -8,6 +8,7 @@ import 'package:rwa_interface/data/services/market_search_history_service.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/stock.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
@@ -125,31 +126,26 @@ void main() {
     },
   );
 
-  testWidgets(
-    'all stocks shows remote results after its debounced query resolves',
-    (tester) async {
-      final repository = _ProgressiveMarketsRepository();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-          child: _marketApp(const MarketSearchScreen()),
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('all stocks filters stocks loaded from the stocks endpoint', (
+    tester,
+  ) async {
+    final repository = _ProgressiveMarketsRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
+        child: _marketApp(const MarketSearchScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), 'nv');
-      await tester.pump();
+    await tester.enterText(find.byType(TextField), 'nv');
+    await tester.pump();
 
-      await tester.pump(const Duration(milliseconds: 300));
-      repository.completeSearch();
-      await tester.pumpAndSettle();
+    expect(find.text('NVDA'), findsWidgets);
+    expect(find.text('TSLA'), findsNothing);
+  });
 
-      expect(find.text('NVDA'), findsWidgets);
-      expect(find.text('TSLA'), findsOneWidget);
-    },
-  );
-
-  testWidgets('all stocks hides stale remote results during a new debounce', (
+  testWidgets('all stocks filters locally without requesting product search', (
     tester,
   ) async {
     final repository = _ProgressiveMarketsRepository();
@@ -165,44 +161,40 @@ void main() {
     await tester.pump();
 
     expect(find.text('NVDA'), findsNothing);
+    expect(repository.productQueries, isEmpty);
   });
 
-  for (final searchScreen in <Widget>[
-    const MarketDiscoverySearchScreen(),
-    const MarketSearchScreen(),
-  ]) {
-    testWidgets('${searchScreen.runtimeType} debounces remote searches', (
-      tester,
-    ) async {
-      final repository = _RecordingMarketsRepository();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            marketsRepositoryProvider.overrideWithValue(repository),
-            marketSearchHistoryServiceProvider.overrideWithValue(
-              _MarketSearchHistoryService(),
-            ),
-          ],
-          child: _marketApp(searchScreen),
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('MarketDiscoverySearchScreen debounces remote searches', (
+    tester,
+  ) async {
+    final repository = _RecordingMarketsRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(repository),
+          marketSearchHistoryServiceProvider.overrideWithValue(
+            _MarketSearchHistoryService(),
+          ),
+        ],
+        child: _marketApp(const MarketDiscoverySearchScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), 'n');
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.enterText(find.byType(TextField), 'nv');
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.enterText(find.byType(TextField), 'nvd');
-      await tester.pump(const Duration(milliseconds: 299));
+    await tester.enterText(find.byType(TextField), 'n');
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.enterText(find.byType(TextField), 'nv');
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.enterText(find.byType(TextField), 'nvd');
+    await tester.pump(const Duration(milliseconds: 299));
 
-      expect(repository.queries.whereType<String>(), isEmpty);
+    expect(repository.queries.whereType<String>(), isEmpty);
 
-      await tester.pump(const Duration(milliseconds: 1));
-      await tester.pump();
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
 
-      expect(repository.queries.whereType<String>(), ['nvd']);
-    });
-  }
+    expect(repository.queries.whereType<String>(), ['nvd']);
+  });
 }
 
 Widget _marketApp(Widget home) => MaterialApp(
@@ -257,6 +249,7 @@ final class _MarketsRepository implements MarketsRepository {
 
 final class _ProgressiveMarketsRepository implements MarketsRepository {
   final _searchResults = Completer<DomainPage<MarketProduct>>();
+  final productQueries = <String?>[];
 
   @override
   Future<DomainPage<MarketProduct>> listProducts({
@@ -266,12 +259,23 @@ final class _ProgressiveMarketsRepository implements MarketsRepository {
     dynamic group,
     dynamic productType,
     int? limit,
-  }) => query == null
-      ? Future.value(DomainPage(items: [_product('NVDA', 'NVIDIA')]))
-      : _searchResults.future;
+  }) {
+    productQueries.add(query);
+    return query == null
+        ? Future.value(DomainPage(items: [_product('NVDA', 'NVIDIA')]))
+        : _searchResults.future;
+  }
 
   void completeSearch() => _searchResults.complete(
     DomainPage(items: [_product('NVDA', 'NVIDIA'), _product('TSLA', 'Tesla')]),
+  );
+
+  @override
+  Future<DomainPage<Stock>> listStocks() async => DomainPage(
+    items: [
+      const Stock(symbol: 'NVDA', name: 'NVIDIA', referencePrice: '120'),
+      const Stock(symbol: 'TSLA', name: 'Tesla', referencePrice: '240'),
+    ],
   );
 
   MarketProduct _product(String symbol, String name) => MarketProduct(
@@ -303,6 +307,11 @@ final class _RecordingMarketsRepository implements MarketsRepository {
     queries.add(query);
     return DomainPage(items: [_product('NVDA', 'NVIDIA')]);
   }
+
+  @override
+  Future<DomainPage<Stock>> listStocks() async => const DomainPage(
+    items: [Stock(symbol: 'NVDA', name: 'NVIDIA', referencePrice: '120')],
+  );
 
   MarketProduct _product(String symbol, String name) => MarketProduct(
     symbol: symbol,

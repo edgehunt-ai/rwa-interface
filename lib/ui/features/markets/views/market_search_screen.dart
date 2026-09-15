@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/stock.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
@@ -96,6 +97,9 @@ class _MarketDiscoverySearchScreenState
                 controller: _controller,
                 onChanged: _setQuery,
                 decoration: InputDecoration(
+                  fillColor: Theme.of(context)
+                      .extension<AppRwaColors>()!
+                      .subtleSurface,
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
                     child: SvgPicture.asset(
@@ -255,9 +259,15 @@ class _MarketDiscoverySearchScreenState
 
   Widget _browseAllButton() => TextButton(
     onPressed: () => context.pushNamed(AppRoutes.allStocksName),
-    child: Align(
+    style: TextButton.styleFrom(
+      padding: EdgeInsets.zero,
+      minimumSize: const Size(0, 44),
       alignment: Alignment.centerLeft,
-      child: Text(AppLocalizations.of(context).browseAllStocks),
+    ),
+    child: Text(
+      '${AppLocalizations.of(context).browseAllStocks}  ›',
+      style: Theme.of(context).textTheme.labelLarge
+          ?.copyWith(fontWeight: FontWeight.w600),
     ),
   );
 
@@ -327,50 +337,18 @@ List<MarketProduct> _mergeProducts(
 }
 
 class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
-  static const _searchDebounceDuration = Duration(milliseconds: 300);
-
-  String query = '';
-  String _remoteQuery = '';
   final _controller = TextEditingController();
-  final _scrollController = ScrollController();
-  Timer? _searchDebounce;
-  final _additionalProducts = <MarketProduct>[];
-  String? _nextCursor;
-  bool _hasLoadedAdditionalPage = false;
-  bool _loadingMore = false;
+  String query = '';
 
   @override
   void dispose() {
-    _searchDebounce?.cancel();
     _controller.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final catalog = ref.watch(
-      marketProductsProvider((
-        query: null,
-        cursor: null,
-        group: 'hot',
-        productType: null,
-      )),
-    );
-    final AsyncValue<DomainPage<MarketProduct>> products =
-        _searchDebounce?.isActive ?? false
-        ? const AsyncLoading()
-        : ref.watch(
-            marketProductsProvider((
-              query: _remoteQuery.isEmpty ? null : _remoteQuery,
-              cursor: null,
-              group: 'hot',
-              productType: null,
-            )),
-          );
-    final localProducts = query.isEmpty
-        ? const <MarketProduct>[]
-        : _localSearch(catalog.asData?.value.items ?? const [], query);
+    final stocksState = ref.watch(marketStocksProvider);
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
@@ -405,8 +383,11 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _controller,
-                    onChanged: _setQuery,
+                    onChanged: (value) => setState(() => query = value),
                     decoration: InputDecoration(
+                      fillColor: Theme.of(context)
+                          .extension<AppRwaColors>()!
+                          .subtleSurface,
                       prefixIcon: Padding(
                         padding: const EdgeInsets.all(12),
                         child: SvgPicture.asset(
@@ -422,7 +403,7 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                               tooltip: l10n.clearSearch,
                               onPressed: () {
                                 _controller.clear();
-                                _setQuery('');
+                                setState(() => query = '');
                               },
                               icon: const Icon(Icons.close),
                             ),
@@ -435,41 +416,37 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
               ),
             ),
             Expanded(
-              child: products.when(
-                loading: () => localProducts.isNotEmpty
-                    ? _stockList(
-                        allProducts: localProducts,
-                        showRemoteSkeleton: true,
-                      )
-                    : DesignStateFeedback(
-                        state: DesignState.loading,
-                        title: l10n.loadingStocks,
-                      ),
-                error: (_, _) => localProducts.isNotEmpty
-                    ? _stockList(allProducts: localProducts)
-                    : DesignStateFeedback(
-                        state: DesignState.failure,
-                        title: l10n.stocksUnavailable,
-                        message: l10n.marketCatalogUnavailable,
-                        onRetry: () => ref.refresh(
-                          marketProductsProvider((
-                            query: query.isEmpty ? null : query,
-                            cursor: null,
-                            group: 'hot',
-                            productType: null,
-                          )).future,
-                        ),
-                      ),
+              child: stocksState.when(
+                loading: () => DesignStateFeedback(
+                  state: DesignState.loading,
+                  title: l10n.loadingStocks,
+                ),
+                error: (_, _) => DesignStateFeedback(
+                  state: DesignState.failure,
+                  title: l10n.stocksUnavailable,
+                  message: l10n.marketCatalogUnavailable,
+                  onRetry: () => ref.refresh(marketStocksProvider.future),
+                ),
                 data: (page) {
-                  final remoteProducts = [
-                    ...page.items,
-                    ..._additionalProducts,
-                  ];
-                  return _stockList(
-                    allProducts: query.isEmpty
-                        ? remoteProducts
-                        : _mergeProducts(localProducts, remoteProducts),
-                    firstPage: page,
+                  final stocks = _filterStocks(page.items, query);
+                  if (stocks.isEmpty) {
+                    return DesignStateFeedback(
+                      state: DesignState.empty,
+                      title: l10n.noStocksFound,
+                      message: l10n.tryAnotherTickerOrCompany,
+                    );
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: stocks.length,
+                    separatorBuilder: (_, _) => Divider(
+                      height: 1,
+                      color: Theme.of(context)
+                          .extension<AppRwaColors>()!
+                          .border,
+                    ),
+                    itemBuilder: (_, index) =>
+                        _StockBrowseRow(stock: stocks[index]),
                   );
                 },
               ),
@@ -479,169 +456,40 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
       ),
     );
   }
-
-  Widget _stockList({
-    required List<MarketProduct> allProducts,
-    DomainPage<MarketProduct>? firstPage,
-    bool showRemoteSkeleton = false,
-  }) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final l10n = AppLocalizations.of(context);
-    final stocks = _stockRows(allProducts);
-    if (stocks.isEmpty) {
-      return DesignStateFeedback(
-        state: DesignState.empty,
-        title: l10n.noStocksFound,
-        message: l10n.tryAnotherTickerOrCompany,
-      );
-    }
-    final headerCount = query.isEmpty ? 0 : 1;
-    final showFooter = _loadingMore || showRemoteSkeleton;
-    final itemCount = headerCount + stocks.length + (showFooter ? 1 : 0);
-    if (firstPage != null && !showRemoteSkeleton) {
-      _scheduleLoadForUnderfilledViewport(firstPage);
-    }
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (firstPage != null &&
-            !showRemoteSkeleton &&
-            notification.metrics.extentAfter < 240) {
-          _loadNextPage(firstPage);
-        }
-        return false;
-      },
-      child: ListView.separated(
-        controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: itemCount,
-        separatorBuilder: (_, _) => Divider(height: 1, color: colors.border),
-        itemBuilder: (_, index) {
-          if (query.isNotEmpty && index == 0) {
-            return SizedBox(
-              height: 24,
-              child: Text(
-                l10n.searchResultCount(stocks.length),
-                style: TextStyle(color: colors.tertiaryText),
-              ),
-            );
-          }
-          if (showFooter && index == itemCount - 1) {
-            return showRemoteSkeleton
-                ? const LoadingSkeleton(
-                    rows: 2,
-                    padding: EdgeInsets.only(top: 12, bottom: 20),
-                  )
-                : const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-          }
-          final product = stocks[index - headerCount];
-          return _StockBrowseRow(product: product, allProducts: allProducts);
-        },
-      ),
-    );
-  }
-
-  void _setQuery(String value) {
-    if (value == query) return;
-    _searchDebounce?.cancel();
-    setState(() {
-      query = value;
-      if (value.isEmpty) _remoteQuery = '';
-      _additionalProducts.clear();
-      _nextCursor = null;
-      _hasLoadedAdditionalPage = false;
-      _loadingMore = false;
-    });
-    if (value.isEmpty) return;
-    _searchDebounce = Timer(_searchDebounceDuration, () {
-      if (!mounted) return;
-      setState(() => _remoteQuery = query);
-    });
-  }
-
-  Future<void> _loadNextPage(DomainPage<MarketProduct> firstPage) async {
-    final cursor = _hasLoadedAdditionalPage
-        ? _nextCursor
-        : firstPage.nextCursor;
-    if (_loadingMore || cursor == null) return;
-
-    final requestedQuery = _remoteQuery;
-    setState(() => _loadingMore = true);
-    try {
-      final nextPage = await ref.read(
-        marketProductsProvider((
-          query: requestedQuery.isEmpty ? null : requestedQuery,
-          cursor: cursor,
-          group: 'hot',
-          productType: null,
-        )).future,
-      );
-      if (!mounted || query != requestedQuery) return;
-      setState(() {
-        _additionalProducts.addAll(nextPage.items);
-        _nextCursor = nextPage.nextCursor;
-        _hasLoadedAdditionalPage = true;
-        _loadingMore = false;
-      });
-    } catch (_) {
-      if (mounted && query == requestedQuery) {
-        setState(() => _loadingMore = false);
-      }
-    }
-  }
-
-  void _scheduleLoadForUnderfilledViewport(
-    DomainPage<MarketProduct> firstPage,
-  ) {
-    final cursor = _hasLoadedAdditionalPage
-        ? _nextCursor
-        : firstPage.nextCursor;
-    if (_loadingMore || cursor == null) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          _loadingMore ||
-          !_scrollController.hasClients ||
-          _scrollController.position.maxScrollExtent > 0) {
-        return;
-      }
-      _loadNextPage(firstPage);
-    });
-  }
 }
 
-List<MarketProduct> _stockRows(List<MarketProduct> products) {
-  final firstBySymbol = <String, MarketProduct>{};
-  for (final product in products) {
-    firstBySymbol.putIfAbsent(product.symbol, () => product);
-  }
-  return firstBySymbol.values.toList(growable: false);
+List<Stock> _filterStocks(List<Stock> stocks, String query) {
+  final normalizedQuery = query.trim().toLowerCase();
+  if (normalizedQuery.isEmpty) return stocks;
+  return stocks
+      .where(
+        (stock) =>
+            stock.symbol.toLowerCase().contains(normalizedQuery) ||
+            stock.name.toLowerCase().contains(normalizedQuery),
+      )
+      .toList(growable: false);
 }
 
 class _StockBrowseRow extends StatelessWidget {
-  const _StockBrowseRow({required this.product, required this.allProducts});
+  const _StockBrowseRow({required this.stock});
 
-  final MarketProduct product;
-  final List<MarketProduct> allProducts;
+  final Stock stock;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final kinds = allProducts
-        .where((candidate) => candidate.symbol == product.symbol)
-        .map((candidate) => candidate.kind)
-        .toSet();
     return Semantics(
       button: true,
-      label: '${product.symbol}, ${product.name}',
+      label: '${stock.symbol}, ${stock.name}',
       child: InkWell(
-        onTap: () {},
+        onTap: () => context.push(
+          AppRoutes.tradeLocation(symbol: stock.symbol, kind: 'bstock'),
+        ),
         child: SizedBox(
           height: 68,
           child: Row(
             children: [
-              MarketAssetMark(symbol: product.symbol),
+              MarketAssetMark(symbol: stock.symbol, borderRadius: 12),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -649,30 +497,22 @@ class _StockBrowseRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      product.symbol,
+                      stock.symbol,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      product.name,
+                      stock.name,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: colors.secondaryText),
                     ),
                   ],
                 ),
               ),
-              if (kinds.contains(MarketProductKind.bstock))
-                SvgPicture.asset(
-                  'assets/figma/home_markets/venue_bnb.svg',
-                  width: 20,
-                  height: 20,
-                ),
-              if (kinds.length == 2) const SizedBox(width: 8),
-              if (kinds.contains(MarketProductKind.perp))
-                SvgPicture.asset(
-                  'assets/figma/home_markets/venue_hyperliquid.svg',
-                  width: 20,
-                  height: 20,
-                ),
+              SvgPicture.asset(
+                'assets/figma/home_markets/venue_bnb.svg',
+                width: 20,
+                height: 20,
+              ),
               const SizedBox(width: 8),
               SvgPicture.asset(
                 'assets/figma/home_markets/chevron_right.svg',
