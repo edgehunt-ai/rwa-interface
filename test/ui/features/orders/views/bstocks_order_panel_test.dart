@@ -206,12 +206,12 @@ void main() {
       ),
     );
 
-    expect(find.byKey(const Key('bstocks-balance-skeleton')), findsOneWidget);
+    expect(find.byKey(const Key('bstocks-balance-loading')), findsOneWidget);
     expect(find.text('—'), findsNothing);
 
     balance.complete(DecimalValue('0', asset: 'USD', unit: 'fiat'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('bstocks-balance-skeleton')), findsNothing);
+    expect(find.byKey(const Key('bstocks-balance-loading')), findsNothing);
     expect(find.text(r'$0'), findsOneWidget);
   });
 

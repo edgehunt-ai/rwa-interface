@@ -61,6 +61,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     side = widget.initialSide;
     amount.addListener(_refreshAmount);
     limitPrice.addListener(_scheduleQuote);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.invalidate(bstocksOrderAvailableBalanceProvider);
+      }
+    });
   }
 
   void _refreshAmount() {
@@ -490,11 +495,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         if (balanceLoading)
-                          const SkeletonBlock(
-                            key: Key('bstocks-balance-skeleton'),
-                            width: 56,
-                            height: 12,
-                            radius: 4,
+                          const SizedBox(
+                            key: Key('bstocks-balance-loading'),
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              value: 0.25,
+                              strokeWidth: 2,
+                            ),
                           )
                         else
                           Text(

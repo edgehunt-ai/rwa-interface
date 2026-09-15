@@ -78,7 +78,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       controller.addListener(_scheduleQuote);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadContext();
+      if (mounted) {
+        ref.invalidate(hip3OrderAvailableBalanceProvider);
+        _loadContext();
+      }
     });
   }
 
@@ -1320,14 +1323,25 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                         color: colors.secondaryText,
                       ),
                     ),
-                    Text(
-                      AppLocalizations.of(context)
-                          .marginValue(availableMargin ?? '—'),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                    if (availableMargin == null)
+                      const SizedBox(
+                        key: Key('hip3-margin-loading'),
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          value: 0.25,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    else
+                      Text(
+                        AppLocalizations.of(context)
+                            .marginValue(availableMargin!),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
                   ],
                 ),
                 SizedBox(
