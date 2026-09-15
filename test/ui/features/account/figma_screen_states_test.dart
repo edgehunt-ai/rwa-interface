@@ -159,7 +159,7 @@ void main() {
     expect(find.text('0 B'), findsOneWidget);
   });
 
-  testWidgets('logout routes from settings to login', (tester) async {
+  testWidgets('logout routes from settings to home', (tester) async {
     final identity = FakeIdentityAuthGateway();
     final session = _SessionRepository();
     final router = AppRouter.create(initialLocation: '/settings');
@@ -198,7 +198,7 @@ void main() {
 
     expect(session.endCalls, 1);
     expect(identity.logoutCalls, 1);
-    expect(find.text('Sign up or log in to start exploring'), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, '/');
   });
 
   testWidgets('requests account deletion after confirmation', (tester) async {

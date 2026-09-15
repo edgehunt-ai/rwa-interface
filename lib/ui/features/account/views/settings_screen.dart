@@ -240,7 +240,7 @@ class SettingsScreen extends ConsumerWidget {
               }
               final router = context.mounted ? GoRouter.maybeOf(context) : null;
               if (router != null) {
-                router.goNamed(AppRoutes.loginName);
+                router.goNamed(AppRoutes.homeName);
               }
             },
             child: Text(l10n.settingsLogOut),
