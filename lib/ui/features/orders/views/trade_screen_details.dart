@@ -42,67 +42,69 @@ class _Details extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Fixed-width tabs packed from the left, per the Figma ranking tabs.
         SizedBox(
-          height: 50,
-          width: double.infinity,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final tabWidth = constraints.maxWidth / tabs.length;
-              return Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOutCubic,
-                    left:
-                        tabs.indexOf(activeTab) * tabWidth +
-                        (tabWidth - 32) / 2,
-                    bottom: 8,
-                    width: 32,
-                    height: 2,
-                    child: const ColoredBox(color: Color(0xFFFF5BD6)),
-                  ),
-                  Row(
-                    children: [
-                      for (final tab in tabs)
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => onChanged(tab),
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 180),
-                                curve: Curves.easeOutCubic,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: activeTab == tab
-                                      ? colors.primaryText
-                                      : colors.secondaryText,
-                                  fontWeight: activeTab == tab
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                ),
-                                child: _TradeTabLabel(
-                                  tab,
-                                  count: switch (tab) {
-                                    'Open' => openCount,
-                                    'Position' => positionCount,
-                                    _ => null,
-                                  },
-                                ),
-                              ),
+          height: 32,
+          child: Row(
+            children: [
+              for (final tab in tabs) ...[
+                if (tab != tabs.first) const SizedBox(width: 4),
+                SizedBox(
+                  width: 68,
+                  child: TextButton(
+                    onPressed: () => onChanged(tab),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 18 / 13,
+                            color: activeTab == tab
+                                ? colors.primaryText
+                                : colors.secondaryText,
+                            fontWeight: activeTab == tab
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                          ),
+                          child: _TradeTabLabel(
+                            tab,
+                            count: switch (tab) {
+                              'Open' => openCount,
+                              'Position' => positionCount,
+                              _ => null,
+                            },
+                          ),
+                        ),
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutCubic,
+                          opacity: activeTab == tab ? 1 : 0,
+                          child: Container(
+                            width: 24,
+                            height: 2,
+                            decoration: BoxDecoration(
+                              color: colors.selected,
+                              borderRadius: BorderRadius.circular(1),
                             ),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
-              );
-            },
+                ),
+              ],
+            ],
           ),
         ),
+        const SizedBox(height: 8),
         if (activeTab == 'Open' && kind == MarketProductKind.perp)
           Hip3OpenOrdersPanel(
             key: ValueKey('hip3-open-$symbol'),
@@ -1275,6 +1277,15 @@ class MarketHoursSheet extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  Text(
+                    l10n.tradeMarketHoursDisclaimer,
+                    style: TextStyle(
+                      fontSize: 15,
+                      height: 22 / 15,
+                      color: colors.secondaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   state.when(
                     loading: () => const LoadingSkeleton(rows: 5),
                     error: (_, _) => DesignStateFeedback(
@@ -1283,39 +1294,40 @@ class MarketHoursSheet extends ConsumerWidget {
                       message: l10n.marketHoursRefreshHint,
                       onRetry: () => ref.refresh(marketHoursProvider.future),
                     ),
-                    data: (hours) => hours.segments.isEmpty
-                        ? EmptyState(
-                            title: l10n.marketHoursUnavailable,
-                            description: l10n.noMarketSessionData,
-                          )
-                        : Column(
-                            children: [
-                              Text(
-                                hours.currentDescription ??
-                                    hours.currentLabel ??
-                                    _sessionLabel(l10n, hours.current),
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: colors.secondaryText,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              for (final segment in hours.segments)
-                                _MarketSession(
-                                  asset: _sessionAsset(segment.kind),
-                                  title:
-                                      segment.label ??
-                                      _sessionLabel(l10n, segment.kind),
-                                  schedule: _sessionSchedule(segment),
-                                  liquidity: _sessionLiquidity(
-                                    segment.kind,
-                                    l10n,
-                                  ),
-                                  activeBars: _sessionBars(segment.kind),
-                                  liquidityTone: _sessionTone(segment.kind),
-                                ),
-                            ],
-                          ),
+                    data: (hours) {
+                      final todaySegments = _marketSegmentsForToday(
+                        hours.segments,
+                      );
+                      if (todaySegments.isEmpty) {
+                        return EmptyState(
+                          title: l10n.marketHoursUnavailable,
+                          description: l10n.noMarketSessionData,
+                        );
+                      }
+                      final live = currentMarketSegment(hours);
+                      return Column(
+                        children: [
+                          for (final segment in todaySegments)
+                            _MarketSession(
+                              asset: marketSessionAsset(segment.kind),
+                              title:
+                                  segment.label ??
+                                  marketSessionLabel(l10n, segment.kind),
+                              schedule: _sessionSchedule(segment),
+                              liquidity: _sessionLiquidity(segment.kind, l10n),
+                              activeBars: _sessionBars(segment.kind),
+                              liquidityTone: _sessionTone(segment.kind),
+                              isCurrent: identical(segment, live),
+                              // Once the market is open there is nothing left
+                              // to count down to.
+                              opensAt:
+                                  hours.current == MarketSessionKind.regular
+                                  ? null
+                                  : hours.nextTransitionAt ?? segment.end,
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -1327,14 +1339,20 @@ class MarketHoursSheet extends ConsumerWidget {
   }
 }
 
-String _sessionAsset(MarketSessionKind kind) => switch (kind) {
-  MarketSessionKind.regular => 'assets/figma/trade/session_regular.svg',
-  MarketSessionKind.overnight =>
-    'assets/figma/trade/session_overnight_moon.svg',
-  MarketSessionKind.weekend ||
-  MarketSessionKind.holiday => 'assets/figma/trade/session_closed.svg',
-  _ => 'assets/figma/trade/session_pre_after.svg',
-};
+List<MarketSessionSegment> _marketSegmentsForToday(
+  List<MarketSessionSegment> segments,
+) {
+  final now = DateTime.now();
+  final startOfToday = DateTime(now.year, now.month, now.day);
+  final startOfTomorrow = startOfToday.add(const Duration(days: 1));
+  return segments
+      .where(
+        (segment) =>
+            segment.end.isAfter(startOfToday) &&
+            segment.start.isBefore(startOfTomorrow),
+      )
+      .toList(growable: false);
+}
 
 String _sessionSchedule(MarketSessionSegment segment) {
   final localStart = segment.start.toLocal();
@@ -1378,6 +1396,8 @@ class _MarketSession extends StatelessWidget {
     required this.liquidity,
     required this.activeBars,
     required this.liquidityTone,
+    this.isCurrent = false,
+    this.opensAt,
   });
 
   final String asset;
@@ -1387,10 +1407,17 @@ class _MarketSession extends StatelessWidget {
   final int activeBars;
   final _LiquidityTone liquidityTone;
 
+  /// The session the market is in right now, marked with a rule at the sheet
+  /// edge and a countdown to the session that follows it.
+  final bool isCurrent;
+
+  /// When the market next opens, or null while it is already open.
+  final DateTime? opensAt;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Container(
+    final row = Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -1435,11 +1462,129 @@ class _MarketSession extends StatelessWidget {
                   schedule,
                   style: TextStyle(fontSize: 12, color: colors.secondaryText),
                 ),
+                if (isCurrent &&
+                    opensAt != null &&
+                    opensAt!.isAfter(DateTime.now())) ...[
+                  const SizedBox(height: 4),
+                  _SessionCountdown(opensAt: opensAt!),
+                ],
               ],
             ),
           ),
         ],
       ),
+    );
+    if (!isCurrent) return row;
+    return Stack(
+      // The rule sits flush with the sheet edge, outside its 20px padding.
+      clipBehavior: Clip.none,
+      children: [
+        row,
+        Positioned(
+          left: -20,
+          top: 0,
+          bottom: 0,
+          child: Center(
+            child: Container(
+              key: const Key('market-hours-current-session'),
+              width: 4,
+              height: 48,
+              decoration: BoxDecoration(
+                color: colors.primaryAction,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Live countdown to the next US market open.
+///
+/// One timer drives a single [Text]: the tick writes into a [ValueNotifier]
+/// rather than calling `setState`, and skips the write when the rendered
+/// string has not changed, so a second passing never rebuilds the sheet.
+class _SessionCountdown extends StatefulWidget {
+  const _SessionCountdown({required this.opensAt});
+
+  final DateTime opensAt;
+
+  @override
+  State<_SessionCountdown> createState() => _SessionCountdownState();
+}
+
+class _SessionCountdownState extends State<_SessionCountdown> {
+  final _remaining = ValueNotifier<String>('');
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  @override
+  void didUpdateWidget(_SessionCountdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.opensAt != oldWidget.opensAt) _tick();
+  }
+
+  void _tick() {
+    final left = widget.opensAt.difference(DateTime.now());
+    if (left.isNegative) {
+      _ticker?.cancel();
+      _ticker = null;
+    }
+    final clamped = left.isNegative ? Duration.zero : left;
+    String pad(int value) => value.toString().padLeft(2, '0');
+    _remaining.value =
+        '${pad(clamped.inHours)}:'
+        '${pad(clamped.inMinutes % 60)}:'
+        '${pad(clamped.inSeconds % 60)}';
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    _remaining.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ValueListenableBuilder<String>(
+          valueListenable: _remaining,
+          builder: (context, countdown, _) => Text(
+            l10n.tradeMarketOpensIn(countdown),
+            style: TextStyle(
+              fontSize: 12,
+              height: 16 / 12,
+              fontWeight: FontWeight.w600,
+              color: colors.primaryText,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colors.primaryAction,
+            boxShadow: const [
+              BoxShadow(color: Color(0x1A000000), spreadRadius: 3),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
