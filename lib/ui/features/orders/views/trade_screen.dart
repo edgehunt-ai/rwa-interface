@@ -256,19 +256,21 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       _toggleFavorite(productRef, isFavorite),
                 ),
                 const SizedBox(height: 12),
-                _Chart(
-                  style: chartStyle,
-                  range: chartRange,
-                  candles: candles,
-                  loading: candlesState.isLoading,
-                  onStyleChanged: (next) => setState(() => chartStyle = next),
-                  onRangeChanged: (next) => setState(() {
-                    chartRange = next;
-                    chartSelection = null;
-                  }),
-                  selectedCandle: chartSelection,
-                  onSelectionChanged: (next) =>
-                      setState(() => chartSelection = next),
+                RepaintBoundary(
+                  child: _Chart(
+                    style: chartStyle,
+                    range: chartRange,
+                    candles: candles,
+                    loading: candlesState.isLoading,
+                    onStyleChanged: (next) => setState(() => chartStyle = next),
+                    onRangeChanged: (next) => setState(() {
+                      chartRange = next;
+                      chartSelection = null;
+                    }),
+                    selectedCandle: chartSelection,
+                    onSelectionChanged: (next) =>
+                        setState(() => chartSelection = next),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 _Statistics(

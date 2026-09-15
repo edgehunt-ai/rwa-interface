@@ -570,7 +570,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   ),
                   const SizedBox(height: 16),
                 ],
-                const SizedBox(height: 12),
+                if (_reduceOnly) const SizedBox(height: 12),
                 _Hip3ModeLeverageCard(
                   marginMode: _marginMode,
                   leverage: _leverage,
