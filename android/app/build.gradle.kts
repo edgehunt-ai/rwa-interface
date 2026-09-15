@@ -35,6 +35,25 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+        val storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+        val keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+        val keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+        if (!keystorePath.isNullOrBlank() &&
+            !storePassword.isNullOrBlank() &&
+            !keyAlias.isNullOrBlank() &&
+            !keyPassword.isNullOrBlank()
+        ) {
+            create("release") {
+                storeFile = file(keystorePath)
+                this.storePassword = storePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -43,9 +62,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (
+                !System.getenv("ANDROID_KEYSTORE_PATH").isNullOrBlank()
+            ) {
+                signingConfigs.getByName("release")
+            } else {
+                // Keep local `flutter run --release` usable without credentials.
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
