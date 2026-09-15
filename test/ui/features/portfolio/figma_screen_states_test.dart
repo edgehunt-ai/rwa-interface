@@ -120,7 +120,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Assets'), findsWidgets);
+    final title = find.text('Assets').first;
+    expect(title, findsOneWidget);
+    expect(tester.widget<Text>(title).style?.fontSize, 28);
+    expect(tester.getTopLeft(title).dy, 28);
     expect(find.byType(SkeletonBlock), findsWidgets);
     summary.complete(
       Portfolio(

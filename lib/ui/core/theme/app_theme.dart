@@ -145,8 +145,8 @@ abstract final class AppTheme {
     // back to the larger/default platform scale.
     final textTheme = const TextTheme(
       headlineMedium: TextStyle(
-        fontSize: 26,
-        height: 34 / 26,
+        fontSize: 28,
+        height: 36 / 28,
         fontWeight: FontWeight.w600,
       ),
       titleLarge: TextStyle(

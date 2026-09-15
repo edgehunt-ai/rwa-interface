@@ -46,7 +46,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
             child: DesignStateFeedback(
               state: DesignState.loading,
               title: AppLocalizations.of(context).loadingAssets,
@@ -81,7 +81,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
               child: Text(
                 l10n.assetsTitle,
                 style: Theme.of(context).textTheme.headlineMedium,
@@ -280,7 +280,7 @@ class _LoggedOutAssets extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
       children: [
         Text(
           l10n.assetsTitle,
