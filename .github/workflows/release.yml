@@ -169,7 +169,9 @@ jobs:
             fi
           done
           keystore_path="$RUNNER_TEMP/rwa-interface-release.jks"
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore_path"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" |
+            tr -d '[:space:]' |
+            base64 --decode > "$keystore_path"
           test -s "$keystore_path"
           {
             echo "ANDROID_KEYSTORE_PATH=$keystore_path"
