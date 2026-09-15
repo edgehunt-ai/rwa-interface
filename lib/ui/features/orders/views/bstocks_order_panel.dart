@@ -498,11 +498,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                         if (balanceLoading)
                           const SizedBox(
                             key: Key('bstocks-balance-loading'),
-                            width: 16,
-                            height: 16,
+                            width: 12,
+                            height: 12,
                             child: CircularProgressIndicator(
                               value: 0.25,
-                              strokeWidth: 2,
+                              strokeWidth: 1.5,
                             ),
                           )
                         else
