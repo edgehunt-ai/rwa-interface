@@ -182,6 +182,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     // afterwards and leaves `_favoriteBusy` stuck true forever.
     ref.watch(favoritesCommandProvider);
     final snapshotState = ref.watch(marketSnapshotProvider(productRef));
+    final marketHours = ref.watch(marketHoursProvider).value;
     final candlesState = ref.watch(
       marketCandlesProvider((product: productRef, range: chartRange)),
     );
@@ -223,6 +224,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
               children: [
                 _NavigationBar(
                   symbol: symbol,
+                  marketHours: marketHours,
                   onMarketHours: () => setState(() => marketHoursOpen = true),
                 ),
                 const SizedBox(height: 16),
@@ -305,14 +307,18 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 }
 
 class _NavigationBar extends StatelessWidget {
-  const _NavigationBar({required this.symbol, required this.onMarketHours});
+  const _NavigationBar({
+    required this.symbol,
+    required this.marketHours,
+    required this.onMarketHours,
+  });
 
   final String symbol;
+  final MarketHours? marketHours;
   final VoidCallback onMarketHours;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final underlying = _underlyingSymbol(symbol);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -333,6 +339,7 @@ class _NavigationBar extends StatelessWidget {
               children: [
                 Text(underlying, style: TextStyle(fontWeight: FontWeight.w600)),
                 GestureDetector(
+                  key: const Key('trade-market-status-navigation'),
                   onTap: onMarketHours,
                   child: Row(
                     children: [
@@ -352,20 +359,9 @@ class _NavigationBar extends StatelessWidget {
                             color: const Color(0xFFDCEBFA),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.nightlight_round,
-                                size: 16,
-                                color: Color(0xFF2690E6),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                l10n.overnightAt('04:30'),
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ],
+                          child: _MarketStatusContent(
+                            hours: marketHours,
+                            fontSize: 12,
                           ),
                         ),
                       ] else
@@ -384,6 +380,72 @@ class _NavigationBar extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MarketStatusContent extends StatelessWidget {
+  const _MarketStatusContent({required this.hours, required this.fontSize});
+
+  final MarketHours? hours;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final value = hours;
+    if (value == null) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.schedule, size: 16),
+          const SizedBox(width: 4),
+          Text(l10n.marketHours, style: TextStyle(fontSize: fontSize)),
+        ],
+      );
+    }
+
+    final segment = _currentMarketSegment(value);
+    final transition = value.nextTransitionAt ?? segment?.end;
+    final label =
+        segment?.label ??
+        value.currentLabel ??
+        _sessionLabel(l10n, value.current);
+    final text = transition == null
+        ? label
+        : '$label ${_formatLocalTime(transition)}';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SvgPicture.asset(
+          _sessionAsset(value.current),
+          key: ValueKey('market-status-icon-${value.current.name}'),
+          width: 20,
+          height: 20,
+        ),
+        const SizedBox(width: 4),
+        Text(text, style: TextStyle(fontSize: fontSize)),
+      ],
+    );
+  }
+}
+
+MarketSessionSegment? _currentMarketSegment(MarketHours hours) {
+  final now = DateTime.now().toUtc();
+  return hours.segments
+          .where((segment) => segment.kind == hours.current)
+          .where(
+            (segment) =>
+                !now.isBefore(segment.start) && now.isBefore(segment.end),
+          )
+          .firstOrNull ??
+      hours.segments
+          .where((segment) => segment.kind == hours.current)
+          .firstOrNull;
+}
+
+String _formatLocalTime(DateTime value) {
+  final local = value.toLocal();
+  return '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
 }
 
 class _ProductSwitch extends StatelessWidget {
@@ -528,6 +590,7 @@ class _ProductHeader extends StatelessWidget {
             const Icon(Icons.arrow_drop_down, size: 20),
             const SizedBox(width: 8),
             GestureDetector(
+              key: const Key('trade-market-status-header'),
               onTap: onMarketHours,
               child: Container(
                 height: 28,

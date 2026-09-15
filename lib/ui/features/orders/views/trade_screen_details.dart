@@ -1329,7 +1329,8 @@ class MarketHoursSheet extends ConsumerWidget {
 
 String _sessionAsset(MarketSessionKind kind) => switch (kind) {
   MarketSessionKind.regular => 'assets/figma/trade/session_regular.svg',
-  MarketSessionKind.overnight => 'assets/figma/trade/session_overnight.svg',
+  MarketSessionKind.overnight =>
+    'assets/figma/trade/session_overnight_moon.svg',
   MarketSessionKind.weekend ||
   MarketSessionKind.holiday => 'assets/figma/trade/session_closed.svg',
   _ => 'assets/figma/trade/session_pre_after.svg',

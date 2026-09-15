@@ -69,7 +69,7 @@ void main() {
     await tester.tap(find.byTooltip('US stock reference price'));
     await tester.pump();
 
-    await tester.tap(find.text('24/7'));
+    await tester.tap(find.byKey(const Key('trade-market-status-header')));
     await tester.pumpAndSettle();
     expectNodeVisible(
       nodeId: '513:17402',
@@ -78,6 +78,18 @@ void main() {
       finder: find.text('US Market Trading Hours'),
     );
     expect(find.text('Regular Market'), findsNWidgets(2));
+    expect(
+      find.text(
+        'Regular Market '
+        '${_localTime(DateTime.utc(2026, 1, 1, 21))}',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('market-status-icon-regular')),
+      findsOneWidget,
+    );
+    expect(find.text('24/7'), findsOneWidget);
     expect(
       find.text(
         _localSchedule(
@@ -714,6 +726,12 @@ String _localSchedule(DateTime start, DateTime end) {
   return '${time(localStart)} - ${time(localEnd)} '
       'UTC$sign${absoluteOffset.inHours.toString().padLeft(2, '0')}:'
       '${(absoluteOffset.inMinutes % 60).toString().padLeft(2, '0')}';
+}
+
+String _localTime(DateTime value) {
+  final local = value.toLocal();
+  return '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
 }
 
 Position _position(MarketProductKind kind) => switch (kind) {
