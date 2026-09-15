@@ -146,7 +146,12 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productQuery = (query: _underlyingSymbol(symbol), cursor: null);
+    final productQuery = (
+      query: _underlyingSymbol(symbol),
+      cursor: null,
+      group: 'hot',
+      productType: null,
+    );
     final productsState = ref.watch(marketProductsProvider(productQuery));
     final availableProducts = productsState.value?.items
         .where(

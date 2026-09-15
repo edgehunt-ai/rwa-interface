@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
@@ -8,71 +7,35 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
 enum _ProductFilterChoice { all, bstock, perp }
 
-List<MarketProduct> marketProductsForTab(
-  List<MarketProduct> products,
-  String tab,
-) {
-  var result = [...products];
-  if (tab == 'Favorites') {
-    result = result.where((product) => product.isFavorite).toList();
-  } else if (tab == 'Gainers') {
-    result = result
-        .where((product) => _metricValue(product.change24hPercent) > 0)
-        .toList();
-    _sortMarketProducts(
-      result,
-      (product) => product.change24hPercent,
-      descending: true,
-    );
-  } else if (tab == 'Losers') {
-    result = result
-        .where((product) => _metricValue(product.change24hPercent) < 0)
-        .toList();
-    _sortMarketProducts(result, (product) => product.change24hPercent);
-  } else if (tab == 'Volume') {
-    _sortMarketProducts(
-      result,
-      (product) => product.volume24h,
-      descending: true,
-    );
-  }
-  return result;
-}
-
-double _metricValue(DecimalValue? value) =>
-    value == null ? double.nan : double.tryParse(value.value) ?? double.nan;
-
-void _sortMarketProducts(
-  List<MarketProduct> products,
-  DecimalValue? Function(MarketProduct product) metric, {
-  bool descending = false,
-}) {
-  products.sort((left, right) {
-    final leftValue = metric(left);
-    final rightValue = metric(right);
-    if (leftValue == null && rightValue == null) return 0;
-    if (leftValue == null) return 1;
-    if (rightValue == null) return -1;
-    final leftNumber = _metricValue(leftValue);
-    final rightNumber = _metricValue(rightValue);
-    final result = leftNumber.compareTo(rightNumber);
-    return descending ? -result : result;
-  });
-}
+String marketProductGroupForTab(String tab) => switch (tab) {
+  'Favorites' => 'favorites',
+  'Gainers' => 'gainers',
+  'Losers' => 'losers',
+  'Volume' => 'volume',
+  _ => 'hot',
+};
 
 class MarketRankingTabs extends StatelessWidget {
   const MarketRankingTabs({
     super.key,
     required this.active,
     required this.onSelected,
+    this.showFavorites = true,
   });
 
   final String active;
   final ValueChanged<String> onSelected;
+  final bool showFavorites;
 
   @override
   Widget build(BuildContext context) {
-    const tabs = ['Favorites', 'Popular', 'Gainers', 'Losers', 'Volume'];
+    final tabs = [
+      if (showFavorites) 'Favorites',
+      'Popular',
+      'Gainers',
+      'Losers',
+      'Volume',
+    ];
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final scaledTextHeight = MediaQuery.textScalerOf(context).scale(14);

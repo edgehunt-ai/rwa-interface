@@ -34,6 +34,7 @@ void main() {
     await pumpEventQueue();
 
     expect(realtime.channels, {'balances'});
+    expect(realtime.usedRecovery, isTrue);
     realtime.add(_balanceEvent(id: 'balance-1', amount: '2'));
 
     final result = await change;
@@ -41,6 +42,36 @@ void main() {
     expect(result.chain, 'Arbitrum');
     expect(result.token, 'USDC');
     expect(result.amount.value, '1');
+  });
+
+  test('polls account balances when SSE does not deliver an event', () async {
+    final realtime = _Realtime();
+    final portfolio = _PollingPortfolio();
+    final container = ProviderContainer(
+      overrides: [
+        portfolioRepositoryProvider.overrideWithValue(portfolio),
+        realtimeRepositoryProvider.overrideWithValue(realtime),
+        depositBalancePollIntervalProvider.overrideWithValue(
+          const Duration(milliseconds: 10),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(realtime.dispose);
+
+    const route = (chain: 'Arbitrum', token: 'USDC');
+    final subscription = container.listen(
+      depositBalanceChangesProvider(route),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    final result = await container.read(
+      depositBalanceChangesProvider(route).future,
+    );
+
+    expect(result.eventId, startsWith('balance-poll-'));
+    expect(result.amount.value, '1');
+    expect(portfolio.calls, greaterThanOrEqualTo(2));
   });
 }
 
@@ -67,6 +98,7 @@ TypedRealtimeEvent _balanceEvent({
 final class _Realtime implements RealtimeRepository {
   final _controller = StreamController<TypedRealtimeEvent>();
   Set<String>? channels;
+  var usedRecovery = false;
 
   void add(TypedRealtimeEvent event) => _controller.add(event);
   void dispose() => _controller.close();
@@ -93,7 +125,36 @@ final class _Realtime implements RealtimeRepository {
   Stream<TypedRealtimeEvent> subscribeWithRecovery({
     required Set<String> channels,
     required Future<void> Function() refreshSnapshot,
-  }) => subscribe(channels: channels);
+  }) {
+    usedRecovery = true;
+    return subscribe(channels: channels);
+  }
+}
+
+final class _PollingPortfolio implements PortfolioRepository {
+  var calls = 0;
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async {
+    final amount = calls++ == 0 ? '1' : '2';
+    return [
+      TradingAccount(
+        kind: TradingAccountKind.app,
+        chain: 'Arbitrum',
+        address: '0x1111111111111111111111111111111111111111',
+        balances: [
+          TokenBalance(
+            symbol: 'USDC',
+            chain: 'Arbitrum',
+            balance: DecimalValue(amount, asset: 'USDC', unit: 'token'),
+          ),
+        ],
+      ),
+    ];
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 final class _Portfolio implements PortfolioRepository {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -64,6 +66,10 @@ final depositRoutesProvider = FutureProvider.autoDispose<List<DepositRoute>>((
 
 typedef DepositBalanceMonitorKey = ({String chain, String token});
 
+final depositBalancePollIntervalProvider = Provider<Duration>(
+  (_) => const Duration(seconds: 30),
+);
+
 final class DepositBalanceChange {
   const DepositBalanceChange({
     required this.eventId,
@@ -80,40 +86,89 @@ final class DepositBalanceChange {
 
 /// Watches the selected deposit asset for an increase over the opening snapshot.
 final depositBalanceChangesProvider = StreamProvider.autoDispose
-    .family<DepositBalanceChange, DepositBalanceMonitorKey>((
-      ref,
-      route,
-    ) async* {
+    .family<DepositBalanceChange, DepositBalanceMonitorKey>((ref, route) {
       ref.watch(sessionGenerationProvider);
+      final repository = ref.watch(portfolioRepositoryProvider);
+      final realtime = ref.watch(realtimeRepositoryProvider);
+      final pollInterval = ref.watch(depositBalancePollIntervalProvider);
+      final controller = StreamController<DepositBalanceChange>();
       final balances = <String, DecimalValue>{};
-      try {
-        final accounts = await ref
-            .watch(portfolioRepositoryProvider)
-            .listAccounts();
-        balances.addAll(_snapshotBalances(accounts, route));
-      } on Object {
-        // Without a trustworthy opening snapshot, the first SSE value is a
-        // baseline rather than a confirmed incoming deposit.
-      }
+      var refreshing = false;
+      var disposed = false;
+      var pollSequence = 0;
+      Timer? pollTimer;
+      StreamSubscription<TypedRealtimeEvent>? realtimeSubscription;
 
-      await for (final event
-          in ref
-              .watch(realtimeRepositoryProvider)
-              .subscribe(channels: const {'balances'})) {
-        final update = _balanceUpdate(event, route);
-        if (update == null) continue;
+      void applyUpdate(_BalanceUpdate update, String eventId) {
         final previous = balances[update.accountId];
         balances[update.accountId] = update.balance;
-        if (previous == null || update.balance.compareTo(previous) <= 0) {
-          continue;
-        }
-        yield DepositBalanceChange(
-          eventId: event.id,
-          chain: route.chain,
-          token: route.token,
-          amount: _difference(update.balance, previous),
+        if (previous == null || update.balance.compareTo(previous) <= 0) return;
+        controller.add(
+          DepositBalanceChange(
+            eventId: eventId,
+            chain: route.chain,
+            token: route.token,
+            amount: _difference(update.balance, previous),
+          ),
         );
       }
+
+      Future<void> refreshBalances({required bool detectIncrease}) async {
+        if (refreshing || disposed) return;
+        refreshing = true;
+        try {
+          final snapshot = _snapshotBalances(
+            await repository.listAccounts(),
+            route,
+          );
+          if (!detectIncrease || balances.isEmpty) {
+            balances
+              ..clear()
+              ..addAll(snapshot);
+            return;
+          }
+          for (final entry in snapshot.entries) {
+            applyUpdate(
+              _BalanceUpdate(accountId: entry.key, balance: entry.value),
+              'balance-poll-${pollSequence++}',
+            );
+          }
+          balances.removeWhere(
+            (accountId, _) => !snapshot.containsKey(accountId),
+          );
+        } on Object {
+          // SSE remains active when a polling or recovery snapshot fails.
+        } finally {
+          refreshing = false;
+        }
+      }
+
+      Future<void> start() async {
+        await refreshBalances(detectIncrease: false);
+        if (disposed) return;
+        realtimeSubscription = realtime
+            .subscribeWithRecovery(
+              channels: const {'balances'},
+              refreshSnapshot: () => refreshBalances(detectIncrease: true),
+            )
+            .listen((event) {
+              final update = _balanceUpdate(event, route);
+              if (update != null) applyUpdate(update, event.id);
+            }, onError: controller.addError);
+        pollTimer = Timer.periodic(
+          pollInterval,
+          (_) => unawaited(refreshBalances(detectIncrease: true)),
+        );
+      }
+
+      ref.onDispose(() {
+        disposed = true;
+        pollTimer?.cancel();
+        unawaited(realtimeSubscription?.cancel());
+        unawaited(controller.close());
+      });
+      unawaited(start());
+      return controller.stream;
     });
 
 Map<String, DecimalValue> _snapshotBalances(

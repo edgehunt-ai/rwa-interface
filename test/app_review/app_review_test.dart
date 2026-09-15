@@ -246,6 +246,7 @@ final class _MarketsDelegate implements MarketsRepository {
     String? cursor,
     dynamic kind,
     dynamic group,
+    dynamic productType,
     int? limit,
   }) => throw UnimplementedError();
 

@@ -36,8 +36,19 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    String? group,
+    MarketProductKind? productType,
   }) async {
-    final page = await _service.listProducts(query: query, cursor: cursor);
+    final page = await _service.listProducts(
+      query: query,
+      cursor: cursor,
+      group: group,
+      productType: productType == null
+          ? api.ProductType.all
+          : productType == MarketProductKind.bstock
+          ? api.ProductType.spot
+          : api.ProductType.contract,
+    );
     return DomainPage(
       items: page.items.map(_listing).toList(),
       nextCursor: page.nextCursor,

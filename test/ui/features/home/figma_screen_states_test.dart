@@ -200,19 +200,23 @@ final class _Markets implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    String? group,
+    MarketProductKind? productType,
   }) async => DomainPage(
-    items: [
-      MarketProduct(
-        symbol: 'NVDA',
-        name: 'NVIDIA',
-        kind: MarketProductKind.bstock,
-        price: DecimalValue('120', asset: 'USD', unit: 'fiat'),
-        settlementAsset: 'USDC',
-        network: 'Arbitrum',
-        tradable: true,
-        isFavorite: true,
-      ),
-    ],
+    items: group == 'favorites'
+        ? const []
+        : [
+            MarketProduct(
+              symbol: 'NVDA',
+              name: 'NVIDIA',
+              kind: MarketProductKind.bstock,
+              price: DecimalValue('120', asset: 'USD', unit: 'fiat'),
+              settlementAsset: 'USDC',
+              network: 'Arbitrum',
+              tradable: true,
+              isFavorite: true,
+            ),
+          ],
   );
 
   @override
@@ -224,22 +228,25 @@ final class _EmptyFavoritesMarkets implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    String? group,
+    MarketProductKind? productType,
     dynamic kind,
-    dynamic group,
     int? limit,
   }) async => DomainPage(
-    items: [
-      MarketProduct(
-        symbol: 'NVDA',
-        name: 'NVIDIA',
-        kind: MarketProductKind.bstock,
-        price: DecimalValue('120', asset: 'USD', unit: 'fiat'),
-        settlementAsset: 'USDC',
-        network: 'Arbitrum',
-        tradable: true,
-        isFavorite: false,
-      ),
-    ],
+    items: group == 'favorites'
+        ? const []
+        : [
+            MarketProduct(
+              symbol: 'NVDA',
+              name: 'NVIDIA',
+              kind: MarketProductKind.bstock,
+              price: DecimalValue('120', asset: 'USD', unit: 'fiat'),
+              settlementAsset: 'USDC',
+              network: 'Arbitrum',
+              tradable: true,
+              isFavorite: false,
+            ),
+          ],
   );
 
   @override

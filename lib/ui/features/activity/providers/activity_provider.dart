@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -11,8 +13,17 @@ typedef ActivityFilter = ({
   String? cursor,
 });
 
+const activityListCacheDuration = Duration(minutes: 30);
+
+void _cacheActivityList(Ref ref) {
+  final link = ref.keepAlive();
+  final timer = Timer(activityListCacheDuration, link.close);
+  ref.onDispose(timer.cancel);
+}
+
 final activityProvider = FutureProvider.autoDispose
     .family<DomainPage<ActivityRecord>, ActivityFilter>((ref, filter) {
+      _cacheActivityList(ref);
       ref.watch(sessionGenerationProvider);
       return ref
           .watch(activityRepositoryProvider)

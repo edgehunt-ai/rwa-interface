@@ -8,6 +8,8 @@ abstract interface class MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    String? group,
+    MarketProductKind? productType,
   });
   Future<MarketProduct> getProduct(MarketProductRef ref);
   Future<MarketSnapshot> getSnapshot(MarketProductRef ref);

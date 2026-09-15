@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/market_snapshot.dart';
@@ -16,6 +17,7 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
+import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 
 class MarketScreen extends ConsumerStatefulWidget {
   const MarketScreen({super.key});
@@ -24,13 +26,23 @@ class MarketScreen extends ConsumerStatefulWidget {
 }
 
 class _MarketScreenState extends ConsumerState<MarketScreen> {
-  String activeTab = 'Popular';
   MarketProductKind? kind;
 
   @override
   Widget build(BuildContext context) {
+    final authenticated =
+        ref.watch(authenticationProvider) is AuthenticationAuthenticated;
+    final selectedTab = effectiveMarketRankingTab(
+      authenticated: authenticated,
+      storedTab: ref.watch(marketRankingTabProvider).value,
+    );
     final products = ref.watch(
-      marketProductsProvider((query: null, cursor: null)),
+      marketProductsProvider((
+        query: null,
+        cursor: null,
+        group: marketProductGroupForTab(selectedTab),
+        productType: kind,
+      )),
     );
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
@@ -40,8 +52,14 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async =>
-              ref.refresh(marketProductsProvider((query: null, cursor: null))),
+          onRefresh: () async => ref.refresh(
+            marketProductsProvider((
+              query: null,
+              cursor: null,
+              group: marketProductGroupForTab(selectedTab),
+              productType: kind,
+            )),
+          ),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
             children: [
@@ -98,8 +116,10 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               ),
               const SizedBox(height: 8),
               MarketRankingTabs(
-                active: activeTab,
-                onSelected: (value) => setState(() => activeTab = value),
+                active: selectedTab,
+                showFavorites: authenticated,
+                onSelected: (value) =>
+                    ref.read(marketRankingTabProvider.notifier).select(value),
               ),
               products.when(
                 loading: () => SizedBox(
@@ -116,19 +136,17 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     title: l10n.marketsUnavailable,
                     message: l10n.pullToRefreshRetry,
                     onRetry: () => ref.refresh(
-                      marketProductsProvider((query: null, cursor: null))
-                          .future,
+                      marketProductsProvider((
+                        query: null,
+                        cursor: null,
+                        group: marketProductGroupForTab(selectedTab),
+                        productType: kind,
+                      )).future,
                     ),
                   ),
                 ),
                 data: (page) {
-                  var items = page.items;
-                  if (kind != null) {
-                    items = items
-                        .where((product) => product.kind == kind)
-                        .toList(growable: false);
-                  }
-                  items = marketProductsForTab(items, activeTab);
+                  final items = page.items;
                   if (items.isEmpty) {
                     return SizedBox(
                       height: 280,

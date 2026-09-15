@@ -8,7 +8,6 @@ import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
@@ -40,9 +39,6 @@ class HomeScreen extends ConsumerWidget {
       data: (value) => value,
       orElse: () => null,
     );
-    final products = ref.watch(
-      marketProductsProvider((query: null, cursor: null)),
-    );
     return Scaffold(
       bottomNavigationBar: const AppBottomNavigation(
         current: AppDestination.home,
@@ -51,9 +47,7 @@ class HomeScreen extends ConsumerWidget {
         child: RefreshIndicator(
           onRefresh: () async {
             if (authenticated) ref.invalidate(portfolioSummaryProvider);
-            // Refresh the exact family instance currently rendered below.
-            // ignore: unused_result
-            ref.refresh(marketProductsProvider((query: null, cursor: null)));
+            ref.invalidate(marketProductsProvider);
           },
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -102,12 +96,7 @@ class HomeScreen extends ConsumerWidget {
                     )
                   : _LoginAction(onLogin: () => _openLogin(context)),
               const SizedBox(height: 12),
-              _MarketPreview(
-                products: products,
-                onRetry: () => ref.refresh(
-                  marketProductsProvider((query: null, cursor: null)).future,
-                ),
-              ),
+              const _MarketPreview(),
             ],
           ),
         ),
@@ -394,22 +383,33 @@ class _LoginAction extends StatelessWidget {
   );
 }
 
-class _MarketPreview extends StatefulWidget {
-  const _MarketPreview({required this.products, required this.onRetry});
-  final AsyncValue<DomainPage<MarketProduct>> products;
-  final FutureOr<void> Function() onRetry;
+class _MarketPreview extends ConsumerStatefulWidget {
+  const _MarketPreview();
   @override
-  State<_MarketPreview> createState() => _MarketPreviewState();
+  ConsumerState<_MarketPreview> createState() => _MarketPreviewState();
 }
 
-class _MarketPreviewState extends State<_MarketPreview> {
-  String activeTab = 'Favorites';
+class _MarketPreviewState extends ConsumerState<_MarketPreview> {
   MarketProductKind? kind;
   bool _favoritesSelectedByUser = false;
   bool _popularFallbackScheduled = false;
 
   @override
   Widget build(BuildContext context) {
+    final authenticated =
+        ref.watch(authenticationProvider) is AuthenticationAuthenticated;
+    final selectedTab = effectiveMarketRankingTab(
+      authenticated: authenticated,
+      storedTab: ref.watch(marketRankingTabProvider).value,
+    );
+    final products = ref.watch(
+      marketProductsProvider((
+        query: null,
+        cursor: null,
+        group: marketProductGroupForTab(selectedTab),
+        productType: kind,
+      )),
+    );
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     return Column(
@@ -435,34 +435,40 @@ class _MarketPreviewState extends State<_MarketPreview> {
         ),
         const SizedBox(height: 8),
         MarketRankingTabs(
-          active: activeTab,
+          active: selectedTab,
+          showFavorites: authenticated,
           onSelected: (tab) => setState(() {
-            activeTab = tab;
+            ref.read(marketRankingTabProvider.notifier).select(tab);
             if (tab == 'Favorites') _favoritesSelectedByUser = true;
           }),
         ),
         const SizedBox(height: 8),
-        widget.products.when(
+        products.when(
           loading: () => const _HomeStateCard(height: 240),
           error: (_, _) => FailureState(
             height: 340,
             title: l10n.marketsLoadFailed,
             description: l10n.checkConnectionRetry,
-            onRetry: widget.onRetry,
+            onRetry: () => ref.refresh(
+              marketProductsProvider((
+                query: null,
+                cursor: null,
+                group: marketProductGroupForTab(selectedTab),
+                productType: kind,
+              )).future,
+            ),
           ),
           data: (page) {
-            var items = page.items.cast<MarketProduct>();
-            if (kind != null) {
-              items = items.where((product) => product.kind == kind).toList();
-            }
-            items = marketProductsForTab(items, activeTab);
+            final items = page.items.cast<MarketProduct>();
             if (items.isEmpty) {
-              if (activeTab == 'Favorites') {
+              if (selectedTab == 'Favorites') {
                 if (!_favoritesSelectedByUser) {
                   _schedulePopularFallback();
                 }
                 return FavoritesEmptyState(
-                  onExplore: () => setState(() => activeTab = 'Popular'),
+                  onExplore: () => ref
+                      .read(marketRankingTabProvider.notifier)
+                      .select('Popular'),
                 );
               }
               return Container(
@@ -521,10 +527,16 @@ class _MarketPreviewState extends State<_MarketPreview> {
     _popularFallbackScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _popularFallbackScheduled = false;
-      if (!mounted || _favoritesSelectedByUser || activeTab != 'Favorites') {
+      final authenticated =
+          ref.read(authenticationProvider) is AuthenticationAuthenticated;
+      final selectedTab = effectiveMarketRankingTab(
+        authenticated: authenticated,
+        storedTab: ref.read(marketRankingTabProvider).value,
+      );
+      if (!mounted || _favoritesSelectedByUser || selectedTab != 'Favorites') {
         return;
       }
-      setState(() => activeTab = 'Popular');
+      ref.read(marketRankingTabProvider.notifier).select('Popular');
     });
   }
 }

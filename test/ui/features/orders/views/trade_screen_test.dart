@@ -787,7 +787,12 @@ Widget _tradeWithMarkets({
     authenticatedStateOverride,
     if (positionsRepository != null)
       positionsRepositoryProvider.overrideWithValue(positionsRepository),
-    marketProductsProvider((query: 'NVDA', cursor: null)).overrideWith(
+    marketProductsProvider((
+      query: 'NVDA',
+      cursor: null,
+      group: 'hot',
+      productType: null,
+    )).overrideWith(
       (_) async => DomainPage(
         items:
             products ??
@@ -864,6 +869,8 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
+    String? group,
+    MarketProductKind? productType,
   }) async => DomainPage(
     items: [
       MarketProduct(

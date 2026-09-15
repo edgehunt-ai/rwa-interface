@@ -21,8 +21,19 @@ final class GeneratedMarketsService implements MarketsService {
   }
 
   @override
-  Future<ProductPage> listProducts({String? query, String? cursor}) =>
-      _body(() => _api.listProducts(q: query, cursor: cursor));
+  Future<ProductPage> listProducts({
+    String? query,
+    String? cursor,
+    String? group,
+    ProductType? productType,
+  }) => _body(
+    () => _api.listProducts(
+      group: group == null ? null : MarketProductGroup.valueOf(group),
+      productType: productType,
+      q: query,
+      cursor: cursor,
+    ),
+  );
 
   @override
   Future<ProductDetail> getProduct(String symbol, ProductKind kind) =>

@@ -33,6 +33,23 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('logged-out ranking tabs hide favorites and select popular', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildTestApp(
+        MarketRankingTabs(
+          active: 'Popular',
+          showFavorites: false,
+          onSelected: (_) {},
+        ),
+      ),
+    );
+
+    expect(find.text('Favorites'), findsNothing);
+    expect(find.text('Popular'), findsOneWidget);
+  });
+
   testWidgets('market discovery starts with the server-backed product list', (
     tester,
   ) async {
@@ -218,6 +235,7 @@ final class _MarketsRepository implements MarketsRepository {
     String? cursor,
     dynamic kind,
     dynamic group,
+    dynamic productType,
     int? limit,
   }) async => DomainPage(
     items: [
@@ -246,6 +264,7 @@ final class _ProgressiveMarketsRepository implements MarketsRepository {
     String? cursor,
     dynamic kind,
     dynamic group,
+    dynamic productType,
     int? limit,
   }) => query == null
       ? Future.value(DomainPage(items: [_product('NVDA', 'NVIDIA')]))
@@ -278,6 +297,7 @@ final class _RecordingMarketsRepository implements MarketsRepository {
     String? cursor,
     dynamic kind,
     dynamic group,
+    dynamic productType,
     int? limit,
   }) async {
     queries.add(query);

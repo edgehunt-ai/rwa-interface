@@ -48,14 +48,24 @@ class _MarketDiscoverySearchScreenState
   @override
   Widget build(BuildContext context) {
     final catalog = ref.watch(
-      marketProductsProvider((query: null, cursor: null)),
+      marketProductsProvider((
+        query: null,
+        cursor: null,
+        group: 'hot',
+        productType: null,
+      )),
     );
     final AsyncValue<DomainPage<MarketProduct>>? searchResults = query.isEmpty
         ? null
         : _searchDebounce?.isActive ?? false
         ? const AsyncLoading()
         : ref.watch(
-            marketProductsProvider((query: _remoteQuery, cursor: null)),
+            marketProductsProvider((
+              query: _remoteQuery,
+              cursor: null,
+              group: 'hot',
+              productType: null,
+            )),
           );
     final recentSearches = ref.watch(recentMarketSearchesProvider);
     final l10n = AppLocalizations.of(context);
@@ -142,7 +152,12 @@ class _MarketDiscoverySearchScreenState
       title: AppLocalizations.of(context).marketsUnavailable,
       message: AppLocalizations.of(context).marketCatalogUnavailable,
       onRetry: () => ref.refresh(
-        marketProductsProvider((query: null, cursor: null)).future,
+        marketProductsProvider((
+          query: null,
+          cursor: null,
+          group: 'hot',
+          productType: null,
+        )).future,
       ),
     ),
     data: (page) {
@@ -335,7 +350,12 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final catalog = ref.watch(
-      marketProductsProvider((query: null, cursor: null)),
+      marketProductsProvider((
+        query: null,
+        cursor: null,
+        group: 'hot',
+        productType: null,
+      )),
     );
     final AsyncValue<DomainPage<MarketProduct>> products =
         _searchDebounce?.isActive ?? false
@@ -344,6 +364,8 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
             marketProductsProvider((
               query: _remoteQuery.isEmpty ? null : _remoteQuery,
               cursor: null,
+              group: 'hot',
+              productType: null,
             )),
           );
     final localProducts = query.isEmpty
@@ -433,6 +455,8 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
                           marketProductsProvider((
                             query: query.isEmpty ? null : query,
                             cursor: null,
+                            group: 'hot',
+                            productType: null,
                           )).future,
                         ),
                       ),
@@ -550,6 +574,8 @@ class _MarketSearchScreenState extends ConsumerState<MarketSearchScreen> {
         marketProductsProvider((
           query: requestedQuery.isEmpty ? null : requestedQuery,
           cursor: cursor,
+          group: 'hot',
+          productType: null,
         )).future,
       );
       if (!mounted || query != requestedQuery) return;

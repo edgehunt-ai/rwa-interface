@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
@@ -8,18 +11,64 @@ import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/market_snapshot.dart';
 import '../../../../domain/models/stock.dart';
 
-typedef MarketQuery = ({String? query, String? cursor});
+typedef MarketQuery = ({
+  String? query,
+  String? cursor,
+  String? group,
+  MarketProductKind? productType,
+});
+
+const _marketRankingTabKey = 'market_ranking_tab';
+
+final marketRankingTabProvider =
+    AsyncNotifierProvider<MarketRankingTabNotifier, String?>(
+      MarketRankingTabNotifier.new,
+    );
+
+final class MarketRankingTabNotifier extends AsyncNotifier<String?> {
+  @override
+  Future<String?> build() async =>
+      (await SharedPreferences.getInstance()).getString(_marketRankingTabKey);
+
+  Future<void> select(String tab) async {
+    state = AsyncData(tab);
+    await (await SharedPreferences.getInstance()).setString(
+      _marketRankingTabKey,
+      tab,
+    );
+  }
+}
+
+String effectiveMarketRankingTab({
+  required bool authenticated,
+  required String? storedTab,
+}) => !authenticated ? 'Popular' : storedTab ?? 'Favorites';
+
+const marketListCacheDuration = Duration(minutes: 30);
+
+void _cacheMarketList(Ref ref) {
+  final link = ref.keepAlive();
+  final timer = Timer(marketListCacheDuration, link.close);
+  ref.onDispose(timer.cancel);
+}
 
 final marketProductsProvider = FutureProvider.autoDispose
     .family<DomainPage<MarketProduct>, MarketQuery>((ref, query) {
+      _cacheMarketList(ref);
       return ref
           .watch(marketsRepositoryProvider)
-          .listProducts(query: query.query, cursor: query.cursor);
+          .listProducts(
+            query: query.query,
+            cursor: query.cursor,
+            group: query.group,
+            productType: query.productType,
+          );
     });
 
 final marketStocksProvider = FutureProvider.autoDispose<DomainPage<Stock>>((
   ref,
 ) {
+  _cacheMarketList(ref);
   return ref.watch(marketsRepositoryProvider).listStocks();
 });
 
