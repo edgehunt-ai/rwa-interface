@@ -24,7 +24,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   bool _pending = false;
   bool _hadTakeProfit = false;
   bool _hadStopLoss = false;
-  double _bstocksQuantityPercent = 20;
   var _takeProfitEnabled = true;
   var _stopLossEnabled = true;
   var _submitting = false;
@@ -52,6 +51,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
       _loadProtection();
     }
   }
+
+  /// Both triggers are set relative to what the position is worth now.
+  double? get _positionReference => double.tryParse(
+    (widget.position.markPrice ?? widget.position.entryPrice)?.value ?? '',
+  );
 
   Future<void> _loadProtection() async {
     try {
@@ -185,14 +189,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
             stopLimit: _stopLossEnabled && _stopLimit.text.trim().isNotEmpty
                 ? _stopLimit.text.trim()
                 : null,
-            quantity: hasSet && widget.position.kind == MarketProductKind.bstock
-                ? percentageQuantity(
-                    widget.position.quantity.value,
-                    _bstocksQuantityPercent.round().toString(),
-                  )
-                : hasSet && _fixedQuantity
-                ? _quantity.text.trim()
-                : null,
+            quantity: hasSet && _fixedQuantity ? _quantity.text.trim() : null,
             clearScope: clearScope,
             takeLimit: _takeProfitEnabled && _takeIsLimit
                 ? _takeLimit.text.trim()
@@ -232,27 +229,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     final l10n = AppLocalizations.of(context);
     final locked =
         _submitting || _pending || _loadingProtection || _protectionLoadFailed;
-    if (widget.position.kind == MarketProductKind.bstock) {
-      return _BstocksTpSlEditor(
-        position: widget.position,
-        takeProfit: _takeProfit,
-        stopLoss: _stopLoss,
-        takeProfitEnabled: _takeProfitEnabled,
-        stopLossEnabled: _stopLossEnabled,
-        quantityPercent: _bstocksQuantityPercent,
-        locked: locked,
-        submitting: _submitting,
-        error: _error,
-        onTakeProfitEnabledChanged: (value) =>
-            setState(() => _takeProfitEnabled = value),
-        onStopLossEnabledChanged: (value) =>
-            setState(() => _stopLossEnabled = value),
-        onQuantityPercentChanged: (value) =>
-            setState(() => _bstocksQuantityPercent = value),
-        onBack: () => Navigator.of(context).pop(),
-        onConfirm: _save,
-      );
-    }
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
       color: colors.surface,
@@ -281,15 +257,31 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     const SizedBox(width: 8),
                     Text(
                       l10n.takeProfitStopLossTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        height: 26 / 20,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ],
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 28, top: 4),
-                  child: Text(
-                    '${widget.position.symbol}/USDT  ${widget.position.side == PositionSide.long ? l10n.buy : l10n.sell}',
-                    style: TextStyle(color: colors.secondaryText),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${widget.position.symbol}/USDT',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 18 / 13,
+                          fontWeight: FontWeight.w500,
+                          color: colors.secondaryText,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      _SideBadge(side: widget.position.side),
+                    ],
                   ),
                 ),
                 if (_loadingProtection) const LinearProgressIndicator(),
@@ -298,6 +290,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                   title: l10n.takeProfit,
                   controller: _takeProfit,
                   enabled: _takeProfitEnabled,
+                  referencePrice: _positionReference,
                   inputKey: const Key('position-protection-take-profit'),
                   rulerKey: const Key('position-take-profit-ruler'),
                   onEnabledChanged: locked
@@ -309,6 +302,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                   title: l10n.stopLoss,
                   controller: _stopLoss,
                   enabled: _stopLossEnabled,
+                  referencePrice: _positionReference,
                   inputKey: const Key('position-protection-stop-loss'),
                   rulerKey: const Key('position-stop-loss-ruler'),
                   onEnabledChanged: locked
@@ -428,580 +422,28 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   }
 }
 
-class _BstocksTpSlEditor extends StatelessWidget {
-  const _BstocksTpSlEditor({
-    required this.position,
-    required this.takeProfit,
-    required this.stopLoss,
-    required this.takeProfitEnabled,
-    required this.stopLossEnabled,
-    required this.quantityPercent,
-    required this.locked,
-    required this.submitting,
-    required this.error,
-    required this.onTakeProfitEnabledChanged,
-    required this.onStopLossEnabledChanged,
-    required this.onQuantityPercentChanged,
-    required this.onBack,
-    required this.onConfirm,
-  });
+/// Soft-tinted Buy/Sell tag that follows the position side.
+class _SideBadge extends StatelessWidget {
+  const _SideBadge({required this.side});
 
-  final Position position;
-  final TextEditingController takeProfit;
-  final TextEditingController stopLoss;
-  final bool takeProfitEnabled;
-  final bool stopLossEnabled;
-  final double quantityPercent;
-  final bool locked;
-  final bool submitting;
-  final String? error;
-  final ValueChanged<bool> onTakeProfitEnabledChanged;
-  final ValueChanged<bool> onStopLossEnabledChanged;
-  final ValueChanged<double> onQuantityPercentChanged;
-  final VoidCallback onBack;
-  final VoidCallback onConfirm;
+  final PositionSide side;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
-    final tradeSymbol = position.symbol.endsWith('B')
-        ? position.symbol
-        : '${position.symbol}B';
-    return Material(
-      color: colors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: IconButton(
-                        tooltip: l10n.back,
-                        onPressed: onBack,
-                        icon: const Icon(Icons.chevron_left, size: 20),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints.tightFor(
-                          width: 20,
-                          height: 20,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.takeProfitStopLossTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 28, top: 4),
-                  child: Row(
-                    children: [
-                      Text(
-                        '$tradeSymbol/USDT',
-                        style: TextStyle(color: colors.secondaryText),
-                      ),
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE9F8F4),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          position.side == PositionSide.short
-                              ? l10n.sell
-                              : l10n.buy,
-                          style: const TextStyle(
-                            color: Color(0xFF04A08B),
-                            fontSize: 11,
-                            height: 14 / 11,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _BstocksRiskControl(
-                  title: l10n.takeProfit,
-                  controller: takeProfit,
-                  enabled: takeProfitEnabled,
-                  onEnabledChanged: locked ? null : onTakeProfitEnabledChanged,
-                ),
-                const SizedBox(height: 12),
-                _BstocksRiskControl(
-                  title: l10n.stopLoss,
-                  controller: stopLoss,
-                  enabled: stopLossEnabled,
-                  onEnabledChanged: locked ? null : onStopLossEnabledChanged,
-                ),
-                const SizedBox(height: 12),
-                _BstocksQuantityControl(
-                  symbol: position.symbol,
-                  value: quantityPercent,
-                  enabled: !locked,
-                  onChanged: onQuantityPercentChanged,
-                ),
-                if (error case final message?) ...[
-                  const SizedBox(height: 12),
-                  Text(message),
-                ],
-                const SizedBox(height: 28),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 160,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: colors.subtleSurface,
-                          side: BorderSide(color: colors.border),
-                        ),
-                        onPressed: submitting ? null : onBack,
-                        child: Text(l10n.back),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: locked ? null : onConfirm,
-                        child: Text(
-                          submitting ? l10n.loadingLabel : l10n.confirm,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BstocksRiskControl extends StatefulWidget {
-  const _BstocksRiskControl({
-    required this.title,
-    required this.controller,
-    required this.enabled,
-    required this.onEnabledChanged,
-  });
-
-  final String title;
-  final TextEditingController controller;
-  final bool enabled;
-  final ValueChanged<bool>? onEnabledChanged;
-
-  @override
-  State<_BstocksRiskControl> createState() => _BstocksRiskControlState();
-}
-
-class _BstocksRiskControlState extends State<_BstocksRiskControl> {
-  late final double _referencePrice =
-      double.tryParse(widget.controller.text) ?? 100;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(_refresh);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(_refresh);
-    super.dispose();
-  }
-
-  void _refresh() {
-    if (mounted) setState(() {});
-  }
-
-  String _formatPrice(double value) => value
-      .toStringAsFixed(2)
-      .replaceFirst(RegExp(r'\.00$'), '')
-      .replaceFirst(RegExp(r'(\.\d)0$'), r'$1');
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final l10n = AppLocalizations.of(context);
-    final minimum = _referencePrice * .9;
-    final maximum = _referencePrice * 1.1;
-    final price = double.tryParse(widget.controller.text) ?? _referencePrice;
-    final value = price.clamp(minimum, maximum);
-    final change = ((value / _referencePrice) - 1) * 100;
-    return Semantics(
-      container: true,
-      label: widget.title,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: colors.border),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      height: 22 / 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 44,
-                  height: 24,
-                  child: Center(
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.diagonal3Values(.846, .75, 1),
-                      child: Switch(
-                        value: widget.enabled,
-                        activeTrackColor: colors.selected,
-                        activeThumbColor: Colors.white,
-                        onChanged: widget.onEnabledChanged,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Divider(height: 1, color: colors.subtleSurface),
-            ),
-            Row(
-              children: [
-                Text(l10n.price, style: TextStyle(color: colors.tertiaryText)),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: TextField(
-                    controller: widget.controller,
-                    enabled: widget.enabled && widget.onEnabledChanged != null,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      height: 22 / 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    decoration: const InputDecoration(
-                      prefixText: r'$ ',
-                      hintText: '0',
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                    ),
-                  ),
-                ),
-                Text(l10n.change, style: TextStyle(color: colors.tertiaryText)),
-                const SizedBox(width: 4),
-                Text(
-                  '${change >= 0 ? '' : '-'}${change.abs().toStringAsFixed(0)}%',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    height: 22 / 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _BstocksTickRuler(
-              semanticLabel: '${widget.title} ${l10n.price}',
-              value: value,
-              minimum: minimum,
-              maximum: maximum,
-              enabled: widget.enabled && widget.onEnabledChanged != null,
-              onChanged: (next) => widget.controller.text = _formatPrice(next),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BstocksTickRuler extends StatelessWidget {
-  const _BstocksTickRuler({
-    required this.semanticLabel,
-    required this.value,
-    required this.minimum,
-    required this.maximum,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final String semanticLabel;
-  final double value;
-  final double minimum;
-  final double maximum;
-  final bool enabled;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Semantics(
-      label: semanticLabel,
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: colors.subtleSurface,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            IgnorePointer(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    for (var index = 0; index < 21; index++)
-                      Expanded(
-                        child: Align(
-                          child: Container(
-                            width: 1,
-                            height: index % 5 == 0 ? 25 : 18,
-                            color: colors.border,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            Positioned(
-              left: 12,
-              child: Text(
-                AppLocalizations.of(context).dragToSet,
-                style: TextStyle(color: colors.secondaryText),
-              ),
-            ),
-            SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: Colors.transparent,
-                inactiveTrackColor: Colors.transparent,
-                trackHeight: 0,
-                thumbColor: colors.selected,
-                overlayShape: SliderComponentShape.noOverlay,
-                thumbShape: const _BstocksRulerThumbShape(),
-              ),
-              child: Slider(
-                value: value,
-                min: minimum,
-                max: maximum,
-                divisions: 20,
-                onChanged: enabled ? onChanged : null,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BstocksRulerThumbShape extends SliderComponentShape {
-  const _BstocksRulerThumbShape();
-
-  @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => const Size(4, 32);
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset center, {
-    required Animation<double> activationAnimation,
-    required Animation<double> enableAnimation,
-    required bool isDiscrete,
-    required TextPainter labelPainter,
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required ui.TextDirection textDirection,
-    required double value,
-    required double textScaleFactor,
-    required Size sizeWithOverflow,
-  }) {
-    context.canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: center, width: 4, height: 32),
-        const Radius.circular(2),
-      ),
-      Paint()..color = sliderTheme.thumbColor!,
-    );
-  }
-}
-
-class _BstocksQuantityControl extends StatelessWidget {
-  const _BstocksQuantityControl({
-    required this.symbol,
-    required this.value,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final String symbol;
-  final double value;
-  final bool enabled;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final short = side == PositionSide.short;
+    final tone = short ? semantic.loss : semantic.success;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(14),
+        color: tone.withValues(alpha: .1),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context).quantity,
-                style: TextStyle(
-                  color: colors.tertiaryText,
-                  fontSize: 17,
-                  height: 22 / 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                symbol,
-                style: const TextStyle(
-                  fontSize: 17,
-                  height: 22 / 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _BstocksPercentageSlider(
-            value: value,
-            enabled: enabled,
-            onChanged: onChanged,
-          ),
-        ],
+      child: Text(
+        short ? l10n.sell : l10n.buy,
+        style: TextStyle(color: tone, fontSize: 11, height: 14 / 11),
       ),
-    );
-  }
-}
-
-class _BstocksPercentageSlider extends StatelessWidget {
-  const _BstocksPercentageSlider({
-    required this.value,
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final double value;
-  final bool enabled;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const badgeWidth = 36.0;
-        final badgeLeft = (constraints.maxWidth - badgeWidth) * (value / 100);
-        return SizedBox(
-          height: 20,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: colors.primaryAction,
-                  inactiveTrackColor: colors.surface,
-                  trackHeight: 8,
-                  thumbColor: colors.primaryAction,
-                  thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 0,
-                  ),
-                  overlayShape: SliderComponentShape.noOverlay,
-                ),
-                child: Slider(
-                  key: const Key('bstocks-tp-sl-quantity-slider'),
-                  value: value,
-                  max: 100,
-                  divisions: 100,
-                  onChanged: enabled ? onChanged : null,
-                ),
-              ),
-              for (final stop in const [25.0, 50.0, 75.0])
-                Positioned(
-                  left: (constraints.maxWidth - 6) * (stop / 100),
-                  child: IgnorePointer(
-                    child: Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: colors.subtleSurface,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-              Positioned(
-                left: badgeLeft,
-                child: IgnorePointer(
-                  child: Container(
-                    width: badgeWidth,
-                    height: 18,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: colors.primaryAction,
-                      border: Border.all(color: colors.surface, width: 2),
-                      borderRadius: BorderRadius.circular(9),
-                    ),
-                    child: Text(
-                      '${value.round()}%',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        height: 1,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

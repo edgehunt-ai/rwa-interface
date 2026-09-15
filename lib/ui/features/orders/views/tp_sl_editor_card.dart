@@ -10,7 +10,9 @@ class TpSlEditorCard extends StatefulWidget {
     required this.controller,
     required this.enabled,
     required this.onEnabledChanged,
+    this.referencePrice,
     this.inputKey,
+    this.changeKey,
     this.rulerKey,
   });
 
@@ -18,7 +20,13 @@ class TpSlEditorCard extends StatefulWidget {
   final TextEditingController controller;
   final bool enabled;
   final ValueChanged<bool>? onEnabledChanged;
+
+  /// Price the ruler ranges around and that `Change` is measured against —
+  /// the mark price for a position, the order price when opening one. Without
+  /// it the card can only anchor on whatever the field already held.
+  final double? referencePrice;
   final Key? inputKey;
+  final Key? changeKey;
   final Key? rulerKey;
 
   @override
@@ -27,21 +35,52 @@ class TpSlEditorCard extends StatefulWidget {
 
 class _TpSlEditorCardState extends State<TpSlEditorCard> {
   late final double _referencePrice =
-      double.tryParse(widget.controller.text) ?? 100;
+      widget.referencePrice ?? double.tryParse(widget.controller.text) ?? 100;
+  final _change = TextEditingController();
+
+  /// Guards the two-way price <-> change binding from looping.
+  var _syncing = false;
 
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(_refresh);
+    widget.controller.addListener(_onPriceEdited);
+    _change.addListener(_onChangeEdited);
+    _pushChangeFromPrice();
   }
 
   @override
   void dispose() {
-    widget.controller.removeListener(_refresh);
+    widget.controller.removeListener(_onPriceEdited);
+    _change.dispose();
     super.dispose();
   }
 
-  void _refresh() {
+  void _onPriceEdited() {
+    _pushChangeFromPrice();
+    if (mounted) setState(() {});
+  }
+
+  void _pushChangeFromPrice() {
+    if (_syncing) return;
+    final price = double.tryParse(widget.controller.text);
+    if (price == null) return;
+    final text = (((price / _referencePrice) - 1) * 100).toStringAsFixed(0);
+    if (_change.text == text) return;
+    _syncing = true;
+    _change.text = text;
+    _syncing = false;
+  }
+
+  void _onChangeEdited() {
+    if (_syncing) return;
+    final percent = double.tryParse(_change.text);
+    if (percent == null) return;
+    final text = _formatPrice(_referencePrice * (1 + percent / 100));
+    if (widget.controller.text == text) return;
+    _syncing = true;
+    widget.controller.text = text;
+    _syncing = false;
     if (mounted) setState(() {});
   }
 
@@ -58,7 +97,6 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
     final maximum = _referencePrice * 1.1;
     final price = double.tryParse(widget.controller.text) ?? _referencePrice;
     final value = price.clamp(minimum, maximum);
-    final change = ((value / _referencePrice) - 1) * 100;
     final editable = widget.enabled && widget.onEnabledChanged != null;
     return Semantics(
       container: true,
@@ -67,7 +105,7 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: colors.border),
+          border: Border.all(color: colors.subtleSurface),
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -77,43 +115,43 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 22 / 15,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                Switch(
+                _TpSlSwitch(
                   value: widget.enabled,
                   onChanged: widget.onEnabledChanged,
                 ),
               ],
             ),
-            Divider(color: colors.subtleSurface),
+            const SizedBox(height: 12),
+            Container(height: 1, color: colors.subtleSurface),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Text(l10n.price, style: TextStyle(color: colors.secondaryText)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    key: widget.inputKey,
-                    controller: widget.controller,
-                    enabled: editable,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    style: Theme.of(context).textTheme.titleLarge,
-                    decoration: const InputDecoration(
-                      hintText: '0',
-                      border: InputBorder.none,
-                      isDense: true,
-                    ),
-                  ),
+                _TpSlAmount(
+                  fieldKey: widget.inputKey,
+                  label: l10n.price,
+                  controller: widget.controller,
+                  enabled: editable,
+                  prefix: r'$',
                 ),
-                Text(
-                  '${l10n.change} ${change >= 0 ? '+' : ''}${change.toStringAsFixed(0)}%',
-                  style: TextStyle(color: colors.secondaryText),
+                const Spacer(),
+                _TpSlAmount(
+                  fieldKey: widget.changeKey,
+                  label: l10n.change,
+                  controller: _change,
+                  enabled: editable,
+                  suffix: '%',
+                  alignEnd: true,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             TpSlTickRuler(
               key: widget.rulerKey,
               semanticLabel: '${widget.title} ${l10n.price}',
@@ -125,6 +163,121 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
               onChanged: (next) => widget.controller.text = _formatPrice(next),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Caption plus a borderless number the trader taps straight into, so the
+/// keyboard opens without the field reading as a boxed input.
+class _TpSlAmount extends StatelessWidget {
+  const _TpSlAmount({
+    required this.fieldKey,
+    required this.label,
+    required this.controller,
+    required this.enabled,
+    this.prefix,
+    this.suffix,
+    this.alignEnd = false,
+  });
+
+  final Key? fieldKey;
+  final String label;
+  final TextEditingController controller;
+  final bool enabled;
+  final String? prefix;
+  final String? suffix;
+  final bool alignEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final amountStyle = TextStyle(
+      fontSize: 20,
+      height: 22 / 20,
+      fontWeight: FontWeight.w600,
+      color: enabled ? colors.primaryText : colors.tertiaryText,
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            height: 22 / 12,
+            fontWeight: FontWeight.w500,
+            color: colors.tertiaryText,
+          ),
+        ),
+        const SizedBox(width: 4),
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 16, maxWidth: 132),
+          child: IntrinsicWidth(
+            child: TextField(
+              key: fieldKey,
+              controller: controller,
+              enabled: enabled,
+              textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+                signed: true,
+              ),
+              style: amountStyle,
+              cursorColor: colors.primaryText,
+              decoration: InputDecoration(
+                isDense: true,
+                filled: false,
+                contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                hintText: '0',
+                hintStyle: amountStyle.copyWith(color: colors.tertiaryText),
+                prefixText: prefix,
+                prefixStyle: amountStyle,
+                suffixText: suffix,
+                suffixStyle: amountStyle,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TpSlSwitch extends StatelessWidget {
+  const _TpSlSwitch({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    // Scaled down to the design's 44x24, matching the bStocks control.
+    return SizedBox(
+      width: 44,
+      height: 24,
+      child: Center(
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.diagonal3Values(.846, .75, 1),
+          child: Switch(
+            value: value,
+            onChanged: onChanged,
+            thumbColor: const WidgetStatePropertyAll(Colors.white),
+            trackColor: WidgetStateProperty.resolveWith(
+              (states) => states.contains(WidgetState.selected)
+                  ? colors.selected
+                  : colors.border,
+            ),
+            trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+            trackOutlineWidth: const WidgetStatePropertyAll(0),
+          ),
         ),
       ),
     );
@@ -208,7 +361,11 @@ class TpSlTickRuler extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 8),
                       child: Text(
                         AppLocalizations.of(context).dragToSet,
-                        style: const TextStyle(color: Color(0xFF676776)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          height: 22 / 12,
+                          color: Color(0xFF676776),
+                        ),
                       ),
                     ),
                   ),

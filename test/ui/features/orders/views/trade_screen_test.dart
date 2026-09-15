@@ -620,36 +620,6 @@ void main() {
     expect(find.text('HIP-3 Perp'), findsOneWidget);
   });
 
-  testWidgets('TP/SL editor submits position updates through the provider', (
-    tester,
-  ) async {
-    final repository = _PositionsRepository();
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
-        child: buildTestApp(
-          PositionTpSlSheet(position: _position(MarketProductKind.bstock)),
-        ),
-      ),
-    );
-
-    await tester.enterText(find.byType(TextField).at(0), '200');
-    await tester.enterText(find.byType(TextField).at(1), '150');
-    expect(find.text('Drag to set'), findsNWidgets(2));
-    expect(find.text('Quantity'), findsOneWidget);
-    expect(find.text('NVDAB/USDT'), findsOneWidget);
-    expect(
-      find.byKey(const Key('bstocks-tp-sl-quantity-slider')),
-      findsOneWidget,
-    );
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
-    await tester.pump();
-
-    expect(repository.tpSlUpdates, [('position-1', '200', '150')]);
-    expect(repository.lastTpSlQuantity, percentageQuantity('3.0154', '20'));
-  });
-
   testWidgets('Trade bStocks position card opens the sell panel from Close', (
     tester,
   ) async {
@@ -1014,9 +984,6 @@ final class _OrderOutcomeRepository implements OrdersRepository {
 }
 
 final class _PositionsRepository implements PositionsRepository {
-  final List<(String, String?, String?)> tpSlUpdates = [];
-  String? lastTpSlQuantity;
-
   @override
   Future<Position> updateTpSl(
     Position position, {
@@ -1028,8 +995,6 @@ final class _PositionsRepository implements PositionsRepository {
     ProtectionClearScope? clearScope,
     required String idempotencyKey,
   }) async {
-    tpSlUpdates.add((position.positionId, takeProfit, stopLoss));
-    lastTpSlQuantity = quantity;
     return position;
   }
 

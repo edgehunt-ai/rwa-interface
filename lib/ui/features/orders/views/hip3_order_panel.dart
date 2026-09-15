@@ -13,6 +13,7 @@ import 'package:rwa_interface/domain/repositories/hip3_order_execution_repositor
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
@@ -252,6 +253,26 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     return Hip3OpeningProtection(takeProfit: leg(0), stopLoss: leg(2));
   }
 
+  /// A limit order prices its protection off the limit; a market order off
+  /// the live quote.
+  double? _protectionReference() {
+    if (_type == TradingOrderType.limit) {
+      final limit = double.tryParse(_limitPrice.text.trim());
+      if (limit != null) return limit;
+    }
+    final snapshot = ref
+        .read(
+          marketSnapshotProvider(
+            MarketProductRef(
+              symbol: widget.symbol,
+              kind: MarketProductKind.perp,
+            ),
+          ),
+        )
+        .value;
+    return double.tryParse(snapshot?.price.value ?? '');
+  }
+
   Future<void> _editTpSl() async {
     final result = await showModalBottomSheet<_Hip3TpSlSelection>(
       context: context,
@@ -261,6 +282,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         side: _side,
         takeProfit: _protectionPrices[0].text,
         stopLoss: _protectionPrices[2].text,
+        referencePrice: _protectionReference(),
       ),
     );
     if (result == null || !mounted) return;
@@ -950,12 +972,14 @@ class _Hip3TpSlSheet extends StatefulWidget {
     required this.side,
     required this.takeProfit,
     required this.stopLoss,
+    required this.referencePrice,
   });
 
   final String symbol;
   final TradingSide side;
   final String takeProfit;
   final String stopLoss;
+  final double? referencePrice;
 
   @override
   State<_Hip3TpSlSheet> createState() => _Hip3TpSlSheetState();
@@ -1032,6 +1056,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                   title: l10n.takeProfit,
                   controller: _takeProfit,
                   enabled: _takeProfitEnabled,
+                  referencePrice: widget.referencePrice,
                   inputKey: const Key('opening-protection-0'),
                   rulerKey: const Key('take-profit-ruler'),
                   onEnabledChanged: (value) =>
@@ -1042,6 +1067,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                   title: l10n.stopLoss,
                   controller: _stopLoss,
                   enabled: _stopLossEnabled,
+                  referencePrice: widget.referencePrice,
                   inputKey: const Key('opening-protection-2'),
                   rulerKey: const Key('stop-loss-ruler'),
                   onEnabledChanged: (value) =>
