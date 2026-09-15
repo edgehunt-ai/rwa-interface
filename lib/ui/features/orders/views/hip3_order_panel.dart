@@ -79,6 +79,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        ref.invalidate(tradingAccountsProvider);
         ref.invalidate(hip3OrderAvailableBalanceProvider);
         _loadContext();
       }
@@ -578,6 +579,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   inputAsset: _inputNotional ? settlementAsset : widget.symbol,
                   quantityInput: !_inputNotional,
                   availableMargin: availableBalance.value?.value,
+                  availableMarginLoading:
+                      availableBalance.isLoading ||
+                      availableBalance.isRefreshing,
                   percentage: _percentage,
                   onMarginModeTap: () {
                     if (_pendingSetting != null || _submitting) {
@@ -1230,6 +1234,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     required this.inputAsset,
     required this.quantityInput,
     this.availableMargin,
+    required this.availableMarginLoading,
     required this.percentage,
     required this.onMarginModeTap,
     required this.onLeverageTap,
@@ -1243,6 +1248,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   final String inputAsset;
   final bool quantityInput;
   final String? availableMargin;
+  final bool availableMarginLoading;
   final double percentage;
   final VoidCallback onMarginModeTap;
   final VoidCallback onLeverageTap;
@@ -1323,7 +1329,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                         color: colors.secondaryText,
                       ),
                     ),
-                    if (availableMargin == null)
+                    if (availableMarginLoading || availableMargin == null)
                       const SizedBox(
                         key: Key('hip3-margin-loading'),
                         width: 16,

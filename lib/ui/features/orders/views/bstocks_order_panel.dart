@@ -63,6 +63,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     limitPrice.addListener(_scheduleQuote);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        ref.invalidate(tradingAccountsProvider);
         ref.invalidate(bstocksOrderAvailableBalanceProvider);
       }
     });
@@ -398,7 +399,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ? TokenAmountFormatter.formatUsd(availableAmount)
         : '${TokenAmountFormatter.formatValue(availableAmount)} ${widget.symbol}';
     final balanceLoading = isBuy
-        ? availableBalance.isLoading
+        ? availableBalance.isLoading || availableBalance.isRefreshing
         : holdings.isLoading;
     final receive =
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
