@@ -237,6 +237,9 @@ void main() {
 
     await gesture.up();
     await tester.pump();
+    // Releasing hands the header back to the live price, which rolls into
+    // place; let that land before reading the settled Text.
+    await tester.pump(const Duration(milliseconds: 900));
     expect(_headerPrice(r'$100'), findsOneWidget);
     expect(
       tester.widget<Text>(_headerPrice(r'$100')).style?.color,

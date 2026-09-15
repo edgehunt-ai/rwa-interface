@@ -16,6 +16,7 @@ import 'package:rwa_interface/ui/core/feedback/failure_state.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
+import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
@@ -230,7 +231,7 @@ class _PortfolioCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          AnimatedNumberText(
             TokenAmountFormatter.formatUsd(portfolio.totalValueUsd),
             style: TextStyle(
               color: colors.primaryText,

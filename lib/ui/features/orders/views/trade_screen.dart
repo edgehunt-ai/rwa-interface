@@ -25,6 +25,7 @@ import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/markets/market_session_presentation.dart';
+import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
@@ -563,6 +564,9 @@ class _ProductHeader extends StatelessWidget {
     final price = selectedPrice ?? snapshot?.price;
     final change = selectedChangePercent ?? snapshot?.change24hPercent;
     final changeColor = _changeColor(context, change);
+    // Scrubbing the chart drives these from the finger, so the digits follow
+    // it directly; rolling them would animate on every pointer move.
+    final settle = selectedPrice == null ? null : Duration.zero;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -658,8 +662,9 @@ class _ProductHeader extends StatelessWidget {
                 radius: 4,
               )
             else
-              Text(
+              AnimatedNumberText(
                 price == null ? '—' : TokenAmountFormatter.formatUsd(price),
+                duration: settle,
                 style: TextStyle(
                   color: price == null ? null : changeColor,
                   fontWeight: FontWeight.w700,
@@ -677,8 +682,9 @@ class _ProductHeader extends StatelessWidget {
                   color: changeColor.withValues(alpha: .1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(
+                child: AnimatedNumberText(
                   TokenAmountFormatter.formatPercent(change),
+                  duration: settle,
                   style: TextStyle(
                     color: changeColor,
                     fontSize: 12,
@@ -1610,7 +1616,7 @@ class _Metric extends StatelessWidget {
       if (loading)
         const SkeletonBlock(width: 58, height: 12, radius: 4)
       else
-        Text(
+        AnimatedNumberText(
           value,
           style: TextStyle(
             fontSize: 12,

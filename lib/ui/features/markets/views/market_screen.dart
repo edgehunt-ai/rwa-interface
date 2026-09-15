@@ -13,6 +13,7 @@ import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
 import 'package:rwa_interface/ui/core/markets/market_session_presentation.dart';
+import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
@@ -328,10 +329,11 @@ class _StockTile extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          Text(
+          AnimatedNumberText(
             TokenAmountFormatter.formatUsd(
               DecimalValue(stock.referencePrice, asset: 'USD', unit: 'price'),
             ),
+            key: ValueKey('stock-price-${stock.symbol}'),
             style: TextStyle(color: colors.secondaryText),
           ),
         ],

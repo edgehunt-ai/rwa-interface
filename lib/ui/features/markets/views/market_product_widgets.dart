@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
+import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
 enum _ProductFilterChoice { all, bstock, perp }
@@ -281,14 +282,16 @@ class MarketProductRow extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
+              AnimatedNumberText(
                 TokenAmountFormatter.formatUsd(product.price),
+                key: ValueKey('market-price-${product.symbol}'),
                 style: Theme.of(context).textTheme.bodyLarge
                     ?.copyWith(fontWeight: FontWeight.w600),
               ),
               if (product.change24hPercent != null)
-                Text(
+                AnimatedNumberText(
                   TokenAmountFormatter.formatPercent(product.change24hPercent!),
+                  key: ValueKey('market-change-${product.symbol}'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: positive ? semantic.success : semantic.loss,
                   ),
