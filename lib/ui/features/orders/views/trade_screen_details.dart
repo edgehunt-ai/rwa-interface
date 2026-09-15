@@ -42,7 +42,8 @@ class _Details extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Fixed-width tabs packed from the left, per the Figma ranking tabs.
+        // Tabs are packed from the left and sized to their own label, so a
+        // count suffix widens its tab instead of being clipped.
         SizedBox(
           height: 32,
           child: Row(
@@ -50,11 +51,11 @@ class _Details extends ConsumerWidget {
               for (final tab in tabs) ...[
                 if (tab != tabs.first) const SizedBox(width: 4),
                 SizedBox(
-                  width: 68,
+                  height: 32,
                   child: TextButton(
                     onPressed: () => onChanged(tab),
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),

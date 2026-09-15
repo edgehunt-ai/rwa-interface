@@ -44,17 +44,26 @@ void main() {
   testWidgets('Trade switches chart states and exposes market hours', (
     tester,
   ) async {
+    // The sheet only lists sessions that fall on the current local day.
+    final today = DateTime.now();
+    final sessionStart = DateTime(today.year, today.month, today.day, 9, 30);
+    final sessionEnd = DateTime(today.year, today.month, today.day, 16);
     await tester.pumpWidget(
       _tradeWithMarkets(
         marketHours: MarketHours(
           timezone: 'America/New_York',
           current: MarketSessionKind.regular,
           currentLabel: 'Regular Market',
+          // The navigation badge counts down to this, so it has to be ahead of
+          // the wall clock the widget reads.
+          nextTransitionAt: DateTime.now().add(
+            const Duration(hours: 2, seconds: 30),
+          ),
           segments: [
             MarketSessionSegment(
               kind: MarketSessionKind.regular,
-              start: DateTime.utc(2026, 1, 1, 14, 30),
-              end: DateTime.utc(2026, 1, 1, 21),
+              start: sessionStart,
+              end: sessionEnd,
             ),
           ],
         ),
@@ -77,28 +86,21 @@ void main() {
       returnContext: '/trade bStocks Details',
       finder: find.text('US Market Trading Hours'),
     );
-    expect(find.text('Regular Market'), findsNWidgets(2));
+    // The sheet's lead paragraph is the fixed trading-hours disclaimer, so
+    // 'Regular Market' appears once, as the row for that session.
+    expect(find.text('Regular Market'), findsOneWidget);
     expect(
-      find.text(
-        'Regular Market '
-        '${_localTime(DateTime.utc(2026, 1, 1, 21))}',
-      ),
+      find.textContaining('Market closed indicates no-trading periods'),
       findsOneWidget,
     );
+    // The navigation badge pairs the session with a live countdown.
+    expect(find.text('Regular Market 02:00'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('market-status-icon-regular')),
       findsOneWidget,
     );
     expect(find.text('24/7'), findsOneWidget);
-    expect(
-      find.text(
-        _localSchedule(
-          DateTime.utc(2026, 1, 1, 14, 30),
-          DateTime.utc(2026, 1, 1, 21),
-        ),
-      ),
-      findsOneWidget,
-    );
+    expect(find.text(_localSchedule(sessionStart, sessionEnd)), findsOneWidget);
 
     await tester.tap(find.byTooltip('Cancel'));
     await tester.pumpAndSettle();
@@ -589,22 +591,34 @@ void main() {
     expect(find.text('Edit TP/SL'), findsNothing);
   });
 
-  testWidgets(
-    'Trade hides the market switch when only one market is available',
-    (tester) async {
-      await tester.pumpWidget(
-        _tradeWithMarkets(
-          products: [_marketProduct('NVDA', MarketProductKind.perp)],
-          perpSnapshot: _perpDisclosureSnapshot(),
-        ),
-      );
-      await tester.pumpAndSettle();
+  testWidgets('Trade keeps both product tabs and empties the unsupported one', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _tradeWithMarkets(
+        products: [_marketProduct('NVDA', MarketProductKind.perp)],
+        perpSnapshot: _perpDisclosureSnapshot(),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.text('bStocks'), findsNothing);
-      expect(find.text('HIP-3 Perp'), findsNothing);
-      expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
-    },
-  );
+    expect(find.text('bStocks'), findsOneWidget);
+    expect(find.text('HIP-3 Perp'), findsOneWidget);
+    expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
+    expect(find.byKey(const Key('trade-product-unavailable')), findsNothing);
+
+    await tester.tap(find.text('bStocks'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('trade-product-unavailable')), findsOneWidget);
+    expect(find.text('No bStocks market'), findsOneWidget);
+    expect(
+      find.textContaining('NVDA is not listed on this product yet'),
+      findsOneWidget,
+    );
+    // The tabs stay usable so the trader can go back.
+    expect(find.text('HIP-3 Perp'), findsOneWidget);
+  });
 
   testWidgets('TP/SL editor submits position updates through the provider', (
     tester,
@@ -680,14 +694,14 @@ void main() {
     expect(find.text('Details (1)'), findsNothing);
     expect(tester.takeException(), isNull);
 
-    final widths = ['Open', 'Position (1)', 'Details']
-        .map(
-          (label) =>
-              tester.getSize(find.widgetWithText(TextButton, label)).width,
-        )
-        .toList(growable: false);
-    expect(widths[0], closeTo(widths[1], 0.01));
-    expect(widths[1], closeTo(widths[2], 0.01));
+    // Tabs size to their own label, so the one carrying a count is wider.
+    Rect tab(String label) =>
+        tester.getRect(find.widgetWithText(TextButton, label));
+    expect(tab('Position (1)').width, greaterThan(tab('Details').width));
+    // ...and they stay packed against the left gutter, in order.
+    expect(tab('Open').left, closeTo(20, 0.01));
+    expect(tab('Position (1)').left, greaterThan(tab('Open').right));
+    expect(tab('Details').left, greaterThan(tab('Position (1)').right));
   });
 
   testWidgets(
@@ -726,12 +740,6 @@ String _localSchedule(DateTime start, DateTime end) {
   return '${time(localStart)} - ${time(localEnd)} '
       'UTC$sign${absoluteOffset.inHours.toString().padLeft(2, '0')}:'
       '${(absoluteOffset.inMinutes % 60).toString().padLeft(2, '0')}';
-}
-
-String _localTime(DateTime value) {
-  final local = value.toLocal();
-  return '${local.hour.toString().padLeft(2, '0')}:'
-      '${local.minute.toString().padLeft(2, '0')}';
 }
 
 Position _position(MarketProductKind kind) => switch (kind) {

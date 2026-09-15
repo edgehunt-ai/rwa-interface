@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
@@ -6,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/application_state.dart';
@@ -23,6 +25,7 @@ import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
+import 'package:rwa_interface/ui/core/markets/market_session_presentation.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
@@ -64,6 +67,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   late MarketProductKind productKind;
   late String symbol;
   var _orderPanelOpen = false;
+
+  /// Product the user selected from the switch that this underlying does not
+  /// offer; the tab stays selectable and the body shows an empty state.
+  MarketProductKind? _unavailableKind;
   MarketProductRef? _favoriteOverrideRef;
   bool? _favoriteOverride;
   var _favoriteBusy = false;
@@ -81,12 +88,22 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
   void _changeProduct(MarketProduct product) {
     setState(() {
+      _unavailableKind = null;
       symbol = product.symbol;
       productKind = product.kind;
       _favoriteOverrideRef = null;
       _favoriteOverride = null;
       chartSelection = null;
     });
+  }
+
+  void _selectKind(MarketProductKind kind, List<MarketProduct> products) {
+    final match = products.where((product) => product.kind == kind).firstOrNull;
+    if (match == null) {
+      setState(() => _unavailableKind = kind);
+      return;
+    }
+    _changeProduct(match);
   }
 
   Future<void> _toggleFavorite(
@@ -229,74 +246,83 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (availableProducts case final products?
-                    when products.length > 1) ...[
+                    when products.isNotEmpty) ...[
                   _ProductSwitch(
-                    products: products,
-                    kind: productKind,
-                    onChanged: _changeProduct,
+                    available: products.map((p) => p.kind).toSet(),
+                    kind: _unavailableKind ?? productKind,
+                    onChanged: (kind) => _selectKind(kind, products),
                   ),
                   const SizedBox(height: 16),
                 ],
-                _ProductHeader(
-                  symbol: symbol,
-                  kind: productKind,
-                  chartStyle: chartStyle,
-                  snapshot: snapshot,
-                  selectedPrice: chartSelection?.close,
-                  selectedChangePercent: selectedChange,
-                  referencePrice:
-                      selectedReference?.close ??
-                      candles?.referencePoints.lastOrNull?.close ??
-                      candles?.referencePrice,
-                  loading: snapshotState.isLoading,
-                  isFavorite: isFavorite,
-                  favoriteLoading: _favoriteBusy,
-                  onMarketHours: () => setState(() => marketHoursOpen = true),
-                  onFavoriteToggle: () =>
-                      _toggleFavorite(productRef, isFavorite),
-                ),
-                const SizedBox(height: 12),
-                RepaintBoundary(
-                  child: _Chart(
-                    style: chartStyle,
-                    range: chartRange,
-                    candles: candles,
-                    loading: candlesState.isLoading,
-                    onStyleChanged: (next) => setState(() => chartStyle = next),
-                    onRangeChanged: (next) => setState(() {
-                      chartRange = next;
-                      chartSelection = null;
-                    }),
-                    selectedCandle: chartSelection,
-                    onSelectionChanged: (next) =>
-                        setState(() => chartSelection = next),
+                if (_unavailableKind case final kind?)
+                  _ProductUnavailable(
+                    kind: kind,
+                    symbol: _underlyingSymbol(symbol),
+                  )
+                else ...[
+                  _ProductHeader(
+                    symbol: symbol,
+                    kind: productKind,
+                    chartStyle: chartStyle,
+                    snapshot: snapshot,
+                    selectedPrice: chartSelection?.close,
+                    selectedChangePercent: selectedChange,
+                    referencePrice:
+                        selectedReference?.close ??
+                        candles?.referencePoints.lastOrNull?.close ??
+                        candles?.referencePrice,
+                    loading: snapshotState.isLoading,
+                    isFavorite: isFavorite,
+                    favoriteLoading: _favoriteBusy,
+                    onMarketHours: () => setState(() => marketHoursOpen = true),
+                    onFavoriteToggle: () =>
+                        _toggleFavorite(productRef, isFavorite),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _Statistics(
-                  snapshot: snapshot,
-                  candles: candles,
-                  loading: snapshotState.isLoading,
-                ),
-                const SizedBox(height: 16),
-                _Details(
-                  activeTab: detailTab,
-                  onChanged: (tab) => setState(() => detailTab = tab),
-                  kind: productKind,
-                  symbol: symbol,
-                ),
+                  const SizedBox(height: 12),
+                  RepaintBoundary(
+                    child: _Chart(
+                      style: chartStyle,
+                      range: chartRange,
+                      candles: candles,
+                      loading: candlesState.isLoading,
+                      onStyleChanged: (next) =>
+                          setState(() => chartStyle = next),
+                      onRangeChanged: (next) => setState(() {
+                        chartRange = next;
+                        chartSelection = null;
+                      }),
+                      selectedCandle: chartSelection,
+                      onSelectionChanged: (next) =>
+                          setState(() => chartSelection = next),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _Statistics(
+                    snapshot: snapshot,
+                    candles: candles,
+                    loading: snapshotState.isLoading,
+                  ),
+                  const SizedBox(height: 16),
+                  _Details(
+                    activeTab: detailTab,
+                    onChanged: (tab) => setState(() => detailTab = tab),
+                    kind: productKind,
+                    symbol: symbol,
+                  ),
+                ],
               ],
             ),
-            _TradeActions(
-              primaryLabel: productKind == MarketProductKind.bstock
-                  ? AppLocalizations.of(context).buy
-                  : AppLocalizations.of(context).long,
-              secondaryLabel: productKind == MarketProductKind.bstock
-                  ? AppLocalizations.of(context).sell
-                  : AppLocalizations.of(context).short,
-              onBuy: () => _openOrderPanel(TradingSide.buy),
-              onSell: () => _openOrderPanel(TradingSide.sell),
-            ),
+            if (_unavailableKind == null)
+              _TradeActions(
+                primaryLabel: productKind == MarketProductKind.bstock
+                    ? AppLocalizations.of(context).buy
+                    : AppLocalizations.of(context).long,
+                secondaryLabel: productKind == MarketProductKind.bstock
+                    ? AppLocalizations.of(context).sell
+                    : AppLocalizations.of(context).short,
+                onBuy: () => _openOrderPanel(TradingSide.buy),
+                onSell: () => _openOrderPanel(TradingSide.sell),
+              ),
             if (marketHoursOpen)
               MarketHoursSheet(
                 onClose: () => setState(() => marketHoursOpen = false),
@@ -321,145 +347,89 @@ class _NavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
     final underlying = _underlyingSymbol(symbol);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: AppLocalizations.of(context).back,
-            icon: const Icon(Icons.chevron_left, size: 24),
-            onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-          ),
-          const SizedBox(width: 4),
-          _ProductMark(symbol: underlying, size: 48, logoSize: 17.455),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(underlying, style: TextStyle(fontWeight: FontWeight.w600)),
-                GestureDetector(
-                  key: const Key('trade-market-status-navigation'),
-                  onTap: onMarketHours,
-                  child: Row(
-                    children: [
-                      Text(
-                        _companyName(underlying),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(width: 6),
-                      if (underlying != 'ETH') ...[
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFDCEBFA),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: _MarketStatusContent(
-                            hours: marketHours,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ] else
-                        Text(
-                          AppLocalizations.of(context).perpetual,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                    ],
-                  ),
+    return Row(
+      children: [
+        Semantics(
+          button: true,
+          label: AppLocalizations.of(context).back,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => context.canPop() ? context.pop() : context.go('/'),
+            // The chevron sits flush with the page gutter, so the tap target
+            // grows to the right of and around the icon, never to its left.
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+              child: Transform.flip(
+                flipX: true,
+                child: SvgPicture.asset(
+                  'assets/figma/home_markets/chevron_right.svg',
+                  width: 20,
+                  height: 20,
                 ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-        ],
-      ),
-    );
-  }
-}
-
-class _MarketStatusContent extends StatelessWidget {
-  const _MarketStatusContent({required this.hours, required this.fontSize});
-
-  final MarketHours? hours;
-  final double fontSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final value = hours;
-    if (value == null) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.schedule, size: 16),
-          const SizedBox(width: 4),
-          Text(l10n.marketHours, style: TextStyle(fontSize: fontSize)),
-        ],
-      );
-    }
-
-    final segment = _currentMarketSegment(value);
-    final transition = value.nextTransitionAt ?? segment?.end;
-    final label =
-        segment?.label ??
-        value.currentLabel ??
-        _sessionLabel(l10n, value.current);
-    final text = transition == null
-        ? label
-        : '$label ${_formatLocalTime(transition)}';
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SvgPicture.asset(
-          _sessionAsset(value.current),
-          key: ValueKey('market-status-icon-${value.current.name}'),
-          width: 20,
-          height: 20,
         ),
-        const SizedBox(width: 4),
-        Text(text, style: TextStyle(fontSize: fontSize)),
+        _ProductMark(symbol: underlying, size: 32, logoSize: 17.455),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                underlying,
+                style: const TextStyle(
+                  fontSize: 15,
+                  height: 22 / 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              GestureDetector(
+                key: const Key('trade-market-status-navigation'),
+                onTap: onMarketHours,
+                child: Row(
+                  children: [
+                    Text(
+                      _companyName(underlying),
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 16 / 12,
+                        color: colors.secondaryText,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    if (underlying != 'ETH')
+                      MarketSessionBadge(hours: marketHours, compact: true)
+                    else
+                      Text(
+                        AppLocalizations.of(context).perpetual,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
       ],
     );
   }
 }
 
-MarketSessionSegment? _currentMarketSegment(MarketHours hours) {
-  final now = DateTime.now().toUtc();
-  return hours.segments
-          .where((segment) => segment.kind == hours.current)
-          .where(
-            (segment) =>
-                !now.isBefore(segment.start) && now.isBefore(segment.end),
-          )
-          .firstOrNull ??
-      hours.segments
-          .where((segment) => segment.kind == hours.current)
-          .firstOrNull;
-}
-
-String _formatLocalTime(DateTime value) {
-  final local = value.toLocal();
-  return '${local.hour.toString().padLeft(2, '0')}:'
-      '${local.minute.toString().padLeft(2, '0')}';
-}
-
 class _ProductSwitch extends StatelessWidget {
   const _ProductSwitch({
-    required this.products,
+    required this.available,
     required this.kind,
     required this.onChanged,
   });
 
-  final List<MarketProduct> products;
+  final Set<MarketProductKind> available;
   final MarketProductKind kind;
-  final ValueChanged<MarketProduct> onChanged;
+  final ValueChanged<MarketProductKind> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -474,20 +444,44 @@ class _ProductSwitch extends StatelessWidget {
       ),
       child: Row(
         children: [
-          for (final product in products)
+          for (final value in MarketProductKind.values)
             Expanded(
               child: _Segment(
-                label: product.kind == MarketProductKind.bstock
+                label: value == MarketProductKind.bstock
                     ? 'bStocks'
                     : l10n.hip3Perp,
-                asset: product.kind == MarketProductKind.bstock
+                asset: value == MarketProductKind.bstock
                     ? 'assets/figma/home_markets/venue_bnb.svg'
                     : 'assets/figma/home_markets/venue_hyperliquid.svg',
-                selected: kind == product.kind,
-                onTap: () => onChanged(product),
+                selected: kind == value,
+                onTap: () => onChanged(value),
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Shown in place of the market body when the underlying has no product of the
+/// selected kind; the switch above it stays usable.
+class _ProductUnavailable extends StatelessWidget {
+  const _ProductUnavailable({required this.kind, required this.symbol});
+
+  final MarketProductKind kind;
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      key: const Key('trade-product-unavailable'),
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: EmptyState(
+        title: kind == MarketProductKind.bstock
+            ? l10n.tradeBstocksUnavailable
+            : l10n.tradePerpUnavailable,
+        description: l10n.tradeProductUnavailableDescription(symbol),
       ),
     );
   }
@@ -581,15 +575,29 @@ class _ProductHeader extends StatelessWidget {
               logoSize: 13.091,
             ),
             const SizedBox(width: 4),
-            Text(
-              symbol,
-              style: TextStyle(
-                fontSize: 17,
-                height: 22 / 17,
-                fontWeight: FontWeight.w600,
+            Semantics(
+              button: true,
+              label: l10n.searchMarkets,
+              child: InkWell(
+                key: const Key('trade-product-switch-search'),
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => context.pushNamed(AppRoutes.marketSearchName),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      symbol,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        height: 22 / 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_drop_down, size: 20),
+                  ],
+                ),
               ),
             ),
-            const Icon(Icons.arrow_drop_down, size: 20),
             const SizedBox(width: 8),
             GestureDetector(
               key: const Key('trade-market-status-header'),
@@ -629,7 +637,13 @@ class _ProductHeader extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Icon(isFavorite ? Icons.star : Icons.star_border, size: 28),
+                  : Icon(
+                      isFavorite ? Icons.star : Icons.star_border,
+                      size: 24,
+                      color: Theme.of(context)
+                          .extension<AppRwaColors>()!
+                          .primaryText,
+                    ),
               onPressed: favoriteLoading ? null : onFavoriteToggle,
             ),
           ],
@@ -1066,14 +1080,14 @@ class _SessionBand extends StatelessWidget {
                 top: 0,
                 bottom: 0,
                 child: Container(
-                  color: _sessionColor(segment.kind).withValues(alpha: .1),
+                  color: marketSessionColor(segment.kind).withValues(alpha: .1),
                   alignment: Alignment.center,
                   child: LayoutBuilder(
                     builder: (context, constraints) => constraints.maxWidth < 68
                         ? const SizedBox.shrink()
                         : Text(
                             segment.label ??
-                                _sessionLabel(
+                                marketSessionLabel(
                                   AppLocalizations.of(context),
                                   segment.kind,
                                 ),
@@ -1100,25 +1114,6 @@ class _SessionBand extends StatelessWidget {
   DateTime _segmentEnd(MarketSessionSegment segment, DateTime windowEnd) =>
       segment.end.isAfter(windowEnd) ? windowEnd : segment.end;
 }
-
-String _sessionLabel(AppLocalizations l10n, MarketSessionKind kind) =>
-    switch (kind) {
-      MarketSessionKind.premarket => l10n.tradePreMarket,
-      MarketSessionKind.regular => l10n.tradeRegularMarket,
-      MarketSessionKind.afterHours => l10n.tradeAfterHours,
-      MarketSessionKind.overnight => l10n.tradeOvernight,
-      MarketSessionKind.weekend => l10n.tradeWeekend,
-      MarketSessionKind.holiday => l10n.tradeHoliday,
-    };
-
-Color _sessionColor(MarketSessionKind kind) => switch (kind) {
-  MarketSessionKind.regular => const Color(0xFFB9F34A),
-  MarketSessionKind.premarket ||
-  MarketSessionKind.afterHours => const Color(0xFFFF9654),
-  MarketSessionKind.overnight => const Color(0xFF2690E6),
-  MarketSessionKind.weekend ||
-  MarketSessionKind.holiday => const Color(0xFF9292A0),
-};
 
 class _ChartLoadingSkeleton extends StatelessWidget {
   const _ChartLoadingSkeleton();
@@ -1578,7 +1573,7 @@ class _ProductMark extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Theme.of(context).extension<AppRwaColors>()!.surface,
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Theme.of(context).extension<AppRwaColors>()!.border,
           ),
@@ -1590,7 +1585,7 @@ class _ProductMark extends StatelessWidget {
         ),
       );
     }
-    return MarketAssetMark(symbol: symbol, size: size);
+    return MarketAssetMark(symbol: symbol, size: size, borderRadius: 12);
   }
 }
 
@@ -1604,16 +1599,25 @@ class _Metric extends StatelessWidget {
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label, style: const TextStyle(fontSize: 11, height: 14 / 11)),
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          height: 14 / 11,
+          color: Theme.of(context).extension<AppRwaColors>()!.tertiaryText,
+        ),
+      ),
+      const SizedBox(height: 4),
       if (loading)
         const SkeletonBlock(width: 58, height: 12, radius: 4)
       else
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             height: 16 / 12,
             fontWeight: FontWeight.w600,
+            color: Theme.of(context).extension<AppRwaColors>()!.primaryText,
           ),
         ),
     ],

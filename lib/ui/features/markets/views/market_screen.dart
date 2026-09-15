@@ -6,13 +6,13 @@ import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/market_snapshot.dart';
 import 'package:rwa_interface/domain/models/stock.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
+import 'package:rwa_interface/ui/core/markets/market_session_presentation.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
@@ -81,6 +81,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                   readOnly: true,
                   onTap: () => context.pushNamed(AppRoutes.marketSearchName),
                   decoration: InputDecoration(
+                    fillColor: colors.subtleSurface,
                     prefixIcon: Padding(
                       padding: const EdgeInsets.all(12),
                       child: SvgPicture.asset(
@@ -190,16 +191,13 @@ class _MarketStatusButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
     final state = ref.watch(marketHoursProvider);
     final l10n = AppLocalizations.of(context);
-    final label = state.value?.currentLabel ?? l10n.usMarket;
-    final isOpen = state.value?.current == MarketSessionKind.regular;
     return Semantics(
       button: true,
       label: l10n.usMarketStatus,
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(999),
         onTap: () => showGeneralDialog<void>(
           context: context,
           barrierDismissible: true,
@@ -209,39 +207,23 @@ class _MarketStatusButton extends ConsumerWidget {
           pageBuilder: (_, _, _) =>
               MarketHoursSheet(onClose: () => Navigator.pop(context)),
         ),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 32),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: state.isLoading
-              ? const SkeletonBlock(width: 72, height: 14, radius: 4)
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        color: isOpen
-                            ? const Color(0xFF04A08B)
-                            : colors.secondaryText,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+        child: state.isLoading
+            ? Container(
+                constraints: const BoxConstraints(minHeight: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
                 ),
-        ),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .extension<AppRwaColors>()!
+                      .subtleSurface,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const SkeletonBlock(width: 72, height: 14, radius: 4),
+              )
+            : MarketSessionBadge(hours: state.value),
       ),
     );
   }
@@ -325,7 +307,7 @@ class _StockTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              MarketAssetMark(symbol: stock.symbol, size: 36),
+              MarketAssetMark(symbol: stock.symbol, size: 36, borderRadius: 12),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
