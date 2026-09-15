@@ -127,10 +127,7 @@ void main() {
       await tester.enterText(takeProfit, '100');
       await tester.pump();
       await tester.drag(
-        find.descendant(
-          of: find.byKey(const Key('take-profit-ruler')),
-          matching: find.byType(Slider),
-        ),
+        find.byKey(const Key('take-profit-ruler')),
         const Offset(80, 0),
       );
       await tester.pump();

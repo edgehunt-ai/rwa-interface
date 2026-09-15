@@ -84,10 +84,7 @@ void main() {
   ) async {
     final price = await pumpCard(tester);
 
-    await tester.drag(
-      find.descendant(of: find.byKey(rulerKey), matching: find.byType(Slider)),
-      const Offset(60, 0),
-    );
+    await tester.drag(find.byKey(rulerKey), const Offset(60, 0));
     await tester.pump();
 
     expect(double.parse(price.text), greaterThan(100));
