@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
@@ -155,60 +156,88 @@ class TpSlTickRuler extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final current = value.clamp(minimum, maximum);
     final tickCount = (divisions + 1).clamp(2, 21);
+    var dragValue = current;
+    var dragStartX = 0.0;
+    var dragStartValue = current;
     return Semantics(
       container: true,
       label: semanticLabel,
       child: ExcludeSemantics(
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: colors.subtleSurface,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              IgnorePointer(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      for (var index = 0; index < tickCount; index++)
-                        Expanded(
-                          child: Align(
-                            child: Container(
-                              width: 1,
-                              height: index % 5 == 0 ? 25 : 18,
-                              color: colors.border,
-                            ),
-                          ),
-                        ),
-                    ],
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          dragStartBehavior: DragStartBehavior.down,
+          onHorizontalDragStart: enabled
+              ? (_) {
+                  dragStartX = 0;
+                  dragStartValue = current;
+                  dragValue = current;
+                }
+              : null,
+          onHorizontalDragUpdate: enabled
+              ? (details) {
+                  final range = maximum - minimum;
+                  final width = (context.size?.width ?? 0) - 24;
+                  if (range <= 0 || width <= 0) return;
+                  dragStartX += details.delta.dx;
+                  dragValue = (dragStartValue + dragStartX / width * range)
+                      .clamp(minimum, maximum);
+                  onChanged(dragValue);
+                }
+              : null,
+          child: Container(
+            height: 48,
+            decoration: BoxDecoration(
+              color: colors.subtleSurface,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Stack(
+              children: [
+                CustomPaint(
+                  painter: _TpSlRulerPainter(
+                    value: current,
+                    minimum: minimum,
+                    maximum: maximum,
+                    divisions: divisions,
+                    tickCount: tickCount,
+                    tickColor: colors.border,
+                    accentColor: colors.selected,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Text(
+                        AppLocalizations.of(context).dragToSet,
+                        style: const TextStyle(color: Color(0xFF676776)),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 8,
-                child: Text(AppLocalizations.of(context).dragToSet),
-              ),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: Colors.transparent,
-                  inactiveTrackColor: Colors.transparent,
-                  trackHeight: 0,
-                  thumbColor: colors.selected,
-                  overlayShape: SliderComponentShape.noOverlay,
-                  thumbShape: const _TpSlRulerThumbShape(),
+                IgnorePointer(
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: Colors.transparent,
+                      inactiveTrackColor: Colors.transparent,
+                      disabledActiveTrackColor: Colors.transparent,
+                      disabledInactiveTrackColor: Colors.transparent,
+                      thumbColor: Colors.transparent,
+                      disabledThumbColor: Colors.transparent,
+                      overlayColor: Colors.transparent,
+                      overlayShape: SliderComponentShape.noOverlay,
+                      thumbShape: SliderComponentShape.noThumb,
+                      trackHeight: 48,
+                    ),
+                    child: Slider(
+                      value: current,
+                      min: minimum,
+                      max: maximum,
+                      divisions: divisions,
+                      onChanged: null,
+                    ),
+                  ),
                 ),
-                child: Slider(
-                  value: current,
-                  min: minimum,
-                  max: maximum,
-                  divisions: divisions,
-                  onChanged: enabled ? onChanged : null,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -216,34 +245,61 @@ class TpSlTickRuler extends StatelessWidget {
   }
 }
 
-class _TpSlRulerThumbShape extends SliderComponentShape {
-  const _TpSlRulerThumbShape();
+class _TpSlRulerPainter extends CustomPainter {
+  const _TpSlRulerPainter({
+    required this.value,
+    required this.minimum,
+    required this.maximum,
+    required this.divisions,
+    required this.tickCount,
+    required this.tickColor,
+    required this.accentColor,
+  });
+
+  final double value;
+  final double minimum;
+  final double maximum;
+  final int divisions;
+  final int tickCount;
+  final Color tickColor;
+  final Color accentColor;
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => const Size(4, 32);
-
-  @override
-  void paint(
-    PaintingContext context,
-    Offset center, {
-    required Animation<double> activationAnimation,
-    required Animation<double> enableAnimation,
-    required bool isDiscrete,
-    required TextPainter labelPainter,
-    required RenderBox parentBox,
-    required SliderThemeData sliderTheme,
-    required TextDirection textDirection,
-    required double value,
-    required double textScaleFactor,
-    required Size sizeWithOverflow,
-  }) {
-    final paint = Paint()..color = sliderTheme.thumbColor!;
-    context.canvas.drawRRect(
+  void paint(Canvas canvas, Size size) {
+    final trackLeft = 12.0;
+    final trackRight = size.width - 12;
+    final trackWidth = trackRight - trackLeft;
+    final centerX = size.width / 2;
+    final progress = ((value - minimum) / (maximum - minimum)).clamp(0.0, 1.0);
+    final selectedX = trackLeft + progress * trackWidth;
+    final gradient = const LinearGradient(
+      colors: [Color(0x1A676776), Color(0x80676776), Color(0x1A676776)],
+      stops: [0, 0.5, 1],
+    ).createShader(Rect.fromLTWH(trackLeft, 0, trackWidth, size.height));
+    final paint = Paint()..shader = gradient;
+    final tickSpacing = trackWidth / divisions;
+    for (var index = 0; index < tickCount; index++) {
+      final x = centerX + (trackLeft + index * tickSpacing - selectedX);
+      if (x < trackLeft || x > trackRight) continue;
+      final height = index % 5 == 0 ? 25.0 : 18.0;
+      canvas.drawRect(
+        Rect.fromLTWH(x - .5, (size.height - height) / 2, 1, height),
+        paint,
+      );
+    }
+    final indicator = Paint()..color = accentColor;
+    canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(center: center, width: 4, height: 32),
+        Rect.fromLTWH(centerX - 2, (size.height - 32) / 2, 4, 32),
         const Radius.circular(2),
       ),
-      paint,
+      indicator,
     );
   }
+
+  @override
+  bool shouldRepaint(_TpSlRulerPainter oldDelegate) =>
+      value != oldDelegate.value ||
+      minimum != oldDelegate.minimum ||
+      maximum != oldDelegate.maximum;
 }
