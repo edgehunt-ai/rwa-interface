@@ -1756,6 +1756,7 @@ class _LeverageOption extends StatelessWidget {
             '${value}x',
             style: TextStyle(
               color: selected ? colors.onPrimaryAction : colors.secondaryText,
+              fontSize: 15,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
