@@ -108,18 +108,20 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                   _productKind = null;
                 }),
               ),
-              const SizedBox(height: 8),
-              _Filters(
-                category: _category,
-                productKind: _productKind,
-                onProductChanged: (value) =>
-                    setState(() => _productKind = value),
-                status: _status,
-                onStatusChanged: (value) => setState(() => _status = value),
-                type: _type,
-                onTypeChanged: (value) => setState(() => _type = value),
-              ),
-              const SizedBox(height: 8),
+              if (_category != ActivityCategory.signatures) ...[
+                const SizedBox(height: 8),
+                _Filters(
+                  category: _category,
+                  productKind: _productKind,
+                  onProductChanged: (value) =>
+                      setState(() => _productKind = value),
+                  status: _status,
+                  onStatusChanged: (value) => setState(() => _status = value),
+                  type: _type,
+                  onTypeChanged: (value) => setState(() => _type = value),
+                ),
+                const SizedBox(height: 8),
+              ],
               Expanded(
                 child: activity.when(
                   loading: () => DesignStateFeedback(
@@ -529,12 +531,25 @@ class _Filters extends StatelessWidget {
       onChanged: onStatusChanged,
       width: 93,
     );
-    final filters = category == ActivityCategory.signatures
-        ? [product]
+    if (category == ActivityCategory.signatures) {
+      return const SizedBox.shrink();
+    }
+    final filters = category == ActivityCategory.funds
+        ? [typeButton, statusButton]
         : [product, typeButton, statusButton];
     final isLargeText = MediaQuery.textScalerOf(context).scale(13) > 18;
     if (isLargeText) {
       return Wrap(spacing: 8, runSpacing: 8, children: filters);
+    }
+    if (category == ActivityCategory.funds) {
+      return Row(
+        children: [
+          filters[0],
+          const SizedBox(width: 8),
+          filters[1],
+          const Spacer(),
+        ],
+      );
     }
     return Row(
       children: [
