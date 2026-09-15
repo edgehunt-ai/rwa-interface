@@ -271,7 +271,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
             SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(28, 48, 28, 28),
+                  padding: const EdgeInsets.fromLTRB(28, 48, 28, 132),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 393),
                     child: Column(
@@ -452,7 +452,22 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                             ),
                           ),
                         ],
-                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 48),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         SvgPicture.asset(
                           'assets/figma/session/protected_by_privy.svg',
                           width: 150,

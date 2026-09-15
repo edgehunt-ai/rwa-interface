@@ -1174,90 +1174,93 @@ class _CashActionSheet extends StatelessWidget {
   const _CashActionSheet({required this.balance});
   final TokenBalance balance;
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Center(child: SizedBox(width: 32, height: 4)),
-        Row(
-          children: [
-            _TokenIcon(symbol: balance.symbol),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    balance.symbol,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 17,
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Center(child: SizedBox(width: 32, height: 4)),
+          Row(
+            children: [
+              _TokenIcon(symbol: balance.symbol),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      balance.symbol,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 17,
+                      ),
                     ),
-                  ),
-                  Text(
-                    balance.chain ?? 'Cash balance',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
+                    Text(
+                      balance.chain ?? 'Cash balance',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Token details',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        _ValueRow(
-          label: AppLocalizations.of(context).network,
-          value: balance.chain ?? '—',
-        ),
-        _ValueRow(
-          label: AppLocalizations.of(context).tokenType,
-          value: balance.symbol,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Cash balance',
-          style: TextStyle(
-            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
           ),
-        ),
-        _ValueRow(
-          label: balance.valueUsd == null
-              ? '—'
-              : TokenAmountFormatter.formatUsd(balance.valueUsd!),
-          value: TokenAmountFormatter.format(
-            balance.balance,
-            symbol: balance.symbol,
-            decimals: balance.decimals,
+          const SizedBox(height: 16),
+          const Text(
+            'Token details',
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: FilledButton(
-                onPressed: () => showDepositRoutesSheet(context),
-                child: Text(AppLocalizations.of(context).deposit),
-              ),
+          _ValueRow(
+            label: AppLocalizations.of(context).network,
+            value: balance.chain ?? '—',
+          ),
+          _ValueRow(
+            label: AppLocalizations.of(context).tokenType,
+            value: balance.symbol,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Cash balance',
+            style: TextStyle(
+              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => context.pushNamed(AppRoutes.withdrawalName),
-                child: Text(AppLocalizations.of(context).withdraw),
-              ),
+          ),
+          _ValueRow(
+            label: balance.valueUsd == null
+                ? '—'
+                : TokenAmountFormatter.formatUsd(balance.valueUsd!),
+            value: TokenAmountFormatter.format(
+              balance.balance,
+              symbol: balance.symbol,
+              decimals: balance.decimals,
             ),
-          ],
-        ),
-      ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => showDepositRoutesSheet(context),
+                  child: Text(AppLocalizations.of(context).deposit),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => context.pushNamed(AppRoutes.withdrawalName),
+                  child: Text(AppLocalizations.of(context).withdraw),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }

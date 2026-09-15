@@ -66,7 +66,7 @@ class _AppToastMessageState extends State<_AppToastMessage>
   Widget build(BuildContext context) {
     final isSuccess = widget.type == AppToastType.success;
     return Positioned(
-      top: 20,
+      top: MediaQuery.paddingOf(context).top + 20,
       left: 16,
       right: 16,
       child: Center(
