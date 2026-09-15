@@ -17,6 +17,13 @@ void main() {
         timezone: 'America/New_York',
         current: kind,
         nextTransitionAt: DateTime.now().add(untilNextSession),
+        segments: [
+          MarketSessionSegment(
+            kind: kind,
+            start: DateTime.now().subtract(const Duration(hours: 1)),
+            end: DateTime.now().add(const Duration(hours: 1)),
+          ),
+        ],
       );
 
   testWidgets('market session badge counts down to the next session', (
@@ -37,7 +44,10 @@ void main() {
       find.byKey(const ValueKey('market-status-icon-overnight')),
       findsOneWidget,
     );
-    expect(badgeText(tester), 'Overnight 04:30');
+    expect(
+      badgeText(tester),
+      'Overnight ${_localTime(DateTime.now().subtract(const Duration(hours: 1)))}',
+    );
     final decoration =
         tester.widget<Container>(find.byType(Container).first).decoration
             as BoxDecoration;
@@ -63,7 +73,10 @@ void main() {
       find.byKey(const ValueKey('market-status-icon-regular')),
       findsOneWidget,
     );
-    expect(badgeText(tester), 'Regular Market 02:00');
+    expect(
+      badgeText(tester),
+      'Regular Market ${_localTime(DateTime.now().subtract(const Duration(hours: 1)))}',
+    );
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
@@ -101,4 +114,9 @@ void main() {
     );
     await tester.pumpWidget(const SizedBox.shrink());
   });
+}
+
+String _localTime(DateTime value) {
+  final local = value.toLocal();
+  return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
 }

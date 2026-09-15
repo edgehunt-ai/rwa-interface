@@ -119,8 +119,8 @@ class _MarketCountdownBuilderState extends State<MarketCountdownBuilder> {
   );
 }
 
-/// Pill showing the session the US market is currently in, followed by a live
-/// countdown to the session that follows it.
+/// Pill showing the session the US market is currently in and its local start
+/// time.
 class MarketSessionBadge extends StatelessWidget {
   const MarketSessionBadge({
     required this.hours,
@@ -139,7 +139,6 @@ class MarketSessionBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final value = hours;
     final segment = value == null ? null : currentMarketSegment(value);
-    final transition = value?.nextTransitionAt ?? segment?.end;
     final label =
         segment?.label ??
         value?.currentLabel ??
@@ -173,26 +172,19 @@ class MarketSessionBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
           ],
-          if (transition == null || !transition.isAfter(DateTime.now()))
-            Text(label, style: style)
-          else
-            MarketCountdownBuilder(
-              until: transition,
-              builder: (context, countdown) => Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(text: '$label '),
-                    TextSpan(
-                      text: countdown,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                style: style,
-              ),
-            ),
+          Text(
+            segment == null
+                ? label
+                : '$label ${_formatLocalTime(segment.start)}',
+            style: style,
+          ),
         ],
       ),
     );
   }
+}
+
+String _formatLocalTime(DateTime value) {
+  final local = value.toLocal();
+  return '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}';
 }

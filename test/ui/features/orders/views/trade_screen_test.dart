@@ -54,8 +54,6 @@ void main() {
           timezone: 'America/New_York',
           current: MarketSessionKind.regular,
           currentLabel: 'Regular Market',
-          // The navigation badge counts down to this, so it has to be ahead of
-          // the wall clock the widget reads.
           nextTransitionAt: DateTime.now().add(
             const Duration(hours: 2, seconds: 30),
           ),
@@ -93,8 +91,8 @@ void main() {
       find.textContaining('Market closed indicates no-trading periods'),
       findsOneWidget,
     );
-    // The navigation badge pairs the session with a live countdown.
-    expect(find.text('Regular Market 02:00'), findsOneWidget);
+    // The navigation badge pairs the session with its local start time.
+    expect(find.text('Regular Market 09:30'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('market-status-icon-regular')),
       findsOneWidget,
