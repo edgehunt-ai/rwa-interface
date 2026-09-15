@@ -37,6 +37,10 @@ void main() {
     final page = await repository.listStocks();
     expect(page.nextCursor, 'next-page');
     expect(page.items.single.referencePrice, financial);
+    expect(page.items.single.products, [
+      const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.bstock),
+      const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
+    ]);
   });
 }
 
@@ -95,7 +99,20 @@ final class _Markets implements MarketsService {
       ..items.add(
         wire.StockGroup(
           (group) => group
-            ..products.clear()
+            ..products.addAll([
+              wire.ProductListing(
+                (product) => product
+                  ..symbol = 'NVDA'
+                  ..kind = wire.ProductKind.bstock
+                  ..price = financial,
+              ),
+              wire.ProductListing(
+                (product) => product
+                  ..symbol = 'NVDA'
+                  ..kind = wire.ProductKind.perp
+                  ..price = financial,
+              ),
+            ])
             ..stock.update(
               (stock) => stock
                 ..symbol = 'NVDA'

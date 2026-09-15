@@ -4,16 +4,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/stock.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
-import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
 import 'package:rwa_interface/ui/core/markets/market_session_presentation.dart';
-import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
@@ -277,10 +274,17 @@ class _StockBrowse extends ConsumerWidget {
                 ),
               );
             }
-            return Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              children: [for (final stock in stocks) _StockTile(stock)],
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: stocks.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 8,
+                mainAxisExtent: 92,
+              ),
+              itemBuilder: (context, index) => _StockTile(stocks[index]),
             );
           },
         ),
@@ -295,47 +299,121 @@ class _StockTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Container(
-      width: 168,
-      height: 92,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
+    final products = stock.products.toSet();
+    final destination = products.firstWhere(
+      (product) => product.kind == MarketProductKind.bstock,
+      orElse: () => products.isNotEmpty
+          ? products.first
+          : MarketProductRef(
+              symbol: stock.symbol,
+              kind: MarketProductKind.bstock,
+            ),
+    );
+    return Semantics(
+      key: ValueKey('stock-tile-${stock.symbol}'),
+      button: true,
+      label: AppLocalizations.of(context).openTradeDetails(stock.symbol),
+      child: Material(
         color: colors.surface,
         borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              MarketAssetMark(symbol: stock.symbol, size: 36, borderRadius: 12),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push(
+            AppRoutes.tradeLocation(
+              symbol: destination.symbol,
+              kind: destination.kind.name,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      stock.symbol,
-                      style: Theme.of(context).textTheme.titleMedium,
+                    MarketAssetMark(
+                      symbol: stock.symbol,
+                      size: 36,
+                      borderRadius: 12,
                     ),
-                    Text(
-                      stock.name,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: colors.secondaryText),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            stock.symbol,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            stock.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: colors.secondaryText,
+                              fontSize: 12,
+                              height: 16 / 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          AnimatedNumberText(
-            TokenAmountFormatter.formatUsd(
-              DecimalValue(stock.referencePrice, asset: 'USD', unit: 'price'),
+                const Spacer(),
+                _StockProductSources(products: products),
+              ],
             ),
-            key: ValueKey('stock-price-${stock.symbol}'),
-            style: TextStyle(color: colors.secondaryText),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StockProductSources extends StatelessWidget {
+  const _StockProductSources({required this.products});
+
+  final Set<MarketProductRef> products;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final kinds = products.map((product) => product.kind).toSet();
+    return SizedBox(
+      height: 20,
+      child: Row(
+        children: [
+          if (kinds.contains(MarketProductKind.bstock)) ...[
+            SvgPicture.asset(
+              'assets/figma/home_markets/venue_bnb.svg',
+              width: 16,
+              height: 16,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'bStocks',
+              style: TextStyle(color: colors.secondaryText, fontSize: 12),
+            ),
+          ],
+          if (kinds.contains(MarketProductKind.bstock) &&
+              kinds.contains(MarketProductKind.perp))
+            const SizedBox(width: 4),
+          if (kinds.contains(MarketProductKind.perp)) ...[
+            SvgPicture.asset(
+              'assets/figma/home_markets/venue_hyperliquid.svg',
+              width: 16,
+              height: 16,
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                'HIP-3',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: colors.secondaryText, fontSize: 12),
+              ),
+            ),
+          ],
         ],
       ),
     );

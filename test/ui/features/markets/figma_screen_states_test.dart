@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/data/services/market_search_history_service.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
@@ -14,6 +15,7 @@ import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
+import 'package:rwa_interface/ui/features/markets/views/market_screen.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_search_screen.dart';
 
 import '../../../helpers/display_config.dart';
@@ -50,6 +52,44 @@ void main() {
     expect(find.text('Favorites'), findsNothing);
     expect(find.text('Popular'), findsOneWidget);
   });
+
+  testWidgets(
+    'market stock cards fill two columns and open supported product',
+    (tester) async {
+      final router = GoRouter(
+        routes: [
+          GoRoute(path: '/', builder: (_, _) => const MarketScreen()),
+          GoRoute(path: '/trade', builder: (_, state) => Text(state.uri.query)),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          ],
+          child: MaterialApp.router(
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('bStocks'), findsWidgets);
+      expect(find.text('HIP-3'), findsNWidgets(2));
+      final nvda = tester.getSize(find.byKey(const Key('stock-tile-NVDA')));
+      final tsla = tester.getSize(find.byKey(const Key('stock-tile-TSLA')));
+      expect(nvda.width, tsla.width);
+      expect(nvda.height, 92);
+
+      await tester.tap(find.byKey(const Key('stock-tile-TSLA')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('symbol=TSLA&kind=perp'), findsOneWidget);
+    },
+  );
 
   testWidgets('market discovery starts with the server-backed product list', (
     tester,
@@ -221,6 +261,29 @@ final class _MarketSearchHistoryService implements MarketSearchHistoryService {
 }
 
 final class _MarketsRepository implements MarketsRepository {
+  @override
+  Future<DomainPage<Stock>> listStocks() async => const DomainPage(
+    items: [
+      Stock(
+        symbol: 'NVDA',
+        name: 'NVIDIA',
+        referencePrice: '120',
+        products: [
+          MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.bstock),
+          MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
+        ],
+      ),
+      Stock(
+        symbol: 'TSLA',
+        name: 'Tesla',
+        referencePrice: '240',
+        products: [
+          MarketProductRef(symbol: 'TSLA', kind: MarketProductKind.perp),
+        ],
+      ),
+    ],
+  );
+
   @override
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,

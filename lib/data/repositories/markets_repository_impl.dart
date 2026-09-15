@@ -24,6 +24,14 @@ final class MarketsRepositoryImpl implements MarketsRepository {
               symbol: group.stock.symbol,
               name: group.stock.name,
               referencePrice: group.stock.referencePrice,
+              products: group.products
+                  .map(
+                    (product) => MarketProductRef(
+                      symbol: product.symbol,
+                      kind: _kind(product.kind),
+                    ),
+                  )
+                  .toList(growable: false),
             ),
           )
           .toList(growable: false),
