@@ -3,8 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/observability_providers.dart';
+import '../../../../app/providers/auth_providers.dart';
+import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
+import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/self_custodial_withdrawal.dart';
+import '../../../../domain/models/portfolio_asset.dart';
+import '../../../../domain/models/withdrawal.dart';
+import '../../../../domain/models/wallet.dart';
+import '../../../../domain/repositories/portfolio_repository.dart';
+import '../../../../domain/services/embedded_wallet_transaction_sender.dart';
+import '../../account/providers/account_providers.dart';
 
 final selfCustodialWithdrawalProvider = FutureProvider.autoDispose
     .family<SelfCustodialWithdrawalSummary, String>(
@@ -12,14 +21,72 @@ final selfCustodialWithdrawalProvider = FutureProvider.autoDispose
           ref.watch(fundingRepositoryProvider).getSelfCustodialWithdrawal(id),
     );
 
-final selfCustodialWithdrawalCommandsProvider = Provider(
-  (ref) => SelfCustodialWithdrawalCommands(ref),
-);
+final selfCustodialWithdrawalCommandsProvider = Provider((ref) {
+  ref.watch(sessionGenerationProvider);
+  return SelfCustodialWithdrawalCommands(ref);
+});
 
 final class SelfCustodialWithdrawalCommands {
   SelfCustodialWithdrawalCommands(this._ref);
   final Ref _ref;
   final _guard = IdempotentCommandGuard();
+  final Map<String, _PendingWithdrawalSubmission> _pendingSubmissions = {};
+
+  Future<SelfCustodialWithdrawalSummary> execute({
+    required WithdrawalQuote quote,
+  }) => _guard.run(
+    operation: 'self-custodial-withdrawal-execute',
+    fingerprint: quote.intent.fingerprint,
+    command: (createKey) async {
+      final fingerprint = quote.intent.fingerprint;
+      final pending = _pendingSubmissions[fingerprint];
+      if (pending != null) {
+        final result = await submit(
+          withdrawalId: pending.withdrawalId,
+          txHash: pending.txHash,
+        );
+        _pendingSubmissions.remove(fingerprint);
+        return result;
+      }
+      _validateRequest(quote);
+      final wallet = await _findWallet(quote.intent.chain);
+      final asset = await _findAsset(quote, wallet: wallet);
+      final prepared = await _ref
+          .read(fundingRepositoryProvider)
+          .createSelfCustodialWithdrawal(
+            walletId: wallet.walletId,
+            assetId: asset.assetId,
+            chain: wallet.chain,
+            amount: quote.intent.amount.value,
+            destinationAddress: quote.intent.address,
+            idempotencyKey: createKey,
+          );
+      _validatePrepared(prepared, asset: asset, wallet: wallet, quote: quote);
+
+      final authGateway = _ref.read(identityAuthGatewayProvider);
+      if (authGateway is! EmbeddedWalletTransactionSender) {
+        throw StateError('Privy transaction sender is unavailable');
+      }
+      final transactionSender = authGateway as EmbeddedWalletTransactionSender;
+      final txHash = await transactionSender.sendTransaction(
+        expectedSigner: prepared.transaction.from,
+        chainId: prepared.transaction.chainId,
+        to: prepared.transaction.to,
+        data: prepared.transaction.data,
+        value: prepared.transaction.value,
+      );
+      _pendingSubmissions[fingerprint] = _PendingWithdrawalSubmission(
+        withdrawalId: prepared.withdrawalId,
+        txHash: txHash,
+      );
+      final result = await submit(
+        withdrawalId: prepared.withdrawalId,
+        txHash: txHash,
+      );
+      _pendingSubmissions.remove(fingerprint);
+      return result;
+    },
+  );
 
   Future<SelfCustodialWithdrawalSummary> submit({
     required String withdrawalId,
@@ -57,4 +124,109 @@ final class SelfCustodialWithdrawalCommands {
       rethrow;
     }
   }
+
+  Future<PortfolioAsset> _findAsset(
+    WithdrawalQuote quote, {
+    required Wallet wallet,
+  }) async {
+    final repository = _ref.read(portfolioRepositoryProvider);
+    if (repository is! PortfolioAssetsRepository) {
+      throw StateError('Portfolio asset metadata is unavailable');
+    }
+    final assetsRepository = repository as PortfolioAssetsRepository;
+    final assets = await assetsRepository.listAssets();
+    final matches = assets
+        .where(
+          (asset) =>
+              asset.symbol.toUpperCase() ==
+                  quote.intent.amount.asset?.toUpperCase() &&
+              asset.network.toLowerCase() == wallet.chain.toLowerCase() &&
+              asset.walletId == wallet.walletId &&
+              asset.contractAddress != null &&
+              !asset.native &&
+              quote.intent.amount.scale <= asset.decimals &&
+              asset.balance.compareTo(quote.intent.amount) >= 0,
+        )
+        .toList(growable: false);
+    if (matches.length != 1) {
+      throw StateError('No unique withdrawable asset is available');
+    }
+    return matches.single;
+  }
+
+  Future<Wallet> _findWallet(String chain) async {
+    final page = await _ref.read(walletsProvider(null).future);
+    final matches = page.items
+        .where(
+          (wallet) =>
+              wallet.status == WalletState.active &&
+              wallet.chain.toLowerCase() == chain.toLowerCase(),
+        )
+        .toList(growable: false);
+    if (matches.length != 1) {
+      throw StateError('No unique active withdrawal wallet is available');
+    }
+    return matches.single;
+  }
+
+  void _validateRequest(WithdrawalQuote quote) {
+    if (!_evmAddress.hasMatch(quote.intent.address) ||
+        quote.intent.amount.compareTo(
+              DecimalValue(
+                '0',
+                asset: quote.intent.amount.asset,
+                unit: quote.intent.amount.unit,
+              ),
+            ) <=
+            0) {
+      throw ArgumentError('Invalid self-custodial withdrawal request');
+    }
+  }
+
+  void _validatePrepared(
+    PreparedSelfCustodialWithdrawal prepared, {
+    required PortfolioAsset asset,
+    required Wallet wallet,
+    required WithdrawalQuote quote,
+  }) {
+    final transaction = prepared.transaction;
+    if (prepared.status != SelfCustodialWithdrawalState.awaitingSubmission ||
+        prepared.assetSymbol.toUpperCase() !=
+            quote.intent.amount.asset?.toUpperCase() ||
+        prepared.amount.compareTo(quote.intent.amount) != 0 ||
+        prepared.sourceWalletId != wallet.walletId ||
+        prepared.assetId != asset.assetId ||
+        prepared.chain.toLowerCase() != quote.intent.chain.toLowerCase() ||
+        prepared.destinationAddress.toLowerCase() !=
+            quote.intent.address.toLowerCase() ||
+        transaction.from.toLowerCase() != wallet.address.toLowerCase() ||
+        transaction.chainId != _chainId(quote.intent.chain) ||
+        transaction.to.toLowerCase() != asset.contractAddress!.toLowerCase() ||
+        transaction.value.toLowerCase() != '0x0' ||
+        prepared.transaction.payloadHash.isEmpty ||
+        !RegExp(r'^0x[0-9a-fA-F]+$').hasMatch(transaction.data) ||
+        !transaction.validUntil.isAfter(DateTime.now().toUtc())) {
+      throw StateError('Server withdrawal transaction failed validation');
+    }
+  }
+
+  int _chainId(String chain) => switch (chain.toLowerCase()) {
+    'ethereum' => 1,
+    'arbitrum' => 42161,
+    'base' => 8453,
+    'bsc' => 56,
+    _ => -1,
+  };
+}
+
+final _evmAddress = RegExp(r'^0x[0-9a-fA-F]{40}$');
+
+final class _PendingWithdrawalSubmission {
+  const _PendingWithdrawalSubmission({
+    required this.withdrawalId,
+    required this.txHash,
+  });
+
+  final String withdrawalId;
+  final String txHash;
 }

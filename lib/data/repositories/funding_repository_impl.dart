@@ -314,6 +314,29 @@ final class FundingRepositoryImpl implements FundingRepository {
   ) async => _selfCustodial(await _service.getSelfCustodialWithdrawal(id));
 
   @override
+  Future<PreparedSelfCustodialWithdrawal> createSelfCustodialWithdrawal({
+    required String walletId,
+    required String assetId,
+    required String chain,
+    required String amount,
+    required String destinationAddress,
+    required String idempotencyKey,
+  }) async {
+    final value = await _service.createSelfCustodialWithdrawal(
+      api.SelfCustodialWithdrawalCreateRequest(
+        (request) => request
+          ..walletId = walletId
+          ..assetId = assetId
+          ..chain = _selfCustodialChain(chain)
+          ..amount = amount
+          ..destinationAddress = destinationAddress,
+      ),
+      idempotencyKey: idempotencyKey,
+    );
+    return _preparedSelfCustodial(value);
+  }
+
+  @override
   Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
     required String id,
     required String txHash,
@@ -354,7 +377,57 @@ final class FundingRepositoryImpl implements FundingRepository {
     },
     txHash: value.txHash,
     failureReason: value.failureReason,
+    confirmations: value.confirmations,
+    requiredConfirmations: value.requiredConfirmations,
   );
+
+  PreparedSelfCustodialWithdrawal _preparedSelfCustodial(
+    api.SelfCustodialWithdrawal value,
+  ) {
+    final transaction = value.transaction;
+    return PreparedSelfCustodialWithdrawal(
+      withdrawalId: value.withdrawalId,
+      sourceWalletId: value.sourceWalletId,
+      assetId: value.assetId,
+      assetSymbol: value.assetSymbol,
+      chain: _selfCustodialChainName(transaction.chainId),
+      amount: DecimalValue(
+        value.amount,
+        asset: value.assetSymbol,
+        unit: 'token',
+      ),
+      destinationAddress: value.destinationAddress,
+      transaction: SelfCustodialWithdrawalTransaction(
+        chainId: _chainId(transaction.chainId),
+        from: transaction.from,
+        to: transaction.to,
+        data: transaction.data,
+        value: switch (transaction.value) {
+          api.SelfCustodialWithdrawalTransactionValueEnum.n0x0 => '0x0',
+          _ => transaction.value.name,
+        },
+        payloadHash: transaction.payloadHash,
+        validUntil: transaction.validUntil.toUtc(),
+      ),
+      status: switch (value.status) {
+        api.SelfCustodialWithdrawalStatus.awaitingSubmission =>
+          SelfCustodialWithdrawalState.awaitingSubmission,
+        api.SelfCustodialWithdrawalStatus.submitted =>
+          SelfCustodialWithdrawalState.submitted,
+        api.SelfCustodialWithdrawalStatus.confirming =>
+          SelfCustodialWithdrawalState.confirming,
+        api.SelfCustodialWithdrawalStatus.confirmed =>
+          SelfCustodialWithdrawalState.confirmed,
+        api.SelfCustodialWithdrawalStatus.failed =>
+          SelfCustodialWithdrawalState.failed,
+        api.SelfCustodialWithdrawalStatus.noncanonical =>
+          SelfCustodialWithdrawalState.noncanonical,
+        api.SelfCustodialWithdrawalStatus.manualReview =>
+          SelfCustodialWithdrawalState.manualReview,
+        _ => SelfCustodialWithdrawalState.unknown,
+      },
+    );
+  }
 
   ResourceResult<Deposit> _depositResult(api.Deposit wire) {
     final value = wire.oneOf.value;
@@ -477,6 +550,32 @@ final class FundingRepositoryImpl implements FundingRepository {
     'solana' => api.Chain.solana,
     _ => throw ArgumentError('Unsupported chain'),
   };
+
+  api.SelfCustodialWithdrawalChain _selfCustodialChain(String value) =>
+      switch (value.toLowerCase()) {
+        'bsc' => api.SelfCustodialWithdrawalChain.BSC,
+        'arbitrum' => api.SelfCustodialWithdrawalChain.arbitrum,
+        'base' => api.SelfCustodialWithdrawalChain.base_,
+        'ethereum' => api.SelfCustodialWithdrawalChain.ethereum,
+        _ => throw ArgumentError('Unsupported self-custodial chain'),
+      };
+
+  int _chainId(api.SelfCustodialWithdrawalChainId value) => switch (value) {
+    api.SelfCustodialWithdrawalChainId.n1 => 1,
+    api.SelfCustodialWithdrawalChainId.n42161 => 42161,
+    api.SelfCustodialWithdrawalChainId.n8453 => 8453,
+    api.SelfCustodialWithdrawalChainId.n56 => 56,
+    _ => throw ArgumentError('Unsupported self-custodial chain id'),
+  };
+
+  String _selfCustodialChainName(api.SelfCustodialWithdrawalChainId value) =>
+      switch (value) {
+        api.SelfCustodialWithdrawalChainId.n1 => 'Ethereum',
+        api.SelfCustodialWithdrawalChainId.n42161 => 'Arbitrum',
+        api.SelfCustodialWithdrawalChainId.n8453 => 'Base',
+        api.SelfCustodialWithdrawalChainId.n56 => 'BSC',
+        _ => throw ArgumentError('Unsupported self-custodial chain id'),
+      };
   DepositState _confirmedDepositStatus(api.DepositStatus value) =>
       switch (value) {
         api.DepositStatus.confirmed => DepositState.credited,

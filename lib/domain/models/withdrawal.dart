@@ -1,4 +1,5 @@
 import 'decimal_value.dart';
+import 'self_custodial_withdrawal.dart';
 
 final class WithdrawableAsset {
   const WithdrawableAsset({
@@ -7,6 +8,10 @@ final class WithdrawableAsset {
     required this.balance,
     this.valueUsd,
     this.decimals,
+    this.assetId,
+    this.walletId,
+    this.contractAddress,
+    this.native = false,
   });
 
   final String symbol;
@@ -14,9 +19,13 @@ final class WithdrawableAsset {
   final DecimalValue balance;
   final DecimalValue? valueUsd;
   final int? decimals;
+  final String? assetId;
+  final String? walletId;
+  final String? contractAddress;
+  final bool native;
 
   String get key => '$symbol|$chain';
-  bool get isWithdrawalSupported => symbol == 'USDC';
+  bool get isWithdrawalSupported => symbol == 'USDC' && !native;
 }
 
 final class WithdrawalIntent {
@@ -46,6 +55,50 @@ final class WithdrawalQuote {
   final DecimalValue totalFee;
   final DecimalValue estimatedReceive;
   final bool sufficient;
+}
+
+final class SelfCustodialWithdrawalTransaction {
+  const SelfCustodialWithdrawalTransaction({
+    required this.chainId,
+    required this.from,
+    required this.to,
+    required this.data,
+    required this.value,
+    required this.payloadHash,
+    required this.validUntil,
+  });
+
+  final int chainId;
+  final String from;
+  final String to;
+  final String data;
+  final String value;
+  final String payloadHash;
+  final DateTime validUntil;
+}
+
+final class PreparedSelfCustodialWithdrawal {
+  const PreparedSelfCustodialWithdrawal({
+    required this.withdrawalId,
+    required this.sourceWalletId,
+    required this.assetId,
+    required this.assetSymbol,
+    required this.chain,
+    required this.amount,
+    required this.destinationAddress,
+    required this.transaction,
+    required this.status,
+  });
+
+  final String withdrawalId;
+  final String sourceWalletId;
+  final String assetId;
+  final String assetSymbol;
+  final String chain;
+  final DecimalValue amount;
+  final String destinationAddress;
+  final SelfCustodialWithdrawalTransaction transaction;
+  final SelfCustodialWithdrawalState status;
 }
 
 enum WalletAuthorizationState {

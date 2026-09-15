@@ -8,6 +8,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../domain/auth/authentication.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
+import '../../domain/services/embedded_wallet_transaction_sender.dart';
 import '../../app/config/privy_configuration.dart';
 
 typedef PrivyFactory = Privy Function(PrivyConfig configuration);
@@ -88,7 +89,10 @@ String _shortenWalletAddress(String address) => address.length <= 12
     : '${address.substring(0, 6)}...${address.substring(address.length - 4)}';
 
 final class PrivyIdentityAuthGateway
-    implements IdentityAuthGateway, Hip3TypedDataSigner {
+    implements
+        IdentityAuthGateway,
+        Hip3TypedDataSigner,
+        EmbeddedWalletTransactionSender {
   PrivyIdentityAuthGateway({
     PrivyFactory? createPrivy,
     PrivyDiagnosticReporter? reportDiagnostic,
@@ -269,6 +273,81 @@ final class PrivyIdentityAuthGateway
     } catch (_) {
       throw const Hip3SigningFailure(
         Hip3SigningFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+  }
+
+  @override
+  Future<String> sendTransaction({
+    required String expectedSigner,
+    required int chainId,
+    required String to,
+    required String data,
+    required String value,
+  }) async {
+    final normalizedSigner = expectedSigner.toLowerCase();
+    if (!RegExp(r'^0x[0-9a-f]{40}$').hasMatch(normalizedSigner) ||
+        !RegExp(r'^0x[0-9a-fA-F]+$').hasMatch(to) ||
+        !RegExp(r'^0x[0-9a-fA-F]*$').hasMatch(data) ||
+        !RegExp(r'^0x[0-9a-fA-F]+$').hasMatch(value) ||
+        chainId <= 0) {
+      throw const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: false,
+      );
+    }
+    if (!_sessionUsable) {
+      throw const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+      );
+    }
+
+    final user = _user ?? await _privy?.getUser();
+    if (user == null) {
+      throw const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+      );
+    }
+    _user = user;
+    final matches = user.embeddedEthereumWallets
+        .where((wallet) => wallet.address.toLowerCase() == normalizedSigner)
+        .toList(growable: false);
+    if (matches.length != 1) {
+      throw const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: false,
+      );
+    }
+
+    final request = EthereumRpcRequest.ethSendTransaction(
+      jsonEncode({
+        'from': matches.single.address,
+        'to': to,
+        'data': data,
+        'value': value,
+        'chainId': '0x${chainId.toRadixString(16)}',
+      }),
+    );
+    try {
+      final result = await matches.single.provider.request(request);
+      return switch (result) {
+        Success<EthereumRpcResponse>(:final value)
+            when RegExp(r'^0x[0-9a-fA-F]{64}$').hasMatch(value.data) =>
+          value.data,
+        Failure<EthereumRpcResponse>(:final error) => throw error,
+        _ => throw const IdentityFailure(
+          AuthenticationFailureCode.provider,
+          retryable: true,
+        ),
+      };
+    } on IdentityFailure {
+      rethrow;
+    } catch (_) {
+      throw const IdentityFailure(
+        AuthenticationFailureCode.provider,
         retryable: true,
       );
     }

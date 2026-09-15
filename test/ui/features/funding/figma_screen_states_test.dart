@@ -242,10 +242,11 @@ void main() {
   testWidgets('withdrawal form validates input then presents its quote', (
     tester,
   ) async {
+    final funding = _CountingFunding();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          fundingRepositoryProvider.overrideWithValue(_Funding()),
+          fundingRepositoryProvider.overrideWithValue(funding),
           tradingAccountsProvider.overrideWith((_) async => _accounts),
         ],
         child: _fundingApp(const WithdrawalScreen()),
@@ -278,7 +279,8 @@ void main() {
 
     expect(find.text('Review withdrawal'), findsOneWidget);
     expect(find.text('5 USDC'), findsWidgets);
-    expect(find.text('4.9 USDC'), findsOneWidget);
+    expect(find.text('—'), findsWidgets);
+    expect(funding.quoteRequests, 0);
     expect(find.widgetWithText(FilledButton, 'Withdraw USDC'), findsOneWidget);
   });
 

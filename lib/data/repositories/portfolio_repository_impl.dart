@@ -4,6 +4,7 @@ import '../../domain/models/decimal_value.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/portfolio.dart';
+import '../../domain/models/portfolio_asset.dart';
 import '../../domain/models/portfolio_history.dart' as domain;
 import '../../domain/models/position.dart';
 import '../../domain/models/trading_account.dart';
@@ -14,7 +15,10 @@ import '../services/portfolio_service.dart';
 // ignore_for_file: deprecated_member_use
 
 final class PortfolioRepositoryImpl
-    implements PortfolioRepository, PortfolioHistoryRepository {
+    implements
+        PortfolioRepository,
+        PortfolioHistoryRepository,
+        PortfolioAssetsRepository {
   PortfolioRepositoryImpl(this._service);
   final PortfolioService _service;
 
@@ -59,6 +63,29 @@ final class PortfolioRepositoryImpl
   @override
   Future<List<TradingAccount>> listAccounts() async =>
       (await _service.listAccounts()).items.map(_account).toList();
+
+  @override
+  Future<List<PortfolioAsset>> listAssets({String? cursor}) async {
+    final page = await _service.listAssets(cursor: cursor);
+    return page.items
+        .map(
+          (asset) => PortfolioAsset(
+            assetId: asset.assetId,
+            network: asset.network.name,
+            symbol: asset.symbol,
+            decimals: asset.decimals,
+            balance: DecimalValue(
+              asset.balance,
+              asset: asset.symbol,
+              unit: 'token',
+            ),
+            walletId: asset.walletId,
+            contractAddress: asset.contractAddress,
+            native: asset.native_,
+          ),
+        )
+        .toList(growable: false);
+  }
 
   @override
   Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async {

@@ -45,11 +45,42 @@ void main() {
     expect(result.resource.instructions.address, '0xrecipient');
     expect(result.capability, isNull);
   });
+
+  test(
+    'self-custodial withdrawal serializes the exact create request',
+    () async {
+      final service = _CaptureFunding();
+      final repository = FundingRepositoryImpl(service);
+
+      await expectLater(
+        repository.createSelfCustodialWithdrawal(
+          walletId: 'wallet-1',
+          assetId:
+              'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+          chain: 'Arbitrum',
+          amount: '25.000001',
+          destinationAddress: '0x1111111111111111111111111111111111111111',
+          idempotencyKey: 'withdrawal-key',
+        ),
+        throwsStateError,
+      );
+
+      expect(service.selfCustodialWithdrawal, {
+        'wallet_id': 'wallet-1',
+        'asset_id':
+            'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+        'chain': 'Arbitrum',
+        'amount': '25.000001',
+        'destination_address': '0x1111111111111111111111111111111111111111',
+      });
+    },
+  );
 }
 
 final class _CaptureFunding implements FundingService {
   Object? plan;
   Object? transfer;
+  Object? selfCustodialWithdrawal;
   @override
   Future<api.FundingPlan> createPlan(
     api.FundingPlanRequest request, {
@@ -69,6 +100,18 @@ final class _CaptureFunding implements FundingService {
   }) async {
     transfer = api.standardSerializers.serializeWith(
       api.TransferRequest.serializer,
+      request,
+    );
+    throw StateError('captured without sending');
+  }
+
+  @override
+  Future<api.SelfCustodialWithdrawal> createSelfCustodialWithdrawal(
+    api.SelfCustodialWithdrawalCreateRequest request, {
+    required String idempotencyKey,
+  }) async {
+    selfCustodialWithdrawal = api.standardSerializers.serializeWith(
+      api.SelfCustodialWithdrawalCreateRequest.serializer,
       request,
     );
     throw StateError('captured without sending');

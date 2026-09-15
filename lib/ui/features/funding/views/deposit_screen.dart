@@ -12,6 +12,7 @@ import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
+import 'package:rwa_interface/ui/core/navigation/app_page_header.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -512,25 +513,9 @@ class _DepositInstructions extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
-        Row(
-          children: [
-            IconButton(
-              tooltip: l10n.backToDepositRoutes,
-              onPressed: () => context.pop(),
-              icon: Transform.rotate(
-                angle: 3.141592653589793,
-                child: SvgPicture.asset(
-                  'assets/figma/funding/back.svg',
-                  width: 20,
-                  height: 20,
-                ),
-              ),
-            ),
-            Text(
-              l10n.depositOn(instruction.token, instruction.chain),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ],
+        AppPageHeader(
+          title: l10n.depositOn(instruction.token, instruction.chain),
+          onBack: () => context.pop(),
         ),
         const SizedBox(height: 40),
         _ReadonlyRoute(instruction: instruction),
@@ -734,25 +719,9 @@ class _DepositSelectorState extends ConsumerState<_DepositSelector> {
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
               children: [
-                Row(
-                  children: [
-                    IconButton(
-                      tooltip: AppLocalizations.of(context).backToDepositRoutes,
-                      onPressed: () => context.pop(),
-                      icon: Transform.rotate(
-                        angle: 3.141592653589793,
-                        child: SvgPicture.asset(
-                          'assets/figma/funding/back.svg',
-                          width: 20,
-                          height: 20,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      AppLocalizations.of(context).depositCrypto,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ],
+                AppPageHeader(
+                  title: AppLocalizations.of(context).depositCrypto,
+                  onBack: () => context.pop(),
                 ),
                 const SizedBox(height: 40),
                 _DepositSelectionCard(

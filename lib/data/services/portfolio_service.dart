@@ -7,5 +7,6 @@ abstract interface class PortfolioService {
     required String interval,
   });
   Future<api.PortfolioAccountPage> listAccounts();
+  Future<api.PortfolioAssetPage> listAssets({String? cursor});
   Future<api.PortfolioHoldingPage> listHoldings({String? cursor});
 }

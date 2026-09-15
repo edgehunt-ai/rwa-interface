@@ -1039,6 +1039,18 @@ final class AppReviewFundingRepository implements FundingRepository {
   );
 
   @override
+  Future<PreparedSelfCustodialWithdrawal> createSelfCustodialWithdrawal({
+    required String walletId,
+    required String assetId,
+    required String chain,
+    required String amount,
+    required String destinationAddress,
+    required String idempotencyKey,
+  }) async => throw StateError(
+    'Self-custodial withdrawals are unavailable in app review',
+  );
+
+  @override
   Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
     required String id,
     required String txHash,

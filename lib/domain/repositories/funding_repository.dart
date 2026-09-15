@@ -49,6 +49,14 @@ abstract interface class FundingRepository {
   Future<Withdrawal> getWithdrawal(String id);
   Future<DomainPage<Withdrawal>> listWithdrawals({String? cursor});
   Future<SelfCustodialWithdrawalSummary> getSelfCustodialWithdrawal(String id);
+  Future<PreparedSelfCustodialWithdrawal> createSelfCustodialWithdrawal({
+    required String walletId,
+    required String assetId,
+    required String chain,
+    required String amount,
+    required String destinationAddress,
+    required String idempotencyKey,
+  });
   Future<SelfCustodialWithdrawalSummary> submitSelfCustodialWithdrawal({
     required String id,
     required String txHash,

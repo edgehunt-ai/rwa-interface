@@ -9,9 +9,12 @@ import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/failure_state.dart';
+import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
+import 'package:rwa_interface/ui/core/navigation/app_page_header.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:rwa_interface/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
@@ -37,6 +40,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   WithdrawalQuote? quote;
   String? error;
   bool quoting = false;
+  bool submitting = false;
 
   @override
   void dispose() {
@@ -73,28 +77,42 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
       return;
     }
     setState(() {
-      quoting = true;
+      quoting = false;
       error = null;
+      quote = WithdrawalQuote(
+        quoteId: 'self-custodial-local',
+        intent: WithdrawalIntent(
+          chain: widget.chain,
+          amount: value,
+          address: recipient,
+        ),
+        // Self-custodial withdrawals pay network gas from the wallet. The
+        // endpoint does not provide a token-denominated fee quote.
+        totalFee: DecimalValue('0', asset: widget.token, unit: 'token'),
+        estimatedReceive: value,
+        sufficient: true,
+      );
     });
+  }
+
+  Future<void> _submit() async {
+    final currentQuote = quote;
+    if (currentQuote == null || submitting) return;
+    setState(() => submitting = true);
     try {
-      final next = await ref
-          .read(withdrawalCommandsProvider)
-          .quote(
-            WithdrawalIntent(
-              chain: widget.chain,
-              amount: value,
-              address: recipient,
-            ),
-          );
-      if (mounted) setState(() => quote = next);
+      await ref
+          .read(selfCustodialWithdrawalCommandsProvider)
+          .execute(quote: currentQuote);
+      if (mounted) context.pop();
     } on Object {
       if (mounted) {
-        setState(
-          () => error = AppLocalizations.of(context).prepareWithdrawalFailed,
+        AppToast.showFailure(
+          context,
+          AppLocalizations.of(context).prepareWithdrawalFailed,
         );
       }
     } finally {
-      if (mounted) setState(() => quoting = false);
+      if (mounted) setState(() => submitting = false);
     }
   }
 
@@ -125,6 +143,8 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
             : _WithdrawalReview(
                 quote: quote!,
                 onBack: () => setState(() => quote = null),
+                onSubmit: _submit,
+                submitting: submitting,
               ),
       ),
     );
@@ -244,7 +264,7 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
-        _PageHeader(
+        AppPageHeader(
           title: l10n.withdrawToken(widget.token),
           fallbackLocation: AppRoutes.withdrawalSelectPath,
         ),
@@ -426,8 +446,11 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _CompactDetail(label: l10n.networkFee, value: '≈ 0.10 USDC'),
-              _CompactDetail(label: l10n.recipientReceives, value: '— USDC'),
+              _CompactDetail(label: l10n.networkFee, value: '—'),
+              _CompactDetail(
+                label: l10n.recipientReceives,
+                value: rawAmount.isEmpty ? '— USDC' : '$rawAmount USDC',
+              ),
             ],
           ),
         ),
@@ -543,10 +566,17 @@ class _RouteRow extends StatelessWidget {
 }
 
 class _WithdrawalReview extends StatelessWidget {
-  const _WithdrawalReview({required this.quote, required this.onBack});
+  const _WithdrawalReview({
+    required this.quote,
+    required this.onBack,
+    required this.onSubmit,
+    required this.submitting,
+  });
 
   final WithdrawalQuote quote;
   final VoidCallback onBack;
+  final VoidCallback onSubmit;
+  final bool submitting;
 
   @override
   Widget build(BuildContext context) {
@@ -559,7 +589,7 @@ class _WithdrawalReview extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       children: [
-        _PageHeader(title: l10n.reviewWithdrawal, onBack: onBack),
+        AppPageHeader(title: l10n.reviewWithdrawal, onBack: onBack),
         const SizedBox(height: 24),
         Text(
           l10n.youAreSending,
@@ -605,8 +635,9 @@ class _WithdrawalReview extends StatelessWidget {
               const SizedBox(height: 8),
               _ReviewDetail(
                 label: l10n.networkFee,
-                value:
-                    '≈ ${TokenAmountFormatter.format(quote.totalFee, symbol: 'USDC')}',
+                value: quote.quoteId == 'self-custodial-local'
+                    ? '—'
+                    : '≈ ${TokenAmountFormatter.format(quote.totalFee, symbol: 'USDC')}',
               ),
             ],
           ),
@@ -629,7 +660,10 @@ class _WithdrawalReview extends StatelessWidget {
               ?.copyWith(color: colors.secondaryText),
         ),
         const SizedBox(height: 40),
-        FilledButton(onPressed: null, child: Text(l10n.withdrawUsdc)),
+        FilledButton(
+          onPressed: submitting ? null : onSubmit,
+          child: Text(l10n.withdrawUsdc),
+        ),
       ],
     );
   }
@@ -660,7 +694,7 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
           children: [
-            _PageHeader(
+            AppPageHeader(
               title: l10n.selectAsset,
               fallbackLocation: AppRoutes.assetsPath,
             ),
@@ -810,50 +844,6 @@ class _AssetRow extends StatelessWidget {
           ),
         ],
       ),
-    ),
-  );
-}
-
-class _PageHeader extends StatelessWidget {
-  const _PageHeader({
-    required this.title,
-    this.onBack,
-    this.fallbackLocation = AppRoutes.homePath,
-  });
-
-  final String title;
-  final VoidCallback? onBack;
-  final String fallbackLocation;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 34,
-    child: Row(
-      children: [
-        IconButton(
-          onPressed:
-              onBack ??
-              () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go(fallbackLocation);
-                }
-              },
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints.tightFor(width: 20, height: 34),
-          icon: Transform.flip(
-            flipX: true,
-            child: SvgPicture.asset(
-              'assets/figma/funding/back.svg',
-              width: 20,
-              height: 20,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(title, style: Theme.of(context).textTheme.titleLarge),
-      ],
     ),
   );
 }

@@ -20,6 +20,8 @@ final class SelfCustodialWithdrawalSummary {
     required this.status,
     this.txHash,
     this.failureReason,
+    this.confirmations,
+    this.requiredConfirmations = 0,
   });
   final String withdrawalId;
   final String assetSymbol;
@@ -28,4 +30,6 @@ final class SelfCustodialWithdrawalSummary {
   final SelfCustodialWithdrawalState status;
   final String? txHash;
   final String? failureReason;
+  final int? confirmations;
+  final int requiredConfirmations;
 }

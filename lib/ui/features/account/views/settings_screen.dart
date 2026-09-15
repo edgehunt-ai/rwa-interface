@@ -13,6 +13,7 @@ import 'package:rwa_interface/domain/models/user_account.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
+import 'package:rwa_interface/ui/core/navigation/app_page_header.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/account/providers/account_providers.dart';
 import 'package:rwa_interface/ui/features/account/providers/app_update_providers.dart';
@@ -348,32 +349,9 @@ class _SettingsHeader extends StatelessWidget {
   const _SettingsHeader();
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context) => AppPageHeader(
+    title: AppLocalizations.of(context).settingsTitle,
     padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-    child: Row(
-      children: [
-        SizedBox(
-          width: 20,
-          height: 34,
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 20),
-            tooltip: AppLocalizations.of(context).back,
-            onPressed: () => context.canPop() ? context.pop() : null,
-            icon: const Icon(Icons.chevron_left, size: 20),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            AppLocalizations.of(context).settingsTitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-      ],
-    ),
   );
 }
 
