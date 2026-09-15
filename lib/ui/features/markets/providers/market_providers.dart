@@ -52,7 +52,11 @@ void _cacheMarketList(Ref ref) {
   Timer? expiryTimer;
   Timer? refreshTimer;
 
-  void stopRefresh() => refreshTimer?.cancel();
+  void stopTimers() {
+    refreshTimer?.cancel();
+    expiryTimer?.cancel();
+  }
+
   void startRefresh() {
     refreshTimer?.cancel();
     refreshTimer = Timer.periodic(
@@ -61,10 +65,18 @@ void _cacheMarketList(Ref ref) {
     );
   }
 
-  expiryTimer = Timer(marketListCacheDuration, link.close);
+  void startExpiry() {
+    expiryTimer?.cancel();
+    expiryTimer = Timer(marketListCacheDuration, link.close);
+  }
+
+  startExpiry();
   startRefresh();
-  ref.onCancel(stopRefresh);
-  ref.onResume(startRefresh);
+  ref.onCancel(stopTimers);
+  ref.onResume(() {
+    startExpiry();
+    startRefresh();
+  });
   ref.onDispose(() {
     expiryTimer?.cancel();
     refreshTimer?.cancel();
