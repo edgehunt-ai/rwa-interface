@@ -68,12 +68,14 @@ void main() {
   test(
     'embedded wallet provisioning failure prevents the wallet sync call',
     () async {
-      final gateway = FakeIdentityAuthGateway(
-        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
-      )..ensureEmbeddedWalletFailure = const IdentityFailure(
-        AuthenticationFailureCode.provider,
-        retryable: true,
-      );
+      final gateway =
+          FakeIdentityAuthGateway(
+              restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+            )
+            ..ensureEmbeddedWalletFailure = const IdentityFailure(
+              AuthenticationFailureCode.provider,
+              retryable: true,
+            );
       final wallets = _WalletsRepository();
       final container = _container(
         gateway,

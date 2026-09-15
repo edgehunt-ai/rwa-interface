@@ -78,9 +78,10 @@ class PrivyAuthInterceptor extends Interceptor {
       return current;
     }
 
-    final refresh = _tokenProvider
-        .refreshAccessToken()
-        .timeout(_refreshTimeout, onTimeout: () => null);
+    final refresh = _tokenProvider.refreshAccessToken().timeout(
+      _refreshTimeout,
+      onTimeout: () => null,
+    );
     _refreshInFlight = refresh;
     try {
       return await refresh;
