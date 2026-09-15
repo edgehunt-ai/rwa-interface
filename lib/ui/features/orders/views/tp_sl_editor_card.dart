@@ -133,21 +133,28 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
             const SizedBox(height: 12),
             Row(
               children: [
-                _TpSlAmount(
-                  fieldKey: widget.inputKey,
-                  label: l10n.price,
-                  controller: widget.controller,
-                  enabled: editable,
-                  prefix: r'$',
+                Expanded(
+                  child: _TpSlAmount(
+                    fieldKey: widget.inputKey,
+                    label: l10n.price,
+                    controller: widget.controller,
+                    enabled: editable,
+                    prefix: r'$',
+                  ),
                 ),
-                const Spacer(),
-                _TpSlAmount(
-                  fieldKey: widget.changeKey,
-                  label: l10n.change,
-                  controller: _change,
-                  enabled: editable,
-                  suffix: '%',
-                  alignEnd: true,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: _TpSlAmount(
+                      fieldKey: widget.changeKey,
+                      label: l10n.change,
+                      controller: _change,
+                      enabled: editable,
+                      suffix: '%',
+                      alignEnd: true,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -212,35 +219,33 @@ class _TpSlAmount extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 16, maxWidth: 132),
-          child: IntrinsicWidth(
-            child: TextField(
-              key: fieldKey,
-              controller: controller,
-              enabled: enabled,
-              textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-                signed: true,
-              ),
-              style: amountStyle,
-              cursorColor: colors.primaryText,
-              decoration: InputDecoration(
-                isDense: true,
-                filled: false,
-                contentPadding: EdgeInsets.zero,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                hintText: '0',
-                hintStyle: amountStyle.copyWith(color: colors.tertiaryText),
-                prefixText: prefix,
-                prefixStyle: amountStyle,
-                suffixText: suffix,
-                suffixStyle: amountStyle,
-              ),
+        SizedBox(
+          width: 112,
+          child: TextField(
+            key: fieldKey,
+            controller: controller,
+            enabled: enabled,
+            textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+            keyboardType: const TextInputType.numberWithOptions(
+              decimal: true,
+              signed: true,
+            ),
+            style: amountStyle,
+            cursorColor: colors.primaryText,
+            decoration: InputDecoration(
+              isDense: true,
+              filled: false,
+              contentPadding: EdgeInsets.zero,
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              hintText: '0',
+              hintStyle: amountStyle.copyWith(color: colors.tertiaryText),
+              prefixText: prefix,
+              prefixStyle: amountStyle,
+              suffixText: suffix,
+              suffixStyle: amountStyle,
             ),
           ),
         ),
@@ -284,7 +289,7 @@ class _TpSlSwitch extends StatelessWidget {
   }
 }
 
-class TpSlTickRuler extends StatelessWidget {
+class TpSlTickRuler extends StatefulWidget {
   const TpSlTickRuler({
     super.key,
     required this.semanticLabel,
@@ -305,38 +310,70 @@ class TpSlTickRuler extends StatelessWidget {
   final bool enabled;
 
   @override
+  State<TpSlTickRuler> createState() => _TpSlTickRulerState();
+}
+
+class _TpSlTickRulerState extends State<TpSlTickRuler> {
+  double? _dragValue;
+  var _dragging = false;
+
+  double get _currentValue =>
+      (_dragValue ?? widget.value).clamp(widget.minimum, widget.maximum);
+
+  @override
+  void didUpdateWidget(covariant TpSlTickRuler oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_dragging &&
+        (oldWidget.value != widget.value ||
+            oldWidget.minimum != widget.minimum ||
+            oldWidget.maximum != widget.maximum)) {
+      _dragValue = null;
+    }
+  }
+
+  void _startDrag() {
+    _dragging = true;
+    _dragValue = _currentValue;
+  }
+
+  void _updateDrag(DragUpdateDetails details, double width) {
+    final range = widget.maximum - widget.minimum;
+    if (range <= 0 || width <= 0) return;
+    // The ruler ticks move with the finger, so dragging right lowers the
+    // value while dragging left raises it.
+    final next = (_currentValue - details.delta.dx / width * range).clamp(
+      widget.minimum,
+      widget.maximum,
+    );
+    if (next == _currentValue) return;
+    setState(() => _dragValue = next);
+    widget.onChanged(next);
+  }
+
+  void _endDrag() {
+    _dragging = false;
+    _dragValue = null;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final current = value.clamp(minimum, maximum);
-    final tickCount = (divisions + 1).clamp(2, 21);
-    var dragValue = current;
-    var dragStartX = 0.0;
-    var dragStartValue = current;
+    final current = _currentValue;
+    final tickCount = (widget.divisions + 1).clamp(2, 21);
     return Semantics(
       container: true,
-      label: semanticLabel,
+      label: widget.semanticLabel,
       child: ExcludeSemantics(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           dragStartBehavior: DragStartBehavior.down,
-          onHorizontalDragStart: enabled
-              ? (_) {
-                  dragStartX = 0;
-                  dragStartValue = current;
-                  dragValue = current;
-                }
+          onHorizontalDragStart: widget.enabled ? (_) => _startDrag() : null,
+          onHorizontalDragUpdate: widget.enabled
+              ? (details) =>
+                    _updateDrag(details, (context.size?.width ?? 0) - 24)
               : null,
-          onHorizontalDragUpdate: enabled
-              ? (details) {
-                  final range = maximum - minimum;
-                  final width = (context.size?.width ?? 0) - 24;
-                  if (range <= 0 || width <= 0) return;
-                  dragStartX += details.delta.dx;
-                  dragValue = (dragStartValue + dragStartX / width * range)
-                      .clamp(minimum, maximum);
-                  onChanged(dragValue);
-                }
-              : null,
+          onHorizontalDragEnd: widget.enabled ? (_) => _endDrag() : null,
+          onHorizontalDragCancel: widget.enabled ? _endDrag : null,
           child: Container(
             height: 48,
             decoration: BoxDecoration(
@@ -348,9 +385,9 @@ class TpSlTickRuler extends StatelessWidget {
                 CustomPaint(
                   painter: _TpSlRulerPainter(
                     value: current,
-                    minimum: minimum,
-                    maximum: maximum,
-                    divisions: divisions,
+                    minimum: widget.minimum,
+                    maximum: widget.maximum,
+                    divisions: widget.divisions,
                     tickCount: tickCount,
                     tickColor: colors.border,
                     accentColor: colors.selected,
@@ -386,9 +423,9 @@ class TpSlTickRuler extends StatelessWidget {
                     ),
                     child: Slider(
                       value: current,
-                      min: minimum,
-                      max: maximum,
-                      divisions: divisions,
+                      min: widget.minimum,
+                      max: widget.maximum,
+                      divisions: widget.divisions,
                       onChanged: null,
                     ),
                   ),

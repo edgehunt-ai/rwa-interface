@@ -79,7 +79,7 @@ void main() {
     expect(tester.getSize(find.byType(Switch)), const Size(44, 24));
   });
 
-  testWidgets('dragging the ruler moves the price and the change together', (
+  testWidgets('dragging the ruler follows the finger direction', (
     tester,
   ) async {
     final price = await pumpCard(tester);
@@ -87,8 +87,8 @@ void main() {
     await tester.drag(find.byKey(rulerKey), const Offset(60, 0));
     await tester.pump();
 
-    expect(double.parse(price.text), greaterThan(100));
-    expect(double.parse(textOf(tester, changeKey)), greaterThan(0));
+    expect(double.parse(price.text), lessThan(100));
+    expect(double.parse(textOf(tester, changeKey)), lessThan(0));
   });
 
   testWidgets('change is measured against the reference price, not the field', (
