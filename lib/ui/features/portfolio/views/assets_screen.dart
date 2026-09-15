@@ -104,9 +104,11 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                     ? const _EmptyAssets()
                     : RefreshIndicator(
                         onRefresh: () async {
-                          ref.invalidate(portfolioSummaryProvider);
-                          ref.invalidate(tradingAccountsProvider);
-                          ref.invalidate(holdingsProvider);
+                          await Future.wait([
+                            ref.refresh(portfolioSummaryProvider.future),
+                            ref.refresh(tradingAccountsProvider.future),
+                            ref.refresh(holdingsProvider(null).future),
+                          ]);
                           ref.invalidate(activeHip3ActionsProvider);
                         },
                         child: ListView(
@@ -198,6 +200,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                           ],
                         ),
                       ),
+                skipLoadingOnRefresh: true,
               ),
             ),
           ],

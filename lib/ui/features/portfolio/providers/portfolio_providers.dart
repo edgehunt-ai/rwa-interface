@@ -11,11 +11,30 @@ import '../../../../domain/repositories/portfolio_repository.dart';
 import '../../../../domain/models/trading_account.dart';
 
 const portfolioListCacheDuration = Duration(minutes: 30);
+const portfolioListRefreshInterval = Duration(seconds: 30);
 
 void _cachePortfolioList(Ref ref) {
   final link = ref.keepAlive();
-  final timer = Timer(portfolioListCacheDuration, link.close);
-  ref.onDispose(timer.cancel);
+  Timer? expiryTimer;
+  Timer? refreshTimer;
+
+  void stopRefresh() => refreshTimer?.cancel();
+  void startRefresh() {
+    refreshTimer?.cancel();
+    refreshTimer = Timer.periodic(
+      portfolioListRefreshInterval,
+      (_) => ref.invalidateSelf(),
+    );
+  }
+
+  expiryTimer = Timer(portfolioListCacheDuration, link.close);
+  startRefresh();
+  ref.onCancel(stopRefresh);
+  ref.onResume(startRefresh);
+  ref.onDispose(() {
+    expiryTimer?.cancel();
+    refreshTimer?.cancel();
+  });
 }
 
 final portfolioSummaryProvider = FutureProvider.autoDispose<Portfolio>((ref) {

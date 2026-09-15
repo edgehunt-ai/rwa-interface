@@ -45,11 +45,30 @@ String effectiveMarketRankingTab({
 }) => !authenticated ? 'Popular' : storedTab ?? 'Favorites';
 
 const marketListCacheDuration = Duration(minutes: 30);
+const marketListRefreshInterval = Duration(seconds: 15);
 
 void _cacheMarketList(Ref ref) {
   final link = ref.keepAlive();
-  final timer = Timer(marketListCacheDuration, link.close);
-  ref.onDispose(timer.cancel);
+  Timer? expiryTimer;
+  Timer? refreshTimer;
+
+  void stopRefresh() => refreshTimer?.cancel();
+  void startRefresh() {
+    refreshTimer?.cancel();
+    refreshTimer = Timer.periodic(
+      marketListRefreshInterval,
+      (_) => ref.invalidateSelf(),
+    );
+  }
+
+  expiryTimer = Timer(marketListCacheDuration, link.close);
+  startRefresh();
+  ref.onCancel(stopRefresh);
+  ref.onResume(startRefresh);
+  ref.onDispose(() {
+    expiryTimer?.cancel();
+    refreshTimer?.cancel();
+  });
 }
 
 final marketProductsProvider = FutureProvider.autoDispose

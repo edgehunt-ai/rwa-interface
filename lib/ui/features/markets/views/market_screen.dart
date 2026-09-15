@@ -52,13 +52,13 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async => ref.refresh(
+          onRefresh: () => ref.refresh(
             marketProductsProvider((
               query: null,
               cursor: null,
               group: marketProductGroupForTab(selectedTab),
               productType: kind,
-            )),
+            )).future,
           ),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
@@ -175,6 +175,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                     ],
                   );
                 },
+                skipLoadingOnRefresh: true,
               ),
             ],
           ),

@@ -46,8 +46,25 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            if (authenticated) ref.invalidate(portfolioSummaryProvider);
-            ref.invalidate(marketProductsProvider);
+            final refreshes = <Future<void>>[
+              ref.refresh(
+                marketProductsProvider((
+                  query: null,
+                  cursor: null,
+                  group: marketProductGroupForTab(
+                    effectiveMarketRankingTab(
+                      authenticated: authenticated,
+                      storedTab: ref.read(marketRankingTabProvider).value,
+                    ),
+                  ),
+                  productType: null,
+                )).future,
+              ),
+            ];
+            if (authenticated) {
+              refreshes.add(ref.refresh(portfolioSummaryProvider.future));
+            }
+            await Future.wait(refreshes);
           },
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
@@ -517,6 +534,7 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
               ),
             );
           },
+          skipLoadingOnRefresh: true,
         ),
       ],
     );

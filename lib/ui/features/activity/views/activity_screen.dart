@@ -153,11 +153,12 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                                 .activityEmptyMessage,
                           )
                         : RefreshIndicator(
-                            onRefresh: () async =>
-                                ref.refresh(activityProvider(filter)),
+                            onRefresh: () =>
+                                ref.refresh(activityProvider(filter).future),
                             child: _ActivityList(records: records),
                           );
                   },
+                  skipLoadingOnRefresh: true,
                 ),
               ),
             ],

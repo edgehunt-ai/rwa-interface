@@ -14,11 +14,30 @@ typedef ActivityFilter = ({
 });
 
 const activityListCacheDuration = Duration(minutes: 30);
+const activityListRefreshInterval = Duration(minutes: 1);
 
 void _cacheActivityList(Ref ref) {
   final link = ref.keepAlive();
-  final timer = Timer(activityListCacheDuration, link.close);
-  ref.onDispose(timer.cancel);
+  Timer? expiryTimer;
+  Timer? refreshTimer;
+
+  void stopRefresh() => refreshTimer?.cancel();
+  void startRefresh() {
+    refreshTimer?.cancel();
+    refreshTimer = Timer.periodic(
+      activityListRefreshInterval,
+      (_) => ref.invalidateSelf(),
+    );
+  }
+
+  expiryTimer = Timer(activityListCacheDuration, link.close);
+  startRefresh();
+  ref.onCancel(stopRefresh);
+  ref.onResume(startRefresh);
+  ref.onDispose(() {
+    expiryTimer?.cancel();
+    refreshTimer?.cancel();
+  });
 }
 
 final activityProvider = FutureProvider.autoDispose
