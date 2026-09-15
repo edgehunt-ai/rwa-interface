@@ -16,6 +16,18 @@ void main() {
       'Popular',
     );
     expect(
+      effectiveMarketRankingTab(authenticated: false, storedTab: 'Gainers'),
+      'Gainers',
+    );
+    expect(
+      effectiveMarketRankingTab(authenticated: false, storedTab: 'Losers'),
+      'Losers',
+    );
+    expect(
+      effectiveMarketRankingTab(authenticated: false, storedTab: 'Volume'),
+      'Volume',
+    );
+    expect(
       effectiveMarketRankingTab(authenticated: true, storedTab: null),
       'Favorites',
     );

@@ -42,7 +42,10 @@ final class MarketRankingTabNotifier extends AsyncNotifier<String?> {
 String effectiveMarketRankingTab({
   required bool authenticated,
   required String? storedTab,
-}) => !authenticated ? 'Popular' : storedTab ?? 'Favorites';
+}) {
+  if (authenticated) return storedTab ?? 'Favorites';
+  return storedTab == null || storedTab == 'Favorites' ? 'Popular' : storedTab;
+}
 
 const marketListCacheDuration = Duration(minutes: 30);
 const marketListRefreshInterval = Duration(seconds: 15);
