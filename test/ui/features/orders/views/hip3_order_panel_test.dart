@@ -504,7 +504,7 @@ void main() {
       await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
       await tester.pumpAndSettle();
       expect(find.text('Margin mode'), findsOneWidget);
-      await tester.tap(find.text('Isolated').last);
+      await tester.tap(find.text('Isolated'));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
       await tester.pumpAndSettle();
@@ -549,25 +549,36 @@ void main() {
     },
   );
 
-  testWidgets('margin mode and leverage controls open their selectors', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_app(const Hip3OrderPanel(), opening: _Opening()));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'margin mode opens its selector and leverage opens its selector',
+    (tester) async {
+      final opening = _Opening();
+      await tester.pumpWidget(_app(const Hip3OrderPanel(), opening: opening));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
-    await tester.pumpAndSettle();
-    expect(find.text('Margin mode'), findsOneWidget);
-    expect(find.text('Cross'), findsNWidgets(2));
-    expect(find.text('Isolated'), findsOneWidget);
+      expect(find.text('Cross'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('Margin mode'), findsOneWidget);
+      await tester.tap(find.text('Isolated'));
+      await tester.pumpAndSettle();
+      expect(find.text('Margin mode'), findsNothing);
+      expect(find.text('Isolated'), findsOneWidget);
+      expect(opening.mode, TradingMarginMode.isolated);
 
-    await tester.tap(find.text('Cross').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
-    await tester.pumpAndSettle();
-    expect(find.text('Leverage'), findsOneWidget);
-    expect(find.bySemanticsLabel('Drag to set leverage'), findsOneWidget);
-  });
+      await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cross'));
+      await tester.pumpAndSettle();
+      expect(find.text('Cross'), findsOneWidget);
+      expect(opening.mode, TradingMarginMode.cross);
+
+      await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('Leverage'), findsOneWidget);
+      expect(find.bySemanticsLabel('Drag to set leverage'), findsOneWidget);
+    },
+  );
 
   testWidgets('order settings remain usable when trading rules cannot load', (
     tester,
@@ -592,9 +603,9 @@ void main() {
     await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
     await tester.pumpAndSettle();
     expect(find.text('Margin mode'), findsOneWidget);
-
-    await tester.tap(find.text('Cross').last);
+    await tester.tap(find.text('Isolated'));
     await tester.pumpAndSettle();
+
     await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
     await tester.pumpAndSettle();
     expect(find.text('Leverage'), findsOneWidget);

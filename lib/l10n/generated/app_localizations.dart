@@ -1004,6 +1004,24 @@ abstract class AppLocalizations {
   /// **'Margin mode'**
   String get marginMode;
 
+  /// No description provided for @chooseMarginMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a margin mode:'**
+  String get chooseMarginMode;
+
+  /// No description provided for @crossMarginDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Shares margin across positions'**
+  String get crossMarginDescription;
+
+  /// No description provided for @isolatedMarginDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses margin for this position only'**
+  String get isolatedMarginDescription;
+
   /// No description provided for @leverage.
   ///
   /// In en, this message translates to:
@@ -1442,6 +1460,30 @@ abstract class AppLocalizations {
   /// **'US Market Trading Hours'**
   String get tradeMarketHoursTitle;
 
+  /// No description provided for @tradeBstocksUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No bStocks market'**
+  String get tradeBstocksUnavailable;
+
+  /// No description provided for @tradePerpUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No HIP-3 perpetual market'**
+  String get tradePerpUnavailable;
+
+  /// No description provided for @tradeProductUnavailableDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'{symbol} is not listed on this product yet. Switch back to the other tab to keep trading.'**
+  String tradeProductUnavailableDescription(Object symbol);
+
+  /// No description provided for @tradeMarketHoursDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.'**
+  String get tradeMarketHoursDisclaimer;
+
   /// No description provided for @tradeMarketHoursDescription.
   ///
   /// In en, this message translates to:
@@ -1499,8 +1541,8 @@ abstract class AppLocalizations {
   /// No description provided for @tradeMarketOpensIn.
   ///
   /// In en, this message translates to:
-  /// **'US market opens in 04:30:11'**
-  String get tradeMarketOpensIn;
+  /// **'US market opens in {countdown}'**
+  String tradeMarketOpensIn(Object countdown);
 
   /// No description provided for @tradeMarketClosedSchedule.
   ///

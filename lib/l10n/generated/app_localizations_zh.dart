@@ -465,6 +465,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get marginMode => '保证金模式';
 
   @override
+  String get chooseMarginMode => '选择保证金模式：';
+
+  @override
+  String get crossMarginDescription => '多个仓位共享保证金';
+
+  @override
+  String get isolatedMarginDescription => '仅使用当前仓位的保证金';
+
+  @override
   String get leverage => '杠杆';
 
   @override
@@ -688,6 +697,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tradeMarketHoursTitle => '美股交易时段';
 
   @override
+  String get tradeBstocksUnavailable => '暂无 bStocks 市场';
+
+  @override
+  String get tradePerpUnavailable => '暂无 HIP-3 永续市场';
+
+  @override
+  String tradeProductUnavailableDescription(Object symbol) {
+    return '$symbol 尚未上线该产品，可切回另一个标签继续交易。';
+  }
+
+  @override
+  String get tradeMarketHoursDisclaimer => '休市表示不可交易的时段，包括周末、美国节假日以及每日结算窗口。';
+
+  @override
   String get tradeMarketHoursDescription => '市场关闭表示不可交易时段，包括周末、美国节假日和每日结算窗口。';
 
   @override
@@ -715,7 +738,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tradeLowLiquidity => '低流动性';
 
   @override
-  String get tradeMarketOpensIn => '美股市场将在 04:30:11 后开盘';
+  String tradeMarketOpensIn(Object countdown) {
+    return '美股市场将在 $countdown 后开盘';
+  }
 
   @override
   String get tradeMarketClosedSchedule => '周末、美国节假日';

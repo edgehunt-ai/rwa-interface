@@ -583,27 +583,29 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       availableBalance.isLoading ||
                       availableBalance.isRefreshing,
                   percentage: _percentage,
-                  onMarginModeTap: () {
+                  onMarginModeTap: () async {
                     if (_pendingSetting != null || _submitting) {
                       return;
                     }
+                    final modes =
+                        _context?.marginModes ??
+                        TradingMarginMode.values.toSet();
                     final generation = ref.read(sessionGenerationProvider);
-                    showModalBottomSheet<TradingMarginMode>(
+                    final mode = await showModalBottomSheet<TradingMarginMode>(
                       context: context,
+                      isScrollControlled: true,
                       builder: (_) => Hip3MarginModeSheet(
-                        selectedMode: _marginMode,
-                        availableModes:
-                            _context?.marginModes ??
-                            TradingMarginMode.values.toSet(),
+                        initialMode: _marginMode,
+                        availableModes: modes,
                       ),
-                    ).then((mode) {
-                      if (mode != null &&
-                          mounted &&
-                          mode != _marginMode &&
-                          ref.read(sessionGenerationProvider) == generation) {
-                        _applySettings(_leverage, mode);
-                      }
-                    });
+                    );
+                    if (mode == null ||
+                        !mounted ||
+                        ref.read(sessionGenerationProvider) != generation ||
+                        mode == _marginMode) {
+                      return;
+                    }
+                    await _applySettings(_leverage, mode);
                   },
                   onLeverageTap: () async {
                     final generation = ref.read(sessionGenerationProvider);
@@ -1284,6 +1286,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
+                        const SizedBox(width: 4),
                         const Icon(Icons.keyboard_arrow_down, size: 18),
                       ],
                     ),
@@ -1434,39 +1437,81 @@ class _Hip3AmountRail extends StatelessWidget {
 class Hip3MarginModeSheet extends StatelessWidget {
   const Hip3MarginModeSheet({
     super.key,
-    required this.selectedMode,
+    required this.initialMode,
     required this.availableModes,
   });
 
-  final TradingMarginMode selectedMode;
+  final TradingMarginMode initialMode;
   final Set<TradingMarginMode> availableModes;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                AppLocalizations.of(context).marginMode,
-                style: Theme.of(context).textTheme.titleLarge,
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colors.secondaryText.withValues(alpha: .45),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              for (final mode in TradingMarginMode.values)
-                _MarginModeOption(
-                  mode: mode,
-                  selected: mode == selectedMode,
-                  enabled: availableModes.contains(mode),
-                  onTap: () => Navigator.of(context).pop(mode),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.marginMode,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: l10n.close,
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              Divider(color: colors.subtleSurface),
+              const SizedBox(height: 12),
+              Text(
+                l10n.chooseMarginMode,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              const SizedBox(height: 8),
+              _MarginModeOption(
+                mode: TradingMarginMode.cross,
+                selected: initialMode == TradingMarginMode.cross,
+                enabled: availableModes.contains(TradingMarginMode.cross),
+                title: l10n.cross,
+                description: l10n.crossMarginDescription,
+                icon: Icons.account_tree_outlined,
+                onTap: () => Navigator.of(context).pop(TradingMarginMode.cross),
+              ),
+              const SizedBox(height: 12),
+              _MarginModeOption(
+                mode: TradingMarginMode.isolated,
+                selected: initialMode == TradingMarginMode.isolated,
+                enabled: availableModes.contains(TradingMarginMode.isolated),
+                title: l10n.isolated,
+                description: l10n.isolatedMarginDescription,
+                icon: Icons.view_agenda_outlined,
+                onTap: () =>
+                    Navigator.of(context).pop(TradingMarginMode.isolated),
+              ),
             ],
           ),
         ),
@@ -1480,47 +1525,68 @@ class _MarginModeOption extends StatelessWidget {
     required this.mode,
     required this.selected,
     required this.enabled,
+    required this.title,
+    required this.description,
+    required this.icon,
     required this.onTap,
   });
 
   final TradingMarginMode mode;
   final bool selected;
   final bool enabled;
+  final String title;
+  final String description;
+  final IconData icon;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final label = mode == TradingMarginMode.cross
-        ? AppLocalizations.of(context).cross
-        : AppLocalizations.of(context).isolated;
     return Semantics(
       button: enabled,
       selected: selected,
-      label: AppLocalizations.of(context).marginModeLabel(label),
+      label: title,
       child: InkWell(
         onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          alignment: Alignment.centerLeft,
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: selected ? colors.selected : colors.subtleSurface,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: colors.primaryText),
+              ),
+              const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: enabled ? null : colors.tertiaryText,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: Theme.of(context).textTheme.bodyLarge),
+                    Text(
+                      description,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: selected
+                            ? colors.primaryText
+                            : colors.secondaryText,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (selected) const Icon(Icons.check, size: 20),
+              if (selected)
+                const Icon(Icons.check_circle, color: Colors.black, size: 20),
             ],
           ),
         ),
@@ -1529,8 +1595,6 @@ class _MarginModeOption extends StatelessWidget {
   }
 }
 
-/// Leverage selection is kept inside the HIP-3 presentation layer so its
-/// result remains local UI state until an order preview is requested.
 class Hip3LeverageSheet extends StatefulWidget {
   const Hip3LeverageSheet({
     super.key,

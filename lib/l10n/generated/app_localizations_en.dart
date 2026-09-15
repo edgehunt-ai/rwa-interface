@@ -477,6 +477,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get marginMode => 'Margin mode';
 
   @override
+  String get chooseMarginMode => 'Choose a margin mode:';
+
+  @override
+  String get crossMarginDescription => 'Shares margin across positions';
+
+  @override
+  String get isolatedMarginDescription => 'Uses margin for this position only';
+
+  @override
   String get leverage => 'Leverage';
 
   @override
@@ -705,6 +714,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tradeMarketHoursTitle => 'US Market Trading Hours';
 
   @override
+  String get tradeBstocksUnavailable => 'No bStocks market';
+
+  @override
+  String get tradePerpUnavailable => 'No HIP-3 perpetual market';
+
+  @override
+  String tradeProductUnavailableDescription(Object symbol) {
+    return '$symbol is not listed on this product yet. Switch back to the other tab to keep trading.';
+  }
+
+  @override
+  String get tradeMarketHoursDisclaimer =>
+      'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.';
+
+  @override
   String get tradeMarketHoursDescription =>
       'Market closed indicates no-trading periods, including weekends, US holidays, and daily settlement windows.';
 
@@ -733,7 +757,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tradeLowLiquidity => 'Low Liquidity';
 
   @override
-  String get tradeMarketOpensIn => 'US market opens in 04:30:11';
+  String tradeMarketOpensIn(Object countdown) {
+    return 'US market opens in $countdown';
+  }
 
   @override
   String get tradeMarketClosedSchedule => 'Weekends, US holidays';
