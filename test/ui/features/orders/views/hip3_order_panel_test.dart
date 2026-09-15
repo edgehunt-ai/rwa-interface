@@ -19,6 +19,7 @@ import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
+import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import '../../../../helpers/test_app.dart';
 
@@ -574,6 +575,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          hip3OrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
+          ),
           hip3OpeningContextProvider.overrideWith(
             (ref, product) async => throw StateError('unavailable'),
           ),
@@ -648,6 +652,9 @@ final class _CapturingHip3Orders implements OrdersRepository {
 Widget _app(Widget child, {Hip3OpeningRepository? opening}) => ProviderScope(
   overrides: [
     hip3OpeningRepositoryProvider.overrideWithValue(opening ?? _Opening()),
+    hip3OrderAvailableBalanceProvider.overrideWith(
+      (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
+    ),
     hip3OpeningContextProvider.overrideWith(
       (ref, product) =>
           ref.watch(hip3OpeningRepositoryProvider).context(product),

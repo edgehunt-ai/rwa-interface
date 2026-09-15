@@ -500,10 +500,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                             key: Key('bstocks-balance-loading'),
                             width: 12,
                             height: 12,
-                            child: CircularProgressIndicator(
-                              value: 0.25,
-                              strokeWidth: 1.5,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 1.5),
                           )
                         else
                           Text(
