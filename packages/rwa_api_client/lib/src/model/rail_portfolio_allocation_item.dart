@@ -3,7 +3,7 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/product_kind.dart';
+import 'package:rwa_api_client/src/model/portfolio_rail.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,8 +18,8 @@ part 'rail_portfolio_allocation_item.g.dart';
 @BuiltValue()
 abstract class RailPortfolioAllocationItem implements Built<RailPortfolioAllocationItem, RailPortfolioAllocationItemBuilder> {
   @BuiltValueField(wireName: r'rail')
-  ProductKind get rail;
-  // enum railEnum {  bstock,  perp,  };
+  PortfolioRail get rail;
+  // enum railEnum {  bstock,  perp,  cash,  };
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'value_usd')
@@ -55,7 +55,7 @@ class _$RailPortfolioAllocationItemSerializer implements PrimitiveSerializer<Rai
     yield r'rail';
     yield serializers.serialize(
       object.rail,
-      specifiedType: const FullType(ProductKind),
+      specifiedType: const FullType(PortfolioRail),
     );
     yield r'value_usd';
     yield serializers.serialize(
@@ -93,8 +93,8 @@ class _$RailPortfolioAllocationItemSerializer implements PrimitiveSerializer<Rai
         case r'rail':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(ProductKind),
-          ) as ProductKind;
+            specifiedType: const FullType(PortfolioRail),
+          ) as PortfolioRail;
           result.rail = valueDes;
           break;
         case r'value_usd':

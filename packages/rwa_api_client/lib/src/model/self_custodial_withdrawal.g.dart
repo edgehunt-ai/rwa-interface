@@ -22,6 +22,8 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
   @override
   final SelfCustodialWithdrawalTransaction transaction;
   @override
+  final SelfCustodialWithdrawalGasEstimate? gas;
+  @override
   final SelfCustodialWithdrawalStatus status;
   @override
   final String? txHash;
@@ -54,6 +56,7 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
       required this.amount,
       required this.destinationAddress,
       required this.transaction,
+      this.gas,
       required this.status,
       this.txHash,
       this.confirmations,
@@ -85,6 +88,7 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
         amount == other.amount &&
         destinationAddress == other.destinationAddress &&
         transaction == other.transaction &&
+        gas == other.gas &&
         status == other.status &&
         txHash == other.txHash &&
         confirmations == other.confirmations &&
@@ -107,6 +111,7 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, destinationAddress.hashCode);
     _$hash = $jc(_$hash, transaction.hashCode);
+    _$hash = $jc(_$hash, gas.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, txHash.hashCode);
     _$hash = $jc(_$hash, confirmations.hashCode);
@@ -131,6 +136,7 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
           ..add('amount', amount)
           ..add('destinationAddress', destinationAddress)
           ..add('transaction', transaction)
+          ..add('gas', gas)
           ..add('status', status)
           ..add('txHash', txHash)
           ..add('confirmations', confirmations)
@@ -181,6 +187,11 @@ class SelfCustodialWithdrawalBuilder
       _$this._transaction ??= SelfCustodialWithdrawalTransactionBuilder();
   set transaction(SelfCustodialWithdrawalTransactionBuilder? transaction) =>
       _$this._transaction = transaction;
+
+  SelfCustodialWithdrawalGasEstimateBuilder? _gas;
+  SelfCustodialWithdrawalGasEstimateBuilder get gas =>
+      _$this._gas ??= SelfCustodialWithdrawalGasEstimateBuilder();
+  set gas(SelfCustodialWithdrawalGasEstimateBuilder? gas) => _$this._gas = gas;
 
   SelfCustodialWithdrawalStatus? _status;
   SelfCustodialWithdrawalStatus? get status => _$this._status;
@@ -240,6 +251,7 @@ class SelfCustodialWithdrawalBuilder
       _amount = $v.amount;
       _destinationAddress = $v.destinationAddress;
       _transaction = $v.transaction.toBuilder();
+      _gas = $v.gas?.toBuilder();
       _status = $v.status;
       _txHash = $v.txHash;
       _confirmations = $v.confirmations;
@@ -288,6 +300,7 @@ class SelfCustodialWithdrawalBuilder
                 r'SelfCustodialWithdrawal',
                 'destinationAddress'),
             transaction: transaction.build(),
+            gas: _gas?.build(),
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'SelfCustodialWithdrawal', 'status'),
             txHash: txHash,
@@ -310,6 +323,8 @@ class SelfCustodialWithdrawalBuilder
       try {
         _$failedField = 'transaction';
         transaction.build();
+        _$failedField = 'gas';
+        _gas?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'SelfCustodialWithdrawal', _$failedField, e.toString());

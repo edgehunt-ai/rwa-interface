@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_gas_estimate.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_status.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_transaction.dart';
 import 'package:built_value/built_value.dart';
@@ -20,6 +21,7 @@ part 'self_custodial_withdrawal.g.dart';
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [destinationAddress] 
 /// * [transaction] 
+/// * [gas] - 创建 intent 响应中服务端观测到的冻结交易 gas 估算；在读取或提交响应、 以及 gas 估算未配置时为 null。客户端在用户签名前应展示该费用，gas 不足时必须先提示补充原生币。 
 /// * [status] 
 /// * [txHash] 
 /// * [confirmations] 
@@ -53,6 +55,10 @@ abstract class SelfCustodialWithdrawal implements Built<SelfCustodialWithdrawal,
 
   @BuiltValueField(wireName: r'transaction')
   SelfCustodialWithdrawalTransaction get transaction;
+
+  /// 创建 intent 响应中服务端观测到的冻结交易 gas 估算；在读取或提交响应、 以及 gas 估算未配置时为 null。客户端在用户签名前应展示该费用，gas 不足时必须先提示补充原生币。 
+  @BuiltValueField(wireName: r'gas')
+  SelfCustodialWithdrawalGasEstimate? get gas;
 
   @BuiltValueField(wireName: r'status')
   SelfCustodialWithdrawalStatus get status;
@@ -142,6 +148,11 @@ class _$SelfCustodialWithdrawalSerializer implements PrimitiveSerializer<SelfCus
     yield serializers.serialize(
       object.transaction,
       specifiedType: const FullType(SelfCustodialWithdrawalTransaction),
+    );
+    yield r'gas';
+    yield object.gas == null ? null : serializers.serialize(
+      object.gas,
+      specifiedType: const FullType.nullable(SelfCustodialWithdrawalGasEstimate),
     );
     yield r'status';
     yield serializers.serialize(
@@ -264,6 +275,14 @@ class _$SelfCustodialWithdrawalSerializer implements PrimitiveSerializer<SelfCus
             specifiedType: const FullType(SelfCustodialWithdrawalTransaction),
           ) as SelfCustodialWithdrawalTransaction;
           result.transaction.replace(valueDes);
+          break;
+        case r'gas':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(SelfCustodialWithdrawalGasEstimate),
+          ) as SelfCustodialWithdrawalGasEstimate?;
+          if (valueDes == null) continue;
+          result.gas.replace(valueDes);
           break;
         case r'status':
           final valueDes = serializers.deserialize(

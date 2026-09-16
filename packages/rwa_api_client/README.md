@@ -137,6 +137,7 @@ Class | Method | HTTP request | Description
 [*MarketsApi*](doc/MarketsApi.md) | [**getOrderBook**](doc/MarketsApi.md#getorderbook) | **GET** /v1/markets/{symbol}/products/{kind}/orderbook | 订单簿深度
 [*MarketsApi*](doc/MarketsApi.md) | [**getProduct**](doc/MarketsApi.md#getproduct) | **GET** /v1/markets/{symbol}/products/{kind} | 产品详情
 [*MarketsApi*](doc/MarketsApi.md) | [**getProductStats**](doc/MarketsApi.md#getproductstats) | **GET** /v1/markets/{symbol}/products/{kind}/stats | 24h 行情统计
+[*MarketsApi*](doc/MarketsApi.md) | [**listBstocksSupportedTokens**](doc/MarketsApi.md#listbstockssupportedtokens) | **GET** /v1/markets/bstocks/supported | bStocks support-list metadata
 [*MarketsApi*](doc/MarketsApi.md) | [**listProducts**](doc/MarketsApi.md#listproducts) | **GET** /v1/markets/products | 产品列表 / 分组
 [*MarketsApi*](doc/MarketsApi.md) | [**listStocks**](doc/MarketsApi.md#liststocks) | **GET** /v1/markets/stocks | 股票分组列表
 [*MarketsApi*](doc/MarketsApi.md) | [**removeFavorite**](doc/MarketsApi.md#removefavorite) | **DELETE** /v1/markets/{symbol}/products/{kind}/favorite | 取消自选
@@ -228,6 +229,8 @@ Class | Method | HTTP request | Description
  - [BstockOrderPreviewRequest](doc/BstockOrderPreviewRequest.md)
  - [BstockOrderWalletActionState](doc/BstockOrderWalletActionState.md)
  - [BstocksActionStatus](doc/BstocksActionStatus.md)
+ - [BstocksSupportedToken](doc/BstocksSupportedToken.md)
+ - [BstocksSupportedTokenPage](doc/BstocksSupportedTokenPage.md)
  - [BstocksTimeInForce](doc/BstocksTimeInForce.md)
  - [BstocksWalletActionSubmission](doc/BstocksWalletActionSubmission.md)
  - [BstocksWalletActionSubmissionRequest](doc/BstocksWalletActionSubmissionRequest.md)
@@ -470,6 +473,7 @@ Class | Method | HTTP request | Description
  - [PortfolioNotice](doc/PortfolioNotice.md)
  - [PortfolioNoticeSeverity](doc/PortfolioNoticeSeverity.md)
  - [PortfolioPriceSource](doc/PortfolioPriceSource.md)
+ - [PortfolioRail](doc/PortfolioRail.md)
  - [PortfolioSourceKind](doc/PortfolioSourceKind.md)
  - [PortfolioSourceState](doc/PortfolioSourceState.md)
  - [PortfolioSourceSummary](doc/PortfolioSourceSummary.md)
@@ -525,6 +529,7 @@ Class | Method | HTTP request | Description
  - [SelfCustodialWithdrawalChain](doc/SelfCustodialWithdrawalChain.md)
  - [SelfCustodialWithdrawalChainId](doc/SelfCustodialWithdrawalChainId.md)
  - [SelfCustodialWithdrawalCreateRequest](doc/SelfCustodialWithdrawalCreateRequest.md)
+ - [SelfCustodialWithdrawalGasEstimate](doc/SelfCustodialWithdrawalGasEstimate.md)
  - [SelfCustodialWithdrawalStatus](doc/SelfCustodialWithdrawalStatus.md)
  - [SelfCustodialWithdrawalSubmissionRequest](doc/SelfCustodialWithdrawalSubmissionRequest.md)
  - [SelfCustodialWithdrawalTransaction](doc/SelfCustodialWithdrawalTransaction.md)

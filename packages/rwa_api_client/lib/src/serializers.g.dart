@@ -99,6 +99,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(BstockOrderWalletActionStateKindEnum.serializer)
       ..add(BstockOrderWalletActionStateWalletActionBlockerEnum.serializer)
       ..add(BstocksActionStatus.serializer)
+      ..add(BstocksSupportedToken.serializer)
+      ..add(BstocksSupportedTokenExecutionStatusEnum.serializer)
+      ..add(BstocksSupportedTokenPage.serializer)
       ..add(BstocksTimeInForce.serializer)
       ..add(BstocksWalletActionSubmission.serializer)
       ..add(BstocksWalletActionSubmissionRequest.serializer)
@@ -530,6 +533,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PortfolioNotice.serializer)
       ..add(PortfolioNoticeSeverity.serializer)
       ..add(PortfolioPriceSource.serializer)
+      ..add(PortfolioRail.serializer)
       ..add(PortfolioSourceKind.serializer)
       ..add(PortfolioSourceState.serializer)
       ..add(PortfolioSourceSummary.serializer)
@@ -614,6 +618,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(SelfCustodialWithdrawalChain.serializer)
       ..add(SelfCustodialWithdrawalChainId.serializer)
       ..add(SelfCustodialWithdrawalCreateRequest.serializer)
+      ..add(SelfCustodialWithdrawalGasEstimate.serializer)
       ..add(SelfCustodialWithdrawalStatus.serializer)
       ..add(SelfCustodialWithdrawalSubmissionRequest.serializer)
       ..add(SelfCustodialWithdrawalTransaction.serializer)
@@ -734,6 +739,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltList, const [const FullType(PortfolioSourceSummary)]),
           () => ListBuilder<PortfolioSourceSummary>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(BstocksSupportedToken)]),
+          () => ListBuilder<BstocksSupportedToken>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(CandlePoint)]),
           () => ListBuilder<CandlePoint>())

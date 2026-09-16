@@ -16,6 +16,8 @@ class _$PortfolioSummary extends PortfolioSummary {
   @override
   final String availableToTradeUsd;
   @override
+  final String? pendingTransferUsd;
+  @override
   final String marginInUseUsd;
   @override
   final String? stocksValueUsd;
@@ -45,6 +47,7 @@ class _$PortfolioSummary extends PortfolioSummary {
       this.todayPnlUsd,
       this.todayPnlPercent,
       required this.availableToTradeUsd,
+      this.pendingTransferUsd,
       required this.marginInUseUsd,
       this.stocksValueUsd,
       required this.unvaluedAssetCount,
@@ -72,6 +75,7 @@ class _$PortfolioSummary extends PortfolioSummary {
         todayPnlUsd == other.todayPnlUsd &&
         todayPnlPercent == other.todayPnlPercent &&
         availableToTradeUsd == other.availableToTradeUsd &&
+        pendingTransferUsd == other.pendingTransferUsd &&
         marginInUseUsd == other.marginInUseUsd &&
         stocksValueUsd == other.stocksValueUsd &&
         unvaluedAssetCount == other.unvaluedAssetCount &&
@@ -91,6 +95,7 @@ class _$PortfolioSummary extends PortfolioSummary {
     _$hash = $jc(_$hash, todayPnlUsd.hashCode);
     _$hash = $jc(_$hash, todayPnlPercent.hashCode);
     _$hash = $jc(_$hash, availableToTradeUsd.hashCode);
+    _$hash = $jc(_$hash, pendingTransferUsd.hashCode);
     _$hash = $jc(_$hash, marginInUseUsd.hashCode);
     _$hash = $jc(_$hash, stocksValueUsd.hashCode);
     _$hash = $jc(_$hash, unvaluedAssetCount.hashCode);
@@ -112,6 +117,7 @@ class _$PortfolioSummary extends PortfolioSummary {
           ..add('todayPnlUsd', todayPnlUsd)
           ..add('todayPnlPercent', todayPnlPercent)
           ..add('availableToTradeUsd', availableToTradeUsd)
+          ..add('pendingTransferUsd', pendingTransferUsd)
           ..add('marginInUseUsd', marginInUseUsd)
           ..add('stocksValueUsd', stocksValueUsd)
           ..add('unvaluedAssetCount', unvaluedAssetCount)
@@ -148,6 +154,11 @@ class PortfolioSummaryBuilder
   String? get availableToTradeUsd => _$this._availableToTradeUsd;
   set availableToTradeUsd(String? availableToTradeUsd) =>
       _$this._availableToTradeUsd = availableToTradeUsd;
+
+  String? _pendingTransferUsd;
+  String? get pendingTransferUsd => _$this._pendingTransferUsd;
+  set pendingTransferUsd(String? pendingTransferUsd) =>
+      _$this._pendingTransferUsd = pendingTransferUsd;
 
   String? _marginInUseUsd;
   String? get marginInUseUsd => _$this._marginInUseUsd;
@@ -210,6 +221,7 @@ class PortfolioSummaryBuilder
       _todayPnlUsd = $v.todayPnlUsd;
       _todayPnlPercent = $v.todayPnlPercent;
       _availableToTradeUsd = $v.availableToTradeUsd;
+      _pendingTransferUsd = $v.pendingTransferUsd;
       _marginInUseUsd = $v.marginInUseUsd;
       _stocksValueUsd = $v.stocksValueUsd;
       _unvaluedAssetCount = $v.unvaluedAssetCount;
@@ -251,6 +263,7 @@ class PortfolioSummaryBuilder
                 availableToTradeUsd,
                 r'PortfolioSummary',
                 'availableToTradeUsd'),
+            pendingTransferUsd: pendingTransferUsd,
             marginInUseUsd: BuiltValueNullFieldError.checkNotNull(
                 marginInUseUsd, r'PortfolioSummary', 'marginInUseUsd'),
             stocksValueUsd: stocksValueUsd,

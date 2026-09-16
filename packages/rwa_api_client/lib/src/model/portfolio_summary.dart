@@ -20,6 +20,7 @@ part 'portfolio_summary.g.dart';
 /// * [todayPnlUsd] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
 /// * [todayPnlPercent] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
 /// * [availableToTradeUsd] - 可证明可用的余额子集；普通钱包余额不会自动等于 available to trade。 Hyperliquid Unified Account 使用 USDC spot total 减去 hold，最低为零， 并在上游提供 tokenToAvailableAfterMaintenance 时受该 USDC 上限约束。 过期或不可用来源不计入此金额，调用方必须同时展示 freshness、data_status 和 warnings。 这是只读快照估计值，不是可提款额或下单承诺；具体订单仍需通过实时预览、费用和风险检查。 
+/// * [pendingTransferUsd] - 尚未划转到任何交易场所的钱包资产小计（`assets` 中未带 `account_ref` 的条目）， 需要先 Transfer 才能计入 available_to_trade_usd。与 `/v1/portfolio/accounts` 中 `available_requires_transfer: true` 分组的 `available_usd` 之和为同一口径。 
 /// * [marginInUseUsd] - Hyperliquid 所覆盖 DEX 持仓报告的 margin used 合计；不表示独立于统一抵押物之外的额外资产。
 /// * [stocksValueUsd] - Legacy optional aggregate retained for older clients; new clients use source-aware assets.
 /// * [unvaluedAssetCount] 
@@ -47,6 +48,10 @@ abstract class PortfolioSummary implements Built<PortfolioSummary, PortfolioSumm
   /// 可证明可用的余额子集；普通钱包余额不会自动等于 available to trade。 Hyperliquid Unified Account 使用 USDC spot total 减去 hold，最低为零， 并在上游提供 tokenToAvailableAfterMaintenance 时受该 USDC 上限约束。 过期或不可用来源不计入此金额，调用方必须同时展示 freshness、data_status 和 warnings。 这是只读快照估计值，不是可提款额或下单承诺；具体订单仍需通过实时预览、费用和风险检查。 
   @BuiltValueField(wireName: r'available_to_trade_usd')
   String get availableToTradeUsd;
+
+  /// 尚未划转到任何交易场所的钱包资产小计（`assets` 中未带 `account_ref` 的条目）， 需要先 Transfer 才能计入 available_to_trade_usd。与 `/v1/portfolio/accounts` 中 `available_requires_transfer: true` 分组的 `available_usd` 之和为同一口径。 
+  @BuiltValueField(wireName: r'pending_transfer_usd')
+  String? get pendingTransferUsd;
 
   /// Hyperliquid 所覆盖 DEX 持仓报告的 margin used 合计；不表示独立于统一抵押物之外的额外资产。
   @BuiltValueField(wireName: r'margin_in_use_usd')
@@ -133,6 +138,13 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
       object.availableToTradeUsd,
       specifiedType: const FullType(String),
     );
+    if (object.pendingTransferUsd != null) {
+      yield r'pending_transfer_usd';
+      yield serializers.serialize(
+        object.pendingTransferUsd,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'margin_in_use_usd';
     yield serializers.serialize(
       object.marginInUseUsd,
@@ -241,6 +253,14 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
             specifiedType: const FullType(String),
           ) as String;
           result.availableToTradeUsd = valueDes;
+          break;
+        case r'pending_transfer_usd':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.pendingTransferUsd = valueDes;
           break;
         case r'margin_in_use_usd':
           final valueDes = serializers.deserialize(

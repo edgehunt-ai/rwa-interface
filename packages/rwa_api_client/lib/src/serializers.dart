@@ -53,6 +53,8 @@ import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
 import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
+import 'package:rwa_api_client/src/model/bstocks_supported_token.dart';
+import 'package:rwa_api_client/src/model/bstocks_supported_token_page.dart';
 import 'package:rwa_api_client/src/model/bstocks_time_in_force.dart';
 import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission.dart';
 import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission_request.dart';
@@ -295,6 +297,7 @@ import 'package:rwa_api_client/src/model/portfolio_holding_page_all_of_coverage.
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice_severity.dart';
 import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
+import 'package:rwa_api_client/src/model/portfolio_rail.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_kind.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_state.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
@@ -350,6 +353,7 @@ import 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain_id.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/self_custodial_withdrawal_gas_estimate.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_status.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_submission_request.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_transaction.dart';
@@ -460,6 +464,8 @@ part 'serializers.g.dart';
   BstockOrderPreviewRequest,
   BstockOrderWalletActionState,
   BstocksActionStatus,
+  BstocksSupportedToken,
+  BstocksSupportedTokenPage,
   BstocksTimeInForce,
   BstocksWalletActionSubmission,
   BstocksWalletActionSubmissionRequest,
@@ -702,6 +708,7 @@ part 'serializers.g.dart';
   PortfolioNotice,
   PortfolioNoticeSeverity,
   PortfolioPriceSource,
+  PortfolioRail,
   PortfolioSourceKind,
   PortfolioSourceState,
   PortfolioSourceSummary,
@@ -757,6 +764,7 @@ part 'serializers.g.dart';
   SelfCustodialWithdrawalChain,
   SelfCustodialWithdrawalChainId,
   SelfCustodialWithdrawalCreateRequest,
+  SelfCustodialWithdrawalGasEstimate,
   SelfCustodialWithdrawalStatus,
   SelfCustodialWithdrawalSubmissionRequest,
   SelfCustodialWithdrawalTransaction,
@@ -965,6 +973,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Withdrawal)]),
         () => ListBuilder<Withdrawal>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(BstocksSupportedToken)]),
+        () => ListBuilder<BstocksSupportedToken>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(HoldingGroup)]),

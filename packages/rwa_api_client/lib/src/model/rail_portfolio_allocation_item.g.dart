@@ -8,7 +8,7 @@ part of 'rail_portfolio_allocation_item.dart';
 
 class _$RailPortfolioAllocationItem extends RailPortfolioAllocationItem {
   @override
-  final ProductKind rail;
+  final PortfolioRail rail;
   @override
   final String valueUsd;
   @override
@@ -65,9 +65,9 @@ class RailPortfolioAllocationItemBuilder
             RailPortfolioAllocationItemBuilder> {
   _$RailPortfolioAllocationItem? _$v;
 
-  ProductKind? _rail;
-  ProductKind? get rail => _$this._rail;
-  set rail(ProductKind? rail) => _$this._rail = rail;
+  PortfolioRail? _rail;
+  PortfolioRail? get rail => _$this._rail;
+  set rail(PortfolioRail? rail) => _$this._rail = rail;
 
   String? _valueUsd;
   String? get valueUsd => _$this._valueUsd;
