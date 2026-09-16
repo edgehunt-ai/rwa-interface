@@ -16,6 +16,11 @@
 </head>
 <body>
   <div id="rwa-private-key-export-root"></div>
+  <script>
+    window.process = window.process || { env: {} };
+    window.process.env = window.process.env || {};
+    window.process.env.NODE_ENV = window.process.env.NODE_ENV || 'development';
+  </script>
   <script type="module" src="/main.jsx"></script>
 </body>
 </html>
