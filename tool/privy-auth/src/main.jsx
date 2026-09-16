@@ -134,14 +134,23 @@ function PrivateKeyExport() {
     onError: reportError,
   });
   const { exportWallet } = useExportWallet();
-  const started = React.useRef(false);
+  const loginStarted = React.useRef(false);
+  const exportStarted = React.useRef(false);
 
   React.useEffect(() => {
-    if (!ready || started.current) return;
-    started.current = true;
+    if (!ready || authenticated || loginStarted.current) return;
+    loginStarted.current = true;
+    login().catch(reportError);
+  }, [authenticated, login, ready, reportError]);
+
+  React.useEffect(() => {
+    if (!ready || !authenticated || exportStarted.current) return;
+    exportStarted.current = true;
     (async () => {
       try {
-        if (!authenticated) await login();
+        // Wait for the authenticated Privy state to settle before exporting;
+        // exportWallet requires the access token created by that state update.
+        await new Promise((resolve) => setTimeout(resolve, 0));
         await exportWallet();
         // Privy's export promise resolves when its secure modal exits. The
         // private key never crosses this bridge; close the host WebView too.
@@ -150,7 +159,7 @@ function PrivateKeyExport() {
         reportError(error);
       }
     })();
-  }, [authenticated, exportWallet, login, ready, reportError]);
+  }, [authenticated, exportWallet, ready, reportError]);
 
   return (
     <main className="export-state">
