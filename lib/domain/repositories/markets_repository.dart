@@ -1,3 +1,4 @@
+import '../models/bstocks_support.dart';
 import '../models/domain_page.dart';
 import '../models/stock.dart';
 import '../models/market_product.dart';
@@ -5,6 +6,10 @@ import '../models/market_snapshot.dart';
 
 abstract interface class MarketsRepository {
   Future<DomainPage<Stock>> listStocks();
+
+  /// Discovery metadata for BNB Chain bStocks. Entries are candidates for
+  /// display; only [BstocksSupportedToken.isExecutable] ones may be traded.
+  Future<List<BstocksSupportedToken>> listBstocksSupportedTokens();
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,

@@ -5,6 +5,7 @@ import 'package:rwa_interface/app_review/app_review.dart';
 import 'package:rwa_interface/data/api/api_environment.dart';
 import 'package:rwa_interface/data/repositories/funding_repository_impl.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
+import 'package:rwa_interface/domain/models/bstocks_support.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -226,6 +227,10 @@ final class _MarketsDelegate implements MarketsRepository {
 
   @override
   Future<void> addFavorite(MarketProductRef ref) async {}
+
+  @override
+  Future<List<BstocksSupportedToken>> listBstocksSupportedTokens() =>
+      throw UnimplementedError();
 
   @override
   Future<CandleChart> getCandles(

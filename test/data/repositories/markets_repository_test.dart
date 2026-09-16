@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart' as wire;
 import 'package:rwa_interface/data/repositories/markets_repository_impl.dart';
 import 'package:rwa_interface/data/services/markets_service.dart';
 import 'package:rwa_interface/data/services/charts_service.dart';
+import 'package:rwa_interface/domain/models/bstocks_support.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 
 void main() {
@@ -42,6 +43,66 @@ void main() {
       const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
     ]);
   });
+
+  test('只有通过准入且启用的 bStock 才可执行', () async {
+    final tokens = await MarketsRepositoryImpl(_BstocksDiscovery())
+        .listBstocksSupportedTokens();
+
+    expect(tokens.map((token) => token.symbol), ['NVDAX', 'TSLAX', 'AAPLX']);
+    // Discovery only ever authorises display; execution needs both signals.
+    expect(tokens[0].executionStatus, BstocksExecutionStatus.discoveryOnly);
+    expect(tokens[0].isExecutable, isFalse);
+    expect(tokens[1].executionStatus, BstocksExecutionStatus.admitted);
+    expect(tokens[1].isExecutable, isFalse);
+    expect(tokens[2].isExecutable, isTrue);
+
+    expect(tokens[2].multiplier, '1.000000000000000001');
+    expect(tokens[2].decimals, 18);
+    expect(tokens[2].lastUpdateTime, DateTime.utc(2026, 1, 1));
+  });
+}
+
+final class _BstocksDiscovery implements MarketsService {
+  @override
+  Future<wire.BstocksSupportedTokenPage> listBstocksSupportedTokens() async =>
+      wire.BstocksSupportedTokenPage(
+        (page) => page.items.addAll([
+          _token(
+            'NVDAX',
+            wire.BstocksSupportedTokenExecutionStatusEnum.discoveryOnly,
+            false,
+          ),
+          _token(
+            'TSLAX',
+            wire.BstocksSupportedTokenExecutionStatusEnum.admitted,
+            false,
+          ),
+          _token(
+            'AAPLX',
+            wire.BstocksSupportedTokenExecutionStatusEnum.admitted,
+            true,
+          ),
+        ]),
+      );
+
+  static wire.BstocksSupportedToken _token(
+    String symbol,
+    wire.BstocksSupportedTokenExecutionStatusEnum status,
+    bool enabled,
+  ) => wire.BstocksSupportedToken(
+    (token) => token
+      ..symbol = symbol
+      ..contractAddress = '0x1111111111111111111111111111111111111111'
+      ..decimals = 18
+      ..multiplier = '1.000000000000000001'
+      ..lastUpdateTime = DateTime.utc(2026, 1, 1).millisecondsSinceEpoch
+      ..displayEnabled = true
+      ..executionStatus = status
+      ..executionEnabled = enabled,
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _Charts implements ChartsService {

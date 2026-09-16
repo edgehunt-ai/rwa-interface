@@ -21,6 +21,10 @@ final class GeneratedMarketsService implements MarketsService {
   }
 
   @override
+  Future<BstocksSupportedTokenPage> listBstocksSupportedTokens() =>
+      _body(() => _api.listBstocksSupportedTokens());
+
+  @override
   Future<ProductPage> listProducts({
     String? query,
     String? cursor,

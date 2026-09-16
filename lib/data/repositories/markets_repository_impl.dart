@@ -1,3 +1,4 @@
+import '../../domain/models/bstocks_support.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/stock.dart';
 import '../../domain/models/decimal_value.dart';
@@ -38,6 +39,39 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       nextCursor: page.nextCursor,
       hasMore: page.hasMore,
     );
+  }
+
+  @override
+  Future<List<BstocksSupportedToken>> listBstocksSupportedTokens() async {
+    final page = await _service.listBstocksSupportedTokens();
+    return page.items
+        .map(
+          (token) => BstocksSupportedToken(
+            symbol: token.symbol,
+            contractAddress: token.contractAddress,
+            decimals: token.decimals,
+            executionStatus: switch (token.executionStatus) {
+              api.BstocksSupportedTokenExecutionStatusEnum.discoveryOnly =>
+                BstocksExecutionStatus.discoveryOnly,
+              api.BstocksSupportedTokenExecutionStatusEnum.admitted =>
+                BstocksExecutionStatus.admitted,
+              _ => BstocksExecutionStatus.unknown,
+            },
+            executionEnabled: token.executionEnabled,
+            underlyingSymbol: token.underlyingSymbol,
+            feedSymbol: token.feedSymbol,
+            asset: token.asset,
+            multiplier: token.multiplier,
+            assetType: token.assetType,
+            lastUpdateTime: token.lastUpdateTime == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(
+                    token.lastUpdateTime!,
+                    isUtc: true,
+                  ),
+          ),
+        )
+        .toList(growable: false);
   }
 
   @override
