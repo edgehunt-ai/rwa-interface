@@ -976,18 +976,12 @@ class _NoticeSheet extends StatelessWidget {
   const _NoticeSheet({
     required this.title,
     required this.message,
-    this.actionLabel,
-    this.onAction,
-    this.actions,
-    this.illustration,
+    required this.actions,
   });
 
   final String title;
   final String message;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-  final List<Widget>? actions;
-  final Widget? illustration;
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -1011,30 +1005,17 @@ class _NoticeSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(title, style: Theme.of(context).textTheme.titleLarge),
-            if (illustration case final illustration?) ...[
-              const SizedBox(height: 16),
-              Center(child: illustration),
-            ],
             const SizedBox(height: 12),
             Text(message),
             const SizedBox(height: 24),
-            if (actions case final actions?)
-              Row(
-                children: [
-                  for (final action in actions) ...[
-                    Expanded(child: SizedBox(height: 48, child: action)),
-                    if (action != actions.last) const SizedBox(width: 12),
-                  ],
+            Row(
+              children: [
+                for (final action in actions) ...[
+                  Expanded(child: SizedBox(height: 48, child: action)),
+                  if (action != actions.last) const SizedBox(width: 12),
                 ],
-              )
-            else
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: onAction,
-                  child: Text(actionLabel!),
-                ),
-              ),
+              ],
+            ),
           ],
         ),
       ),
