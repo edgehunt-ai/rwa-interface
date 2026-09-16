@@ -362,7 +362,7 @@ class FundingApi {
   }
 
   /// 创建自托管提现审计意图
-  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 用户必须在 Privy wallet 中复核并原样签名、广播，客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call， 不支持原生币转账。服务端不会 approve、sign 或 broadcast，也不会返回可由后端 执行的授权或签名接口。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
+  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call，不支持原生币转账。  创建 intent 后应通过 &#x60;POST /v1/self-custodial-withdrawals/{withdrawal_id}/executions&#x60; 创建 &#x60;app_sponsored&#x60; 执行并签署返回的 &#x60;privy_authorization_payload&#x60;，由服务端 relay 到 Privy 代付 Gas；只有在赞助于广播前被明确拒绝后，用户才可再次确认并自行广播 冻结交易。服务端不会 approve、sign 或 broadcast，也不会返回可由后端 执行的授权或签名接口。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -454,6 +454,112 @@ class FundingApi {
     }
 
     return Response<SelfCustodialWithdrawal>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 创建自托管提现钱包动作执行
+  /// 为已创建且仍在 &#x60;awaiting_submission&#x60; 的提现 intent 创建统一 &#x60;WalletActionExecution&#x60;。 服务端从冻结的提现交易解析精确 &#x60;chain/from/to/data/value&#x60; 与业务绑定，客户端只能选择 gas 支付模式，不得提交或覆盖任何交易、Provider 或绑定字段。  &#x60;app_sponsored&#x60; 模式下服务端评估统一 Gas 赞助策略；eligible 时返回 &#x60;privy_authorization_payload&#x60; 等待客户端签名，随后由 &#x60;POST /v1/wallet-action-executions/{execution_id}/submissions&#x60; 同步 relay 到 Privy， 平台代付 Gas，用户无需持有原生币。&#x60;user_paid_native&#x60; 只允许在该 intent 的 app-sponsored execution 已确定为广播前拒绝（&#x60;user_gas_confirmation_required&#x60;）后创建， 作为用户自付 gas 的回落路径；此时用户仍按冻结交易自行签名广播并提交 &#x60;tx_hash&#x60;。  intent 过期、已提交、已绑定活跃 execution 或提现 chain 未启用赞助时 fail-closed。 
+  ///
+  /// Parameters:
+  /// * [withdrawalId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [walletActionExecutionCreateRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [WalletActionExecution] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<WalletActionExecution>> createSelfCustodialWithdrawalExecution({ 
+    required String withdrawalId,
+    required String idempotencyKey,
+    required WalletActionExecutionCreateRequest walletActionExecutionCreateRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/self-custodial-withdrawals/{withdrawal_id}/executions'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(WalletActionExecutionCreateRequest);
+      _bodyData = _serializers.serialize(walletActionExecutionCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    WalletActionExecution? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(WalletActionExecution),
+      ) as WalletActionExecution;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<WalletActionExecution>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -2102,7 +2208,7 @@ class FundingApi {
   }
 
   /// 提交自托管提现交易哈希
-  /// 用户在 Privy wallet 中自行签名并广播后，只提交 &#x60;tx_hash&#x60; 作为不可信链上定位符。 服务端不会 approve、sign、broadcast 或重播交易，必须独立核验 chain、from wallet、 token、recipient、amount、receipt、确认数与 canonicality 后再推进状态。哈希不存在、 不匹配或观察结果冲突时不得假定成功，进入 failed、noncanonical 或 manual_review。 
+  /// 用户在 Privy wallet 中自行签名并广播后，只提交 &#x60;tx_hash&#x60; 作为不可信链上定位符。 服务端不会 approve、sign、broadcast 或重播交易，必须独立核验 chain、from wallet、 token、recipient、amount、receipt、确认数与 canonicality 后再推进状态。哈希不存在、 不匹配或观察结果冲突时不得假定成功，进入 failed、noncanonical 或 manual_review。  已绑定 &#x60;wallet_action_execution_id&#x60; 的 intent 不得走本端点：&#x60;app_sponsored&#x60; 执行通过 &#x60;POST /v1/wallet-action-executions/{execution_id}/submissions&#x60; 提交授权签名， user-paid 回落执行在同一端点提交 &#x60;tx_hash&#x60;。 
   ///
   /// Parameters:
   /// * [withdrawalId] 

@@ -108,7 +108,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                   _productKind = null;
                 }),
               ),
-              if (_category != ActivityCategory.signatures) ...[
+              if (_category != ActivityCategory.funding) ...[
                 const SizedBox(height: 8),
                 _Filters(
                   category: _category,
@@ -243,13 +243,13 @@ class _CategoryTabs extends StatelessWidget {
         ),
         _Tab(
           label: AppLocalizations.of(context).cash,
-          selected: selected == ActivityCategory.funds,
-          onTap: () => onSelected(ActivityCategory.funds),
+          selected: selected == ActivityCategory.cash,
+          onTap: () => onSelected(ActivityCategory.cash),
         ),
         _Tab(
           label: AppLocalizations.of(context).activityFunding,
-          selected: selected == ActivityCategory.signatures,
-          onTap: () => onSelected(ActivityCategory.signatures),
+          selected: selected == ActivityCategory.funding,
+          onTap: () => onSelected(ActivityCategory.funding),
         ),
       ],
     ),
@@ -320,7 +320,7 @@ List<_ActivityTypeOption> _typeOptions(
   ActivityCategory? category,
 ) {
   final l10n = AppLocalizations.of(context);
-  if (category == ActivityCategory.funds) {
+  if (category == ActivityCategory.cash) {
     return [
       _ActivityTypeOption('deposit', l10n.deposit),
       _ActivityTypeOption('withdraw', l10n.withdraw),
@@ -531,17 +531,17 @@ class _Filters extends StatelessWidget {
       onChanged: onStatusChanged,
       width: 93,
     );
-    if (category == ActivityCategory.signatures) {
+    if (category == ActivityCategory.funding) {
       return const SizedBox.shrink();
     }
-    final filters = category == ActivityCategory.funds
+    final filters = category == ActivityCategory.cash
         ? [typeButton, statusButton]
         : [product, typeButton, statusButton];
     final isLargeText = MediaQuery.textScalerOf(context).scale(13) > 18;
     if (isLargeText) {
       return Wrap(spacing: 8, runSpacing: 8, children: filters);
     }
-    if (category == ActivityCategory.funds) {
+    if (category == ActivityCategory.cash) {
       return Row(
         children: [
           filters[0],
@@ -656,7 +656,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final record = widget.record;
     final isOrder = record.category == ActivityCategory.orders;
-    final isFunding = record.category == ActivityCategory.signatures;
+    final isFunding = record.category == ActivityCategory.funding;
     final type = isOrder
         ? _orderTypeLabel(record)
         : _activityTypeLabel(record.type);

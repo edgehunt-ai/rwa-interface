@@ -100,6 +100,50 @@ final BuiltSet<ProductListingProductTypeEnum>
   _$productListingProductTypeEnum_unknownDefaultOpenApi,
 ]);
 
+const ProductListingExecutionStatusEnum
+    _$productListingExecutionStatusEnum_discoveryOnly =
+    const ProductListingExecutionStatusEnum._('discoveryOnly');
+const ProductListingExecutionStatusEnum
+    _$productListingExecutionStatusEnum_catalogDisplay =
+    const ProductListingExecutionStatusEnum._('catalogDisplay');
+const ProductListingExecutionStatusEnum
+    _$productListingExecutionStatusEnum_indexedReadOnly =
+    const ProductListingExecutionStatusEnum._('indexedReadOnly');
+const ProductListingExecutionStatusEnum
+    _$productListingExecutionStatusEnum_baselineLiveCandidate =
+    const ProductListingExecutionStatusEnum._('baselineLiveCandidate');
+const ProductListingExecutionStatusEnum
+    _$productListingExecutionStatusEnum_unknownDefaultOpenApi =
+    const ProductListingExecutionStatusEnum._('unknownDefaultOpenApi');
+
+ProductListingExecutionStatusEnum _$productListingExecutionStatusEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'discoveryOnly':
+      return _$productListingExecutionStatusEnum_discoveryOnly;
+    case 'catalogDisplay':
+      return _$productListingExecutionStatusEnum_catalogDisplay;
+    case 'indexedReadOnly':
+      return _$productListingExecutionStatusEnum_indexedReadOnly;
+    case 'baselineLiveCandidate':
+      return _$productListingExecutionStatusEnum_baselineLiveCandidate;
+    case 'unknownDefaultOpenApi':
+      return _$productListingExecutionStatusEnum_unknownDefaultOpenApi;
+    default:
+      return _$productListingExecutionStatusEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<ProductListingExecutionStatusEnum>
+    _$productListingExecutionStatusEnumValues = BuiltSet<
+        ProductListingExecutionStatusEnum>(const <ProductListingExecutionStatusEnum>[
+  _$productListingExecutionStatusEnum_discoveryOnly,
+  _$productListingExecutionStatusEnum_catalogDisplay,
+  _$productListingExecutionStatusEnum_indexedReadOnly,
+  _$productListingExecutionStatusEnum_baselineLiveCandidate,
+  _$productListingExecutionStatusEnum_unknownDefaultOpenApi,
+]);
+
 Serializer<ProductListingPriceKindEnum>
     _$productListingPriceKindEnumSerializer =
     _$ProductListingPriceKindEnumSerializer();
@@ -109,6 +153,9 @@ Serializer<ProductListingDataStatusEnum>
 Serializer<ProductListingProductTypeEnum>
     _$productListingProductTypeEnumSerializer =
     _$ProductListingProductTypeEnumSerializer();
+Serializer<ProductListingExecutionStatusEnum>
+    _$productListingExecutionStatusEnumSerializer =
+    _$ProductListingExecutionStatusEnumSerializer();
 
 class _$ProductListingPriceKindEnumSerializer
     implements PrimitiveSerializer<ProductListingPriceKindEnum> {
@@ -206,6 +253,42 @@ class _$ProductListingProductTypeEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$ProductListingExecutionStatusEnumSerializer
+    implements PrimitiveSerializer<ProductListingExecutionStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'discoveryOnly': 'discovery_only',
+    'catalogDisplay': 'catalog_display',
+    'indexedReadOnly': 'indexed_read_only',
+    'baselineLiveCandidate': 'baseline_live_candidate',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'discovery_only': 'discoveryOnly',
+    'catalog_display': 'catalogDisplay',
+    'indexed_read_only': 'indexedReadOnly',
+    'baseline_live_candidate': 'baselineLiveCandidate',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[ProductListingExecutionStatusEnum];
+  @override
+  final String wireName = 'ProductListingExecutionStatusEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, ProductListingExecutionStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  ProductListingExecutionStatusEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      ProductListingExecutionStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$ProductListing extends ProductListing {
   @override
   final Hip3PublicMarket? hip3Market;
@@ -243,6 +326,10 @@ class _$ProductListing extends ProductListing {
   final int? hotRank;
   @override
   final bool? isFavorite;
+  @override
+  final bool? tradable;
+  @override
+  final ProductListingExecutionStatusEnum? executionStatus;
 
   factory _$ProductListing([void Function(ProductListingBuilder)? updates]) =>
       (ProductListingBuilder()..update(updates))._build();
@@ -265,7 +352,9 @@ class _$ProductListing extends ProductListing {
       this.volume24hUnit,
       this.turnover24hUsd,
       this.hotRank,
-      this.isFavorite})
+      this.isFavorite,
+      this.tradable,
+      this.executionStatus})
       : super._();
   @override
   ProductListing rebuild(void Function(ProductListingBuilder) updates) =>
@@ -295,7 +384,9 @@ class _$ProductListing extends ProductListing {
         volume24hUnit == other.volume24hUnit &&
         turnover24hUsd == other.turnover24hUsd &&
         hotRank == other.hotRank &&
-        isFavorite == other.isFavorite;
+        isFavorite == other.isFavorite &&
+        tradable == other.tradable &&
+        executionStatus == other.executionStatus;
   }
 
   @override
@@ -319,6 +410,8 @@ class _$ProductListing extends ProductListing {
     _$hash = $jc(_$hash, turnover24hUsd.hashCode);
     _$hash = $jc(_$hash, hotRank.hashCode);
     _$hash = $jc(_$hash, isFavorite.hashCode);
+    _$hash = $jc(_$hash, tradable.hashCode);
+    _$hash = $jc(_$hash, executionStatus.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -343,7 +436,9 @@ class _$ProductListing extends ProductListing {
           ..add('volume24hUnit', volume24hUnit)
           ..add('turnover24hUsd', turnover24hUsd)
           ..add('hotRank', hotRank)
-          ..add('isFavorite', isFavorite))
+          ..add('isFavorite', isFavorite)
+          ..add('tradable', tradable)
+          ..add('executionStatus', executionStatus))
         .toString();
   }
 }
@@ -432,6 +527,16 @@ class ProductListingBuilder
   bool? get isFavorite => _$this._isFavorite;
   set isFavorite(bool? isFavorite) => _$this._isFavorite = isFavorite;
 
+  bool? _tradable;
+  bool? get tradable => _$this._tradable;
+  set tradable(bool? tradable) => _$this._tradable = tradable;
+
+  ProductListingExecutionStatusEnum? _executionStatus;
+  ProductListingExecutionStatusEnum? get executionStatus =>
+      _$this._executionStatus;
+  set executionStatus(ProductListingExecutionStatusEnum? executionStatus) =>
+      _$this._executionStatus = executionStatus;
+
   ProductListingBuilder() {
     ProductListing._defaults(this);
   }
@@ -457,6 +562,8 @@ class ProductListingBuilder
       _turnover24hUsd = $v.turnover24hUsd;
       _hotRank = $v.hotRank;
       _isFavorite = $v.isFavorite;
+      _tradable = $v.tradable;
+      _executionStatus = $v.executionStatus;
       _$v = null;
     }
     return this;
@@ -499,6 +606,8 @@ class ProductListingBuilder
           turnover24hUsd: turnover24hUsd,
           hotRank: hotRank,
           isFavorite: isFavorite,
+          tradable: tradable,
+          executionStatus: executionStatus,
         );
     replace(_$result);
     return _$result;

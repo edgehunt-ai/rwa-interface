@@ -15,6 +15,8 @@ class WalletActionKind extends EnumClass {
   static const WalletActionKind erc20Approval = _$erc20Approval;
   @BuiltValueEnumConst(wireName: r'origin_transaction')
   static const WalletActionKind originTransaction = _$originTransaction;
+  @BuiltValueEnumConst(wireName: r'erc20_transfer')
+  static const WalletActionKind erc20Transfer = _$erc20Transfer;
   @BuiltValueEnumConst(wireName: r'spot_swap')
   static const WalletActionKind spotSwap = _$spotSwap;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)

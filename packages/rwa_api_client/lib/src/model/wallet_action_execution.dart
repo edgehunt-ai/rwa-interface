@@ -24,8 +24,8 @@ part 'wallet_action_execution.g.dart';
 /// Properties:
 /// * [executionId] 
 /// * [resourceType] 
-/// * [resourceId] - Bound order_id or transfer_id; it is never accepted from the client.
-/// * [actionId] - Bound transfer action_id or order step_id; it is never accepted from the client.
+/// * [resourceId] - Bound order_id, transfer_id or self-custodial withdrawal_id; it is never accepted from the client. 
+/// * [actionId] - Bound transfer action_id, order step_id, or the self-custodial withdrawal_id for `erc20_transfer` executions; it is never accepted from the client. 
 /// * [actionKind] 
 /// * [chainId] 
 /// * [walletAddress] 
@@ -56,19 +56,19 @@ abstract class WalletActionExecution implements Built<WalletActionExecution, Wal
 
   @BuiltValueField(wireName: r'resource_type')
   WalletActionResourceType get resourceType;
-  // enum resourceTypeEnum {  transfer,  order,  };
+  // enum resourceTypeEnum {  transfer,  order,  self_custodial_withdrawal,  };
 
-  /// Bound order_id or transfer_id; it is never accepted from the client.
+  /// Bound order_id, transfer_id or self-custodial withdrawal_id; it is never accepted from the client. 
   @BuiltValueField(wireName: r'resource_id')
   String get resourceId;
 
-  /// Bound transfer action_id or order step_id; it is never accepted from the client.
+  /// Bound transfer action_id, order step_id, or the self-custodial withdrawal_id for `erc20_transfer` executions; it is never accepted from the client. 
   @BuiltValueField(wireName: r'action_id')
   String get actionId;
 
   @BuiltValueField(wireName: r'action_kind')
   WalletActionKind get actionKind;
-  // enum actionKindEnum {  erc20_approval,  origin_transaction,  spot_swap,  };
+  // enum actionKindEnum {  erc20_approval,  origin_transaction,  erc20_transfer,  spot_swap,  };
 
   @BuiltValueField(wireName: r'chain_id')
   WalletActionExecutionChainIdEnum get chainId;

@@ -26,6 +26,12 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
   @override
   final SelfCustodialWithdrawalStatus status;
   @override
+  final GasPaymentMode gasPaymentMode;
+  @override
+  final String? walletActionExecutionId;
+  @override
+  final String? userOperationHash;
+  @override
   final String? txHash;
   @override
   final int? confirmations;
@@ -58,6 +64,9 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
       required this.transaction,
       this.gas,
       required this.status,
+      required this.gasPaymentMode,
+      this.walletActionExecutionId,
+      this.userOperationHash,
       this.txHash,
       this.confirmations,
       required this.requiredConfirmations,
@@ -90,6 +99,9 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
         transaction == other.transaction &&
         gas == other.gas &&
         status == other.status &&
+        gasPaymentMode == other.gasPaymentMode &&
+        walletActionExecutionId == other.walletActionExecutionId &&
+        userOperationHash == other.userOperationHash &&
         txHash == other.txHash &&
         confirmations == other.confirmations &&
         requiredConfirmations == other.requiredConfirmations &&
@@ -113,6 +125,9 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
     _$hash = $jc(_$hash, transaction.hashCode);
     _$hash = $jc(_$hash, gas.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
+    _$hash = $jc(_$hash, gasPaymentMode.hashCode);
+    _$hash = $jc(_$hash, walletActionExecutionId.hashCode);
+    _$hash = $jc(_$hash, userOperationHash.hashCode);
     _$hash = $jc(_$hash, txHash.hashCode);
     _$hash = $jc(_$hash, confirmations.hashCode);
     _$hash = $jc(_$hash, requiredConfirmations.hashCode);
@@ -138,6 +153,9 @@ class _$SelfCustodialWithdrawal extends SelfCustodialWithdrawal {
           ..add('transaction', transaction)
           ..add('gas', gas)
           ..add('status', status)
+          ..add('gasPaymentMode', gasPaymentMode)
+          ..add('walletActionExecutionId', walletActionExecutionId)
+          ..add('userOperationHash', userOperationHash)
           ..add('txHash', txHash)
           ..add('confirmations', confirmations)
           ..add('requiredConfirmations', requiredConfirmations)
@@ -197,6 +215,21 @@ class SelfCustodialWithdrawalBuilder
   SelfCustodialWithdrawalStatus? get status => _$this._status;
   set status(SelfCustodialWithdrawalStatus? status) => _$this._status = status;
 
+  GasPaymentMode? _gasPaymentMode;
+  GasPaymentMode? get gasPaymentMode => _$this._gasPaymentMode;
+  set gasPaymentMode(GasPaymentMode? gasPaymentMode) =>
+      _$this._gasPaymentMode = gasPaymentMode;
+
+  String? _walletActionExecutionId;
+  String? get walletActionExecutionId => _$this._walletActionExecutionId;
+  set walletActionExecutionId(String? walletActionExecutionId) =>
+      _$this._walletActionExecutionId = walletActionExecutionId;
+
+  String? _userOperationHash;
+  String? get userOperationHash => _$this._userOperationHash;
+  set userOperationHash(String? userOperationHash) =>
+      _$this._userOperationHash = userOperationHash;
+
   String? _txHash;
   String? get txHash => _$this._txHash;
   set txHash(String? txHash) => _$this._txHash = txHash;
@@ -253,6 +286,9 @@ class SelfCustodialWithdrawalBuilder
       _transaction = $v.transaction.toBuilder();
       _gas = $v.gas?.toBuilder();
       _status = $v.status;
+      _gasPaymentMode = $v.gasPaymentMode;
+      _walletActionExecutionId = $v.walletActionExecutionId;
+      _userOperationHash = $v.userOperationHash;
       _txHash = $v.txHash;
       _confirmations = $v.confirmations;
       _requiredConfirmations = $v.requiredConfirmations;
@@ -303,6 +339,10 @@ class SelfCustodialWithdrawalBuilder
             gas: _gas?.build(),
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'SelfCustodialWithdrawal', 'status'),
+            gasPaymentMode: BuiltValueNullFieldError.checkNotNull(
+                gasPaymentMode, r'SelfCustodialWithdrawal', 'gasPaymentMode'),
+            walletActionExecutionId: walletActionExecutionId,
+            userOperationHash: userOperationHash,
             txHash: txHash,
             confirmations: confirmations,
             requiredConfirmations: BuiltValueNullFieldError.checkNotNull(

@@ -15,6 +15,8 @@ class WalletActionResourceType extends EnumClass {
   static const WalletActionResourceType transfer = _$transfer;
   @BuiltValueEnumConst(wireName: r'order')
   static const WalletActionResourceType order = _$order;
+  @BuiltValueEnumConst(wireName: r'self_custodial_withdrawal')
+  static const WalletActionResourceType selfCustodialWithdrawal = _$selfCustodialWithdrawal;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const WalletActionResourceType unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 

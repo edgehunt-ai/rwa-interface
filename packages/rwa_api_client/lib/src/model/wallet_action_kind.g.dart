@@ -10,6 +10,8 @@ const WalletActionKind _$erc20Approval =
     const WalletActionKind._('erc20Approval');
 const WalletActionKind _$originTransaction =
     const WalletActionKind._('originTransaction');
+const WalletActionKind _$erc20Transfer =
+    const WalletActionKind._('erc20Transfer');
 const WalletActionKind _$spotSwap = const WalletActionKind._('spotSwap');
 const WalletActionKind _$unknownDefaultOpenApi =
     const WalletActionKind._('unknownDefaultOpenApi');
@@ -20,6 +22,8 @@ WalletActionKind _$valueOf(String name) {
       return _$erc20Approval;
     case 'originTransaction':
       return _$originTransaction;
+    case 'erc20Transfer':
+      return _$erc20Transfer;
     case 'spotSwap':
       return _$spotSwap;
     case 'unknownDefaultOpenApi':
@@ -33,6 +37,7 @@ final BuiltSet<WalletActionKind> _$values =
     BuiltSet<WalletActionKind>(const <WalletActionKind>[
   _$erc20Approval,
   _$originTransaction,
+  _$erc20Transfer,
   _$spotSwap,
   _$unknownDefaultOpenApi,
 ]);
@@ -41,6 +46,7 @@ class _$WalletActionKindMeta {
   const _$WalletActionKindMeta();
   WalletActionKind get erc20Approval => _$erc20Approval;
   WalletActionKind get originTransaction => _$originTransaction;
+  WalletActionKind get erc20Transfer => _$erc20Transfer;
   WalletActionKind get spotSwap => _$spotSwap;
   WalletActionKind get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   WalletActionKind valueOf(String name) => _$valueOf(name);
@@ -60,12 +66,14 @@ class _$WalletActionKindSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'erc20Approval': 'erc20_approval',
     'originTransaction': 'origin_transaction',
+    'erc20Transfer': 'erc20_transfer',
     'spotSwap': 'spot_swap',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'erc20_approval': 'erc20Approval',
     'origin_transaction': 'originTransaction',
+    'erc20_transfer': 'erc20Transfer',
     'spot_swap': 'spotSwap',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };

@@ -7,8 +7,8 @@ part of 'activity_category.dart';
 // **************************************************************************
 
 const ActivityCategory _$orders = const ActivityCategory._('orders');
-const ActivityCategory _$funds = const ActivityCategory._('funds');
-const ActivityCategory _$signatures = const ActivityCategory._('signatures');
+const ActivityCategory _$cash = const ActivityCategory._('cash');
+const ActivityCategory _$funding = const ActivityCategory._('funding');
 const ActivityCategory _$unknownDefaultOpenApi =
     const ActivityCategory._('unknownDefaultOpenApi');
 
@@ -16,10 +16,10 @@ ActivityCategory _$valueOf(String name) {
   switch (name) {
     case 'orders':
       return _$orders;
-    case 'funds':
-      return _$funds;
-    case 'signatures':
-      return _$signatures;
+    case 'cash':
+      return _$cash;
+    case 'funding':
+      return _$funding;
     case 'unknownDefaultOpenApi':
       return _$unknownDefaultOpenApi;
     default:
@@ -30,16 +30,16 @@ ActivityCategory _$valueOf(String name) {
 final BuiltSet<ActivityCategory> _$values =
     BuiltSet<ActivityCategory>(const <ActivityCategory>[
   _$orders,
-  _$funds,
-  _$signatures,
+  _$cash,
+  _$funding,
   _$unknownDefaultOpenApi,
 ]);
 
 class _$ActivityCategoryMeta {
   const _$ActivityCategoryMeta();
   ActivityCategory get orders => _$orders;
-  ActivityCategory get funds => _$funds;
-  ActivityCategory get signatures => _$signatures;
+  ActivityCategory get cash => _$cash;
+  ActivityCategory get funding => _$funding;
   ActivityCategory get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ActivityCategory valueOf(String name) => _$valueOf(name);
   BuiltSet<ActivityCategory> get values => _$values;
@@ -57,14 +57,14 @@ class _$ActivityCategorySerializer
     implements PrimitiveSerializer<ActivityCategory> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'orders': 'orders',
-    'funds': 'funds',
-    'signatures': 'signatures',
+    'cash': 'cash',
+    'funding': 'funding',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'orders': 'orders',
-    'funds': 'funds',
-    'signatures': 'signatures',
+    'cash': 'cash',
+    'funding': 'funding',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

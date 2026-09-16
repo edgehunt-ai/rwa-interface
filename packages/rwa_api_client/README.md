@@ -112,6 +112,7 @@ Class | Method | HTTP request | Description
 [*FundingApi*](doc/FundingApi.md) | [**createFundingPlan**](doc/FundingApi.md#createfundingplan) | **POST** /v1/funding/plans | 创建资金准备计划
 [*FundingApi*](doc/FundingApi.md) | [**createFundingSession**](doc/FundingApi.md#createfundingsession) | **POST** /v1/funding/sessions | 创建可恢复的资金准备会话
 [*FundingApi*](doc/FundingApi.md) | [**createSelfCustodialWithdrawal**](doc/FundingApi.md#createselfcustodialwithdrawal) | **POST** /v1/self-custodial-withdrawals | 创建自托管提现审计意图
+[*FundingApi*](doc/FundingApi.md) | [**createSelfCustodialWithdrawalExecution**](doc/FundingApi.md#createselfcustodialwithdrawalexecution) | **POST** /v1/self-custodial-withdrawals/{withdrawal_id}/executions | 创建自托管提现钱包动作执行
 [*FundingApi*](doc/FundingApi.md) | [**createTransfer**](doc/FundingApi.md#createtransfer) | **POST** /v1/transfers | 按资金计划创建划转
 [*FundingApi*](doc/FundingApi.md) | [**createTransferActionSubmission**](doc/FundingApi.md#createtransferactionsubmission) | **POST** /v1/transfers/{transfer_id}/actions/{action_id}/submissions | 报告已广播的钱包动作交易哈希（兼容窗口）
 [*FundingApi*](doc/FundingApi.md) | [**createTransferClaim**](doc/FundingApi.md#createtransferclaim) | **POST** /v1/transfers/{transfer_id}/claims | 为需要恢复的划转创建 Claim

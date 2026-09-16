@@ -110,7 +110,7 @@ abstract final class AppRouter {
           path: AppRoutes.activityPath,
           builder: (context, state) => ActivityScreen(
             initialCategory: state.uri.queryParameters['tab'] == 'cash'
-                ? ActivityCategory.funds
+                ? ActivityCategory.cash
                 : null,
           ),
         ),

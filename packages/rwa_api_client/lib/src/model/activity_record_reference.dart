@@ -18,7 +18,7 @@ part 'activity_record_reference.g.dart';
 abstract class ActivityRecordReference implements Built<ActivityRecordReference, ActivityRecordReferenceBuilder> {
   @BuiltValueField(wireName: r'type')
   ActivityRecordReferenceTypeEnum get type;
-  // enum typeEnum {  order,  position,  transfer,  claim,  deposit,  withdrawal,  };
+  // enum typeEnum {  order,  position,  transfer,  claim,  deposit,  withdrawal,  funding_payment,  };
 
   @BuiltValueField(wireName: r'id')
   String get id;
@@ -136,6 +136,8 @@ class ActivityRecordReferenceTypeEnum extends EnumClass {
   static const ActivityRecordReferenceTypeEnum deposit = _$activityRecordReferenceTypeEnum_deposit;
   @BuiltValueEnumConst(wireName: r'withdrawal')
   static const ActivityRecordReferenceTypeEnum withdrawal = _$activityRecordReferenceTypeEnum_withdrawal;
+  @BuiltValueEnumConst(wireName: r'funding_payment')
+  static const ActivityRecordReferenceTypeEnum fundingPayment = _$activityRecordReferenceTypeEnum_fundingPayment;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const ActivityRecordReferenceTypeEnum unknownDefaultOpenApi = _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi;
 

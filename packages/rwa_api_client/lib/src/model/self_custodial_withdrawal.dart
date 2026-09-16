@@ -5,13 +5,14 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_gas_estimate.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_status.dart';
+import 'package:rwa_api_client/src/model/gas_payment_mode.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_transaction.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'self_custodial_withdrawal.g.dart';
 
-/// 自托管提现的审计与链上对账资源。服务端只观察和核验用户通过 Privy wallet 自签自播 的交易，不持有签名、不执行 approve，也不广播或重播交易。`transaction` 是服务端冻结 的精确、不可变执行请求，在所有状态保持存在；客户端不得覆盖字段或自定义 calldata， 且不得把它转换为原生币转账。 
+/// 自托管提现的审计与链上对账资源。`transaction` 是服务端冻结的精确、不可变执行请求， 在所有状态保持存在；客户端不得覆盖字段或自定义 calldata，且不得把它转换为原生币转账。  执行路径由 `gas_payment_mode` 与 `wallet_action_execution_id` 表达：`app_sponsored` 时服务端通过统一 wallet-action 管道 relay Privy sponsored UserOperation 代付 Gas， 链上同时核验 `UserOperationEvent` 与内层 ERC-20 `Transfer` 日志；`user_paid_native` 为用户自付 gas 的广播路径。服务端不持有签名、不执行 approve，也不重播交易。 
 ///
 /// Properties:
 /// * [withdrawalId] 
@@ -23,6 +24,9 @@ part 'self_custodial_withdrawal.g.dart';
 /// * [transaction] 
 /// * [gas] - 创建 intent 响应中服务端观测到的冻结交易 gas 估算；在读取或提交响应、 以及 gas 估算未配置时为 null。客户端在用户签名前应展示该费用，gas 不足时必须先提示补充原生币。 
 /// * [status] 
+/// * [gasPaymentMode] 
+/// * [walletActionExecutionId] - 当前生效的统一 wallet-action 执行 ID；未创建 execution 时为 null。app-sponsored 被确定拒绝后回落 user-paid 时，该字段指向新的回落 execution。 
+/// * [userOperationHash] - app-sponsored 执行被 Privy 接受后返回的 ERC-4337 user operation hash； user-paid 或未接受时为 null。 
 /// * [txHash] 
 /// * [confirmations] 
 /// * [requiredConfirmations] 
@@ -63,6 +67,18 @@ abstract class SelfCustodialWithdrawal implements Built<SelfCustodialWithdrawal,
   @BuiltValueField(wireName: r'status')
   SelfCustodialWithdrawalStatus get status;
   // enum statusEnum {  awaiting_submission,  submitted,  confirming,  confirmed,  failed,  noncanonical,  manual_review,  };
+
+  @BuiltValueField(wireName: r'gas_payment_mode')
+  GasPaymentMode get gasPaymentMode;
+  // enum gasPaymentModeEnum {  app_sponsored,  user_paid_native,  };
+
+  /// 当前生效的统一 wallet-action 执行 ID；未创建 execution 时为 null。app-sponsored 被确定拒绝后回落 user-paid 时，该字段指向新的回落 execution。 
+  @BuiltValueField(wireName: r'wallet_action_execution_id')
+  String? get walletActionExecutionId;
+
+  /// app-sponsored 执行被 Privy 接受后返回的 ERC-4337 user operation hash； user-paid 或未接受时为 null。 
+  @BuiltValueField(wireName: r'user_operation_hash')
+  String? get userOperationHash;
 
   @BuiltValueField(wireName: r'tx_hash')
   String? get txHash;
@@ -158,6 +174,21 @@ class _$SelfCustodialWithdrawalSerializer implements PrimitiveSerializer<SelfCus
     yield serializers.serialize(
       object.status,
       specifiedType: const FullType(SelfCustodialWithdrawalStatus),
+    );
+    yield r'gas_payment_mode';
+    yield serializers.serialize(
+      object.gasPaymentMode,
+      specifiedType: const FullType(GasPaymentMode),
+    );
+    yield r'wallet_action_execution_id';
+    yield object.walletActionExecutionId == null ? null : serializers.serialize(
+      object.walletActionExecutionId,
+      specifiedType: const FullType.nullable(String),
+    );
+    yield r'user_operation_hash';
+    yield object.userOperationHash == null ? null : serializers.serialize(
+      object.userOperationHash,
+      specifiedType: const FullType.nullable(String),
     );
     yield r'tx_hash';
     yield object.txHash == null ? null : serializers.serialize(
@@ -290,6 +321,29 @@ class _$SelfCustodialWithdrawalSerializer implements PrimitiveSerializer<SelfCus
             specifiedType: const FullType(SelfCustodialWithdrawalStatus),
           ) as SelfCustodialWithdrawalStatus;
           result.status = valueDes;
+          break;
+        case r'gas_payment_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(GasPaymentMode),
+          ) as GasPaymentMode;
+          result.gasPaymentMode = valueDes;
+          break;
+        case r'wallet_action_execution_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.walletActionExecutionId = valueDes;
+          break;
+        case r'user_operation_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.userOperationHash = valueDes;
           break;
         case r'tx_hash':
           final valueDes = serializers.deserialize(

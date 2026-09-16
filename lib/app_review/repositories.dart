@@ -473,7 +473,7 @@ final class AppReviewActivityRepository implements ActivityRepository {
       ),
       ActivityRecord(
         id: 'review-activity-deposit',
-        category: ActivityCategory.funds,
+        category: ActivityCategory.cash,
         type: 'deposit_credited',
         status: ActivityState.success,
         title: 'USDC deposit',

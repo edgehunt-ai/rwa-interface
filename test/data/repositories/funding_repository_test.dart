@@ -238,6 +238,7 @@ final class _GasFunding implements FundingService {
                 ..observedAt = DateTime.utc(2026),
             ).toBuilder()
       ..status = api.SelfCustodialWithdrawalStatus.awaitingSubmission
+      ..gasPaymentMode = api.GasPaymentMode.userPaidNative
       ..requiredConfirmations = 12
       ..createdAt = DateTime.utc(2026)
       ..updatedAt = DateTime.utc(2026),

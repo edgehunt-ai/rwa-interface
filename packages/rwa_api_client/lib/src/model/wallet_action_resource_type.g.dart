@@ -10,6 +10,8 @@ const WalletActionResourceType _$transfer =
     const WalletActionResourceType._('transfer');
 const WalletActionResourceType _$order =
     const WalletActionResourceType._('order');
+const WalletActionResourceType _$selfCustodialWithdrawal =
+    const WalletActionResourceType._('selfCustodialWithdrawal');
 const WalletActionResourceType _$unknownDefaultOpenApi =
     const WalletActionResourceType._('unknownDefaultOpenApi');
 
@@ -19,6 +21,8 @@ WalletActionResourceType _$valueOf(String name) {
       return _$transfer;
     case 'order':
       return _$order;
+    case 'selfCustodialWithdrawal':
+      return _$selfCustodialWithdrawal;
     case 'unknownDefaultOpenApi':
       return _$unknownDefaultOpenApi;
     default:
@@ -30,6 +34,7 @@ final BuiltSet<WalletActionResourceType> _$values =
     BuiltSet<WalletActionResourceType>(const <WalletActionResourceType>[
   _$transfer,
   _$order,
+  _$selfCustodialWithdrawal,
   _$unknownDefaultOpenApi,
 ]);
 
@@ -37,6 +42,8 @@ class _$WalletActionResourceTypeMeta {
   const _$WalletActionResourceTypeMeta();
   WalletActionResourceType get transfer => _$transfer;
   WalletActionResourceType get order => _$order;
+  WalletActionResourceType get selfCustodialWithdrawal =>
+      _$selfCustodialWithdrawal;
   WalletActionResourceType get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   WalletActionResourceType valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletActionResourceType> get values => _$values;
@@ -56,11 +63,13 @@ class _$WalletActionResourceTypeSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'transfer': 'transfer',
     'order': 'order',
+    'selfCustodialWithdrawal': 'self_custodial_withdrawal',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'transfer': 'transfer',
     'order': 'order',
+    'self_custodial_withdrawal': 'selfCustodialWithdrawal',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

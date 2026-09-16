@@ -1,6 +1,6 @@
 import 'decimal_value.dart';
 
-enum ActivityCategory { orders, funds, signatures, unknown }
+enum ActivityCategory { orders, cash, funding, unknown }
 
 enum ActivityState { pending, success, failed, cancelled, unknown }
 

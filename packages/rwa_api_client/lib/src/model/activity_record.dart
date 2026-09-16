@@ -50,7 +50,7 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
 
   @BuiltValueField(wireName: r'category')
   ActivityCategory get category;
-  // enum categoryEnum {  orders,  funds,  signatures,  };
+  // enum categoryEnum {  orders,  cash,  funding,  };
 
   @BuiltValueField(wireName: r'type')
   ActivityType get type;

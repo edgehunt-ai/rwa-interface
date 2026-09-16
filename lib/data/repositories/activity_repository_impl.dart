@@ -31,8 +31,8 @@ final class ActivityRepositoryImpl implements ActivityRepository {
     id: value.id,
     category: switch (value.category) {
       api.ActivityCategory.orders => ActivityCategory.orders,
-      api.ActivityCategory.funds => ActivityCategory.funds,
-      api.ActivityCategory.signatures => ActivityCategory.signatures,
+      api.ActivityCategory.cash => ActivityCategory.cash,
+      api.ActivityCategory.funding => ActivityCategory.funding,
       _ => ActivityCategory.unknown,
     },
     type: value.type.name,
@@ -76,8 +76,8 @@ final class ActivityRepositoryImpl implements ActivityRepository {
   );
   api.ActivityCategory? _category(ActivityCategory? value) => switch (value) {
     ActivityCategory.orders => api.ActivityCategory.orders,
-    ActivityCategory.funds => api.ActivityCategory.funds,
-    ActivityCategory.signatures => api.ActivityCategory.signatures,
+    ActivityCategory.cash => api.ActivityCategory.cash,
+    ActivityCategory.funding => api.ActivityCategory.funding,
     _ => null,
   };
   api.ActivityStatus? _status(ActivityState? value) => switch (value) {

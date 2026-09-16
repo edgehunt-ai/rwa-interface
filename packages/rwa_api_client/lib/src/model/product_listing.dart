@@ -32,6 +32,8 @@ part 'product_listing.g.dart';
 /// * [turnover24hUsd] - 十进制字符串，避免浮点误差
 /// * [hotRank] 
 /// * [isFavorite] 
+/// * [tradable] - 产品级可交易性。bStocks catalog 展示条目为 false；未返回时按产品类型默认处理。
+/// * [executionStatus] - bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
 @BuiltValue()
 abstract class ProductListing implements Built<ProductListing, ProductListingBuilder> {
   @BuiltValueField(wireName: r'hip3_market')
@@ -101,6 +103,15 @@ abstract class ProductListing implements Built<ProductListing, ProductListingBui
 
   @BuiltValueField(wireName: r'is_favorite')
   bool? get isFavorite;
+
+  /// 产品级可交易性。bStocks catalog 展示条目为 false；未返回时按产品类型默认处理。
+  @BuiltValueField(wireName: r'tradable')
+  bool? get tradable;
+
+  /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
+  @BuiltValueField(wireName: r'execution_status')
+  ProductListingExecutionStatusEnum? get executionStatus;
+  // enum executionStatusEnum {  discovery_only,  catalog_display,  indexed_read_only,  baseline_live_candidate,  };
 
   ProductListing._();
 
@@ -244,6 +255,20 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
       yield serializers.serialize(
         object.isFavorite,
         specifiedType: const FullType(bool),
+      );
+    }
+    if (object.tradable != null) {
+      yield r'tradable';
+      yield serializers.serialize(
+        object.tradable,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.executionStatus != null) {
+      yield r'execution_status';
+      yield serializers.serialize(
+        object.executionStatus,
+        specifiedType: const FullType(ProductListingExecutionStatusEnum),
       );
     }
   }
@@ -410,6 +435,22 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
           if (valueDes == null) continue;
           result.isFavorite = valueDes;
           break;
+        case r'tradable':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.tradable = valueDes;
+          break;
+        case r'execution_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(ProductListingExecutionStatusEnum),
+          ) as ProductListingExecutionStatusEnum?;
+          if (valueDes == null) continue;
+          result.executionStatus = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -497,5 +538,31 @@ class ProductListingProductTypeEnum extends EnumClass {
 
   static BuiltSet<ProductListingProductTypeEnum> get values => _$productListingProductTypeEnumValues;
   static ProductListingProductTypeEnum valueOf(String name) => _$productListingProductTypeEnumValueOf(name);
+}
+
+class ProductListingExecutionStatusEnum extends EnumClass {
+
+  /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
+  @BuiltValueEnumConst(wireName: r'discovery_only')
+  static const ProductListingExecutionStatusEnum discoveryOnly = _$productListingExecutionStatusEnum_discoveryOnly;
+  /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
+  @BuiltValueEnumConst(wireName: r'catalog_display')
+  static const ProductListingExecutionStatusEnum catalogDisplay = _$productListingExecutionStatusEnum_catalogDisplay;
+  /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
+  @BuiltValueEnumConst(wireName: r'indexed_read_only')
+  static const ProductListingExecutionStatusEnum indexedReadOnly = _$productListingExecutionStatusEnum_indexedReadOnly;
+  /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
+  @BuiltValueEnumConst(wireName: r'baseline_live_candidate')
+  static const ProductListingExecutionStatusEnum baselineLiveCandidate = _$productListingExecutionStatusEnum_baselineLiveCandidate;
+  /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const ProductListingExecutionStatusEnum unknownDefaultOpenApi = _$productListingExecutionStatusEnum_unknownDefaultOpenApi;
+
+  static Serializer<ProductListingExecutionStatusEnum> get serializer => _$productListingExecutionStatusEnumSerializer;
+
+  const ProductListingExecutionStatusEnum._(String name): super(name);
+
+  static BuiltSet<ProductListingExecutionStatusEnum> get values => _$productListingExecutionStatusEnumValues;
+  static ProductListingExecutionStatusEnum valueOf(String name) => _$productListingExecutionStatusEnumValueOf(name);
 }
 

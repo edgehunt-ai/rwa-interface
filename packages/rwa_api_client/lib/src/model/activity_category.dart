@@ -11,12 +11,16 @@ part 'activity_category.g.dart';
 
 class ActivityCategory extends EnumClass {
 
+  /// `orders` 订单类 · `cash` 资金流水 · `funding` 资金费。  `orders` 覆盖 market/limit/tpsl/close/liquidation；`cash` 覆盖入金、划转、 提现与 Claim 等资金流水；`funding` 是 venue 无关的资金费 feed，当前包含 HIP-3 资金费，后续场所（如 bStocks）的资金费事件接入后同样归入本类。 资金费明细视图见 `GET /v1/hip3/funding-payments`。 `funds` 与 `signatures` 为已废弃的兼容值，服务端不再接受或产生。 
   @BuiltValueEnumConst(wireName: r'orders')
   static const ActivityCategory orders = _$orders;
-  @BuiltValueEnumConst(wireName: r'funds')
-  static const ActivityCategory funds = _$funds;
-  @BuiltValueEnumConst(wireName: r'signatures')
-  static const ActivityCategory signatures = _$signatures;
+  /// `orders` 订单类 · `cash` 资金流水 · `funding` 资金费。  `orders` 覆盖 market/limit/tpsl/close/liquidation；`cash` 覆盖入金、划转、 提现与 Claim 等资金流水；`funding` 是 venue 无关的资金费 feed，当前包含 HIP-3 资金费，后续场所（如 bStocks）的资金费事件接入后同样归入本类。 资金费明细视图见 `GET /v1/hip3/funding-payments`。 `funds` 与 `signatures` 为已废弃的兼容值，服务端不再接受或产生。 
+  @BuiltValueEnumConst(wireName: r'cash')
+  static const ActivityCategory cash = _$cash;
+  /// `orders` 订单类 · `cash` 资金流水 · `funding` 资金费。  `orders` 覆盖 market/limit/tpsl/close/liquidation；`cash` 覆盖入金、划转、 提现与 Claim 等资金流水；`funding` 是 venue 无关的资金费 feed，当前包含 HIP-3 资金费，后续场所（如 bStocks）的资金费事件接入后同样归入本类。 资金费明细视图见 `GET /v1/hip3/funding-payments`。 `funds` 与 `signatures` 为已废弃的兼容值，服务端不再接受或产生。 
+  @BuiltValueEnumConst(wireName: r'funding')
+  static const ActivityCategory funding = _$funding;
+  /// `orders` 订单类 · `cash` 资金流水 · `funding` 资金费。  `orders` 覆盖 market/limit/tpsl/close/liquidation；`cash` 覆盖入金、划转、 提现与 Claim 等资金流水；`funding` 是 venue 无关的资金费 feed，当前包含 HIP-3 资金费，后续场所（如 bStocks）的资金费事件接入后同样归入本类。 资金费明细视图见 `GET /v1/hip3/funding-payments`。 `funds` 与 `signatures` 为已废弃的兼容值，服务端不再接受或产生。 
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const ActivityCategory unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
