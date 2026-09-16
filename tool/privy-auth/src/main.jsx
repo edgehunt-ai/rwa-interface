@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   PrivyProvider,
+  useExportWallet,
   useLinkWithPasskey,
   useLogin,
   usePrivy,
@@ -109,6 +110,75 @@ function mount() {
   );
 }
 
+function postExportMessage(type, detail) {
+  const message = JSON.stringify({ type, ...(detail || {}) });
+  if (window.RwaPrivateKeyExport?.postMessage) {
+    window.RwaPrivateKeyExport.postMessage(message);
+  }
+  if (window.webkit?.messageHandlers?.RwaPrivateKeyExport?.postMessage) {
+    window.webkit.messageHandlers.RwaPrivateKeyExport.postMessage(message);
+  }
+}
+
+function PrivateKeyExport() {
+  const { authenticated, ready } = usePrivy();
+  const [error, setError] = React.useState(null);
+  const reportError = React.useCallback((value) => {
+    const message = value?.message || value?.privyErrorCode || String(value);
+    console.error('[Privy export]', value);
+    setError(message);
+    postExportMessage('error', { message });
+  }, []);
+  const { login } = useLogin({
+    onComplete: () => undefined,
+    onError: reportError,
+  });
+  const { exportWallet } = useExportWallet();
+  const started = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!ready || started.current) return;
+    started.current = true;
+    (async () => {
+      try {
+        if (!authenticated) await login();
+        await exportWallet();
+        // Privy's export promise resolves when its secure modal exits. The
+        // private key never crosses this bridge; close the host WebView too.
+        postExportMessage('close');
+      } catch (error) {
+        reportError(error);
+      }
+    })();
+  }, [authenticated, exportWallet, login, ready, reportError]);
+
+  return (
+    <main className="export-state">
+      <div className="spinner" />
+      <h1>Export private key</h1>
+      <p>{error || (authenticated ? 'Preparing secure export…' : 'Continue with Privy to verify your identity.')}</p>
+    </main>
+  );
+}
+
+function mountPrivateKeyExport() {
+  const appId =
+    typeof __PRIVY_EXPORT_APP_ID__ === 'string'
+      ? __PRIVY_EXPORT_APP_ID__
+      : new URLSearchParams(window.location.search).get('appId');
+  if (!appId) {
+    postExportMessage('error', { message: 'Missing Privy app ID.' });
+    return;
+  }
+  const host = document.getElementById('rwa-private-key-export-root');
+  if (!host) return;
+  createRoot(host).render(
+    <PrivyProvider appId={appId}>
+      <PrivateKeyExport />
+    </PrivyProvider>,
+  );
+}
+
 window.rwaPrivyAuth = {
   initialize(appId, clientId) {
     if (!appId || !clientId) {
@@ -181,3 +251,7 @@ window.rwaPrivyAuth = {
     state.user = null;
   },
 };
+
+if (document.getElementById('rwa-private-key-export-root')) {
+  mountPrivateKeyExport();
+}

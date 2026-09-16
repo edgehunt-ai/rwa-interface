@@ -115,7 +115,7 @@ profile secrets。Android release 启用 R8 代码和资源压缩。
 ## CI 与发布
 
 - GitHub Actions 对 push 和 pull request 执行 Flutter 的 `npm run quality:check`。
-- GitHub Actions 会在 `main` 推送后构建并部署 Flutter Web 到 Vercel；同仓库 PR 会部署 Vercel Preview，来自 fork 的 PR 会跳过部署，避免向不受信任代码提供部署凭据。
+- GitHub Actions 会在手动触发时构建并部署独立的 Privy 私钥导出页到 Vercel；同仓库 PR 会部署 Vercel Preview，来自 fork 的 PR 会跳过部署，避免向不受信任代码提供部署凭据。
 - PR 使用 concurrency，新提交会取消旧的质量运行；Release 运行不会自动取消。
 - `main` 上修改 `pubspec.yaml` 版本会触发 Android/iOS 发布构建、创建 `v<version>` 标签并发布
   GitHub Release。
@@ -152,7 +152,7 @@ API 生成层和 data/domain 层不保存翻译后的 UI 文案，只传递稳�
 `com.orbit.rwa_interface` 和 iOS bundle identifier，并确认 staging 配置启用了 `email` 登录。
 Google OAuth 和 passkey 的原生回跳配置已在工程中注册。Android OAuth 回调由
 `io.privy.sdk.oAuth.PrivyRedirectActivity` 接收；不要将同一 scheme 另行注册给 `MainActivity`。在 Privy
-Dashboard 中还必须为当前 `PRIVY_CLIENT_ID` 启用 Google 登录，并登记 Android application ID
+  Dashboard 中还必须为当前 `PRIVY_CLIENT_ID` 启用 Google 登录，并登记 Android application ID
 `com.orbit.rwa_interface`（iOS 为对应 bundle identifier），否则第三方登录页面无法由客户端修复。外部钱包登录使用 Reown AppKit 连接 EVM
 钱包并请求 `personal_sign`，再由 Privy SIWE 登录换取现有 API 所需的 Privy access token。需要在
 Privy Dashboard 启用外部 EVM 钱包登录，并在 Reown Dashboard 为对应 Android/iOS App 注册
@@ -184,11 +184,11 @@ flutter build web --dart-define-from-file=.env
 在 Privy Dashboard 的 Allowed origins 中登记 Web 的生产、staging 和本地开发地址；Web 使用的
 `PRIVY_APP_ID` 必须启用所需登录方式。移动端 `PRIVY_CLIENT_ID` 仅供原生 SDK 使用。
 
-Vercel 自动部署使用 GitHub Actions，不依赖 Vercel 的 Git 集成。请在仓库 Secrets 中配置
+Vercel 自动部署使用 GitHub Actions，不依赖 Vercel 的 Git 集成。当前 workflow 部署
+`private-key-export/dist`，请将目标 Vercel 项目设置为独立的私钥导出页项目，并在仓库 Secrets 中配置
 `VERCEL_TOKEN`、`VERCEL_ORG_ID` 和 `VERCEL_PROJECT_ID`；其中 ID 可通过 `vercel link` 生成的
-`.vercel/project.json` 获取。Web 构建继续使用现有 GitHub Actions Variables：`API_BASE_URL`、
-`PRIVY_APP_ID`、`PRIVY_CLIENT_ID`、`PRIVY_APP_URL_SCHEME`、`REOWN_PROJECT_ID`，可选
-`PRIVY_RELYING_PARTY`、Sentry 变量沿用 Release CI 的命名。
+`.vercel/project.json` 获取。导出页构建只需要现有 GitHub Actions Variable：`PRIVY_APP_ID`。
+`PRIVY_CLIENT_ID` 仅用于 Flutter 原生端，不会进入导出页构建。
 
 ## 相关文档
 

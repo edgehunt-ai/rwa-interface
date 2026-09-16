@@ -1,6 +1,20 @@
 name: Deploy Web
 
 on:
+  push:
+    paths:
+      - 'private-key-export/**'
+      - 'tool/privy-auth/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-web.yml'
+  pull_request:
+    paths:
+      - 'private-key-export/**'
+      - 'tool/privy-auth/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
 
 permissions:
@@ -11,23 +25,14 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  API_BASE_URL: ${{ vars.API_BASE_URL }}
   PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
-  PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
-  PRIVY_APP_URL_SCHEME: ${{ vars.PRIVY_APP_URL_SCHEME }}
-  PRIVY_RELYING_PARTY: ${{ vars.PRIVY_RELYING_PARTY || 'https://rwa.dxd.ink' }}
-  REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
-  SENTRY_DSN: ${{ vars.SENTRY_DSN }}
-  SENTRY_ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && (vars.SENTRY_ENVIRONMENT || 'production') || 'preview' }}
-  SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.10' }}
-  SENTRY_PROFILES_SAMPLE_RATE: ${{ vars.SENTRY_PROFILES_SAMPLE_RATE || '0.10' }}
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
   deploy:
-    name: Deploy Flutter Web to Vercel
+    name: Deploy private-key export page to Vercel
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,22 +44,12 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
       - name: Validate deployment configuration
         shell: bash
         run: |
           set -euo pipefail
           for key in \
-            API_BASE_URL \
             PRIVY_APP_ID \
-            PRIVY_CLIENT_ID \
-            PRIVY_APP_URL_SCHEME \
-            REOWN_PROJECT_ID \
             VERCEL_ORG_ID \
             VERCEL_PROJECT_ID \
             VERCEL_TOKEN; do
@@ -65,35 +60,17 @@ jobs:
           done
 
       - name: Install dependencies
-        run: |
-          npm ci --ignore-scripts
-          flutter pub get
+        run: npm ci --ignore-scripts
 
-      - name: Build Privy web bridge
-        run: npm run privy:web:build
-
-      - name: Build Flutter Web
-        shell: bash
-        run: >-
-          flutter build web --release
-          --dart-define=API_BASE_URL="$API_BASE_URL"
-          --dart-define=PRIVY_APP_ID="$PRIVY_APP_ID"
-          --dart-define=PRIVY_CLIENT_ID="$PRIVY_CLIENT_ID"
-          --dart-define=PRIVY_APP_URL_SCHEME="$PRIVY_APP_URL_SCHEME"
-          --dart-define=PRIVY_RELYING_PARTY="$PRIVY_RELYING_PARTY"
-          --dart-define=REOWN_PROJECT_ID="$REOWN_PROJECT_ID"
-          ${SENTRY_DSN:+--dart-define=SENTRY_DSN=$SENTRY_DSN}
-          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
-          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
-          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
-          --dart-define=SENTRY_RELEASE="rwa_interface@${{ github.sha }}"
+      - name: Build private-key export page
+        run: npm run privy:export:build
 
       - name: Prepare Vercel prebuilt output
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p .vercel/output/static
-          cp -a build/web/. .vercel/output/static/
+          cp -a private-key-export/dist/. .vercel/output/static/
           printf '%s\n' \
             '{' \
             '  "version": 3,' \

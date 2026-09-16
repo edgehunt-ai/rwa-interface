@@ -22,6 +22,12 @@ final class PrivyConfiguration {
     defaultValue: 'https://rwa.dxd.ink',
   );
 
+  /// HTTPS page hosting the React Privy private-key export experience.
+  static const privateKeyExportUrl = String.fromEnvironment(
+    'PRIVY_EXPORT_URL',
+    defaultValue: 'https://rwa.dxd.ink/private-key-export.html',
+  );
+
   final String appId;
   final String clientId;
 

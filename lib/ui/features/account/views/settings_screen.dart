@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/app/providers/auth_providers.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
 import 'package:rwa_interface/domain/models/app_update.dart';
@@ -18,6 +19,7 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/account/providers/account_providers.dart';
 import 'package:rwa_interface/ui/features/account/providers/app_update_providers.dart';
 import 'package:rwa_interface/ui/features/account/providers/cache_providers.dart';
+import 'package:rwa_interface/ui/features/account/views/private_key_export_sheet.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -77,7 +79,7 @@ class SettingsScreen extends ConsumerWidget {
                     ref,
                     account.settings.language,
                   ),
-                  onPrivateKey: () => _showPrivateKeyWarning(context),
+                  onPrivateKey: () => _showPrivateKeyWarning(context, ref),
                   appVersion: switch (installedAppInfo) {
                     AsyncData(:final value) => 'v${value.version}',
                     _ => '...',
@@ -198,24 +200,14 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  void _showPrivateKeyWarning(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  void _showPrivateKeyWarning(BuildContext context, WidgetRef ref) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => _NoticeSheet(
-        title: l10n.settingsExportPrivateKey,
-        message: l10n.settingsPrivateKeyWarning,
-        actionLabel: l10n.confirm,
-        illustration: const Image(
-          image: AssetImage(
-            'assets/figma/account_activity/private_key_warning.png',
-          ),
-          width: 160,
-          height: 160,
-          fit: BoxFit.contain,
-        ),
-        onAction: () => Navigator.of(sheetContext).pop(),
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0x70111215),
+      builder: (_) => PrivateKeyExportSheet(
+        configuration: ref.read(privyConfigurationProvider),
       ),
     );
   }

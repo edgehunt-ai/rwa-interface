@@ -3,7 +3,7 @@ FLUTTER_ARGS ?=
 
 REQUIRED_ENV_KEYS := API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID
 
-.PHONY: env-check sync-privy-config run
+.PHONY: env-check sync-privy-config run privy-export-dev privy-export-build
 
 env-check:
 	@test -f "$(ENV_FILE)" || { echo "Missing environment file: $(ENV_FILE)" >&2; exit 1; }
@@ -19,3 +19,9 @@ sync-privy-config: env-check
 
 run: sync-privy-config
 	flutter run --dart-define-from-file="$(ENV_FILE)" $(FLUTTER_ARGS)
+
+privy-export-dev: env-check
+	npm run privy:export:dev
+
+privy-export-build: env-check
+	npm run privy:export:build
