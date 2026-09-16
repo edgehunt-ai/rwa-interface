@@ -136,3 +136,6 @@ dist/
 !web/privy-auth/
 !web/privy-auth/dist/
 !web/privy-auth/dist/privy-auth.js
+
+# Standalone private-key export bundle is built by CI before deployment.
+private-key-export/dist/
