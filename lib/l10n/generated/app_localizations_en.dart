@@ -446,6 +446,52 @@ class AppLocalizationsEn extends AppLocalizations {
       'This quote is unavailable or expired. Go back and request a new quote.';
 
   @override
+  String get hip3TradingContextUnavailable =>
+      'Trading service is unavailable. Try again in a moment.';
+
+  @override
+  String hip3LeverageAboveMaximum(Object maximum) {
+    return 'Leverage exceeds the ${maximum}x limit for this product.';
+  }
+
+  @override
+  String get hip3MarginModeUnsupported =>
+      'This product does not support the selected margin mode.';
+
+  @override
+  String get hip3PlaceOrderUnsupported =>
+      'Opening orders is unavailable for this product right now.';
+
+  @override
+  String get hip3OrderTypeUnsupported =>
+      'This product does not support the selected order type.';
+
+  @override
+  String hip3NotionalBelowMinimum(Object minimum) {
+    return 'Order value is below the $minimum USDC minimum.';
+  }
+
+  @override
+  String hip3NotionalAboveMaximum(Object maximum) {
+    return 'Order value is above the $maximum USDC maximum.';
+  }
+
+  @override
+  String hip3MaximumLeverageHint(Object maximum) {
+    return 'Max ${maximum}x';
+  }
+
+  @override
+  String hip3OrderValueRangeHint(Object minimum, Object maximum) {
+    return 'Order value $minimum-$maximum USDC';
+  }
+
+  @override
+  String hip3OrderValueMinimumHint(Object minimum) {
+    return 'Min order value $minimum USDC';
+  }
+
+  @override
   String get walletConnectRequired =>
       'Connect the wallet requested for this order.';
 
@@ -853,7 +899,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPrivateKeyWarning =>
-      'Never share your private key with anyone. Anyone with this information can control your wallet.';
+      'Sign in on the web to export\nyour private key';
+
+  @override
+  String get settingsPrivateKeyContinue => 'Sign in on the web';
 
   @override
   String get settingsCheckUpdates => 'Check for Updates';
@@ -1279,9 +1328,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String availableTokenAmount(Object amount, Object token) {
     return 'Available $amount $token';
   }
-
-  @override
-  String get confirmAndSignWithdrawal => 'Confirm and sign';
 
   @override
   String insufficientGasForWithdrawal(Object asset) {

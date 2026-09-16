@@ -435,6 +435,48 @@ class AppLocalizationsZh extends AppLocalizations {
   String get orderQuoteUnavailable => '报价不可用或已过期，请返回并重新请求报价。';
 
   @override
+  String get hip3TradingContextUnavailable => '交易服务异常，请稍后重试。';
+
+  @override
+  String hip3LeverageAboveMaximum(Object maximum) {
+    return '杠杆超出该产品 $maximum× 上限。';
+  }
+
+  @override
+  String get hip3MarginModeUnsupported => '该产品不支持所选保证金模式。';
+
+  @override
+  String get hip3PlaceOrderUnsupported => '该产品当前无法下单。';
+
+  @override
+  String get hip3OrderTypeUnsupported => '该产品不支持所选订单类型。';
+
+  @override
+  String hip3NotionalBelowMinimum(Object minimum) {
+    return '订单金额低于 $minimum USDC 最小值。';
+  }
+
+  @override
+  String hip3NotionalAboveMaximum(Object maximum) {
+    return '订单金额超过 $maximum USDC 最大值。';
+  }
+
+  @override
+  String hip3MaximumLeverageHint(Object maximum) {
+    return '最高 $maximum×';
+  }
+
+  @override
+  String hip3OrderValueRangeHint(Object minimum, Object maximum) {
+    return '订单金额 $minimum-$maximum USDC';
+  }
+
+  @override
+  String hip3OrderValueMinimumHint(Object minimum) {
+    return '最小订单金额 $minimum USDC';
+  }
+
+  @override
   String get walletConnectRequired => '请连接此订单要求的钱包。';
 
   @override
@@ -827,7 +869,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsExportPrivateKey => '导出私钥';
 
   @override
-  String get settingsPrivateKeyWarning => '切勿向任何人透露你的私钥。获得该信息的人可以控制你的钱包。';
+  String get settingsPrivateKeyWarning => '前往网页登录以导出\n你的私钥';
+
+  @override
+  String get settingsPrivateKeyContinue => '前往网页登录';
 
   @override
   String get settingsCheckUpdates => '检查更新';
@@ -1232,9 +1277,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String availableTokenAmount(Object amount, Object token) {
     return '可用 $amount $token';
   }
-
-  @override
-  String get confirmAndSignWithdrawal => '确认并签名';
 
   @override
   String insufficientGasForWithdrawal(Object asset) {

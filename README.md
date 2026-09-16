@@ -183,6 +183,7 @@ flutter build web --dart-define-from-file=.env
 
 在 Privy Dashboard 的 Allowed origins 中登记 Web 的生产、staging 和本地开发地址；Web 使用的
 `PRIVY_APP_ID` 必须启用所需登录方式。移动端 `PRIVY_CLIENT_ID` 仅供原生 SDK 使用。
+移动端 WebView 使用 `PRIVY_EXPORT_URL` 加载独立部署的私钥导出页，生产构建必须配置为 HTTPS 地址。
 
 Vercel 自动部署使用 GitHub Actions，不依赖 Vercel 的 Git 集成。当前 workflow 部署
 `private-key-export/dist`，请将目标 Vercel 项目设置为独立的私钥导出页项目，并在仓库 Secrets 中配置

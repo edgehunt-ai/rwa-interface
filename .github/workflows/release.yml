@@ -23,6 +23,7 @@ env:
   API_BASE_URL: ${{ vars.API_BASE_URL }}
   PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
   PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
+  PRIVY_EXPORT_URL: ${{ vars.PRIVY_EXPORT_URL }}
   PRIVY_APP_URL_SCHEME: ${{ vars.PRIVY_APP_URL_SCHEME }}
   REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
   APP_REVIEW_ENABLED: ${{ vars.APP_REVIEW_ENABLED || 'false' }}
@@ -183,7 +184,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_EXPORT_URL PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
             if [[ -z "${!key:-}" ]]; then
               echo "Missing required GitHub Actions variable: $key" >&2
               exit 1
@@ -193,6 +194,7 @@ jobs:
             "API_BASE_URL=$API_BASE_URL" \
             "PRIVY_APP_ID=$PRIVY_APP_ID" \
             "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" \
+            "PRIVY_EXPORT_URL=$PRIVY_EXPORT_URL" \
             "PRIVY_APP_URL_SCHEME=$PRIVY_APP_URL_SCHEME" \
             "REOWN_PROJECT_ID=$REOWN_PROJECT_ID" \
             "APP_REVIEW_ENABLED=$APP_REVIEW_ENABLED" \
@@ -264,7 +266,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_EXPORT_URL PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
             if [[ -z "${!key:-}" ]]; then
               echo "Missing required GitHub Actions variable: $key" >&2
               exit 1
@@ -274,6 +276,7 @@ jobs:
             "API_BASE_URL=$API_BASE_URL" \
             "PRIVY_APP_ID=$PRIVY_APP_ID" \
             "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" \
+            "PRIVY_EXPORT_URL=$PRIVY_EXPORT_URL" \
             "PRIVY_APP_URL_SCHEME=$PRIVY_APP_URL_SCHEME" \
             "REOWN_PROJECT_ID=$REOWN_PROJECT_ID" \
             "APP_REVIEW_ENABLED=$APP_REVIEW_ENABLED" \

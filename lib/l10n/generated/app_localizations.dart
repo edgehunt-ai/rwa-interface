@@ -944,6 +944,66 @@ abstract class AppLocalizations {
   /// **'This quote is unavailable or expired. Go back and request a new quote.'**
   String get orderQuoteUnavailable;
 
+  /// No description provided for @hip3TradingContextUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading service is unavailable. Try again in a moment.'**
+  String get hip3TradingContextUnavailable;
+
+  /// No description provided for @hip3LeverageAboveMaximum.
+  ///
+  /// In en, this message translates to:
+  /// **'Leverage exceeds the {maximum}x limit for this product.'**
+  String hip3LeverageAboveMaximum(Object maximum);
+
+  /// No description provided for @hip3MarginModeUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This product does not support the selected margin mode.'**
+  String get hip3MarginModeUnsupported;
+
+  /// No description provided for @hip3PlaceOrderUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening orders is unavailable for this product right now.'**
+  String get hip3PlaceOrderUnsupported;
+
+  /// No description provided for @hip3OrderTypeUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This product does not support the selected order type.'**
+  String get hip3OrderTypeUnsupported;
+
+  /// No description provided for @hip3NotionalBelowMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Order value is below the {minimum} USDC minimum.'**
+  String hip3NotionalBelowMinimum(Object minimum);
+
+  /// No description provided for @hip3NotionalAboveMaximum.
+  ///
+  /// In en, this message translates to:
+  /// **'Order value is above the {maximum} USDC maximum.'**
+  String hip3NotionalAboveMaximum(Object maximum);
+
+  /// No description provided for @hip3MaximumLeverageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Max {maximum}x'**
+  String hip3MaximumLeverageHint(Object maximum);
+
+  /// No description provided for @hip3OrderValueRangeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Order value {minimum}-{maximum} USDC'**
+  String hip3OrderValueRangeHint(Object minimum, Object maximum);
+
+  /// No description provided for @hip3OrderValueMinimumHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Min order value {minimum} USDC'**
+  String hip3OrderValueMinimumHint(Object minimum);
+
   /// No description provided for @walletConnectRequired.
   ///
   /// In en, this message translates to:
@@ -1715,8 +1775,14 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPrivateKeyWarning.
   ///
   /// In en, this message translates to:
-  /// **'Never share your private key with anyone. Anyone with this information can control your wallet.'**
+  /// **'Sign in on the web to export\nyour private key'**
   String get settingsPrivateKeyWarning;
+
+  /// No description provided for @settingsPrivateKeyContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in on the web'**
+  String get settingsPrivateKeyContinue;
 
   /// No description provided for @settingsCheckUpdates.
   ///
@@ -2479,12 +2545,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Available {amount} {token}'**
   String availableTokenAmount(Object amount, Object token);
-
-  /// No description provided for @confirmAndSignWithdrawal.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm and sign'**
-  String get confirmAndSignWithdrawal;
 
   /// No description provided for @insufficientGasForWithdrawal.
   ///

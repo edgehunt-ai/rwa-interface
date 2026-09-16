@@ -35,8 +35,8 @@ void main() {
 
     await tester.tap(find.text('Export Private Key'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Never share your private key'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    expect(find.textContaining('Sign in on the web to export'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign in on the web'));
     await tester.pumpAndSettle();
 
     await tester.drag(find.byType(ListView), const Offset(0, -400));
@@ -66,7 +66,10 @@ void main() {
     await tester.tap(find.text('Export Private Key'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.textContaining('Never share your private key'), findsOneWidget);
+    expect(
+      find.textContaining('Sign in on the web to export'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('settings links and removes a Privy passkey', (tester) async {

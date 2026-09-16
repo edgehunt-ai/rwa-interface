@@ -120,6 +120,13 @@ function postExportMessage(type, detail) {
   }
 }
 
+function isNativeExportWebView() {
+  return Boolean(
+    window.RwaPrivateKeyExport?.postMessage ||
+      window.webkit?.messageHandlers?.RwaPrivateKeyExport?.postMessage,
+  );
+}
+
 function PrivateKeyExport() {
   const { authenticated, ready } = usePrivy();
   const [error, setError] = React.useState(null);
@@ -140,7 +147,11 @@ function PrivateKeyExport() {
   React.useEffect(() => {
     if (!ready || authenticated || loginStarted.current) return;
     loginStarted.current = true;
-    login().catch(reportError);
+    // Google blocks OAuth in many embedded WebViews. Keep social login in a
+    // normal browser, but use email OTP inside the native export WebView.
+    login({
+      loginMethods: isNativeExportWebView() ? ['email'] : ['google', 'email'],
+    }).catch(reportError);
   }, [authenticated, login, ready, reportError]);
 
   React.useEffect(() => {
