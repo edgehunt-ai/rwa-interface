@@ -38,9 +38,12 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   final address = TextEditingController();
   final amount = TextEditingController();
   WithdrawalQuote? quote;
+  PreparedSelfCustodialWithdrawal? prepared;
   String? error;
   bool quoting = false;
   bool submitting = false;
+  // Each visit to the review step asks the server for its own gas observation.
+  int prepareAttempt = 0;
 
   @override
   void dispose() {
@@ -79,6 +82,8 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     setState(() {
       quoting = false;
       error = null;
+      prepared = null;
+      prepareAttempt++;
       quote = WithdrawalQuote(
         quoteId: 'self-custodial-local',
         intent: WithdrawalIntent(
@@ -86,8 +91,9 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
           amount: value,
           address: recipient,
         ),
-        // Self-custodial withdrawals pay network gas from the wallet. The
-        // endpoint does not provide a token-denominated fee quote.
+        // Self-custodial withdrawals pay network gas from the wallet in its
+        // native asset, so there is no token-denominated fee. The real cost is
+        // only observed once the intent is created, and is shown before signing.
         totalFee: DecimalValue('0', asset: widget.token, unit: 'token'),
         estimatedReceive: value,
         sufficient: true,
@@ -100,10 +106,26 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     if (currentQuote == null || submitting) return;
     setState(() => submitting = true);
     try {
-      await ref
-          .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(quote: currentQuote);
+      final commands = ref.read(selfCustodialWithdrawalCommandsProvider);
+      // The first confirmation creates the intent so the server-observed gas
+      // becomes reviewable; only the second one signs it.
+      final current = prepared;
+      if (current == null) {
+        final intent = await commands.prepare(
+          quote: currentQuote,
+          attempt: prepareAttempt,
+        );
+        if (!mounted) return;
+        setState(() {
+          prepared = intent;
+          error = _gasError(intent.gas);
+        });
+        return;
+      }
+      await commands.execute(quote: currentQuote, prepared: current);
       if (mounted) context.pop();
+    } on InsufficientWithdrawalGas catch (failure) {
+      if (mounted) setState(() => error = _gasError(failure.estimate));
     } on Object {
       if (mounted) {
         AppToast.showFailure(
@@ -114,6 +136,12 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     } finally {
       if (mounted) setState(() => submitting = false);
     }
+  }
+
+  String? _gasError(SelfCustodialWithdrawalGasEstimate? gas) {
+    if (gas == null || gas.canPayGas) return null;
+    return AppLocalizations.of(context)
+        .insufficientGasForWithdrawal(gas.nativeAsset);
   }
 
   @override
@@ -142,7 +170,13 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
               )
             : _WithdrawalReview(
                 quote: quote!,
-                onBack: () => setState(() => quote = null),
+                prepared: prepared,
+                error: error,
+                onBack: () => setState(() {
+                  quote = null;
+                  prepared = null;
+                  error = null;
+                }),
                 onSubmit: _submit,
                 submitting: submitting,
               ),
@@ -568,15 +602,23 @@ class _RouteRow extends StatelessWidget {
 class _WithdrawalReview extends StatelessWidget {
   const _WithdrawalReview({
     required this.quote,
+    required this.prepared,
+    required this.error,
     required this.onBack,
     required this.onSubmit,
     required this.submitting,
   });
 
   final WithdrawalQuote quote;
+  final PreparedSelfCustodialWithdrawal? prepared;
+  final String? error;
   final VoidCallback onBack;
   final VoidCallback onSubmit;
   final bool submitting;
+
+  /// A wallet that cannot cover the observed gas must top up first; signing
+  /// stays unavailable until the intent is prepared again.
+  bool get _canSign => prepared?.gas?.canPayGas ?? true;
 
   @override
   Widget build(BuildContext context) {
@@ -635,9 +677,13 @@ class _WithdrawalReview extends StatelessWidget {
               const SizedBox(height: 8),
               _ReviewDetail(
                 label: l10n.networkFee,
-                value: quote.quoteId == 'self-custodial-local'
-                    ? '—'
-                    : '≈ ${TokenAmountFormatter.format(quote.totalFee, symbol: 'USDC')}',
+                value: switch ((quote.quoteId, prepared?.gas)) {
+                  (_, final gas?) =>
+                    '≈ ${TokenAmountFormatter.format(gas.estimatedNativeFee, symbol: gas.nativeAsset)}',
+                  ('self-custodial-local', _) => '—',
+                  _ =>
+                    '≈ ${TokenAmountFormatter.format(quote.totalFee, symbol: 'USDC')}',
+                },
               ),
             ],
           ),
@@ -659,10 +705,23 @@ class _WithdrawalReview extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: colors.secondaryText),
         ),
+        if (error != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            error!,
+            style: TextStyle(
+              color: Theme.of(context).extension<AppSemanticColors>()!.loss,
+            ),
+          ),
+        ],
         const SizedBox(height: 40),
         FilledButton(
-          onPressed: submitting ? null : onSubmit,
-          child: Text(l10n.withdrawUsdc),
+          onPressed: submitting || !_canSign ? null : onSubmit,
+          child: Text(
+            prepared == null
+                ? l10n.withdrawUsdc
+                : l10n.confirmAndSignWithdrawal,
+          ),
         ),
       ],
     );

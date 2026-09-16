@@ -2480,6 +2480,18 @@ abstract class AppLocalizations {
   /// **'Available {amount} {token}'**
   String availableTokenAmount(Object amount, Object token);
 
+  /// No description provided for @confirmAndSignWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and sign'**
+  String get confirmAndSignWithdrawal;
+
+  /// No description provided for @insufficientGasForWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough {asset} to pay the network fee. Add {asset} to this wallet and try again.'**
+  String insufficientGasForWithdrawal(Object asset);
+
   /// No description provided for @networkFeesMayChange.
   ///
   /// In en, this message translates to:

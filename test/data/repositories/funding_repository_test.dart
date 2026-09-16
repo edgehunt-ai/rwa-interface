@@ -37,6 +37,45 @@ void main() {
       });
     },
   );
+  test(
+    'prepared withdrawal carries the observed gas estimate verbatim',
+    () async {
+      final prepared = await FundingRepositoryImpl(_GasFunding())
+          .createSelfCustodialWithdrawal(
+            walletId: 'wallet-1',
+            assetId: 'eip155:56/erc20:0xusdc',
+            chain: 'BSC',
+            amount: '25.000001',
+            destinationAddress: '0x1111111111111111111111111111111111111111',
+            idempotencyKey: 'withdrawal-key',
+          );
+
+      final gas = prepared.gas!;
+      expect(gas.nativeAsset, 'BNB');
+      expect(gas.gasUnits, '65000');
+      // Financial strings must survive the boundary without reformatting.
+      expect(gas.gasPriceWei.value, '1000000000');
+      expect(gas.estimatedNativeFee.value, '0.000065000000000000');
+      expect(gas.walletNativeBalance.value, '0.000010000000000000');
+      expect(gas.estimatedNativeFee.asset, 'BNB');
+      expect(gas.canPayGas, isFalse);
+      expect(gas.observedAt, DateTime.utc(2026));
+    },
+  );
+
+  test('a withdrawal without a gas estimate maps to null', () async {
+    final prepared = await FundingRepositoryImpl(_GasFunding(gas: false))
+        .createSelfCustodialWithdrawal(
+          walletId: 'wallet-1',
+          assetId: 'eip155:56/erc20:0xusdc',
+          chain: 'BSC',
+          amount: '25.000001',
+          destinationAddress: '0x1111111111111111111111111111111111111111',
+          idempotencyKey: 'withdrawal-key',
+        );
+    expect(prepared.gas, isNull);
+  });
+
   test('confirmed deposits map from the new oneOf response', () async {
     final result = await FundingRepositoryImpl(_Funding())
         .getDeposit('deposit-1');
@@ -155,6 +194,54 @@ final class _Funding implements FundingService {
       ),
     );
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _GasFunding implements FundingService {
+  _GasFunding({this.gas = true});
+  final bool gas;
+
+  @override
+  Future<api.SelfCustodialWithdrawal> createSelfCustodialWithdrawal(
+    api.SelfCustodialWithdrawalCreateRequest request, {
+    required String idempotencyKey,
+  }) async => api.SelfCustodialWithdrawal(
+    (withdrawal) => withdrawal
+      ..withdrawalId = 'withdrawal-1'
+      ..sourceWalletId = request.walletId
+      ..assetId = request.assetId
+      ..assetSymbol = 'USDC'
+      ..amount = request.amount
+      ..destinationAddress = request.destinationAddress
+      ..transaction = api.SelfCustodialWithdrawalTransaction(
+        (transaction) => transaction
+          ..chainId = api.SelfCustodialWithdrawalChainId.n56
+          ..from = '0x2222222222222222222222222222222222222222'
+          ..to = '0x3333333333333333333333333333333333333333'
+          ..data = '0xa9059cbb'
+          ..value = api.SelfCustodialWithdrawalTransactionValueEnum.n0x0
+          ..payloadHash = '0xpayload'
+          ..validUntil = DateTime.utc(2026),
+      ).toBuilder()
+      ..gas = !gas
+          ? null
+          : api.SelfCustodialWithdrawalGasEstimate(
+              (estimate) => estimate
+                ..nativeAsset = 'BNB'
+                ..gasUnits = '65000'
+                ..gasPriceWei = '1000000000'
+                ..estimatedNativeFee = '0.000065000000000000'
+                ..walletNativeBalance = '0.000010000000000000'
+                ..canPayGas = false
+                ..observedAt = DateTime.utc(2026),
+            ).toBuilder()
+      ..status = api.SelfCustodialWithdrawalStatus.awaitingSubmission
+      ..requiredConfirmations = 12
+      ..createdAt = DateTime.utc(2026)
+      ..updatedAt = DateTime.utc(2026),
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

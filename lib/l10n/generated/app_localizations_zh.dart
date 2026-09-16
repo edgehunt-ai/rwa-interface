@@ -1234,6 +1234,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get confirmAndSignWithdrawal => '确认并签名';
+
+  @override
+  String insufficientGasForWithdrawal(Object asset) {
+    return '$asset 不足以支付网络费用，请先向该钱包充值 $asset 后重试。';
+  }
+
+  @override
   String get networkFeesMayChange => '确认前网络费用可能发生变化。';
 
   @override

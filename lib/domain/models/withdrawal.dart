@@ -77,6 +77,36 @@ final class SelfCustodialWithdrawalTransaction {
   final DateTime validUntil;
 }
 
+/// Server observation of the frozen transfer's network cost, bound to the
+/// [PreparedSelfCustodialWithdrawal.transaction] it was estimated for. It is an
+/// estimate for the user to review before signing, never a promised cost.
+final class SelfCustodialWithdrawalGasEstimate {
+  const SelfCustodialWithdrawalGasEstimate({
+    required this.nativeAsset,
+    required this.gasUnits,
+    required this.gasPriceWei,
+    required this.estimatedNativeFee,
+    required this.walletNativeBalance,
+    required this.canPayGas,
+    required this.observedAt,
+  });
+
+  final String nativeAsset;
+  final String gasUnits;
+  final DecimalValue gasPriceWei;
+  final DecimalValue estimatedNativeFee;
+  final DecimalValue walletNativeBalance;
+  final bool canPayGas;
+  final DateTime observedAt;
+}
+
+/// The source wallet cannot cover the observed gas, so the user must top up the
+/// native asset before any signature is requested.
+final class InsufficientWithdrawalGas implements Exception {
+  const InsufficientWithdrawalGas(this.estimate);
+  final SelfCustodialWithdrawalGasEstimate estimate;
+}
+
 final class PreparedSelfCustodialWithdrawal {
   const PreparedSelfCustodialWithdrawal({
     required this.withdrawalId,
@@ -88,6 +118,7 @@ final class PreparedSelfCustodialWithdrawal {
     required this.destinationAddress,
     required this.transaction,
     required this.status,
+    this.gas,
   });
 
   final String withdrawalId;
@@ -99,6 +130,10 @@ final class PreparedSelfCustodialWithdrawal {
   final String destinationAddress;
   final SelfCustodialWithdrawalTransaction transaction;
   final SelfCustodialWithdrawalState status;
+
+  /// Present only on the create response; null when the server has no gas
+  /// estimate configured.
+  final SelfCustodialWithdrawalGasEstimate? gas;
 }
 
 enum WalletAuthorizationState {

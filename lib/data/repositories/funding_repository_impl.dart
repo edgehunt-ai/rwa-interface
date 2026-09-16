@@ -426,6 +426,31 @@ final class FundingRepositoryImpl implements FundingRepository {
           SelfCustodialWithdrawalState.manualReview,
         _ => SelfCustodialWithdrawalState.unknown,
       },
+      gas: _gasEstimate(value.gas),
+    );
+  }
+
+  SelfCustodialWithdrawalGasEstimate? _gasEstimate(
+    api.SelfCustodialWithdrawalGasEstimate? value,
+  ) {
+    if (value == null) return null;
+    final native = value.nativeAsset;
+    return SelfCustodialWithdrawalGasEstimate(
+      nativeAsset: native,
+      gasUnits: value.gasUnits,
+      gasPriceWei: DecimalValue(value.gasPriceWei, asset: native, unit: 'wei'),
+      estimatedNativeFee: DecimalValue(
+        value.estimatedNativeFee,
+        asset: native,
+        unit: 'token',
+      ),
+      walletNativeBalance: DecimalValue(
+        value.walletNativeBalance,
+        asset: native,
+        unit: 'token',
+      ),
+      canPayGas: value.canPayGas,
+      observedAt: value.observedAt.toUtc(),
     );
   }
 

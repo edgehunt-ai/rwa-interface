@@ -1281,6 +1281,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get confirmAndSignWithdrawal => 'Confirm and sign';
+
+  @override
+  String insufficientGasForWithdrawal(Object asset) {
+    return 'Not enough $asset to pay the network fee. Add $asset to this wallet and try again.';
+  }
+
+  @override
   String get networkFeesMayChange =>
       'Network fees may change before confirmation.';
 

@@ -32,22 +32,20 @@ final class SelfCustodialWithdrawalCommands {
   final _guard = IdempotentCommandGuard();
   final Map<String, _PendingWithdrawalSubmission> _pendingSubmissions = {};
 
-  Future<SelfCustodialWithdrawalSummary> execute({
+  /// Creates the server-side intent so its frozen transaction and gas estimate
+  /// can be reviewed. Never signs: the user confirms the observed fee first.
+  /// Confirming the same [attempt] twice replays one idempotency key, so a
+  /// repeated tap cannot leave a second intent behind. A gas estimate is only
+  /// observed while creating, so returning to the form and reviewing again
+  /// raises [attempt] to obtain a fresh observation — otherwise a wallet that
+  /// topped up its native balance would keep replaying the stale one.
+  Future<PreparedSelfCustodialWithdrawal> prepare({
     required WithdrawalQuote quote,
+    int attempt = 0,
   }) => _guard.run(
-    operation: 'self-custodial-withdrawal-execute',
-    fingerprint: quote.intent.fingerprint,
+    operation: 'self-custodial-withdrawal-prepare',
+    fingerprint: '${quote.intent.fingerprint}|$attempt',
     command: (createKey) async {
-      final fingerprint = quote.intent.fingerprint;
-      final pending = _pendingSubmissions[fingerprint];
-      if (pending != null) {
-        final result = await submit(
-          withdrawalId: pending.withdrawalId,
-          txHash: pending.txHash,
-        );
-        _pendingSubmissions.remove(fingerprint);
-        return result;
-      }
       _validateRequest(quote);
       final wallet = await _findWallet(quote.intent.chain);
       final asset = await _findAsset(quote, wallet: wallet);
@@ -62,6 +60,33 @@ final class SelfCustodialWithdrawalCommands {
             idempotencyKey: createKey,
           );
       _validatePrepared(prepared, asset: asset, wallet: wallet, quote: quote);
+      return prepared;
+    },
+  );
+
+  Future<SelfCustodialWithdrawalSummary> execute({
+    required WithdrawalQuote quote,
+    required PreparedSelfCustodialWithdrawal prepared,
+  }) => _guard.run(
+    operation: 'self-custodial-withdrawal-execute',
+    fingerprint: quote.intent.fingerprint,
+    command: (_) async {
+      final fingerprint = quote.intent.fingerprint;
+      final pending = _pendingSubmissions[fingerprint];
+      if (pending != null) {
+        final result = await submit(
+          withdrawalId: pending.withdrawalId,
+          txHash: pending.txHash,
+        );
+        _pendingSubmissions.remove(fingerprint);
+        return result;
+      }
+      // The wallet must be able to pay the observed gas before the user is
+      // ever asked to sign.
+      final gas = prepared.gas;
+      if (gas != null && !gas.canPayGas) {
+        throw InsufficientWithdrawalGas(gas);
+      }
 
       final authGateway = _ref.read(identityAuthGatewayProvider);
       if (authGateway is! EmbeddedWalletTransactionSender) {
