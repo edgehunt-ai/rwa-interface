@@ -64,6 +64,13 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
   }) {}
 
   @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+  }) {}
+
+  @override
   void recordOperation(String operation, {required String outcome}) {}
 
   @override

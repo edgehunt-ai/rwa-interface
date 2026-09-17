@@ -98,7 +98,6 @@ final class Hip3OrderExecutionRepositoryImpl
         var current = action;
         for (var attempt = 0; attempt < 30; attempt++) {
           if (current.orderId != orderId ||
-              current.environment != api.Hip3Environment.testnet ||
               current.operation !=
                   (cancel
                       ? api.Hip3Operation.cancelOrder

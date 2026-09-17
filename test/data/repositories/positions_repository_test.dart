@@ -34,40 +34,37 @@ void main() {
     ),
   );
 
-  test(
-    'leverage context maps exact limits and refuses wrong product/network/mode',
-    () async {
-      actions.tradingContext = _context();
-      final context = await repository.leverageContext('xyz:XYZ');
-      expect(context.maximum.value, '10');
-      expect(context.current!.value, '2');
-      expect(context.marginMode, PositionMarginMode.cross);
-      expect(context.canChange, isTrue);
-      actions.tradingContext = _context().rebuild(
-        (b) => b.productId = 'xyz:OTHER',
-      );
-      await expectLater(
-        repository.leverageContext('xyz:XYZ'),
-        throwsFormatException,
-      );
-      actions.tradingContext = _context().rebuild(
-        (b) => b.environment = api.Hip3Environment.mainnet,
-      );
-      expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
-      actions.tradingContext = _context().rebuild(
-        (b) => b.currentMarginMode = null,
-      );
-      expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
-      actions.tradingContext = _context().rebuild(
-        (b) => b.currentLeverage = null,
-      );
-      expect((await repository.leverageContext('xyz:XYZ')).current, isNull);
-      actions.tradingContext = _context().rebuild(
-        (b) => b.supportedOperations.clear(),
-      );
-      expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
-    },
-  );
+  test('leverage context maps exact limits, refuses a wrong product, and is not network-gated', () async {
+    actions.tradingContext = _context();
+    final context = await repository.leverageContext('xyz:XYZ');
+    expect(context.maximum.value, '10');
+    expect(context.current!.value, '2');
+    expect(context.marginMode, PositionMarginMode.cross);
+    expect(context.canChange, isTrue);
+    actions.tradingContext = _context().rebuild(
+      (b) => b.productId = 'xyz:OTHER',
+    );
+    await expectLater(
+      repository.leverageContext('xyz:XYZ'),
+      throwsFormatException,
+    );
+    actions.tradingContext = _context().rebuild(
+      (b) => b.environment = api.Hip3Environment.mainnet,
+    );
+    expect((await repository.leverageContext('xyz:XYZ')).canChange, isTrue);
+    actions.tradingContext = _context().rebuild(
+      (b) => b.currentMarginMode = null,
+    );
+    expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
+    actions.tradingContext = _context().rebuild(
+      (b) => b.currentLeverage = null,
+    );
+    expect((await repository.leverageContext('xyz:XYZ')).current, isNull);
+    actions.tradingContext = _context().rebuild(
+      (b) => b.supportedOperations.clear(),
+    );
+    expect((await repository.leverageContext('xyz:XYZ')).canChange, isFalse);
+  });
 
   test('TP/SL direction uses decimal comparisons without precision loss', () {
     expect(
@@ -111,15 +108,24 @@ void main() {
     },
   );
 
-  test('recovery rejects an action from another network', () async {
-    actions.recovered = _recovered().rebuild(
-      (b) => b.environment = api.Hip3Environment.mainnet,
-    );
-    await expectLater(
-      repository.resumeHip3Action('action-1'),
-      throwsA(isA<Hip3SigningFailure>()),
-    );
-  });
+  test(
+    'recovery accepts a mainnet action and still binds its identity',
+    () async {
+      actions.recovered = _recovered().rebuild(
+        (b) => b.environment = api.Hip3Environment.mainnet,
+      );
+      await repository.resumeHip3Action('action-1');
+      actions.recovered = _recovered().rebuild(
+        (b) => b
+          ..environment = api.Hip3Environment.mainnet
+          ..actionId = 'other-action',
+      );
+      await expectLater(
+        repository.resumeHip3Action('action-1'),
+        throwsA(isA<Hip3SigningFailure>()),
+      );
+    },
+  );
 
   test('recovery rejects inconsistent frozen intent and position', () async {
     actions.recovered = _recovered().rebuild(

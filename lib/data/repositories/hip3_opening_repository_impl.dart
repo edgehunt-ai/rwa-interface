@@ -14,19 +14,24 @@ import '../services/hip3_preparation_cache.dart';
 import '../services/hip3_step_confirmation_mapper.dart';
 
 final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
-  Hip3OpeningRepositoryImpl(this._service, this._executor, this._confirm);
+  Hip3OpeningRepositoryImpl(
+    this._service,
+    this._executor,
+    this._confirm, {
+    Future<void> Function(Duration)? delay,
+  }) : _delay = delay ?? Future<void>.delayed;
   final Hip3PositionActionService _service;
   final Hip3PositionActionExecutor _executor;
   final Future<bool> Function(Hip3StepConfirmation) _confirm;
+  final Future<void> Function(Duration) _delay;
   final _preparations = Hip3PreparationCache();
 
   @override
   Future<Hip3OpeningContext> context(String productOrSymbol) async {
     final value = await _service.context(productOrSymbol);
-    if (value.environment != api.Hip3Environment.testnet ||
-        (productOrSymbol.contains(':')
-            ? value.productId != productOrSymbol
-            : value.symbol.toUpperCase() != productOrSymbol.toUpperCase())) {
+    if (productOrSymbol.contains(':')
+        ? value.productId != productOrSymbol
+        : value.symbol.toUpperCase() != productOrSymbol.toUpperCase()) {
       throw const FormatException(
         'HIP3 context product or environment mismatch',
       );
@@ -48,7 +53,6 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
     );
     final context = _map(source);
     if (context.productId != productId ||
-        context.environment != 'testnet' ||
         leverage < 1 ||
         leverage > context.maximumLeverage ||
         !context.marginModes.contains(mode) ||
@@ -69,7 +73,9 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
       intent: intent,
       operation: api.Hip3Operation.setLeverage,
       productId: productId,
-      environment: api.Hip3Environment.testnet,
+      // The context just read is the authority; the action must not switch
+      // networks behind it.
+      environment: source.environment,
     );
     final action = await _service.create(intent, idempotencyKey);
     binding.validate(action);
@@ -79,15 +85,20 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
       confirm: (action, step) =>
           _confirm(mapHip3StepConfirmation(action, step)),
     );
-    // Never preview using the context from before a signed settings change.
-    final refreshed = await this.context(productId);
-    if (refreshed.currentLeverage != leverage ||
-        refreshed.currentMarginMode != mode) {
-      throw const FormatException(
-        'Leverage update is not yet reflected by the venue',
-      );
+    // The action may be accepted before the venue context reflects the new
+    // settings. Poll the authoritative context while keeping the same action
+    // idempotency key instead of treating propagation latency as a failure.
+    for (var attempt = 0; attempt < 10; attempt++) {
+      final refreshed = await this.context(productId);
+      if (refreshed.currentLeverage == leverage &&
+          refreshed.currentMarginMode == mode) {
+        return refreshed;
+      }
+      if (attempt < 9) await _delay(const Duration(milliseconds: 500));
     }
-    return refreshed;
+    throw const FormatException(
+      'Leverage update was accepted but is not yet reflected by the venue',
+    );
   }
 
   Hip3OpeningContext _map(api.Hip3TradingContext value) {

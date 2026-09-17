@@ -173,6 +173,7 @@ void main() {
 final class _RecordingObservabilityReporter implements ObservabilityReporter {
   final List<String> operations = [];
   final List<ApiFailure> failures = [];
+  final List<Object> errors = [];
 
   @override
   Future<void> clearUser() async {}
@@ -184,6 +185,16 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
     StackTrace? stackTrace,
   }) {
     failures.add(failure);
+    recordOperation(operation, outcome: 'failed');
+  }
+
+  @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+  }) {
+    errors.add(error);
     recordOperation(operation, outcome: 'failed');
   }
 

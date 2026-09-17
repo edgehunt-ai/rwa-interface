@@ -57,7 +57,6 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       marginMode: mode,
       validUntil: context.validUntil.toUtc(),
       canChange:
-          context.environment == api.Hip3Environment.testnet &&
           mode != null &&
           context.supportedOperations.contains(api.Hip3Operation.setLeverage) &&
           context.blocker == null,
@@ -83,7 +82,6 @@ final class PositionsRepositoryImpl implements PositionsRepository {
               orderId: action.orderId,
               effectsApplied: action.effectsApplied,
               canResumePositionAction:
-                  action.environment == api.Hip3Environment.testnet &&
                   const [
                     api.Hip3Operation.setTpsl,
                     api.Hip3Operation.clearTpsl,
@@ -123,10 +121,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
             action.closePreview?.environment == action.environment,
       _ => false,
     };
-    if (!matches ||
-        action.environment != api.Hip3Environment.testnet ||
-        action.actionId != actionId ||
-        action.productId.isEmpty) {
+    if (!matches || action.actionId != actionId || action.productId.isEmpty) {
       throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
     }
     await _executor.resume(
@@ -303,8 +298,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       ]),
       () => _actions.context(position.productId!),
     );
-    if (context.productId != position.productId ||
-        context.environment != api.Hip3Environment.testnet) {
+    if (context.productId != position.productId) {
       throw const FormatException('Trading context binding mismatch');
     }
     await _run(
@@ -313,6 +307,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       api.Hip3Operation.setLeverage,
       idempotencyKey,
       bindPosition: false,
+      environment: context.environment,
     );
     return get(position.positionId);
   }
@@ -393,8 +388,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         preview.type.name != type.name ||
         preview.side.name !=
             (position.side == PositionSide.long ? 'short' : 'long') ||
-        (type == TradingOrderType.limit && preview.limitPrice == null) ||
-        preview.environment != api.Hip3Environment.testnet) {
+        (type == TradingOrderType.limit && preview.limitPrice == null)) {
       throw const FormatException('Close preview binding mismatch');
     }
     requireWithinPosition(
@@ -417,6 +411,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       Hip3PositionIntents.close(preview.previewId),
       api.Hip3Operation.closePosition,
       idempotencyKey,
+      environment: preview.environment,
     );
     final orderId = completed.orderId;
     if (orderId == null) {
@@ -431,13 +426,14 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     api.Hip3Operation operation,
     String key, {
     bool bindPosition = true,
+    api.Hip3Environment? environment,
   }) async {
     _requireProduct(position);
     final binding = Hip3ActionBinding(
       intent: intent,
       operation: operation,
       productId: position.productId!,
-      environment: api.Hip3Environment.testnet,
+      environment: environment,
       positionId: bindPosition ? position.positionId : null,
     );
     final created = await _actions.create(intent, key);

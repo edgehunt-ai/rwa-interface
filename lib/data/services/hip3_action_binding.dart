@@ -9,7 +9,7 @@ final class Hip3ActionBinding {
     required this.intent,
     required this.operation,
     required this.productId,
-    required this.environment,
+    this.environment,
     this.positionId,
     this.orderId,
   });
@@ -17,7 +17,10 @@ final class Hip3ActionBinding {
   final api.Hip3ActionCreateRequest intent;
   final api.Hip3Operation operation;
   final String productId;
-  final api.Hip3Environment environment;
+
+  /// Pinned only when an authoritative source (context or preview) named the
+  /// environment; null accepts whatever the action reports.
+  final api.Hip3Environment? environment;
   final String? positionId;
   final String? orderId;
 
@@ -27,7 +30,7 @@ final class Hip3ActionBinding {
         action.intent != intent ||
         action.operation != operation ||
         action.productId != productId ||
-        action.environment != environment ||
+        (environment != null && action.environment != environment) ||
         (positionId != null && action.positionId != positionId) ||
         (orderId != null && action.orderId != orderId)) {
       throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
