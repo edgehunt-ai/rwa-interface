@@ -50,6 +50,10 @@ import '../../domain/repositories/wallets_repository.dart';
 import '../../domain/repositories/realtime_repository.dart';
 import '../../domain/repositories/trade_intent_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
+import '../../domain/services/wallet_authorization_signer.dart';
+import '../../domain/repositories/wallet_action_execution_repository.dart';
+import '../../data/repositories/wallet_action_execution_repository_impl.dart';
+import '../../data/services/generated_wallet_action_execution_service.dart';
 import '../../domain/repositories/app_update_repository.dart';
 import 'auth_providers.dart';
 import 'session_scope.dart';
@@ -164,6 +168,26 @@ final hip3TypedDataSignerProvider = Provider<Hip3TypedDataSigner>((ref) {
     retryable: true,
   );
 });
+final walletAuthorizationSignerProvider = Provider<WalletAuthorizationSigner>((
+  ref,
+) {
+  final gateway = ref.watch(identityAuthGatewayProvider);
+  if (gateway case final WalletAuthorizationSigner signer) return signer;
+  throw const WalletAuthorizationFailure(
+    WalletAuthorizationFailureCode.unsupportedWallet,
+  );
+});
+final walletActionExecutionRepositoryProvider =
+    Provider<WalletActionExecutionRepository>((ref) {
+      ref.watch(sessionGenerationProvider);
+      final source = ref.watch(apiDataSourceProvider);
+      return WalletActionExecutionRepositoryImpl(
+        GeneratedWalletActionExecutionService(
+          source.client.getFundingApi(),
+          source.client.getWalletsApi(),
+        ),
+      );
+    });
 final hip3OrderExecutionRepositoryProvider =
     Provider<Hip3OrderExecutionRepository>((ref) {
       ref.watch(sessionGenerationProvider);

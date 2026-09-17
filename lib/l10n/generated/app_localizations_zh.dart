@@ -449,6 +449,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3PlaceOrderUnsupported => '该产品当前无法下单。';
 
   @override
+  String get hip3ClientSignedTradingUnavailable => '该产品尚未开放 App 内签名交易。';
+
+  @override
   String get hip3OrderTypeUnsupported => '该产品不支持所选订单类型。';
 
   @override
@@ -468,12 +471,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String hip3OrderValueRangeHint(Object minimum, Object maximum) {
-    return '订单金额 $minimum-$maximum USDC';
+    return '限额 $minimum-$maximum USDC';
   }
 
   @override
   String hip3OrderValueMinimumHint(Object minimum) {
-    return '最小订单金额 $minimum USDC';
+    return '限额 $minimum USDC 起';
   }
 
   @override
@@ -1279,6 +1282,36 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get confirmingWithdrawal => '正在确认提现…';
+
+  @override
+  String get withdrawalSucceeded => '提现成功';
+
+  @override
+  String get balanceRefreshFailed => '提现已提交，余额仍在更新中。';
+
+  @override
+  String get walletUpgradeTitle => '升级这个钱包？';
+
+  @override
+  String get walletUpgradeNotice =>
+      '为了替你支付网络手续费，这个钱包会升级为智能合约账户（EIP-7702）。升级只需一次，钱包地址不变，你仍然完全掌控这个钱包。';
+
+  @override
+  String get walletUpgradeConfirm => '升级并继续';
+
+  @override
+  String get sponsoredGasUnavailableTitle => '手续费无法代付';
+
+  @override
+  String sponsoredGasUnavailableMessage(Object fee, Object asset) {
+    return '平台暂时无法代付这笔网络手续费。继续的话将从这个钱包支付约 $fee $asset。';
+  }
+
+  @override
+  String get sponsoredGasUnavailableConfirm => '自己支付手续费';
+
+  @override
   String insufficientGasForWithdrawal(Object asset) {
     return '$asset 不足以支付网络费用，请先向该钱包充值 $asset 后重试。';
   }
@@ -2076,6 +2109,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String marginValue(Object value) {
-    return '保证金：$value USDC';
+    return '余额：$value USDC';
   }
 }

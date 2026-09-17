@@ -1,27 +1,42 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/self_custodial_withdrawal.dart';
+import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
+import 'package:rwa_interface/domain/repositories/wallet_action_execution_repository.dart';
 import 'package:rwa_interface/domain/services/embedded_wallet_transaction_sender.dart';
 import 'package:rwa_interface/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 
 void main() {
+  // The server binds no execution here, so these cases exercise the direct
+  // path where the user both pays gas and broadcasts.
   test(
     'a wallet that cannot pay the observed gas never reaches the signer',
     () async {
       final sender = _RecordingSender();
       final container = ProviderContainer(
-        overrides: [identityAuthGatewayProvider.overrideWithValue(sender)],
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(sender),
+          walletActionExecutionRepositoryProvider.overrideWithValue(
+            _UnboundExecutions(),
+          ),
+        ],
       );
       addTearDown(container.dispose);
 
       await expectLater(
         container
             .read(selfCustodialWithdrawalCommandsProvider)
-            .execute(quote: _quote, prepared: _prepared(canPayGas: false)),
+            .execute(
+              quote: _quote,
+              prepared: _prepared(canPayGas: false),
+              confirmWalletUpgrade: (_) async => true,
+            ),
         throwsA(isA<InsufficientWithdrawalGas>()),
       );
       expect(sender.calls, 0);
@@ -31,7 +46,12 @@ void main() {
   test('an affordable estimate is allowed through to the signer', () async {
     final sender = _RecordingSender();
     final container = ProviderContainer(
-      overrides: [identityAuthGatewayProvider.overrideWithValue(sender)],
+      overrides: [
+        identityAuthGatewayProvider.overrideWithValue(sender),
+        walletActionExecutionRepositoryProvider.overrideWithValue(
+          _UnboundExecutions(),
+        ),
+      ],
     );
     addTearDown(container.dispose);
 
@@ -40,7 +60,11 @@ void main() {
     await expectLater(
       container
           .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(quote: _quote, prepared: _prepared(canPayGas: true)),
+          .execute(
+            quote: _quote,
+            prepared: _prepared(canPayGas: true),
+            confirmWalletUpgrade: (_) async => true,
+          ),
       throwsA(anything),
     );
     expect(sender.calls, 1);
@@ -49,14 +73,23 @@ void main() {
   test('an absent estimate does not block the signer', () async {
     final sender = _RecordingSender();
     final container = ProviderContainer(
-      overrides: [identityAuthGatewayProvider.overrideWithValue(sender)],
+      overrides: [
+        identityAuthGatewayProvider.overrideWithValue(sender),
+        walletActionExecutionRepositoryProvider.overrideWithValue(
+          _UnboundExecutions(),
+        ),
+      ],
     );
     addTearDown(container.dispose);
 
     await expectLater(
       container
           .read(selfCustodialWithdrawalCommandsProvider)
-          .execute(quote: _quote, prepared: _prepared()),
+          .execute(
+            quote: _quote,
+            prepared: _prepared(),
+            confirmWalletUpgrade: (_) async => true,
+          ),
       throwsA(anything),
     );
     expect(sender.calls, 1);
@@ -134,6 +167,22 @@ final class _RecordingSender
     calls++;
     return '0xtx';
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Sponsorship is not available for this intent, leaving the direct path.
+final class _UnboundExecutions implements WalletActionExecutionRepository {
+  @override
+  Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
+    required String withdrawalId,
+    required GasPaymentMode mode,
+    required String idempotencyKey,
+  }) async => throw const ServerFailure(
+    statusCode: 422,
+    code: 'sponsorship_unavailable',
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

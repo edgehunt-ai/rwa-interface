@@ -7,7 +7,9 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../domain/auth/authentication.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
+import '../../domain/models/wallet_action_execution.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
+import '../../domain/services/wallet_authorization_signer.dart';
 import '../../domain/services/embedded_wallet_transaction_sender.dart';
 import '../../app/config/privy_configuration.dart';
 
@@ -19,6 +21,10 @@ typedef PrivyDiagnosticReporter = void Function({
 typedef PrivyTypedDataRequester = Future<Result<EthereumRpcResponse>> Function(
   EmbeddedEthereumWallet wallet,
   EthereumRpcRequest request,
+);
+typedef PrivyAuthorizationSigner = Future<Result<String>> Function(
+  PrivyUser user,
+  WalletApiPayload payload,
 );
 
 IdentityPrincipal _principalFromUser(PrivyUser user) => IdentityPrincipal(
@@ -92,20 +98,26 @@ final class PrivyIdentityAuthGateway
     implements
         IdentityAuthGateway,
         Hip3TypedDataSigner,
+        WalletAuthorizationSigner,
         EmbeddedWalletTransactionSender {
   PrivyIdentityAuthGateway({
     PrivyFactory? createPrivy,
     PrivyDiagnosticReporter? reportDiagnostic,
     PrivyTypedDataRequester? requestTypedData,
+    PrivyAuthorizationSigner? signAuthorization,
   }) : _createPrivy = createPrivy ?? ((config) => Privy.init(config: config)),
        _reportDiagnostic = reportDiagnostic ?? _reportToSentry,
        _requestTypedData =
            requestTypedData ??
-           ((wallet, request) => wallet.provider.request(request));
+           ((wallet, request) => wallet.provider.request(request)),
+       _signAuthorization =
+           signAuthorization ??
+           ((user, payload) => user.generateAuthorizationSignature(payload));
 
   final PrivyFactory _createPrivy;
   final PrivyDiagnosticReporter _reportDiagnostic;
   final PrivyTypedDataRequester _requestTypedData;
+  final PrivyAuthorizationSigner _signAuthorization;
   Privy? _privy;
   PrivyUser? _user;
   WalletConnection? _externalWallet;
@@ -273,6 +285,84 @@ final class PrivyIdentityAuthGateway
     } catch (_) {
       throw const Hip3SigningFailure(
         Hip3SigningFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+  }
+
+  @override
+  Future<String> signWalletAuthorization({
+    required String expectedSigner,
+    required WalletAuthorizationRequest request,
+  }) async {
+    final normalizedSigner = expectedSigner.toLowerCase();
+    if (!RegExp(r'^0x[0-9a-f]{40}$').hasMatch(normalizedSigner) ||
+        request.transaction.from.toLowerCase() != normalizedSigner ||
+        !request.url.startsWith('https://api.privy.io/v1/wallets/') ||
+        request.method != 'POST' ||
+        request.version != 1 ||
+        request.headers.isEmpty ||
+        request.body.isEmpty) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.invalidPayload,
+      );
+    }
+    if (!_sessionUsable) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+
+    final external = _externalWallet;
+    if (external != null &&
+        external.address.toLowerCase() == normalizedSigner) {
+      // Authorization signatures come from the Privy signing key; a connected
+      // WalletConnect session has no way to produce one.
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.unsupportedWallet,
+      );
+    }
+
+    final user = _user ?? await _privy?.getUser();
+    if (user == null) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+    _user = user;
+    final owned = user.embeddedEthereumWallets.any(
+      (wallet) => wallet.address.toLowerCase() == normalizedSigner,
+    );
+    if (!owned) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.walletMismatch,
+      );
+    }
+
+    try {
+      final result = await _signAuthorization(
+        user,
+        WalletApiPayload(
+          version: request.version,
+          url: request.url,
+          method: request.method,
+          headers: request.headers,
+          body: request.body,
+        ),
+      );
+      return switch (result) {
+        Success<String>(:final value) when value.isNotEmpty => value,
+        _ => throw const WalletAuthorizationFailure(
+          WalletAuthorizationFailureCode.rejected,
+        ),
+      };
+    } on WalletAuthorizationFailure {
+      rethrow;
+    } catch (_) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.walletUnavailable,
         retryable: true,
       );
     }

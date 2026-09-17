@@ -968,6 +968,12 @@ abstract class AppLocalizations {
   /// **'Opening orders is unavailable for this product right now.'**
   String get hip3PlaceOrderUnsupported;
 
+  /// No description provided for @hip3ClientSignedTradingUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'In-app signed trading is not open for this product yet.'**
+  String get hip3ClientSignedTradingUnavailable;
+
   /// No description provided for @hip3OrderTypeUnsupported.
   ///
   /// In en, this message translates to:
@@ -995,13 +1001,13 @@ abstract class AppLocalizations {
   /// No description provided for @hip3OrderValueRangeHint.
   ///
   /// In en, this message translates to:
-  /// **'Order value {minimum}-{maximum} USDC'**
+  /// **'Allowed {minimum}-{maximum} USDC'**
   String hip3OrderValueRangeHint(Object minimum, Object maximum);
 
   /// No description provided for @hip3OrderValueMinimumHint.
   ///
   /// In en, this message translates to:
-  /// **'Min order value {minimum} USDC'**
+  /// **'Allowed from {minimum} USDC'**
   String hip3OrderValueMinimumHint(Object minimum);
 
   /// No description provided for @walletConnectRequired.
@@ -2546,6 +2552,60 @@ abstract class AppLocalizations {
   /// **'Available {amount} {token}'**
   String availableTokenAmount(Object amount, Object token);
 
+  /// No description provided for @confirmingWithdrawal.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming withdrawal…'**
+  String get confirmingWithdrawal;
+
+  /// No description provided for @withdrawalSucceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal successful'**
+  String get withdrawalSucceeded;
+
+  /// No description provided for @balanceRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal submitted. Balance is still updating.'**
+  String get balanceRefreshFailed;
+
+  /// No description provided for @walletUpgradeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade this wallet?'**
+  String get walletUpgradeTitle;
+
+  /// No description provided for @walletUpgradeNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'To cover the network fee for you, this wallet is upgraded to a smart contract account (EIP-7702). The upgrade happens once, your wallet address does not change, and you keep full control of the wallet.'**
+  String get walletUpgradeNotice;
+
+  /// No description provided for @walletUpgradeConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade and continue'**
+  String get walletUpgradeConfirm;
+
+  /// No description provided for @sponsoredGasUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Network fee not covered'**
+  String get sponsoredGasUnavailableTitle;
+
+  /// No description provided for @sponsoredGasUnavailableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The platform cannot cover this network fee right now. Continue by paying about {fee} {asset} from this wallet.'**
+  String sponsoredGasUnavailableMessage(Object fee, Object asset);
+
+  /// No description provided for @sponsoredGasUnavailableConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay the fee myself'**
+  String get sponsoredGasUnavailableConfirm;
+
   /// No description provided for @insufficientGasForWithdrawal.
   ///
   /// In en, this message translates to:
@@ -3976,7 +4036,7 @@ abstract class AppLocalizations {
   /// No description provided for @marginValue.
   ///
   /// In en, this message translates to:
-  /// **'Margin: {value} USDC'**
+  /// **'Balance: {value} USDC'**
   String marginValue(Object value);
 }
 

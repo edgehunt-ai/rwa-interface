@@ -10,6 +10,7 @@ import '../../domain/models/deposit.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/funding_catalog.dart';
 import '../../domain/models/funding_transfer.dart';
+import '../../domain/models/portfolio_asset.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/models/withdrawal.dart';
 import '../../domain/models/deposit_observation.dart';
@@ -576,8 +577,10 @@ final class FundingRepositoryImpl implements FundingRepository {
     _ => throw ArgumentError('Unsupported chain'),
   };
 
+  // Callers pass chain labels that may come from a generated enum name, where
+  // `Base` arrives as `base_`, so normalise before matching.
   api.SelfCustodialWithdrawalChain _selfCustodialChain(String value) =>
-      switch (value.toLowerCase()) {
+      switch (normalizeChainLabel(value)) {
         'bsc' => api.SelfCustodialWithdrawalChain.BSC,
         'arbitrum' => api.SelfCustodialWithdrawalChain.arbitrum,
         'base' => api.SelfCustodialWithdrawalChain.base_,

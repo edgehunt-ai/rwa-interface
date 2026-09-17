@@ -463,6 +463,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Opening orders is unavailable for this product right now.';
 
   @override
+  String get hip3ClientSignedTradingUnavailable =>
+      'In-app signed trading is not open for this product yet.';
+
+  @override
   String get hip3OrderTypeUnsupported =>
       'This product does not support the selected order type.';
 
@@ -483,12 +487,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String hip3OrderValueRangeHint(Object minimum, Object maximum) {
-    return 'Order value $minimum-$maximum USDC';
+    return 'Allowed $minimum-$maximum USDC';
   }
 
   @override
   String hip3OrderValueMinimumHint(Object minimum) {
-    return 'Min order value $minimum USDC';
+    return 'Allowed from $minimum USDC';
   }
 
   @override
@@ -1328,6 +1332,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String availableTokenAmount(Object amount, Object token) {
     return 'Available $amount $token';
   }
+
+  @override
+  String get confirmingWithdrawal => 'Confirming withdrawal…';
+
+  @override
+  String get withdrawalSucceeded => 'Withdrawal successful';
+
+  @override
+  String get balanceRefreshFailed =>
+      'Withdrawal submitted. Balance is still updating.';
+
+  @override
+  String get walletUpgradeTitle => 'Upgrade this wallet?';
+
+  @override
+  String get walletUpgradeNotice =>
+      'To cover the network fee for you, this wallet is upgraded to a smart contract account (EIP-7702). The upgrade happens once, your wallet address does not change, and you keep full control of the wallet.';
+
+  @override
+  String get walletUpgradeConfirm => 'Upgrade and continue';
+
+  @override
+  String get sponsoredGasUnavailableTitle => 'Network fee not covered';
+
+  @override
+  String sponsoredGasUnavailableMessage(Object fee, Object asset) {
+    return 'The platform cannot cover this network fee right now. Continue by paying about $fee $asset from this wallet.';
+  }
+
+  @override
+  String get sponsoredGasUnavailableConfirm => 'Pay the fee myself';
 
   @override
   String insufficientGasForWithdrawal(Object asset) {
@@ -2193,6 +2228,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String marginValue(Object value) {
-    return 'Margin: $value USDC';
+    return 'Balance: $value USDC';
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,8 +7,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/trading_account.dart';
+import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:rwa_interface/ui/core/adaptive/app_adaptive_dialogs.dart';
 import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/failure_state.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
@@ -42,8 +47,12 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   String? error;
   bool quoting = false;
   bool submitting = false;
+  bool waitingForBalance = false;
   // Each visit to the review step asks the server for its own gas observation.
   int prepareAttempt = 0;
+
+  static const _balancePollInterval = Duration(seconds: 2);
+  static const _balancePollTimeout = Duration(seconds: 30);
 
   @override
   void dispose() {
@@ -79,51 +88,94 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
       );
       return;
     }
+    final candidate = WithdrawalQuote(
+      quoteId: 'self-custodial-local',
+      intent: WithdrawalIntent(
+        chain: widget.chain,
+        amount: value,
+        address: recipient,
+      ),
+      // Self-custodial withdrawals pay network gas from the wallet in its
+      // native asset, so there is no token-denominated fee.
+      totalFee: DecimalValue('0', asset: widget.token, unit: 'token'),
+      estimatedReceive: value,
+      sufficient: true,
+    );
+
+    // Creating the intent is what produces the gas observation, so it happens
+    // on the way into the review step and its fee is shown there. Each entry
+    // takes a fresh observation: a wallet that has just topped up must not be
+    // judged against a replayed estimate.
     setState(() {
-      quoting = false;
+      quoting = true;
       error = null;
       prepared = null;
       prepareAttempt++;
-      quote = WithdrawalQuote(
-        quoteId: 'self-custodial-local',
-        intent: WithdrawalIntent(
-          chain: widget.chain,
-          amount: value,
-          address: recipient,
-        ),
-        // Self-custodial withdrawals pay network gas from the wallet in its
-        // native asset, so there is no token-denominated fee. The real cost is
-        // only observed once the intent is created, and is shown before signing.
-        totalFee: DecimalValue('0', asset: widget.token, unit: 'token'),
-        estimatedReceive: value,
-        sufficient: true,
-      );
     });
+    try {
+      final intent = await ref
+          .read(selfCustodialWithdrawalCommandsProvider)
+          .prepare(quote: candidate, attempt: prepareAttempt);
+      if (!mounted) return;
+      setState(() {
+        quoting = false;
+        quote = candidate;
+        prepared = intent;
+        // Whether the wallet needs its own gas is only known once the server
+        // has decided on sponsorship, so the review no longer pre-judges an
+        // empty native balance. Confirming raises it if it turns out to apply.
+        error = null;
+      });
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        quoting = false;
+        error = AppLocalizations.of(context).prepareWithdrawalFailed;
+      });
+    }
   }
 
   Future<void> _submit() async {
     final currentQuote = quote;
-    if (currentQuote == null || submitting) return;
+    final current = prepared;
+    if (currentQuote == null || current == null || submitting) return;
     setState(() => submitting = true);
+    final openingBalance = await _readWithdrawableBalance(currentQuote);
+    if (!mounted) return;
     try {
-      final commands = ref.read(selfCustodialWithdrawalCommandsProvider);
-      // The first confirmation creates the intent so the server-observed gas
-      // becomes reviewable; only the second one signs it.
-      final current = prepared;
-      if (current == null) {
-        final intent = await commands.prepare(
-          quote: currentQuote,
-          attempt: prepareAttempt,
+      await ref
+          .read(selfCustodialWithdrawalCommandsProvider)
+          .execute(
+            quote: currentQuote,
+            prepared: current,
+            confirmWalletUpgrade: _confirmWalletUpgrade,
+          );
+      await _waitForBalanceChange(currentQuote, openingBalance);
+      if (mounted) {
+        ref.invalidate(portfolioSummaryProvider);
+        context.goNamed(AppRoutes.homeName);
+        AppToast.showSuccess(
+          context,
+          AppLocalizations.of(context).withdrawalSucceeded,
         );
-        if (!mounted) return;
-        setState(() {
-          prepared = intent;
-          error = _gasError(intent.gas);
-        });
+      }
+    } on SponsoredGasUnavailable catch (refusal) {
+      // Sponsorship was refused before any broadcast. Paying gas from the
+      // wallet is a separate decision, so it needs its own confirmation — and
+      // asking at all is pointless when the wallet cannot cover the fee.
+      if (!mounted) return;
+      final gas = current.gas;
+      if (gas != null && !gas.canPayGas) {
+        setState(() => error = _gasError(gas));
         return;
       }
-      await commands.execute(quote: currentQuote, prepared: current);
-      if (mounted) context.pop();
+      if (!refusal.fallbackAllowed || !await _confirmUserPaidGas(refusal)) {
+        if (mounted) setState(() => submitting = false);
+        return;
+      }
+      await _submitUserPaid(currentQuote, current, openingBalance);
+    } on WalletUpgradeDeclined {
+      if (mounted) setState(() => submitting = false);
     } on InsufficientWithdrawalGas catch (failure) {
       if (mounted) setState(() => error = _gasError(failure.estimate));
     } on Object {
@@ -136,6 +188,125 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
     } finally {
       if (mounted) setState(() => submitting = false);
     }
+  }
+
+  Future<void> _submitUserPaid(
+    WithdrawalQuote currentQuote,
+    PreparedSelfCustodialWithdrawal current,
+    DecimalValue? openingBalance,
+  ) async {
+    try {
+      await ref
+          .read(selfCustodialWithdrawalCommandsProvider)
+          .executeUserPaid(quote: currentQuote, prepared: current);
+      await _waitForBalanceChange(currentQuote, openingBalance);
+      if (mounted) {
+        ref.invalidate(portfolioSummaryProvider);
+        context.goNamed(AppRoutes.homeName);
+        AppToast.showSuccess(
+          context,
+          AppLocalizations.of(context).withdrawalSucceeded,
+        );
+      }
+    } on InsufficientWithdrawalGas catch (failure) {
+      if (mounted) setState(() => error = _gasError(failure.estimate));
+    } on Object {
+      if (mounted) {
+        AppToast.showFailure(
+          context,
+          AppLocalizations.of(context).prepareWithdrawalFailed,
+        );
+      }
+    }
+  }
+
+  Future<DecimalValue?> _readWithdrawableBalance(WithdrawalQuote quote) async {
+    try {
+      final accounts = await ref.read(tradingAccountsProvider.future);
+      return _matchingBalance(accounts, quote);
+    } on Object {
+      return null;
+    }
+  }
+
+  Future<void> _waitForBalanceChange(
+    WithdrawalQuote quote,
+    DecimalValue? openingBalance,
+  ) async {
+    if (openingBalance == null) return;
+    if (mounted) setState(() => waitingForBalance = true);
+    final deadline = DateTime.now().add(_balancePollTimeout);
+    try {
+      while (DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(_balancePollInterval);
+        if (!mounted) return;
+        try {
+          final accounts = await ref.refresh(tradingAccountsProvider.future);
+          final current = _matchingBalance(accounts, quote);
+          if (current != null && current.compareTo(openingBalance) < 0) return;
+        } on Object {
+          // A transient balance request failure should not hide a submitted withdrawal.
+        }
+      }
+      if (mounted) {
+        AppToast.showFailure(
+          context,
+          AppLocalizations.of(context).balanceRefreshFailed,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => waitingForBalance = false);
+    }
+  }
+
+  DecimalValue? _matchingBalance(
+    List<TradingAccount> accounts,
+    WithdrawalQuote quote,
+  ) {
+    for (final account in accounts) {
+      for (final token in account.balances) {
+        final chain = token.chain ?? account.chain;
+        if (token.symbol.toUpperCase() ==
+                quote.intent.amount.asset?.toUpperCase() &&
+            chain?.toLowerCase() == quote.intent.chain.toLowerCase()) {
+          return token.balance;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// The disclosure is shown in the app's own language. The server also sends
+  /// [GasPaymentQuote.eip7702Notice], but it arrives in one language only, so
+  /// the localized copy is what reaches the user.
+  Future<bool> _confirmWalletUpgrade(GasPaymentQuote _) async {
+    if (!mounted) return false;
+    final l10n = AppLocalizations.of(context);
+    final accepted = await showAppAlert(
+      context: context,
+      title: l10n.walletUpgradeTitle,
+      message: l10n.walletUpgradeNotice,
+      confirmLabel: l10n.walletUpgradeConfirm,
+      cancelLabel: l10n.cancel,
+    );
+    return accepted ?? false;
+  }
+
+  Future<bool> _confirmUserPaidGas(SponsoredGasUnavailable refusal) async {
+    if (!mounted) return false;
+    final l10n = AppLocalizations.of(context);
+    final gas = refusal.gasPayment;
+    final accepted = await showAppAlert(
+      context: context,
+      title: l10n.sponsoredGasUnavailableTitle,
+      message: l10n.sponsoredGasUnavailableMessage(
+        gas.estimatedNativeFee.value,
+        gas.nativeAsset,
+      ),
+      confirmLabel: l10n.sponsoredGasUnavailableConfirm,
+      cancelLabel: l10n.cancel,
+    );
+    return accepted ?? false;
   }
 
   String? _gasError(SelfCustodialWithdrawalGasEstimate? gas) {
@@ -157,29 +328,55 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         .firstOrNull;
     return Scaffold(
       body: SafeArea(
-        child: quote == null
-            ? _WithdrawalForm(
-                address: address,
-                amount: amount,
-                error: error,
-                submitting: quoting,
-                asset: selectedAsset,
-                token: widget.token,
-                chain: widget.chain,
-                onReview: _review,
-              )
-            : _WithdrawalReview(
-                quote: quote!,
-                prepared: prepared,
-                error: error,
-                onBack: () => setState(() {
-                  quote = null;
-                  prepared = null;
-                  error = null;
-                }),
-                onSubmit: _submit,
-                submitting: submitting,
+        child: Stack(
+          children: [
+            quote == null
+                ? _WithdrawalForm(
+                    address: address,
+                    amount: amount,
+                    error: error,
+                    submitting: quoting,
+                    asset: selectedAsset,
+                    token: widget.token,
+                    chain: widget.chain,
+                    onReview: _review,
+                  )
+                : _WithdrawalReview(
+                    quote: quote!,
+                    prepared: prepared,
+                    error: error,
+                    onBack: () => setState(() {
+                      quote = null;
+                      prepared = null;
+                      error = null;
+                    }),
+                    onSubmit: _submit,
+                    submitting: submitting || waitingForBalance,
+                  ),
+            if (submitting)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.white70,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 16),
+                        Text(
+                          waitingForBalance
+                              ? AppLocalizations.of(context)
+                                    .confirmingWithdrawal
+                              : AppLocalizations.of(context)
+                                    .preparingWithdrawal,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
+          ],
+        ),
       ),
     );
   }
@@ -469,31 +666,10 @@ class _WithdrawalFormState extends State<_WithdrawalForm> {
             ],
           ),
         ),
+        // No fee or recipient subtotal here: the network fee is only observed
+        // when the intent is created on the way to the review step, and a
+        // placeholder would just be noise.
         const SizedBox(height: 36),
-        Container(
-          height: 88,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colors.subtleSurface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _CompactDetail(label: l10n.networkFee, value: '—'),
-              _CompactDetail(
-                label: l10n.recipientReceives,
-                value: rawAmount.isEmpty ? '— USDC' : '$rawAmount USDC',
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 40),
-        Text(
-          l10n.networkFeesMayChange,
-          style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(color: colors.secondaryText),
-        ),
         if (widget.error != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -616,14 +792,17 @@ class _WithdrawalReview extends StatelessWidget {
   final VoidCallback onSubmit;
   final bool submitting;
 
-  /// A wallet that cannot cover the observed gas must top up first; signing
-  /// stays unavailable until the intent is prepared again.
-  bool get _canSign => prepared?.gas?.canPayGas ?? true;
+  /// An empty native balance no longer blocks the review: the platform may
+  /// cover the fee. Confirming asks the server first, and the wallet is only
+  /// required to pay when sponsorship is refused, which raises the gas error
+  /// then rather than pre-emptively.
+  bool get _canSign => prepared != null;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
+    final gas = prepared?.gas;
     final amount = TokenAmountFormatter.format(
       quote.intent.amount,
       symbol: 'USDC',
@@ -677,13 +856,11 @@ class _WithdrawalReview extends StatelessWidget {
               const SizedBox(height: 8),
               _ReviewDetail(
                 label: l10n.networkFee,
-                value: switch ((quote.quoteId, prepared?.gas)) {
-                  (_, final gas?) =>
-                    '≈ ${TokenAmountFormatter.format(gas.estimatedNativeFee, symbol: gas.nativeAsset)}',
-                  ('self-custodial-local', _) => '—',
-                  _ =>
-                    '≈ ${TokenAmountFormatter.format(quote.totalFee, symbol: 'USDC')}',
-                },
+                // Gas is paid from the wallet in the chain's native asset, not
+                // in the token being withdrawn.
+                value: gas == null
+                    ? '—'
+                    : '≈ ${TokenAmountFormatter.format(gas.estimatedNativeFee, symbol: gas.nativeAsset)}',
               ),
             ],
           ),
@@ -717,11 +894,7 @@ class _WithdrawalReview extends StatelessWidget {
         const SizedBox(height: 40),
         FilledButton(
           onPressed: submitting || !_canSign ? null : onSubmit,
-          child: Text(
-            prepared == null
-                ? l10n.withdrawUsdc
-                : l10n.confirmAndSignWithdrawal,
-          ),
+          child: Text(l10n.withdrawUsdc),
         ),
       ],
     );
@@ -940,22 +1113,6 @@ class _FieldLabel extends StatelessWidget {
     style: Theme.of(context).textTheme.bodySmall?.copyWith(
       color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
     ),
-  );
-}
-
-class _CompactDetail extends StatelessWidget {
-  const _CompactDetail({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      _FieldLabel(label),
-      Text(value, style: _strongText),
-    ],
   );
 }
 

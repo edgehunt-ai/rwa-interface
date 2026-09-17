@@ -6,7 +6,9 @@ import 'package:privy_flutter/src/modules/oauth/login_with_oauth.dart';
 import 'package:rwa_interface/data/auth/privy_identity_auth_gateway.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
+import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:rwa_interface/domain/services/wallet_authorization_signer.dart';
 
 void main() {
   const configuration = IdentityConfiguration(
@@ -270,6 +272,156 @@ void main() {
         ),
       ),
     );
+  });
+
+  group('Privy authorization signatures', () {
+    WalletAuthorizationRequest request({String? from, String? url}) =>
+        WalletAuthorizationRequest(
+          version: 1,
+          method: 'POST',
+          url: url ?? 'https://api.privy.io/v1/wallets/wallet-1/rpc',
+          headers: const {
+            'privy-app-id': 'app-id',
+            'privy-idempotency-key': 'privy-key-1',
+            'privy-request-expiry': '1780000000000',
+          },
+          body: const {
+            'method': 'eth_sendTransaction',
+            'sponsor': true,
+            'reference_id': 'execution-1',
+          },
+          referenceId: 'execution-1',
+          sponsor: true,
+          caip2: 'eip155:56',
+          transaction: AuthorizedTransaction(
+            from: from ?? '0x0000000000000000000000000000000000000002',
+            to: '0x0000000000000000000000000000000000000003',
+            data: '0xa9059cbb',
+            value: '0x0',
+          ),
+        );
+
+    EmbeddedEthereumWallet wallet() => EmbeddedEthereumWallet(
+      address: '0x0000000000000000000000000000000000000002',
+      hdWalletIndex: 0,
+    );
+
+    test('signs the server payload verbatim', () async {
+      WalletApiPayload? captured;
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(
+          authState: Authenticated(
+            _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet()]),
+          ),
+        ),
+        signAuthorization: (_, payload) async {
+          captured = payload;
+          return const Success('privy-signature');
+        },
+      );
+      await gateway.initialize(configuration);
+
+      final signature = await gateway.signWalletAuthorization(
+        expectedSigner: wallet().address.toUpperCase().replaceFirst('0X', '0x'),
+        request: request(),
+      );
+
+      expect(signature, 'privy-signature');
+      expect(captured?.version, 1);
+      expect(captured?.method, 'POST');
+      expect(captured?.url, 'https://api.privy.io/v1/wallets/wallet-1/rpc');
+      expect(captured?.headers['privy-idempotency-key'], 'privy-key-1');
+      expect(captured?.body['reference_id'], 'execution-1');
+    });
+
+    test('fails closed when the payload binds another wallet', () async {
+      var signed = false;
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(
+          authState: Authenticated(
+            _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet()]),
+          ),
+        ),
+        signAuthorization: (_, _) async {
+          signed = true;
+          return const Success('privy-signature');
+        },
+      );
+      await gateway.initialize(configuration);
+
+      await expectLater(
+        gateway.signWalletAuthorization(
+          expectedSigner: '0x0000000000000000000000000000000000000009',
+          request: request(from: '0x0000000000000000000000000000000000000009'),
+        ),
+        throwsA(
+          isA<WalletAuthorizationFailure>().having(
+            (failure) => failure.code,
+            'code',
+            WalletAuthorizationFailureCode.walletMismatch,
+          ),
+        ),
+      );
+      expect(signed, isFalse);
+    });
+
+    test('refuses a request aimed anywhere but the Privy wallet API', () async {
+      var signed = false;
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(
+          authState: Authenticated(
+            _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet()]),
+          ),
+        ),
+        signAuthorization: (_, _) async {
+          signed = true;
+          return const Success('privy-signature');
+        },
+      );
+      await gateway.initialize(configuration);
+
+      await expectLater(
+        gateway.signWalletAuthorization(
+          expectedSigner: wallet().address,
+          request: request(url: 'https://attacker.example/v1/wallets/1/rpc'),
+        ),
+        throwsA(
+          isA<WalletAuthorizationFailure>().having(
+            (failure) => failure.code,
+            'code',
+            WalletAuthorizationFailureCode.invalidPayload,
+          ),
+        ),
+      );
+      expect(signed, isFalse);
+    });
+
+    test('external wallets cannot produce authorization signatures', () async {
+      final user = _FakeUser(id: 'did:privy:wallet', token: 'wallet-token');
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(
+          authState: const Unauthenticated(),
+          siwe: _FakeSiwe(loginResult: Success(user)),
+        ),
+      );
+      await gateway.initialize(configuration);
+      final connection = _WalletConnection();
+      await gateway.loginWithWallet(connection);
+
+      await expectLater(
+        gateway.signWalletAuthorization(
+          expectedSigner: connection.address,
+          request: request(from: connection.address),
+        ),
+        throwsA(
+          isA<WalletAuthorizationFailure>().having(
+            (failure) => failure.code,
+            'code',
+            WalletAuthorizationFailureCode.unsupportedWallet,
+          ),
+        ),
+      );
+    });
   });
 }
 

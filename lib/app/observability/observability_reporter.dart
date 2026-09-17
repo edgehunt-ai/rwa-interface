@@ -12,6 +12,14 @@ abstract interface class ObservabilityReporter {
     required ApiFailure failure,
     StackTrace? stackTrace,
   });
+
+  /// Reports a failure that is not an [ApiFailure], such as a contract
+  /// mismatch raised while mapping a response.
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+  });
 }
 
 final class SentryObservabilityReporter implements ObservabilityReporter {
@@ -73,6 +81,30 @@ final class SentryObservabilityReporter implements ObservabilityReporter {
               ..setTag('api_code', server.code);
           }
         },
+      ),
+    );
+  }
+
+  @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+  }) {
+    if (error is ApiFailure) {
+      recordApiFailure(
+        operation: operation,
+        failure: error,
+        stackTrace: stackTrace,
+      );
+      return;
+    }
+    recordOperation(operation, outcome: 'failed');
+    unawaited(
+      Sentry.captureException(
+        error,
+        stackTrace: stackTrace,
+        withScope: (scope) => scope.setTag('operation', operation),
       ),
     );
   }

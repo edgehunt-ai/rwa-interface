@@ -8,10 +8,16 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/routing/app_router.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/deposit.dart';
+import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/funding_catalog.dart';
+import 'package:rwa_interface/domain/models/portfolio_asset.dart';
+import 'package:rwa_interface/domain/models/self_custodial_withdrawal.dart';
+import 'package:rwa_interface/domain/models/wallet.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
+import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
+import 'package:rwa_interface/ui/features/account/providers/account_providers.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
@@ -248,6 +254,10 @@ void main() {
         overrides: [
           fundingRepositoryProvider.overrideWithValue(funding),
           tradingAccountsProvider.overrideWith((_) async => _accounts),
+          portfolioRepositoryProvider.overrideWithValue(
+            _WithdrawablePortfolio(),
+          ),
+          walletsProvider(null).overrideWith((_) async => _withdrawalWallets),
         ],
         child: _fundingApp(const WithdrawalScreen()),
       ),
@@ -279,9 +289,41 @@ void main() {
 
     expect(find.text('Review withdrawal'), findsOneWidget);
     expect(find.text('5 USDC'), findsWidgets);
-    expect(find.text('—'), findsWidgets);
+    // Entering the review step is what creates the intent, and it is the
+    // server's gas observation that reaches the fee row — never a placeholder.
+    expect(
+      funding.selfCustodialCreateRequests,
+      1,
+      reason: 'the review step takes exactly one gas observation',
+    );
+    expect(find.text('Network fee'), findsOneWidget);
+    expect(find.text('≈ 0.000065 BNB'), findsOneWidget);
+    expect(find.text('Recipient receives'), findsOneWidget);
+    expect(find.text('—'), findsNothing);
     expect(funding.quoteRequests, 0);
     expect(find.widgetWithText(FilledButton, 'Withdraw USDC'), findsOneWidget);
+  });
+
+  testWidgets('withdrawal form shows no fee before the intent exists', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(_CountingFunding()),
+          tradingAccountsProvider.overrideWith((_) async => _accounts),
+        ],
+        child: _fundingApp(const WithdrawalScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Gas is only observed when the intent is created, so the form cannot know
+    // a fee yet and must not imply one.
+    expect(find.text('Network fee'), findsNothing);
+    expect(find.text('Recipient receives'), findsNothing);
+    expect(find.text('—'), findsNothing);
+    expect(find.text('— USDC'), findsNothing);
   });
 
   testWidgets('withdrawal rejects an invalid recipient before quoting', (
@@ -401,6 +443,7 @@ class _Funding implements FundingRepository {
 
 final class _CountingFunding extends _Funding {
   var quoteRequests = 0;
+  var selfCustodialCreateRequests = 0;
 
   @override
   Future<WithdrawalQuote> quoteWithdrawal(
@@ -410,4 +453,87 @@ final class _CountingFunding extends _Funding {
     quoteRequests += 1;
     return super.quoteWithdrawal(intent, idempotencyKey: idempotencyKey);
   }
+
+  @override
+  Future<PreparedSelfCustodialWithdrawal> createSelfCustodialWithdrawal({
+    required String walletId,
+    required String assetId,
+    required String chain,
+    required String amount,
+    required String destinationAddress,
+    required String idempotencyKey,
+  }) async {
+    selfCustodialCreateRequests += 1;
+    // The canonical identity is what this endpoint accepts; the opaque
+    // portfolio asset id is rejected with 422.
+    expect(assetId, 'eip155:42161/erc20:$_usdcContract');
+    return PreparedSelfCustodialWithdrawal(
+      withdrawalId: 'withdrawal-1',
+      sourceWalletId: walletId,
+      assetId: assetId,
+      assetSymbol: 'USDC',
+      chain: chain,
+      amount: DecimalValue(amount, asset: 'USDC', unit: 'token'),
+      destinationAddress: destinationAddress,
+      transaction: SelfCustodialWithdrawalTransaction(
+        chainId: 42161,
+        from: _walletAddress,
+        to: _usdcContract,
+        data: '0xa9059cbb',
+        value: '0x0',
+        payloadHash: '0xpayload',
+        validUntil: DateTime.now().toUtc().add(const Duration(minutes: 5)),
+      ),
+      status: SelfCustodialWithdrawalState.awaitingSubmission,
+      gas: SelfCustodialWithdrawalGasEstimate(
+        nativeAsset: 'BNB',
+        gasUnits: '65000',
+        gasPriceWei: DecimalValue('1000000000', asset: 'BNB', unit: 'wei'),
+        estimatedNativeFee: DecimalValue(
+          '0.000065',
+          asset: 'BNB',
+          unit: 'token',
+        ),
+        walletNativeBalance: DecimalValue('1', asset: 'BNB', unit: 'token'),
+        canPayGas: true,
+        observedAt: DateTime.utc(2026),
+      ),
+    );
+  }
+}
+
+const _usdcContract = '0xaf88d065e77c8cc2239327c5edb3a432268e5831';
+const _walletAddress = '0x2222222222222222222222222222222222222222';
+
+final _withdrawalWallets = DomainPage<Wallet>(
+  items: [
+    Wallet(
+      walletId: 'wallet-1',
+      address: _walletAddress,
+      chain: 'Arbitrum',
+      status: WalletState.active,
+      createdAt: DateTime.utc(2026),
+    ),
+  ],
+  hasMore: false,
+);
+
+final class _WithdrawablePortfolio
+    implements PortfolioRepository, PortfolioAssetsRepository {
+  @override
+  Future<List<PortfolioAsset>> listAssets({String? cursor}) async => [
+    PortfolioAsset(
+      // Opaque row id: the withdrawal endpoint must not receive this.
+      assetId: 'portfolio-1',
+      network: 'arbitrum',
+      symbol: 'USDC',
+      decimals: 6,
+      balance: DecimalValue('100.000000', asset: 'USDC', unit: 'token'),
+      walletId: 'wallet-1',
+      contractAddress: _usdcContract,
+    ),
+  ];
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
