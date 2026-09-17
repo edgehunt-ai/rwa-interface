@@ -932,6 +932,12 @@ abstract class AppLocalizations {
   /// **'Enter an order value.'**
   String get enterOrderValue;
 
+  /// No description provided for @minimumAmountPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Min {minimum}'**
+  String minimumAmountPlaceholder(Object minimum);
+
   /// No description provided for @enterValidOrderValues.
   ///
   /// In en, this message translates to:
@@ -991,6 +997,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Order value is above the {maximum} USDC maximum.'**
   String hip3NotionalAboveMaximum(Object maximum);
+
+  /// No description provided for @hip3InsufficientBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance.'**
+  String get hip3InsufficientBalance;
 
   /// No description provided for @hip3MaximumLeverageHint.
   ///

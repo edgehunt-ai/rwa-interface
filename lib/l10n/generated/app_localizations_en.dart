@@ -439,6 +439,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterOrderValue => 'Enter an order value.';
 
   @override
+  String minimumAmountPlaceholder(Object minimum) {
+    return 'Min $minimum';
+  }
+
+  @override
   String get enterValidOrderValues => 'Enter valid order values.';
 
   @override
@@ -479,6 +484,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String hip3NotionalAboveMaximum(Object maximum) {
     return 'Order value is above the $maximum USDC maximum.';
   }
+
+  @override
+  String get hip3InsufficientBalance => 'Insufficient balance.';
 
   @override
   String hip3MaximumLeverageHint(Object maximum) {

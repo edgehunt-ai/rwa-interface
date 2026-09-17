@@ -429,6 +429,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterOrderValue => '请输入订单金额。';
 
   @override
+  String minimumAmountPlaceholder(Object minimum) {
+    return '最低 $minimum';
+  }
+
+  @override
   String get enterValidOrderValues => '请输入有效的订单参数。';
 
   @override
@@ -463,6 +468,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String hip3NotionalAboveMaximum(Object maximum) {
     return '订单金额超过 $maximum USDC 最大值。';
   }
+
+  @override
+  String get hip3InsufficientBalance => '余额不足。';
 
   @override
   String hip3MaximumLeverageHint(Object maximum) {

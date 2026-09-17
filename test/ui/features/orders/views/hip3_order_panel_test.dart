@@ -21,6 +21,10 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
+import 'package:rwa_interface/app/observability/observability_reporter.dart';
+import 'package:rwa_interface/app/providers/observability_providers.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
+
 import '../../../../helpers/test_app.dart';
 
 import 'package:rwa_interface/domain/models/hip3_opening_context.dart';
@@ -38,6 +42,132 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '2');
     await tester.pump();
     expect(find.text(r'Long NVDA · $2'), findsOneWidget);
+  });
+
+  testWidgets(
+    'an unreachable trading context explains itself on submit and is reported',
+    (tester) async {
+      final observability = _RecordingReporter();
+      await tester.pumpWidget(
+        _app(
+          const Hip3OrderPanel(),
+          opening: _Opening(failing: true),
+          observability: observability,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $0'));
+      await tester.pump();
+      expect(
+        find.text('Trading service is unavailable. Try again in a moment.'),
+        findsWidgets,
+      );
+      expect(
+        observability.operations,
+        contains('hip3.trading_context.load:failed'),
+      );
+    },
+  );
+
+  testWidgets('the product rules are visible before the order is composed', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('hip3-maximum-leverage')), findsOneWidget);
+    expect(find.text('Max 20x'), findsOneWidget);
+    expect(find.text('Min 12'), findsOneWidget);
+    expect(find.byKey(const Key('hip3-order-value-range')), findsNothing);
+  });
+
+  testWidgets('amount over the interface maximum uses the shared error area', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3OpeningRepositoryProvider.overrideWithValue(
+            _Opening(maximumNotional: '50'),
+          ),
+          hip3OpeningContextProvider.overrideWith(
+            (ref, product) =>
+                ref.watch(hip3OpeningRepositoryProvider).context(product),
+          ),
+          hip3OrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('1000', asset: 'USD', unit: 'fiat'),
+          ),
+        ],
+        child: buildTestApp(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).first, '51');
+    await tester.pump();
+    expect(find.byKey(const Key('hip3-form-error')), findsOneWidget);
+    expect(find.byKey(const Key('hip3-order-amount-error')), findsNothing);
+    expect(
+      find.text('Order value is above the 50 USDC maximum.'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextField).first, '49');
+    await tester.pump();
+    expect(find.byKey(const Key('hip3-form-error')), findsNothing);
+  });
+
+  testWidgets('amount over balance shows insufficient balance', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3OrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('16', asset: 'USD', unit: 'fiat'),
+          ),
+          hip3OpeningRepositoryProvider.overrideWithValue(_Opening()),
+          hip3OpeningContextProvider.overrideWith(
+            (ref, product) =>
+                ref.watch(hip3OpeningRepositoryProvider).context(product),
+          ),
+        ],
+        child: buildTestApp(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '17');
+    await tester.pump();
+    expect(find.text('Insufficient balance.'), findsOneWidget);
+  });
+
+  testWidgets('an order value under the minimum is refused with a toast', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '5');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $5'));
+    await tester.pump();
+    expect(
+      find.text('Order value is below the 12 USDC minimum.'),
+      findsWidgets,
+    );
+  });
+
+  testWidgets('a leverage above the product maximum is refused with a toast', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(const Hip3OrderPanel(), opening: _Opening(maximum: 5)),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '50');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $50'));
+    await tester.pump();
+    expect(
+      find.text('Leverage exceeds the 5x limit for this product.'),
+      findsWidgets,
+    );
   });
 
   testWidgets(
@@ -309,24 +439,37 @@ void main() {
     await capture('review');
     expect(tester.takeException(), isNull);
   });
-  test('opening percentages floor whole lots and preserve exact notional', () {
+  test('slider percentages spend balance and need no quote', () {
+    final balance = DecimalValue('6', asset: 'USD', unit: 'fiat');
+    // No quote at all: the slider must still produce an amount.
+    expect(hip3OpeningNotional(balance, 1, 100), '6');
+    expect(hip3OpeningNotional(balance, 1, 50), '3');
+    expect(hip3OpeningNotional(balance, 1, 0), '0');
+    // Leverage multiplies the spendable base.
+    expect(hip3OpeningNotional(balance, 2, 100), '12');
+    expect(hip3OpeningNotional(balance, 10, 25), '15');
+    expect(() => hip3OpeningNotional(balance, 1, 101), throwsArgumentError);
+    expect(() => hip3OpeningNotional(balance, 0, 50), throwsArgumentError);
+  });
+
+  test('a quote caps the slider at the venue maximum', () {
     final intent = OrderIntent(
       symbol: 'TSLA',
       kind: MarketProductKind.perp,
       side: TradingSide.long,
       type: TradingOrderType.market,
-      amount: DecimalValue('15'),
+      amount: DecimalValue('6'),
     );
+    // 0.148 at a price of 100 is 14.8 USDC of notional.
     final quote = _previewExecution(intent, maximum: '0.148');
-    expect(hip3OpeningPercentage(quote, 50, 3, notional: false), '0.074');
-    expect(hip3OpeningPercentage(quote, 25, 3, notional: true), '3.7');
-    expect(hip3OpeningPercentage(quote, 1, 3, notional: false), '0.001');
-    expect(hip3OpeningPercentage(quote, 0, 3, notional: true), '0');
-    expect(
-      () => hip3OpeningPercentage(quote, 101, 3, notional: false),
-      throwsArgumentError,
-    );
+    final balance = DecimalValue('6', asset: 'USD', unit: 'fiat');
+    // 6 USDC at 5x would reach 30, but the venue maximum binds first.
+    expect(hip3OpeningNotional(balance, 5, 100, quote: quote), '14.8');
+    // At 2x the balance is still the binding limit, so the cap is inert.
+    expect(hip3OpeningNotional(balance, 2, 100, quote: quote), '12');
+    expect(hip3OpeningNotional(balance, 2, 50, quote: quote), '6');
   });
+
   testWidgets('missing or expired quotes cannot create a new order', (
     tester,
   ) async {
@@ -357,7 +500,7 @@ void main() {
     }
   });
   testWidgets(
-    'leverage options follow product maximum and sign before selection changes',
+    'leverage options follow product maximum and stay local until order review',
     (tester) async {
       final opening = _Opening(maximum: 7)..leverage = 3;
       await tester.pumpWidget(_app(const Hip3OrderPanel(), opening: opening));
@@ -369,8 +512,8 @@ void main() {
       await tester.tap(find.text('7x'));
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pumpAndSettle();
-      expect(opening.leverage, 7);
-      expect(opening.settingsRequests, 1);
+      expect(opening.leverage, 3);
+      expect(opening.settingsRequests, 0);
       expect(find.text('7×'), findsWidgets);
     },
   );
@@ -561,7 +704,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Margin mode'), findsNothing);
       expect(find.text('Isolated'), findsOneWidget);
-      expect(opening.mode, TradingMarginMode.isolated);
+      expect(opening.mode, TradingMarginMode.cross);
 
       await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
       await tester.pumpAndSettle();
@@ -657,11 +800,17 @@ final class _CapturingHip3Orders implements OrdersRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-Widget _app(Widget child, {Hip3OpeningRepository? opening}) => ProviderScope(
+Widget _app(
+  Widget child, {
+  Hip3OpeningRepository? opening,
+  ObservabilityReporter? observability,
+}) => ProviderScope(
   overrides: [
+    if (observability != null)
+      observabilityReporterProvider.overrideWithValue(observability),
     hip3OpeningRepositoryProvider.overrideWithValue(opening ?? _Opening()),
     hip3OrderAvailableBalanceProvider.overrideWith(
-      (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
+      (ref) async => DecimalValue('1000', asset: 'USD', unit: 'fiat'),
     ),
     hip3OpeningContextProvider.overrideWith(
       (ref, product) =>
@@ -671,33 +820,73 @@ Widget _app(Widget child, {Hip3OpeningRepository? opening}) => ProviderScope(
   child: buildTestApp(child),
 );
 
+final class _RecordingReporter implements ObservabilityReporter {
+  final List<String> operations = [];
+
+  @override
+  Future<void> clearUser() async {}
+
+  @override
+  void recordApiFailure({
+    required String operation,
+    required ApiFailure failure,
+    StackTrace? stackTrace,
+  }) => recordOperation(operation, outcome: 'failed');
+
+  @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+  }) => recordOperation(operation, outcome: 'failed');
+
+  @override
+  void recordOperation(String operation, {required String outcome}) =>
+      operations.add('$operation:$outcome');
+
+  @override
+  Future<void> setUserId(String userId) async {}
+}
+
 final class _Opening implements Hip3OpeningRepository {
-  _Opening({this.maximum = 20});
+  _Opening({
+    this.maximum = 20,
+    this.failing = false,
+    this.maximumNotional = '1000',
+  });
   final int maximum;
+  final bool failing;
+  final String maximumNotional;
   int settingsRequests = 0;
   int leverage = 10;
   TradingMarginMode mode = TradingMarginMode.cross;
   @override
-  Future<Hip3OpeningContext> context(String productOrSymbol) async =>
-      Hip3OpeningContext(
-        contextId: 'context',
-        productId: productOrSymbol.contains(':')
-            ? productOrSymbol
-            : 'xyz:$productOrSymbol',
-        environment: 'testnet',
-        currentLeverage: leverage,
-        maximumLeverage: maximum,
-        currentMarginMode: mode,
-        marginModes: {TradingMarginMode.cross, TradingMarginMode.isolated},
-        orderTypes: {TradingOrderType.market, TradingOrderType.limit},
-        timeInForce: {'gtc', 'ioc'},
-        availableMargin: DecimalValue('100'),
-        minimumNotional: DecimalValue('12'),
-        maximumNotional: DecimalValue('1000'),
-        sizeDecimals: 3,
-        validUntil: DateTime.now().toUtc().add(const Duration(minutes: 1)),
-        operations: {'placeOrder', 'setLeverage'},
-      );
+  Future<Hip3OpeningContext> context(String productOrSymbol) async {
+    if (failing) {
+      throw const ServerFailure(statusCode: 503, code: 'unavailable');
+    }
+    return _context(productOrSymbol);
+  }
+
+  Hip3OpeningContext _context(String productOrSymbol) => Hip3OpeningContext(
+    contextId: 'context',
+    productId: productOrSymbol.contains(':')
+        ? productOrSymbol
+        : 'xyz:$productOrSymbol',
+    environment: 'testnet',
+    currentLeverage: leverage,
+    maximumLeverage: maximum,
+    currentMarginMode: mode,
+    marginModes: {TradingMarginMode.cross, TradingMarginMode.isolated},
+    orderTypes: {TradingOrderType.market, TradingOrderType.limit},
+    timeInForce: {'gtc', 'ioc'},
+    availableMargin: DecimalValue('100'),
+    minimumNotional: DecimalValue('12'),
+    maximumNotional: DecimalValue(maximumNotional),
+    sizeDecimals: 3,
+    validUntil: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    operations: {'placeOrder', 'setLeverage'},
+  );
   @override
   Future<Hip3OpeningContext> setLeverage(
     String productId,
@@ -789,6 +978,7 @@ final class _Hip3Execution implements Hip3OrderExecutionRepository {
 Hip3PreviewExecution _previewExecution(
   OrderIntent intent, {
   String maximum = '1',
+  String margin = '20',
 }) => Hip3PreviewExecution(
   openingProtection: intent.openingProtection == null
       ? null
@@ -821,7 +1011,7 @@ Hip3PreviewExecution _previewExecution(
   reduceOnly: false,
   notional: DecimalValue('100'),
   marginRequired: DecimalValue('10'),
-  availableMargin: DecimalValue('20'),
+  availableMargin: DecimalValue(margin),
   maximumQuantity: DecimalValue(maximum),
   estimatedFee: DecimalValue('0.05'),
   slippagePercent: DecimalValue('1'),
