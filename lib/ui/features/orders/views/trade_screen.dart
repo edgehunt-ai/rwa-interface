@@ -190,6 +190,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       }
     }
     final productRef = MarketProductRef(symbol: symbol, kind: productKind);
+    final productDetailState = ref.watch(marketProductProvider(productRef));
+    final productTradable =
+        productDetailState.value?.tradable ?? activeProduct?.tradable ?? true;
     final isFavorite = _favoriteOverrideRef == productRef
         ? _favoriteOverride!
         : activeProduct?.isFavorite ?? false;
@@ -312,7 +315,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                 ],
               ],
             ),
-            if (_unavailableKind == null)
+            if (_unavailableKind == null && productTradable)
               _TradeActions(
                 primaryLabel: productKind == MarketProductKind.bstock
                     ? AppLocalizations.of(context).buy

@@ -108,7 +108,9 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       price: DecimalValue(value.quote.price, asset: 'USDC', unit: 'price'),
       settlementAsset: 'USDC',
       network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',
-      tradable: true,
+      tradable: value.kind == api.ProductKind.perp
+          ? (value.hip3Market?.tradable ?? false)
+          : true,
       change24hPercent: _decimal(value.quote.change24hPercent, unit: 'percent'),
     );
   }
