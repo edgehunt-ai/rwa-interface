@@ -628,14 +628,20 @@ class _RouteValue extends StatelessWidget {
   );
 }
 
-class _RouteDetails extends StatelessWidget {
+class _RouteDetails extends ConsumerWidget {
   const _RouteDetails({required this.instruction});
   final DepositInstruction instruction;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
+    final balance = ref.watch(
+      depositCurrentBalanceProvider((
+        chain: instruction.chain,
+        token: instruction.token,
+      )),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -646,6 +652,21 @@ class _RouteDetails extends StatelessWidget {
           style: TextStyle(color: colors.secondaryText, fontSize: 12),
         ),
         const SizedBox(height: 12),
+        _DetailRow(
+          label: l10n.balance,
+          value: balance == null
+              ? null
+              : '${balance.value} ${instruction.token}',
+          trailing: balance == null
+              ? const SkeletonBlock(
+                  key: ValueKey('deposit-balance-skeleton'),
+                  width: 72,
+                  height: 16,
+                  radius: 4,
+                )
+              : null,
+        ),
+        const SizedBox(height: 8),
         _DetailRow(
           label: l10n.minimumDeposit,
           value: '${instruction.minimumAmount.value} ${instruction.token}',
@@ -666,9 +687,11 @@ class _RouteDetails extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value});
+  const _DetailRow({required this.label, this.value, this.trailing})
+    : assert(value != null || trailing != null);
   final String label;
-  final String value;
+  final String? value;
+  final Widget? trailing;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -677,7 +700,8 @@ class _DetailRow extends StatelessWidget {
         Expanded(
           child: Text(label, style: TextStyle(color: colors.secondaryText)),
         ),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        trailing ??
+            Text(value!, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
     );
   }

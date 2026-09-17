@@ -19,6 +19,7 @@ import '../../domain/models/self_custodial_withdrawal.dart';
 import '../../domain/models/funding_catalog_summary.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../services/funding_service.dart';
+import '../mappers/chain_name_mapper.dart';
 
 final class FundingRepositoryImpl implements FundingRepository {
   FundingRepositoryImpl(this._service);
@@ -218,7 +219,7 @@ final class FundingRepositoryImpl implements FundingRepository {
           .map(
             (value) => DepositObservation(
               observationId: value.observationId,
-              chain: value.chain.name,
+              chain: canonicalChainName(value.chain.name),
               asset: value.asset,
               amount: DecimalValue(
                 value.amount,
@@ -478,7 +479,7 @@ final class FundingRepositoryImpl implements FundingRepository {
 
   Withdrawal _withdrawal(api.Withdrawal wire) => Withdrawal(
     withdrawalId: wire.withdrawalId,
-    chain: wire.chain.name,
+    chain: canonicalChainName(wire.chain.name),
     amount: _money(wire.amount)!,
     receivedAmount: _money(wire.receivedAmount),
     totalFee: _money(wire.totalFee),

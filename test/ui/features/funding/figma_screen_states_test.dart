@@ -101,6 +101,12 @@ void main() {
         overrides: [
           depositInstructionProvider((chain: 'Arbitrum', token: 'USDC'))
               .overrideWith((_) async => instruction),
+          depositCurrentBalanceProvider((chain: 'Arbitrum', token: 'USDC'))
+              .overrideWith(
+                (_) => DecimalValue('12.5', asset: 'USDC', unit: 'token'),
+              ),
+          depositBalanceChangesProvider((chain: 'Arbitrum', token: 'USDC'))
+              .overrideWith((_) => const Stream.empty()),
         ],
         child: buildTestApp(
           const DepositScreen(chain: 'Arbitrum', token: 'USDC'),
@@ -111,10 +117,43 @@ void main() {
 
     expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
     expect(find.byType(QrImageView), findsOneWidget);
+    await tester.ensureVisible(find.text('12.5 USDC'));
+    expect(
+      tester.getTopLeft(find.text('12.5 USDC')).dy,
+      lessThan(tester.getTopLeft(find.text('1 USDC')).dy),
+    );
     expect(
       tester.getTopLeft(find.text('Network')).dy,
       lessThan(tester.getTopLeft(find.text('Token')).dy),
     );
+  });
+
+  testWidgets('deposit balance shows a skeleton while loading', (tester) async {
+    const route = (chain: 'Arbitrum', token: 'USDC');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositInstructionProvider(route)
+              .overrideWith((_) async => _depositInstruction(route)),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => const Stream.empty()),
+        ],
+        child: buildTestApp(
+          const DepositScreen(chain: 'Arbitrum', token: 'USDC'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('deposit-balance-skeleton')),
+    );
+    expect(
+      find.byKey(const ValueKey('deposit-balance-skeleton')),
+      findsOneWidget,
+    );
+    expect(find.text('-- USDC'), findsNothing);
   });
 
   testWidgets('balance increase opens the deposit received sheet', (

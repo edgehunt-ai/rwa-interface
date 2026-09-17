@@ -25,6 +25,11 @@ void main() {
     addTearDown(realtime.dispose);
 
     const route = (chain: 'Arbitrum', token: 'USDC');
+    final balanceSubscription = container.listen(
+      depositCurrentBalanceProvider(route),
+      (_, _) {},
+    );
+    addTearDown(balanceSubscription.close);
     final subscription = container.listen(
       depositBalanceChangesProvider(route),
       (_, _) {},
@@ -42,6 +47,7 @@ void main() {
     expect(result.chain, 'Arbitrum');
     expect(result.token, 'USDC');
     expect(result.amount.value, '1');
+    expect(container.read(depositCurrentBalanceProvider(route))?.value, '2');
   });
 
   test('polls account balances when SSE does not deliver an event', () async {
@@ -71,7 +77,38 @@ void main() {
 
     expect(result.eventId, startsWith('balance-poll-'));
     expect(result.amount.value, '1');
+    expect(container.read(depositCurrentBalanceProvider(route))?.value, '2');
     expect(portfolio.calls, greaterThanOrEqualTo(2));
+  });
+
+  test('matches generated chain names and does not double count SSE', () async {
+    final realtime = _Realtime();
+    final container = ProviderContainer(
+      overrides: [
+        portfolioRepositoryProvider.overrideWithValue(_Portfolio()),
+        realtimeRepositoryProvider.overrideWithValue(realtime),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(realtime.dispose);
+
+    const route = (chain: 'Arbitrum', token: 'USDC');
+    final balanceSubscription = container.listen(
+      depositCurrentBalanceProvider(route),
+      (_, _) {},
+    );
+    addTearDown(balanceSubscription.close);
+    final subscription = container.listen(
+      depositBalanceChangesProvider(route),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    await pumpEventQueue();
+
+    expect(container.read(depositCurrentBalanceProvider(route))?.value, '1');
+    realtime.add(_balanceEvent(id: 'balance-2', amount: '2'));
+    await pumpEventQueue();
+    expect(container.read(depositCurrentBalanceProvider(route))?.value, '2');
   });
 }
 
@@ -162,12 +199,12 @@ final class _Portfolio implements PortfolioRepository {
   Future<List<TradingAccount>> listAccounts() async => [
     TradingAccount(
       kind: TradingAccountKind.app,
-      chain: 'Arbitrum',
+      chain: 'arbitrum',
       address: '0x1111111111111111111111111111111111111111',
       balances: [
         TokenBalance(
           symbol: 'USDC',
-          chain: 'Arbitrum',
+          chain: 'arbitrum',
           balance: DecimalValue('1', asset: 'USDC', unit: 'token'),
         ),
       ],

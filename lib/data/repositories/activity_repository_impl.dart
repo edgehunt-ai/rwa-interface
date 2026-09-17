@@ -5,6 +5,7 @@ import '../../domain/models/decimal_value.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/repositories/activity_repository.dart';
 import '../services/activity_service.dart';
+import '../mappers/chain_name_mapper.dart';
 
 final class ActivityRepositoryImpl implements ActivityRepository {
   ActivityRepositoryImpl(this._service);
@@ -66,7 +67,7 @@ final class ActivityRepositoryImpl implements ActivityRepository {
             )
             .toList() ??
         const [],
-    chain: value.chain?.name,
+    chain: value.chain == null ? null : canonicalChainName(value.chain!.name),
     txHash: value.txHash,
     asset: value.asset,
     symbol: value.symbol,

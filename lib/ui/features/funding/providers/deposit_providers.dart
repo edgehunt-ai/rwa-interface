@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
@@ -66,6 +67,9 @@ final depositRoutesProvider = FutureProvider.autoDispose<List<DepositRoute>>((
 
 typedef DepositBalanceMonitorKey = ({String chain, String token});
 
+final depositCurrentBalanceProvider = StateProvider.autoDispose
+    .family<DecimalValue?, DepositBalanceMonitorKey>((ref, route) => null);
+
 final depositBalancePollIntervalProvider = Provider<Duration>(
   (_) => const Duration(seconds: 30),
 );
@@ -121,6 +125,9 @@ final depositBalanceChangesProvider = StreamProvider.autoDispose
             await repository.listAccounts(),
             route,
           );
+          if (disposed) return;
+          ref.read(depositCurrentBalanceProvider(route).notifier).state =
+              _totalBalance(snapshot.values, route.token);
           if (!detectIncrease || balances.isEmpty) {
             balances
               ..clear()
@@ -153,7 +160,11 @@ final depositBalanceChangesProvider = StreamProvider.autoDispose
             )
             .listen((event) {
               final update = _balanceUpdate(event, route);
-              if (update != null) applyUpdate(update, event.id);
+              if (update != null) {
+                applyUpdate(update, event.id);
+                ref.read(depositCurrentBalanceProvider(route).notifier).state =
+                    _totalBalance(balances.values, route.token);
+              }
             }, onError: controller.addError);
         pollTimer = Timer.periodic(
           pollInterval,
@@ -228,13 +239,14 @@ bool _matches(
   DepositBalanceMonitorKey route, {
   required String symbol,
   required String? chain,
-}) => symbol == route.token && chain == route.chain;
+}) =>
+    symbol == route.token && chain?.toLowerCase() == route.chain.toLowerCase();
 
 String _accountId({
   required String account,
   required String? chain,
   required String? address,
-}) => '$account|${chain ?? ''}|${address ?? ''}';
+}) => '$account|${chain?.toLowerCase() ?? ''}|${address ?? ''}';
 
 DecimalValue _difference(DecimalValue current, DecimalValue previous) {
   final scale = current.scale > previous.scale ? current.scale : previous.scale;
@@ -246,6 +258,27 @@ DecimalValue _difference(DecimalValue current, DecimalValue previous) {
       : '$sign${digits.substring(0, digits.length - scale)}.'
             '${digits.substring(digits.length - scale)}';
   return DecimalValue(value, asset: current.asset, unit: current.unit);
+}
+
+DecimalValue _totalBalance(Iterable<DecimalValue> balances, String token) {
+  final values = balances.toList();
+  final scale = values.fold<int>(
+    0,
+    (max, value) => value.scale > max ? value.scale : max,
+  );
+  final total = values.fold<BigInt>(
+    BigInt.zero,
+    (sum, value) => sum + _toAtomic(value, scale),
+  );
+  final digits = total.abs().toString().padLeft(scale + 1, '0');
+  final value = scale == 0
+      ? digits
+      : '${digits.substring(0, digits.length - scale)}.${digits.substring(digits.length - scale)}';
+  return DecimalValue(
+    '${total.isNegative ? '-' : ''}$value',
+    asset: token,
+    unit: 'token',
+  );
 }
 
 BigInt _toAtomic(DecimalValue value, int scale) {

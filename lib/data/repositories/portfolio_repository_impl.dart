@@ -10,6 +10,7 @@ import '../../domain/models/position.dart';
 import '../../domain/models/trading_account.dart';
 import '../../domain/repositories/portfolio_repository.dart';
 import '../services/portfolio_service.dart';
+import '../mappers/chain_name_mapper.dart';
 
 // The domain portfolio still exposes this optional legacy aggregate.
 // ignore_for_file: deprecated_member_use
@@ -115,7 +116,7 @@ final class PortfolioRepositoryImpl
     label: value.label,
     address: value.address,
     walletId: value.walletId,
-    chain: value.chain?.name,
+    chain: value.chain == null ? null : canonicalChainName(value.chain!.name),
     totalValueUsd: _optionalUsd(value.totalValueUsd),
     availableUsd: _optionalUsd(value.availableUsd),
     availableRequiresTransfer: value.availableRequiresTransfer,
@@ -131,7 +132,9 @@ final class PortfolioRepositoryImpl
             ),
             valueUsd: _optionalUsd(balance.valueUsd),
             decimals: balance.decimals,
-            chain: balance.chain?.name,
+            chain: balance.chain == null
+                ? null
+                : canonicalChainName(balance.chain!.name),
           ),
         )
         .toList(),

@@ -5,6 +5,7 @@ import '../../domain/models/wallet.dart';
 import '../../domain/models/withdrawal.dart';
 import '../../domain/repositories/wallets_repository.dart';
 import '../services/wallets_service.dart';
+import '../mappers/chain_name_mapper.dart';
 
 final class WalletsRepositoryImpl implements WalletsRepository {
   WalletsRepositoryImpl(this._service);
@@ -107,7 +108,7 @@ final class WalletsRepositoryImpl implements WalletsRepository {
   Wallet _mapWallet(api.Wallet value) => Wallet(
     walletId: value.walletId,
     address: value.address,
-    chain: value.chain.name,
+    chain: canonicalChainName(value.chain.name),
     status: switch (value.status) {
       api.WalletStatus.active => WalletState.active,
       api.WalletStatus.verificationRequired => WalletState.verificationRequired,
