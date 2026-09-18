@@ -169,7 +169,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       group: 'hot',
       productType: null,
     );
-    final productsState = ref.watch(marketProductsProvider(productQuery));
+    final productsState = ref.watch(marketProductLookupProvider(productQuery));
     final availableProducts = productsState.value?.items
         .where(
           (product) => _underlyingSymbol(product.symbol) == productQuery.query,

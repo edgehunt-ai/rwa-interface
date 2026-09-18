@@ -89,15 +89,27 @@ void _cacheMarketList(Ref ref) {
 final marketProductsProvider = FutureProvider.autoDispose
     .family<DomainPage<MarketProduct>, MarketQuery>((ref, query) {
       _cacheMarketList(ref);
-      return ref
-          .watch(marketsRepositoryProvider)
-          .listProducts(
-            query: query.query,
-            cursor: query.cursor,
-            group: query.group,
-            productType: query.productType,
-          );
+      return _listMarketProducts(ref, query);
     });
+
+// Detail screens only need the matching products to resolve the active kind.
+// They must not inherit the list-page polling cadence.
+final marketProductLookupProvider = FutureProvider.autoDispose
+    .family<DomainPage<MarketProduct>, MarketQuery>(
+      (ref, query) => _listMarketProducts(ref, query),
+    );
+
+Future<DomainPage<MarketProduct>> _listMarketProducts(
+  Ref ref,
+  MarketQuery query,
+) => ref
+    .watch(marketsRepositoryProvider)
+    .listProducts(
+      query: query.query,
+      cursor: query.cursor,
+      group: query.group,
+      productType: query.productType,
+    );
 
 final marketStocksProvider = FutureProvider.autoDispose<DomainPage<Stock>>((
   ref,
