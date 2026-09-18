@@ -14,24 +14,28 @@ class _Details extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final positionState = ref.watch(
-      positionsProvider((symbol: symbol, kind: kind, cursor: null)),
-    );
-    final productId = positionState.value?.items
+    final positionState = activeTab == 'Position'
+        ? ref.watch(
+            positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+          )
+        : null;
+    final productId = positionState?.value?.items
         .where((p) => p.symbol == symbol && p.kind == kind)
         .firstOrNull
         ?.productId;
-    final openState = kind == MarketProductKind.perp
-        ? ref.watch(
-            hip3OpenOrdersProvider((
-              symbol: symbol,
-              productId: productId,
-              cursor: null,
-            )),
-          )
-        : ref.watch(ordersProvider(null));
-    final positionCount = positionState.value?.items.length;
-    final openCount = openState.value?.items
+    final openState = activeTab == 'Open'
+        ? kind == MarketProductKind.perp
+              ? ref.watch(
+                  hip3OpenOrdersProvider((
+                    symbol: symbol,
+                    productId: productId,
+                    cursor: null,
+                  )),
+                )
+              : ref.watch(ordersProvider(null))
+        : null;
+    final positionCount = positionState?.value?.items.length;
+    final openCount = openState?.value?.items
         .map((item) => item.resource)
         .where(
           (order) =>
@@ -114,22 +118,12 @@ class _Details extends ConsumerWidget {
           ),
         if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
-            orders: ref.watch(
-              kind == MarketProductKind.perp
-                  ? hip3OrdersProvider(null)
-                  : ordersProvider(null),
-            ),
+            orders: ref.watch(ordersProvider(null)),
             kind: kind,
             symbol: symbol,
           ),
         if (activeTab == 'Position')
-          _PositionTab(
-            positions: ref.watch(
-              positionsProvider((symbol: symbol, kind: kind, cursor: null)),
-            ),
-            kind: kind,
-            symbol: symbol,
-          ),
+          _PositionTab(positions: positionState!, kind: kind, symbol: symbol),
         if (activeTab == 'Details') _DetailsCard(kind: kind, symbol: symbol),
       ],
     );
