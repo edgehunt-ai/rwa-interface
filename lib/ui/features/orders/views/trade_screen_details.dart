@@ -1028,12 +1028,12 @@ class _DetailsCard extends ConsumerWidget {
     final reference = referencePrice == null
         ? '—'
         : TokenAmountFormatter.formatUsd(referencePrice);
-    final bid = snapshot?.bids.firstOrNull?.price == null
+    final bid = snapshot?.bestBid == null
         ? '—'
-        : TokenAmountFormatter.formatUsd(snapshot!.bids.first.price);
-    final ask = snapshot?.asks.firstOrNull?.price == null
+        : TokenAmountFormatter.formatUsd(snapshot!.bestBid!);
+    final ask = snapshot?.bestAsk == null
         ? '—'
-        : TokenAmountFormatter.formatUsd(snapshot!.asks.first.price);
+        : TokenAmountFormatter.formatUsd(snapshot!.bestAsk!);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -65,6 +65,8 @@ final class MarketSnapshot {
     this.fundingRate,
     this.openInterestUsd,
     this.referencePrice,
+    this.bestBid,
+    this.bestAsk,
     this.referenceLabel,
     this.relativeLabel,
     this.basisPercent,
@@ -83,6 +85,7 @@ final class MarketSnapshot {
   final String? marketSession;
   final DecimalValue? high24h, low24h, volume24h, turnover24h;
   final DecimalValue? fundingRate, openInterestUsd, referencePrice;
+  final DecimalValue? bestBid, bestAsk;
   final String? referenceLabel;
   final String? relativeLabel;
   final DecimalValue? basisPercent, spreadPercent;

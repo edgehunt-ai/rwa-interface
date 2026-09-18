@@ -1,4 +1,5 @@
 import '../../domain/models/bstocks_support.dart';
+import '../../domain/models/api_failure.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/stock.dart';
 import '../../domain/models/decimal_value.dart';
@@ -119,16 +120,24 @@ final class MarketsRepositoryImpl implements MarketsRepository {
   Future<MarketSnapshot> getSnapshot(MarketProductRef ref) async {
     final kind = _apiKind(ref.kind);
     final product = await _service.getProduct(ref.symbol, kind);
-    final book = await _service.getOrderBook(ref.symbol, kind);
+    api.OrderBook? book;
+    try {
+      book = await _service.getOrderBook(ref.symbol, kind);
+    } on ApiFailure catch (failure) {
+      if (failure.kind != FailureKind.unavailable &&
+          failure.kind != FailureKind.network) {
+        rethrow;
+      }
+    }
     return MarketSnapshot(
       price: DecimalValue(product.quote.price, asset: 'USDC', unit: 'price'),
       change24hPercent: _decimal(
         product.quote.change24hPercent,
         unit: 'percent',
       ),
-      bids: book.bids.map(_bookEntry).toList(),
-      asks: book.asks.map(_bookEntry).toList(),
-      asOf: book.updatedAt?.toUtc() ?? product.quote.updatedAt?.toUtc(),
+      bids: book?.bids.map(_bookEntry).toList() ?? const [],
+      asks: book?.asks.map(_bookEntry).toList() ?? const [],
+      asOf: book?.updatedAt?.toUtc() ?? product.quote.updatedAt?.toUtc(),
       high24h: _decimal(product.stats?.high24h),
       low24h: _decimal(product.stats?.low24h),
       volume24h: _decimal(product.stats?.volume24h),
@@ -136,6 +145,8 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       fundingRate: _decimal(product.stats?.fundingRate),
       openInterestUsd: _decimal(product.stats?.openInterestUsd),
       referencePrice: _decimal(product.stats?.referencePrice),
+      bestBid: _decimal(product.stats?.bestBid),
+      bestAsk: _decimal(product.stats?.bestAsk),
       referenceLabel: product.stats?.referenceLabel,
       relativeLabel: product.stats?.relativeLabel,
       basisPercent: _decimal(product.stats?.relativePercent),
