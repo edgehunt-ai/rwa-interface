@@ -1,0 +1,165 @@
+name: Build and Deploy Web
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-web-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  API_BASE_URL: ${{ vars.API_BASE_URL }}
+  PRIVY_APP_ID: ${{ vars.PRIVY_APP_ID }}
+  PRIVY_CLIENT_ID: ${{ vars.PRIVY_CLIENT_ID }}
+  PRIVY_EXPORT_URL: ${{ vars.PRIVY_EXPORT_URL }}
+  PRIVY_APP_URL_SCHEME: ${{ vars.PRIVY_APP_URL_SCHEME }}
+  PRIVY_RELYING_PARTY: ${{ vars.PRIVY_RELYING_PARTY || 'https://rwa.dxd.ink' }}
+  REOWN_PROJECT_ID: ${{ vars.REOWN_PROJECT_ID }}
+  APP_REVIEW_ENABLED: ${{ vars.APP_REVIEW_ENABLED || 'false' }}
+  APP_REVIEW_USERS: ${{ vars.APP_REVIEW_USERS || '' }}
+  SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+  SENTRY_ENVIRONMENT: ${{ github.ref == 'refs/heads/main' && (vars.SENTRY_ENVIRONMENT || 'production') || 'preview' }}
+  SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0.10' }}
+  SENTRY_PROFILES_SAMPLE_RATE: ${{ vars.SENTRY_PROFILES_SAMPLE_RATE || '0.10' }}
+
+jobs:
+  build:
+    name: Flutter Web Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.3
+          cache: true
+
+      - name: Create Flutter environment file
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in API_BASE_URL PRIVY_APP_ID PRIVY_CLIENT_ID PRIVY_EXPORT_URL PRIVY_APP_URL_SCHEME REOWN_PROJECT_ID; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing required GitHub Actions variable: $key" >&2
+              exit 1
+            fi
+          done
+          printf '%s\n' \
+            "API_BASE_URL=$API_BASE_URL" \
+            "PRIVY_APP_ID=$PRIVY_APP_ID" \
+            "PRIVY_CLIENT_ID=$PRIVY_CLIENT_ID" \
+            "PRIVY_EXPORT_URL=$PRIVY_EXPORT_URL" \
+            "PRIVY_APP_URL_SCHEME=$PRIVY_APP_URL_SCHEME" \
+            "REOWN_PROJECT_ID=$REOWN_PROJECT_ID" \
+            "APP_REVIEW_ENABLED=$APP_REVIEW_ENABLED" \
+            "APP_REVIEW_USERS=$APP_REVIEW_USERS" > .env.ci
+          make env-check ENV_FILE=.env.ci
+
+      - name: Install JavaScript dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build Privy browser bundle
+        run: npm run privy:web:build
+
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        shell: bash
+        run: >-
+          flutter build web --release
+          --dart-define-from-file=.env.ci
+          --dart-define=PRIVY_RELYING_PARTY="$PRIVY_RELYING_PARTY"
+          --dart-define=SENTRY_DSN="$SENTRY_DSN"
+          --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
+          --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
+          --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
+          --dart-define=SENTRY_RELEASE="rwa_interface@${{ github.sha }}"
+
+      - name: Verify Web output
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/web/index.html
+          test -s build/web/flutter_bootstrap.js
+          test -s build/web/main.dart.js
+          test -s build/web/privy-auth/dist/privy-auth.js
+
+      - name: Upload Web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rwa-interface-web
+          path: build/web/
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy Flutter Web to Vercel
+    needs: build
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_WEB_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_TOKEN; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing required GitHub Secret: $key (main site project uses VERCEL_WEB_PROJECT_ID)" >&2
+              exit 1
+            fi
+          done
+
+      - name: Download Web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rwa-interface-web
+          path: .vercel/output/static
+
+      - name: Prepare Vercel prebuilt output
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s .vercel/output/static/index.html
+          test -s .vercel/output/static/privy-auth/dist/privy-auth.js
+          printf '%s\n' \
+            '{' \
+            '  "version": 3,' \
+            '  "routes": [' \
+            '    { "handle": "filesystem" },' \
+            '    { "src": "/(.*)", "dest": "/index.html" }' \
+            '  ]' \
+            '}' > .vercel/output/config.json
+
+      - name: Deploy preview
+        if: github.ref != 'refs/heads/main'
+        run: npx --yes vercel@latest deploy --prebuilt --yes --token="$VERCEL_TOKEN"
+
+      - name: Deploy production
+        if: github.ref == 'refs/heads/main'
+        run: npx --yes vercel@latest deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN"

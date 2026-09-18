@@ -181,6 +181,19 @@ npm run privy:web:build
 flutter build web --dart-define-from-file=.env
 ```
 
+项目主站由 `.github/workflows/build-web.yml`（`Build and Deploy Web`）独立打包部署，在推送到 `main`、
+创建或更新 PR 时运行，也支持手动触发。流程先构建 Privy 浏览器 bundle，再构建 Flutter Web
+release，将完整 `build/web/` 上传为 `rwa-interface-web` artifact，保留 7 天，可在 Actions
+运行页面下载。构建成功后使用 Vercel `--prebuilt` 部署：`main` 发布生产版本，PR 和手动选择的
+其他分支发布预览版本；来自 fork 的 PR 只构建，不部署。部署配置包含 SPA 路由回退到 `index.html`。
+需在 GitHub Actions Variables 配置 `API_BASE_URL`、`PRIVY_APP_ID`、`PRIVY_CLIENT_ID`、
+`PRIVY_EXPORT_URL`、`PRIVY_APP_URL_SCHEME` 和 `REOWN_PROJECT_ID`，缺失时会停止构建；
+可选的 `APP_REVIEW_*` 和 `SENTRY_*` 构建配置沿用移动端 Release CI；预览构建的
+`SENTRY_ENVIRONMENT` 为 `preview`，`SENTRY_RELEASE` 使用提交 SHA。
+`PRIVY_RELYING_PARTY` 默认使用 `https://rwa.dxd.ink`，可通过同名 Variable 覆盖。
+主站部署复用 Secrets `VERCEL_TOKEN`、`VERCEL_ORG_ID`，需新增 `VERCEL_WEB_PROJECT_ID`
+指向主站的 Vercel 项目；现有 `VERCEL_PROJECT_ID` 继续用于私钥导出页，两个项目 ID 必须不同。
+
 在 Privy Dashboard 的 Allowed origins 中登记 Web 的生产、staging 和本地开发地址；Web 使用的
 `PRIVY_APP_ID` 必须启用所需登录方式。移动端 `PRIVY_CLIENT_ID` 仅供原生 SDK 使用。
 移动端 WebView 使用 `PRIVY_EXPORT_URL` 加载独立部署的私钥导出页，生产构建必须配置为 HTTPS 地址。
