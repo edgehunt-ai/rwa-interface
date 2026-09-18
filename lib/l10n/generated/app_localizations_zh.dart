@@ -285,6 +285,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get preparingWithdrawal => '正在准备提现…';
 
   @override
+  String get signatureDetails => '签名详情';
+
+  @override
+  String signAndWithdraw(Object symbol) {
+    return '签名 & 提现 $symbol';
+  }
+
+  @override
+  String get signatureFrom => 'From';
+
+  @override
+  String get signatureTo => 'To';
+
+  @override
+  String get signatureValue => 'Value';
+
+  @override
+  String get signatureData => 'Data';
+
+  @override
   String get withdrawalDetails => '提现详情';
 
   @override

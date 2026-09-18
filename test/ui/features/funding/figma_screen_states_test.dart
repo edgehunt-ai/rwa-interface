@@ -340,7 +340,15 @@ void main() {
     expect(find.text('Recipient receives'), findsOneWidget);
     expect(find.text('—'), findsNothing);
     expect(funding.quoteRequests, 0);
-    expect(find.widgetWithText(FilledButton, 'Withdraw USDC'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('withdrawal-signature-details')),
+      findsOneWidget,
+    );
+    expect(find.text('Signing wallet'), findsNothing);
+    expect(
+      find.widgetWithText(FilledButton, 'Sign & Withdraw USDC'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('withdrawal form shows no fee before the intent exists', (

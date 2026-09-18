@@ -882,6 +882,10 @@ class _WithdrawalReview extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: colors.secondaryText),
         ),
+        if (prepared != null) ...[
+          const SizedBox(height: 16),
+          _WithdrawalSignatureDetails(transaction: prepared!.transaction),
+        ],
         if (error != null) ...[
           const SizedBox(height: 12),
           Text(
@@ -894,7 +898,9 @@ class _WithdrawalReview extends StatelessWidget {
         const SizedBox(height: 40),
         FilledButton(
           onPressed: submitting || !_canSign ? null : onSubmit,
-          child: Text(l10n.withdrawUsdc),
+          child: Text(
+            l10n.signAndWithdraw(quote.intent.amount.asset ?? 'USDC'),
+          ),
         ),
       ],
     );
@@ -904,6 +910,137 @@ class _WithdrawalReview extends StatelessWidget {
     if (value.length <= 18) return value;
     return '${value.substring(0, 10)}...${value.substring(value.length - 4)}';
   }
+}
+
+class _WithdrawalSignatureDetails extends StatefulWidget {
+  const _WithdrawalSignatureDetails({required this.transaction});
+
+  final SelfCustodialWithdrawalTransaction transaction;
+
+  @override
+  State<_WithdrawalSignatureDetails> createState() =>
+      _WithdrawalSignatureDetailsState();
+}
+
+class _WithdrawalSignatureDetailsState
+    extends State<_WithdrawalSignatureDetails> {
+  var _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      key: const ValueKey('withdrawal-signature-details'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          key: const ValueKey('withdrawal-signature-details-toggle'),
+          onTap: () => setState(() => _expanded = !_expanded),
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.signatureDetails,
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: colors.secondaryText),
+                ),
+                const SizedBox(width: 4),
+                AnimatedRotation(
+                  turns: _expanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 160),
+                  child: Icon(
+                    Icons.keyboard_arrow_up,
+                    size: 14,
+                    color: colors.secondaryText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.subtleSurface,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                _SignatureField(
+                  label: l10n.signatureFrom,
+                  value: _shortAddress(widget.transaction.from),
+                ),
+                _SignatureField(
+                  label: l10n.signatureTo,
+                  value: _shortAddress(widget.transaction.to),
+                ),
+                _SignatureField(
+                  label: l10n.signatureValue,
+                  value: widget.transaction.value,
+                ),
+                _SignatureField(
+                  label: l10n.signatureData,
+                  value: widget.transaction.data,
+                  multiline: true,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  static String _shortAddress(String value) {
+    if (value.length <= 18) return value;
+    return '${value.substring(0, 10)}...${value.substring(value.length - 4)}';
+  }
+}
+
+class _SignatureField extends StatelessWidget {
+  const _SignatureField({
+    required this.label,
+    required this.value,
+    this.multiline = false,
+  });
+
+  final String label;
+  final String value;
+  final bool multiline;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 40,
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: SelectableText(
+            value,
+            textAlign: TextAlign.right,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _AssetSelector extends ConsumerStatefulWidget {

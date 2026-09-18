@@ -291,6 +291,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparingWithdrawal => 'Preparing withdrawal…';
 
   @override
+  String get signatureDetails => 'Signature Details';
+
+  @override
+  String signAndWithdraw(Object symbol) {
+    return 'Sign & Withdraw $symbol';
+  }
+
+  @override
+  String get signatureFrom => 'From';
+
+  @override
+  String get signatureTo => 'To';
+
+  @override
+  String get signatureValue => 'Value';
+
+  @override
+  String get signatureData => 'Data';
+
+  @override
   String get withdrawalDetails => 'Withdrawal details';
 
   @override

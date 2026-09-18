@@ -644,6 +644,42 @@ abstract class AppLocalizations {
   /// **'Preparing withdrawal…'**
   String get preparingWithdrawal;
 
+  /// No description provided for @signatureDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature Details'**
+  String get signatureDetails;
+
+  /// No description provided for @signAndWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign & Withdraw {symbol}'**
+  String signAndWithdraw(Object symbol);
+
+  /// No description provided for @signatureFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get signatureFrom;
+
+  /// No description provided for @signatureTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get signatureTo;
+
+  /// No description provided for @signatureValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get signatureValue;
+
+  /// No description provided for @signatureData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get signatureData;
+
   /// No description provided for @withdrawalDetails.
   ///
   /// In en, this message translates to:
