@@ -528,7 +528,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Position (1)'));
+    await tester.tap(find.widgetWithText(TextButton, 'Position'));
     await tester.pumpAndSettle();
 
     for (final text in [
@@ -568,7 +568,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Position (1)'));
+    await tester.tap(find.widgetWithText(TextButton, 'Position'));
     await tester.pumpAndSettle();
 
     for (final text in [
@@ -633,7 +633,7 @@ void main() {
 
     await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Position (1)'));
+    await tester.tap(find.widgetWithText(TextButton, 'Position'));
     await tester.pumpAndSettle();
     expect(find.text('bStocks · BSC'), findsOneWidget);
 
@@ -658,6 +658,11 @@ void main() {
       ),
     );
     await tester.drag(find.byType(ListView), const Offset(0, -160));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Position'), findsOneWidget);
+    expect(find.text('Position (1)'), findsNothing);
+    await tester.tap(find.widgetWithText(TextButton, 'Position'));
     await tester.pumpAndSettle();
 
     expect(find.text('Position (1)'), findsOneWidget);
@@ -686,11 +691,12 @@ void main() {
         ),
       );
 
-      final openTab = find.widgetWithText(TextButton, 'Open (1)');
+      final openTab = find.widgetWithText(TextButton, 'Open');
       await tester.drag(find.byType(ListView), const Offset(0, -160));
       await tester.pumpAndSettle();
       await tester.tap(openTab);
       await tester.pumpAndSettle();
+      expect(find.text('Open (1)'), findsOneWidget);
       expect(find.text('Filled / Total'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
@@ -806,7 +812,7 @@ Widget _tradeWithMarkets({
     authenticatedStateOverride,
     if (positionsRepository != null)
       positionsRepositoryProvider.overrideWithValue(positionsRepository),
-    marketProductsProvider((
+    marketProductLookupProvider((
       query: 'NVDA',
       cursor: null,
       group: 'hot',

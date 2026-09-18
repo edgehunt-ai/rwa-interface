@@ -66,10 +66,7 @@ void main() {
     await tester.tap(find.text('Export Private Key'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(
-      find.textContaining('Sign in on the web to export'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Sign in on the web to export'), findsOneWidget);
   });
 
   testWidgets('settings links and removes a Privy passkey', (tester) async {
