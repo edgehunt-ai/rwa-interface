@@ -45,16 +45,16 @@ part 'bstock_order_preview.g.dart';
 /// * [feeNote] - Optional localized display note, for example Included.
 /// * [kind] 
 /// * [network] 
-/// * [settlementAsset] 
+/// * [settlementAsset] - 服务端返回的实际结算资产标识。
 /// * [settlementChainId] 
 /// * [settlementAssetId] 
 /// * [settlementTokenContract] 
 /// * [settlementTokenDecimals] 
 @BuiltValue()
 abstract class BstockOrderPreview implements OrderPreviewCommon, Built<BstockOrderPreview, BstockOrderPreviewBuilder> {
+  /// 服务端返回的实际结算资产标识。
   @BuiltValueField(wireName: r'settlement_asset')
-  BstockOrderPreviewSettlementAssetEnum get settlementAsset;
-  // enum settlementAssetEnum {  USDT,  };
+  String get settlementAsset;
 
   @BuiltValueField(wireName: r'settlement_token_contract')
   BstockOrderPreviewSettlementTokenContractEnum get settlementTokenContract;
@@ -106,7 +106,7 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
     yield r'settlement_asset';
     yield serializers.serialize(
       object.settlementAsset,
-      specifiedType: const FullType(BstockOrderPreviewSettlementAssetEnum),
+      specifiedType: const FullType(String),
     );
     yield r'symbol';
     yield serializers.serialize(
@@ -329,8 +329,8 @@ class _$BstockOrderPreviewSerializer implements PrimitiveSerializer<BstockOrderP
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BstockOrderPreviewSettlementAssetEnum),
-          ) as BstockOrderPreviewSettlementAssetEnum;
+            specifiedType: const FullType(String),
+          ) as String;
           result.settlementAsset = valueDes;
           break;
         case r'symbol':
@@ -627,21 +627,6 @@ class BstockOrderPreviewNetworkEnum extends EnumClass {
 
   static BuiltSet<BstockOrderPreviewNetworkEnum> get values => _$bstockOrderPreviewNetworkEnumValues;
   static BstockOrderPreviewNetworkEnum valueOf(String name) => _$bstockOrderPreviewNetworkEnumValueOf(name);
-}
-
-class BstockOrderPreviewSettlementAssetEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'USDT')
-  static const BstockOrderPreviewSettlementAssetEnum USDT = _$bstockOrderPreviewSettlementAssetEnum_USDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-
-  static Serializer<BstockOrderPreviewSettlementAssetEnum> get serializer => _$bstockOrderPreviewSettlementAssetEnumSerializer;
-
-  const BstockOrderPreviewSettlementAssetEnum._(String name): super(name);
-
-  static BuiltSet<BstockOrderPreviewSettlementAssetEnum> get values => _$bstockOrderPreviewSettlementAssetEnumValues;
-  static BstockOrderPreviewSettlementAssetEnum valueOf(String name) => _$bstockOrderPreviewSettlementAssetEnumValueOf(name);
 }
 
 class BstockOrderPreviewSettlementChainIdEnum extends EnumClass {

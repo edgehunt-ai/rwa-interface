@@ -53,32 +53,6 @@ final BuiltSet<PerpOrderPreviewNetworkEnum>
   _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
-const PerpOrderPreviewSettlementAssetEnum
-    _$perpOrderPreviewSettlementAssetEnum_USDC =
-    const PerpOrderPreviewSettlementAssetEnum._('USDC');
-const PerpOrderPreviewSettlementAssetEnum
-    _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
-
-PerpOrderPreviewSettlementAssetEnum
-    _$perpOrderPreviewSettlementAssetEnumValueOf(String name) {
-  switch (name) {
-    case 'USDC':
-      return _$perpOrderPreviewSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-    default:
-      return _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<PerpOrderPreviewSettlementAssetEnum>
-    _$perpOrderPreviewSettlementAssetEnumValues = BuiltSet<
-        PerpOrderPreviewSettlementAssetEnum>(const <PerpOrderPreviewSettlementAssetEnum>[
-  _$perpOrderPreviewSettlementAssetEnum_USDC,
-  _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
-]);
-
 const PerpOrderPreviewSettlementChainIdEnum
     _$perpOrderPreviewSettlementChainIdEnum_number1337 =
     const PerpOrderPreviewSettlementChainIdEnum._('number1337');
@@ -192,9 +166,6 @@ Serializer<PerpOrderPreviewKindEnum> _$perpOrderPreviewKindEnumSerializer =
 Serializer<PerpOrderPreviewNetworkEnum>
     _$perpOrderPreviewNetworkEnumSerializer =
     _$PerpOrderPreviewNetworkEnumSerializer();
-Serializer<PerpOrderPreviewSettlementAssetEnum>
-    _$perpOrderPreviewSettlementAssetEnumSerializer =
-    _$PerpOrderPreviewSettlementAssetEnumSerializer();
 Serializer<PerpOrderPreviewSettlementChainIdEnum>
     _$perpOrderPreviewSettlementChainIdEnumSerializer =
     _$PerpOrderPreviewSettlementChainIdEnumSerializer();
@@ -263,38 +234,6 @@ class _$PerpOrderPreviewNetworkEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       PerpOrderPreviewNetworkEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$PerpOrderPreviewSettlementAssetEnumSerializer
-    implements PrimitiveSerializer<PerpOrderPreviewSettlementAssetEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    PerpOrderPreviewSettlementAssetEnum
-  ];
-  @override
-  final String wireName = 'PerpOrderPreviewSettlementAssetEnum';
-
-  @override
-  Object serialize(
-          Serializers serializers, PerpOrderPreviewSettlementAssetEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  PerpOrderPreviewSettlementAssetEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      PerpOrderPreviewSettlementAssetEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
@@ -434,7 +373,7 @@ class _$PerpOrderPreviewSettlementTokenDecimalsEnumSerializer
 
 class _$PerpOrderPreview extends PerpOrderPreview {
   @override
-  final PerpOrderPreviewSettlementAssetEnum settlementAsset;
+  final String settlementAsset;
   @override
   final PerpOrderPreviewSettlementTokenContractEnum settlementTokenContract;
   @override
@@ -666,11 +605,9 @@ class PerpOrderPreviewBuilder
         OrderPreviewCommonBuilder {
   _$PerpOrderPreview? _$v;
 
-  PerpOrderPreviewSettlementAssetEnum? _settlementAsset;
-  PerpOrderPreviewSettlementAssetEnum? get settlementAsset =>
-      _$this._settlementAsset;
-  set settlementAsset(
-          covariant PerpOrderPreviewSettlementAssetEnum? settlementAsset) =>
+  String? _settlementAsset;
+  String? get settlementAsset => _$this._settlementAsset;
+  set settlementAsset(covariant String? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
   PerpOrderPreviewSettlementTokenContractEnum? _settlementTokenContract;

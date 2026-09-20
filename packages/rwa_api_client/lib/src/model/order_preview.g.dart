@@ -50,31 +50,6 @@ final BuiltSet<OrderPreviewNetworkEnum> _$orderPreviewNetworkEnumValues =
   _$orderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
-const OrderPreviewSettlementAssetEnum _$orderPreviewSettlementAssetEnum_USDC =
-    const OrderPreviewSettlementAssetEnum._('USDC');
-const OrderPreviewSettlementAssetEnum
-    _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const OrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
-
-OrderPreviewSettlementAssetEnum _$orderPreviewSettlementAssetEnumValueOf(
-    String name) {
-  switch (name) {
-    case 'USDC':
-      return _$orderPreviewSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-    default:
-      return _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<OrderPreviewSettlementAssetEnum>
-    _$orderPreviewSettlementAssetEnumValues = BuiltSet<
-        OrderPreviewSettlementAssetEnum>(const <OrderPreviewSettlementAssetEnum>[
-  _$orderPreviewSettlementAssetEnum_USDC,
-  _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
-]);
-
 const OrderPreviewSettlementChainIdEnum
     _$orderPreviewSettlementChainIdEnum_number1337 =
     const OrderPreviewSettlementChainIdEnum._('number1337');
@@ -185,9 +160,6 @@ Serializer<OrderPreviewKindEnum> _$orderPreviewKindEnumSerializer =
     _$OrderPreviewKindEnumSerializer();
 Serializer<OrderPreviewNetworkEnum> _$orderPreviewNetworkEnumSerializer =
     _$OrderPreviewNetworkEnumSerializer();
-Serializer<OrderPreviewSettlementAssetEnum>
-    _$orderPreviewSettlementAssetEnumSerializer =
-    _$OrderPreviewSettlementAssetEnumSerializer();
 Serializer<OrderPreviewSettlementChainIdEnum>
     _$orderPreviewSettlementChainIdEnumSerializer =
     _$OrderPreviewSettlementChainIdEnumSerializer();
@@ -255,36 +227,6 @@ class _$OrderPreviewNetworkEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       OrderPreviewNetworkEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$OrderPreviewSettlementAssetEnumSerializer
-    implements PrimitiveSerializer<OrderPreviewSettlementAssetEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[OrderPreviewSettlementAssetEnum];
-  @override
-  final String wireName = 'OrderPreviewSettlementAssetEnum';
-
-  @override
-  Object serialize(
-          Serializers serializers, OrderPreviewSettlementAssetEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  OrderPreviewSettlementAssetEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      OrderPreviewSettlementAssetEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 

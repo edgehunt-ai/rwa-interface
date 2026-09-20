@@ -45,16 +45,16 @@ part 'perp_order_preview.g.dart';
 /// * [feeNote] - Optional localized display note, for example Included.
 /// * [kind] 
 /// * [network] 
-/// * [settlementAsset] 
+/// * [settlementAsset] - 服务端返回的实际结算资产标识。
 /// * [settlementChainId] 
 /// * [settlementAssetId] 
 /// * [settlementTokenContract] 
 /// * [settlementTokenDecimals] 
 @BuiltValue()
 abstract class PerpOrderPreview implements OrderPreviewCommon, Built<PerpOrderPreview, PerpOrderPreviewBuilder> {
+  /// 服务端返回的实际结算资产标识。
   @BuiltValueField(wireName: r'settlement_asset')
-  PerpOrderPreviewSettlementAssetEnum get settlementAsset;
-  // enum settlementAssetEnum {  USDC,  };
+  String get settlementAsset;
 
   @BuiltValueField(wireName: r'settlement_token_contract')
   PerpOrderPreviewSettlementTokenContractEnum get settlementTokenContract;
@@ -106,7 +106,7 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
     yield r'settlement_asset';
     yield serializers.serialize(
       object.settlementAsset,
-      specifiedType: const FullType(PerpOrderPreviewSettlementAssetEnum),
+      specifiedType: const FullType(String),
     );
     yield r'symbol';
     yield serializers.serialize(
@@ -329,8 +329,8 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(PerpOrderPreviewSettlementAssetEnum),
-          ) as PerpOrderPreviewSettlementAssetEnum;
+            specifiedType: const FullType(String),
+          ) as String;
           result.settlementAsset = valueDes;
           break;
         case r'symbol':
@@ -627,21 +627,6 @@ class PerpOrderPreviewNetworkEnum extends EnumClass {
 
   static BuiltSet<PerpOrderPreviewNetworkEnum> get values => _$perpOrderPreviewNetworkEnumValues;
   static PerpOrderPreviewNetworkEnum valueOf(String name) => _$perpOrderPreviewNetworkEnumValueOf(name);
-}
-
-class PerpOrderPreviewSettlementAssetEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'USDC')
-  static const PerpOrderPreviewSettlementAssetEnum USDC = _$perpOrderPreviewSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-
-  static Serializer<PerpOrderPreviewSettlementAssetEnum> get serializer => _$perpOrderPreviewSettlementAssetEnumSerializer;
-
-  const PerpOrderPreviewSettlementAssetEnum._(String name): super(name);
-
-  static BuiltSet<PerpOrderPreviewSettlementAssetEnum> get values => _$perpOrderPreviewSettlementAssetEnumValues;
-  static PerpOrderPreviewSettlementAssetEnum valueOf(String name) => _$perpOrderPreviewSettlementAssetEnumValueOf(name);
 }
 
 class PerpOrderPreviewSettlementChainIdEnum extends EnumClass {

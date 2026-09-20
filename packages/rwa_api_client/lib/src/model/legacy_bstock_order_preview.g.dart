@@ -58,42 +58,12 @@ final BuiltSet<LegacyBstockOrderPreviewNetworkEnum>
   _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
-const LegacyBstockOrderPreviewSettlementAssetEnum
-    _$legacyBstockOrderPreviewSettlementAssetEnum_USDC =
-    const LegacyBstockOrderPreviewSettlementAssetEnum._('USDC');
-const LegacyBstockOrderPreviewSettlementAssetEnum
-    _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const LegacyBstockOrderPreviewSettlementAssetEnum._(
-        'unknownDefaultOpenApi');
-
-LegacyBstockOrderPreviewSettlementAssetEnum
-    _$legacyBstockOrderPreviewSettlementAssetEnumValueOf(String name) {
-  switch (name) {
-    case 'USDC':
-      return _$legacyBstockOrderPreviewSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-    default:
-      return _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<LegacyBstockOrderPreviewSettlementAssetEnum>
-    _$legacyBstockOrderPreviewSettlementAssetEnumValues = BuiltSet<
-        LegacyBstockOrderPreviewSettlementAssetEnum>(const <LegacyBstockOrderPreviewSettlementAssetEnum>[
-  _$legacyBstockOrderPreviewSettlementAssetEnum_USDC,
-  _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
-]);
-
 Serializer<LegacyBstockOrderPreviewKindEnum>
     _$legacyBstockOrderPreviewKindEnumSerializer =
     _$LegacyBstockOrderPreviewKindEnumSerializer();
 Serializer<LegacyBstockOrderPreviewNetworkEnum>
     _$legacyBstockOrderPreviewNetworkEnumSerializer =
     _$LegacyBstockOrderPreviewNetworkEnumSerializer();
-Serializer<LegacyBstockOrderPreviewSettlementAssetEnum>
-    _$legacyBstockOrderPreviewSettlementAssetEnumSerializer =
-    _$LegacyBstockOrderPreviewSettlementAssetEnumSerializer();
 
 class _$LegacyBstockOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<LegacyBstockOrderPreviewKindEnum> {
@@ -157,42 +127,9 @@ class _$LegacyBstockOrderPreviewNetworkEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$LegacyBstockOrderPreviewSettlementAssetEnumSerializer
-    implements
-        PrimitiveSerializer<LegacyBstockOrderPreviewSettlementAssetEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    LegacyBstockOrderPreviewSettlementAssetEnum
-  ];
-  @override
-  final String wireName = 'LegacyBstockOrderPreviewSettlementAssetEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          LegacyBstockOrderPreviewSettlementAssetEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  LegacyBstockOrderPreviewSettlementAssetEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      LegacyBstockOrderPreviewSettlementAssetEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
 class _$LegacyBstockOrderPreview extends LegacyBstockOrderPreview {
   @override
-  final LegacyBstockOrderPreviewSettlementAssetEnum settlementAsset;
+  final String settlementAsset;
   @override
   final LegacyBstockOrderPreviewKindEnum kind;
   @override
@@ -401,12 +338,9 @@ class LegacyBstockOrderPreviewBuilder
         OrderPreviewCommonBuilder {
   _$LegacyBstockOrderPreview? _$v;
 
-  LegacyBstockOrderPreviewSettlementAssetEnum? _settlementAsset;
-  LegacyBstockOrderPreviewSettlementAssetEnum? get settlementAsset =>
-      _$this._settlementAsset;
-  set settlementAsset(
-          covariant LegacyBstockOrderPreviewSettlementAssetEnum?
-              settlementAsset) =>
+  String? _settlementAsset;
+  String? get settlementAsset => _$this._settlementAsset;
+  set settlementAsset(covariant String? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
   LegacyBstockOrderPreviewKindEnum? _kind;

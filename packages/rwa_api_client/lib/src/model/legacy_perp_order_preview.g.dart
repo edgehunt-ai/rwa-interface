@@ -57,41 +57,12 @@ final BuiltSet<LegacyPerpOrderPreviewNetworkEnum>
   _$legacyPerpOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
-const LegacyPerpOrderPreviewSettlementAssetEnum
-    _$legacyPerpOrderPreviewSettlementAssetEnum_USDC =
-    const LegacyPerpOrderPreviewSettlementAssetEnum._('USDC');
-const LegacyPerpOrderPreviewSettlementAssetEnum
-    _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const LegacyPerpOrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
-
-LegacyPerpOrderPreviewSettlementAssetEnum
-    _$legacyPerpOrderPreviewSettlementAssetEnumValueOf(String name) {
-  switch (name) {
-    case 'USDC':
-      return _$legacyPerpOrderPreviewSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-    default:
-      return _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<LegacyPerpOrderPreviewSettlementAssetEnum>
-    _$legacyPerpOrderPreviewSettlementAssetEnumValues = BuiltSet<
-        LegacyPerpOrderPreviewSettlementAssetEnum>(const <LegacyPerpOrderPreviewSettlementAssetEnum>[
-  _$legacyPerpOrderPreviewSettlementAssetEnum_USDC,
-  _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
-]);
-
 Serializer<LegacyPerpOrderPreviewKindEnum>
     _$legacyPerpOrderPreviewKindEnumSerializer =
     _$LegacyPerpOrderPreviewKindEnumSerializer();
 Serializer<LegacyPerpOrderPreviewNetworkEnum>
     _$legacyPerpOrderPreviewNetworkEnumSerializer =
     _$LegacyPerpOrderPreviewNetworkEnumSerializer();
-Serializer<LegacyPerpOrderPreviewSettlementAssetEnum>
-    _$legacyPerpOrderPreviewSettlementAssetEnumSerializer =
-    _$LegacyPerpOrderPreviewSettlementAssetEnumSerializer();
 
 class _$LegacyPerpOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<LegacyPerpOrderPreviewKindEnum> {
@@ -153,41 +124,9 @@ class _$LegacyPerpOrderPreviewNetworkEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$LegacyPerpOrderPreviewSettlementAssetEnumSerializer
-    implements PrimitiveSerializer<LegacyPerpOrderPreviewSettlementAssetEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    LegacyPerpOrderPreviewSettlementAssetEnum
-  ];
-  @override
-  final String wireName = 'LegacyPerpOrderPreviewSettlementAssetEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          LegacyPerpOrderPreviewSettlementAssetEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  LegacyPerpOrderPreviewSettlementAssetEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      LegacyPerpOrderPreviewSettlementAssetEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
 class _$LegacyPerpOrderPreview extends LegacyPerpOrderPreview {
   @override
-  final LegacyPerpOrderPreviewSettlementAssetEnum settlementAsset;
+  final String settlementAsset;
   @override
   final LegacyPerpOrderPreviewKindEnum kind;
   @override
@@ -396,12 +335,9 @@ class LegacyPerpOrderPreviewBuilder
         OrderPreviewCommonBuilder {
   _$LegacyPerpOrderPreview? _$v;
 
-  LegacyPerpOrderPreviewSettlementAssetEnum? _settlementAsset;
-  LegacyPerpOrderPreviewSettlementAssetEnum? get settlementAsset =>
-      _$this._settlementAsset;
-  set settlementAsset(
-          covariant LegacyPerpOrderPreviewSettlementAssetEnum?
-              settlementAsset) =>
+  String? _settlementAsset;
+  String? get settlementAsset => _$this._settlementAsset;
+  set settlementAsset(covariant String? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
   LegacyPerpOrderPreviewKindEnum? _kind;

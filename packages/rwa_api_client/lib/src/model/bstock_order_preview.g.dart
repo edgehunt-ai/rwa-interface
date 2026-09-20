@@ -54,32 +54,6 @@ final BuiltSet<BstockOrderPreviewNetworkEnum>
   _$bstockOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
-const BstockOrderPreviewSettlementAssetEnum
-    _$bstockOrderPreviewSettlementAssetEnum_USDT =
-    const BstockOrderPreviewSettlementAssetEnum._('USDT');
-const BstockOrderPreviewSettlementAssetEnum
-    _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const BstockOrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
-
-BstockOrderPreviewSettlementAssetEnum
-    _$bstockOrderPreviewSettlementAssetEnumValueOf(String name) {
-  switch (name) {
-    case 'USDT':
-      return _$bstockOrderPreviewSettlementAssetEnum_USDT;
-    case 'unknownDefaultOpenApi':
-      return _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-    default:
-      return _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<BstockOrderPreviewSettlementAssetEnum>
-    _$bstockOrderPreviewSettlementAssetEnumValues = BuiltSet<
-        BstockOrderPreviewSettlementAssetEnum>(const <BstockOrderPreviewSettlementAssetEnum>[
-  _$bstockOrderPreviewSettlementAssetEnum_USDT,
-  _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
-]);
-
 const BstockOrderPreviewSettlementChainIdEnum
     _$bstockOrderPreviewSettlementChainIdEnum_number56 =
     const BstockOrderPreviewSettlementChainIdEnum._('number56');
@@ -193,9 +167,6 @@ Serializer<BstockOrderPreviewKindEnum> _$bstockOrderPreviewKindEnumSerializer =
 Serializer<BstockOrderPreviewNetworkEnum>
     _$bstockOrderPreviewNetworkEnumSerializer =
     _$BstockOrderPreviewNetworkEnumSerializer();
-Serializer<BstockOrderPreviewSettlementAssetEnum>
-    _$bstockOrderPreviewSettlementAssetEnumSerializer =
-    _$BstockOrderPreviewSettlementAssetEnumSerializer();
 Serializer<BstockOrderPreviewSettlementChainIdEnum>
     _$bstockOrderPreviewSettlementChainIdEnumSerializer =
     _$BstockOrderPreviewSettlementChainIdEnumSerializer();
@@ -265,38 +236,6 @@ class _$BstockOrderPreviewNetworkEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       BstockOrderPreviewNetworkEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$BstockOrderPreviewSettlementAssetEnumSerializer
-    implements PrimitiveSerializer<BstockOrderPreviewSettlementAssetEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'USDT': 'USDT',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDT': 'USDT',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    BstockOrderPreviewSettlementAssetEnum
-  ];
-  @override
-  final String wireName = 'BstockOrderPreviewSettlementAssetEnum';
-
-  @override
-  Object serialize(
-          Serializers serializers, BstockOrderPreviewSettlementAssetEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  BstockOrderPreviewSettlementAssetEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      BstockOrderPreviewSettlementAssetEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
@@ -436,7 +375,7 @@ class _$BstockOrderPreviewSettlementTokenDecimalsEnumSerializer
 
 class _$BstockOrderPreview extends BstockOrderPreview {
   @override
-  final BstockOrderPreviewSettlementAssetEnum settlementAsset;
+  final String settlementAsset;
   @override
   final BstockOrderPreviewSettlementTokenContractEnum settlementTokenContract;
   @override
@@ -669,11 +608,9 @@ class BstockOrderPreviewBuilder
         OrderPreviewCommonBuilder {
   _$BstockOrderPreview? _$v;
 
-  BstockOrderPreviewSettlementAssetEnum? _settlementAsset;
-  BstockOrderPreviewSettlementAssetEnum? get settlementAsset =>
-      _$this._settlementAsset;
-  set settlementAsset(
-          covariant BstockOrderPreviewSettlementAssetEnum? settlementAsset) =>
+  String? _settlementAsset;
+  String? get settlementAsset => _$this._settlementAsset;
+  set settlementAsset(covariant String? settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
   BstockOrderPreviewSettlementTokenContractEnum? _settlementTokenContract;

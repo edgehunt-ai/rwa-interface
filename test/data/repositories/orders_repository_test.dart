@@ -256,7 +256,7 @@ final class _PreviewOrders implements OrdersService {
         )
         ..kind = api.PerpOrderPreviewKindEnum.perp
         ..network = api.PerpOrderPreviewNetworkEnum.hyperliquid
-        ..settlementAsset = api.PerpOrderPreviewSettlementAssetEnum.USDC
+        ..settlementAsset = 'USDC'
         ..settlementChainId =
             api.PerpOrderPreviewSettlementChainIdEnum.number1337
         ..settlementAssetId = api

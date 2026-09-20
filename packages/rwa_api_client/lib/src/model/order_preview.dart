@@ -24,7 +24,7 @@ part 'order_preview.g.dart';
 /// Properties:
 /// * [kind] 
 /// * [network] 
-/// * [settlementAsset] 
+/// * [settlementAsset] - 服务端返回的实际结算资产标识。
 /// * [settlementChainId] 
 /// * [settlementAssetId] 
 /// * [settlementTokenContract] 
@@ -190,21 +190,6 @@ class OrderPreviewNetworkEnum extends EnumClass {
 
   static BuiltSet<OrderPreviewNetworkEnum> get values => _$orderPreviewNetworkEnumValues;
   static OrderPreviewNetworkEnum valueOf(String name) => _$orderPreviewNetworkEnumValueOf(name);
-}
-
-class OrderPreviewSettlementAssetEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'USDC')
-  static const OrderPreviewSettlementAssetEnum USDC = _$orderPreviewSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-
-  static Serializer<OrderPreviewSettlementAssetEnum> get serializer => _$orderPreviewSettlementAssetEnumSerializer;
-
-  const OrderPreviewSettlementAssetEnum._(String name): super(name);
-
-  static BuiltSet<OrderPreviewSettlementAssetEnum> get values => _$orderPreviewSettlementAssetEnumValues;
-  static OrderPreviewSettlementAssetEnum valueOf(String name) => _$orderPreviewSettlementAssetEnumValueOf(name);
 }
 
 class OrderPreviewSettlementChainIdEnum extends EnumClass {

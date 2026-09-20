@@ -43,8 +43,8 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       marginRequired: _optional(common.marginRequired, 'margin'),
       liquidationPrice: _optional(common.liquidationPrice, 'price'),
       settlementAsset: switch (value) {
-        api.BstockOrderPreview(:final settlementAsset) => settlementAsset.name,
-        api.PerpOrderPreview(:final settlementAsset) => settlementAsset.name,
+        api.BstockOrderPreview(:final settlementAsset) => settlementAsset,
+        api.PerpOrderPreview(:final settlementAsset) => settlementAsset,
         _ => null,
       },
       priceUpdated: common.priceUpdated ?? false,

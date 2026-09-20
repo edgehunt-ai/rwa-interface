@@ -45,13 +45,13 @@ part 'legacy_bstock_order_preview.g.dart';
 /// * [feeNote] - Optional localized display note, for example Included.
 /// * [kind] 
 /// * [network] 
-/// * [settlementAsset] 
+/// * [settlementAsset] - 服务端返回的实际结算资产标识。
 @Deprecated('LegacyBstockOrderPreview has been deprecated')
 @BuiltValue()
 abstract class LegacyBstockOrderPreview implements OrderPreviewCommon, Built<LegacyBstockOrderPreview, LegacyBstockOrderPreviewBuilder> {
+  /// 服务端返回的实际结算资产标识。
   @BuiltValueField(wireName: r'settlement_asset')
-  LegacyBstockOrderPreviewSettlementAssetEnum get settlementAsset;
-  // enum settlementAssetEnum {  USDC,  };
+  String get settlementAsset;
 
   @BuiltValueField(wireName: r'kind')
   LegacyBstockOrderPreviewKindEnum get kind;
@@ -87,7 +87,7 @@ class _$LegacyBstockOrderPreviewSerializer implements PrimitiveSerializer<Legacy
     yield r'settlement_asset';
     yield serializers.serialize(
       object.settlementAsset,
-      specifiedType: const FullType(LegacyBstockOrderPreviewSettlementAssetEnum),
+      specifiedType: const FullType(String),
     );
     yield r'symbol';
     yield serializers.serialize(
@@ -290,8 +290,8 @@ class _$LegacyBstockOrderPreviewSerializer implements PrimitiveSerializer<Legacy
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(LegacyBstockOrderPreviewSettlementAssetEnum),
-          ) as LegacyBstockOrderPreviewSettlementAssetEnum;
+            specifiedType: const FullType(String),
+          ) as String;
           result.settlementAsset = valueDes;
           break;
         case r'symbol':
@@ -562,21 +562,5 @@ class LegacyBstockOrderPreviewNetworkEnum extends EnumClass {
 
   static BuiltSet<LegacyBstockOrderPreviewNetworkEnum> get values => _$legacyBstockOrderPreviewNetworkEnumValues;
   static LegacyBstockOrderPreviewNetworkEnum valueOf(String name) => _$legacyBstockOrderPreviewNetworkEnumValueOf(name);
-}
-
-@Deprecated('LegacyBstockOrderPreviewSettlementAssetEnum has been deprecated')
-class LegacyBstockOrderPreviewSettlementAssetEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'USDC')
-  static const LegacyBstockOrderPreviewSettlementAssetEnum USDC = _$legacyBstockOrderPreviewSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
-
-  static Serializer<LegacyBstockOrderPreviewSettlementAssetEnum> get serializer => _$legacyBstockOrderPreviewSettlementAssetEnumSerializer;
-
-  const LegacyBstockOrderPreviewSettlementAssetEnum._(String name): super(name);
-
-  static BuiltSet<LegacyBstockOrderPreviewSettlementAssetEnum> get values => _$legacyBstockOrderPreviewSettlementAssetEnumValues;
-  static LegacyBstockOrderPreviewSettlementAssetEnum valueOf(String name) => _$legacyBstockOrderPreviewSettlementAssetEnumValueOf(name);
 }
 
