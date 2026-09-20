@@ -215,7 +215,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       symbol: symbol,
       productId: productId,
       statusGroup: statusGroup,
-      kind: kind == MarketProductKind.perp ? api.ProductKind.perp : null,
+      kind: switch (kind) {
+        MarketProductKind.bstock => api.ProductKind.bstock,
+        MarketProductKind.perp => api.ProductKind.perp,
+        null => null,
+      },
     );
     return DomainPage(
       items: page.items.map(_result).toList(),
@@ -326,7 +330,8 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       resource: order,
       capability:
           order.status == TradingOrderStatus.pendingSignature &&
-              order.kind != MarketProductKind.perp
+              order.kind != MarketProductKind.perp &&
+              order.nextAction == null
           ? UnsupportedCapability.orderSignature(resourceId: order.orderId)
           : null,
     );
@@ -348,6 +353,13 @@ final class OrdersRepositoryImpl implements OrdersRepository {
 }
 
 TradingOrder mapOrder(api.Order value) => TradingOrder(
+  nextAction: _bstocksAction(value.nextAction),
+  walletActionBlocker: value.walletActionBlocker?.name,
+  actionStatus: value.actionStatus == null
+      ? null
+      : _bstocksActionStatus(value.actionStatus!),
+  submittedTransactionHash: value.submittedTransactionHash,
+  confirmedTransactionHash: value.confirmedTransactionHash,
   productId: value.productId,
   conditional: value.conditional == null
       ? null
@@ -397,6 +409,74 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
   createdAt: value.createdAt.toUtc(),
   updatedAt: value.updatedAt?.toUtc(),
 );
+
+BstocksOrderAction? _bstocksAction(dynamic raw) {
+  if (raw == null) return null;
+  final value = raw.value;
+  if (value is! Map) throw const FormatException('Invalid bStocks action');
+
+  // `gas_payment` is not needed to construct or submit the frozen wallet
+  // transaction. The staging API currently returns it with a null decision,
+  // while the generated contract model declares that field as non-nullable.
+  // Parse only the authoritative transaction fields here so an unrelated gas
+  // quote cannot block approve/swap execution.
+  Object? field(String name) => value[name];
+  String stringField(String name) {
+    final fieldValue = field(name);
+    if (fieldValue is! String || fieldValue.isEmpty) {
+      throw FormatException('Invalid bStocks action field: $name');
+    }
+    return fieldValue;
+  }
+
+  final kind = switch (stringField('kind')) {
+    'erc20_approval' => BstocksOrderActionKind.erc20Approval,
+    'spot_swap' => BstocksOrderActionKind.spotSwap,
+    _ => BstocksOrderActionKind.unknown,
+  };
+  final chainId = field('chain_id');
+  final parsedChainId = chainId is int
+      ? chainId
+      : int.tryParse(chainId.toString());
+  if (parsedChainId == null || !const {56, 97, 31337}.contains(parsedChainId)) {
+    throw const FormatException('Unsupported bStocks action chain');
+  }
+  final valueHex = stringField('value');
+  if (valueHex != '0x0') {
+    throw const FormatException('Unsupported bStocks action value');
+  }
+  final validUntil = DateTime.tryParse(stringField('valid_until'));
+  if (validUntil == null) {
+    throw const FormatException('Invalid bStocks action expiry');
+  }
+  return BstocksOrderAction(
+    orderId: stringField('order_id'),
+    stepId: stringField('step_id'),
+    ordinal: field('ordinal') is int
+        ? field('ordinal') as int
+        : int.parse(field('ordinal').toString()),
+    kind: kind,
+    chainId: parsedChainId,
+    from: stringField('from'),
+    to: stringField('to'),
+    data: stringField('data'),
+    value: valueHex,
+    payloadHash: stringField('payload_hash'),
+    validUntil: validUntil.toUtc(),
+  );
+}
+
+BstocksOrderActionStatus _bstocksActionStatus(api.BstocksActionStatus value) =>
+    switch (value) {
+      api.BstocksActionStatus.awaitingSignature =>
+        BstocksOrderActionStatus.awaitingSignature,
+      api.BstocksActionStatus.submitted => BstocksOrderActionStatus.submitted,
+      api.BstocksActionStatus.confirmed => BstocksOrderActionStatus.confirmed,
+      api.BstocksActionStatus.failed => BstocksOrderActionStatus.failed,
+      api.BstocksActionStatus.manualReview =>
+        BstocksOrderActionStatus.manualReview,
+      _ => BstocksOrderActionStatus.unknown,
+    };
 
 TradingOrderStatus _status(api.OrderStatus value) => switch (value) {
   api.OrderStatus.pendingSignature => TradingOrderStatus.pendingSignature,

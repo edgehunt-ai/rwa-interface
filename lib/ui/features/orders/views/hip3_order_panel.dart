@@ -62,6 +62,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _reduceOnly = false;
   var _showTpSl = false;
   var _percentage = 0.0;
+  var _percentageWaitingForBalance = false;
+  var _percentageSyncScheduled = false;
   var _submitting = false;
   String? _error;
   OrderPreview? _preview;
@@ -320,6 +322,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   void _onAmountChanged() {
+    // A typed amount takes precedence over a slider value selected while the
+    // asynchronous balance was still loading.
+    _percentageWaitingForBalance = false;
     _scheduleQuote();
     if (_error != null && mounted) setState(() => _error = null);
   }
@@ -343,6 +348,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       ref.read(hip3OrderAvailableBalanceProvider).value,
     );
     if (bounds == null) return;
+
+    if (_percentageWaitingForBalance) {
+      final input = bounds.$1 + (bounds.$2 - bounds.$1) * _percentage;
+      _percentageWaitingForBalance = false;
+      _amount.text = input.toString();
+      return;
+    }
+
     final amount = double.tryParse(_amount.text.trim());
     final next = amount == null || amount <= bounds.$1 || bounds.$2 <= bounds.$1
         ? 0.0
@@ -350,6 +363,19 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     if ((next - _percentage).abs() > 0.001 && mounted) {
       setState(() => _percentage = next);
     }
+  }
+
+  void _schedulePendingPercentageSync(DecimalValue? balance) {
+    if (!_percentageWaitingForBalance ||
+        _percentageSyncScheduled ||
+        _amountBounds(balance) == null) {
+      return;
+    }
+    _percentageSyncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _percentageSyncScheduled = false;
+      if (mounted) _syncPercentageFromAmount();
+    });
   }
 
   /// Checks the composed order against the server's product rules so an
@@ -381,9 +407,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   Future<void> _review() async {
-    final generation = ref.read(sessionGenerationProvider);
+    final generation = ref.read(sessionGenerationProvider).value;
     bool isCurrent() =>
-        mounted && ref.read(sessionGenerationProvider) == generation;
+        mounted && ref.read(sessionGenerationProvider).value == generation;
     if (_contextLoading) {
       await _loadContext();
       if (!mounted || !isCurrent()) return;
@@ -579,6 +605,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<DecimalValue>>(hip3OrderAvailableBalanceProvider, (
+      previous,
+      next,
+    ) {
+      if (!next.hasValue || !_percentageWaitingForBalance) return;
+      _schedulePendingPercentageSync(next.value);
+    });
     ref.listen(sessionGenerationProvider, (previous, next) {
       if (previous == next) return;
       _quoteDebounce?.cancel();
@@ -592,6 +625,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _pendingOrderId = null;
         _error = null;
         _submitting = false;
+        _percentage = 0;
+        _percentageWaitingForBalance = false;
+        _percentageSyncScheduled = false;
         _amount.clear();
         _limitPrice.clear();
         _showTpSl = false;
@@ -617,6 +653,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final amount = _amount.text.trim();
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
     final availableBalance = ref.watch(hip3OrderAvailableBalanceProvider);
+    _schedulePendingPercentageSync(availableBalance.value);
     final formError = _amountError() ?? _error;
     return Material(
       color: colors.surface,
@@ -733,7 +770,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     // slider works before an amount has been typed.
                     final balance = availableBalance.value;
                     if (balance == null) {
-                      setState(() => _percentage = value);
+                      setState(() {
+                        _percentage = value;
+                        _percentageWaitingForBalance = true;
+                      });
                       return;
                     }
                     final bounds = _amountBounds(balance);
@@ -1584,11 +1624,9 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                   ),
                 ),
                 _Hip3AmountRail(
-                  value:
-                      amountBounds == null ||
-                          amountBounds!.$2 <= amountBounds!.$1
-                      ? 0
-                      : percentage,
+                  // Keep the user's selection visible while balance/rules are
+                  // loading. The callback applies it once bounds are ready.
+                  value: percentage.clamp(0.0, 1.0),
                   onChanged: onPercentageChanged,
                 ),
               ],

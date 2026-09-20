@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/application_state.dart';
@@ -29,10 +30,12 @@ import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_unified_account_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
@@ -144,6 +147,48 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
   Future<void> _openOrderPanel(TradingSide side) async {
     if (!await requireAuthentication(context, ref)) return;
+    if (!mounted) return;
+
+    if (productKind == MarketProductKind.perp) {
+      try {
+        final status = await ref
+            .read(hip3AccountAbstractionRepositoryProvider)
+            .getStatus();
+        if (!mounted) return;
+        if (!status.isUnifiedAccount) {
+          if (!status.switchAvailable) {
+            AppToast.showFailure(
+              context,
+              'Unified Account is unavailable for this account.',
+            );
+            return;
+          }
+          final converted = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            isDismissible: false,
+            enableDrag: false,
+            backgroundColor: Colors.transparent,
+            barrierColor: const Color(0xB3000000),
+            builder: (_) => Hip3UnifiedAccountSheet(
+              onConfirm: () => ref
+                  .read(hip3AccountAbstractionCommandProvider)
+                  .convertToUnifiedAccount(),
+            ),
+          );
+          if (converted != true || !mounted) return;
+        }
+      } on Object {
+        if (mounted) {
+          AppToast.showFailure(
+            context,
+            'Unable to verify Unified Account. Try again.',
+          );
+        }
+        return;
+      }
+    }
+
     if (!mounted) return;
     setState(() => _orderPanelOpen = true);
     await showModalBottomSheet<void>(

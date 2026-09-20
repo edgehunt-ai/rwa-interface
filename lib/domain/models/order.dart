@@ -15,6 +15,61 @@ enum TradingOrderStatus {
   unknown,
 }
 
+enum BstocksOrderActionKind { erc20Approval, spotSwap, unknown }
+
+final class BstocksOrderAction {
+  const BstocksOrderAction({
+    required this.orderId,
+    required this.stepId,
+    required this.ordinal,
+    required this.kind,
+    required this.chainId,
+    required this.from,
+    required this.to,
+    required this.data,
+    required this.value,
+    required this.payloadHash,
+    required this.validUntil,
+  });
+
+  final String orderId;
+  final String stepId;
+  final int ordinal;
+  final BstocksOrderActionKind kind;
+  final int chainId;
+  final String from;
+  final String to;
+  final String data;
+  final String value;
+  final String payloadHash;
+  final DateTime validUntil;
+}
+
+enum BstocksOrderActionStatus {
+  awaitingSignature,
+  submitted,
+  confirmed,
+  failed,
+  manualReview,
+  unknown,
+}
+
+final class BstocksWalletActionSubmission {
+  const BstocksWalletActionSubmission({
+    required this.orderId,
+    required this.actionId,
+    required this.status,
+    required this.transactionHash,
+    required this.updatedAt,
+  });
+
+  final String orderId;
+  final String actionId;
+  final String status;
+  final String transactionHash;
+  final DateTime updatedAt;
+}
+
 final class ConditionalOrder {
   const ConditionalOrder({
     required this.role,
@@ -62,6 +117,11 @@ final class TradingOrder {
     this.txHash,
     this.failureReason,
     this.updatedAt,
+    this.nextAction,
+    this.walletActionBlocker,
+    this.actionStatus,
+    this.submittedTransactionHash,
+    this.confirmedTransactionHash,
   });
   final String orderId;
   final String? productId;
@@ -83,6 +143,11 @@ final class TradingOrder {
   final String? failureReason;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final BstocksOrderAction? nextAction;
+  final String? walletActionBlocker;
+  final BstocksOrderActionStatus? actionStatus;
+  final String? submittedTransactionHash;
+  final String? confirmedTransactionHash;
 
   bool get isTerminal => const {
     TradingOrderStatus.filled,

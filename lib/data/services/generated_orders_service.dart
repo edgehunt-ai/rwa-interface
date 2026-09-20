@@ -63,6 +63,24 @@ final class GeneratedOrdersService implements OrdersService {
             _api.cancelOrder(orderId: orderId, idempotencyKey: idempotencyKey),
       );
 
+  @override
+  Future<BstocksWalletActionSubmission> submitBstocksWalletAction({
+    required String orderId,
+    required String stepId,
+    required String transactionHash,
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.submitBstocksWalletAction(
+      orderId: orderId,
+      stepId: stepId,
+      idempotencyKey: idempotencyKey,
+      bstocksWalletActionSubmissionRequest:
+          BstocksWalletActionSubmissionRequest(
+            (request) => request.txHash = transactionHash,
+          ),
+    ),
+  );
+
   Future<T> _body<T>(Future<Response<T>> Function() request) async {
     try {
       final data = (await request()).data;

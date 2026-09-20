@@ -34,6 +34,8 @@ import 'package:rwa_interface/domain/models/funding_transfer.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 
 import 'package:rwa_interface/domain/models/hip3_opening_context.dart';
+import 'package:rwa_interface/domain/models/hip3_account_abstraction.dart';
+import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
 import 'package:rwa_interface/domain/repositories/hip3_opening_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
@@ -74,6 +76,80 @@ void main() {
     await tester.pump();
     expect(find.text(r'Long NVDA · $2'), findsOneWidget);
   });
+
+  testWidgets(
+    'slider selection is preserved while the available balance loads',
+    (tester) async {
+      final balance = Completer<DecimalValue>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            hip3OrderAvailableBalanceProvider.overrideWith(
+              (ref) => balance.future,
+            ),
+          ],
+          child: _app(const Hip3OrderPanel()),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final sliderFinder = find.byType(Slider);
+      expect(sliderFinder, findsOneWidget);
+      await tester.drag(sliderFinder, const Offset(80, 0));
+      await tester.pump();
+      final selectedBeforeBalance = tester.widget<Slider>(sliderFinder).value;
+      expect(selectedBeforeBalance, greaterThan(0));
+
+      balance.complete(DecimalValue('1000', asset: 'USD', unit: 'fiat'));
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 350));
+
+      final selectedAfterBalance = tester.widget<Slider>(sliderFinder).value;
+      expect(selectedAfterBalance, closeTo(selectedBeforeBalance, 0.01));
+      expect(find.text('0.0'), findsNothing);
+      expect(find.byType(TextField).first, findsOneWidget);
+      expect(
+        (tester
+            .widget<TextField>(find.byType(TextField).first)
+            .controller
+            ?.text),
+        isNotEmpty,
+      );
+    },
+  );
+
+  testWidgets(
+    'slider selection is applied when balance arrives before trading rules',
+    (tester) async {
+      final balance = Completer<DecimalValue>();
+      final opening = _Opening();
+      final rules = Completer<Hip3OpeningContext>();
+      await tester.pumpWidget(
+        _app(
+          const Hip3OrderPanel(),
+          opening: _DelayedOpening(opening, rules.future),
+          availableBalance: balance.future,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.drag(find.byType(Slider), const Offset(80, 0));
+      await tester.pump();
+
+      balance.complete(DecimalValue('1000', asset: 'USD', unit: 'fiat'));
+      await tester.pump();
+      expect(
+        tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+        isEmpty,
+      );
+
+      rules.complete(opening._context('NVDA'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+        isNotEmpty,
+      );
+    },
+  );
 
   testWidgets(
     'an unreachable trading context explains itself on submit and is reported',
@@ -846,17 +922,23 @@ Widget _app(
   Hip3OpeningRepository? opening,
   ObservabilityReporter? observability,
   FundingRepository? funding,
+  Future<DecimalValue>? availableBalance,
 }) => ProviderScope(
   overrides: [
     fundingTransferCommandsProvider.overrideWith(
       (ref) => FundingTransferCommands(ref),
     ),
     fundingRepositoryProvider.overrideWithValue(funding ?? FundedRepository()),
+    hip3AccountAbstractionRepositoryProvider.overrideWithValue(
+      _UnifiedAccountRepository(),
+    ),
     if (observability != null)
       observabilityReporterProvider.overrideWithValue(observability),
     hip3OpeningRepositoryProvider.overrideWithValue(opening ?? _Opening()),
     hip3OrderAvailableBalanceProvider.overrideWith(
-      (ref) async => DecimalValue('1000', asset: 'USD', unit: 'fiat'),
+      (ref) =>
+          availableBalance ??
+          Future.value(DecimalValue('1000', asset: 'USD', unit: 'fiat')),
     ),
     hip3OpeningContextProvider.overrideWith(
       (ref, product) =>
@@ -865,6 +947,40 @@ Widget _app(
   ],
   child: buildTestApp(child),
 );
+
+final class _UnifiedAccountRepository
+    implements Hip3AccountAbstractionRepository {
+  _UnifiedAccountRepository({this.unified = true});
+
+  final bool unified;
+  int statusCalls = 0;
+  int conversionCalls = 0;
+
+  @override
+  Future<Hip3AccountAbstractionStatus> getStatus() async {
+    statusCalls++;
+    return Hip3AccountAbstractionStatus(
+      ownerAddress: '0x0000000000000000000000000000000000000001',
+      currentMode: unified
+          ? Hip3AccountAbstractionMode.unifiedAccount
+          : Hip3AccountAbstractionMode.defaultMode,
+      switchAvailable: !unified,
+    );
+  }
+
+  @override
+  Future<Hip3AccountAbstractionStatus> switchToUnifiedAccount({
+    required String prepareIdempotencyKey,
+    required String executeIdempotencyKey,
+  }) async {
+    conversionCalls++;
+    return const Hip3AccountAbstractionStatus(
+      ownerAddress: '0x0000000000000000000000000000000000000001',
+      currentMode: Hip3AccountAbstractionMode.unifiedAccount,
+      switchAvailable: false,
+    );
+  }
+}
 
 final class _RecordingReporter implements ObservabilityReporter {
   final List<String> operations = [];
@@ -945,6 +1061,29 @@ final class _Opening implements Hip3OpeningRepository {
     this.mode = mode;
     return context(productId);
   }
+}
+
+final class _DelayedOpening implements Hip3OpeningRepository {
+  _DelayedOpening(this.delegate, this.contextResult);
+
+  final _Opening delegate;
+  final Future<Hip3OpeningContext> contextResult;
+
+  @override
+  Future<Hip3OpeningContext> context(String productOrSymbol) => contextResult;
+
+  @override
+  Future<Hip3OpeningContext> setLeverage(
+    String productId,
+    int leverage,
+    TradingMarginMode mode, {
+    required String idempotencyKey,
+  }) => delegate.setLeverage(
+    productId,
+    leverage,
+    mode,
+    idempotencyKey: idempotencyKey,
+  );
 }
 
 final class _ExecutableHip3Orders implements OrdersRepository {

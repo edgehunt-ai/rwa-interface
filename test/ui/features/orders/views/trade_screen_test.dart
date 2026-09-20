@@ -9,6 +9,7 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/market_snapshot.dart';
+import 'package:rwa_interface/domain/models/hip3_account_abstraction.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
@@ -18,7 +19,9 @@ import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
+import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 
@@ -810,6 +813,9 @@ Widget _tradeWithMarkets({
 }) => ProviderScope(
   overrides: [
     authenticatedStateOverride,
+    hip3AccountAbstractionRepositoryProvider.overrideWithValue(
+      _UnifiedAccountRepository(),
+    ),
     if (positionsRepository != null)
       positionsRepositoryProvider.overrideWithValue(positionsRepository),
     marketProductLookupProvider((
@@ -839,6 +845,23 @@ Widget _tradeWithMarkets({
   ],
   child: buildTestApp(const TradeScreen(), locale: locale),
 );
+
+final class _UnifiedAccountRepository
+    implements Hip3AccountAbstractionRepository {
+  @override
+  Future<Hip3AccountAbstractionStatus> getStatus() async =>
+      const Hip3AccountAbstractionStatus(
+        ownerAddress: '0xowner',
+        currentMode: Hip3AccountAbstractionMode.unifiedAccount,
+        switchAvailable: false,
+      );
+
+  @override
+  Future<Hip3AccountAbstractionStatus> switchToUnifiedAccount({
+    required String prepareIdempotencyKey,
+    required String executeIdempotencyKey,
+  }) async => getStatus();
+}
 
 const _bstockProduct = MarketProductRef(
   symbol: 'NVDAB',

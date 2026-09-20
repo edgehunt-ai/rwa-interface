@@ -435,10 +435,14 @@ final class PrivyIdentityAuthGateway
       };
     } on IdentityFailure {
       rethrow;
-    } catch (_) {
-      throw const IdentityFailure(
+    } catch (error) {
+      final reason = error is PrivyException
+          ? _sanitizeDiagnosticMessage(error.message)
+          : _sanitizeDiagnosticMessage(error.toString());
+      throw IdentityFailure(
         AuthenticationFailureCode.provider,
         retryable: true,
+        reason: reason,
       );
     }
   }

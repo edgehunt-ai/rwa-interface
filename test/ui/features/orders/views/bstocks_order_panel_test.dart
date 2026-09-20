@@ -102,6 +102,34 @@ void main() {
     expect(tester.widget<Slider>(sliderFinder).value % 20, isNot(0));
   });
 
+  testWidgets(
+    'slider selection is applied after the balance finishes loading',
+    (tester) async {
+      final balance = Completer<DecimalValue>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bstocksOrderAvailableBalanceProvider.overrideWith(
+              (_) => balance.future,
+            ),
+          ],
+          child: buildTestApp(const BstocksOrderPanel()),
+        ),
+      );
+
+      final input = find.byType(TextField).first;
+      final slider = find.byKey(const Key('bstocks-percentage-slider'));
+      tester.widget<Slider>(slider).onChanged!(50);
+      await tester.pump();
+      expect(tester.widget<TextField>(input).controller!.text, isEmpty);
+
+      balance.complete(DecimalValue('456.78', asset: 'USD', unit: 'fiat'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(input).controller!.text, '228.39');
+      expect(tester.widget<Slider>(slider).value, 50);
+    },
+  );
+
   testWidgets('bStocks order form renders account balance and live quote', (
     tester,
   ) async {

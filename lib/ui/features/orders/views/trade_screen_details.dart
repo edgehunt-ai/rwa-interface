@@ -32,7 +32,7 @@ class _Details extends ConsumerWidget {
                     cursor: null,
                   )),
                 )
-              : ref.watch(ordersProvider(null))
+              : ref.watch(bstocksOrdersProvider(null))
         : null;
     final positionCount = positionState?.value?.items.length;
     final openCount = openState?.value?.items
@@ -118,7 +118,7 @@ class _Details extends ConsumerWidget {
           ),
         if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
-            orders: ref.watch(ordersProvider(null)),
+            orders: ref.watch(bstocksOrdersProvider(null)),
             kind: kind,
             symbol: symbol,
           ),
@@ -176,7 +176,7 @@ class _OpenOrdersTab extends ConsumerWidget {
         onRetry: () => ref.refresh(
           kind == MarketProductKind.perp
               ? hip3OrdersProvider(null).future
-              : ordersProvider(null).future,
+              : bstocksOrdersProvider(null).future,
         ),
       ),
       data: (page) {

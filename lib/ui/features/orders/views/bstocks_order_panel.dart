@@ -12,6 +12,9 @@ import 'package:rwa_interface/domain/models/funding_transfer.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/models/application_state.dart';
+import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
@@ -48,6 +51,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   late TradingSide side;
   var type = TradingOrderType.market;
   var percentage = 0.0;
+  var _percentageWaitingForAmount = false;
+  var _percentageSyncScheduled = false;
   var slippage = 0.12;
   OrderPreview? preview;
   OrderPreview? quotePreview;
@@ -77,6 +82,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   void _refreshAmount() {
+    _percentageWaitingForAmount = false;
     final available = double.tryParse(
       _availableAmount(
             side: side,
@@ -116,20 +122,50 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           '',
     );
     if (available == null) {
-      setState(() => percentage = value);
+      setState(() {
+        percentage = value;
+        _percentageWaitingForAmount = true;
+      });
       return;
     }
     if (available <= 0) {
-      setState(() => percentage = 0);
+      setState(() {
+        percentage = 0;
+        _percentageWaitingForAmount = false;
+      });
       return;
     }
 
     final nextAmount = available * value / 100;
     final nextText = _formatInputAmount(nextAmount);
+    _percentageWaitingForAmount = false;
     amount.value = TextEditingValue(
       text: nextText,
       selection: TextSelection.collapsed(offset: nextText.length),
     );
+  }
+
+  void _schedulePendingPercentageSync({
+    required DecimalValue? availableBalance,
+    required List<HoldingGroup>? holdings,
+  }) {
+    if (!_percentageWaitingForAmount || _percentageSyncScheduled) return;
+    final available = double.tryParse(
+      _availableAmount(
+            side: side,
+            symbol: widget.symbol,
+            availableBalance: availableBalance,
+            holdings: holdings,
+          )?.value ??
+          '',
+    );
+    if (available == null || available <= 0) return;
+    _percentageSyncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _percentageSyncScheduled = false;
+      if (!mounted || !_percentageWaitingForAmount) return;
+      _updateAmountFromPercentage(percentage, availableBalance, holdings);
+    });
   }
 
   void _scheduleQuote() {
@@ -427,7 +463,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     setState(() {
       reviewing = false;
       if (result == null) {
-        error = AppLocalizations.of(context).orderSubmissionFailed;
+        final state = ref.read(orderCommandProvider);
+        final failure =
+            state is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>
+            ? state.failure
+            : const CompatibilityFailure();
+        error = apiFailureMessage(
+          failure,
+          fallback: AppLocalizations.of(context).orderSubmissionFailed,
+        );
       } else {
         submittedOrder = result.resource;
       }
@@ -477,6 +521,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
     final availableBalance = ref.watch(bstocksOrderAvailableBalanceProvider);
     final holdings = ref.watch(holdingsProvider(null));
+    _schedulePendingPercentageSync(
+      availableBalance: availableBalance.value,
+      holdings: holdings.value?.items,
+    );
     final availableAmount = _availableAmount(
       side: side,
       symbol: widget.symbol,
@@ -547,6 +595,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     value == TradingSide.buy ? l10n.buy : l10n.sell,
                 onChanged: (value) {
                   setState(() => side = value);
+                  _percentageWaitingForAmount = false;
                   amount.clear();
                   _scheduleQuote();
                 },

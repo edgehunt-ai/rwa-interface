@@ -30,6 +30,14 @@ final ordersProvider = FutureProvider.autoDispose
       return ref.watch(ordersRepositoryProvider).list(cursor: cursor);
     });
 
+final bstocksOrdersProvider = FutureProvider.autoDispose
+    .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
+      ref.watch(sessionGenerationProvider);
+      return ref
+          .watch(ordersRepositoryProvider)
+          .list(cursor: cursor, kind: MarketProductKind.bstock);
+    });
+
 final hip3OrdersProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
       ref.watch(sessionGenerationProvider);
@@ -185,9 +193,11 @@ final class OrderCommandNotifier
       intent,
       key,
     );
-    final request = ref
-        .read(ordersRepositoryProvider)
-        .create(intent, idempotencyKey: key, previewId: previewId);
+    final request = _submitOrder(
+      intent,
+      idempotencyKey: key,
+      previewId: previewId,
+    );
     _inFlight = request;
     ref
         .read(observabilityReporterProvider)
@@ -201,6 +211,7 @@ final class OrderCommandNotifier
         result: result,
       );
       ref.invalidate(ordersProvider);
+      ref.invalidate(bstocksOrdersProvider);
       ref.invalidate(hip3OrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
       ref
@@ -222,9 +233,51 @@ final class OrderCommandNotifier
         failure: failure,
       );
       return null;
+    } on FormatException catch (error) {
+      // Keep malformed server payloads from escaping the command notifier and
+      // leaving the order sheet permanently in its submitting state.
+      final failure = CompatibilityFailure(
+        userAction: '订单响应解析失败: ${error.message}',
+      );
+      if (!isCurrent()) return null;
+      state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
+        intent: intent,
+        idempotencyKey: key,
+        failure: failure,
+      );
+      return null;
     } finally {
       if (isCurrent() && identical(_inFlight, request)) _inFlight = null;
     }
+  }
+
+  Future<ResourceResult<TradingOrder>> _submitOrder(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) async {
+    final created = await ref
+        .read(ordersRepositoryProvider)
+        .create(intent, idempotencyKey: idempotencyKey, previewId: previewId);
+    // The API may create the order before releasing its first frozen wallet
+    // action. In that state `next_action` is temporarily null and the Web
+    // client keeps polling. Only skip the executor for terminal/review orders
+    // or clearly unrelated legacy/app-review results.
+    final order = created.resource;
+    final shouldExecuteBstocks =
+        intent.kind == MarketProductKind.bstock &&
+        !order.isTerminal &&
+        order.status != TradingOrderStatus.manualReview &&
+        (order.nextAction != null ||
+            order.status == TradingOrderStatus.pendingSignature ||
+            order.actionStatus != null ||
+            order.walletActionBlocker == 'action_not_ready');
+    if (!shouldExecuteBstocks) {
+      return created;
+    }
+    return ref
+        .read(bstocksOrderExecutionRepositoryProvider)
+        .execute(intent: intent, created: created);
   }
 
   Future<void> cancel(TradingOrder order) async {
@@ -249,6 +302,7 @@ final class OrderCommandNotifier
                 .read(ordersRepositoryProvider)
                 .cancel(order.orderId, idempotencyKey: key);
       ref.invalidate(ordersProvider);
+      ref.invalidate(bstocksOrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
       ref
           .read(observabilityReporterProvider)

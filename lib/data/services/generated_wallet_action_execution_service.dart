@@ -13,12 +13,33 @@ final class GeneratedWalletActionExecutionService
   GeneratedWalletActionExecutionService(
     this._funding,
     this._wallets, {
+    this._orders,
     this._mapper = const ApiFailureMapper(),
   });
 
   final api.FundingApi _funding;
   final api.WalletsApi _wallets;
+  final api.OrdersApi? _orders;
   final ApiFailureMapper _mapper;
+
+  @override
+  Future<api.WalletActionExecution> createOrderExecution(
+    String orderId,
+    String stepId,
+    api.WalletActionExecutionCreateRequest request, {
+    required String idempotencyKey,
+  }) {
+    final orders = _orders;
+    if (orders == null) throw StateError('Orders API is not configured');
+    return _body(
+      () => orders.createOrderWalletActionExecution(
+        orderId: orderId,
+        stepId: stepId,
+        idempotencyKey: idempotencyKey,
+        walletActionExecutionCreateRequest: request,
+      ),
+    );
+  }
 
   @override
   Future<api.WalletActionExecution> createSelfCustodialWithdrawalExecution(

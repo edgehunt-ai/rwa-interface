@@ -6,10 +6,14 @@ import '../../data/api/rwa_api_data_source.dart';
 import '../../data/repositories/markets_repository_impl.dart';
 import '../../data/repositories/market_hours_repository_impl.dart';
 import '../../data/repositories/hip3_opening_repository_impl.dart';
+import '../../data/repositories/hip3_account_abstraction_repository_impl.dart';
+import '../../domain/repositories/hip3_account_abstraction_repository.dart';
 import '../../domain/repositories/hip3_opening_repository.dart';
 import '../../data/repositories/hip3_order_execution_repository_impl.dart';
 import '../../data/repositories/funding_repository_impl.dart';
 import '../../data/repositories/orders_repository_impl.dart';
+import '../../data/repositories/bstocks_order_execution_repository_impl.dart';
+import '../../data/repositories/bstocks_order_action_repository_impl.dart';
 import '../../data/repositories/portfolio_repository_impl.dart';
 import '../../data/repositories/positions_repository_impl.dart';
 import '../../data/repositories/account_repository_impl.dart';
@@ -31,6 +35,7 @@ import '../../data/services/generated_positions_service.dart';
 import '../../data/services/generated_session_service.dart';
 import '../../data/services/generated_wallets_service.dart';
 import '../../data/services/hip3_order_action_service.dart';
+import '../../data/services/hip3_account_abstraction_service.dart';
 import '../../data/services/dio_realtime_service.dart';
 import '../../data/services/generated_system_service.dart';
 import '../../data/services/package_info_service.dart';
@@ -41,6 +46,7 @@ import '../../domain/repositories/market_hours_repository.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../../domain/repositories/orders_repository.dart';
+import '../../domain/repositories/bstocks_order_execution_repository.dart';
 import '../../domain/repositories/portfolio_repository.dart';
 import '../../domain/repositories/positions_repository.dart';
 import '../../domain/repositories/account_repository.dart';
@@ -50,6 +56,7 @@ import '../../domain/repositories/wallets_repository.dart';
 import '../../domain/repositories/realtime_repository.dart';
 import '../../domain/repositories/trade_intent_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
+import '../../domain/services/embedded_wallet_transaction_sender.dart';
 import '../../domain/services/wallet_authorization_signer.dart';
 import '../../domain/repositories/wallet_action_execution_repository.dart';
 import '../../data/repositories/wallet_action_execution_repository_impl.dart';
@@ -151,6 +158,24 @@ final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
     GeneratedOrdersService(source.client.getOrdersApi()),
   );
 });
+
+final bstocksOrderExecutionRepositoryProvider =
+    Provider<BstocksOrderExecutionRepository>((ref) {
+      final gateway = ref.watch(identityAuthGatewayProvider);
+      return BstocksOrderExecutionRepositoryImpl(
+        ref.watch(ordersRepositoryProvider),
+        BstocksOrderActionRepositoryImpl(
+          GeneratedOrdersService(
+            ref.watch(apiDataSourceProvider).client.getOrdersApi(),
+          ),
+        ),
+        gateway is EmbeddedWalletTransactionSender
+            ? gateway as EmbeddedWalletTransactionSender
+            : null,
+        sponsoredExecutions: ref.watch(walletActionExecutionRepositoryProvider),
+        authorizationSigner: ref.watch(walletAuthorizationSignerProvider),
+      );
+    });
 final tradeIntentRepositoryProvider = Provider<TradeIntentRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
     return AppReviewTradeIntentRepository(ref.watch(appReviewStoreProvider));
@@ -185,6 +210,7 @@ final walletActionExecutionRepositoryProvider =
         GeneratedWalletActionExecutionService(
           source.client.getFundingApi(),
           source.client.getWalletsApi(),
+          orders: source.client.getOrdersApi(),
         ),
       );
     });
@@ -219,6 +245,16 @@ final hip3OpeningRepositoryProvider = Provider<Hip3OpeningRepository>((ref) {
     (summary) => ref.read(hip3ConfirmationProvider.notifier).request(summary),
   );
 });
+
+final hip3AccountAbstractionRepositoryProvider =
+    Provider<Hip3AccountAbstractionRepository>((ref) {
+      ref.watch(sessionGenerationProvider);
+      final source = ref.watch(apiDataSourceProvider);
+      return Hip3AccountAbstractionRepositoryImpl(
+        GeneratedHip3AccountAbstractionService(source.client.getOrdersApi()),
+        ref.watch(hip3TypedDataSignerProvider),
+      );
+    });
 
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {

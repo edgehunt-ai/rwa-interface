@@ -13,6 +13,27 @@ final class WalletActionExecutionRepositoryImpl
   final WalletActionExecutionService _service;
 
   @override
+  Future<WalletActionExecution> createOrderWalletActionExecution({
+    required String orderId,
+    required String stepId,
+    required GasPaymentMode mode,
+    required String idempotencyKey,
+  }) async => _execution(
+    await _service.createOrderExecution(
+      orderId,
+      stepId,
+      api.WalletActionExecutionCreateRequest(
+        (request) => request
+          ..mode = switch (mode) {
+            GasPaymentMode.appSponsored => api.GasPaymentMode.appSponsored,
+            GasPaymentMode.userPaidNative => api.GasPaymentMode.userPaidNative,
+          },
+      ),
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  @override
   Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
     required String withdrawalId,
     required GasPaymentMode mode,

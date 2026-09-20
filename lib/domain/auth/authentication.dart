@@ -15,11 +15,17 @@ enum AuthenticationFailureCode {
 }
 
 final class IdentityFailure implements Exception {
-  const IdentityFailure(this.code, {required this.retryable, this.requestId});
+  const IdentityFailure(
+    this.code, {
+    required this.retryable,
+    this.requestId,
+    this.reason,
+  });
 
   final AuthenticationFailureCode code;
   final bool retryable;
   final String? requestId;
+  final String? reason;
 }
 
 final class IdentityConfiguration {

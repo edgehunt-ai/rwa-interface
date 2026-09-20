@@ -4,6 +4,13 @@ import '../models/wallet_action_execution.dart';
 /// mode. Clients choose only the mode; every transaction, provider and binding
 /// field stays server-owned.
 abstract interface class WalletActionExecutionRepository {
+  Future<WalletActionExecution> createOrderWalletActionExecution({
+    required String orderId,
+    required String stepId,
+    required GasPaymentMode mode,
+    required String idempotencyKey,
+  });
+
   Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
     required String withdrawalId,
     required GasPaymentMode mode,

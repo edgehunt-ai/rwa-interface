@@ -39,6 +39,21 @@ sealed class ApiFailure implements Exception {
   int get hashCode => Object.hash(runtimeType, Object.hashAll(_properties));
 }
 
+String apiFailureMessage(ApiFailure failure, {required String fallback}) {
+  if (failure is ServerFailure) {
+    final detail = failure.details.entries
+        .map((entry) => '${entry.key}: ${entry.value}')
+        .join(', ');
+    final suffix = detail.isEmpty ? '' : ' ($detail)';
+    return 'HTTP ${failure.statusCode} ${failure.code}$suffix';
+  }
+  if (failure.userAction case final action?
+      when action.trim().isNotEmpty && action != 'reauthenticate') {
+    return action;
+  }
+  return '${failure.kind.name}: $fallback';
+}
+
 final class ServerFailure extends ApiFailure {
   const ServerFailure({
     required this.statusCode,
@@ -104,13 +119,13 @@ final class DecodingFailure extends ApiFailure {
 }
 
 final class CompatibilityFailure extends ApiFailure {
-  const CompatibilityFailure({super.requestId});
+  const CompatibilityFailure({super.requestId, super.userAction});
   @override
   FailureKind get kind => FailureKind.compatibility;
 }
 
 final class UnknownFailure extends ApiFailure {
-  const UnknownFailure({super.requestId});
+  const UnknownFailure({super.requestId, super.retryable, super.userAction});
   @override
   FailureKind get kind => FailureKind.unknown;
 }
