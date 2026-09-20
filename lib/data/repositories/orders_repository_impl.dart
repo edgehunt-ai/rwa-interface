@@ -28,25 +28,39 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     );
     final value = wire.oneOf.value;
     final common = value as api.OrderPreviewCommon;
+    final settlementAsset = switch (value) {
+      api.BstockOrderPreview(:final settlementAsset) => settlementAsset,
+      api.PerpOrderPreview(:final settlementAsset) => settlementAsset,
+      _ => null,
+    };
     final preview = OrderPreview(
       previewId: common.previewId,
       intent: intent,
-      orderValue: _value(common.orderValue, 'notional'),
-      marketPrice: _optional(common.marketPrice, 'price'),
-      estimatedPrice: _optional(common.estimatedPrice, 'price'),
-      estimatedQuantity: _optional(common.estimatedQuantity, 'quantity'),
+      orderValue: _value(common.orderValue, 'notional', asset: settlementAsset),
+      marketPrice: _optional(common.marketPrice, 'price', asset: 'USD'),
+      estimatedPrice: _optional(common.estimatedPrice, 'price', asset: 'USD'),
+      estimatedQuantity: _optional(
+        common.estimatedQuantity,
+        'quantity',
+        asset: intent.symbol,
+      ),
       estimatedReceive: _optional(
         common.estimatedReceive,
-        common.estimatedReceiveUnit ?? 'quantity',
+        'quantity',
+        asset: common.estimatedReceiveUnit ?? intent.symbol,
       ),
-      fee: _optional(common.fee, 'fee'),
-      marginRequired: _optional(common.marginRequired, 'margin'),
-      liquidationPrice: _optional(common.liquidationPrice, 'price'),
-      settlementAsset: switch (value) {
-        api.BstockOrderPreview(:final settlementAsset) => settlementAsset,
-        api.PerpOrderPreview(:final settlementAsset) => settlementAsset,
-        _ => null,
-      },
+      fee: _optional(common.fee, 'fee', asset: settlementAsset),
+      marginRequired: _optional(
+        common.marginRequired,
+        'margin',
+        asset: settlementAsset,
+      ),
+      liquidationPrice: _optional(
+        common.liquidationPrice,
+        'price',
+        asset: 'USD',
+      ),
+      settlementAsset: settlementAsset,
       priceUpdated: common.priceUpdated ?? false,
       expiresAt: common.quoteExpiresAt?.toUtc(),
       hip3Execution: common.hip3Execution == null
@@ -363,10 +377,10 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     TradingMarginMode.cross => api.MarginMode.cross,
     null => null,
   };
-  DecimalValue _value(String value, String unit) =>
-      DecimalValue(value, asset: 'USDC', unit: unit);
-  DecimalValue? _optional(String? value, String unit) =>
-      value == null ? null : _value(value, unit);
+  DecimalValue _value(String value, String unit, {String? asset}) =>
+      DecimalValue(value, asset: asset, unit: unit);
+  DecimalValue? _optional(String? value, String unit, {String? asset}) =>
+      value == null ? null : _value(value, unit, asset: asset);
 }
 
 TradingOrder mapOrder(api.Order value) => TradingOrder(
