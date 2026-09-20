@@ -15,6 +15,7 @@ final class OrderPreview {
     this.marginRequired,
     this.liquidationPrice,
     this.settlementAsset,
+    this.settlementChain,
     this.priceUpdated = false,
     this.expiresAt,
     this.hip3Execution,
@@ -33,6 +34,7 @@ final class OrderPreview {
   final DecimalValue? marginRequired;
   final DecimalValue? liquidationPrice;
   final String? settlementAsset;
+  final String? settlementChain;
   final bool priceUpdated;
   final DateTime? expiresAt;
   final Hip3PreviewExecution? hip3Execution;

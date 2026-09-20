@@ -12,6 +12,8 @@ import '../../domain/models/resource_result.dart';
 import '../../domain/models/unsupported_capability.dart';
 import '../../domain/repositories/orders_repository.dart';
 import '../services/orders_service.dart';
+import '../mappers/order_preview_request_mapper.dart';
+import '../mappers/chain_name_mapper.dart';
 
 final class OrdersRepositoryImpl implements OrdersRepository {
   OrdersRepositoryImpl(this._service);
@@ -31,6 +33,13 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     final settlementAsset = switch (value) {
       api.BstockOrderPreview(:final settlementAsset) => settlementAsset,
       api.PerpOrderPreview(:final settlementAsset) => settlementAsset,
+      _ => null,
+    };
+    final settlementChain = switch (value) {
+      api.BstockOrderPreview(:final network) => canonicalSettlementChainName(
+        network: network.name,
+      ),
+      api.PerpOrderPreview(:final network) => canonicalChainName(network.name),
       _ => null,
     };
     final preview = OrderPreview(
@@ -61,6 +70,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
         asset: 'USD',
       ),
       settlementAsset: settlementAsset,
+      settlementChain: settlementChain,
       priceUpdated: common.priceUpdated ?? false,
       expiresAt: common.quoteExpiresAt?.toUtc(),
       hip3Execution: common.hip3Execution == null
@@ -227,53 +237,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
   );
 
   api.OrderPreviewRequest _previewRequest(OrderIntent intent) {
-    final value = intent.kind == MarketProductKind.bstock
-        ? api.BstockOrderPreviewRequest((builder) {
-            builder
-              ..symbol = intent.symbol
-              ..kind = api.BstockOrderPreviewRequestKindEnum.bstock
-              ..side = intent.side == TradingSide.buy
-                  ? api.BstockOrderPreviewRequestSideEnum.buy
-                  : api.BstockOrderPreviewRequestSideEnum.sell
-              ..type = _type(intent.type)
-              ..timeInForce = api.BstocksTimeInForce.ioc
-              ..amount = intent.amount?.value
-              ..quantity = intent.quantity?.value
-              ..limitPrice = intent.limitPrice?.value
-              ..slippagePercent = intent.slippage?.value;
-            _tpSl(builder.tpSl, intent.tpSl);
-          })
-        : api.PerpOrderPreviewRequest((builder) {
-            builder
-              ..symbol = intent.symbol
-              ..kind = api.PerpOrderPreviewRequestKindEnum.perp
-              ..side = intent.side == TradingSide.long
-                  ? api.PerpOrderPreviewRequestSideEnum.long
-                  : api.PerpOrderPreviewRequestSideEnum.short
-              ..type = _type(intent.type)
-              ..amount = intent.amount?.value
-              ..quantity = intent.quantity?.value
-              ..limitPrice = intent.limitPrice?.value
-              ..leverage = intent.leverage?.value
-              ..marginMode = _margin(intent.marginMode)
-              ..reduceOnly = intent.reduceOnly
-              ..slippagePercent = intent.slippage?.value;
-            if (intent.tpSl != null) {
-              throw ArgumentError('Use openingProtection for HIP3 orders');
-            }
-            builder.protection = _openingProtection(intent.openingProtection)
-                ?.toBuilder();
-          });
-    return api.OrderPreviewRequest(
-      (builder) => builder.oneOf = OneOfDynamic(
-        typeIndex: intent.kind == MarketProductKind.bstock ? 0 : 1,
-        types: const [
-          api.BstockOrderPreviewRequest,
-          api.PerpOrderPreviewRequest,
-        ],
-        value: value,
-      ),
-    );
+    return orderPreviewRequest(intent);
   }
 
   api.CreateOrderRequest _createRequest(OrderIntent intent, String? previewId) {

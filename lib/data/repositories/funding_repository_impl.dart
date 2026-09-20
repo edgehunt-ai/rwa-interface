@@ -15,11 +15,13 @@ import '../../domain/models/resource_result.dart';
 import '../../domain/models/withdrawal.dart';
 import '../../domain/models/deposit_observation.dart';
 import '../../domain/models/funding_session.dart';
+import '../../domain/models/order_intent.dart';
 import '../../domain/models/self_custodial_withdrawal.dart';
 import '../../domain/models/funding_catalog_summary.dart';
 import '../../domain/repositories/funding_repository.dart';
 import '../services/funding_service.dart';
 import '../mappers/chain_name_mapper.dart';
+import '../mappers/order_preview_request_mapper.dart';
 
 final class FundingRepositoryImpl implements FundingRepository {
   FundingRepositoryImpl(this._service);
@@ -99,6 +101,26 @@ final class FundingRepositoryImpl implements FundingRepository {
   @override
   Future<FundingSessionSummary> getFundingSession(String id) async {
     final value = await _service.getFundingSession(id);
+    return FundingSessionSummary(
+      sessionId: value.fundingSessionId,
+      status: value.status.name,
+      version: value.version,
+      canConfirmTransfer: value.canConfirmTransfer,
+      expiresAt: value.expiresAt.toUtc(),
+    );
+  }
+
+  @override
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  }) async {
+    final value = await _service.createFundingSession(
+      api.FundingSessionCreateRequest(
+        (request) => request.trade.replace(orderPreviewRequest(intent)),
+      ),
+      idempotencyKey: idempotencyKey,
+    );
     return FundingSessionSummary(
       sessionId: value.fundingSessionId,
       status: value.status.name,

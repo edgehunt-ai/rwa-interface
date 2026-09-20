@@ -40,10 +40,47 @@ final class DecimalValue {
     if (asset != other.asset || unit != other.unit) {
       throw ArgumentError('Cannot compare different decimal units');
     }
+    return compareMagnitudeTo(other);
+  }
+
+  /// Compares values for the same asset while ignoring presentation/semantic
+  /// units such as `token`, `notional`, or `fee`.
+  int compareMagnitudeTo(DecimalValue other) {
+    if (asset != other.asset) {
+      throw ArgumentError('Cannot compare different decimal assets');
+    }
     final commonScale = scale > other.scale ? scale : other.scale;
     final left = _scaledInteger(commonScale);
     final right = other._scaledInteger(commonScale);
     return left.compareTo(right);
+  }
+
+  DecimalValue plus(DecimalValue other) {
+    if (asset != other.asset || unit != other.unit) {
+      throw ArgumentError('Cannot add different decimal units');
+    }
+    return plusMagnitude(other);
+  }
+
+  /// Adds values for the same asset while ignoring semantic units.
+  DecimalValue plusMagnitude(DecimalValue other) {
+    if (asset != other.asset) {
+      throw ArgumentError('Cannot add different decimal assets');
+    }
+    final commonScale = scale > other.scale ? scale : other.scale;
+    final sum = _scaledInteger(commonScale) + other._scaledInteger(commonScale);
+    final negative = sum.isNegative;
+    final digits = sum.abs().toString().padLeft(commonScale + 1, '0');
+    final split = digits.length - commonScale;
+    final value = commonScale == 0
+        ? digits
+        : '${digits.substring(0, split)}.${digits.substring(split)}';
+    return DecimalValue(
+      '${negative ? '-' : ''}$value',
+      asset: asset,
+      unit: unit,
+      scale: commonScale,
+    );
   }
 
   BigInt _scaledInteger(int targetScale) {

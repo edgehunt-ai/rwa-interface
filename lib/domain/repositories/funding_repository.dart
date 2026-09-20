@@ -8,11 +8,16 @@ import '../models/deposit_observation.dart';
 import '../models/funding_session.dart';
 import '../models/self_custodial_withdrawal.dart';
 import '../models/funding_catalog_summary.dart';
+import '../models/order_intent.dart';
 
 abstract interface class FundingRepository {
   Future<DepositDirectory> getDepositDirectory();
   Future<UnifiedFundingAccountSummary> getUnifiedFundingAccount();
   Future<FundingSessionSummary> getFundingSession(String id);
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  });
   Future<FundingCatalogSummary> getFundingCatalog();
   Future<FundingPlan> createFundingPlan({
     required String tradePreviewId,

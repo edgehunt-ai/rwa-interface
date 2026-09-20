@@ -1067,6 +1067,21 @@ Hip3PreviewExecution _previewExecution(
 
 class _ShortfallFunding extends FundedRepository {
   @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) async {
+    previewIds.add(fundingSessionId);
+    return FundingPlan(
+      planId: 'hip3-plan',
+      tradePreviewId: fundingSessionId,
+      shortfall: DecimalValue('5'),
+      status: FundingPlanState.blocked,
+    );
+  }
+
+  @override
   Future<FundingPlan> createFundingPlan({
     required String tradePreviewId,
     required String idempotencyKey,

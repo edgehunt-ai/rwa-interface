@@ -868,6 +868,18 @@ final class AppReviewFundingRepository implements FundingRepository {
       );
 
   @override
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  }) async => FundingSessionSummary(
+    sessionId: 'review-session-${intent.fingerprint.hashCode}',
+    status: 'funded',
+    version: 1,
+    canConfirmTransfer: true,
+    expiresAt: _now.add(const Duration(hours: 24)),
+  );
+
+  @override
   Future<FundingCatalogSummary> getFundingCatalog() async =>
       FundingCatalogSummary(
         catalogVersion: 'review',

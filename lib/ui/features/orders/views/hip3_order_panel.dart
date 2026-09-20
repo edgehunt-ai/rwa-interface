@@ -8,6 +8,7 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
@@ -268,6 +269,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _quotePreview = null;
       }
     });
+    // Opening orders must establish funding readiness before requesting an
+    // immutable order quote. Reduce-only orders do not require funding.
+    if (!_reduceOnly) return;
     if (_context == null || intent == null) return;
     _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
       try {
@@ -380,7 +384,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final generation = ref.read(sessionGenerationProvider);
     bool isCurrent() =>
         mounted && ref.read(sessionGenerationProvider) == generation;
-    if (_contextLoading) return;
+    if (_contextLoading) {
+      await _loadContext();
+      if (!mounted || !isCurrent()) return;
+    }
     if (_context == null) {
       _reportUnavailableContext();
       return;
@@ -425,19 +432,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _error = null;
         _submitting = true;
       });
-      final cachedQuote = _quotePreview;
-      var preview =
-          cachedQuote?.intent.fingerprint == intent.fingerprint &&
-              cachedQuote?.isExpired == false
-          ? cachedQuote
-          : await ref.read(orderPreviewProvider(intent).future);
-      if (!isCurrent() || preview == null) return;
       // The funding API reads Hyperliquid Perps available margin, not the
       // aggregated balance used by the form's percentage selector.
       while (!intent.reduceOnly) {
         final plan = await ref
             .read(fundingTransferCommandsProvider)
-            .plan(tradePreviewId: preview!.previewId);
+            .session(intent: intent);
         if (!mounted || !isCurrent()) return;
         if (plan.status == FundingPlanState.alreadyFunded) break;
         final funded = await showModalBottomSheet<bool>(
@@ -448,14 +448,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
         );
         if (!isCurrent() || funded != true) return;
-        ref.invalidate(orderPreviewProvider(intent));
-        preview = await ref.read(orderPreviewProvider(intent).future);
-        if (!isCurrent()) return;
       }
+      final cachedQuote = _quotePreview;
+      final preview =
+          cachedQuote?.intent.fingerprint == intent.fingerprint &&
+              cachedQuote?.isExpired == false
+          ? cachedQuote
+          : await ref.read(orderPreviewProvider(intent).future);
+      if (!isCurrent() || preview == null) return;
       if (isCurrent()) {
         setState(() => _preview = preview);
         _previewExpiry?.cancel();
-        final expiry = preview?.expiresAt;
+        final expiry = preview.expiresAt;
         if (expiry != null && expiry.isAfter(DateTime.now().toUtc())) {
           _previewExpiry = Timer(expiry.difference(DateTime.now().toUtc()), () {
             if (isCurrent()) setState(() {});
@@ -468,6 +472,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           () => _error = AppLocalizations.of(context).enterValidOrderValues,
         );
       }
+    } on ApiFailure catch (failure) {
+      if (isCurrent()) {
+        setState(() => _error = _fundingFailureMessage(failure));
+      }
     } on Object {
       if (isCurrent()) {
         setState(
@@ -479,6 +487,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         setState(() => _submitting = false);
       }
     }
+  }
+
+  String _fundingFailureMessage(ApiFailure failure) {
+    if (failure case final ServerFailure server
+        when server.code == 'cross_chain_funding_services_unconfigured') {
+      return 'Funding service is not configured for this environment.';
+    }
+    return 'Funding preparation failed. Please try again.';
   }
 
   Future<void> _submit() async {
@@ -759,10 +775,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   width: double.infinity,
                   height: 48,
                   child: FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: actionColor),
-                    // Stays enabled without a context or against unsupported
-                    // rules: _review explains the reason instead of leaving a
-                    // dead grey button.
+                    style: FilledButton.styleFrom(
+                      backgroundColor: actionColor,
+                      disabledBackgroundColor: colors.subtleSurface,
+                      disabledForegroundColor: colors.tertiaryText,
+                    ),
                     onPressed:
                         _submitting || _contextLoading || formError != null
                         ? null

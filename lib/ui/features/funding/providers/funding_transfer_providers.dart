@@ -10,6 +10,7 @@ import '../../../../domain/models/funding_transfer.dart';
 import '../../../../domain/models/withdrawal.dart';
 import '../../../../domain/models/funding_session.dart';
 import '../../../../domain/models/funding_catalog_summary.dart';
+import '../../../../domain/models/order_intent.dart';
 
 final fundingCatalogProvider =
     FutureProvider.autoDispose<FundingCatalogSummary>(
@@ -57,6 +58,41 @@ final class FundingTransferCommands {
               tradePreviewId: tradePreviewId,
               idempotencyKey: key,
             ),
+      ),
+    );
+    _ref.invalidate(fundingPlanProvider(result.planId));
+    return result;
+  }
+
+  Future<FundingPlan> session({
+    required OrderIntent intent,
+  }) async {
+    final session = await _run(
+      operation: 'funding_session',
+      command: () => _commands.run(
+        operation: 'funding-session',
+        fingerprint: intent.fingerprint,
+        command: (key) => _ref.read(fundingRepositoryProvider).createFundingSession(
+          intent: intent,
+          idempotencyKey: key,
+        ),
+      ),
+    );
+    final plan = await planForSession(session);
+    return plan;
+  }
+
+  Future<FundingPlan> planForSession(FundingSessionSummary session) async {
+    final result = await _run(
+      operation: 'funding_plan',
+      command: () => _commands.run(
+        operation: 'funding-plan-session',
+        fingerprint: '${session.sessionId}|${session.version}',
+        command: (key) => _ref.read(fundingRepositoryProvider).createFundingSessionPlan(
+          fundingSessionId: session.sessionId,
+          selectionVersion: session.version,
+          idempotencyKey: key,
+        ),
       ),
     );
     _ref.invalidate(fundingPlanProvider(result.planId));
