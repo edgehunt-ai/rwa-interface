@@ -69,6 +69,8 @@ class _$Hip3Agent extends Hip3Agent {
   @override
   final String agentAddress;
   @override
+  final String agentName;
+  @override
   final Hip3AgentEnvironmentEnum environment;
   @override
   final Hip3AgentStatus status;
@@ -86,6 +88,7 @@ class _$Hip3Agent extends Hip3Agent {
       {required this.agentId,
       required this.ownerAddress,
       required this.agentAddress,
+      required this.agentName,
       required this.environment,
       required this.status,
       required this.validUntil,
@@ -106,6 +109,7 @@ class _$Hip3Agent extends Hip3Agent {
         agentId == other.agentId &&
         ownerAddress == other.ownerAddress &&
         agentAddress == other.agentAddress &&
+        agentName == other.agentName &&
         environment == other.environment &&
         status == other.status &&
         validUntil == other.validUntil &&
@@ -119,6 +123,7 @@ class _$Hip3Agent extends Hip3Agent {
     _$hash = $jc(_$hash, agentId.hashCode);
     _$hash = $jc(_$hash, ownerAddress.hashCode);
     _$hash = $jc(_$hash, agentAddress.hashCode);
+    _$hash = $jc(_$hash, agentName.hashCode);
     _$hash = $jc(_$hash, environment.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, validUntil.hashCode);
@@ -134,6 +139,7 @@ class _$Hip3Agent extends Hip3Agent {
           ..add('agentId', agentId)
           ..add('ownerAddress', ownerAddress)
           ..add('agentAddress', agentAddress)
+          ..add('agentName', agentName)
           ..add('environment', environment)
           ..add('status', status)
           ..add('validUntil', validUntil)
@@ -157,6 +163,10 @@ class Hip3AgentBuilder implements Builder<Hip3Agent, Hip3AgentBuilder> {
   String? _agentAddress;
   String? get agentAddress => _$this._agentAddress;
   set agentAddress(String? agentAddress) => _$this._agentAddress = agentAddress;
+
+  String? _agentName;
+  String? get agentName => _$this._agentName;
+  set agentName(String? agentName) => _$this._agentName = agentName;
 
   Hip3AgentEnvironmentEnum? _environment;
   Hip3AgentEnvironmentEnum? get environment => _$this._environment;
@@ -189,6 +199,7 @@ class Hip3AgentBuilder implements Builder<Hip3Agent, Hip3AgentBuilder> {
       _agentId = $v.agentId;
       _ownerAddress = $v.ownerAddress;
       _agentAddress = $v.agentAddress;
+      _agentName = $v.agentName;
       _environment = $v.environment;
       _status = $v.status;
       _validUntil = $v.validUntil;
@@ -221,6 +232,8 @@ class Hip3AgentBuilder implements Builder<Hip3Agent, Hip3AgentBuilder> {
               ownerAddress, r'Hip3Agent', 'ownerAddress'),
           agentAddress: BuiltValueNullFieldError.checkNotNull(
               agentAddress, r'Hip3Agent', 'agentAddress'),
+          agentName: BuiltValueNullFieldError.checkNotNull(
+              agentName, r'Hip3Agent', 'agentName'),
           environment: BuiltValueNullFieldError.checkNotNull(
               environment, r'Hip3Agent', 'environment'),
           status: BuiltValueNullFieldError.checkNotNull(

@@ -10,6 +10,9 @@ const PortfolioHoldingPageAllOfCoverageScopeEnum
     _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3 =
     const PortfolioHoldingPageAllOfCoverageScopeEnum._('hip3');
 const PortfolioHoldingPageAllOfCoverageScopeEnum
+    _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3PlusBstocks =
+    const PortfolioHoldingPageAllOfCoverageScopeEnum._('hip3PlusBstocks');
+const PortfolioHoldingPageAllOfCoverageScopeEnum
     _$portfolioHoldingPageAllOfCoverageScopeEnum_unknownDefaultOpenApi =
     const PortfolioHoldingPageAllOfCoverageScopeEnum._('unknownDefaultOpenApi');
 
@@ -18,6 +21,8 @@ PortfolioHoldingPageAllOfCoverageScopeEnum
   switch (name) {
     case 'hip3':
       return _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3;
+    case 'hip3PlusBstocks':
+      return _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3PlusBstocks;
     case 'unknownDefaultOpenApi':
       return _$portfolioHoldingPageAllOfCoverageScopeEnum_unknownDefaultOpenApi;
     default:
@@ -29,6 +34,7 @@ final BuiltSet<PortfolioHoldingPageAllOfCoverageScopeEnum>
     _$portfolioHoldingPageAllOfCoverageScopeEnumValues = BuiltSet<
         PortfolioHoldingPageAllOfCoverageScopeEnum>(const <PortfolioHoldingPageAllOfCoverageScopeEnum>[
   _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3,
+  _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3PlusBstocks,
   _$portfolioHoldingPageAllOfCoverageScopeEnum_unknownDefaultOpenApi,
 ]);
 
@@ -40,10 +46,12 @@ class _$PortfolioHoldingPageAllOfCoverageScopeEnumSerializer
     implements PrimitiveSerializer<PortfolioHoldingPageAllOfCoverageScopeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3': 'hip3',
+    'hip3PlusBstocks': 'hip3+bstocks',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3': 'hip3',
+    'hip3+bstocks': 'hip3PlusBstocks',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

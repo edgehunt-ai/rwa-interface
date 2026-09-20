@@ -21,6 +21,9 @@ import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_provider
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 
 import 'hip3_preview_details.dart';
+import 'order_funding_sheet.dart';
+import '../../../../domain/models/funding_transfer.dart';
+import '../../funding/providers/funding_transfer_providers.dart';
 import '../../../../domain/models/hip3_opening_protection.dart';
 import '../../../../domain/models/hip3_opening_context.dart';
 import '../../../../app/providers/session_scope.dart';
@@ -317,14 +320,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     if (_error != null && mounted) setState(() => _error = null);
   }
 
-  String? _amountError(DecimalValue? balance) {
+  String? _amountError() {
     final rules = _context;
-    final available = balance == null ? null : double.tryParse(balance.value);
     final amount = double.tryParse(_amount.text.trim());
-    if (rules == null || available == null || amount == null) return null;
-    if (amount > available) {
-      return AppLocalizations.of(context).hip3InsufficientBalance;
-    }
+    if (rules == null || amount == null) return null;
     final maximum = rules.maximumNotional == null
         ? null
         : double.tryParse(rules.maximumNotional!.value);
@@ -394,8 +393,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         return;
       }
     }
-    if (_amountError(ref.read(hip3OrderAvailableBalanceProvider).value) !=
-        null) {
+    if (_amountError() != null) {
       return;
     }
     if (_ruleViolation(_context!) case final violation?) {
@@ -428,11 +426,32 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _submitting = true;
       });
       final cachedQuote = _quotePreview;
-      final preview =
+      var preview =
           cachedQuote?.intent.fingerprint == intent.fingerprint &&
               cachedQuote?.isExpired == false
           ? cachedQuote
           : await ref.read(orderPreviewProvider(intent).future);
+      if (!isCurrent() || preview == null) return;
+      // The funding API reads Hyperliquid Perps available margin, not the
+      // aggregated balance used by the form's percentage selector.
+      while (!intent.reduceOnly) {
+        final plan = await ref
+            .read(fundingTransferCommandsProvider)
+            .plan(tradePreviewId: preview!.previewId);
+        if (!mounted || !isCurrent()) return;
+        if (plan.status == FundingPlanState.alreadyFunded) break;
+        final funded = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: false,
+          enableDrag: false,
+          builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
+        );
+        if (!isCurrent() || funded != true) return;
+        ref.invalidate(orderPreviewProvider(intent));
+        preview = await ref.read(orderPreviewProvider(intent).future);
+        if (!isCurrent()) return;
+      }
       if (isCurrent()) {
         setState(() => _preview = preview);
         _previewExpiry?.cancel();
@@ -582,7 +601,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final amount = _amount.text.trim();
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
     final availableBalance = ref.watch(hip3OrderAvailableBalanceProvider);
-    final formError = _amountError(availableBalance.value) ?? _error;
+    final formError = _amountError() ?? _error;
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),

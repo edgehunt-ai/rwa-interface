@@ -13,13 +13,14 @@ part 'hip3_challenge_request.g.dart';
 ///
 /// Properties:
 /// * [purpose] 
-/// * [label] 
+/// * [label] - Stable Hyperliquid named-agent label. The server appends `valid_until <timestamp>` to produce the exact signed agent_name and reuses the stable label when rotating to a fresh Privy wallet address.
 @BuiltValue()
 abstract class Hip3ChallengeRequest implements Built<Hip3ChallengeRequest, Hip3ChallengeRequestBuilder> {
   @BuiltValueField(wireName: r'purpose')
   Hip3ChallengeRequestPurposeEnum? get purpose;
   // enum purposeEnum {  register,  rotate,  };
 
+  /// Stable Hyperliquid named-agent label. The server appends `valid_until <timestamp>` to produce the exact signed agent_name and reuses the stable label when rotating to a fresh Privy wallet address.
   @BuiltValueField(wireName: r'label')
   String? get label;
 

@@ -25,8 +25,65 @@ import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart'
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import '../../../../helpers/test_app.dart';
+import '../../../../helpers/funded_repository.dart';
+
+import 'package:rwa_interface/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
+  for (final kind in [MarketProductKind.bstock, MarketProductKind.perp]) {
+    testWidgets('$kind funding waits for arrival before allowing review', (
+      tester,
+    ) async {
+      final funding = _PendingFundingRepository();
+      final wallets = _FundingWalletsRepository();
+      bool? funded;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(funding),
+            walletsRepositoryProvider.overrideWithValue(wallets),
+          ],
+          child: buildTestApp(
+            Builder(
+              builder: (context) => TextButton(
+                onPressed: () async {
+                  funded = await showModalBottomSheet<bool>(
+                    context: context,
+                    builder: (_) =>
+                        OrderFundingSheet(plan: _readyFundingPlan, kind: kind),
+                  );
+                },
+                child: const Text('Open funding'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open funding'));
+      await tester.pumpAndSettle();
+      expect(wallets.authorizations, 0);
+      await tester.tap(find.widgetWithText(FilledButton, 'In-App Transfer'));
+      await tester.pumpAndSettle();
+      expect(funding.transfers, 1);
+      expect(wallets.authorizations, 1);
+      expect(funded, isNull);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'In-App Transfer'),
+            )
+            .onPressed,
+        isNull,
+      );
+      funding.completed = true;
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Retry'));
+      await tester.pumpAndSettle();
+      expect(funded, isTrue);
+      expect(funding.transfers, 1);
+      expect(wallets.authorizations, 1);
+    });
+  }
+
   testWidgets('bStocks order form follows tab sizing and continuous slider', (
     tester,
   ) async {
@@ -51,6 +108,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
             (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
           ),
@@ -78,6 +136,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
             _SettlementFeeOrdersRepository(),
           ),
@@ -104,6 +163,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
             (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
           ),
@@ -150,6 +210,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             bstocksOrderAvailableBalanceProvider.overrideWith(
               (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
             ),
@@ -198,6 +259,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
             (_) => balance.future,
           ),
@@ -254,7 +316,10 @@ void main() {
     final repository = _CapturingOrdersRepository();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(repository),
+        ],
         child: buildTestApp(const BstocksOrderPanel()),
       ),
     );
@@ -304,7 +369,10 @@ void main() {
     final repository = _DelayedOrdersRepository();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(repository),
+        ],
         child: buildTestApp(const BstocksOrderPanel()),
       ),
     );
@@ -345,14 +413,14 @@ void main() {
   });
 
   testWidgets(
-    'insufficient bStocks balance opens funding routes from the order preview',
+    'high displayed balance still checks BSC USDT through the funding plan',
     (tester) async {
       final funding = _FundingPlanRepository(_readyFundingPlan);
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             bstocksOrderAvailableBalanceProvider.overrideWith(
-              (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
+              (ref) async => DecimalValue('100000', asset: 'USD', unit: 'fiat'),
             ),
             ordersRepositoryProvider.overrideWithValue(
               _DelayedOrdersRepository(),
@@ -508,6 +576,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(_FilledOrdersRepository()),
         ],
         child: buildRouterTestApp(router),
@@ -536,6 +605,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            fundingRepositoryProvider.overrideWithValue(FundedRepository()),
             ordersRepositoryProvider.overrideWithValue(
               _RejectedOrdersRepository(),
             ),
@@ -808,6 +878,36 @@ final class _FundingWalletsRepository implements WalletsRepository {
     );
   }
 
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _PendingFundingRepository implements FundingRepository {
+  int transfers = 0;
+  bool completed = false;
+  @override
+  Future<FundingTransfer> createFundingTransfer({
+    required String planId,
+    required String legId,
+    required String authorizationId,
+    required String idempotencyKey,
+  }) async {
+    transfers++;
+    return FundingTransfer(
+      transferId: 'pending-transfer',
+      planId: planId,
+      amount: DecimalValue('100'),
+      status: FundingTransferState.filling,
+    );
+  }
+
+  @override
+  Future<FundingPlan> getFundingPlan(String id) async => FundingPlan(
+    planId: id,
+    tradePreviewId: 'preview-1',
+    shortfall: DecimalValue(completed ? '0' : '100'),
+    status: completed ? FundingPlanState.alreadyFunded : FundingPlanState.ready,
+  );
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

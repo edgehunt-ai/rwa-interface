@@ -346,6 +346,8 @@ class _$Hip3Challenge extends Hip3Challenge {
   @override
   final String agentAddress;
   @override
+  final String agentName;
+  @override
   final String typedDataJson;
   @override
   final String payloadHash;
@@ -372,6 +374,7 @@ class _$Hip3Challenge extends Hip3Challenge {
       required this.purpose,
       required this.ownerAddress,
       required this.agentAddress,
+      required this.agentName,
       required this.typedDataJson,
       required this.payloadHash,
       required this.validUntil,
@@ -398,6 +401,7 @@ class _$Hip3Challenge extends Hip3Challenge {
         purpose == other.purpose &&
         ownerAddress == other.ownerAddress &&
         agentAddress == other.agentAddress &&
+        agentName == other.agentName &&
         typedDataJson == other.typedDataJson &&
         payloadHash == other.payloadHash &&
         validUntil == other.validUntil &&
@@ -417,6 +421,7 @@ class _$Hip3Challenge extends Hip3Challenge {
     _$hash = $jc(_$hash, purpose.hashCode);
     _$hash = $jc(_$hash, ownerAddress.hashCode);
     _$hash = $jc(_$hash, agentAddress.hashCode);
+    _$hash = $jc(_$hash, agentName.hashCode);
     _$hash = $jc(_$hash, typedDataJson.hashCode);
     _$hash = $jc(_$hash, payloadHash.hashCode);
     _$hash = $jc(_$hash, validUntil.hashCode);
@@ -438,6 +443,7 @@ class _$Hip3Challenge extends Hip3Challenge {
           ..add('purpose', purpose)
           ..add('ownerAddress', ownerAddress)
           ..add('agentAddress', agentAddress)
+          ..add('agentName', agentName)
           ..add('typedDataJson', typedDataJson)
           ..add('payloadHash', payloadHash)
           ..add('validUntil', validUntil)
@@ -478,6 +484,10 @@ class Hip3ChallengeBuilder
   String? _agentAddress;
   String? get agentAddress => _$this._agentAddress;
   set agentAddress(String? agentAddress) => _$this._agentAddress = agentAddress;
+
+  String? _agentName;
+  String? get agentName => _$this._agentName;
+  set agentName(String? agentName) => _$this._agentName = agentName;
 
   String? _typedDataJson;
   String? get typedDataJson => _$this._typedDataJson;
@@ -527,6 +537,7 @@ class Hip3ChallengeBuilder
       _purpose = $v.purpose;
       _ownerAddress = $v.ownerAddress;
       _agentAddress = $v.agentAddress;
+      _agentName = $v.agentName;
       _typedDataJson = $v.typedDataJson;
       _payloadHash = $v.payloadHash;
       _validUntil = $v.validUntil;
@@ -568,6 +579,8 @@ class Hip3ChallengeBuilder
               ownerAddress, r'Hip3Challenge', 'ownerAddress'),
           agentAddress: BuiltValueNullFieldError.checkNotNull(
               agentAddress, r'Hip3Challenge', 'agentAddress'),
+          agentName: BuiltValueNullFieldError.checkNotNull(
+              agentName, r'Hip3Challenge', 'agentName'),
           typedDataJson: BuiltValueNullFieldError.checkNotNull(
               typedDataJson, r'Hip3Challenge', 'typedDataJson'),
           payloadHash: BuiltValueNullFieldError.checkNotNull(

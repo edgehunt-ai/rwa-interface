@@ -14,7 +14,7 @@ import 'package:built_value/serializer.dart';
 
 part 'perp_create_order_request.g.dart';
 
-/// protection 表示本单止盈止损，与旧版 tp_sl 不得同时传入。引用 preview 时必须匹配其冻结的规范化委托、保护和 context； context 的 symbol 必须一致。不支持的能力返回 422，不得静默忽略或降低订单约束。 
+/// 市价单只传 amount（USDC 名义价值）；限价单只传 quantity（基础资产数量）与 limit_price。 protection 表示本单止盈止损，与旧版 tp_sl 不得同时传入。引用 preview 时必须匹配其冻结的规范化委托、保护和 context； context 的 symbol 必须一致。不支持的能力返回 422，不得静默忽略或降低订单约束。 
 ///
 /// Properties:
 /// * [contextId] - 必须与所引用 preview 的 context 相同；账户/环境不由客户端决定。

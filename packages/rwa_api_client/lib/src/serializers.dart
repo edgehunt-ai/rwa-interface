@@ -129,6 +129,7 @@ import 'package:rwa_api_client/src/model/funding_route_capability_matrix.dart';
 import 'package:rwa_api_client/src/model/funding_route_capability_status.dart';
 import 'package:rwa_api_client/src/model/funding_route_quote.dart';
 import 'package:rwa_api_client/src/model/funding_session.dart';
+import 'package:rwa_api_client/src/model/funding_session_continuation.dart';
 import 'package:rwa_api_client/src/model/funding_session_create_request.dart';
 import 'package:rwa_api_client/src/model/funding_session_plan_request.dart';
 import 'package:rwa_api_client/src/model/funding_session_selection_request.dart';
@@ -357,6 +358,7 @@ import 'package:rwa_api_client/src/model/self_custodial_withdrawal_gas_estimate.
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_status.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_submission_request.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_transaction.dart';
+import 'package:rwa_api_client/src/model/service_environment.dart';
 import 'package:rwa_api_client/src/model/session.dart';
 import 'package:rwa_api_client/src/model/session_kind.dart';
 import 'package:rwa_api_client/src/model/session_request.dart';
@@ -366,6 +368,11 @@ import 'package:rwa_api_client/src/model/sponsored_wallet_action_execution_submi
 import 'package:rwa_api_client/src/model/stock.dart';
 import 'package:rwa_api_client/src/model/stock_group.dart';
 import 'package:rwa_api_client/src/model/stock_page.dart';
+import 'package:rwa_api_client/src/model/system_environment.dart';
+import 'package:rwa_api_client/src/model/system_environment_bstocks.dart';
+import 'package:rwa_api_client/src/model/system_environment_bstocks_quote_token.dart';
+import 'package:rwa_api_client/src/model/system_environment_execution.dart';
+import 'package:rwa_api_client/src/model/system_environment_hip3.dart';
 import 'package:rwa_api_client/src/model/token_balance.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/trade_intent.dart';
@@ -540,6 +547,7 @@ part 'serializers.g.dart';
   FundingRouteCapabilityStatus,
   FundingRouteQuote,
   FundingSession,
+  FundingSessionContinuation,
   FundingSessionCreateRequest,
   FundingSessionPlanRequest,
   FundingSessionSelectionRequest,
@@ -768,6 +776,7 @@ part 'serializers.g.dart';
   SelfCustodialWithdrawalStatus,
   SelfCustodialWithdrawalSubmissionRequest,
   SelfCustodialWithdrawalTransaction,
+  ServiceEnvironment,
   Session,
   SessionKind,
   SessionRequest,
@@ -777,6 +786,11 @@ part 'serializers.g.dart';
   Stock,
   StockGroup,
   StockPage,
+  SystemEnvironment,
+  SystemEnvironmentBstocks,
+  SystemEnvironmentBstocksQuoteToken,
+  SystemEnvironmentExecution,
+  SystemEnvironmentHip3,
   TokenBalance,
   TpSlSpec,
   TradeIntent,

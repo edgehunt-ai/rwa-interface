@@ -89,7 +89,7 @@ try {
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://rwa-api-staging.dxd.ink*
+All URIs are relative to *https://rwa-api-staging.edgeagent.net*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -179,6 +179,7 @@ Class | Method | HTTP request | Description
 [*PositionsApi*](doc/PositionsApi.md) | [**getPosition**](doc/PositionsApi.md#getposition) | **GET** /v1/positions/{position_id} | 仓位详情
 [*PositionsApi*](doc/PositionsApi.md) | [**listPositions**](doc/PositionsApi.md#listpositions) | **GET** /v1/positions | 持仓列表
 [*SystemApi*](doc/SystemApi.md) | [**getDisclosures**](doc/SystemApi.md#getdisclosures) | **GET** /v1/system/disclosures | 产品说明文案
+[*SystemApi*](doc/SystemApi.md) | [**getSystemEnvironment**](doc/SystemApi.md#getsystemenvironment) | **GET** /v1/system/environment | 部署环境标识
 [*SystemApi*](doc/SystemApi.md) | [**listAppVersions**](doc/SystemApi.md#listappversions) | **GET** /v1/system/app-version | 各平台最新版本
 [*SystemApi*](doc/SystemApi.md) | [**replayEvents**](doc/SystemApi.md#replayevents) | **GET** /v1/events/replay | 有界回放账户事件
 [*SystemApi*](doc/SystemApi.md) | [**streamEvents**](doc/SystemApi.md#streamevents) | **GET** /v1/events | 实时事件流（SSE）
@@ -306,6 +307,7 @@ Class | Method | HTTP request | Description
  - [FundingRouteCapabilityStatus](doc/FundingRouteCapabilityStatus.md)
  - [FundingRouteQuote](doc/FundingRouteQuote.md)
  - [FundingSession](doc/FundingSession.md)
+ - [FundingSessionContinuation](doc/FundingSessionContinuation.md)
  - [FundingSessionCreateRequest](doc/FundingSessionCreateRequest.md)
  - [FundingSessionPlanRequest](doc/FundingSessionPlanRequest.md)
  - [FundingSessionSelectionRequest](doc/FundingSessionSelectionRequest.md)
@@ -534,6 +536,7 @@ Class | Method | HTTP request | Description
  - [SelfCustodialWithdrawalStatus](doc/SelfCustodialWithdrawalStatus.md)
  - [SelfCustodialWithdrawalSubmissionRequest](doc/SelfCustodialWithdrawalSubmissionRequest.md)
  - [SelfCustodialWithdrawalTransaction](doc/SelfCustodialWithdrawalTransaction.md)
+ - [ServiceEnvironment](doc/ServiceEnvironment.md)
  - [Session](doc/Session.md)
  - [SessionKind](doc/SessionKind.md)
  - [SessionRequest](doc/SessionRequest.md)
@@ -543,6 +546,11 @@ Class | Method | HTTP request | Description
  - [Stock](doc/Stock.md)
  - [StockGroup](doc/StockGroup.md)
  - [StockPage](doc/StockPage.md)
+ - [SystemEnvironment](doc/SystemEnvironment.md)
+ - [SystemEnvironmentBstocks](doc/SystemEnvironmentBstocks.md)
+ - [SystemEnvironmentBstocksQuoteToken](doc/SystemEnvironmentBstocksQuoteToken.md)
+ - [SystemEnvironmentExecution](doc/SystemEnvironmentExecution.md)
+ - [SystemEnvironmentHip3](doc/SystemEnvironmentHip3.md)
  - [TokenBalance](doc/TokenBalance.md)
  - [TpSlSpec](doc/TpSlSpec.md)
  - [TradeIntent](doc/TradeIntent.md)

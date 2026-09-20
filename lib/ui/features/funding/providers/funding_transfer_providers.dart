@@ -63,6 +63,11 @@ final class FundingTransferCommands {
     return result;
   }
 
+  Future<FundingPlan> refresh(String planId) => _run(
+    operation: 'funding_plan_refresh',
+    command: () => _ref.read(fundingRepositoryProvider).getFundingPlan(planId),
+  );
+
   Future<WalletAuthorization> authorize(FundingPlan plan) {
     final leg = plan.nextActionableLeg;
     if (!plan.isActionable || leg == null) {

@@ -21,33 +21,37 @@ import 'package:rwa_interface/domain/repositories/hip3_order_execution_repositor
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 
 void main() {
-  test(
-    'refreshing an HIP3 quote uses a new key while replay shares its key',
-    () async {
-      final repository = _QuoteOrders();
-      final container = ProviderContainer(
-        overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
-      );
-      addTearDown(container.dispose);
-      final intent = OrderIntent(
-        symbol: 'NVDA',
-        kind: MarketProductKind.perp,
-        side: TradingSide.long,
-        type: TradingOrderType.market,
-        amount: DecimalValue('15'),
-      );
-      final provider = orderPreviewProvider(intent);
-      final subscription = container.listen(provider, (_, _) {});
-      addTearDown(subscription.close);
-      await container.read(provider.future);
-      await container.read(provider.future);
-      expect(repository.previewKeys, hasLength(1));
-      container.invalidate(provider);
-      await container.read(provider.future);
-      expect(repository.previewKeys, hasLength(2));
-      expect(repository.previewKeys[1], isNot(repository.previewKeys[0]));
-    },
-  );
+  for (final kind in [MarketProductKind.bstock, MarketProductKind.perp]) {
+    test(
+      'refreshing a $kind quote uses a new key while replay shares its key',
+      () async {
+        final repository = _QuoteOrders();
+        final container = ProviderContainer(
+          overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+        );
+        addTearDown(container.dispose);
+        final intent = OrderIntent(
+          symbol: 'NVDA',
+          kind: kind,
+          side: kind == MarketProductKind.perp
+              ? TradingSide.long
+              : TradingSide.buy,
+          type: TradingOrderType.market,
+          amount: DecimalValue('15'),
+        );
+        final provider = orderPreviewProvider(intent);
+        final subscription = container.listen(provider, (_, _) {});
+        addTearDown(subscription.close);
+        await container.read(provider.future);
+        await container.read(provider.future);
+        expect(repository.previewKeys, hasLength(1));
+        container.invalidate(provider);
+        await container.read(provider.future);
+        expect(repository.previewKeys, hasLength(2));
+        expect(repository.previewKeys[1], isNot(repository.previewKeys[0]));
+      },
+    );
+  }
   test(
     'late HIP3 create success or failure cannot update a new session',
     () async {

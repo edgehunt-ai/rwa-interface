@@ -18,6 +18,7 @@ part 'hip3_challenge.g.dart';
 /// * [purpose] 
 /// * [ownerAddress] 
 /// * [agentAddress] 
+/// * [agentName] - Exact Hyperliquid named-agent value included in the approveAgent signature and broadcast.
 /// * [typedDataJson] - Canonical JSON for the exact Hyperliquid approveAgent typed-data payload.
 /// * [payloadHash] 
 /// * [validUntil] - The registered Agent expires after at most 30 days and must then be rotated to a fresh address.
@@ -50,6 +51,10 @@ abstract class Hip3Challenge implements Built<Hip3Challenge, Hip3ChallengeBuilde
 
   @BuiltValueField(wireName: r'agent_address')
   String get agentAddress;
+
+  /// Exact Hyperliquid named-agent value included in the approveAgent signature and broadcast.
+  @BuiltValueField(wireName: r'agent_name')
+  String get agentName;
 
   /// Canonical JSON for the exact Hyperliquid approveAgent typed-data payload.
   @BuiltValueField(wireName: r'typed_data_json')
@@ -132,6 +137,11 @@ class _$Hip3ChallengeSerializer implements PrimitiveSerializer<Hip3Challenge> {
     yield r'agent_address';
     yield serializers.serialize(
       object.agentAddress,
+      specifiedType: const FullType(String),
+    );
+    yield r'agent_name';
+    yield serializers.serialize(
+      object.agentName,
       specifiedType: const FullType(String),
     );
     yield r'typed_data_json';
@@ -240,6 +250,13 @@ class _$Hip3ChallengeSerializer implements PrimitiveSerializer<Hip3Challenge> {
             specifiedType: const FullType(String),
           ) as String;
           result.agentAddress = valueDes;
+          break;
+        case r'agent_name':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.agentName = valueDes;
           break;
         case r'typed_data_json':
           final valueDes = serializers.deserialize(

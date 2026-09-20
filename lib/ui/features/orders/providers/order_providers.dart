@@ -76,9 +76,8 @@ final orderPreviewProvider = FutureProvider.autoDispose
           .preview(
             intent,
             // A new quote must not reuse an expired immutable server preview.
-            idempotencyKey: intent.kind != MarketProductKind.perp
-                ? 'preview-${intent.fingerprint.hashCode}'
-                : 'preview-${List.generate(16, (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0')).join()}',
+            idempotencyKey:
+                'preview-${List.generate(16, (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0')).join()}',
           );
     });
 

@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -22,6 +22,8 @@ import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart'
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
+
+import 'order_funding_sheet.dart';
 
 part 'bstocks_funding_required.dart';
 part 'bstocks_transfer_flow.dart';
@@ -182,17 +184,19 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       return;
     }
     final intent = _intentFromFields()!;
+    if (reviewing) return;
     final cachedQuote = quotePreview;
-    if (cachedQuote?.intent.fingerprint == intent.fingerprint) {
-      await _prepareConfirmation(cachedQuote!);
-      return;
-    }
     setState(() {
       error = null;
       reviewing = true;
     });
     try {
-      final next = await ref.read(orderPreviewProvider(intent).future);
+      final next =
+          cachedQuote?.intent.fingerprint == intent.fingerprint &&
+              cachedQuote?.isExpired == false
+          ? cachedQuote!
+          : await ref.read(orderPreviewProvider(intent).future);
+      if (!mounted) return;
       await _prepareConfirmation(next);
     } on Object {
       if (mounted) {
@@ -206,7 +210,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   Future<void> _prepareConfirmation(OrderPreview next) async {
-    if (_hasSufficientDisplayedBalance(next)) {
+    if (next.intent.side == TradingSide.sell) {
       if (mounted) {
         setState(() {
           error = null;
@@ -228,7 +232,21 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         });
         return;
       }
-      await _showFundingRequired(plan: plan, orderPreview: next);
+      final funded = await showModalBottomSheet<bool>(
+        context: context,
+        isScrollControlled: true,
+        isDismissible: false,
+        enableDrag: false,
+        builder: (_) => OrderFundingSheet(plan: plan, kind: next.intent.kind),
+      );
+      if (!mounted || funded != true) return;
+      // Funding may outlive the quote. Obtain a new preview and recheck its
+      // target requirement before allowing the user to confirm the order.
+      ref.invalidate(orderPreviewProvider(next.intent));
+      final refreshed = await ref.read(
+        orderPreviewProvider(next.intent).future,
+      );
+      if (mounted) await _prepareConfirmation(refreshed);
     } on Object {
       if (mounted) {
         setState(() {
@@ -237,64 +255,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       }
     }
   }
-
-  bool _hasSufficientDisplayedBalance(OrderPreview next) {
-    final available = ref.read(bstocksOrderAvailableBalanceProvider).value;
-    if (available == null) return true;
-    try {
-      final orderValueUsd = DecimalValue(
-        next.orderValue.value,
-        asset: 'USD',
-        unit: 'fiat',
-      );
-      return available.compareTo(orderValueUsd) >= 0;
-    } on ArgumentError {
-      return true;
-    }
-  }
-
-  Future<void> _showFundingRequired({
-    required FundingPlan plan,
-    required OrderPreview orderPreview,
-  }) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => BstocksFundingRequiredSheet(
-        amountNeeded: plan.shortfall,
-        onInAppTransfer: plan.isActionable
-            ? () {
-                Navigator.of(sheetContext).pop();
-                _showTransfer(plan: plan, orderPreview: orderPreview);
-              }
-            : null,
-        onExternalDeposit: () {
-          Navigator.of(sheetContext).pop();
-          GoRouter.of(context).pushNamed(
-            AppRoutes.depositName,
-            queryParameters: const {'chain': 'BSC', 'token': 'USDT'},
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _showTransfer({
-    required FundingPlan plan,
-    required OrderPreview orderPreview,
-  }) => showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (_) => BstocksTransferFlowSheet(
-      amountNeeded: plan.shortfall,
-      plan: plan,
-      orderPreview: orderPreview,
-      symbol: widget.symbol,
-      onClose: () => Navigator.of(context).pop(),
-    ),
-  );
 
   OrderIntent? _intentFromFields() {
     final amountValue = amount.text.trim();

@@ -16,6 +16,7 @@ part 'hip3_agent.g.dart';
 /// * [agentId] 
 /// * [ownerAddress] 
 /// * [agentAddress] 
+/// * [agentName] - Exact active Hyperliquid named-agent value; may include a `valid_until <timestamp>` suffix.
 /// * [environment] 
 /// * [status] 
 /// * [validUntil] 
@@ -31,6 +32,10 @@ abstract class Hip3Agent implements Built<Hip3Agent, Hip3AgentBuilder> {
 
   @BuiltValueField(wireName: r'agent_address')
   String get agentAddress;
+
+  /// Exact active Hyperliquid named-agent value; may include a `valid_until <timestamp>` suffix.
+  @BuiltValueField(wireName: r'agent_name')
+  String get agentName;
 
   @BuiltValueField(wireName: r'environment')
   Hip3AgentEnvironmentEnum get environment;
@@ -85,6 +90,11 @@ class _$Hip3AgentSerializer implements PrimitiveSerializer<Hip3Agent> {
     yield r'agent_address';
     yield serializers.serialize(
       object.agentAddress,
+      specifiedType: const FullType(String),
+    );
+    yield r'agent_name';
+    yield serializers.serialize(
+      object.agentName,
       specifiedType: const FullType(String),
     );
     yield r'environment';
@@ -155,6 +165,13 @@ class _$Hip3AgentSerializer implements PrimitiveSerializer<Hip3Agent> {
             specifiedType: const FullType(String),
           ) as String;
           result.agentAddress = valueDes;
+          break;
+        case r'agent_name':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.agentName = valueDes;
           break;
         case r'environment':
           final valueDes = serializers.deserialize(

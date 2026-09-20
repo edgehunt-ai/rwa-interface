@@ -26,6 +26,12 @@ import 'package:rwa_interface/app/providers/observability_providers.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 
 import '../../../../helpers/test_app.dart';
+import '../../../../helpers/funded_repository.dart';
+
+import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
+
+import 'package:rwa_interface/domain/models/funding_transfer.dart';
+import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 
 import 'package:rwa_interface/domain/models/hip3_opening_context.dart';
 import 'package:rwa_interface/domain/repositories/hip3_opening_repository.dart';
@@ -33,6 +39,31 @@ import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart'
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
 
 void main() {
+  testWidgets(
+    'HIP-3 checks Hyperliquid funding despite a high display balance',
+    (tester) async {
+      final funding = _ShortfallFunding();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(_ExecutableHip3Orders()),
+          ],
+          child: _app(const Hip3OrderPanel(), funding: funding),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, '20');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $20'));
+      await tester.pumpAndSettle();
+      expect(funding.previewIds, hasLength(1));
+      expect(find.text('Hyperliquid Perps USDC'), findsOneWidget);
+      expect(find.textContaining('5 USDC'), findsOneWidget);
+      expect(find.text('Insufficient balance.'), findsNothing);
+    },
+  );
+
   testWidgets('order form uses a USDC amount input without a quantity tab', (
     tester,
   ) async {
@@ -116,7 +147,9 @@ void main() {
     expect(find.byKey(const Key('hip3-form-error')), findsNothing);
   });
 
-  testWidgets('amount over balance shows insufficient balance', (tester) async {
+  testWidgets('displayed balance does not block funding preparation', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -135,7 +168,15 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, '17');
     await tester.pump();
-    expect(find.text('Insufficient balance.'), findsOneWidget);
+    expect(find.text('Insufficient balance.'), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, r'Long NVDA · $17'),
+          )
+          .onPressed,
+      isNotNull,
+    );
   });
 
   testWidgets('an order value under the minimum is refused with a toast', (
@@ -804,8 +845,13 @@ Widget _app(
   Widget child, {
   Hip3OpeningRepository? opening,
   ObservabilityReporter? observability,
+  FundingRepository? funding,
 }) => ProviderScope(
   overrides: [
+    fundingTransferCommandsProvider.overrideWith(
+      (ref) => FundingTransferCommands(ref),
+    ),
+    fundingRepositoryProvider.overrideWithValue(funding ?? FundedRepository()),
     if (observability != null)
       observabilityReporterProvider.overrideWithValue(observability),
     hip3OpeningRepositoryProvider.overrideWithValue(opening ?? _Opening()),
@@ -1018,3 +1064,19 @@ Hip3PreviewExecution _previewExecution(
   liquidationPriceUnavailableReason:
       'cross_margin_requires_full_account_simulation',
 );
+
+class _ShortfallFunding extends FundedRepository {
+  @override
+  Future<FundingPlan> createFundingPlan({
+    required String tradePreviewId,
+    required String idempotencyKey,
+  }) async {
+    previewIds.add(tradePreviewId);
+    return FundingPlan(
+      planId: 'hip3-plan',
+      tradePreviewId: tradePreviewId,
+      shortfall: DecimalValue('5'),
+      status: FundingPlanState.blocked,
+    );
+  }
+}

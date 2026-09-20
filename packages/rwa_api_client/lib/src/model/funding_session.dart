@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/funding_session_source_allocation.dart';
+import 'package:rwa_api_client/src/model/funding_session_continuation.dart';
 import 'package:rwa_api_client/src/model/order_preview_request.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/funding_fee_breakdown.dart';
@@ -23,6 +24,7 @@ part 'funding_session.g.dart';
 /// * [status] 
 /// * [version] 
 /// * [trade] 
+/// * [continuation] 
 /// * [rail] 
 /// * [targetSnapshot] 
 /// * [requiredTargetBalance] - 十进制字符串，避免浮点误差
@@ -57,6 +59,9 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
 
   @BuiltValueField(wireName: r'trade')
   OrderPreviewRequest get trade;
+
+  @BuiltValueField(wireName: r'continuation')
+  FundingSessionContinuation get continuation;
 
   @BuiltValueField(wireName: r'rail')
   ProductKind get rail;
@@ -171,6 +176,11 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
     yield serializers.serialize(
       object.trade,
       specifiedType: const FullType(OrderPreviewRequest),
+    );
+    yield r'continuation';
+    yield serializers.serialize(
+      object.continuation,
+      specifiedType: const FullType(FundingSessionContinuation),
     );
     yield r'rail';
     yield serializers.serialize(
@@ -322,6 +332,13 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
             specifiedType: const FullType(OrderPreviewRequest),
           ) as OrderPreviewRequest;
           result.trade.replace(valueDes);
+          break;
+        case r'continuation':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(FundingSessionContinuation),
+          ) as FundingSessionContinuation;
+          result.continuation.replace(valueDes);
           break;
         case r'rail':
           final valueDes = serializers.deserialize(

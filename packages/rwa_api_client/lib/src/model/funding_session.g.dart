@@ -16,6 +16,8 @@ class _$FundingSession extends FundingSession {
   @override
   final OrderPreviewRequest trade;
   @override
+  final FundingSessionContinuation continuation;
+  @override
   final ProductKind rail;
   @override
   final FundingTargetBalanceSnapshot targetSnapshot;
@@ -64,6 +66,7 @@ class _$FundingSession extends FundingSession {
       required this.status,
       required this.version,
       required this.trade,
+      required this.continuation,
       required this.rail,
       required this.targetSnapshot,
       required this.requiredTargetBalance,
@@ -100,6 +103,7 @@ class _$FundingSession extends FundingSession {
         status == other.status &&
         version == other.version &&
         trade == other.trade &&
+        continuation == other.continuation &&
         rail == other.rail &&
         targetSnapshot == other.targetSnapshot &&
         requiredTargetBalance == other.requiredTargetBalance &&
@@ -129,6 +133,7 @@ class _$FundingSession extends FundingSession {
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
     _$hash = $jc(_$hash, trade.hashCode);
+    _$hash = $jc(_$hash, continuation.hashCode);
     _$hash = $jc(_$hash, rail.hashCode);
     _$hash = $jc(_$hash, targetSnapshot.hashCode);
     _$hash = $jc(_$hash, requiredTargetBalance.hashCode);
@@ -160,6 +165,7 @@ class _$FundingSession extends FundingSession {
           ..add('status', status)
           ..add('version', version)
           ..add('trade', trade)
+          ..add('continuation', continuation)
           ..add('rail', rail)
           ..add('targetSnapshot', targetSnapshot)
           ..add('requiredTargetBalance', requiredTargetBalance)
@@ -205,6 +211,12 @@ class FundingSessionBuilder
   OrderPreviewRequestBuilder get trade =>
       _$this._trade ??= OrderPreviewRequestBuilder();
   set trade(OrderPreviewRequestBuilder? trade) => _$this._trade = trade;
+
+  FundingSessionContinuationBuilder? _continuation;
+  FundingSessionContinuationBuilder get continuation =>
+      _$this._continuation ??= FundingSessionContinuationBuilder();
+  set continuation(FundingSessionContinuationBuilder? continuation) =>
+      _$this._continuation = continuation;
 
   ProductKind? _rail;
   ProductKind? get rail => _$this._rail;
@@ -316,6 +328,7 @@ class FundingSessionBuilder
       _status = $v.status;
       _version = $v.version;
       _trade = $v.trade.toBuilder();
+      _continuation = $v.continuation.toBuilder();
       _rail = $v.rail;
       _targetSnapshot = $v.targetSnapshot.toBuilder();
       _requiredTargetBalance = $v.requiredTargetBalance;
@@ -366,6 +379,7 @@ class FundingSessionBuilder
             version: BuiltValueNullFieldError.checkNotNull(
                 version, r'FundingSession', 'version'),
             trade: trade.build(),
+            continuation: continuation.build(),
             rail: BuiltValueNullFieldError.checkNotNull(
                 rail, r'FundingSession', 'rail'),
             targetSnapshot: targetSnapshot.build(),
@@ -417,6 +431,8 @@ class FundingSessionBuilder
       try {
         _$failedField = 'trade';
         trade.build();
+        _$failedField = 'continuation';
+        continuation.build();
 
         _$failedField = 'targetSnapshot';
         targetSnapshot.build();

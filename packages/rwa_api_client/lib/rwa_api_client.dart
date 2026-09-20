@@ -137,6 +137,7 @@ export 'package:rwa_api_client/src/model/funding_route_capability_matrix.dart';
 export 'package:rwa_api_client/src/model/funding_route_capability_status.dart';
 export 'package:rwa_api_client/src/model/funding_route_quote.dart';
 export 'package:rwa_api_client/src/model/funding_session.dart';
+export 'package:rwa_api_client/src/model/funding_session_continuation.dart';
 export 'package:rwa_api_client/src/model/funding_session_create_request.dart';
 export 'package:rwa_api_client/src/model/funding_session_plan_request.dart';
 export 'package:rwa_api_client/src/model/funding_session_selection_request.dart';
@@ -365,6 +366,7 @@ export 'package:rwa_api_client/src/model/self_custodial_withdrawal_gas_estimate.
 export 'package:rwa_api_client/src/model/self_custodial_withdrawal_status.dart';
 export 'package:rwa_api_client/src/model/self_custodial_withdrawal_submission_request.dart';
 export 'package:rwa_api_client/src/model/self_custodial_withdrawal_transaction.dart';
+export 'package:rwa_api_client/src/model/service_environment.dart';
 export 'package:rwa_api_client/src/model/session.dart';
 export 'package:rwa_api_client/src/model/session_kind.dart';
 export 'package:rwa_api_client/src/model/session_request.dart';
@@ -374,6 +376,11 @@ export 'package:rwa_api_client/src/model/sponsored_wallet_action_execution_submi
 export 'package:rwa_api_client/src/model/stock.dart';
 export 'package:rwa_api_client/src/model/stock_group.dart';
 export 'package:rwa_api_client/src/model/stock_page.dart';
+export 'package:rwa_api_client/src/model/system_environment.dart';
+export 'package:rwa_api_client/src/model/system_environment_bstocks.dart';
+export 'package:rwa_api_client/src/model/system_environment_bstocks_quote_token.dart';
+export 'package:rwa_api_client/src/model/system_environment_execution.dart';
+export 'package:rwa_api_client/src/model/system_environment_hip3.dart';
 export 'package:rwa_api_client/src/model/token_balance.dart';
 export 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 export 'package:rwa_api_client/src/model/trade_intent.dart';

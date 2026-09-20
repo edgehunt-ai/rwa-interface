@@ -13,6 +13,7 @@ import 'package:rwa_api_client/src/model/api_error.dart';
 import 'package:rwa_api_client/src/model/disclosures.dart';
 import 'package:rwa_api_client/src/model/list_app_versions200_response.dart';
 import 'package:rwa_api_client/src/model/realtime_event_page.dart';
+import 'package:rwa_api_client/src/model/system_environment.dart';
 
 class SystemApi {
 
@@ -91,6 +92,79 @@ class SystemApi {
     }
 
     return Response<Disclosures>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 部署环境标识
+  /// 返回当前部署声明的资产环境（&#x60;development&#x60; / &#x60;testnet&#x60; / &#x60;mainnet&#x60;） 以及各交易子系统实际接入的网络。客户端在渲染行情、下单或资金页面前 应先读取本接口：&#x60;environment&#x60; 为 &#x60;testnet&#x60; 时产品目录、结算资产与 链 ID 全部指向测试链（如 BSC testnet chain 97），不得按主网资产解释。  &#x60;bstocks.configured&#x60; 为 &#x60;false&#x60; 时 bStocks 执行链路未挂载， 对应市场只能展示行情；&#x60;hip3.environment&#x60; 与顶层 &#x60;environment&#x60; 可以不同（主网平台允许保留 HIP-3 testnet 观察通道）。 
+  ///
+  /// Parameters:
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [SystemEnvironment] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<SystemEnvironment>> getSystemEnvironment({ 
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/system/environment';
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    SystemEnvironment? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(SystemEnvironment),
+      ) as SystemEnvironment;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<SystemEnvironment>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

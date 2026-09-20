@@ -138,6 +138,7 @@ lib/src/model/funding_route_capability_matrix.dart
 lib/src/model/funding_route_capability_status.dart
 lib/src/model/funding_route_quote.dart
 lib/src/model/funding_session.dart
+lib/src/model/funding_session_continuation.dart
 lib/src/model/funding_session_create_request.dart
 lib/src/model/funding_session_plan_request.dart
 lib/src/model/funding_session_selection_request.dart
@@ -366,6 +367,7 @@ lib/src/model/self_custodial_withdrawal_gas_estimate.dart
 lib/src/model/self_custodial_withdrawal_status.dart
 lib/src/model/self_custodial_withdrawal_submission_request.dart
 lib/src/model/self_custodial_withdrawal_transaction.dart
+lib/src/model/service_environment.dart
 lib/src/model/session.dart
 lib/src/model/session_kind.dart
 lib/src/model/session_request.dart
@@ -375,6 +377,11 @@ lib/src/model/sponsored_wallet_action_execution_submission_request.dart
 lib/src/model/stock.dart
 lib/src/model/stock_group.dart
 lib/src/model/stock_page.dart
+lib/src/model/system_environment.dart
+lib/src/model/system_environment_bstocks.dart
+lib/src/model/system_environment_bstocks_quote_token.dart
+lib/src/model/system_environment_execution.dart
+lib/src/model/system_environment_hip3.dart
 lib/src/model/token_balance.dart
 lib/src/model/tp_sl_spec.dart
 lib/src/model/trade_intent.dart

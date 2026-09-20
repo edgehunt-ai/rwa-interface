@@ -17,7 +17,7 @@ part 'order_evm_action.g.dart';
 /// * [stepId] 
 /// * [ordinal] 
 /// * [kind] 
-/// * [chainId] 
+/// * [chainId] - BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
 /// * [from] 
 /// * [to] 
 /// * [data] 
@@ -41,9 +41,10 @@ abstract class OrderEvmAction implements Built<OrderEvmAction, OrderEvmActionBui
   OrderEvmActionKindEnum get kind;
   // enum kindEnum {  erc20_approval,  spot_swap,  };
 
+  /// BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
   @BuiltValueField(wireName: r'chain_id')
   OrderEvmActionChainIdEnum get chainId;
-  // enum chainIdEnum {  56,  };
+  // enum chainIdEnum {  56,  97,  31337,  };
 
   @BuiltValueField(wireName: r'from')
   String get from;
@@ -307,8 +308,16 @@ class OrderEvmActionKindEnum extends EnumClass {
 
 class OrderEvmActionChainIdEnum extends EnumClass {
 
+  /// BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
   @BuiltValueEnumConst(wireNumber: 56)
   static const OrderEvmActionChainIdEnum number56 = _$orderEvmActionChainIdEnum_number56;
+  /// BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
+  @BuiltValueEnumConst(wireNumber: 97)
+  static const OrderEvmActionChainIdEnum number97 = _$orderEvmActionChainIdEnum_number97;
+  /// BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
+  @BuiltValueEnumConst(wireNumber: 31337)
+  static const OrderEvmActionChainIdEnum number31337 = _$orderEvmActionChainIdEnum_number31337;
+  /// BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
   static const OrderEvmActionChainIdEnum unknownDefaultOpenApi = _$orderEvmActionChainIdEnum_unknownDefaultOpenApi;
 

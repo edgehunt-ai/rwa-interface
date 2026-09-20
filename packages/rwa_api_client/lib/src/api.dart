@@ -22,7 +22,7 @@ import 'package:rwa_api_client/src/api/system_api.dart';
 import 'package:rwa_api_client/src/api/wallets_api.dart';
 
 class RwaApiClient {
-  static const String basePath = r'https://rwa-api-staging.dxd.ink';
+  static const String basePath = r'https://rwa-api-staging.edgeagent.net';
 
   final Dio dio;
   final Serializers serializers;

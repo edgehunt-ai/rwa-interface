@@ -9,7 +9,7 @@ import 'package:built_value/serializer.dart';
 
 part 'portfolio_holding_page_all_of_coverage.g.dart';
 
-/// HIP3 持仓展示覆盖；不承诺原生 perpetual 或全钱包所有资产。计数在分页前计算。
+/// 持仓展示覆盖；不承诺原生 perpetual 或全钱包所有资产。计数在分页前计算。hip3 仅统计 HIP-3 仓位；hip3+bstocks 额外并入 manifest 承认的 bStocks 现货余额。
 ///
 /// Properties:
 /// * [scope] 
@@ -21,7 +21,7 @@ part 'portfolio_holding_page_all_of_coverage.g.dart';
 abstract class PortfolioHoldingPageAllOfCoverage implements Built<PortfolioHoldingPageAllOfCoverage, PortfolioHoldingPageAllOfCoverageBuilder> {
   @BuiltValueField(wireName: r'scope')
   PortfolioHoldingPageAllOfCoverageScopeEnum get scope;
-  // enum scopeEnum {  hip3,  };
+  // enum scopeEnum {  hip3,  hip3+bstocks,  };
 
   @BuiltValueField(wireName: r'observed_position_count')
   int get observedPositionCount;
@@ -176,6 +176,8 @@ class PortfolioHoldingPageAllOfCoverageScopeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3')
   static const PortfolioHoldingPageAllOfCoverageScopeEnum hip3 = _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3;
+  @BuiltValueEnumConst(wireName: r'hip3+bstocks')
+  static const PortfolioHoldingPageAllOfCoverageScopeEnum hip3PlusBstocks = _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3PlusBstocks;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const PortfolioHoldingPageAllOfCoverageScopeEnum unknownDefaultOpenApi = _$portfolioHoldingPageAllOfCoverageScopeEnum_unknownDefaultOpenApi;
 
