@@ -13,11 +13,17 @@ const WalletActionExecutionChainIdEnum
     _$walletActionExecutionChainIdEnum_number56 =
     const WalletActionExecutionChainIdEnum._('number56');
 const WalletActionExecutionChainIdEnum
+    _$walletActionExecutionChainIdEnum_number97 =
+    const WalletActionExecutionChainIdEnum._('number97');
+const WalletActionExecutionChainIdEnum
     _$walletActionExecutionChainIdEnum_number8453 =
     const WalletActionExecutionChainIdEnum._('number8453');
 const WalletActionExecutionChainIdEnum
     _$walletActionExecutionChainIdEnum_number42161 =
     const WalletActionExecutionChainIdEnum._('number42161');
+const WalletActionExecutionChainIdEnum
+    _$walletActionExecutionChainIdEnum_number421614 =
+    const WalletActionExecutionChainIdEnum._('number421614');
 const WalletActionExecutionChainIdEnum
     _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi =
     const WalletActionExecutionChainIdEnum._('unknownDefaultOpenApi');
@@ -29,10 +35,14 @@ WalletActionExecutionChainIdEnum _$walletActionExecutionChainIdEnumValueOf(
       return _$walletActionExecutionChainIdEnum_number1;
     case 'number56':
       return _$walletActionExecutionChainIdEnum_number56;
+    case 'number97':
+      return _$walletActionExecutionChainIdEnum_number97;
     case 'number8453':
       return _$walletActionExecutionChainIdEnum_number8453;
     case 'number42161':
       return _$walletActionExecutionChainIdEnum_number42161;
+    case 'number421614':
+      return _$walletActionExecutionChainIdEnum_number421614;
     case 'unknownDefaultOpenApi':
       return _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi;
     default:
@@ -45,8 +55,10 @@ final BuiltSet<WalletActionExecutionChainIdEnum>
         WalletActionExecutionChainIdEnum>(const <WalletActionExecutionChainIdEnum>[
   _$walletActionExecutionChainIdEnum_number1,
   _$walletActionExecutionChainIdEnum_number56,
+  _$walletActionExecutionChainIdEnum_number97,
   _$walletActionExecutionChainIdEnum_number8453,
   _$walletActionExecutionChainIdEnum_number42161,
+  _$walletActionExecutionChainIdEnum_number421614,
   _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi,
 ]);
 
@@ -59,15 +71,19 @@ class _$WalletActionExecutionChainIdEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'number1': 1,
     'number56': 56,
+    'number97': 97,
     'number8453': 8453,
     'number42161': 42161,
+    'number421614': 421614,
     'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
     56: 'number56',
+    97: 'number97',
     8453: 'number8453',
     42161: 'number42161',
+    421614: 'number421614',
     11184809: 'unknownDefaultOpenApi',
   };
 

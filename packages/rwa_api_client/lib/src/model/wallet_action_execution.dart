@@ -27,7 +27,7 @@ part 'wallet_action_execution.g.dart';
 /// * [resourceId] - Bound order_id, transfer_id or self-custodial withdrawal_id; it is never accepted from the client. 
 /// * [actionId] - Bound transfer action_id, order step_id, or the self-custodial withdrawal_id for `erc20_transfer` executions; it is never accepted from the client. 
 /// * [actionKind] 
-/// * [chainId] 
+/// * [chainId] - 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
 /// * [walletAddress] 
 /// * [payloadHash] - Lowercase SHA-256 digest without `0x` over the versioned canonical chain/from/to/calldata/value tuple. It MUST equal the bound business action hash. 
 /// * [businessExpiresAt] 
@@ -70,9 +70,10 @@ abstract class WalletActionExecution implements Built<WalletActionExecution, Wal
   WalletActionKind get actionKind;
   // enum actionKindEnum {  erc20_approval,  origin_transaction,  erc20_transfer,  spot_swap,  };
 
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
   @BuiltValueField(wireName: r'chain_id')
   WalletActionExecutionChainIdEnum get chainId;
-  // enum chainIdEnum {  1,  56,  8453,  42161,  };
+  // enum chainIdEnum {  1,  56,  97,  8453,  42161,  421614,  };
 
   @BuiltValueField(wireName: r'wallet_address')
   String get walletAddress;
@@ -556,14 +557,25 @@ class _$WalletActionExecutionSerializer implements PrimitiveSerializer<WalletAct
 
 class WalletActionExecutionChainIdEnum extends EnumClass {
 
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
   @BuiltValueEnumConst(wireNumber: 1)
   static const WalletActionExecutionChainIdEnum number1 = _$walletActionExecutionChainIdEnum_number1;
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
   @BuiltValueEnumConst(wireNumber: 56)
   static const WalletActionExecutionChainIdEnum number56 = _$walletActionExecutionChainIdEnum_number56;
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
+  @BuiltValueEnumConst(wireNumber: 97)
+  static const WalletActionExecutionChainIdEnum number97 = _$walletActionExecutionChainIdEnum_number97;
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
   @BuiltValueEnumConst(wireNumber: 8453)
   static const WalletActionExecutionChainIdEnum number8453 = _$walletActionExecutionChainIdEnum_number8453;
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
   @BuiltValueEnumConst(wireNumber: 42161)
   static const WalletActionExecutionChainIdEnum number42161 = _$walletActionExecutionChainIdEnum_number42161;
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
+  @BuiltValueEnumConst(wireNumber: 421614)
+  static const WalletActionExecutionChainIdEnum number421614 = _$walletActionExecutionChainIdEnum_number421614;
+  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
   static const WalletActionExecutionChainIdEnum unknownDefaultOpenApi = _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi;
 

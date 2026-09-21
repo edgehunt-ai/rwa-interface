@@ -154,7 +154,7 @@ class _$PerpOrderPreviewRequest extends PerpOrderPreviewRequest {
   @override
   final String? leverage;
   @override
-  final MarginMode? marginMode;
+  final MarginMode marginMode;
   @override
   final bool? reduceOnly;
   @override
@@ -178,7 +178,7 @@ class _$PerpOrderPreviewRequest extends PerpOrderPreviewRequest {
       this.quantity,
       this.limitPrice,
       this.leverage,
-      this.marginMode,
+      required this.marginMode,
       this.reduceOnly,
       this.slippagePercent,
       this.tpSl})
@@ -386,7 +386,8 @@ class PerpOrderPreviewRequestBuilder
             quantity: quantity,
             limitPrice: limitPrice,
             leverage: leverage,
-            marginMode: marginMode,
+            marginMode: BuiltValueNullFieldError.checkNotNull(
+                marginMode, r'PerpOrderPreviewRequest', 'marginMode'),
             reduceOnly: reduceOnly,
             slippagePercent: slippagePercent,
             tpSl: _tpSl?.build(),

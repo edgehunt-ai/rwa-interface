@@ -6,6 +6,28 @@ part of 'order.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const OrderFundingModeEnum _$orderFundingModeEnum_unreservedTransferFrom =
+    const OrderFundingModeEnum._('unreservedTransferFrom');
+const OrderFundingModeEnum _$orderFundingModeEnum_unknownDefaultOpenApi =
+    const OrderFundingModeEnum._('unknownDefaultOpenApi');
+
+OrderFundingModeEnum _$orderFundingModeEnumValueOf(String name) {
+  switch (name) {
+    case 'unreservedTransferFrom':
+      return _$orderFundingModeEnum_unreservedTransferFrom;
+    case 'unknownDefaultOpenApi':
+      return _$orderFundingModeEnum_unknownDefaultOpenApi;
+    default:
+      return _$orderFundingModeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<OrderFundingModeEnum> _$orderFundingModeEnumValues =
+    BuiltSet<OrderFundingModeEnum>(const <OrderFundingModeEnum>[
+  _$orderFundingModeEnum_unreservedTransferFrom,
+  _$orderFundingModeEnum_unknownDefaultOpenApi,
+]);
+
 const OrderWalletActionBlockerEnum
     _$orderWalletActionBlockerEnum_providerUnavailable =
     const OrderWalletActionBlockerEnum._('providerUnavailable');
@@ -50,9 +72,39 @@ final BuiltSet<OrderWalletActionBlockerEnum>
   _$orderWalletActionBlockerEnum_unknownDefaultOpenApi,
 ]);
 
+Serializer<OrderFundingModeEnum> _$orderFundingModeEnumSerializer =
+    _$OrderFundingModeEnumSerializer();
 Serializer<OrderWalletActionBlockerEnum>
     _$orderWalletActionBlockerEnumSerializer =
     _$OrderWalletActionBlockerEnumSerializer();
+
+class _$OrderFundingModeEnumSerializer
+    implements PrimitiveSerializer<OrderFundingModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'unreservedTransferFrom': 'unreserved_transfer_from',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'unreserved_transfer_from': 'unreservedTransferFrom',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[OrderFundingModeEnum];
+  @override
+  final String wireName = 'OrderFundingModeEnum';
+
+  @override
+  Object serialize(Serializers serializers, OrderFundingModeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  OrderFundingModeEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      OrderFundingModeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$OrderWalletActionBlockerEnumSerializer
     implements PrimitiveSerializer<OrderWalletActionBlockerEnum> {
@@ -90,6 +142,14 @@ class _$OrderWalletActionBlockerEnumSerializer
 }
 
 class _$Order extends Order {
+  @override
+  final bool? approvalRequired;
+  @override
+  final OrderFundingModeEnum? fundingMode;
+  @override
+  final bool? fundsReserved;
+  @override
+  final BstocksCancellationPolicy? cancellationPolicy;
   @override
   final ProductKind kind;
   @override
@@ -173,7 +233,11 @@ class _$Order extends Order {
       (OrderBuilder()..update(updates))._build();
 
   _$Order._(
-      {required this.kind,
+      {this.approvalRequired,
+      this.fundingMode,
+      this.fundsReserved,
+      this.cancellationPolicy,
+      required this.kind,
       this.nextAction,
       this.walletActionBlocker,
       this.actionStatus,
@@ -224,6 +288,10 @@ class _$Order extends Order {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Order &&
+        approvalRequired == other.approvalRequired &&
+        fundingMode == other.fundingMode &&
+        fundsReserved == other.fundsReserved &&
+        cancellationPolicy == other.cancellationPolicy &&
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
@@ -268,6 +336,10 @@ class _$Order extends Order {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, approvalRequired.hashCode);
+    _$hash = $jc(_$hash, fundingMode.hashCode);
+    _$hash = $jc(_$hash, fundsReserved.hashCode);
+    _$hash = $jc(_$hash, cancellationPolicy.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
@@ -314,6 +386,10 @@ class _$Order extends Order {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Order')
+          ..add('approvalRequired', approvalRequired)
+          ..add('fundingMode', fundingMode)
+          ..add('fundsReserved', fundsReserved)
+          ..add('cancellationPolicy', cancellationPolicy)
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
@@ -359,6 +435,28 @@ class _$Order extends Order {
 
 class OrderBuilder implements Builder<Order, OrderBuilder> {
   _$Order? _$v;
+
+  bool? _approvalRequired;
+  bool? get approvalRequired => _$this._approvalRequired;
+  set approvalRequired(bool? approvalRequired) =>
+      _$this._approvalRequired = approvalRequired;
+
+  OrderFundingModeEnum? _fundingMode;
+  OrderFundingModeEnum? get fundingMode => _$this._fundingMode;
+  set fundingMode(OrderFundingModeEnum? fundingMode) =>
+      _$this._fundingMode = fundingMode;
+
+  bool? _fundsReserved;
+  bool? get fundsReserved => _$this._fundsReserved;
+  set fundsReserved(bool? fundsReserved) =>
+      _$this._fundsReserved = fundsReserved;
+
+  BstocksCancellationPolicyBuilder? _cancellationPolicy;
+  BstocksCancellationPolicyBuilder get cancellationPolicy =>
+      _$this._cancellationPolicy ??= BstocksCancellationPolicyBuilder();
+  set cancellationPolicy(
+          BstocksCancellationPolicyBuilder? cancellationPolicy) =>
+      _$this._cancellationPolicy = cancellationPolicy;
 
   ProductKind? _kind;
   ProductKind? get kind => _$this._kind;
@@ -543,6 +641,10 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   OrderBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _approvalRequired = $v.approvalRequired;
+      _fundingMode = $v.fundingMode;
+      _fundsReserved = $v.fundsReserved;
+      _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
       _kind = $v.kind;
       _nextAction = $v.nextAction;
       _walletActionBlocker = $v.walletActionBlocker;
@@ -605,6 +707,10 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
     try {
       _$result = _$v ??
           _$Order._(
+            approvalRequired: approvalRequired,
+            fundingMode: fundingMode,
+            fundsReserved: fundsReserved,
+            cancellationPolicy: _cancellationPolicy?.build(),
             kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
             nextAction: nextAction,
             walletActionBlocker: walletActionBlocker,
@@ -652,6 +758,9 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'cancellationPolicy';
+        _cancellationPolicy?.build();
+
         _$failedField = 'conditional';
         _conditional?.build();
 

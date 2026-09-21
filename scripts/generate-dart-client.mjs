@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
@@ -38,6 +38,7 @@ export function generateClient(requestedOutput) {
     stdio: "inherit",
     env: { ...process.env, RWA_DART_CLIENT_OUTPUT: relativeOutput },
   });
+  repairSharedModelImports(outputDir);
   const generatorConfig = JSON.parse(readFileSync(resolve(rootDir, "openapitools.json"), "utf8"));
   const buildRunnerVersion = generatorConfig["generator-cli"].generators["rwa-api-client"]
     .additionalProperties.buildRunnerVersion;
@@ -53,6 +54,31 @@ export function generateClient(requestedOutput) {
   // 不属于可复现 artifact（package lock 由应用根目录统一管理）。
   rmSync(resolve(outputDir, ".dart_tool"), { recursive: true, force: true });
   rmSync(resolve(outputDir, "pubspec.lock"), { force: true });
+}
+
+// dart-dio can omit imports for shared schemas referenced through composed
+// models. Keep the generated package compilable without editing its output by
+// applying the deterministic imports immediately after generation.
+function repairSharedModelImports(outputDir) {
+  const modelDir = resolve(outputDir, "lib/src/model");
+  const repairs = [
+    ["OrderType", "order_type.dart"],
+    ["Hip3TimeInForce", "hip3_time_in_force.dart"],
+  ];
+  for (const fileName of readdirSync(modelDir)) {
+    if (!fileName.endsWith(".dart") || fileName.endsWith(".g.dart")) continue;
+    const filePath = resolve(modelDir, fileName);
+    let source = readFileSync(filePath, "utf8");
+    let changed = false;
+    for (const [typeName, importName] of repairs) {
+      const importLine = `import 'package:rwa_api_client/src/model/${importName}';`;
+      if (new RegExp(`\\b${typeName}\\b`).test(source) && !source.includes(importLine)) {
+        source = `${importLine}\n${source}`;
+        changed = true;
+      }
+    }
+    if (changed) writeFileSync(filePath, source);
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

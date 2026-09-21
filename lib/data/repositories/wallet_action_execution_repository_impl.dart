@@ -242,6 +242,7 @@ final class WalletActionExecutionRepositoryImpl
   String _caip2(api.PrivyAuthorizationBodyCaip2Enum value) => switch (value) {
     api.PrivyAuthorizationBodyCaip2Enum.eip155Colon1 => 'eip155:1',
     api.PrivyAuthorizationBodyCaip2Enum.eip155Colon56 => 'eip155:56',
+    api.PrivyAuthorizationBodyCaip2Enum.eip155Colon97 => 'eip155:97',
     api.PrivyAuthorizationBodyCaip2Enum.eip155Colon8453 => 'eip155:8453',
     api.PrivyAuthorizationBodyCaip2Enum.eip155Colon42161 => 'eip155:42161',
     _ => value.name,
@@ -250,6 +251,7 @@ final class WalletActionExecutionRepositoryImpl
   int _chainId(api.WalletActionExecutionChainIdEnum value) => switch (value) {
     api.WalletActionExecutionChainIdEnum.number1 => 1,
     api.WalletActionExecutionChainIdEnum.number56 => 56,
+    api.WalletActionExecutionChainIdEnum.number97 => 97,
     api.WalletActionExecutionChainIdEnum.number8453 => 8453,
     api.WalletActionExecutionChainIdEnum.number42161 => 42161,
     _ => -1,

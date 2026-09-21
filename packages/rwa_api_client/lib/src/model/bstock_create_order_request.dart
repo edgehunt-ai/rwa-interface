@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_create_order_request.g.dart';
 
-/// BstockCreateOrderRequest
+/// 当前非 localnet 实现要求有效 preview_id，并严格匹配账户/owner/输入/准入和经济量边界。 字段可选保留旧 wire 兼容，不表示运行时允许省略；缺失/过期/变更需重新预览。 返回 approval action 不代表已创建 swap，确认审批后须使用新 preview 和新创建幂等键。 
 ///
 /// Properties:
 /// * [symbol] 
@@ -20,12 +20,12 @@ part 'bstock_create_order_request.g.dart';
 /// * [side] 
 /// * [type] 
 /// * [timeInForce] 
-/// * [amount] - 市价买入时的 USDC 金额
+/// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
-/// * [limitPrice] - 限价单的 USDC 价格
+/// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
 /// * [tpSl] 
-/// * [previewId] - 传入预览返回的报价 id 可锁定价格；过期后需重新预览
+/// * [previewId] - 引用账户绑定的有效预览和经济量边界，不锁定成交；审批消费后或过期后重新预览。
 @BuiltValue()
 abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderRequest, BstockCreateOrderRequestBuilder> {
   @BuiltValueField(wireName: r'symbol')
@@ -47,7 +47,7 @@ abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderReques
   BstocksTimeInForce? get timeInForce;
   // enum timeInForceEnum {  gtc,  ioc,  };
 
-  /// 市价买入时的 USDC 金额
+  /// 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
   @BuiltValueField(wireName: r'amount')
   String? get amount;
 
@@ -55,7 +55,7 @@ abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderReques
   @BuiltValueField(wireName: r'quantity')
   String? get quantity;
 
-  /// 限价单的 USDC 价格
+  /// 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
@@ -66,7 +66,7 @@ abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderReques
   @BuiltValueField(wireName: r'tp_sl')
   TpSlSpec? get tpSl;
 
-  /// 传入预览返回的报价 id 可锁定价格；过期后需重新预览
+  /// 引用账户绑定的有效预览和经济量边界，不锁定成交；审批消费后或过期后重新预览。
   @BuiltValueField(wireName: r'preview_id')
   String? get previewId;
 

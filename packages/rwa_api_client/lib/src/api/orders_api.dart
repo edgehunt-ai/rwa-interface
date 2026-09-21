@@ -829,7 +829,7 @@ class OrdersApi {
   }
 
   /// 创建订单钱包动作执行
-  /// 服务端按 &#x60;order_id&#x60; 与 &#x60;step_id&#x60; 解析已冻结的 EVM 动作，客户端只能选择 gas 支付模式， 不得提交或覆盖 chain、to、data、value、payload hash 或业务资源绑定。HIP-3 EIP-712 动作不通过本端点执行；Provider 尚未实现时订单保持 &#x60;next_action&#x3D;null&#x60;。 
+  /// 服务端按 &#x60;order_id&#x60; 与 &#x60;step_id&#x60; 解析已冻结的 EVM 动作，客户端只能选择 gas 支付模式， 不得提交或覆盖 chain、to、data、value、payload hash 或业务资源绑定。HIP-3 EIP-712 动作不通过本端点执行。当前 bStocks order_id 为 bstocks-action:&lt;action UUID&gt;，step_id 必须为同一个 action UUID，动作必须仍 awaiting_signature 且未过期。支持 approval、IOC、 GTC 下单与取消；代付受 Privy/TEE、执行开关、链开关、gas额度及熔断控制，不承诺默认启用。 mode&#x3D;user_paid_native 仅在已启用回退且原代付明确广播前拒绝后允许，不能用于未知结果重试。 
   ///
   /// Parameters:
   /// * [orderId] 
@@ -2009,7 +2009,7 @@ class OrdersApi {
   }
 
   /// 订单列表
-  /// 筛选在分页前应用；组合条件取交集。按 created_at、order_id 稳定倒序分页。 open 包括 open/partially_filled 和仍有效的未触发条件单（不含已终结的条件单）；pending 包括待签名、提交中、 ambiguous/manual_review；terminal 为 filled/cancelled/failed。all 返回全部。 HIP3 条件单作为独立 Order 返回，可按 order_id 单独撤销。 
+  /// 筛选在分页前应用；组合条件取交集。按 created_at、order_id 稳定倒序分页。 open 包括 open/partially_filled 和仍有效的未触发条件单（不含已终结的条件单）；pending 包括待签名、提交中、 ambiguous/manual_review；terminal 为 filled/cancelled/failed。all 返回全部。 HIP3 条件单作为独立 Order 返回，可按 order_id 单独撤销。 当前运行时要求显式 kind；省略返回422/order_kind_required，user_action&#x3D;select_order_kind，不可盲目重试。 kind&#x3D;bstock 查询持久化 action、canonical GTC/IOC 历史。未确认 action ID 为 bstocks-action:&lt;UUID&gt;； 链上订单/成交使用服务端返回的规范 ID，不要自行拼接。 
   ///
   /// Parameters:
   /// * [symbol] 

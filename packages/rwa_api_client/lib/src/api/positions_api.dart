@@ -104,7 +104,7 @@ class PositionsApi {
   }
 
   /// 持仓列表
-  /// 当前 HIP3 客户端交易通道读取 Testnet 合约仓位；kind&#x3D;perp，不代表 Mainnet 或全钱包所有轨道。 详情页 symbol 可传完整 product_id（如 frce:US30YFRM），按完整身份在分页前精确过滤； 裸 symbol 保留同名查询，前端已知产品身份时必须传完整 ID，不能与其他环境的公开行情合并。 
+  /// 当前 HIP3 客户端交易通道读取 Testnet 合约仓位；kind&#x3D;perp，不代表 Mainnet 或全钱包所有轨道。 详情页 symbol 可传完整 product_id（如 frce:US30YFRM），按完整身份在分页前精确过滤； 裸 symbol 保留同名查询，前端已知产品身份时必须传完整 ID，不能与其他环境的公开行情合并。 kind&#x3D;bstock 读取当前 admission 的 BSC 钱包余额，可按 token symbol 或对应 underlying symbol 过滤。 必须有当前完整余额证据，否则503/bstocks_balances_unavailable，不能当作空仓。 total_value_usd 在分页前对整个筛选集合计算；任一正持仓未估值时省略总值，而不是填0。 bStocks 当前只提供本列表查询，不保证 /positions/{position_id} 的 HIP3 详情流程支持该ID。 
   ///
   /// Parameters:
   /// * [symbol] 

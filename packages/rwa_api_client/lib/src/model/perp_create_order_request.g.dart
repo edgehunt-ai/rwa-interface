@@ -154,7 +154,7 @@ class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
   @override
   final String? leverage;
   @override
-  final MarginMode? marginMode;
+  final MarginMode marginMode;
   @override
   final bool? reduceOnly;
   @override
@@ -180,7 +180,7 @@ class _$PerpCreateOrderRequest extends PerpCreateOrderRequest {
       this.quantity,
       this.limitPrice,
       this.leverage,
-      this.marginMode,
+      required this.marginMode,
       this.reduceOnly,
       this.slippagePercent,
       this.tpSl,
@@ -396,7 +396,8 @@ class PerpCreateOrderRequestBuilder
             quantity: quantity,
             limitPrice: limitPrice,
             leverage: leverage,
-            marginMode: marginMode,
+            marginMode: BuiltValueNullFieldError.checkNotNull(
+                marginMode, r'PerpCreateOrderRequest', 'marginMode'),
             reduceOnly: reduceOnly,
             slippagePercent: slippagePercent,
             tpSl: _tpSl?.build(),

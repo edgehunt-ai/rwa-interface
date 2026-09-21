@@ -11,19 +11,25 @@ part 'self_custodial_withdrawal_chain_id.g.dart';
 
 class SelfCustodialWithdrawalChainId extends EnumClass {
 
-  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
+  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
   @BuiltValueEnumConst(wireName: r'1')
   static const SelfCustodialWithdrawalChainId n1 = _$n1;
-  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
+  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
   @BuiltValueEnumConst(wireName: r'42161')
   static const SelfCustodialWithdrawalChainId n42161 = _$n42161;
-  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
+  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
   @BuiltValueEnumConst(wireName: r'8453')
   static const SelfCustodialWithdrawalChainId n8453 = _$n8453;
-  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
+  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
   @BuiltValueEnumConst(wireName: r'56')
   static const SelfCustodialWithdrawalChainId n56 = _$n56;
-  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
+  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
+  @BuiltValueEnumConst(wireName: r'97')
+  static const SelfCustodialWithdrawalChainId n97 = _$n97;
+  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
+  @BuiltValueEnumConst(wireName: r'421614')
+  static const SelfCustodialWithdrawalChainId n421614 = _$n421614;
+  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const SelfCustodialWithdrawalChainId unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 

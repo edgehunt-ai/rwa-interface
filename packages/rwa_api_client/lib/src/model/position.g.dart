@@ -33,8 +33,98 @@ final BuiltSet<PositionSideEnum> _$positionSideEnumValues =
   _$positionSideEnum_unknownDefaultOpenApi,
 ]);
 
+const PositionChainIdEnum _$positionChainIdEnum_number56 =
+    const PositionChainIdEnum._('number56');
+const PositionChainIdEnum _$positionChainIdEnum_number97 =
+    const PositionChainIdEnum._('number97');
+const PositionChainIdEnum _$positionChainIdEnum_number31337 =
+    const PositionChainIdEnum._('number31337');
+const PositionChainIdEnum _$positionChainIdEnum_unknownDefaultOpenApi =
+    const PositionChainIdEnum._('unknownDefaultOpenApi');
+
+PositionChainIdEnum _$positionChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number56':
+      return _$positionChainIdEnum_number56;
+    case 'number97':
+      return _$positionChainIdEnum_number97;
+    case 'number31337':
+      return _$positionChainIdEnum_number31337;
+    case 'unknownDefaultOpenApi':
+      return _$positionChainIdEnum_unknownDefaultOpenApi;
+    default:
+      return _$positionChainIdEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<PositionChainIdEnum> _$positionChainIdEnumValues =
+    BuiltSet<PositionChainIdEnum>(const <PositionChainIdEnum>[
+  _$positionChainIdEnum_number56,
+  _$positionChainIdEnum_number97,
+  _$positionChainIdEnum_number31337,
+  _$positionChainIdEnum_unknownDefaultOpenApi,
+]);
+
+const PositionPnlStatusEnum _$positionPnlStatusEnum_known =
+    const PositionPnlStatusEnum._('known');
+const PositionPnlStatusEnum _$positionPnlStatusEnum_unknownCost =
+    const PositionPnlStatusEnum._('unknownCost');
+const PositionPnlStatusEnum _$positionPnlStatusEnum_unknownDefaultOpenApi =
+    const PositionPnlStatusEnum._('unknownDefaultOpenApi');
+
+PositionPnlStatusEnum _$positionPnlStatusEnumValueOf(String name) {
+  switch (name) {
+    case 'known':
+      return _$positionPnlStatusEnum_known;
+    case 'unknownCost':
+      return _$positionPnlStatusEnum_unknownCost;
+    case 'unknownDefaultOpenApi':
+      return _$positionPnlStatusEnum_unknownDefaultOpenApi;
+    default:
+      return _$positionPnlStatusEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<PositionPnlStatusEnum> _$positionPnlStatusEnumValues =
+    BuiltSet<PositionPnlStatusEnum>(const <PositionPnlStatusEnum>[
+  _$positionPnlStatusEnum_known,
+  _$positionPnlStatusEnum_unknownCost,
+  _$positionPnlStatusEnum_unknownDefaultOpenApi,
+]);
+
+const PositionValuationStatusEnum _$positionValuationStatusEnum_referenceOnly =
+    const PositionValuationStatusEnum._('referenceOnly');
+const PositionValuationStatusEnum
+    _$positionValuationStatusEnum_unknownDefaultOpenApi =
+    const PositionValuationStatusEnum._('unknownDefaultOpenApi');
+
+PositionValuationStatusEnum _$positionValuationStatusEnumValueOf(String name) {
+  switch (name) {
+    case 'referenceOnly':
+      return _$positionValuationStatusEnum_referenceOnly;
+    case 'unknownDefaultOpenApi':
+      return _$positionValuationStatusEnum_unknownDefaultOpenApi;
+    default:
+      return _$positionValuationStatusEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<PositionValuationStatusEnum>
+    _$positionValuationStatusEnumValues =
+    BuiltSet<PositionValuationStatusEnum>(const <PositionValuationStatusEnum>[
+  _$positionValuationStatusEnum_referenceOnly,
+  _$positionValuationStatusEnum_unknownDefaultOpenApi,
+]);
+
 Serializer<PositionSideEnum> _$positionSideEnumSerializer =
     _$PositionSideEnumSerializer();
+Serializer<PositionChainIdEnum> _$positionChainIdEnumSerializer =
+    _$PositionChainIdEnumSerializer();
+Serializer<PositionPnlStatusEnum> _$positionPnlStatusEnumSerializer =
+    _$PositionPnlStatusEnumSerializer();
+Serializer<PositionValuationStatusEnum>
+    _$positionValuationStatusEnumSerializer =
+    _$PositionValuationStatusEnumSerializer();
 
 class _$PositionSideEnumSerializer
     implements PrimitiveSerializer<PositionSideEnum> {
@@ -66,6 +156,97 @@ class _$PositionSideEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$PositionChainIdEnumSerializer
+    implements PrimitiveSerializer<PositionChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number56': 56,
+    'number97': 97,
+    'number31337': 31337,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    56: 'number56',
+    97: 'number97',
+    31337: 'number31337',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[PositionChainIdEnum];
+  @override
+  final String wireName = 'PositionChainIdEnum';
+
+  @override
+  Object serialize(Serializers serializers, PositionChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PositionChainIdEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PositionChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PositionPnlStatusEnumSerializer
+    implements PrimitiveSerializer<PositionPnlStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'known': 'known',
+    'unknownCost': 'unknown_cost',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'known': 'known',
+    'unknown_cost': 'unknownCost',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[PositionPnlStatusEnum];
+  @override
+  final String wireName = 'PositionPnlStatusEnum';
+
+  @override
+  Object serialize(Serializers serializers, PositionPnlStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PositionPnlStatusEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PositionPnlStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PositionValuationStatusEnumSerializer
+    implements PrimitiveSerializer<PositionValuationStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'referenceOnly': 'reference_only',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'reference_only': 'referenceOnly',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[PositionValuationStatusEnum];
+  @override
+  final String wireName = 'PositionValuationStatusEnum';
+
+  @override
+  Object serialize(Serializers serializers, PositionValuationStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PositionValuationStatusEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PositionValuationStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$Position extends Position {
   @override
   final String? productId;
@@ -90,7 +271,25 @@ class _$Position extends Position {
   @override
   final String? quantityUnit;
   @override
-  final String valueUsd;
+  final PositionChainIdEnum? chainId;
+  @override
+  final String? environment;
+  @override
+  final String? freshness;
+  @override
+  final PositionPnlStatusEnum? pnlStatus;
+  @override
+  final PositionValuationStatusEnum? valuationStatus;
+  @override
+  final String? costBasisQuote;
+  @override
+  final String? costBasisQuoteAsset;
+  @override
+  final String? referenceCostUsd;
+  @override
+  final String? unrealizedPnlReferenceUsd;
+  @override
+  final String? valueUsd;
   @override
   final String? entryPrice;
   @override
@@ -139,7 +338,16 @@ class _$Position extends Position {
       this.side,
       required this.quantity,
       this.quantityUnit,
-      required this.valueUsd,
+      this.chainId,
+      this.environment,
+      this.freshness,
+      this.pnlStatus,
+      this.valuationStatus,
+      this.costBasisQuote,
+      this.costBasisQuoteAsset,
+      this.referenceCostUsd,
+      this.unrealizedPnlReferenceUsd,
+      this.valueUsd,
       this.entryPrice,
       this.markPrice,
       this.unrealizedPnl,
@@ -179,6 +387,15 @@ class _$Position extends Position {
         side == other.side &&
         quantity == other.quantity &&
         quantityUnit == other.quantityUnit &&
+        chainId == other.chainId &&
+        environment == other.environment &&
+        freshness == other.freshness &&
+        pnlStatus == other.pnlStatus &&
+        valuationStatus == other.valuationStatus &&
+        costBasisQuote == other.costBasisQuote &&
+        costBasisQuoteAsset == other.costBasisQuoteAsset &&
+        referenceCostUsd == other.referenceCostUsd &&
+        unrealizedPnlReferenceUsd == other.unrealizedPnlReferenceUsd &&
         valueUsd == other.valueUsd &&
         entryPrice == other.entryPrice &&
         markPrice == other.markPrice &&
@@ -212,6 +429,15 @@ class _$Position extends Position {
     _$hash = $jc(_$hash, side.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, quantityUnit.hashCode);
+    _$hash = $jc(_$hash, chainId.hashCode);
+    _$hash = $jc(_$hash, environment.hashCode);
+    _$hash = $jc(_$hash, freshness.hashCode);
+    _$hash = $jc(_$hash, pnlStatus.hashCode);
+    _$hash = $jc(_$hash, valuationStatus.hashCode);
+    _$hash = $jc(_$hash, costBasisQuote.hashCode);
+    _$hash = $jc(_$hash, costBasisQuoteAsset.hashCode);
+    _$hash = $jc(_$hash, referenceCostUsd.hashCode);
+    _$hash = $jc(_$hash, unrealizedPnlReferenceUsd.hashCode);
     _$hash = $jc(_$hash, valueUsd.hashCode);
     _$hash = $jc(_$hash, entryPrice.hashCode);
     _$hash = $jc(_$hash, markPrice.hashCode);
@@ -247,6 +473,15 @@ class _$Position extends Position {
           ..add('side', side)
           ..add('quantity', quantity)
           ..add('quantityUnit', quantityUnit)
+          ..add('chainId', chainId)
+          ..add('environment', environment)
+          ..add('freshness', freshness)
+          ..add('pnlStatus', pnlStatus)
+          ..add('valuationStatus', valuationStatus)
+          ..add('costBasisQuote', costBasisQuote)
+          ..add('costBasisQuoteAsset', costBasisQuoteAsset)
+          ..add('referenceCostUsd', referenceCostUsd)
+          ..add('unrealizedPnlReferenceUsd', unrealizedPnlReferenceUsd)
           ..add('valueUsd', valueUsd)
           ..add('entryPrice', entryPrice)
           ..add('markPrice', markPrice)
@@ -317,6 +552,48 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
   String? _quantityUnit;
   String? get quantityUnit => _$this._quantityUnit;
   set quantityUnit(String? quantityUnit) => _$this._quantityUnit = quantityUnit;
+
+  PositionChainIdEnum? _chainId;
+  PositionChainIdEnum? get chainId => _$this._chainId;
+  set chainId(PositionChainIdEnum? chainId) => _$this._chainId = chainId;
+
+  String? _environment;
+  String? get environment => _$this._environment;
+  set environment(String? environment) => _$this._environment = environment;
+
+  String? _freshness;
+  String? get freshness => _$this._freshness;
+  set freshness(String? freshness) => _$this._freshness = freshness;
+
+  PositionPnlStatusEnum? _pnlStatus;
+  PositionPnlStatusEnum? get pnlStatus => _$this._pnlStatus;
+  set pnlStatus(PositionPnlStatusEnum? pnlStatus) =>
+      _$this._pnlStatus = pnlStatus;
+
+  PositionValuationStatusEnum? _valuationStatus;
+  PositionValuationStatusEnum? get valuationStatus => _$this._valuationStatus;
+  set valuationStatus(PositionValuationStatusEnum? valuationStatus) =>
+      _$this._valuationStatus = valuationStatus;
+
+  String? _costBasisQuote;
+  String? get costBasisQuote => _$this._costBasisQuote;
+  set costBasisQuote(String? costBasisQuote) =>
+      _$this._costBasisQuote = costBasisQuote;
+
+  String? _costBasisQuoteAsset;
+  String? get costBasisQuoteAsset => _$this._costBasisQuoteAsset;
+  set costBasisQuoteAsset(String? costBasisQuoteAsset) =>
+      _$this._costBasisQuoteAsset = costBasisQuoteAsset;
+
+  String? _referenceCostUsd;
+  String? get referenceCostUsd => _$this._referenceCostUsd;
+  set referenceCostUsd(String? referenceCostUsd) =>
+      _$this._referenceCostUsd = referenceCostUsd;
+
+  String? _unrealizedPnlReferenceUsd;
+  String? get unrealizedPnlReferenceUsd => _$this._unrealizedPnlReferenceUsd;
+  set unrealizedPnlReferenceUsd(String? unrealizedPnlReferenceUsd) =>
+      _$this._unrealizedPnlReferenceUsd = unrealizedPnlReferenceUsd;
 
   String? _valueUsd;
   String? get valueUsd => _$this._valueUsd;
@@ -410,6 +687,15 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
       _side = $v.side;
       _quantity = $v.quantity;
       _quantityUnit = $v.quantityUnit;
+      _chainId = $v.chainId;
+      _environment = $v.environment;
+      _freshness = $v.freshness;
+      _pnlStatus = $v.pnlStatus;
+      _valuationStatus = $v.valuationStatus;
+      _costBasisQuote = $v.costBasisQuote;
+      _costBasisQuoteAsset = $v.costBasisQuoteAsset;
+      _referenceCostUsd = $v.referenceCostUsd;
+      _unrealizedPnlReferenceUsd = $v.unrealizedPnlReferenceUsd;
       _valueUsd = $v.valueUsd;
       _entryPrice = $v.entryPrice;
       _markPrice = $v.markPrice;
@@ -465,8 +751,16 @@ class PositionBuilder implements Builder<Position, PositionBuilder> {
             quantity: BuiltValueNullFieldError.checkNotNull(
                 quantity, r'Position', 'quantity'),
             quantityUnit: quantityUnit,
-            valueUsd: BuiltValueNullFieldError.checkNotNull(
-                valueUsd, r'Position', 'valueUsd'),
+            chainId: chainId,
+            environment: environment,
+            freshness: freshness,
+            pnlStatus: pnlStatus,
+            valuationStatus: valuationStatus,
+            costBasisQuote: costBasisQuote,
+            costBasisQuoteAsset: costBasisQuoteAsset,
+            referenceCostUsd: referenceCostUsd,
+            unrealizedPnlReferenceUsd: unrealizedPnlReferenceUsd,
+            valueUsd: valueUsd,
             entryPrice: entryPrice,
             markPrice: markPrice,
             unrealizedPnl: unrealizedPnl,

@@ -24,7 +24,7 @@ part 'self_custodial_withdrawal_transaction.g.dart';
 abstract class SelfCustodialWithdrawalTransaction implements Built<SelfCustodialWithdrawalTransaction, SelfCustodialWithdrawalTransactionBuilder> {
   @BuiltValueField(wireName: r'chain_id')
   SelfCustodialWithdrawalChainId get chainId;
-  // enum chainIdEnum {  1,  42161,  8453,  56,  };
+  // enum chainIdEnum {  1,  42161,  8453,  56,  97,  421614,  };
 
   /// Exact verified Privy wallet address selected through `wallet_id`.
   @BuiltValueField(wireName: r'from')

@@ -8,6 +8,7 @@ import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_warning_code.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
+import 'package:rwa_api_client/src/model/bstocks_portfolio_availability.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_network.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -17,6 +18,7 @@ part 'portfolio_asset.g.dart';
 /// 只读余额事实。EVM 资产的 network 仅使用 BSC、Arbitrum、Base、Ethereum 四链 allowlist；venue 资产使用 Hyperliquid。任何标识都由服务端已验证的 用户钱包集合或 venue account 派生，客户端不能覆盖所有权输入。 
 ///
 /// Properties:
+/// * [bstocks] 
 /// * [assetId] 
 /// * [source_] 
 /// * [network] 
@@ -38,6 +40,9 @@ part 'portfolio_asset.g.dart';
 /// * [warnings] 
 @BuiltValue()
 abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBuilder> {
+  @BuiltValueField(wireName: r'bstocks')
+  BstocksPortfolioAvailability? get bstocks;
+
   @BuiltValueField(wireName: r'asset_id')
   String get assetId;
 
@@ -128,6 +133,13 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
     PortfolioAsset object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.bstocks != null) {
+      yield r'bstocks';
+      yield serializers.serialize(
+        object.bstocks,
+        specifiedType: const FullType(BstocksPortfolioAvailability),
+      );
+    }
     yield r'asset_id';
     yield serializers.serialize(
       object.assetId,
@@ -260,6 +272,14 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'bstocks':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksPortfolioAvailability),
+          ) as BstocksPortfolioAvailability?;
+          if (valueDes == null) continue;
+          result.bstocks.replace(valueDes);
+          break;
         case r'asset_id':
           final valueDes = serializers.deserialize(
             value,

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/routing/routes.dart';
 import '../../../../domain/models/funding_transfer.dart';
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
@@ -55,9 +56,9 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
         return;
       }
       _pending = _plan.status == FundingPlanState.ready && !_plan.isActionable;
-    } on Object {
+    } on Object catch (error) {
       if (mounted) {
-        _error = AppLocalizations.of(context).transferStartFailed;
+        _error = _specificErrorMessage(error);
         // Reconcile before offering another authorization after an uncertain
         // transfer response.
         _pending = true;
@@ -65,6 +66,20 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String _specificErrorMessage(Object error) {
+    if (error is ApiFailure) {
+      return apiFailureMessage(
+        error,
+        fallback: AppLocalizations.of(context).transferStartFailed,
+      );
+    }
+    if (error is FormatException && error.message.toString().isNotEmpty) {
+      return error.message.toString();
+    }
+    final message = error.toString().trim();
+    return message.isEmpty ? 'Funding failed for an unknown reason.' : message;
   }
 
   @override

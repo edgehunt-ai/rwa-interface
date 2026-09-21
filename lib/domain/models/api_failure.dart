@@ -95,7 +95,11 @@ final class AuthenticationFailure extends ApiFailure {
 }
 
 final class NetworkFailure extends ApiFailure {
-  const NetworkFailure({super.requestId, super.retryable = true});
+  const NetworkFailure({
+    super.requestId,
+    super.retryable = true,
+    super.userAction,
+  });
   @override
   FailureKind get kind => FailureKind.network;
 }
@@ -113,7 +117,7 @@ final class CancelledFailure extends ApiFailure {
 }
 
 final class DecodingFailure extends ApiFailure {
-  const DecodingFailure({super.requestId});
+  const DecodingFailure({super.requestId, super.userAction});
   @override
   FailureKind get kind => FailureKind.decoding;
 }

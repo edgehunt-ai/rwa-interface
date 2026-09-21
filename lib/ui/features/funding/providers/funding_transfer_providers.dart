@@ -6,6 +6,7 @@ import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/observability_providers.dart';
 import '../../../../domain/models/api_failure.dart';
+import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../../../domain/models/withdrawal.dart';
 import '../../../../domain/models/funding_session.dart';
@@ -64,20 +65,28 @@ final class FundingTransferCommands {
     return result;
   }
 
-  Future<FundingPlan> session({
-    required OrderIntent intent,
-  }) async {
+  Future<FundingPlan> session({required OrderIntent intent}) async {
     final session = await _run(
       operation: 'funding_session',
       command: () => _commands.run(
         operation: 'funding-session',
         fingerprint: intent.fingerprint,
-        command: (key) => _ref.read(fundingRepositoryProvider).createFundingSession(
-          intent: intent,
-          idempotencyKey: key,
-        ),
+        command: (key) => _ref
+            .read(fundingRepositoryProvider)
+            .createFundingSession(intent: intent, idempotencyKey: key),
       ),
     );
+    // A funded session already proves the target balance requirement is met.
+    // Creating a plan after this response is both unnecessary and can make
+    // the server re-evaluate an already-satisfied funding request.
+    if (session.status == 'funded') {
+      return FundingPlan(
+        planId: session.sessionId,
+        tradePreviewId: '',
+        shortfall: DecimalValue('0'),
+        status: FundingPlanState.alreadyFunded,
+      );
+    }
     final plan = await planForSession(session);
     return plan;
   }
@@ -88,11 +97,13 @@ final class FundingTransferCommands {
       command: () => _commands.run(
         operation: 'funding-plan-session',
         fingerprint: '${session.sessionId}|${session.version}',
-        command: (key) => _ref.read(fundingRepositoryProvider).createFundingSessionPlan(
-          fundingSessionId: session.sessionId,
-          selectionVersion: session.version,
-          idempotencyKey: key,
-        ),
+        command: (key) => _ref
+            .read(fundingRepositoryProvider)
+            .createFundingSessionPlan(
+              fundingSessionId: session.sessionId,
+              selectionVersion: session.version,
+              idempotencyKey: key,
+            ),
       ),
     );
     _ref.invalidate(fundingPlanProvider(result.planId));

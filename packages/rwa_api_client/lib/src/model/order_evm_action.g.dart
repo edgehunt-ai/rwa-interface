@@ -211,7 +211,7 @@ class _$OrderEvmAction extends OrderEvmAction {
   @override
   final DateTime validUntil;
   @override
-  final GasPaymentQuote gasPayment;
+  final OrderActionGasPayment gasPayment;
 
   factory _$OrderEvmAction([void Function(OrderEvmActionBuilder)? updates]) =>
       (OrderEvmActionBuilder()..update(updates))._build();
@@ -341,10 +341,10 @@ class OrderEvmActionBuilder
   DateTime? get validUntil => _$this._validUntil;
   set validUntil(DateTime? validUntil) => _$this._validUntil = validUntil;
 
-  GasPaymentQuoteBuilder? _gasPayment;
-  GasPaymentQuoteBuilder get gasPayment =>
-      _$this._gasPayment ??= GasPaymentQuoteBuilder();
-  set gasPayment(GasPaymentQuoteBuilder? gasPayment) =>
+  OrderActionGasPaymentBuilder? _gasPayment;
+  OrderActionGasPaymentBuilder get gasPayment =>
+      _$this._gasPayment ??= OrderActionGasPaymentBuilder();
+  set gasPayment(OrderActionGasPaymentBuilder? gasPayment) =>
       _$this._gasPayment = gasPayment;
 
   OrderEvmActionBuilder() {

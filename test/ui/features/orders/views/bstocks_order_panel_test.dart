@@ -205,8 +205,12 @@ void main() {
     final slider = find.byKey(const Key('bstocks-percentage-slider'));
     tester.widget<Slider>(slider).onChanged!(50);
     await tester.pump();
-    expect(tester.widget<TextField>(input).controller!.text, '228.39');
+    expect(tester.widget<TextField>(input).controller!.text, '228');
     expect(tester.widget<Slider>(slider).value, 50);
+
+    tester.widget<Slider>(slider).onChanged!(100);
+    await tester.pump();
+    expect(tester.widget<TextField>(input).controller!.text, '456.78');
 
     await tester.enterText(input, '114.195');
     await tester.pump();
@@ -223,6 +227,28 @@ void main() {
     await tester.enterText(input, 'invalid');
     await tester.pump();
     expect(tester.widget<Slider>(slider).value, 0);
+  });
+
+  testWidgets('small balances keep slider decimals', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          bstocksOrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('1.5', asset: 'USD', unit: 'fiat'),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final input = find.byType(TextField).first;
+    final slider = find.byKey(const Key('bstocks-percentage-slider'));
+    tester.widget<Slider>(slider).onChanged!(50);
+    await tester.pump();
+
+    expect(tester.widget<TextField>(input).controller!.text, '0.75');
   });
 
   testWidgets(

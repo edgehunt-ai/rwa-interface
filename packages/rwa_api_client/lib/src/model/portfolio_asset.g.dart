@@ -8,6 +8,8 @@ part of 'portfolio_asset.dart';
 
 class _$PortfolioAsset extends PortfolioAsset {
   @override
+  final BstocksPortfolioAvailability? bstocks;
+  @override
   final String assetId;
   @override
   final PortfolioAssetSourceKind source_;
@@ -50,7 +52,8 @@ class _$PortfolioAsset extends PortfolioAsset {
       (PortfolioAssetBuilder()..update(updates))._build();
 
   _$PortfolioAsset._(
-      {required this.assetId,
+      {this.bstocks,
+      required this.assetId,
       required this.source_,
       required this.network,
       this.walletId,
@@ -81,6 +84,7 @@ class _$PortfolioAsset extends PortfolioAsset {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is PortfolioAsset &&
+        bstocks == other.bstocks &&
         assetId == other.assetId &&
         source_ == other.source_ &&
         network == other.network &&
@@ -105,6 +109,7 @@ class _$PortfolioAsset extends PortfolioAsset {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, bstocks.hashCode);
     _$hash = $jc(_$hash, assetId.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
@@ -131,6 +136,7 @@ class _$PortfolioAsset extends PortfolioAsset {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'PortfolioAsset')
+          ..add('bstocks', bstocks)
           ..add('assetId', assetId)
           ..add('source_', source_)
           ..add('network', network)
@@ -157,6 +163,12 @@ class _$PortfolioAsset extends PortfolioAsset {
 class PortfolioAssetBuilder
     implements Builder<PortfolioAsset, PortfolioAssetBuilder> {
   _$PortfolioAsset? _$v;
+
+  BstocksPortfolioAvailabilityBuilder? _bstocks;
+  BstocksPortfolioAvailabilityBuilder get bstocks =>
+      _$this._bstocks ??= BstocksPortfolioAvailabilityBuilder();
+  set bstocks(BstocksPortfolioAvailabilityBuilder? bstocks) =>
+      _$this._bstocks = bstocks;
 
   String? _assetId;
   String? get assetId => _$this._assetId;
@@ -245,6 +257,7 @@ class PortfolioAssetBuilder
   PortfolioAssetBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _bstocks = $v.bstocks?.toBuilder();
       _assetId = $v.assetId;
       _source_ = $v.source_;
       _network = $v.network;
@@ -287,6 +300,7 @@ class PortfolioAssetBuilder
     try {
       _$result = _$v ??
           _$PortfolioAsset._(
+            bstocks: _bstocks?.build(),
             assetId: BuiltValueNullFieldError.checkNotNull(
                 assetId, r'PortfolioAsset', 'assetId'),
             source_: BuiltValueNullFieldError.checkNotNull(
@@ -321,6 +335,9 @@ class PortfolioAssetBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'bstocks';
+        _bstocks?.build();
+
         _$failedField = 'warnings';
         warnings.build();
       } catch (e) {

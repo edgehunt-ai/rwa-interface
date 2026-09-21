@@ -33,7 +33,7 @@ part 'order_preview_request.g.dart';
 /// * [contextId] - 可选的 HIP3 trading context；存在时精确绑定账户/产品/环境，过期返回 409。新客户端在请求前读取 context。
 /// * [protection] 
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode] 
+/// * [marginMode] - 必须显式传入，并与当前 HIP-3 trading context 的保证金模式一致；如需切换模式，先调用账户设置接口。
 /// * [reduceOnly] 
 @BuiltValue()
 abstract class OrderPreviewRequest implements Built<OrderPreviewRequest, OrderPreviewRequestBuilder> {

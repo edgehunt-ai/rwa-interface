@@ -6,15 +6,15 @@ part of 'order_preview.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
-const OrderPreviewKindEnum _$orderPreviewKindEnum_perp =
-    const OrderPreviewKindEnum._('perp');
+const OrderPreviewKindEnum _$orderPreviewKindEnum_bstock =
+    const OrderPreviewKindEnum._('bstock');
 const OrderPreviewKindEnum _$orderPreviewKindEnum_unknownDefaultOpenApi =
     const OrderPreviewKindEnum._('unknownDefaultOpenApi');
 
 OrderPreviewKindEnum _$orderPreviewKindEnumValueOf(String name) {
   switch (name) {
-    case 'perp':
-      return _$orderPreviewKindEnum_perp;
+    case 'bstock':
+      return _$orderPreviewKindEnum_bstock;
     case 'unknownDefaultOpenApi':
       return _$orderPreviewKindEnum_unknownDefaultOpenApi;
     default:
@@ -24,19 +24,19 @@ OrderPreviewKindEnum _$orderPreviewKindEnumValueOf(String name) {
 
 final BuiltSet<OrderPreviewKindEnum> _$orderPreviewKindEnumValues =
     BuiltSet<OrderPreviewKindEnum>(const <OrderPreviewKindEnum>[
-  _$orderPreviewKindEnum_perp,
+  _$orderPreviewKindEnum_bstock,
   _$orderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
-const OrderPreviewNetworkEnum _$orderPreviewNetworkEnum_arbitrum =
-    const OrderPreviewNetworkEnum._('arbitrum');
+const OrderPreviewNetworkEnum _$orderPreviewNetworkEnum_BSC =
+    const OrderPreviewNetworkEnum._('BSC');
 const OrderPreviewNetworkEnum _$orderPreviewNetworkEnum_unknownDefaultOpenApi =
     const OrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 OrderPreviewNetworkEnum _$orderPreviewNetworkEnumValueOf(String name) {
   switch (name) {
-    case 'arbitrum':
-      return _$orderPreviewNetworkEnum_arbitrum;
+    case 'BSC':
+      return _$orderPreviewNetworkEnum_BSC;
     case 'unknownDefaultOpenApi':
       return _$orderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
@@ -46,13 +46,41 @@ OrderPreviewNetworkEnum _$orderPreviewNetworkEnumValueOf(String name) {
 
 final BuiltSet<OrderPreviewNetworkEnum> _$orderPreviewNetworkEnumValues =
     BuiltSet<OrderPreviewNetworkEnum>(const <OrderPreviewNetworkEnum>[
-  _$orderPreviewNetworkEnum_arbitrum,
+  _$orderPreviewNetworkEnum_BSC,
   _$orderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
+const OrderPreviewSettlementAssetEnum _$orderPreviewSettlementAssetEnum_LUSDT =
+    const OrderPreviewSettlementAssetEnum._('LUSDT');
+const OrderPreviewSettlementAssetEnum
+    _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
+    const OrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
+
+OrderPreviewSettlementAssetEnum _$orderPreviewSettlementAssetEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'LUSDT':
+      return _$orderPreviewSettlementAssetEnum_LUSDT;
+    case 'unknownDefaultOpenApi':
+      return _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+    default:
+      return _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<OrderPreviewSettlementAssetEnum>
+    _$orderPreviewSettlementAssetEnumValues = BuiltSet<
+        OrderPreviewSettlementAssetEnum>(const <OrderPreviewSettlementAssetEnum>[
+  _$orderPreviewSettlementAssetEnum_LUSDT,
+  _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
+]);
+
 const OrderPreviewSettlementChainIdEnum
-    _$orderPreviewSettlementChainIdEnum_number1337 =
-    const OrderPreviewSettlementChainIdEnum._('number1337');
+    _$orderPreviewSettlementChainIdEnum_number56 =
+    const OrderPreviewSettlementChainIdEnum._('number56');
+const OrderPreviewSettlementChainIdEnum
+    _$orderPreviewSettlementChainIdEnum_number31337 =
+    const OrderPreviewSettlementChainIdEnum._('number31337');
 const OrderPreviewSettlementChainIdEnum
     _$orderPreviewSettlementChainIdEnum_unknownDefaultOpenApi =
     const OrderPreviewSettlementChainIdEnum._('unknownDefaultOpenApi');
@@ -60,8 +88,10 @@ const OrderPreviewSettlementChainIdEnum
 OrderPreviewSettlementChainIdEnum _$orderPreviewSettlementChainIdEnumValueOf(
     String name) {
   switch (name) {
-    case 'number1337':
-      return _$orderPreviewSettlementChainIdEnum_number1337;
+    case 'number56':
+      return _$orderPreviewSettlementChainIdEnum_number56;
+    case 'number31337':
+      return _$orderPreviewSettlementChainIdEnum_number31337;
     case 'unknownDefaultOpenApi':
       return _$orderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
     default:
@@ -72,115 +102,58 @@ OrderPreviewSettlementChainIdEnum _$orderPreviewSettlementChainIdEnumValueOf(
 final BuiltSet<OrderPreviewSettlementChainIdEnum>
     _$orderPreviewSettlementChainIdEnumValues = BuiltSet<
         OrderPreviewSettlementChainIdEnum>(const <OrderPreviewSettlementChainIdEnum>[
-  _$orderPreviewSettlementChainIdEnum_number1337,
+  _$orderPreviewSettlementChainIdEnum_number56,
+  _$orderPreviewSettlementChainIdEnum_number31337,
   _$orderPreviewSettlementChainIdEnum_unknownDefaultOpenApi,
 ]);
 
-const OrderPreviewSettlementAssetIdEnum
-    _$orderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS =
-    const OrderPreviewSettlementAssetIdEnum._(
-        'hyperliquidColon1337SlashPerpsColonUSDCPERPS');
-const OrderPreviewSettlementAssetIdEnum
-    _$orderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi =
-    const OrderPreviewSettlementAssetIdEnum._('unknownDefaultOpenApi');
+const OrderPreviewFundingModeEnum
+    _$orderPreviewFundingModeEnum_unreservedTransferFrom =
+    const OrderPreviewFundingModeEnum._('unreservedTransferFrom');
+const OrderPreviewFundingModeEnum
+    _$orderPreviewFundingModeEnum_unknownDefaultOpenApi =
+    const OrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
 
-OrderPreviewSettlementAssetIdEnum _$orderPreviewSettlementAssetIdEnumValueOf(
-    String name) {
+OrderPreviewFundingModeEnum _$orderPreviewFundingModeEnumValueOf(String name) {
   switch (name) {
-    case 'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
-      return _$orderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
+    case 'unreservedTransferFrom':
+      return _$orderPreviewFundingModeEnum_unreservedTransferFrom;
     case 'unknownDefaultOpenApi':
-      return _$orderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+      return _$orderPreviewFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$orderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+      return _$orderPreviewFundingModeEnum_unknownDefaultOpenApi;
   }
 }
 
-final BuiltSet<OrderPreviewSettlementAssetIdEnum>
-    _$orderPreviewSettlementAssetIdEnumValues = BuiltSet<
-        OrderPreviewSettlementAssetIdEnum>(const <OrderPreviewSettlementAssetIdEnum>[
-  _$orderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS,
-  _$orderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi,
-]);
-
-const OrderPreviewSettlementTokenContractEnum
-    _$orderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000 =
-    const OrderPreviewSettlementTokenContractEnum._(
-        'n0x2100000000000000000000000000000000000000');
-const OrderPreviewSettlementTokenContractEnum
-    _$orderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi =
-    const OrderPreviewSettlementTokenContractEnum._('unknownDefaultOpenApi');
-
-OrderPreviewSettlementTokenContractEnum
-    _$orderPreviewSettlementTokenContractEnumValueOf(String name) {
-  switch (name) {
-    case 'n0x2100000000000000000000000000000000000000':
-      return _$orderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000;
-    case 'unknownDefaultOpenApi':
-      return _$orderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
-    default:
-      return _$orderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<OrderPreviewSettlementTokenContractEnum>
-    _$orderPreviewSettlementTokenContractEnumValues = BuiltSet<
-        OrderPreviewSettlementTokenContractEnum>(const <OrderPreviewSettlementTokenContractEnum>[
-  _$orderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000,
-  _$orderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi,
-]);
-
-const OrderPreviewSettlementTokenDecimalsEnum
-    _$orderPreviewSettlementTokenDecimalsEnum_number8 =
-    const OrderPreviewSettlementTokenDecimalsEnum._('number8');
-const OrderPreviewSettlementTokenDecimalsEnum
-    _$orderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi =
-    const OrderPreviewSettlementTokenDecimalsEnum._('unknownDefaultOpenApi');
-
-OrderPreviewSettlementTokenDecimalsEnum
-    _$orderPreviewSettlementTokenDecimalsEnumValueOf(String name) {
-  switch (name) {
-    case 'number8':
-      return _$orderPreviewSettlementTokenDecimalsEnum_number8;
-    case 'unknownDefaultOpenApi':
-      return _$orderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
-    default:
-      return _$orderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<OrderPreviewSettlementTokenDecimalsEnum>
-    _$orderPreviewSettlementTokenDecimalsEnumValues = BuiltSet<
-        OrderPreviewSettlementTokenDecimalsEnum>(const <OrderPreviewSettlementTokenDecimalsEnum>[
-  _$orderPreviewSettlementTokenDecimalsEnum_number8,
-  _$orderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi,
+final BuiltSet<OrderPreviewFundingModeEnum>
+    _$orderPreviewFundingModeEnumValues =
+    BuiltSet<OrderPreviewFundingModeEnum>(const <OrderPreviewFundingModeEnum>[
+  _$orderPreviewFundingModeEnum_unreservedTransferFrom,
+  _$orderPreviewFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<OrderPreviewKindEnum> _$orderPreviewKindEnumSerializer =
     _$OrderPreviewKindEnumSerializer();
 Serializer<OrderPreviewNetworkEnum> _$orderPreviewNetworkEnumSerializer =
     _$OrderPreviewNetworkEnumSerializer();
+Serializer<OrderPreviewSettlementAssetEnum>
+    _$orderPreviewSettlementAssetEnumSerializer =
+    _$OrderPreviewSettlementAssetEnumSerializer();
 Serializer<OrderPreviewSettlementChainIdEnum>
     _$orderPreviewSettlementChainIdEnumSerializer =
     _$OrderPreviewSettlementChainIdEnumSerializer();
-Serializer<OrderPreviewSettlementAssetIdEnum>
-    _$orderPreviewSettlementAssetIdEnumSerializer =
-    _$OrderPreviewSettlementAssetIdEnumSerializer();
-Serializer<OrderPreviewSettlementTokenContractEnum>
-    _$orderPreviewSettlementTokenContractEnumSerializer =
-    _$OrderPreviewSettlementTokenContractEnumSerializer();
-Serializer<OrderPreviewSettlementTokenDecimalsEnum>
-    _$orderPreviewSettlementTokenDecimalsEnumSerializer =
-    _$OrderPreviewSettlementTokenDecimalsEnumSerializer();
+Serializer<OrderPreviewFundingModeEnum>
+    _$orderPreviewFundingModeEnumSerializer =
+    _$OrderPreviewFundingModeEnumSerializer();
 
 class _$OrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<OrderPreviewKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'perp': 'perp',
+    'bstock': 'bstock',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'perp': 'perp',
+    'bstock': 'bstock',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
@@ -204,11 +177,11 @@ class _$OrderPreviewKindEnumSerializer
 class _$OrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<OrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'arbitrum': 'Arbitrum',
+    'BSC': 'BSC',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'Arbitrum': 'arbitrum',
+    'BSC': 'BSC',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
@@ -230,14 +203,46 @@ class _$OrderPreviewNetworkEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$OrderPreviewSettlementAssetEnumSerializer
+    implements PrimitiveSerializer<OrderPreviewSettlementAssetEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'LUSDT': 'LUSDT',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'LUSDT': 'LUSDT',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[OrderPreviewSettlementAssetEnum];
+  @override
+  final String wireName = 'OrderPreviewSettlementAssetEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, OrderPreviewSettlementAssetEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  OrderPreviewSettlementAssetEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      OrderPreviewSettlementAssetEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$OrderPreviewSettlementChainIdEnumSerializer
     implements PrimitiveSerializer<OrderPreviewSettlementChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'number1337': 1337,
+    'number56': 56,
+    'number31337': 31337,
     'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    1337: 'number1337',
+    56: 'number56',
+    31337: 'number31337',
     11184809: 'unknownDefaultOpenApi',
   };
 
@@ -260,101 +265,32 @@ class _$OrderPreviewSettlementChainIdEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$OrderPreviewSettlementAssetIdEnumSerializer
-    implements PrimitiveSerializer<OrderPreviewSettlementAssetIdEnum> {
+class _$OrderPreviewFundingModeEnumSerializer
+    implements PrimitiveSerializer<OrderPreviewFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
-        'hyperliquid:1337/perps:USDC-PERPS',
+    'unreservedTransferFrom': 'unreserved_transfer_from',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'hyperliquid:1337/perps:USDC-PERPS':
-        'hyperliquidColon1337SlashPerpsColonUSDCPERPS',
+    'unreserved_transfer_from': 'unreservedTransferFrom',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
-  final Iterable<Type> types = const <Type>[OrderPreviewSettlementAssetIdEnum];
+  final Iterable<Type> types = const <Type>[OrderPreviewFundingModeEnum];
   @override
-  final String wireName = 'OrderPreviewSettlementAssetIdEnum';
+  final String wireName = 'OrderPreviewFundingModeEnum';
 
   @override
-  Object serialize(
-          Serializers serializers, OrderPreviewSettlementAssetIdEnum object,
+  Object serialize(Serializers serializers, OrderPreviewFundingModeEnum object,
           {FullType specifiedType = FullType.unspecified}) =>
       _toWire[object.name] ?? object.name;
 
   @override
-  OrderPreviewSettlementAssetIdEnum deserialize(
+  OrderPreviewFundingModeEnum deserialize(
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
-      OrderPreviewSettlementAssetIdEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$OrderPreviewSettlementTokenContractEnumSerializer
-    implements PrimitiveSerializer<OrderPreviewSettlementTokenContractEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'n0x2100000000000000000000000000000000000000':
-        '0x2100000000000000000000000000000000000000',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    '0x2100000000000000000000000000000000000000':
-        'n0x2100000000000000000000000000000000000000',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    OrderPreviewSettlementTokenContractEnum
-  ];
-  @override
-  final String wireName = 'OrderPreviewSettlementTokenContractEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          OrderPreviewSettlementTokenContractEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  OrderPreviewSettlementTokenContractEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      OrderPreviewSettlementTokenContractEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
-class _$OrderPreviewSettlementTokenDecimalsEnumSerializer
-    implements PrimitiveSerializer<OrderPreviewSettlementTokenDecimalsEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'number8': 8,
-    'unknownDefaultOpenApi': 11184809,
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    8: 'number8',
-    11184809: 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[
-    OrderPreviewSettlementTokenDecimalsEnum
-  ];
-  @override
-  final String wireName = 'OrderPreviewSettlementTokenDecimalsEnum';
-
-  @override
-  Object serialize(Serializers serializers,
-          OrderPreviewSettlementTokenDecimalsEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  OrderPreviewSettlementTokenDecimalsEnum deserialize(
-          Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      OrderPreviewSettlementTokenDecimalsEnum.valueOf(
+      OrderPreviewFundingModeEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 

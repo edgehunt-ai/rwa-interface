@@ -28,7 +28,7 @@ part 'perp_order_preview_request.g.dart';
 /// * [quantity] - 限价单的基础资产数量
 /// * [limitPrice] - 限价单的 USDC 价格
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode] 
+/// * [marginMode] - 必须显式传入，并与当前 HIP-3 trading context 的保证金模式一致；如需切换模式，先调用账户设置接口。
 /// * [reduceOnly] 
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
 /// * [tpSl] 
@@ -76,8 +76,9 @@ abstract class PerpOrderPreviewRequest implements Built<PerpOrderPreviewRequest,
   @BuiltValueField(wireName: r'leverage')
   String? get leverage;
 
+  /// 必须显式传入，并与当前 HIP-3 trading context 的保证金模式一致；如需切换模式，先调用账户设置接口。
   @BuiltValueField(wireName: r'margin_mode')
-  MarginMode? get marginMode;
+  MarginMode get marginMode;
   // enum marginModeEnum {  isolated,  cross,  };
 
   @BuiltValueField(wireName: r'reduce_only')
@@ -183,13 +184,11 @@ class _$PerpOrderPreviewRequestSerializer implements PrimitiveSerializer<PerpOrd
         specifiedType: const FullType(String),
       );
     }
-    if (object.marginMode != null) {
-      yield r'margin_mode';
-      yield serializers.serialize(
-        object.marginMode,
-        specifiedType: const FullType(MarginMode),
-      );
-    }
+    yield r'margin_mode';
+    yield serializers.serialize(
+      object.marginMode,
+      specifiedType: const FullType(MarginMode),
+    );
     if (object.reduceOnly != null) {
       yield r'reduce_only';
       yield serializers.serialize(
@@ -321,9 +320,8 @@ class _$PerpOrderPreviewRequestSerializer implements PrimitiveSerializer<PerpOrd
         case r'margin_mode':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(MarginMode),
-          ) as MarginMode?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(MarginMode),
+          ) as MarginMode;
           result.marginMode = valueDes;
           break;
         case r'reduce_only':

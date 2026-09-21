@@ -1,7 +1,7 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 abstract interface class OrdersService {
-  Future<api.OrderPreview> previewOrder(
+  Future<PreviewOrderResponse> previewOrder(
     api.OrderPreviewRequest request, {
     required String idempotencyKey,
   });
@@ -27,4 +27,12 @@ abstract interface class OrdersService {
     required String transactionHash,
     required String idempotencyKey,
   });
+}
+
+final class PreviewOrderResponse {
+  const PreviewOrderResponse.parsed(this.value) : raw = null;
+  const PreviewOrderResponse.raw(this.raw) : value = null;
+
+  final api.OrderPreview? value;
+  final Map<String, dynamic>? raw;
 }

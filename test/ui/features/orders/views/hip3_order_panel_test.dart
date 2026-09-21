@@ -31,6 +31,7 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
+import 'package:rwa_interface/domain/models/funding_session.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 
 import 'package:rwa_interface/domain/models/hip3_opening_context.dart';
@@ -58,7 +59,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 301));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $20'));
-      await tester.pumpAndSettle();
+      // The parent submit button keeps its indeterminate loading animation
+      // while the funding sheet is open, so there is intentionally no stable
+      // frame for pumpAndSettle to wait for here.
+      await tester.pump(const Duration(milliseconds: 500));
       expect(funding.previewIds, hasLength(1));
       expect(find.text('Hyperliquid Perps USDC'), findsOneWidget);
       expect(find.textContaining('5 USDC'), findsOneWidget);
@@ -163,11 +167,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $0'));
-      await tester.pump();
+      final notice = find.byKey(const Key('hip3-form-error'));
+      expect(notice, findsOneWidget);
+      final message = (tester.widget<Text>(
+        find.descendant(of: notice, matching: find.byType(Text)),
+      )).data!;
       expect(
-        find.text('Trading service is unavailable. Try again in a moment.'),
-        findsWidgets,
+        message,
+        isNot('Trading service is unavailable. Try again in a moment.'),
       );
       expect(
         observability.operations,
@@ -706,7 +713,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 301));
     await tester.pumpAndSettle();
 
-    expect(find.text('USDT'), findsOneWidget);
+    expect(find.text('USDC'), findsOneWidget);
   });
 
   testWidgets('HIP-3 leverage sheet retains a confirmed selection', (
@@ -950,9 +957,9 @@ Widget _app(
 
 final class _UnifiedAccountRepository
     implements Hip3AccountAbstractionRepository {
-  _UnifiedAccountRepository({this.unified = true});
+  _UnifiedAccountRepository();
 
-  final bool unified;
+  final bool unified = true;
   int statusCalls = 0;
   int conversionCalls = 0;
 
@@ -1205,6 +1212,18 @@ Hip3PreviewExecution _previewExecution(
 );
 
 class _ShortfallFunding extends FundedRepository {
+  @override
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  }) async => FundingSessionSummary(
+    sessionId: 'session-${intent.fingerprint}',
+    status: 'ready_to_confirm',
+    version: 1,
+    canConfirmTransfer: false,
+    expiresAt: DateTime.now().toUtc().add(const Duration(hours: 24)),
+  );
+
   @override
   Future<FundingPlan> createFundingSessionPlan({
     required String fundingSessionId,

@@ -6,6 +6,32 @@ part of 'legacy_perp_order_preview.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const LegacyPerpOrderPreviewFundingModeEnum
+    _$legacyPerpOrderPreviewFundingModeEnum_unreservedTransferFrom =
+    const LegacyPerpOrderPreviewFundingModeEnum._('unreservedTransferFrom');
+const LegacyPerpOrderPreviewFundingModeEnum
+    _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
+    const LegacyPerpOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
+
+LegacyPerpOrderPreviewFundingModeEnum
+    _$legacyPerpOrderPreviewFundingModeEnumValueOf(String name) {
+  switch (name) {
+    case 'unreservedTransferFrom':
+      return _$legacyPerpOrderPreviewFundingModeEnum_unreservedTransferFrom;
+    case 'unknownDefaultOpenApi':
+      return _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+    default:
+      return _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<LegacyPerpOrderPreviewFundingModeEnum>
+    _$legacyPerpOrderPreviewFundingModeEnumValues = BuiltSet<
+        LegacyPerpOrderPreviewFundingModeEnum>(const <LegacyPerpOrderPreviewFundingModeEnum>[
+  _$legacyPerpOrderPreviewFundingModeEnum_unreservedTransferFrom,
+  _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
+]);
+
 const LegacyPerpOrderPreviewKindEnum _$legacyPerpOrderPreviewKindEnum_perp =
     const LegacyPerpOrderPreviewKindEnum._('perp');
 const LegacyPerpOrderPreviewKindEnum
@@ -57,12 +83,76 @@ final BuiltSet<LegacyPerpOrderPreviewNetworkEnum>
   _$legacyPerpOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
+const LegacyPerpOrderPreviewSettlementAssetEnum
+    _$legacyPerpOrderPreviewSettlementAssetEnum_USDC =
+    const LegacyPerpOrderPreviewSettlementAssetEnum._('USDC');
+const LegacyPerpOrderPreviewSettlementAssetEnum
+    _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
+    const LegacyPerpOrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
+
+LegacyPerpOrderPreviewSettlementAssetEnum
+    _$legacyPerpOrderPreviewSettlementAssetEnumValueOf(String name) {
+  switch (name) {
+    case 'USDC':
+      return _$legacyPerpOrderPreviewSettlementAssetEnum_USDC;
+    case 'unknownDefaultOpenApi':
+      return _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+    default:
+      return _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<LegacyPerpOrderPreviewSettlementAssetEnum>
+    _$legacyPerpOrderPreviewSettlementAssetEnumValues = BuiltSet<
+        LegacyPerpOrderPreviewSettlementAssetEnum>(const <LegacyPerpOrderPreviewSettlementAssetEnum>[
+  _$legacyPerpOrderPreviewSettlementAssetEnum_USDC,
+  _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<LegacyPerpOrderPreviewFundingModeEnum>
+    _$legacyPerpOrderPreviewFundingModeEnumSerializer =
+    _$LegacyPerpOrderPreviewFundingModeEnumSerializer();
 Serializer<LegacyPerpOrderPreviewKindEnum>
     _$legacyPerpOrderPreviewKindEnumSerializer =
     _$LegacyPerpOrderPreviewKindEnumSerializer();
 Serializer<LegacyPerpOrderPreviewNetworkEnum>
     _$legacyPerpOrderPreviewNetworkEnumSerializer =
     _$LegacyPerpOrderPreviewNetworkEnumSerializer();
+Serializer<LegacyPerpOrderPreviewSettlementAssetEnum>
+    _$legacyPerpOrderPreviewSettlementAssetEnumSerializer =
+    _$LegacyPerpOrderPreviewSettlementAssetEnumSerializer();
+
+class _$LegacyPerpOrderPreviewFundingModeEnumSerializer
+    implements PrimitiveSerializer<LegacyPerpOrderPreviewFundingModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'unreservedTransferFrom': 'unreserved_transfer_from',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'unreserved_transfer_from': 'unreservedTransferFrom',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    LegacyPerpOrderPreviewFundingModeEnum
+  ];
+  @override
+  final String wireName = 'LegacyPerpOrderPreviewFundingModeEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, LegacyPerpOrderPreviewFundingModeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  LegacyPerpOrderPreviewFundingModeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      LegacyPerpOrderPreviewFundingModeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$LegacyPerpOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<LegacyPerpOrderPreviewKindEnum> {
@@ -124,13 +214,77 @@ class _$LegacyPerpOrderPreviewNetworkEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
+class _$LegacyPerpOrderPreviewSettlementAssetEnumSerializer
+    implements PrimitiveSerializer<LegacyPerpOrderPreviewSettlementAssetEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'USDC': 'USDC',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'USDC': 'USDC',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    LegacyPerpOrderPreviewSettlementAssetEnum
+  ];
+  @override
+  final String wireName = 'LegacyPerpOrderPreviewSettlementAssetEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          LegacyPerpOrderPreviewSettlementAssetEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  LegacyPerpOrderPreviewSettlementAssetEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      LegacyPerpOrderPreviewSettlementAssetEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$LegacyPerpOrderPreview extends LegacyPerpOrderPreview {
   @override
-  final String settlementAsset;
+  final LegacyPerpOrderPreviewSettlementAssetEnum settlementAsset;
   @override
   final LegacyPerpOrderPreviewKindEnum kind;
   @override
   final LegacyPerpOrderPreviewNetworkEnum network;
+  @override
+  final BstocksPreviewEconomics? bstocks;
+  @override
+  final Hip3TimeInForce? timeInForce;
+  @override
+  final String? limitPrice;
+  @override
+  final bool? priceConditionMet;
+  @override
+  final OrderPreviewCommonFundingModeEnum? fundingMode;
+  @override
+  final bool? fundsReserved;
+  @override
+  final String? requiredFundingRaw;
+  @override
+  final String? fundingToken;
+  @override
+  final String? balanceRaw;
+  @override
+  final String? allowanceRaw;
+  @override
+  final bool? balanceSufficient;
+  @override
+  final bool? allowanceSufficient;
+  @override
+  final bool? approvalRequired;
+  @override
+  final String? orderRouter;
+  @override
+  final BstocksPreviewRoute? route;
+  @override
+  final BstocksCancellationPolicy? cancellationPolicy;
   @override
   final Hip3PreviewExecution? hip3Execution;
   @override
@@ -190,6 +344,22 @@ class _$LegacyPerpOrderPreview extends LegacyPerpOrderPreview {
       {required this.settlementAsset,
       required this.kind,
       required this.network,
+      this.bstocks,
+      this.timeInForce,
+      this.limitPrice,
+      this.priceConditionMet,
+      this.fundingMode,
+      this.fundsReserved,
+      this.requiredFundingRaw,
+      this.fundingToken,
+      this.balanceRaw,
+      this.allowanceRaw,
+      this.balanceSufficient,
+      this.allowanceSufficient,
+      this.approvalRequired,
+      this.orderRouter,
+      this.route,
+      this.cancellationPolicy,
       this.hip3Execution,
       required this.previewId,
       required this.symbol,
@@ -232,6 +402,22 @@ class _$LegacyPerpOrderPreview extends LegacyPerpOrderPreview {
         settlementAsset == other.settlementAsset &&
         kind == other.kind &&
         network == other.network &&
+        bstocks == other.bstocks &&
+        timeInForce == other.timeInForce &&
+        limitPrice == other.limitPrice &&
+        priceConditionMet == other.priceConditionMet &&
+        fundingMode == other.fundingMode &&
+        fundsReserved == other.fundsReserved &&
+        requiredFundingRaw == other.requiredFundingRaw &&
+        fundingToken == other.fundingToken &&
+        balanceRaw == other.balanceRaw &&
+        allowanceRaw == other.allowanceRaw &&
+        balanceSufficient == other.balanceSufficient &&
+        allowanceSufficient == other.allowanceSufficient &&
+        approvalRequired == other.approvalRequired &&
+        orderRouter == other.orderRouter &&
+        route == other.route &&
+        cancellationPolicy == other.cancellationPolicy &&
         hip3Execution == other.hip3Execution &&
         previewId == other.previewId &&
         symbol == other.symbol &&
@@ -265,6 +451,22 @@ class _$LegacyPerpOrderPreview extends LegacyPerpOrderPreview {
     _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
+    _$hash = $jc(_$hash, bstocks.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, limitPrice.hashCode);
+    _$hash = $jc(_$hash, priceConditionMet.hashCode);
+    _$hash = $jc(_$hash, fundingMode.hashCode);
+    _$hash = $jc(_$hash, fundsReserved.hashCode);
+    _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
+    _$hash = $jc(_$hash, fundingToken.hashCode);
+    _$hash = $jc(_$hash, balanceRaw.hashCode);
+    _$hash = $jc(_$hash, allowanceRaw.hashCode);
+    _$hash = $jc(_$hash, balanceSufficient.hashCode);
+    _$hash = $jc(_$hash, allowanceSufficient.hashCode);
+    _$hash = $jc(_$hash, approvalRequired.hashCode);
+    _$hash = $jc(_$hash, orderRouter.hashCode);
+    _$hash = $jc(_$hash, route.hashCode);
+    _$hash = $jc(_$hash, cancellationPolicy.hashCode);
     _$hash = $jc(_$hash, hip3Execution.hashCode);
     _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
@@ -300,6 +502,22 @@ class _$LegacyPerpOrderPreview extends LegacyPerpOrderPreview {
           ..add('settlementAsset', settlementAsset)
           ..add('kind', kind)
           ..add('network', network)
+          ..add('bstocks', bstocks)
+          ..add('timeInForce', timeInForce)
+          ..add('limitPrice', limitPrice)
+          ..add('priceConditionMet', priceConditionMet)
+          ..add('fundingMode', fundingMode)
+          ..add('fundsReserved', fundsReserved)
+          ..add('requiredFundingRaw', requiredFundingRaw)
+          ..add('fundingToken', fundingToken)
+          ..add('balanceRaw', balanceRaw)
+          ..add('allowanceRaw', allowanceRaw)
+          ..add('balanceSufficient', balanceSufficient)
+          ..add('allowanceSufficient', allowanceSufficient)
+          ..add('approvalRequired', approvalRequired)
+          ..add('orderRouter', orderRouter)
+          ..add('route', route)
+          ..add('cancellationPolicy', cancellationPolicy)
           ..add('hip3Execution', hip3Execution)
           ..add('previewId', previewId)
           ..add('symbol', symbol)
@@ -335,9 +553,12 @@ class LegacyPerpOrderPreviewBuilder
         OrderPreviewCommonBuilder {
   _$LegacyPerpOrderPreview? _$v;
 
-  String? _settlementAsset;
-  String? get settlementAsset => _$this._settlementAsset;
-  set settlementAsset(covariant String? settlementAsset) =>
+  LegacyPerpOrderPreviewSettlementAssetEnum? _settlementAsset;
+  LegacyPerpOrderPreviewSettlementAssetEnum? get settlementAsset =>
+      _$this._settlementAsset;
+  set settlementAsset(
+          covariant LegacyPerpOrderPreviewSettlementAssetEnum?
+              settlementAsset) =>
       _$this._settlementAsset = settlementAsset;
 
   LegacyPerpOrderPreviewKindEnum? _kind;
@@ -349,6 +570,90 @@ class LegacyPerpOrderPreviewBuilder
   LegacyPerpOrderPreviewNetworkEnum? get network => _$this._network;
   set network(covariant LegacyPerpOrderPreviewNetworkEnum? network) =>
       _$this._network = network;
+
+  BstocksPreviewEconomicsBuilder? _bstocks;
+  BstocksPreviewEconomicsBuilder get bstocks =>
+      _$this._bstocks ??= BstocksPreviewEconomicsBuilder();
+  set bstocks(covariant BstocksPreviewEconomicsBuilder? bstocks) =>
+      _$this._bstocks = bstocks;
+
+  Hip3TimeInForce? _timeInForce;
+  Hip3TimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(covariant Hip3TimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
+
+  String? _limitPrice;
+  String? get limitPrice => _$this._limitPrice;
+  set limitPrice(covariant String? limitPrice) =>
+      _$this._limitPrice = limitPrice;
+
+  bool? _priceConditionMet;
+  bool? get priceConditionMet => _$this._priceConditionMet;
+  set priceConditionMet(covariant bool? priceConditionMet) =>
+      _$this._priceConditionMet = priceConditionMet;
+
+  OrderPreviewCommonFundingModeEnum? _fundingMode;
+  OrderPreviewCommonFundingModeEnum? get fundingMode => _$this._fundingMode;
+  set fundingMode(covariant OrderPreviewCommonFundingModeEnum? fundingMode) =>
+      _$this._fundingMode = fundingMode;
+
+  bool? _fundsReserved;
+  bool? get fundsReserved => _$this._fundsReserved;
+  set fundsReserved(covariant bool? fundsReserved) =>
+      _$this._fundsReserved = fundsReserved;
+
+  String? _requiredFundingRaw;
+  String? get requiredFundingRaw => _$this._requiredFundingRaw;
+  set requiredFundingRaw(covariant String? requiredFundingRaw) =>
+      _$this._requiredFundingRaw = requiredFundingRaw;
+
+  String? _fundingToken;
+  String? get fundingToken => _$this._fundingToken;
+  set fundingToken(covariant String? fundingToken) =>
+      _$this._fundingToken = fundingToken;
+
+  String? _balanceRaw;
+  String? get balanceRaw => _$this._balanceRaw;
+  set balanceRaw(covariant String? balanceRaw) =>
+      _$this._balanceRaw = balanceRaw;
+
+  String? _allowanceRaw;
+  String? get allowanceRaw => _$this._allowanceRaw;
+  set allowanceRaw(covariant String? allowanceRaw) =>
+      _$this._allowanceRaw = allowanceRaw;
+
+  bool? _balanceSufficient;
+  bool? get balanceSufficient => _$this._balanceSufficient;
+  set balanceSufficient(covariant bool? balanceSufficient) =>
+      _$this._balanceSufficient = balanceSufficient;
+
+  bool? _allowanceSufficient;
+  bool? get allowanceSufficient => _$this._allowanceSufficient;
+  set allowanceSufficient(covariant bool? allowanceSufficient) =>
+      _$this._allowanceSufficient = allowanceSufficient;
+
+  bool? _approvalRequired;
+  bool? get approvalRequired => _$this._approvalRequired;
+  set approvalRequired(covariant bool? approvalRequired) =>
+      _$this._approvalRequired = approvalRequired;
+
+  String? _orderRouter;
+  String? get orderRouter => _$this._orderRouter;
+  set orderRouter(covariant String? orderRouter) =>
+      _$this._orderRouter = orderRouter;
+
+  BstocksPreviewRouteBuilder? _route;
+  BstocksPreviewRouteBuilder get route =>
+      _$this._route ??= BstocksPreviewRouteBuilder();
+  set route(covariant BstocksPreviewRouteBuilder? route) =>
+      _$this._route = route;
+
+  BstocksCancellationPolicyBuilder? _cancellationPolicy;
+  BstocksCancellationPolicyBuilder get cancellationPolicy =>
+      _$this._cancellationPolicy ??= BstocksCancellationPolicyBuilder();
+  set cancellationPolicy(
+          covariant BstocksCancellationPolicyBuilder? cancellationPolicy) =>
+      _$this._cancellationPolicy = cancellationPolicy;
 
   Hip3PreviewExecutionBuilder? _hip3Execution;
   Hip3PreviewExecutionBuilder get hip3Execution =>
@@ -479,6 +784,22 @@ class LegacyPerpOrderPreviewBuilder
       _settlementAsset = $v.settlementAsset;
       _kind = $v.kind;
       _network = $v.network;
+      _bstocks = $v.bstocks?.toBuilder();
+      _timeInForce = $v.timeInForce;
+      _limitPrice = $v.limitPrice;
+      _priceConditionMet = $v.priceConditionMet;
+      _fundingMode = $v.fundingMode;
+      _fundsReserved = $v.fundsReserved;
+      _requiredFundingRaw = $v.requiredFundingRaw;
+      _fundingToken = $v.fundingToken;
+      _balanceRaw = $v.balanceRaw;
+      _allowanceRaw = $v.allowanceRaw;
+      _balanceSufficient = $v.balanceSufficient;
+      _allowanceSufficient = $v.allowanceSufficient;
+      _approvalRequired = $v.approvalRequired;
+      _orderRouter = $v.orderRouter;
+      _route = $v.route?.toBuilder();
+      _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
       _hip3Execution = $v.hip3Execution?.toBuilder();
       _previewId = $v.previewId;
       _symbol = $v.symbol;
@@ -533,6 +854,22 @@ class LegacyPerpOrderPreviewBuilder
                 kind, r'LegacyPerpOrderPreview', 'kind'),
             network: BuiltValueNullFieldError.checkNotNull(
                 network, r'LegacyPerpOrderPreview', 'network'),
+            bstocks: _bstocks?.build(),
+            timeInForce: timeInForce,
+            limitPrice: limitPrice,
+            priceConditionMet: priceConditionMet,
+            fundingMode: fundingMode,
+            fundsReserved: fundsReserved,
+            requiredFundingRaw: requiredFundingRaw,
+            fundingToken: fundingToken,
+            balanceRaw: balanceRaw,
+            allowanceRaw: allowanceRaw,
+            balanceSufficient: balanceSufficient,
+            allowanceSufficient: allowanceSufficient,
+            approvalRequired: approvalRequired,
+            orderRouter: orderRouter,
+            route: _route?.build(),
+            cancellationPolicy: _cancellationPolicy?.build(),
             hip3Execution: _hip3Execution?.build(),
             previewId: BuiltValueNullFieldError.checkNotNull(
                 previewId, r'LegacyPerpOrderPreview', 'previewId'),
@@ -567,6 +904,13 @@ class LegacyPerpOrderPreviewBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'bstocks';
+        _bstocks?.build();
+
+        _$failedField = 'route';
+        _route?.build();
+        _$failedField = 'cancellationPolicy';
+        _cancellationPolicy?.build();
         _$failedField = 'hip3Execution';
         _hip3Execution?.build();
 

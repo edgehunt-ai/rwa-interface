@@ -26,7 +26,7 @@ part 'product_listing.g.dart';
 /// * [label] - 展示名，`bStocks` 或 `HIP-3`
 /// * [price] - 十进制字符串，避免浮点误差
 /// * [change24hPercent] - 24h 涨跌幅（百分比数值，如 `\"0.47\"`）
-/// * [spreadVsReferencePercent] - 相对美股参考价的价差百分比
+/// * [spreadVsReferencePercent] - 有来源证明的参考偏离；当前 bStocks 列表未加载参考盘口时为 null，不能显示成0或独立美股现货溢价。
 /// * [volume24h] - 24h 成交量（以基础资产计价）
 /// * [volume24hUnit] 
 /// * [turnover24hUsd] - 十进制字符串，避免浮点误差
@@ -83,7 +83,7 @@ abstract class ProductListing implements Built<ProductListing, ProductListingBui
   @BuiltValueField(wireName: r'change_24h_percent')
   String? get change24hPercent;
 
-  /// 相对美股参考价的价差百分比
+  /// 有来源证明的参考偏离；当前 bStocks 列表未加载参考盘口时为 null，不能显示成0或独立美股现货溢价。
   @BuiltValueField(wireName: r'spread_vs_reference_percent')
   String? get spreadVsReferencePercent;
 
@@ -219,7 +219,7 @@ class _$ProductListingSerializer implements PrimitiveSerializer<ProductListing> 
       yield r'spread_vs_reference_percent';
       yield serializers.serialize(
         object.spreadVsReferencePercent,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.volume24h != null) {

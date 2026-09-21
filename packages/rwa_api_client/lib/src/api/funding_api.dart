@@ -23,6 +23,9 @@ import 'package:rwa_api_client/src/model/funding_plan_request.dart';
 import 'package:rwa_api_client/src/model/funding_session.dart';
 import 'package:rwa_api_client/src/model/funding_session_create_request.dart';
 import 'package:rwa_api_client/src/model/funding_session_selection_request.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_submission_request.dart';
 import 'package:rwa_api_client/src/model/legacy_deposit.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_create_request.dart';
@@ -350,6 +353,110 @@ class FundingApi {
     }
 
     return Response<FundingSession>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 创建 HIP-3 统一账户提现
+  /// 冻结一笔 Hyperliquid 统一账户的 &#x60;withdraw3&#x60; action：金额、owner 地址、nonce 与过期时间。 响应返回服务端生成的精确 EIP-712 &#x60;HyperliquidTransaction:Withdraw&#x60; typed data 与 &#x60;payload_hash&#x60;；客户端必须把 &#x60;typed_data_json&#x60; 原样交给 Privy 钱包签名，不得修改任何 字段、不得自行组装 action。  提现目标地址固定为账户自己的 unified EVM 地址（Bridge2 在 Arbitrum 上向该地址支付 链上资产：testnet 为 USDC2、mainnet 为 USDC）。请求不接受 &#x60;destination&#x60;、&#x60;signature&#x60; 或任意 action 字段；服务端持有签名后才会把 action 提交到 &#x60;/exchange&#x60;。 
+  ///
+  /// Parameters:
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [hip3WithdrawalCreateRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3Withdrawal] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3Withdrawal>> createHip3Withdrawal({ 
+    required String idempotencyKey,
+    required Hip3WithdrawalCreateRequest hip3WithdrawalCreateRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/withdrawals';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(Hip3WithdrawalCreateRequest);
+      _bodyData = _serializers.serialize(hip3WithdrawalCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3Withdrawal? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3Withdrawal),
+      ) as Hip3Withdrawal;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3Withdrawal>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -1618,6 +1725,87 @@ class FundingApi {
     );
   }
 
+  /// 获取 HIP-3 提现状态
+  /// 返回提现的当前权威状态。&#x60;submitted&#x60; 之后由 worker 轮询 venue non-funding ledger； 观测到匹配的 &#x60;withdraw&#x60; delta 后置为 &#x60;completed&#x60;。 
+  ///
+  /// Parameters:
+  /// * [withdrawalId] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3Withdrawal] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3Withdrawal>> getHip3Withdrawal({ 
+    required String withdrawalId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/withdrawals/{withdrawal_id}'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3Withdrawal? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3Withdrawal),
+      ) as Hip3Withdrawal;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3Withdrawal>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
   /// 获取自托管提现审计状态
   /// 返回服务端对用户自行通过 Privy wallet 签名并广播的交易所做的只读核验状态。 服务端不会 approve、sign、broadcast 或替用户执行提现；提交哈希也不构成成功证据。 
   ///
@@ -2196,6 +2384,112 @@ class FundingApi {
     }
 
     return Response<WithdrawalPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 提交 HIP-3 提现签名
+  /// 提交 owner 对冻结 typed data 的 EIP-712 签名。服务端先校验 &#x60;payload_hash&#x60; 与冻结 action 一致、恢复地址等于 owner，再把 &#x60;withdraw3&#x60; 提交到 Hyperliquid &#x60;/exchange&#x60;；venue 接受后 状态进入 &#x60;submitted&#x60; 并由 worker 观测到账。签名窗口过期或状态不为 &#x60;awaiting_signature&#x60; 时返回 409。 
+  ///
+  /// Parameters:
+  /// * [withdrawalId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [hip3WithdrawalSubmissionRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3Withdrawal] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3Withdrawal>> submitHip3Withdrawal({ 
+    required String withdrawalId,
+    required String idempotencyKey,
+    required Hip3WithdrawalSubmissionRequest hip3WithdrawalSubmissionRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/withdrawals/{withdrawal_id}/submission'.replaceAll('{' r'withdrawal_id' '}', encodeQueryParameter(_serializers, withdrawalId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(Hip3WithdrawalSubmissionRequest);
+      _bodyData = _serializers.serialize(hip3WithdrawalSubmissionRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3Withdrawal? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3Withdrawal),
+      ) as Hip3Withdrawal;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3Withdrawal>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

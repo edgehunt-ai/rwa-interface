@@ -131,29 +131,29 @@ class _$FundingSessionContinuationStatusEnumSerializer
 
 class _$FundingSessionContinuation extends FundingSessionContinuation {
   @override
-  final FundingSessionContinuationActionEnum action;
+  final FundingSessionContinuationActionEnum? action;
   @override
-  final FundingSessionContinuationStatusEnum status;
+  final FundingSessionContinuationStatusEnum? status;
   @override
-  final String fundingSessionId;
+  final String? fundingSessionId;
   @override
-  final OrderPreviewRequest trade;
+  final OrderPreviewRequest? trade;
   @override
-  final bool requiresNewQuote;
+  final bool? requiresNewQuote;
   @override
-  final bool autoSubmit;
+  final bool? autoSubmit;
 
   factory _$FundingSessionContinuation(
           [void Function(FundingSessionContinuationBuilder)? updates]) =>
       (FundingSessionContinuationBuilder()..update(updates))._build();
 
   _$FundingSessionContinuation._(
-      {required this.action,
-      required this.status,
-      required this.fundingSessionId,
-      required this.trade,
-      required this.requiresNewQuote,
-      required this.autoSubmit})
+      {this.action,
+      this.status,
+      this.fundingSessionId,
+      this.trade,
+      this.requiresNewQuote,
+      this.autoSubmit})
       : super._();
   @override
   FundingSessionContinuation rebuild(
@@ -246,7 +246,7 @@ class FundingSessionContinuationBuilder
       _action = $v.action;
       _status = $v.status;
       _fundingSessionId = $v.fundingSessionId;
-      _trade = $v.trade.toBuilder();
+      _trade = $v.trade?.toBuilder();
       _requiresNewQuote = $v.requiresNewQuote;
       _autoSubmit = $v.autoSubmit;
       _$v = null;
@@ -272,27 +272,18 @@ class FundingSessionContinuationBuilder
     try {
       _$result = _$v ??
           _$FundingSessionContinuation._(
-            action: BuiltValueNullFieldError.checkNotNull(
-                action, r'FundingSessionContinuation', 'action'),
-            status: BuiltValueNullFieldError.checkNotNull(
-                status, r'FundingSessionContinuation', 'status'),
-            fundingSessionId: BuiltValueNullFieldError.checkNotNull(
-                fundingSessionId,
-                r'FundingSessionContinuation',
-                'fundingSessionId'),
-            trade: trade.build(),
-            requiresNewQuote: BuiltValueNullFieldError.checkNotNull(
-                requiresNewQuote,
-                r'FundingSessionContinuation',
-                'requiresNewQuote'),
-            autoSubmit: BuiltValueNullFieldError.checkNotNull(
-                autoSubmit, r'FundingSessionContinuation', 'autoSubmit'),
+            action: action,
+            status: status,
+            fundingSessionId: fundingSessionId,
+            trade: _trade?.build(),
+            requiresNewQuote: requiresNewQuote,
+            autoSubmit: autoSubmit,
           );
     } catch (_) {
       late String _$failedField;
       try {
         _$failedField = 'trade';
-        trade.build();
+        _trade?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'FundingSessionContinuation', _$failedField, e.toString());

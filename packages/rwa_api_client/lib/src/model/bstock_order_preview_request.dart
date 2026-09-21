@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_order_preview_request.g.dart';
 
-/// bStocks 现货订单。只接受 `buy` / `sell`：市价买入传 `amount`，市价卖出传 `quantity`，限价买卖均须传 `limit_price` 和 `quantity`。 
+/// bStocks 现货订单。只接受 buy/sell：市价买入传 amount，市价卖出传 quantity， 限价买卖均传 limit_price 和 quantity；金额/价格以当前准入 quote token 计价，主网通常 USDT、测试网 TUSDT。 市价只接受 ioc（省略也按 IOC），不支持启用 TP/SL；报价是参考值，确认时重新报价并校验冻结边界。 
 ///
 /// Properties:
 /// * [symbol] 
@@ -20,9 +20,9 @@ part 'bstock_order_preview_request.g.dart';
 /// * [side] 
 /// * [type] 
 /// * [timeInForce] 
-/// * [amount] - 市价买入时的 USDC 金额
+/// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
-/// * [limitPrice] - 限价单的 USDC 价格
+/// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
 /// * [slippagePercent] - 最大可接受滑点；超出则下单失败
 /// * [tpSl] 
 @BuiltValue()
@@ -46,7 +46,7 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   BstocksTimeInForce? get timeInForce;
   // enum timeInForceEnum {  gtc,  ioc,  };
 
-  /// 市价买入时的 USDC 金额
+  /// 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
   @BuiltValueField(wireName: r'amount')
   String? get amount;
 
@@ -54,7 +54,7 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   @BuiltValueField(wireName: r'quantity')
   String? get quantity;
 
-  /// 限价单的 USDC 价格
+  /// 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 

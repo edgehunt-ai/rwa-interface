@@ -69,6 +69,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   var detailTab = 'Details';
   late MarketProductKind productKind;
   late String symbol;
+  String? _productId;
   var _orderPanelOpen = false;
 
   /// Product the user selected from the switch that this underlying does not
@@ -94,6 +95,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       _unavailableKind = null;
       symbol = product.symbol;
       productKind = product.kind;
+      _productId = product.productId;
       _favoriteOverrideRef = null;
       _favoriteOverride = null;
       chartSelection = null;
@@ -198,6 +200,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
           ? BstocksOrderPanel(symbol: symbol, initialSide: side)
           : Hip3OrderPanel(
               symbol: symbol,
+              productId: _productId,
               initialSide: side == TradingSide.buy
                   ? TradingSide.long
                   : TradingSide.short,
@@ -233,6 +236,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       } else {
         activeProduct = matchingProducts.first;
       }
+    }
+    if (activeProduct?.productId != _productId) {
+      _productId = activeProduct?.productId;
     }
     final productRef = MarketProductRef(symbol: symbol, kind: productKind);
     final productDetailState = ref.watch(marketProductProvider(productRef));

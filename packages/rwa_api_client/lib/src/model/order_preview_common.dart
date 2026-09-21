@@ -4,10 +4,14 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/key_value.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_route.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_economics.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
+import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -17,8 +21,24 @@ part 'order_preview_common.g.dart';
 /// OrderPreviewCommon
 ///
 /// Properties:
+/// * [bstocks] 
+/// * [timeInForce] 
+/// * [limitPrice] - 十进制字符串，避免浮点误差
+/// * [priceConditionMet] 
+/// * [fundingMode] 
+/// * [fundsReserved] 
+/// * [requiredFundingRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [fundingToken] 
+/// * [balanceRaw] - 十进制字符串，避免浮点误差
+/// * [allowanceRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [balanceSufficient] 
+/// * [allowanceSufficient] 
+/// * [approvalRequired] 
+/// * [orderRouter] 
+/// * [route] 
+/// * [cancellationPolicy] 
 /// * [hip3Execution] 
-/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
+/// * [previewId] - 服务端预览标识。bStocks 绑定账户、owner、输入、准入版本和经济量上限，不是锁价或成交承诺。 当前非 localnet 下单必须引用自己的有效预览；quote_expires_at 是最多120秒的服务端确认期限， 还必须满足独立的 Quoter 区块窗口。审批会消费预览，成功后必须重新 preview/create。 
 /// * [symbol] 
 /// * [side] 
 /// * [type] 
@@ -44,10 +64,64 @@ part 'order_preview_common.g.dart';
 /// * [feeNote] - Optional localized display note, for example Included.
 @BuiltValue(instantiable: false)
 abstract class OrderPreviewCommon  {
+  @BuiltValueField(wireName: r'bstocks')
+  BstocksPreviewEconomics? get bstocks;
+
+  @BuiltValueField(wireName: r'time_in_force')
+  Hip3TimeInForce? get timeInForce;
+  // enum timeInForceEnum {  gtc,  ioc,  alo,  };
+
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'limit_price')
+  String? get limitPrice;
+
+  @BuiltValueField(wireName: r'price_condition_met')
+  bool? get priceConditionMet;
+
+  @BuiltValueField(wireName: r'funding_mode')
+  OrderPreviewCommonFundingModeEnum? get fundingMode;
+  // enum fundingModeEnum {  unreserved_transfer_from,  };
+
+  @BuiltValueField(wireName: r'funds_reserved')
+  bool? get fundsReserved;
+
+  /// 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+  @BuiltValueField(wireName: r'required_funding_raw')
+  String? get requiredFundingRaw;
+
+  @BuiltValueField(wireName: r'funding_token')
+  String? get fundingToken;
+
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'balance_raw')
+  String? get balanceRaw;
+
+  /// 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+  @BuiltValueField(wireName: r'allowance_raw')
+  String? get allowanceRaw;
+
+  @BuiltValueField(wireName: r'balance_sufficient')
+  bool? get balanceSufficient;
+
+  @BuiltValueField(wireName: r'allowance_sufficient')
+  bool? get allowanceSufficient;
+
+  @BuiltValueField(wireName: r'approval_required')
+  bool? get approvalRequired;
+
+  @BuiltValueField(wireName: r'order_router')
+  String? get orderRouter;
+
+  @BuiltValueField(wireName: r'route')
+  BstocksPreviewRoute? get route;
+
+  @BuiltValueField(wireName: r'cancellation_policy')
+  BstocksCancellationPolicy? get cancellationPolicy;
+
   @BuiltValueField(wireName: r'hip3_execution')
   Hip3PreviewExecution? get hip3Execution;
 
-  /// 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
+  /// 服务端预览标识。bStocks 绑定账户、owner、输入、准入版本和经济量上限，不是锁价或成交承诺。 当前非 localnet 下单必须引用自己的有效预览；quote_expires_at 是最多120秒的服务端确认期限， 还必须满足独立的 Quoter 区块窗口。审批会消费预览，成功后必须重新 preview/create。 
   @BuiltValueField(wireName: r'preview_id')
   String get previewId;
 
@@ -156,6 +230,118 @@ class _$OrderPreviewCommonSerializer implements PrimitiveSerializer<OrderPreview
     OrderPreviewCommon object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.bstocks != null) {
+      yield r'bstocks';
+      yield serializers.serialize(
+        object.bstocks,
+        specifiedType: const FullType(BstocksPreviewEconomics),
+      );
+    }
+    if (object.timeInForce != null) {
+      yield r'time_in_force';
+      yield serializers.serialize(
+        object.timeInForce,
+        specifiedType: const FullType(Hip3TimeInForce),
+      );
+    }
+    if (object.limitPrice != null) {
+      yield r'limit_price';
+      yield serializers.serialize(
+        object.limitPrice,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.priceConditionMet != null) {
+      yield r'price_condition_met';
+      yield serializers.serialize(
+        object.priceConditionMet,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.fundingMode != null) {
+      yield r'funding_mode';
+      yield serializers.serialize(
+        object.fundingMode,
+        specifiedType: const FullType(OrderPreviewCommonFundingModeEnum),
+      );
+    }
+    if (object.fundsReserved != null) {
+      yield r'funds_reserved';
+      yield serializers.serialize(
+        object.fundsReserved,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.requiredFundingRaw != null) {
+      yield r'required_funding_raw';
+      yield serializers.serialize(
+        object.requiredFundingRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.fundingToken != null) {
+      yield r'funding_token';
+      yield serializers.serialize(
+        object.fundingToken,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.balanceRaw != null) {
+      yield r'balance_raw';
+      yield serializers.serialize(
+        object.balanceRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.allowanceRaw != null) {
+      yield r'allowance_raw';
+      yield serializers.serialize(
+        object.allowanceRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.balanceSufficient != null) {
+      yield r'balance_sufficient';
+      yield serializers.serialize(
+        object.balanceSufficient,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.allowanceSufficient != null) {
+      yield r'allowance_sufficient';
+      yield serializers.serialize(
+        object.allowanceSufficient,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.approvalRequired != null) {
+      yield r'approval_required';
+      yield serializers.serialize(
+        object.approvalRequired,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.orderRouter != null) {
+      yield r'order_router';
+      yield serializers.serialize(
+        object.orderRouter,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.route != null) {
+      yield r'route';
+      yield serializers.serialize(
+        object.route,
+        specifiedType: const FullType(BstocksPreviewRoute),
+      );
+    }
+    if (object.cancellationPolicy != null) {
+      yield r'cancellation_policy';
+      yield serializers.serialize(
+        object.cancellationPolicy,
+        specifiedType: const FullType(BstocksCancellationPolicy),
+      );
+    }
     if (object.hip3Execution != null) {
       yield r'hip3_execution';
       yield serializers.serialize(
@@ -384,6 +570,134 @@ class _$$OrderPreviewCommonSerializer implements PrimitiveSerializer<$OrderPrevi
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'bstocks':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksPreviewEconomics),
+          ) as BstocksPreviewEconomics?;
+          if (valueDes == null) continue;
+          result.bstocks.replace(valueDes);
+          break;
+        case r'time_in_force':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3TimeInForce),
+          ) as Hip3TimeInForce?;
+          if (valueDes == null) continue;
+          result.timeInForce = valueDes;
+          break;
+        case r'limit_price':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.limitPrice = valueDes;
+          break;
+        case r'price_condition_met':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.priceConditionMet = valueDes;
+          break;
+        case r'funding_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(OrderPreviewCommonFundingModeEnum),
+          ) as OrderPreviewCommonFundingModeEnum?;
+          if (valueDes == null) continue;
+          result.fundingMode = valueDes;
+          break;
+        case r'funds_reserved':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.fundsReserved = valueDes;
+          break;
+        case r'required_funding_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.requiredFundingRaw = valueDes;
+          break;
+        case r'funding_token':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.fundingToken = valueDes;
+          break;
+        case r'balance_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.balanceRaw = valueDes;
+          break;
+        case r'allowance_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.allowanceRaw = valueDes;
+          break;
+        case r'balance_sufficient':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.balanceSufficient = valueDes;
+          break;
+        case r'allowance_sufficient':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.allowanceSufficient = valueDes;
+          break;
+        case r'approval_required':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.approvalRequired = valueDes;
+          break;
+        case r'order_router':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.orderRouter = valueDes;
+          break;
+        case r'route':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksPreviewRoute),
+          ) as BstocksPreviewRoute?;
+          if (valueDes == null) continue;
+          result.route.replace(valueDes);
+          break;
+        case r'cancellation_policy':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksCancellationPolicy),
+          ) as BstocksCancellationPolicy?;
+          if (valueDes == null) continue;
+          result.cancellationPolicy.replace(valueDes);
+          break;
         case r'hip3_execution':
           final valueDes = serializers.deserialize(
             value,
@@ -606,5 +920,20 @@ class _$$OrderPreviewCommonSerializer implements PrimitiveSerializer<$OrderPrevi
     );
     return result.build();
   }
+}
+
+class OrderPreviewCommonFundingModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
+  static const OrderPreviewCommonFundingModeEnum unreservedTransferFrom = _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const OrderPreviewCommonFundingModeEnum unknownDefaultOpenApi = _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi;
+
+  static Serializer<OrderPreviewCommonFundingModeEnum> get serializer => _$orderPreviewCommonFundingModeEnumSerializer;
+
+  const OrderPreviewCommonFundingModeEnum._(String name): super(name);
+
+  static BuiltSet<OrderPreviewCommonFundingModeEnum> get values => _$orderPreviewCommonFundingModeEnumValues;
+  static OrderPreviewCommonFundingModeEnum valueOf(String name) => _$orderPreviewCommonFundingModeEnumValueOf(name);
 }
 

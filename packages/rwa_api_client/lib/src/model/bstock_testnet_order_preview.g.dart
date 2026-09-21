@@ -1,0 +1,1126 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'bstock_testnet_order_preview.dart';
+
+// **************************************************************************
+// BuiltValueGenerator
+// **************************************************************************
+
+const BstockTestnetOrderPreviewFundingModeEnum
+    _$bstockTestnetOrderPreviewFundingModeEnum_unreservedTransferFrom =
+    const BstockTestnetOrderPreviewFundingModeEnum._('unreservedTransferFrom');
+const BstockTestnetOrderPreviewFundingModeEnum
+    _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
+    const BstockTestnetOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
+
+BstockTestnetOrderPreviewFundingModeEnum
+    _$bstockTestnetOrderPreviewFundingModeEnumValueOf(String name) {
+  switch (name) {
+    case 'unreservedTransferFrom':
+      return _$bstockTestnetOrderPreviewFundingModeEnum_unreservedTransferFrom;
+    case 'unknownDefaultOpenApi':
+      return _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockTestnetOrderPreviewFundingModeEnum>
+    _$bstockTestnetOrderPreviewFundingModeEnumValues = BuiltSet<
+        BstockTestnetOrderPreviewFundingModeEnum>(const <BstockTestnetOrderPreviewFundingModeEnum>[
+  _$bstockTestnetOrderPreviewFundingModeEnum_unreservedTransferFrom,
+  _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
+]);
+
+const BstockTestnetOrderPreviewTypeEnum
+    _$bstockTestnetOrderPreviewTypeEnum_market =
+    const BstockTestnetOrderPreviewTypeEnum._('market');
+const BstockTestnetOrderPreviewTypeEnum
+    _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi =
+    const BstockTestnetOrderPreviewTypeEnum._('unknownDefaultOpenApi');
+
+BstockTestnetOrderPreviewTypeEnum _$bstockTestnetOrderPreviewTypeEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'market':
+      return _$bstockTestnetOrderPreviewTypeEnum_market;
+    case 'unknownDefaultOpenApi':
+      return _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockTestnetOrderPreviewTypeEnum>
+    _$bstockTestnetOrderPreviewTypeEnumValues = BuiltSet<
+        BstockTestnetOrderPreviewTypeEnum>(const <BstockTestnetOrderPreviewTypeEnum>[
+  _$bstockTestnetOrderPreviewTypeEnum_market,
+  _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi,
+]);
+
+const BstockTestnetOrderPreviewKindEnum
+    _$bstockTestnetOrderPreviewKindEnum_bstock =
+    const BstockTestnetOrderPreviewKindEnum._('bstock');
+const BstockTestnetOrderPreviewKindEnum
+    _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi =
+    const BstockTestnetOrderPreviewKindEnum._('unknownDefaultOpenApi');
+
+BstockTestnetOrderPreviewKindEnum _$bstockTestnetOrderPreviewKindEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'bstock':
+      return _$bstockTestnetOrderPreviewKindEnum_bstock;
+    case 'unknownDefaultOpenApi':
+      return _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockTestnetOrderPreviewKindEnum>
+    _$bstockTestnetOrderPreviewKindEnumValues = BuiltSet<
+        BstockTestnetOrderPreviewKindEnum>(const <BstockTestnetOrderPreviewKindEnum>[
+  _$bstockTestnetOrderPreviewKindEnum_bstock,
+  _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi,
+]);
+
+const BstockTestnetOrderPreviewNetworkEnum
+    _$bstockTestnetOrderPreviewNetworkEnum_BSC =
+    const BstockTestnetOrderPreviewNetworkEnum._('BSC');
+const BstockTestnetOrderPreviewNetworkEnum
+    _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi =
+    const BstockTestnetOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
+
+BstockTestnetOrderPreviewNetworkEnum
+    _$bstockTestnetOrderPreviewNetworkEnumValueOf(String name) {
+  switch (name) {
+    case 'BSC':
+      return _$bstockTestnetOrderPreviewNetworkEnum_BSC;
+    case 'unknownDefaultOpenApi':
+      return _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockTestnetOrderPreviewNetworkEnum>
+    _$bstockTestnetOrderPreviewNetworkEnumValues = BuiltSet<
+        BstockTestnetOrderPreviewNetworkEnum>(const <BstockTestnetOrderPreviewNetworkEnum>[
+  _$bstockTestnetOrderPreviewNetworkEnum_BSC,
+  _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi,
+]);
+
+const BstockTestnetOrderPreviewSettlementAssetEnum
+    _$bstockTestnetOrderPreviewSettlementAssetEnum_TUSDT =
+    const BstockTestnetOrderPreviewSettlementAssetEnum._('TUSDT');
+const BstockTestnetOrderPreviewSettlementAssetEnum
+    _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
+    const BstockTestnetOrderPreviewSettlementAssetEnum._(
+        'unknownDefaultOpenApi');
+
+BstockTestnetOrderPreviewSettlementAssetEnum
+    _$bstockTestnetOrderPreviewSettlementAssetEnumValueOf(String name) {
+  switch (name) {
+    case 'TUSDT':
+      return _$bstockTestnetOrderPreviewSettlementAssetEnum_TUSDT;
+    case 'unknownDefaultOpenApi':
+      return _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockTestnetOrderPreviewSettlementAssetEnum>
+    _$bstockTestnetOrderPreviewSettlementAssetEnumValues = BuiltSet<
+        BstockTestnetOrderPreviewSettlementAssetEnum>(const <BstockTestnetOrderPreviewSettlementAssetEnum>[
+  _$bstockTestnetOrderPreviewSettlementAssetEnum_TUSDT,
+  _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
+]);
+
+const BstockTestnetOrderPreviewSettlementChainIdEnum
+    _$bstockTestnetOrderPreviewSettlementChainIdEnum_number97 =
+    const BstockTestnetOrderPreviewSettlementChainIdEnum._('number97');
+const BstockTestnetOrderPreviewSettlementChainIdEnum
+    _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi =
+    const BstockTestnetOrderPreviewSettlementChainIdEnum._(
+        'unknownDefaultOpenApi');
+
+BstockTestnetOrderPreviewSettlementChainIdEnum
+    _$bstockTestnetOrderPreviewSettlementChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number97':
+      return _$bstockTestnetOrderPreviewSettlementChainIdEnum_number97;
+    case 'unknownDefaultOpenApi':
+      return _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockTestnetOrderPreviewSettlementChainIdEnum>
+    _$bstockTestnetOrderPreviewSettlementChainIdEnumValues = BuiltSet<
+        BstockTestnetOrderPreviewSettlementChainIdEnum>(const <BstockTestnetOrderPreviewSettlementChainIdEnum>[
+  _$bstockTestnetOrderPreviewSettlementChainIdEnum_number97,
+  _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<BstockTestnetOrderPreviewFundingModeEnum>
+    _$bstockTestnetOrderPreviewFundingModeEnumSerializer =
+    _$BstockTestnetOrderPreviewFundingModeEnumSerializer();
+Serializer<BstockTestnetOrderPreviewTypeEnum>
+    _$bstockTestnetOrderPreviewTypeEnumSerializer =
+    _$BstockTestnetOrderPreviewTypeEnumSerializer();
+Serializer<BstockTestnetOrderPreviewKindEnum>
+    _$bstockTestnetOrderPreviewKindEnumSerializer =
+    _$BstockTestnetOrderPreviewKindEnumSerializer();
+Serializer<BstockTestnetOrderPreviewNetworkEnum>
+    _$bstockTestnetOrderPreviewNetworkEnumSerializer =
+    _$BstockTestnetOrderPreviewNetworkEnumSerializer();
+Serializer<BstockTestnetOrderPreviewSettlementAssetEnum>
+    _$bstockTestnetOrderPreviewSettlementAssetEnumSerializer =
+    _$BstockTestnetOrderPreviewSettlementAssetEnumSerializer();
+Serializer<BstockTestnetOrderPreviewSettlementChainIdEnum>
+    _$bstockTestnetOrderPreviewSettlementChainIdEnumSerializer =
+    _$BstockTestnetOrderPreviewSettlementChainIdEnumSerializer();
+
+class _$BstockTestnetOrderPreviewFundingModeEnumSerializer
+    implements PrimitiveSerializer<BstockTestnetOrderPreviewFundingModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'unreservedTransferFrom': 'unreserved_transfer_from',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'unreserved_transfer_from': 'unreservedTransferFrom',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockTestnetOrderPreviewFundingModeEnum
+  ];
+  @override
+  final String wireName = 'BstockTestnetOrderPreviewFundingModeEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockTestnetOrderPreviewFundingModeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockTestnetOrderPreviewFundingModeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockTestnetOrderPreviewFundingModeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockTestnetOrderPreviewTypeEnumSerializer
+    implements PrimitiveSerializer<BstockTestnetOrderPreviewTypeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'market': 'market',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'market': 'market',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[BstockTestnetOrderPreviewTypeEnum];
+  @override
+  final String wireName = 'BstockTestnetOrderPreviewTypeEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, BstockTestnetOrderPreviewTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockTestnetOrderPreviewTypeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockTestnetOrderPreviewTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockTestnetOrderPreviewKindEnumSerializer
+    implements PrimitiveSerializer<BstockTestnetOrderPreviewKindEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'bstock': 'bstock',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'bstock': 'bstock',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[BstockTestnetOrderPreviewKindEnum];
+  @override
+  final String wireName = 'BstockTestnetOrderPreviewKindEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, BstockTestnetOrderPreviewKindEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockTestnetOrderPreviewKindEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockTestnetOrderPreviewKindEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockTestnetOrderPreviewNetworkEnumSerializer
+    implements PrimitiveSerializer<BstockTestnetOrderPreviewNetworkEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'BSC': 'BSC',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'BSC': 'BSC',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockTestnetOrderPreviewNetworkEnum
+  ];
+  @override
+  final String wireName = 'BstockTestnetOrderPreviewNetworkEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, BstockTestnetOrderPreviewNetworkEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockTestnetOrderPreviewNetworkEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockTestnetOrderPreviewNetworkEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockTestnetOrderPreviewSettlementAssetEnumSerializer
+    implements
+        PrimitiveSerializer<BstockTestnetOrderPreviewSettlementAssetEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'TUSDT': 'TUSDT',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'TUSDT': 'TUSDT',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockTestnetOrderPreviewSettlementAssetEnum
+  ];
+  @override
+  final String wireName = 'BstockTestnetOrderPreviewSettlementAssetEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockTestnetOrderPreviewSettlementAssetEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockTestnetOrderPreviewSettlementAssetEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockTestnetOrderPreviewSettlementAssetEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockTestnetOrderPreviewSettlementChainIdEnumSerializer
+    implements
+        PrimitiveSerializer<BstockTestnetOrderPreviewSettlementChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number97': 97,
+    'unknownDefaultOpenApi': 11184809,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    97: 'number97',
+    11184809: 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockTestnetOrderPreviewSettlementChainIdEnum
+  ];
+  @override
+  final String wireName = 'BstockTestnetOrderPreviewSettlementChainIdEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockTestnetOrderPreviewSettlementChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockTestnetOrderPreviewSettlementChainIdEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockTestnetOrderPreviewSettlementChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockTestnetOrderPreview extends BstockTestnetOrderPreview {
+  @override
+  final BstockTestnetOrderPreviewSettlementAssetEnum settlementAsset;
+  @override
+  final String settlementTokenContract;
+  @override
+  final int settlementTokenDecimals;
+  @override
+  final BstockTestnetOrderPreviewKindEnum kind;
+  @override
+  final String settlementAssetId;
+  @override
+  final BstockTestnetOrderPreviewSettlementChainIdEnum settlementChainId;
+  @override
+  final BstockTestnetOrderPreviewNetworkEnum network;
+  @override
+  final BstocksPreviewEconomics? bstocks;
+  @override
+  final Hip3TimeInForce? timeInForce;
+  @override
+  final String? limitPrice;
+  @override
+  final bool? priceConditionMet;
+  @override
+  final OrderPreviewCommonFundingModeEnum? fundingMode;
+  @override
+  final bool? fundsReserved;
+  @override
+  final String? requiredFundingRaw;
+  @override
+  final String? fundingToken;
+  @override
+  final String? balanceRaw;
+  @override
+  final String? allowanceRaw;
+  @override
+  final bool? balanceSufficient;
+  @override
+  final bool? allowanceSufficient;
+  @override
+  final bool? approvalRequired;
+  @override
+  final String? orderRouter;
+  @override
+  final BstocksPreviewRoute? route;
+  @override
+  final BstocksCancellationPolicy? cancellationPolicy;
+  @override
+  final Hip3PreviewExecution? hip3Execution;
+  @override
+  final String previewId;
+  @override
+  final String symbol;
+  @override
+  final OrderSide side;
+  @override
+  final OrderType type;
+  @override
+  final String? marketPrice;
+  @override
+  final String? estimatedPrice;
+  @override
+  final bool? priceUpdated;
+  @override
+  final String? estimatedQuantity;
+  @override
+  final String? estimatedReceive;
+  @override
+  final String? estimatedReceiveUnit;
+  @override
+  final String orderValue;
+  @override
+  final String? fee;
+  @override
+  final String? feeRate;
+  @override
+  final String? slippagePercent;
+  @override
+  final String? orderBookImpactPercent;
+  @override
+  final String? networkFee;
+  @override
+  final AccountKind? settlementAccount;
+  @override
+  final String? settlementAccountLabel;
+  @override
+  final String? marginRequired;
+  @override
+  final String? liquidationPrice;
+  @override
+  final DateTime? quoteExpiresAt;
+  @override
+  final BuiltList<KeyValue>? details;
+  @override
+  final String? feeAsset;
+  @override
+  final String? feeNote;
+
+  factory _$BstockTestnetOrderPreview(
+          [void Function(BstockTestnetOrderPreviewBuilder)? updates]) =>
+      (BstockTestnetOrderPreviewBuilder()..update(updates))._build();
+
+  _$BstockTestnetOrderPreview._(
+      {required this.settlementAsset,
+      required this.settlementTokenContract,
+      required this.settlementTokenDecimals,
+      required this.kind,
+      required this.settlementAssetId,
+      required this.settlementChainId,
+      required this.network,
+      this.bstocks,
+      this.timeInForce,
+      this.limitPrice,
+      this.priceConditionMet,
+      this.fundingMode,
+      this.fundsReserved,
+      this.requiredFundingRaw,
+      this.fundingToken,
+      this.balanceRaw,
+      this.allowanceRaw,
+      this.balanceSufficient,
+      this.allowanceSufficient,
+      this.approvalRequired,
+      this.orderRouter,
+      this.route,
+      this.cancellationPolicy,
+      this.hip3Execution,
+      required this.previewId,
+      required this.symbol,
+      required this.side,
+      required this.type,
+      this.marketPrice,
+      this.estimatedPrice,
+      this.priceUpdated,
+      this.estimatedQuantity,
+      this.estimatedReceive,
+      this.estimatedReceiveUnit,
+      required this.orderValue,
+      this.fee,
+      this.feeRate,
+      this.slippagePercent,
+      this.orderBookImpactPercent,
+      this.networkFee,
+      this.settlementAccount,
+      this.settlementAccountLabel,
+      this.marginRequired,
+      this.liquidationPrice,
+      this.quoteExpiresAt,
+      this.details,
+      this.feeAsset,
+      this.feeNote})
+      : super._();
+  @override
+  BstockTestnetOrderPreview rebuild(
+          void Function(BstockTestnetOrderPreviewBuilder) updates) =>
+      (toBuilder()..update(updates)).build();
+
+  @override
+  BstockTestnetOrderPreviewBuilder toBuilder() =>
+      BstockTestnetOrderPreviewBuilder()..replace(this);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(other, this)) return true;
+    return other is BstockTestnetOrderPreview &&
+        settlementAsset == other.settlementAsset &&
+        settlementTokenContract == other.settlementTokenContract &&
+        settlementTokenDecimals == other.settlementTokenDecimals &&
+        kind == other.kind &&
+        settlementAssetId == other.settlementAssetId &&
+        settlementChainId == other.settlementChainId &&
+        network == other.network &&
+        bstocks == other.bstocks &&
+        timeInForce == other.timeInForce &&
+        limitPrice == other.limitPrice &&
+        priceConditionMet == other.priceConditionMet &&
+        fundingMode == other.fundingMode &&
+        fundsReserved == other.fundsReserved &&
+        requiredFundingRaw == other.requiredFundingRaw &&
+        fundingToken == other.fundingToken &&
+        balanceRaw == other.balanceRaw &&
+        allowanceRaw == other.allowanceRaw &&
+        balanceSufficient == other.balanceSufficient &&
+        allowanceSufficient == other.allowanceSufficient &&
+        approvalRequired == other.approvalRequired &&
+        orderRouter == other.orderRouter &&
+        route == other.route &&
+        cancellationPolicy == other.cancellationPolicy &&
+        hip3Execution == other.hip3Execution &&
+        previewId == other.previewId &&
+        symbol == other.symbol &&
+        side == other.side &&
+        type == other.type &&
+        marketPrice == other.marketPrice &&
+        estimatedPrice == other.estimatedPrice &&
+        priceUpdated == other.priceUpdated &&
+        estimatedQuantity == other.estimatedQuantity &&
+        estimatedReceive == other.estimatedReceive &&
+        estimatedReceiveUnit == other.estimatedReceiveUnit &&
+        orderValue == other.orderValue &&
+        fee == other.fee &&
+        feeRate == other.feeRate &&
+        slippagePercent == other.slippagePercent &&
+        orderBookImpactPercent == other.orderBookImpactPercent &&
+        networkFee == other.networkFee &&
+        settlementAccount == other.settlementAccount &&
+        settlementAccountLabel == other.settlementAccountLabel &&
+        marginRequired == other.marginRequired &&
+        liquidationPrice == other.liquidationPrice &&
+        quoteExpiresAt == other.quoteExpiresAt &&
+        details == other.details &&
+        feeAsset == other.feeAsset &&
+        feeNote == other.feeNote;
+  }
+
+  @override
+  int get hashCode {
+    var _$hash = 0;
+    _$hash = $jc(_$hash, settlementAsset.hashCode);
+    _$hash = $jc(_$hash, settlementTokenContract.hashCode);
+    _$hash = $jc(_$hash, settlementTokenDecimals.hashCode);
+    _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, settlementAssetId.hashCode);
+    _$hash = $jc(_$hash, settlementChainId.hashCode);
+    _$hash = $jc(_$hash, network.hashCode);
+    _$hash = $jc(_$hash, bstocks.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, limitPrice.hashCode);
+    _$hash = $jc(_$hash, priceConditionMet.hashCode);
+    _$hash = $jc(_$hash, fundingMode.hashCode);
+    _$hash = $jc(_$hash, fundsReserved.hashCode);
+    _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
+    _$hash = $jc(_$hash, fundingToken.hashCode);
+    _$hash = $jc(_$hash, balanceRaw.hashCode);
+    _$hash = $jc(_$hash, allowanceRaw.hashCode);
+    _$hash = $jc(_$hash, balanceSufficient.hashCode);
+    _$hash = $jc(_$hash, allowanceSufficient.hashCode);
+    _$hash = $jc(_$hash, approvalRequired.hashCode);
+    _$hash = $jc(_$hash, orderRouter.hashCode);
+    _$hash = $jc(_$hash, route.hashCode);
+    _$hash = $jc(_$hash, cancellationPolicy.hashCode);
+    _$hash = $jc(_$hash, hip3Execution.hashCode);
+    _$hash = $jc(_$hash, previewId.hashCode);
+    _$hash = $jc(_$hash, symbol.hashCode);
+    _$hash = $jc(_$hash, side.hashCode);
+    _$hash = $jc(_$hash, type.hashCode);
+    _$hash = $jc(_$hash, marketPrice.hashCode);
+    _$hash = $jc(_$hash, estimatedPrice.hashCode);
+    _$hash = $jc(_$hash, priceUpdated.hashCode);
+    _$hash = $jc(_$hash, estimatedQuantity.hashCode);
+    _$hash = $jc(_$hash, estimatedReceive.hashCode);
+    _$hash = $jc(_$hash, estimatedReceiveUnit.hashCode);
+    _$hash = $jc(_$hash, orderValue.hashCode);
+    _$hash = $jc(_$hash, fee.hashCode);
+    _$hash = $jc(_$hash, feeRate.hashCode);
+    _$hash = $jc(_$hash, slippagePercent.hashCode);
+    _$hash = $jc(_$hash, orderBookImpactPercent.hashCode);
+    _$hash = $jc(_$hash, networkFee.hashCode);
+    _$hash = $jc(_$hash, settlementAccount.hashCode);
+    _$hash = $jc(_$hash, settlementAccountLabel.hashCode);
+    _$hash = $jc(_$hash, marginRequired.hashCode);
+    _$hash = $jc(_$hash, liquidationPrice.hashCode);
+    _$hash = $jc(_$hash, quoteExpiresAt.hashCode);
+    _$hash = $jc(_$hash, details.hashCode);
+    _$hash = $jc(_$hash, feeAsset.hashCode);
+    _$hash = $jc(_$hash, feeNote.hashCode);
+    _$hash = $jf(_$hash);
+    return _$hash;
+  }
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper(r'BstockTestnetOrderPreview')
+          ..add('settlementAsset', settlementAsset)
+          ..add('settlementTokenContract', settlementTokenContract)
+          ..add('settlementTokenDecimals', settlementTokenDecimals)
+          ..add('kind', kind)
+          ..add('settlementAssetId', settlementAssetId)
+          ..add('settlementChainId', settlementChainId)
+          ..add('network', network)
+          ..add('bstocks', bstocks)
+          ..add('timeInForce', timeInForce)
+          ..add('limitPrice', limitPrice)
+          ..add('priceConditionMet', priceConditionMet)
+          ..add('fundingMode', fundingMode)
+          ..add('fundsReserved', fundsReserved)
+          ..add('requiredFundingRaw', requiredFundingRaw)
+          ..add('fundingToken', fundingToken)
+          ..add('balanceRaw', balanceRaw)
+          ..add('allowanceRaw', allowanceRaw)
+          ..add('balanceSufficient', balanceSufficient)
+          ..add('allowanceSufficient', allowanceSufficient)
+          ..add('approvalRequired', approvalRequired)
+          ..add('orderRouter', orderRouter)
+          ..add('route', route)
+          ..add('cancellationPolicy', cancellationPolicy)
+          ..add('hip3Execution', hip3Execution)
+          ..add('previewId', previewId)
+          ..add('symbol', symbol)
+          ..add('side', side)
+          ..add('type', type)
+          ..add('marketPrice', marketPrice)
+          ..add('estimatedPrice', estimatedPrice)
+          ..add('priceUpdated', priceUpdated)
+          ..add('estimatedQuantity', estimatedQuantity)
+          ..add('estimatedReceive', estimatedReceive)
+          ..add('estimatedReceiveUnit', estimatedReceiveUnit)
+          ..add('orderValue', orderValue)
+          ..add('fee', fee)
+          ..add('feeRate', feeRate)
+          ..add('slippagePercent', slippagePercent)
+          ..add('orderBookImpactPercent', orderBookImpactPercent)
+          ..add('networkFee', networkFee)
+          ..add('settlementAccount', settlementAccount)
+          ..add('settlementAccountLabel', settlementAccountLabel)
+          ..add('marginRequired', marginRequired)
+          ..add('liquidationPrice', liquidationPrice)
+          ..add('quoteExpiresAt', quoteExpiresAt)
+          ..add('details', details)
+          ..add('feeAsset', feeAsset)
+          ..add('feeNote', feeNote))
+        .toString();
+  }
+}
+
+class BstockTestnetOrderPreviewBuilder
+    implements
+        Builder<BstockTestnetOrderPreview, BstockTestnetOrderPreviewBuilder>,
+        OrderPreviewCommonBuilder {
+  _$BstockTestnetOrderPreview? _$v;
+
+  BstockTestnetOrderPreviewSettlementAssetEnum? _settlementAsset;
+  BstockTestnetOrderPreviewSettlementAssetEnum? get settlementAsset =>
+      _$this._settlementAsset;
+  set settlementAsset(
+          covariant BstockTestnetOrderPreviewSettlementAssetEnum?
+              settlementAsset) =>
+      _$this._settlementAsset = settlementAsset;
+
+  String? _settlementTokenContract;
+  String? get settlementTokenContract => _$this._settlementTokenContract;
+  set settlementTokenContract(covariant String? settlementTokenContract) =>
+      _$this._settlementTokenContract = settlementTokenContract;
+
+  int? _settlementTokenDecimals;
+  int? get settlementTokenDecimals => _$this._settlementTokenDecimals;
+  set settlementTokenDecimals(covariant int? settlementTokenDecimals) =>
+      _$this._settlementTokenDecimals = settlementTokenDecimals;
+
+  BstockTestnetOrderPreviewKindEnum? _kind;
+  BstockTestnetOrderPreviewKindEnum? get kind => _$this._kind;
+  set kind(covariant BstockTestnetOrderPreviewKindEnum? kind) =>
+      _$this._kind = kind;
+
+  String? _settlementAssetId;
+  String? get settlementAssetId => _$this._settlementAssetId;
+  set settlementAssetId(covariant String? settlementAssetId) =>
+      _$this._settlementAssetId = settlementAssetId;
+
+  BstockTestnetOrderPreviewSettlementChainIdEnum? _settlementChainId;
+  BstockTestnetOrderPreviewSettlementChainIdEnum? get settlementChainId =>
+      _$this._settlementChainId;
+  set settlementChainId(
+          covariant BstockTestnetOrderPreviewSettlementChainIdEnum?
+              settlementChainId) =>
+      _$this._settlementChainId = settlementChainId;
+
+  BstockTestnetOrderPreviewNetworkEnum? _network;
+  BstockTestnetOrderPreviewNetworkEnum? get network => _$this._network;
+  set network(covariant BstockTestnetOrderPreviewNetworkEnum? network) =>
+      _$this._network = network;
+
+  BstocksPreviewEconomicsBuilder? _bstocks;
+  BstocksPreviewEconomicsBuilder get bstocks =>
+      _$this._bstocks ??= BstocksPreviewEconomicsBuilder();
+  set bstocks(covariant BstocksPreviewEconomicsBuilder? bstocks) =>
+      _$this._bstocks = bstocks;
+
+  Hip3TimeInForce? _timeInForce;
+  Hip3TimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(covariant Hip3TimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
+
+  String? _limitPrice;
+  String? get limitPrice => _$this._limitPrice;
+  set limitPrice(covariant String? limitPrice) =>
+      _$this._limitPrice = limitPrice;
+
+  bool? _priceConditionMet;
+  bool? get priceConditionMet => _$this._priceConditionMet;
+  set priceConditionMet(covariant bool? priceConditionMet) =>
+      _$this._priceConditionMet = priceConditionMet;
+
+  OrderPreviewCommonFundingModeEnum? _fundingMode;
+  OrderPreviewCommonFundingModeEnum? get fundingMode => _$this._fundingMode;
+  set fundingMode(covariant OrderPreviewCommonFundingModeEnum? fundingMode) =>
+      _$this._fundingMode = fundingMode;
+
+  bool? _fundsReserved;
+  bool? get fundsReserved => _$this._fundsReserved;
+  set fundsReserved(covariant bool? fundsReserved) =>
+      _$this._fundsReserved = fundsReserved;
+
+  String? _requiredFundingRaw;
+  String? get requiredFundingRaw => _$this._requiredFundingRaw;
+  set requiredFundingRaw(covariant String? requiredFundingRaw) =>
+      _$this._requiredFundingRaw = requiredFundingRaw;
+
+  String? _fundingToken;
+  String? get fundingToken => _$this._fundingToken;
+  set fundingToken(covariant String? fundingToken) =>
+      _$this._fundingToken = fundingToken;
+
+  String? _balanceRaw;
+  String? get balanceRaw => _$this._balanceRaw;
+  set balanceRaw(covariant String? balanceRaw) =>
+      _$this._balanceRaw = balanceRaw;
+
+  String? _allowanceRaw;
+  String? get allowanceRaw => _$this._allowanceRaw;
+  set allowanceRaw(covariant String? allowanceRaw) =>
+      _$this._allowanceRaw = allowanceRaw;
+
+  bool? _balanceSufficient;
+  bool? get balanceSufficient => _$this._balanceSufficient;
+  set balanceSufficient(covariant bool? balanceSufficient) =>
+      _$this._balanceSufficient = balanceSufficient;
+
+  bool? _allowanceSufficient;
+  bool? get allowanceSufficient => _$this._allowanceSufficient;
+  set allowanceSufficient(covariant bool? allowanceSufficient) =>
+      _$this._allowanceSufficient = allowanceSufficient;
+
+  bool? _approvalRequired;
+  bool? get approvalRequired => _$this._approvalRequired;
+  set approvalRequired(covariant bool? approvalRequired) =>
+      _$this._approvalRequired = approvalRequired;
+
+  String? _orderRouter;
+  String? get orderRouter => _$this._orderRouter;
+  set orderRouter(covariant String? orderRouter) =>
+      _$this._orderRouter = orderRouter;
+
+  BstocksPreviewRouteBuilder? _route;
+  BstocksPreviewRouteBuilder get route =>
+      _$this._route ??= BstocksPreviewRouteBuilder();
+  set route(covariant BstocksPreviewRouteBuilder? route) =>
+      _$this._route = route;
+
+  BstocksCancellationPolicyBuilder? _cancellationPolicy;
+  BstocksCancellationPolicyBuilder get cancellationPolicy =>
+      _$this._cancellationPolicy ??= BstocksCancellationPolicyBuilder();
+  set cancellationPolicy(
+          covariant BstocksCancellationPolicyBuilder? cancellationPolicy) =>
+      _$this._cancellationPolicy = cancellationPolicy;
+
+  Hip3PreviewExecutionBuilder? _hip3Execution;
+  Hip3PreviewExecutionBuilder get hip3Execution =>
+      _$this._hip3Execution ??= Hip3PreviewExecutionBuilder();
+  set hip3Execution(covariant Hip3PreviewExecutionBuilder? hip3Execution) =>
+      _$this._hip3Execution = hip3Execution;
+
+  String? _previewId;
+  String? get previewId => _$this._previewId;
+  set previewId(covariant String? previewId) => _$this._previewId = previewId;
+
+  String? _symbol;
+  String? get symbol => _$this._symbol;
+  set symbol(covariant String? symbol) => _$this._symbol = symbol;
+
+  OrderSide? _side;
+  OrderSide? get side => _$this._side;
+  set side(covariant OrderSide? side) => _$this._side = side;
+
+  OrderType? _type;
+  OrderType? get type => _$this._type;
+  set type(covariant OrderType? type) => _$this._type = type;
+
+  String? _marketPrice;
+  String? get marketPrice => _$this._marketPrice;
+  set marketPrice(covariant String? marketPrice) =>
+      _$this._marketPrice = marketPrice;
+
+  String? _estimatedPrice;
+  String? get estimatedPrice => _$this._estimatedPrice;
+  set estimatedPrice(covariant String? estimatedPrice) =>
+      _$this._estimatedPrice = estimatedPrice;
+
+  bool? _priceUpdated;
+  bool? get priceUpdated => _$this._priceUpdated;
+  set priceUpdated(covariant bool? priceUpdated) =>
+      _$this._priceUpdated = priceUpdated;
+
+  String? _estimatedQuantity;
+  String? get estimatedQuantity => _$this._estimatedQuantity;
+  set estimatedQuantity(covariant String? estimatedQuantity) =>
+      _$this._estimatedQuantity = estimatedQuantity;
+
+  String? _estimatedReceive;
+  String? get estimatedReceive => _$this._estimatedReceive;
+  set estimatedReceive(covariant String? estimatedReceive) =>
+      _$this._estimatedReceive = estimatedReceive;
+
+  String? _estimatedReceiveUnit;
+  String? get estimatedReceiveUnit => _$this._estimatedReceiveUnit;
+  set estimatedReceiveUnit(covariant String? estimatedReceiveUnit) =>
+      _$this._estimatedReceiveUnit = estimatedReceiveUnit;
+
+  String? _orderValue;
+  String? get orderValue => _$this._orderValue;
+  set orderValue(covariant String? orderValue) =>
+      _$this._orderValue = orderValue;
+
+  String? _fee;
+  String? get fee => _$this._fee;
+  set fee(covariant String? fee) => _$this._fee = fee;
+
+  String? _feeRate;
+  String? get feeRate => _$this._feeRate;
+  set feeRate(covariant String? feeRate) => _$this._feeRate = feeRate;
+
+  String? _slippagePercent;
+  String? get slippagePercent => _$this._slippagePercent;
+  set slippagePercent(covariant String? slippagePercent) =>
+      _$this._slippagePercent = slippagePercent;
+
+  String? _orderBookImpactPercent;
+  String? get orderBookImpactPercent => _$this._orderBookImpactPercent;
+  set orderBookImpactPercent(covariant String? orderBookImpactPercent) =>
+      _$this._orderBookImpactPercent = orderBookImpactPercent;
+
+  String? _networkFee;
+  String? get networkFee => _$this._networkFee;
+  set networkFee(covariant String? networkFee) =>
+      _$this._networkFee = networkFee;
+
+  AccountKind? _settlementAccount;
+  AccountKind? get settlementAccount => _$this._settlementAccount;
+  set settlementAccount(covariant AccountKind? settlementAccount) =>
+      _$this._settlementAccount = settlementAccount;
+
+  String? _settlementAccountLabel;
+  String? get settlementAccountLabel => _$this._settlementAccountLabel;
+  set settlementAccountLabel(covariant String? settlementAccountLabel) =>
+      _$this._settlementAccountLabel = settlementAccountLabel;
+
+  String? _marginRequired;
+  String? get marginRequired => _$this._marginRequired;
+  set marginRequired(covariant String? marginRequired) =>
+      _$this._marginRequired = marginRequired;
+
+  String? _liquidationPrice;
+  String? get liquidationPrice => _$this._liquidationPrice;
+  set liquidationPrice(covariant String? liquidationPrice) =>
+      _$this._liquidationPrice = liquidationPrice;
+
+  DateTime? _quoteExpiresAt;
+  DateTime? get quoteExpiresAt => _$this._quoteExpiresAt;
+  set quoteExpiresAt(covariant DateTime? quoteExpiresAt) =>
+      _$this._quoteExpiresAt = quoteExpiresAt;
+
+  ListBuilder<KeyValue>? _details;
+  ListBuilder<KeyValue> get details =>
+      _$this._details ??= ListBuilder<KeyValue>();
+  set details(covariant ListBuilder<KeyValue>? details) =>
+      _$this._details = details;
+
+  String? _feeAsset;
+  String? get feeAsset => _$this._feeAsset;
+  set feeAsset(covariant String? feeAsset) => _$this._feeAsset = feeAsset;
+
+  String? _feeNote;
+  String? get feeNote => _$this._feeNote;
+  set feeNote(covariant String? feeNote) => _$this._feeNote = feeNote;
+
+  BstockTestnetOrderPreviewBuilder() {
+    BstockTestnetOrderPreview._defaults(this);
+  }
+
+  BstockTestnetOrderPreviewBuilder get _$this {
+    final $v = _$v;
+    if ($v != null) {
+      _settlementAsset = $v.settlementAsset;
+      _settlementTokenContract = $v.settlementTokenContract;
+      _settlementTokenDecimals = $v.settlementTokenDecimals;
+      _kind = $v.kind;
+      _settlementAssetId = $v.settlementAssetId;
+      _settlementChainId = $v.settlementChainId;
+      _network = $v.network;
+      _bstocks = $v.bstocks?.toBuilder();
+      _timeInForce = $v.timeInForce;
+      _limitPrice = $v.limitPrice;
+      _priceConditionMet = $v.priceConditionMet;
+      _fundingMode = $v.fundingMode;
+      _fundsReserved = $v.fundsReserved;
+      _requiredFundingRaw = $v.requiredFundingRaw;
+      _fundingToken = $v.fundingToken;
+      _balanceRaw = $v.balanceRaw;
+      _allowanceRaw = $v.allowanceRaw;
+      _balanceSufficient = $v.balanceSufficient;
+      _allowanceSufficient = $v.allowanceSufficient;
+      _approvalRequired = $v.approvalRequired;
+      _orderRouter = $v.orderRouter;
+      _route = $v.route?.toBuilder();
+      _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
+      _hip3Execution = $v.hip3Execution?.toBuilder();
+      _previewId = $v.previewId;
+      _symbol = $v.symbol;
+      _side = $v.side;
+      _type = $v.type;
+      _marketPrice = $v.marketPrice;
+      _estimatedPrice = $v.estimatedPrice;
+      _priceUpdated = $v.priceUpdated;
+      _estimatedQuantity = $v.estimatedQuantity;
+      _estimatedReceive = $v.estimatedReceive;
+      _estimatedReceiveUnit = $v.estimatedReceiveUnit;
+      _orderValue = $v.orderValue;
+      _fee = $v.fee;
+      _feeRate = $v.feeRate;
+      _slippagePercent = $v.slippagePercent;
+      _orderBookImpactPercent = $v.orderBookImpactPercent;
+      _networkFee = $v.networkFee;
+      _settlementAccount = $v.settlementAccount;
+      _settlementAccountLabel = $v.settlementAccountLabel;
+      _marginRequired = $v.marginRequired;
+      _liquidationPrice = $v.liquidationPrice;
+      _quoteExpiresAt = $v.quoteExpiresAt;
+      _details = $v.details?.toBuilder();
+      _feeAsset = $v.feeAsset;
+      _feeNote = $v.feeNote;
+      _$v = null;
+    }
+    return this;
+  }
+
+  @override
+  void replace(covariant BstockTestnetOrderPreview other) {
+    _$v = other as _$BstockTestnetOrderPreview;
+  }
+
+  @override
+  void update(void Function(BstockTestnetOrderPreviewBuilder)? updates) {
+    if (updates != null) updates(this);
+  }
+
+  @override
+  BstockTestnetOrderPreview build() => _build();
+
+  _$BstockTestnetOrderPreview _build() {
+    _$BstockTestnetOrderPreview _$result;
+    try {
+      _$result = _$v ??
+          _$BstockTestnetOrderPreview._(
+            settlementAsset: BuiltValueNullFieldError.checkNotNull(
+                settlementAsset,
+                r'BstockTestnetOrderPreview',
+                'settlementAsset'),
+            settlementTokenContract: BuiltValueNullFieldError.checkNotNull(
+                settlementTokenContract,
+                r'BstockTestnetOrderPreview',
+                'settlementTokenContract'),
+            settlementTokenDecimals: BuiltValueNullFieldError.checkNotNull(
+                settlementTokenDecimals,
+                r'BstockTestnetOrderPreview',
+                'settlementTokenDecimals'),
+            kind: BuiltValueNullFieldError.checkNotNull(
+                kind, r'BstockTestnetOrderPreview', 'kind'),
+            settlementAssetId: BuiltValueNullFieldError.checkNotNull(
+                settlementAssetId,
+                r'BstockTestnetOrderPreview',
+                'settlementAssetId'),
+            settlementChainId: BuiltValueNullFieldError.checkNotNull(
+                settlementChainId,
+                r'BstockTestnetOrderPreview',
+                'settlementChainId'),
+            network: BuiltValueNullFieldError.checkNotNull(
+                network, r'BstockTestnetOrderPreview', 'network'),
+            bstocks: _bstocks?.build(),
+            timeInForce: timeInForce,
+            limitPrice: limitPrice,
+            priceConditionMet: priceConditionMet,
+            fundingMode: fundingMode,
+            fundsReserved: fundsReserved,
+            requiredFundingRaw: requiredFundingRaw,
+            fundingToken: fundingToken,
+            balanceRaw: balanceRaw,
+            allowanceRaw: allowanceRaw,
+            balanceSufficient: balanceSufficient,
+            allowanceSufficient: allowanceSufficient,
+            approvalRequired: approvalRequired,
+            orderRouter: orderRouter,
+            route: _route?.build(),
+            cancellationPolicy: _cancellationPolicy?.build(),
+            hip3Execution: _hip3Execution?.build(),
+            previewId: BuiltValueNullFieldError.checkNotNull(
+                previewId, r'BstockTestnetOrderPreview', 'previewId'),
+            symbol: BuiltValueNullFieldError.checkNotNull(
+                symbol, r'BstockTestnetOrderPreview', 'symbol'),
+            side: BuiltValueNullFieldError.checkNotNull(
+                side, r'BstockTestnetOrderPreview', 'side'),
+            type: BuiltValueNullFieldError.checkNotNull(
+                type, r'BstockTestnetOrderPreview', 'type'),
+            marketPrice: marketPrice,
+            estimatedPrice: estimatedPrice,
+            priceUpdated: priceUpdated,
+            estimatedQuantity: estimatedQuantity,
+            estimatedReceive: estimatedReceive,
+            estimatedReceiveUnit: estimatedReceiveUnit,
+            orderValue: BuiltValueNullFieldError.checkNotNull(
+                orderValue, r'BstockTestnetOrderPreview', 'orderValue'),
+            fee: fee,
+            feeRate: feeRate,
+            slippagePercent: slippagePercent,
+            orderBookImpactPercent: orderBookImpactPercent,
+            networkFee: networkFee,
+            settlementAccount: settlementAccount,
+            settlementAccountLabel: settlementAccountLabel,
+            marginRequired: marginRequired,
+            liquidationPrice: liquidationPrice,
+            quoteExpiresAt: quoteExpiresAt,
+            details: _details?.build(),
+            feeAsset: feeAsset,
+            feeNote: feeNote,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'bstocks';
+        _bstocks?.build();
+
+        _$failedField = 'route';
+        _route?.build();
+        _$failedField = 'cancellationPolicy';
+        _cancellationPolicy?.build();
+        _$failedField = 'hip3Execution';
+        _hip3Execution?.build();
+
+        _$failedField = 'details';
+        _details?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'BstockTestnetOrderPreview', _$failedField, e.toString());
+      }
+      rethrow;
+    }
+    replace(_$result);
+    return _$result;
+  }
+}
+
+// ignore_for_file: deprecated_member_use_from_same_package,type=lint

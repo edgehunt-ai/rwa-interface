@@ -19,7 +19,10 @@ final class ApiFailureMapper {
       return TimeoutFailure(requestId: requestId);
     }
     if (error.type == DioExceptionType.connectionError) {
-      return NetworkFailure(requestId: requestId);
+      return NetworkFailure(
+        requestId: requestId,
+        userAction: _transportReason(error),
+      );
     }
     final status = response?.statusCode;
     if (status == 401) {
@@ -30,7 +33,11 @@ final class ApiFailureMapper {
     }
     if (error.type == DioExceptionType.unknown && response != null ||
         error.error is FormatException) {
-      return DecodingFailure(requestId: requestId);
+      final reason = error.error?.toString().trim();
+      return DecodingFailure(
+        requestId: requestId,
+        userAction: reason == null || reason.isEmpty ? null : reason,
+      );
     }
     if (status != null) {
       final body = response?.data;
@@ -47,6 +54,14 @@ final class ApiFailureMapper {
       );
     }
     return const UnknownFailure();
+  }
+
+  String? _transportReason(DioException error) {
+    final message = error.message?.trim();
+    if (message != null && message.isNotEmpty) return message;
+    final cause = error.error?.toString().trim();
+    if (cause != null && cause.isNotEmpty && cause != 'null') return cause;
+    return null;
   }
 
   Map<String, Object?> _safeDetails(Object? value) {

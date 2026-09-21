@@ -6,9 +6,117 @@ part of 'order_preview_common.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const OrderPreviewCommonFundingModeEnum
+    _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom =
+    const OrderPreviewCommonFundingModeEnum._('unreservedTransferFrom');
+const OrderPreviewCommonFundingModeEnum
+    _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi =
+    const OrderPreviewCommonFundingModeEnum._('unknownDefaultOpenApi');
+
+OrderPreviewCommonFundingModeEnum _$orderPreviewCommonFundingModeEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'unreservedTransferFrom':
+      return _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom;
+    case 'unknownDefaultOpenApi':
+      return _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi;
+    default:
+      return _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<OrderPreviewCommonFundingModeEnum>
+    _$orderPreviewCommonFundingModeEnumValues = BuiltSet<
+        OrderPreviewCommonFundingModeEnum>(const <OrderPreviewCommonFundingModeEnum>[
+  _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom,
+  _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi,
+]);
+
+Serializer<OrderPreviewCommonFundingModeEnum>
+    _$orderPreviewCommonFundingModeEnumSerializer =
+    _$OrderPreviewCommonFundingModeEnumSerializer();
+
+class _$OrderPreviewCommonFundingModeEnumSerializer
+    implements PrimitiveSerializer<OrderPreviewCommonFundingModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'unreservedTransferFrom': 'unreserved_transfer_from',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'unreserved_transfer_from': 'unreservedTransferFrom',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[OrderPreviewCommonFundingModeEnum];
+  @override
+  final String wireName = 'OrderPreviewCommonFundingModeEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, OrderPreviewCommonFundingModeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  OrderPreviewCommonFundingModeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      OrderPreviewCommonFundingModeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 abstract class OrderPreviewCommonBuilder {
   void replace(OrderPreviewCommon other);
   void update(void Function(OrderPreviewCommonBuilder) updates);
+  BstocksPreviewEconomicsBuilder get bstocks;
+  set bstocks(BstocksPreviewEconomicsBuilder? bstocks);
+
+  Hip3TimeInForce? get timeInForce;
+  set timeInForce(Hip3TimeInForce? timeInForce);
+
+  String? get limitPrice;
+  set limitPrice(String? limitPrice);
+
+  bool? get priceConditionMet;
+  set priceConditionMet(bool? priceConditionMet);
+
+  OrderPreviewCommonFundingModeEnum? get fundingMode;
+  set fundingMode(OrderPreviewCommonFundingModeEnum? fundingMode);
+
+  bool? get fundsReserved;
+  set fundsReserved(bool? fundsReserved);
+
+  String? get requiredFundingRaw;
+  set requiredFundingRaw(String? requiredFundingRaw);
+
+  String? get fundingToken;
+  set fundingToken(String? fundingToken);
+
+  String? get balanceRaw;
+  set balanceRaw(String? balanceRaw);
+
+  String? get allowanceRaw;
+  set allowanceRaw(String? allowanceRaw);
+
+  bool? get balanceSufficient;
+  set balanceSufficient(bool? balanceSufficient);
+
+  bool? get allowanceSufficient;
+  set allowanceSufficient(bool? allowanceSufficient);
+
+  bool? get approvalRequired;
+  set approvalRequired(bool? approvalRequired);
+
+  String? get orderRouter;
+  set orderRouter(String? orderRouter);
+
+  BstocksPreviewRouteBuilder get route;
+  set route(BstocksPreviewRouteBuilder? route);
+
+  BstocksCancellationPolicyBuilder get cancellationPolicy;
+  set cancellationPolicy(BstocksCancellationPolicyBuilder? cancellationPolicy);
+
   Hip3PreviewExecutionBuilder get hip3Execution;
   set hip3Execution(Hip3PreviewExecutionBuilder? hip3Execution);
 
@@ -87,6 +195,38 @@ abstract class OrderPreviewCommonBuilder {
 
 class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
+  final BstocksPreviewEconomics? bstocks;
+  @override
+  final Hip3TimeInForce? timeInForce;
+  @override
+  final String? limitPrice;
+  @override
+  final bool? priceConditionMet;
+  @override
+  final OrderPreviewCommonFundingModeEnum? fundingMode;
+  @override
+  final bool? fundsReserved;
+  @override
+  final String? requiredFundingRaw;
+  @override
+  final String? fundingToken;
+  @override
+  final String? balanceRaw;
+  @override
+  final String? allowanceRaw;
+  @override
+  final bool? balanceSufficient;
+  @override
+  final bool? allowanceSufficient;
+  @override
+  final bool? approvalRequired;
+  @override
+  final String? orderRouter;
+  @override
+  final BstocksPreviewRoute? route;
+  @override
+  final BstocksCancellationPolicy? cancellationPolicy;
+  @override
   final Hip3PreviewExecution? hip3Execution;
   @override
   final String previewId;
@@ -142,7 +282,23 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
       ($OrderPreviewCommonBuilder()..update(updates))._build();
 
   _$$OrderPreviewCommon._(
-      {this.hip3Execution,
+      {this.bstocks,
+      this.timeInForce,
+      this.limitPrice,
+      this.priceConditionMet,
+      this.fundingMode,
+      this.fundsReserved,
+      this.requiredFundingRaw,
+      this.fundingToken,
+      this.balanceRaw,
+      this.allowanceRaw,
+      this.balanceSufficient,
+      this.allowanceSufficient,
+      this.approvalRequired,
+      this.orderRouter,
+      this.route,
+      this.cancellationPolicy,
+      this.hip3Execution,
       required this.previewId,
       required this.symbol,
       required this.side,
@@ -181,6 +337,22 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is $OrderPreviewCommon &&
+        bstocks == other.bstocks &&
+        timeInForce == other.timeInForce &&
+        limitPrice == other.limitPrice &&
+        priceConditionMet == other.priceConditionMet &&
+        fundingMode == other.fundingMode &&
+        fundsReserved == other.fundsReserved &&
+        requiredFundingRaw == other.requiredFundingRaw &&
+        fundingToken == other.fundingToken &&
+        balanceRaw == other.balanceRaw &&
+        allowanceRaw == other.allowanceRaw &&
+        balanceSufficient == other.balanceSufficient &&
+        allowanceSufficient == other.allowanceSufficient &&
+        approvalRequired == other.approvalRequired &&
+        orderRouter == other.orderRouter &&
+        route == other.route &&
+        cancellationPolicy == other.cancellationPolicy &&
         hip3Execution == other.hip3Execution &&
         previewId == other.previewId &&
         symbol == other.symbol &&
@@ -211,6 +383,22 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, bstocks.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, limitPrice.hashCode);
+    _$hash = $jc(_$hash, priceConditionMet.hashCode);
+    _$hash = $jc(_$hash, fundingMode.hashCode);
+    _$hash = $jc(_$hash, fundsReserved.hashCode);
+    _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
+    _$hash = $jc(_$hash, fundingToken.hashCode);
+    _$hash = $jc(_$hash, balanceRaw.hashCode);
+    _$hash = $jc(_$hash, allowanceRaw.hashCode);
+    _$hash = $jc(_$hash, balanceSufficient.hashCode);
+    _$hash = $jc(_$hash, allowanceSufficient.hashCode);
+    _$hash = $jc(_$hash, approvalRequired.hashCode);
+    _$hash = $jc(_$hash, orderRouter.hashCode);
+    _$hash = $jc(_$hash, route.hashCode);
+    _$hash = $jc(_$hash, cancellationPolicy.hashCode);
     _$hash = $jc(_$hash, hip3Execution.hashCode);
     _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
@@ -243,6 +431,22 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'$OrderPreviewCommon')
+          ..add('bstocks', bstocks)
+          ..add('timeInForce', timeInForce)
+          ..add('limitPrice', limitPrice)
+          ..add('priceConditionMet', priceConditionMet)
+          ..add('fundingMode', fundingMode)
+          ..add('fundsReserved', fundsReserved)
+          ..add('requiredFundingRaw', requiredFundingRaw)
+          ..add('fundingToken', fundingToken)
+          ..add('balanceRaw', balanceRaw)
+          ..add('allowanceRaw', allowanceRaw)
+          ..add('balanceSufficient', balanceSufficient)
+          ..add('allowanceSufficient', allowanceSufficient)
+          ..add('approvalRequired', approvalRequired)
+          ..add('orderRouter', orderRouter)
+          ..add('route', route)
+          ..add('cancellationPolicy', cancellationPolicy)
           ..add('hip3Execution', hip3Execution)
           ..add('previewId', previewId)
           ..add('symbol', symbol)
@@ -277,6 +481,90 @@ class $OrderPreviewCommonBuilder
         Builder<$OrderPreviewCommon, $OrderPreviewCommonBuilder>,
         OrderPreviewCommonBuilder {
   _$$OrderPreviewCommon? _$v;
+
+  BstocksPreviewEconomicsBuilder? _bstocks;
+  BstocksPreviewEconomicsBuilder get bstocks =>
+      _$this._bstocks ??= BstocksPreviewEconomicsBuilder();
+  set bstocks(covariant BstocksPreviewEconomicsBuilder? bstocks) =>
+      _$this._bstocks = bstocks;
+
+  Hip3TimeInForce? _timeInForce;
+  Hip3TimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(covariant Hip3TimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
+
+  String? _limitPrice;
+  String? get limitPrice => _$this._limitPrice;
+  set limitPrice(covariant String? limitPrice) =>
+      _$this._limitPrice = limitPrice;
+
+  bool? _priceConditionMet;
+  bool? get priceConditionMet => _$this._priceConditionMet;
+  set priceConditionMet(covariant bool? priceConditionMet) =>
+      _$this._priceConditionMet = priceConditionMet;
+
+  OrderPreviewCommonFundingModeEnum? _fundingMode;
+  OrderPreviewCommonFundingModeEnum? get fundingMode => _$this._fundingMode;
+  set fundingMode(covariant OrderPreviewCommonFundingModeEnum? fundingMode) =>
+      _$this._fundingMode = fundingMode;
+
+  bool? _fundsReserved;
+  bool? get fundsReserved => _$this._fundsReserved;
+  set fundsReserved(covariant bool? fundsReserved) =>
+      _$this._fundsReserved = fundsReserved;
+
+  String? _requiredFundingRaw;
+  String? get requiredFundingRaw => _$this._requiredFundingRaw;
+  set requiredFundingRaw(covariant String? requiredFundingRaw) =>
+      _$this._requiredFundingRaw = requiredFundingRaw;
+
+  String? _fundingToken;
+  String? get fundingToken => _$this._fundingToken;
+  set fundingToken(covariant String? fundingToken) =>
+      _$this._fundingToken = fundingToken;
+
+  String? _balanceRaw;
+  String? get balanceRaw => _$this._balanceRaw;
+  set balanceRaw(covariant String? balanceRaw) =>
+      _$this._balanceRaw = balanceRaw;
+
+  String? _allowanceRaw;
+  String? get allowanceRaw => _$this._allowanceRaw;
+  set allowanceRaw(covariant String? allowanceRaw) =>
+      _$this._allowanceRaw = allowanceRaw;
+
+  bool? _balanceSufficient;
+  bool? get balanceSufficient => _$this._balanceSufficient;
+  set balanceSufficient(covariant bool? balanceSufficient) =>
+      _$this._balanceSufficient = balanceSufficient;
+
+  bool? _allowanceSufficient;
+  bool? get allowanceSufficient => _$this._allowanceSufficient;
+  set allowanceSufficient(covariant bool? allowanceSufficient) =>
+      _$this._allowanceSufficient = allowanceSufficient;
+
+  bool? _approvalRequired;
+  bool? get approvalRequired => _$this._approvalRequired;
+  set approvalRequired(covariant bool? approvalRequired) =>
+      _$this._approvalRequired = approvalRequired;
+
+  String? _orderRouter;
+  String? get orderRouter => _$this._orderRouter;
+  set orderRouter(covariant String? orderRouter) =>
+      _$this._orderRouter = orderRouter;
+
+  BstocksPreviewRouteBuilder? _route;
+  BstocksPreviewRouteBuilder get route =>
+      _$this._route ??= BstocksPreviewRouteBuilder();
+  set route(covariant BstocksPreviewRouteBuilder? route) =>
+      _$this._route = route;
+
+  BstocksCancellationPolicyBuilder? _cancellationPolicy;
+  BstocksCancellationPolicyBuilder get cancellationPolicy =>
+      _$this._cancellationPolicy ??= BstocksCancellationPolicyBuilder();
+  set cancellationPolicy(
+          covariant BstocksCancellationPolicyBuilder? cancellationPolicy) =>
+      _$this._cancellationPolicy = cancellationPolicy;
 
   Hip3PreviewExecutionBuilder? _hip3Execution;
   Hip3PreviewExecutionBuilder get hip3Execution =>
@@ -404,6 +692,22 @@ class $OrderPreviewCommonBuilder
   $OrderPreviewCommonBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _bstocks = $v.bstocks?.toBuilder();
+      _timeInForce = $v.timeInForce;
+      _limitPrice = $v.limitPrice;
+      _priceConditionMet = $v.priceConditionMet;
+      _fundingMode = $v.fundingMode;
+      _fundsReserved = $v.fundsReserved;
+      _requiredFundingRaw = $v.requiredFundingRaw;
+      _fundingToken = $v.fundingToken;
+      _balanceRaw = $v.balanceRaw;
+      _allowanceRaw = $v.allowanceRaw;
+      _balanceSufficient = $v.balanceSufficient;
+      _allowanceSufficient = $v.allowanceSufficient;
+      _approvalRequired = $v.approvalRequired;
+      _orderRouter = $v.orderRouter;
+      _route = $v.route?.toBuilder();
+      _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
       _hip3Execution = $v.hip3Execution?.toBuilder();
       _previewId = $v.previewId;
       _symbol = $v.symbol;
@@ -452,6 +756,22 @@ class $OrderPreviewCommonBuilder
     try {
       _$result = _$v ??
           _$$OrderPreviewCommon._(
+            bstocks: _bstocks?.build(),
+            timeInForce: timeInForce,
+            limitPrice: limitPrice,
+            priceConditionMet: priceConditionMet,
+            fundingMode: fundingMode,
+            fundsReserved: fundsReserved,
+            requiredFundingRaw: requiredFundingRaw,
+            fundingToken: fundingToken,
+            balanceRaw: balanceRaw,
+            allowanceRaw: allowanceRaw,
+            balanceSufficient: balanceSufficient,
+            allowanceSufficient: allowanceSufficient,
+            approvalRequired: approvalRequired,
+            orderRouter: orderRouter,
+            route: _route?.build(),
+            cancellationPolicy: _cancellationPolicy?.build(),
             hip3Execution: _hip3Execution?.build(),
             previewId: BuiltValueNullFieldError.checkNotNull(
                 previewId, r'$OrderPreviewCommon', 'previewId'),
@@ -486,6 +806,13 @@ class $OrderPreviewCommonBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'bstocks';
+        _bstocks?.build();
+
+        _$failedField = 'route';
+        _route?.build();
+        _$failedField = 'cancellationPolicy';
+        _cancellationPolicy?.build();
         _$failedField = 'hip3Execution';
         _hip3Execution?.build();
 

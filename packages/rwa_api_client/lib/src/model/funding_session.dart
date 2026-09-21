@@ -24,7 +24,7 @@ part 'funding_session.g.dart';
 /// * [status] 
 /// * [version] 
 /// * [trade] 
-/// * [continuation] 
+/// * [continuation] - Server-owned navigation hint for resuming the frozen trade after funding completes; `null` unless the funded session still owes a follow-up order action. It never carries an executable quote, calldata or auto-submission.
 /// * [rail] 
 /// * [targetSnapshot] 
 /// * [requiredTargetBalance] - 十进制字符串，避免浮点误差
@@ -60,8 +60,9 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   @BuiltValueField(wireName: r'trade')
   OrderPreviewRequest get trade;
 
+  /// Server-owned navigation hint for resuming the frozen trade after funding completes; `null` unless the funded session still owes a follow-up order action. It never carries an executable quote, calldata or auto-submission.
   @BuiltValueField(wireName: r'continuation')
-  FundingSessionContinuation get continuation;
+  FundingSessionContinuation? get continuation;
 
   @BuiltValueField(wireName: r'rail')
   ProductKind get rail;
@@ -178,9 +179,9 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
       specifiedType: const FullType(OrderPreviewRequest),
     );
     yield r'continuation';
-    yield serializers.serialize(
+    yield object.continuation == null ? null : serializers.serialize(
       object.continuation,
-      specifiedType: const FullType(FundingSessionContinuation),
+      specifiedType: const FullType.nullable(FundingSessionContinuation),
     );
     yield r'rail';
     yield serializers.serialize(
@@ -336,8 +337,9 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
         case r'continuation':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(FundingSessionContinuation),
-          ) as FundingSessionContinuation;
+            specifiedType: const FullType.nullable(FundingSessionContinuation),
+          ) as FundingSessionContinuation?;
+          if (valueDes == null) continue;
           result.continuation.replace(valueDes);
           break;
         case r'rail':

@@ -3,13 +3,20 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_route.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_order_preview.dart';
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
+import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/bstock_limit_order_preview.dart';
+import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
+import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_order_preview.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/bstock_localnet_order_preview.dart';
 import 'package:rwa_api_client/src/model/legacy_perp_order_preview.dart';
-import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_economics.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
@@ -19,18 +26,34 @@ import 'package:one_of/one_of.dart';
 
 part 'order_preview.g.dart';
 
-/// 根据 `kind` 锁定结算身份：bstock => BSC/USDT，perp => Hyperliquid Perps/USDC。
+/// 按完整响应形状选择变体，kind 单独不足以区分 bStocks 主网/测试网/本地或限价预览。 保留旧变体；主网 USDT、测试网 TUSDT 与本地 LUSDT 的身份不得混用。 当前限价预览无顶层 settlement_*，须读取 bstocks.input_asset 和 estimated_receive_unit。 
 ///
 /// Properties:
 /// * [kind] 
 /// * [network] 
-/// * [settlementAsset] - 服务端返回的实际结算资产标识。
+/// * [settlementAsset] 
 /// * [settlementChainId] 
 /// * [settlementAssetId] 
 /// * [settlementTokenContract] 
 /// * [settlementTokenDecimals] 
+/// * [bstocks] 
+/// * [timeInForce] 
+/// * [limitPrice] - 十进制字符串，避免浮点误差
+/// * [priceConditionMet] 
+/// * [fundingMode] 
+/// * [fundsReserved] 
+/// * [requiredFundingRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [fundingToken] 
+/// * [balanceRaw] - 十进制字符串，避免浮点误差
+/// * [allowanceRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [balanceSufficient] 
+/// * [allowanceSufficient] 
+/// * [approvalRequired] 
+/// * [orderRouter] 
+/// * [route] 
+/// * [cancellationPolicy] 
 /// * [hip3Execution] 
-/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
+/// * [previewId] - 服务端预览标识。bStocks 绑定账户、owner、输入、准入版本和经济量上限，不是锁价或成交承诺。 当前非 localnet 下单必须引用自己的有效预览；quote_expires_at 是最多120秒的服务端确认期限， 还必须满足独立的 Quoter 区块窗口。审批会消费预览，成功后必须重新 preview/create。 
 /// * [symbol] 
 /// * [side] 
 /// * [type] 
@@ -56,15 +79,8 @@ part 'order_preview.g.dart';
 /// * [feeNote] - Optional localized display note, for example Included.
 @BuiltValue()
 abstract class OrderPreview implements Built<OrderPreview, OrderPreviewBuilder> {
-  /// One Of [BstockOrderPreview], [LegacyBstockOrderPreview], [LegacyPerpOrderPreview], [PerpOrderPreview]
+  /// One Of [BstockLimitOrderPreview], [BstockLocalnetOrderPreview], [BstockOrderPreview], [BstockTestnetOrderPreview], [LegacyBstockOrderPreview], [LegacyPerpOrderPreview], [PerpOrderPreview]
   OneOf get oneOf;
-
-  static const String discriminatorFieldName = r'kind';
-
-  static const Map<String, Type> discriminatorMapping = {
-    r'bstock': BstockOrderPreview,
-    r'perp': PerpOrderPreview,
-  };
 
   OrderPreview._();
 
@@ -75,29 +91,6 @@ abstract class OrderPreview implements Built<OrderPreview, OrderPreviewBuilder> 
 
   @BuiltValueSerializer(custom: true)
   static Serializer<OrderPreview> get serializer => _$OrderPreviewSerializer();
-}
-
-extension OrderPreviewDiscriminatorExt on OrderPreview {
-    String? get discriminatorValue {
-        if (this is BstockOrderPreview) {
-            return r'bstock';
-        }
-        if (this is PerpOrderPreview) {
-            return r'perp';
-        }
-        return null;
-    }
-}
-extension OrderPreviewBuilderDiscriminatorExt on OrderPreviewBuilder {
-    String? get discriminatorValue {
-        if (this is BstockOrderPreviewBuilder) {
-            return r'bstock';
-        }
-        if (this is PerpOrderPreviewBuilder) {
-            return r'perp';
-        }
-        return null;
-    }
 }
 
 class _$OrderPreviewSerializer implements PrimitiveSerializer<OrderPreview> {
@@ -132,40 +125,17 @@ class _$OrderPreviewSerializer implements PrimitiveSerializer<OrderPreview> {
   }) {
     final result = OrderPreviewBuilder();
     Object? oneOfDataSrc;
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex = serializedList.indexOf(OrderPreview.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    final targetType = const FullType(OneOf, [FullType(BstockOrderPreview), FullType(PerpOrderPreview), FullType(LegacyBstockOrderPreview), FullType(LegacyPerpOrderPreview), FullType(BstockTestnetOrderPreview), FullType(BstockLocalnetOrderPreview), FullType(BstockLimitOrderPreview), ]);
     oneOfDataSrc = serialized;
-    final oneOfTypes = [BstockOrderPreview, PerpOrderPreview, ];
-    Object oneOfResult;
-    Type oneOfType;
-    switch (discValue) {
-      case r'bstock':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(BstockOrderPreview),
-        ) as BstockOrderPreview;
-        oneOfType = BstockOrderPreview;
-        break;
-      case r'perp':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(PerpOrderPreview),
-        ) as PerpOrderPreview;
-        oneOfType = PerpOrderPreview;
-        break;
-      default:
-        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
-    }
-    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }
 
 class OrderPreviewKindEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'perp')
-  static const OrderPreviewKindEnum perp = _$orderPreviewKindEnum_perp;
+  @BuiltValueEnumConst(wireName: r'bstock')
+  static const OrderPreviewKindEnum bstock = _$orderPreviewKindEnum_bstock;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const OrderPreviewKindEnum unknownDefaultOpenApi = _$orderPreviewKindEnum_unknownDefaultOpenApi;
 
@@ -179,8 +149,8 @@ class OrderPreviewKindEnum extends EnumClass {
 
 class OrderPreviewNetworkEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const OrderPreviewNetworkEnum arbitrum = _$orderPreviewNetworkEnum_arbitrum;
+  @BuiltValueEnumConst(wireName: r'BSC')
+  static const OrderPreviewNetworkEnum BSC = _$orderPreviewNetworkEnum_BSC;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const OrderPreviewNetworkEnum unknownDefaultOpenApi = _$orderPreviewNetworkEnum_unknownDefaultOpenApi;
 
@@ -192,10 +162,27 @@ class OrderPreviewNetworkEnum extends EnumClass {
   static OrderPreviewNetworkEnum valueOf(String name) => _$orderPreviewNetworkEnumValueOf(name);
 }
 
+class OrderPreviewSettlementAssetEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'LUSDT')
+  static const OrderPreviewSettlementAssetEnum LUSDT = _$orderPreviewSettlementAssetEnum_LUSDT;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const OrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+
+  static Serializer<OrderPreviewSettlementAssetEnum> get serializer => _$orderPreviewSettlementAssetEnumSerializer;
+
+  const OrderPreviewSettlementAssetEnum._(String name): super(name);
+
+  static BuiltSet<OrderPreviewSettlementAssetEnum> get values => _$orderPreviewSettlementAssetEnumValues;
+  static OrderPreviewSettlementAssetEnum valueOf(String name) => _$orderPreviewSettlementAssetEnumValueOf(name);
+}
+
 class OrderPreviewSettlementChainIdEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireNumber: 1337)
-  static const OrderPreviewSettlementChainIdEnum number1337 = _$orderPreviewSettlementChainIdEnum_number1337;
+  @BuiltValueEnumConst(wireNumber: 56)
+  static const OrderPreviewSettlementChainIdEnum number56 = _$orderPreviewSettlementChainIdEnum_number56;
+  @BuiltValueEnumConst(wireNumber: 31337)
+  static const OrderPreviewSettlementChainIdEnum number31337 = _$orderPreviewSettlementChainIdEnum_number31337;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
   static const OrderPreviewSettlementChainIdEnum unknownDefaultOpenApi = _$orderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
 
@@ -207,48 +194,18 @@ class OrderPreviewSettlementChainIdEnum extends EnumClass {
   static OrderPreviewSettlementChainIdEnum valueOf(String name) => _$orderPreviewSettlementChainIdEnumValueOf(name);
 }
 
-class OrderPreviewSettlementAssetIdEnum extends EnumClass {
+class OrderPreviewFundingModeEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'hyperliquid:1337/perps:USDC-PERPS')
-  static const OrderPreviewSettlementAssetIdEnum hyperliquidColon1337SlashPerpsColonUSDCPERPS = _$orderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
+  @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
+  static const OrderPreviewFundingModeEnum unreservedTransferFrom = _$orderPreviewFundingModeEnum_unreservedTransferFrom;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewSettlementAssetIdEnum unknownDefaultOpenApi = _$orderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+  static const OrderPreviewFundingModeEnum unknownDefaultOpenApi = _$orderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
-  static Serializer<OrderPreviewSettlementAssetIdEnum> get serializer => _$orderPreviewSettlementAssetIdEnumSerializer;
+  static Serializer<OrderPreviewFundingModeEnum> get serializer => _$orderPreviewFundingModeEnumSerializer;
 
-  const OrderPreviewSettlementAssetIdEnum._(String name): super(name);
+  const OrderPreviewFundingModeEnum._(String name): super(name);
 
-  static BuiltSet<OrderPreviewSettlementAssetIdEnum> get values => _$orderPreviewSettlementAssetIdEnumValues;
-  static OrderPreviewSettlementAssetIdEnum valueOf(String name) => _$orderPreviewSettlementAssetIdEnumValueOf(name);
-}
-
-class OrderPreviewSettlementTokenContractEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'0x2100000000000000000000000000000000000000')
-  static const OrderPreviewSettlementTokenContractEnum n0x2100000000000000000000000000000000000000 = _$orderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewSettlementTokenContractEnum unknownDefaultOpenApi = _$orderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
-
-  static Serializer<OrderPreviewSettlementTokenContractEnum> get serializer => _$orderPreviewSettlementTokenContractEnumSerializer;
-
-  const OrderPreviewSettlementTokenContractEnum._(String name): super(name);
-
-  static BuiltSet<OrderPreviewSettlementTokenContractEnum> get values => _$orderPreviewSettlementTokenContractEnumValues;
-  static OrderPreviewSettlementTokenContractEnum valueOf(String name) => _$orderPreviewSettlementTokenContractEnumValueOf(name);
-}
-
-class OrderPreviewSettlementTokenDecimalsEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireNumber: 8)
-  static const OrderPreviewSettlementTokenDecimalsEnum number8 = _$orderPreviewSettlementTokenDecimalsEnum_number8;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const OrderPreviewSettlementTokenDecimalsEnum unknownDefaultOpenApi = _$orderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
-
-  static Serializer<OrderPreviewSettlementTokenDecimalsEnum> get serializer => _$orderPreviewSettlementTokenDecimalsEnumSerializer;
-
-  const OrderPreviewSettlementTokenDecimalsEnum._(String name): super(name);
-
-  static BuiltSet<OrderPreviewSettlementTokenDecimalsEnum> get values => _$orderPreviewSettlementTokenDecimalsEnumValues;
-  static OrderPreviewSettlementTokenDecimalsEnum valueOf(String name) => _$orderPreviewSettlementTokenDecimalsEnumValueOf(name);
+  static BuiltSet<OrderPreviewFundingModeEnum> get values => _$orderPreviewFundingModeEnumValues;
+  static OrderPreviewFundingModeEnum valueOf(String name) => _$orderPreviewFundingModeEnumValueOf(name);
 }
 

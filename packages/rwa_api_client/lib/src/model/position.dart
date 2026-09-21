@@ -11,7 +11,7 @@ import 'package:built_value/serializer.dart';
 
 part 'position.g.dart';
 
-/// Position
+/// kind=bstock 为已认证钱包的当前准入资产余额，保留正余额但估值未知的持仓，未知价格/成本不得填0。 bStocks value_usd/mark_price 可为 null；成本已知时读取 cost_basis_quote，USD 字段仅为参考估值。 
 ///
 /// Properties:
 /// * [productId] - HIP3 完整 venue:coin。
@@ -25,7 +25,16 @@ part 'position.g.dart';
 /// * [side] - 仅 HIP-3
 /// * [quantity] - 十进制字符串，避免浮点误差
 /// * [quantityUnit] 
-/// * [valueUsd] - 现货为持仓市值，合约为仓位权益
+/// * [chainId] 
+/// * [environment] 
+/// * [freshness] 
+/// * [pnlStatus] 
+/// * [valuationStatus] 
+/// * [costBasisQuote] - 十进制字符串，避免浮点误差
+/// * [costBasisQuoteAsset] 
+/// * [referenceCostUsd] - 十进制字符串，避免浮点误差
+/// * [unrealizedPnlReferenceUsd] - Binance 参考估值，不是测试币美元锚定或实际结算收益。
+/// * [valueUsd] - 现货为已知估值或null，合约为仓位权益；unknown 不是0。
 /// * [entryPrice] - 十进制字符串，避免浮点误差
 /// * [markPrice] - 十进制字符串，避免浮点误差
 /// * [unrealizedPnl] - 十进制字符串，避免浮点误差
@@ -85,9 +94,42 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'quantity_unit')
   String? get quantityUnit;
 
-  /// 现货为持仓市值，合约为仓位权益
+  @BuiltValueField(wireName: r'chain_id')
+  PositionChainIdEnum? get chainId;
+  // enum chainIdEnum {  56,  97,  31337,  };
+
+  @BuiltValueField(wireName: r'environment')
+  String? get environment;
+
+  @BuiltValueField(wireName: r'freshness')
+  String? get freshness;
+
+  @BuiltValueField(wireName: r'pnl_status')
+  PositionPnlStatusEnum? get pnlStatus;
+  // enum pnlStatusEnum {  known,  unknown_cost,  };
+
+  @BuiltValueField(wireName: r'valuation_status')
+  PositionValuationStatusEnum? get valuationStatus;
+  // enum valuationStatusEnum {  reference_only,  };
+
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'cost_basis_quote')
+  String? get costBasisQuote;
+
+  @BuiltValueField(wireName: r'cost_basis_quote_asset')
+  String? get costBasisQuoteAsset;
+
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'reference_cost_usd')
+  String? get referenceCostUsd;
+
+  /// Binance 参考估值，不是测试币美元锚定或实际结算收益。
+  @BuiltValueField(wireName: r'unrealized_pnl_reference_usd')
+  String? get unrealizedPnlReferenceUsd;
+
+  /// 现货为已知估值或null，合约为仓位权益；unknown 不是0。
   @BuiltValueField(wireName: r'value_usd')
-  String get valueUsd;
+  String? get valueUsd;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'entry_price')
@@ -243,30 +285,93 @@ class _$PositionSerializer implements PrimitiveSerializer<Position> {
         specifiedType: const FullType(String),
       );
     }
+    if (object.chainId != null) {
+      yield r'chain_id';
+      yield serializers.serialize(
+        object.chainId,
+        specifiedType: const FullType(PositionChainIdEnum),
+      );
+    }
+    if (object.environment != null) {
+      yield r'environment';
+      yield serializers.serialize(
+        object.environment,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.freshness != null) {
+      yield r'freshness';
+      yield serializers.serialize(
+        object.freshness,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.pnlStatus != null) {
+      yield r'pnl_status';
+      yield serializers.serialize(
+        object.pnlStatus,
+        specifiedType: const FullType(PositionPnlStatusEnum),
+      );
+    }
+    if (object.valuationStatus != null) {
+      yield r'valuation_status';
+      yield serializers.serialize(
+        object.valuationStatus,
+        specifiedType: const FullType.nullable(PositionValuationStatusEnum),
+      );
+    }
+    if (object.costBasisQuote != null) {
+      yield r'cost_basis_quote';
+      yield serializers.serialize(
+        object.costBasisQuote,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.costBasisQuoteAsset != null) {
+      yield r'cost_basis_quote_asset';
+      yield serializers.serialize(
+        object.costBasisQuoteAsset,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.referenceCostUsd != null) {
+      yield r'reference_cost_usd';
+      yield serializers.serialize(
+        object.referenceCostUsd,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.unrealizedPnlReferenceUsd != null) {
+      yield r'unrealized_pnl_reference_usd';
+      yield serializers.serialize(
+        object.unrealizedPnlReferenceUsd,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'value_usd';
-    yield serializers.serialize(
+    yield object.valueUsd == null ? null : serializers.serialize(
       object.valueUsd,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType.nullable(String),
     );
     if (object.entryPrice != null) {
       yield r'entry_price';
       yield serializers.serialize(
         object.entryPrice,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.markPrice != null) {
       yield r'mark_price';
       yield serializers.serialize(
         object.markPrice,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.unrealizedPnl != null) {
       yield r'unrealized_pnl';
       yield serializers.serialize(
         object.unrealizedPnl,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.unrealizedPnlPercent != null) {
@@ -287,7 +392,7 @@ class _$PositionSerializer implements PrimitiveSerializer<Position> {
       yield r'cost_basis';
       yield serializers.serialize(
         object.costBasis,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.leverage != null) {
@@ -467,11 +572,84 @@ class _$PositionSerializer implements PrimitiveSerializer<Position> {
           if (valueDes == null) continue;
           result.quantityUnit = valueDes;
           break;
+        case r'chain_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PositionChainIdEnum),
+          ) as PositionChainIdEnum?;
+          if (valueDes == null) continue;
+          result.chainId = valueDes;
+          break;
+        case r'environment':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.environment = valueDes;
+          break;
+        case r'freshness':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.freshness = valueDes;
+          break;
+        case r'pnl_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PositionPnlStatusEnum),
+          ) as PositionPnlStatusEnum?;
+          if (valueDes == null) continue;
+          result.pnlStatus = valueDes;
+          break;
+        case r'valuation_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PositionValuationStatusEnum),
+          ) as PositionValuationStatusEnum?;
+          if (valueDes == null) continue;
+          result.valuationStatus = valueDes;
+          break;
+        case r'cost_basis_quote':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.costBasisQuote = valueDes;
+          break;
+        case r'cost_basis_quote_asset':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.costBasisQuoteAsset = valueDes;
+          break;
+        case r'reference_cost_usd':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.referenceCostUsd = valueDes;
+          break;
+        case r'unrealized_pnl_reference_usd':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.unrealizedPnlReferenceUsd = valueDes;
+          break;
         case r'value_usd':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
           result.valueUsd = valueDes;
           break;
         case r'entry_price':
@@ -649,5 +827,56 @@ class PositionSideEnum extends EnumClass {
 
   static BuiltSet<PositionSideEnum> get values => _$positionSideEnumValues;
   static PositionSideEnum valueOf(String name) => _$positionSideEnumValueOf(name);
+}
+
+class PositionChainIdEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireNumber: 56)
+  static const PositionChainIdEnum number56 = _$positionChainIdEnum_number56;
+  @BuiltValueEnumConst(wireNumber: 97)
+  static const PositionChainIdEnum number97 = _$positionChainIdEnum_number97;
+  @BuiltValueEnumConst(wireNumber: 31337)
+  static const PositionChainIdEnum number31337 = _$positionChainIdEnum_number31337;
+  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
+  static const PositionChainIdEnum unknownDefaultOpenApi = _$positionChainIdEnum_unknownDefaultOpenApi;
+
+  static Serializer<PositionChainIdEnum> get serializer => _$positionChainIdEnumSerializer;
+
+  const PositionChainIdEnum._(String name): super(name);
+
+  static BuiltSet<PositionChainIdEnum> get values => _$positionChainIdEnumValues;
+  static PositionChainIdEnum valueOf(String name) => _$positionChainIdEnumValueOf(name);
+}
+
+class PositionPnlStatusEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'known')
+  static const PositionPnlStatusEnum known = _$positionPnlStatusEnum_known;
+  @BuiltValueEnumConst(wireName: r'unknown_cost')
+  static const PositionPnlStatusEnum unknownCost = _$positionPnlStatusEnum_unknownCost;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const PositionPnlStatusEnum unknownDefaultOpenApi = _$positionPnlStatusEnum_unknownDefaultOpenApi;
+
+  static Serializer<PositionPnlStatusEnum> get serializer => _$positionPnlStatusEnumSerializer;
+
+  const PositionPnlStatusEnum._(String name): super(name);
+
+  static BuiltSet<PositionPnlStatusEnum> get values => _$positionPnlStatusEnumValues;
+  static PositionPnlStatusEnum valueOf(String name) => _$positionPnlStatusEnumValueOf(name);
+}
+
+class PositionValuationStatusEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'reference_only')
+  static const PositionValuationStatusEnum referenceOnly = _$positionValuationStatusEnum_referenceOnly;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const PositionValuationStatusEnum unknownDefaultOpenApi = _$positionValuationStatusEnum_unknownDefaultOpenApi;
+
+  static Serializer<PositionValuationStatusEnum> get serializer => _$positionValuationStatusEnumSerializer;
+
+  const PositionValuationStatusEnum._(String name): super(name);
+
+  static BuiltSet<PositionValuationStatusEnum> get values => _$positionValuationStatusEnumValues;
+  static PositionValuationStatusEnum valueOf(String name) => _$positionValuationStatusEnumValueOf(name);
 }
 

@@ -49,10 +49,30 @@ import 'package:rwa_api_client/src/model/bstock_funding_target_asset.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_target_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_target_credit_observation.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_transfer_target.dart';
+import 'package:rwa_api_client/src/model/bstock_limit_order_preview.dart';
+import 'package:rwa_api_client/src/model/bstock_localnet_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
+import 'package:rwa_api_client/src/model/bstocks_block_quote_validity.dart';
+import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
+import 'package:rwa_api_client/src/model/bstocks_confirmation_binding.dart';
+import 'package:rwa_api_client/src/model/bstocks_depth_sampling.dart';
+import 'package:rwa_api_client/src/model/bstocks_depth_side_state.dart';
+import 'package:rwa_api_client/src/model/bstocks_depth_sides.dart';
+import 'package:rwa_api_client/src/model/bstocks_depth_status.dart';
+import 'package:rwa_api_client/src/model/bstocks_fee_asset.dart';
+import 'package:rwa_api_client/src/model/bstocks_portfolio_availability.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_economics.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_economics_quote_validity.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_fee.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_fees.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_route.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_route_leg.dart';
+import 'package:rwa_api_client/src/model/bstocks_reference_quotation.dart';
+import 'package:rwa_api_client/src/model/bstocks_requote_validity.dart';
 import 'package:rwa_api_client/src/model/bstocks_supported_token.dart';
 import 'package:rwa_api_client/src/model/bstocks_supported_token_page.dart';
 import 'package:rwa_api_client/src/model/bstocks_time_in_force.dart';
@@ -223,6 +243,11 @@ import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_context.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
 import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_rail.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_status.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_submission_request.dart';
 import 'package:rwa_api_client/src/model/holding_group.dart';
 import 'package:rwa_api_client/src/model/holding_stock.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
@@ -259,6 +284,7 @@ import 'package:rwa_api_client/src/model/no_executable_action_transfer_state.dar
 import 'package:rwa_api_client/src/model/non_completed_funding_transfer_state.dart';
 import 'package:rwa_api_client/src/model/notification_queued_response.dart';
 import 'package:rwa_api_client/src/model/order.dart';
+import 'package:rwa_api_client/src/model/order_action_gas_payment.dart';
 import 'package:rwa_api_client/src/model/order_book.dart';
 import 'package:rwa_api_client/src/model/order_book_level.dart';
 import 'package:rwa_api_client/src/model/order_evm_action.dart';
@@ -467,10 +493,30 @@ part 'serializers.g.dart';
   BstockFundingTargetBalanceSnapshot,
   BstockFundingTargetCreditObservation,
   BstockFundingTransferTarget,
+  BstockLimitOrderPreview,
+  BstockLocalnetOrderPreview,
   BstockOrderPreview,
   BstockOrderPreviewRequest,
   BstockOrderWalletActionState,
+  BstockTestnetOrderPreview,
   BstocksActionStatus,
+  BstocksBlockQuoteValidity,
+  BstocksCancellationPolicy,
+  BstocksConfirmationBinding,
+  BstocksDepthSampling,
+  BstocksDepthSideState,
+  BstocksDepthSides,
+  BstocksDepthStatus,
+  BstocksFeeAsset,
+  BstocksPortfolioAvailability,
+  BstocksPreviewEconomics,
+  BstocksPreviewEconomicsQuoteValidity,
+  BstocksPreviewFee,
+  BstocksPreviewFees,
+  BstocksPreviewRoute,
+  BstocksPreviewRouteLeg,
+  BstocksReferenceQuotation,
+  BstocksRequoteValidity,
   BstocksSupportedToken,
   BstocksSupportedTokenPage,
   BstocksTimeInForce,
@@ -641,6 +687,11 @@ part 'serializers.g.dart';
   Hip3TradingContext,
   Hip3TradingRules,
   Hip3TriggerSpec,
+  Hip3Withdrawal,
+  Hip3WithdrawalCreateRequest,
+  Hip3WithdrawalRail,
+  Hip3WithdrawalStatus,
+  Hip3WithdrawalSubmissionRequest,
   HoldingGroup,
   HoldingStock,
   HyperliquidSignature,
@@ -677,6 +728,7 @@ part 'serializers.g.dart';
   NonCompletedFundingTransferState,
   NotificationQueuedResponse,
   Order,
+  OrderActionGasPayment,
   OrderBook,
   OrderBookLevel,
   OrderEvmAction,
@@ -1019,6 +1071,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioWarningCode)]),
         () => ListBuilder<PortfolioWarningCode>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(BstocksPreviewRouteLeg)]),
+        () => ListBuilder<BstocksPreviewRouteLeg>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3HistoryRange)]),

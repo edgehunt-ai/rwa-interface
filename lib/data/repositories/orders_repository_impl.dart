@@ -24,15 +24,17 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     OrderIntent intent, {
     required String idempotencyKey,
   }) async {
-    final wire = await _service.previewOrder(
+    final response = await _service.previewOrder(
       _previewRequest(intent),
       idempotencyKey: idempotencyKey,
     );
+    if (response.raw case final raw?) return _rawPreview(raw, intent);
+    final wire = response.value!;
     final value = wire.oneOf.value;
     final common = value as api.OrderPreviewCommon;
     final settlementAsset = switch (value) {
-      api.BstockOrderPreview(:final settlementAsset) => settlementAsset,
-      api.PerpOrderPreview(:final settlementAsset) => settlementAsset,
+      api.BstockOrderPreview(:final settlementAsset) => settlementAsset.name,
+      api.PerpOrderPreview(:final settlementAsset) => settlementAsset.name,
       _ => null,
     };
     final settlementChain = switch (value) {
@@ -95,6 +97,73 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       );
     }
     return preview;
+  }
+
+  OrderPreview _rawPreview(Map<String, dynamic> raw, OrderIntent intent) {
+    String? text(String key) => raw[key]?.toString();
+    DecimalValue? decimal(String key, String unit, {String? asset}) {
+      final value = text(key);
+      return value == null
+          ? null
+          : DecimalValue(value, unit: unit, asset: asset);
+    }
+
+    final orderValue = text('order_value');
+    if (orderValue == null) throw const FormatException('Missing order_value');
+    final details =
+        (raw['details'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(
+              (entry) => PreviewDetail(
+                entry['label']?.toString() ?? '',
+                entry['value']?.toString() ?? '',
+                tone: entry['tone']?.toString(),
+              ),
+            )
+            .toList() ??
+        const <PreviewDetail>[];
+    final settlementAsset = text('settlement_asset');
+    return OrderPreview(
+      previewId: text('preview_id') ?? '',
+      intent: intent,
+      orderValue: _value(orderValue, 'notional', asset: settlementAsset),
+      marketPrice: decimal('market_price', 'price', asset: 'USD'),
+      estimatedPrice: decimal('estimated_price', 'price', asset: 'USD'),
+      estimatedQuantity: decimal(
+        'estimated_quantity',
+        'quantity',
+        asset: intent.symbol,
+      ),
+      estimatedReceive: decimal(
+        'estimated_receive',
+        'quantity',
+        asset: text('estimated_receive_unit') ?? intent.symbol,
+      ),
+      // fee_asset denotes network_fee, not the trading fee field above.
+      fee: decimal('fee', 'fee', asset: settlementAsset),
+      marginRequired: decimal(
+        'margin_required',
+        'margin',
+        asset: settlementAsset,
+      ),
+      settlementAsset: settlementAsset,
+      settlementChain: text('network'),
+      priceUpdated: raw['price_updated'] == true,
+      expiresAt: DateTime.tryParse(text('quote_expires_at') ?? '')?.toUtc(),
+      feeRate: decimal('fee_rate', 'rate'),
+      feeNote: text('fee_note'),
+      details: List.unmodifiable(details),
+      executionReady: _hasBstocksExecutionBinding(raw),
+    );
+  }
+
+  bool _hasBstocksExecutionBinding(Map<String, dynamic> raw) {
+    final bstocks = raw['bstocks'];
+    final binding = bstocks is Map ? bstocks['confirmation_binding'] : null;
+    return binding is Map &&
+        binding['maximum_input_raw'] is String &&
+        binding['minimum_output_raw'] is String &&
+        binding['expires_at'] is String;
   }
 
   Hip3PreviewExecution _hip3Execution(

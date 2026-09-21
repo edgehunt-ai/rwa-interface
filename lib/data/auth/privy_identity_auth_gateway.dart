@@ -356,7 +356,7 @@ final class PrivyIdentityAuthGateway
         Success<String>(:final value) when value.isNotEmpty => value,
         Failure<String>(:final error) => throw WalletAuthorizationFailure(
           WalletAuthorizationFailureCode.rejected,
-          reason: error.toString(),
+          reason: error.message,
         ),
         _ => throw const WalletAuthorizationFailure(
           WalletAuthorizationFailureCode.rejected,
@@ -365,7 +365,8 @@ final class PrivyIdentityAuthGateway
     } on WalletAuthorizationFailure {
       rethrow;
     } catch (error, stackTrace) {
-      final reason = error.toString().trim();
+      final reason =
+          (error is PrivyException ? error.message : error.toString()).trim();
       _reportDiagnostic(
         operation: 'generate_authorization_signature',
         message: '$reason\n$stackTrace',

@@ -22,26 +22,26 @@ part 'funding_session_continuation.g.dart';
 @BuiltValue()
 abstract class FundingSessionContinuation implements Built<FundingSessionContinuation, FundingSessionContinuationBuilder> {
   @BuiltValueField(wireName: r'action')
-  FundingSessionContinuationActionEnum get action;
+  FundingSessionContinuationActionEnum? get action;
   // enum actionEnum {  resume_bstocks_order,  };
 
   @BuiltValueField(wireName: r'status')
-  FundingSessionContinuationStatusEnum get status;
+  FundingSessionContinuationStatusEnum? get status;
   // enum statusEnum {  ready_to_requote,  };
 
   @BuiltValueField(wireName: r'funding_session_id')
-  String get fundingSessionId;
+  String? get fundingSessionId;
 
   @BuiltValueField(wireName: r'trade')
-  OrderPreviewRequest get trade;
+  OrderPreviewRequest? get trade;
 
   /// Always `true`; funding never preserves a usable quote.
   @BuiltValueField(wireName: r'requires_new_quote')
-  bool get requiresNewQuote;
+  bool? get requiresNewQuote;
 
   /// Always `false`; resuming requires an explicit user action.
   @BuiltValueField(wireName: r'auto_submit')
-  bool get autoSubmit;
+  bool? get autoSubmit;
 
   FundingSessionContinuation._();
 
@@ -66,36 +66,48 @@ class _$FundingSessionContinuationSerializer implements PrimitiveSerializer<Fund
     FundingSessionContinuation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'action';
-    yield serializers.serialize(
-      object.action,
-      specifiedType: const FullType(FundingSessionContinuationActionEnum),
-    );
-    yield r'status';
-    yield serializers.serialize(
-      object.status,
-      specifiedType: const FullType(FundingSessionContinuationStatusEnum),
-    );
-    yield r'funding_session_id';
-    yield serializers.serialize(
-      object.fundingSessionId,
-      specifiedType: const FullType(String),
-    );
-    yield r'trade';
-    yield serializers.serialize(
-      object.trade,
-      specifiedType: const FullType(OrderPreviewRequest),
-    );
-    yield r'requires_new_quote';
-    yield serializers.serialize(
-      object.requiresNewQuote,
-      specifiedType: const FullType(bool),
-    );
-    yield r'auto_submit';
-    yield serializers.serialize(
-      object.autoSubmit,
-      specifiedType: const FullType(bool),
-    );
+    if (object.action != null) {
+      yield r'action';
+      yield serializers.serialize(
+        object.action,
+        specifiedType: const FullType.nullable(FundingSessionContinuationActionEnum),
+      );
+    }
+    if (object.status != null) {
+      yield r'status';
+      yield serializers.serialize(
+        object.status,
+        specifiedType: const FullType.nullable(FundingSessionContinuationStatusEnum),
+      );
+    }
+    if (object.fundingSessionId != null) {
+      yield r'funding_session_id';
+      yield serializers.serialize(
+        object.fundingSessionId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.trade != null) {
+      yield r'trade';
+      yield serializers.serialize(
+        object.trade,
+        specifiedType: const FullType(OrderPreviewRequest),
+      );
+    }
+    if (object.requiresNewQuote != null) {
+      yield r'requires_new_quote';
+      yield serializers.serialize(
+        object.requiresNewQuote,
+        specifiedType: const FullType.nullable(bool),
+      );
+    }
+    if (object.autoSubmit != null) {
+      yield r'auto_submit';
+      yield serializers.serialize(
+        object.autoSubmit,
+        specifiedType: const FullType.nullable(bool),
+      );
+    }
   }
 
   @override
@@ -122,43 +134,49 @@ class _$FundingSessionContinuationSerializer implements PrimitiveSerializer<Fund
         case r'action':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(FundingSessionContinuationActionEnum),
-          ) as FundingSessionContinuationActionEnum;
+            specifiedType: const FullType.nullable(FundingSessionContinuationActionEnum),
+          ) as FundingSessionContinuationActionEnum?;
+          if (valueDes == null) continue;
           result.action = valueDes;
           break;
         case r'status':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(FundingSessionContinuationStatusEnum),
-          ) as FundingSessionContinuationStatusEnum;
+            specifiedType: const FullType.nullable(FundingSessionContinuationStatusEnum),
+          ) as FundingSessionContinuationStatusEnum?;
+          if (valueDes == null) continue;
           result.status = valueDes;
           break;
         case r'funding_session_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
           result.fundingSessionId = valueDes;
           break;
         case r'trade':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(OrderPreviewRequest),
-          ) as OrderPreviewRequest;
+            specifiedType: const FullType.nullable(OrderPreviewRequest),
+          ) as OrderPreviewRequest?;
+          if (valueDes == null) continue;
           result.trade.replace(valueDes);
           break;
         case r'requires_new_quote':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
           result.requiresNewQuote = valueDes;
           break;
         case r'auto_submit':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
           result.autoSubmit = valueDes;
           break;
         default:

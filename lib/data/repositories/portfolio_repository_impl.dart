@@ -197,7 +197,7 @@ Position mapPosition(api.Position value) => Position(
     value.quantity,
     unit: value.quantityUnit ?? 'quantity',
   ),
-  valueUsd: DecimalValue(value.valueUsd, asset: 'USD', unit: 'fiat'),
+  valueUsd: DecimalValue(value.valueUsd ?? '0', asset: 'USD', unit: 'fiat'),
   entryPrice: _optional(value.entryPrice, 'price'),
   markPrice: _optional(value.markPrice, 'price'),
   unrealizedPnl: _optional(value.unrealizedPnl, 'pnl'),

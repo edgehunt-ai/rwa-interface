@@ -37,11 +37,13 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
     this.initialSide = TradingSide.long,
     this.initialReduceOnly = false,
     this.symbol = 'NVDA',
+    this.productId,
   });
 
   final TradingSide initialSide;
   final bool initialReduceOnly;
   final String symbol;
+  final String? productId;
 
   @override
   ConsumerState<Hip3OrderPanel> createState() => _Hip3OrderPanelState();
@@ -97,9 +99,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final generation = ref.read(sessionGenerationProvider);
     setState(() => _contextLoading = true);
     try {
-      ref.invalidate(hip3OpeningContextProvider(widget.symbol));
+      ref.invalidate(
+        hip3OpeningContextProvider(widget.productId ?? widget.symbol),
+      );
       final context = await ref.read(
-        hip3OpeningContextProvider(widget.symbol).future,
+        hip3OpeningContextProvider(widget.productId ?? widget.symbol).future,
       );
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
       setState(() {
@@ -123,7 +127,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (mounted && ref.read(sessionGenerationProvider) == generation) {
         setState(() {
           _contextError = error;
-          _error = AppLocalizations.of(context).hip3TradingContextUnavailable;
+          _error = _specificErrorMessage(
+            error,
+            fallback: AppLocalizations.of(context)
+                .hip3TradingContextUnavailable,
+          );
         });
       }
     } finally {
@@ -281,9 +289,22 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         if (mounted && generation == _quoteGeneration) {
           setState(() => _quotePreview = quote);
         }
-      } on Object {
+      } on Object catch (error, stackTrace) {
+        ref
+            .read(observabilityReporterProvider)
+            .recordError(
+              operation: 'hip3.order.quote.refresh',
+              error: error,
+              stackTrace: stackTrace,
+            );
         if (mounted && generation == _quoteGeneration) {
-          setState(() => _quotePreview = null);
+          setState(() {
+            _quotePreview = null;
+            _error = _specificErrorMessage(
+              error,
+              fallback: 'Unable to refresh the HIP-3 preview.',
+            );
+          });
         }
       }
     });
@@ -303,7 +324,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
               ),
           stackTrace: StackTrace.current,
         );
-    final message = AppLocalizations.of(context).hip3TradingContextUnavailable;
+    final message = _specificErrorMessage(
+      _contextError ??
+          StateError(
+            'HIP-3 trading context is unavailable for ${widget.symbol}',
+          ),
+      fallback: AppLocalizations.of(context).hip3TradingContextUnavailable,
+    );
     AppToast.showFailure(context, message);
     setState(() => _error = message);
   }
@@ -352,7 +379,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     if (_percentageWaitingForBalance) {
       final input = bounds.$1 + (bounds.$2 - bounds.$1) * _percentage;
       _percentageWaitingForBalance = false;
-      _amount.text = input.toString();
+      final balance = ref.read(hip3OrderAvailableBalanceProvider).value;
+      final available = double.tryParse(balance?.value ?? '');
+      _amount.text = available == null
+          ? input.toString()
+          : _formatHip3SliderAmount(input, available, _percentage);
       return;
     }
 
@@ -391,26 +422,93 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     if (!_inputNotional) return null;
     final DecimalValue notional;
     try {
-      notional = DecimalValue(_amount.text.trim());
+      // The input is a USDC notional. Give it the same semantic unit as the
+      // server rule before comparing; compareTo intentionally rejects mixed
+      // units such as `token` and `notional`.
+      notional = DecimalValue(
+        _amount.text.trim(),
+        asset: rules.minimumNotional.asset,
+        unit: rules.minimumNotional.unit,
+      );
     } on Object {
       return null; // Malformed input is reported by the existing intent check.
     }
-    if (notional.compareTo(rules.minimumNotional) < 0) {
+    if (notional.compareMagnitudeTo(rules.minimumNotional) < 0) {
       return l10n.hip3NotionalBelowMinimum(rules.minimumNotional.value);
     }
     if (rules.maximumNotional case final maximum?) {
-      if (notional.compareTo(maximum) > 0) {
+      if (notional.compareMagnitudeTo(maximum) > 0) {
         return l10n.hip3NotionalAboveMaximum(maximum.value);
       }
     }
     return null;
   }
 
+  String? _disabledReason(AppLocalizations l10n) {
+    if (_submitting) return null;
+    // Context/rule/preview validation happens in _review after the user
+    // presses the button. Local input is intentionally validated there too,
+    // so an async rebuild cannot leave a visibly enabled button inert.
+    return null;
+  }
+
+  bool _isObviousInputError(String? message, AppLocalizations l10n) {
+    if (message == null) return false;
+    return message == l10n.enterOrderValue ||
+        message == l10n.validLimitPrice ||
+        message == l10n.hip3InvalidOrderInputs ||
+        message == l10n.hip3InvalidOrderWithProtection ||
+        message.startsWith('Invalid argument(s):') ||
+        message == 'Invalid decimal value';
+  }
+
+  void _setProcessingStep(String step) {
+    debugPrint(
+      'HIP-3 order flow: product=${widget.productId ?? widget.symbol} '
+      'side=${_side.name} step=$step',
+    );
+  }
+
   Future<void> _review() async {
+    if (_submitting) return;
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    debugPrint(
+      'HIP-3 order flow: product=${widget.productId ?? widget.symbol} '
+      'side=${_side.name} step=started',
+    );
+    try {
+      await _reviewInternal();
+    } catch (error, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: 'hip3.order.review.unhandled',
+            error: error,
+            stackTrace: stackTrace,
+          );
+      if (mounted) setState(() => _error = _specificErrorMessage(error));
+    } finally {
+      if (mounted) {
+        debugPrint(
+          'HIP-3 order flow: product=${widget.productId ?? widget.symbol} '
+          'side=${_side.name} step=finished',
+        );
+        setState(() {
+          _submitting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _reviewInternal() async {
     final generation = ref.read(sessionGenerationProvider).value;
     bool isCurrent() =>
         mounted && ref.read(sessionGenerationProvider).value == generation;
     if (_contextLoading) {
+      _setProcessingStep('loading trading context');
       await _loadContext();
       if (!mounted || !isCurrent()) return;
     }
@@ -419,6 +517,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       return;
     }
     if (_context!.isExpired) {
+      _setProcessingStep('refreshing expired trading context');
       await _loadContext();
       if (!mounted || !isCurrent()) return;
       if (_context == null || _context!.isExpired) {
@@ -426,7 +525,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         return;
       }
     }
-    if (_amountError() != null) {
+    if (_amountError() case final amountError?) {
+      AppToast.showFailure(context, amountError);
+      setState(() => _error = amountError);
       return;
     }
     if (_ruleViolation(_context!) case final violation?) {
@@ -445,6 +546,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       return;
     }
     try {
+      _setProcessingStep('validating order intent');
       final intent = _intentFromFields();
       if (intent == null) {
         setState(
@@ -456,11 +558,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       }
       setState(() {
         _error = null;
-        _submitting = true;
       });
       // The funding API reads Hyperliquid Perps available margin, not the
       // aggregated balance used by the form's percentage selector.
       while (!intent.reduceOnly) {
+        _setProcessingStep('checking funding requirements');
         final plan = await ref
             .read(fundingTransferCommandsProvider)
             .session(intent: intent);
@@ -473,15 +575,33 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           enableDrag: false,
           builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
         );
-        if (!isCurrent() || funded != true) return;
+        _setProcessingStep('reconciling funding result');
+        if (!isCurrent()) return;
+        if (funded != true) {
+          setState(
+            () => _error =
+                'Funding was not completed; the order was not prepared.',
+          );
+          return;
+        }
       }
       final cachedQuote = _quotePreview;
+      _setProcessingStep(
+        cachedQuote?.intent.fingerprint == intent.fingerprint &&
+                cachedQuote?.isExpired == false
+            ? 'using current preview'
+            : 'requesting order preview',
+      );
       final preview =
           cachedQuote?.intent.fingerprint == intent.fingerprint &&
               cachedQuote?.isExpired == false
           ? cachedQuote
           : await ref.read(orderPreviewProvider(intent).future);
-      if (!isCurrent() || preview == null) return;
+      if (!isCurrent()) return;
+      if (preview == null) {
+        setState(() => _error = 'The server returned no HIP-3 preview.');
+        return;
+      }
       if (isCurrent()) {
         setState(() => _preview = preview);
         _previewExpiry?.cancel();
@@ -492,35 +612,26 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           });
         }
       }
-    } on FormatException {
+    } on FormatException catch (error) {
       if (isCurrent()) {
-        setState(
-          () => _error = AppLocalizations.of(context).enterValidOrderValues,
-        );
+        setState(() => _error = _specificErrorMessage(error));
       }
     } on ApiFailure catch (failure) {
       if (isCurrent()) {
-        setState(() => _error = _fundingFailureMessage(failure));
+        setState(() => _error = _specificErrorMessage(failure));
       }
-    } on Object {
+    } on Object catch (error, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: 'hip3.order.review',
+            error: error,
+            stackTrace: stackTrace,
+          );
       if (isCurrent()) {
-        setState(
-          () => _error = AppLocalizations.of(context).prepareOrderFailed,
-        );
-      }
-    } finally {
-      if (isCurrent()) {
-        setState(() => _submitting = false);
+        setState(() => _error = _specificErrorMessage(error));
       }
     }
-  }
-
-  String _fundingFailureMessage(ApiFailure failure) {
-    if (failure case final ServerFailure server
-        when server.code == 'cross_chain_funding_services_unconfigured') {
-      return 'Funding service is not configured for this environment.';
-    }
-    return 'Funding preparation failed. Please try again.';
   }
 
   Future<void> _submit() async {
@@ -528,7 +639,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     bool isCurrent() =>
         mounted && ref.read(sessionGenerationProvider) == generation;
     final preview = _preview;
-    if (preview == null) return;
+    if (preview == null) {
+      setState(() => _error = 'There is no HIP-3 preview to submit.');
+      return;
+    }
     if (_pendingOrderId == null &&
         (preview.hip3Execution == null ||
             !preview.openingProtectionMatchesIntent ||
@@ -560,7 +674,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       setState(() {
         _submitted = submitted?.resource;
         _error = submitted == null
-            ? AppLocalizations.of(context).orderSubmissionFailed
+            ? 'The server did not return a submitted HIP-3 order.'
             : null;
       });
     } on Hip3ExecutionPending catch (pending) {
@@ -574,9 +688,22 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     } on Hip3SigningFailure catch (failure) {
       if (!isCurrent()) return;
       setState(() => _error = _signingError(failure));
-    } on Object {
+    } on ApiFailure catch (failure) {
       if (!isCurrent()) return;
-      setState(() => _error = AppLocalizations.of(context).prepareOrderFailed);
+      setState(() => _error = _specificErrorMessage(failure));
+    } on FormatException catch (error) {
+      if (!isCurrent()) return;
+      setState(() => _error = _specificErrorMessage(error));
+    } on Object catch (error, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: 'hip3.order.submit',
+            error: error,
+            stackTrace: stackTrace,
+          );
+      if (!isCurrent()) return;
+      setState(() => _error = _specificErrorMessage(error));
     } finally {
       if (isCurrent()) setState(() => _submitting = false);
     }
@@ -602,6 +729,23 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       context,
     ).hip3SigningRequestInvalid,
   };
+
+  String _specificErrorMessage(Object error, {String? fallback}) {
+    if (error is ApiFailure) {
+      return apiFailureMessage(
+        error,
+        fallback: fallback ?? 'HIP-3 request failed.',
+      );
+    }
+    if (error is FormatException) {
+      final message = error.message.toString().trim();
+      if (message.isNotEmpty) return message;
+    }
+    if (error is Hip3SigningFailure) return _signingError(error);
+    final message = error.toString().trim();
+    if (message.isNotEmpty && message != 'null') return message;
+    return fallback ?? 'HIP-3 request failed for an unknown reason.';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -655,6 +799,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final availableBalance = ref.watch(hip3OrderAvailableBalanceProvider);
     _schedulePendingPercentageSync(availableBalance.value);
     final formError = _amountError() ?? _error;
+    final disabledReason = _disabledReason(l10n);
+    final visibleError = _isObviousInputError(formError, l10n)
+        ? null
+        : formError;
+    final visibleDisabledReason = _isObviousInputError(disabledReason, l10n)
+        ? null
+        : disabledReason;
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -779,9 +930,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     final bounds = _amountBounds(balance);
                     if (bounds == null) return;
                     final input = bounds.$1 + (bounds.$2 - bounds.$1) * value;
+                    final available = double.tryParse(balance.value);
                     setState(() {
                       _percentage = value;
-                      _amount.text = input.toString();
+                      _amount.text = available == null
+                          ? input.toString()
+                          : _formatHip3SliderAmount(input, available, value);
                       _error = null;
                     });
                   },
@@ -803,7 +957,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     }
                   },
                 ),
-                if (formError case final error?) ...[
+                if ((visibleError ?? visibleDisabledReason)
+                    case final error?) ...[
                   const SizedBox(height: 16),
                   _Hip3OrderFailureNotice(
                     key: const Key('hip3-form-error'),
@@ -820,19 +975,39 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       disabledBackgroundColor: colors.subtleSurface,
                       disabledForegroundColor: colors.tertiaryText,
                     ),
-                    onPressed:
-                        _submitting || _contextLoading || formError != null
+                    key: const Key('hip3-submit-button'),
+                    onPressed: _submitting || disabledReason != null
                         ? null
                         : _review,
-                    child: Text(
-                      _submitting
-                          ? l10n.preparingOrder
-                          : '${_reduceOnly
+                    child: _submitting
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.tertiaryText,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${_reduceOnly
+                                    ? l10n.close
+                                    : _side == TradingSide.long
+                                    ? l10n.long
+                                    : l10n.short} ${widget.symbol} · ${_inputNotional ? '\$${amount.isEmpty ? '0' : amount}' : '${amount.isEmpty ? '0' : amount} ${widget.symbol}'}',
+                              ),
+                            ],
+                          )
+                        : Text(
+                            '${_reduceOnly
                                 ? l10n.close
                                 : _side == TradingSide.long
                                 ? l10n.long
                                 : l10n.short} ${widget.symbol} · ${_inputNotional ? '\$${amount.isEmpty ? '0' : amount}' : '${amount.isEmpty ? '0' : amount} ${widget.symbol}'}',
-                    ),
+                          ),
                   ),
                 ),
               ],
@@ -1381,6 +1556,18 @@ class _Hip3OrderFailureNotice extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatHip3SliderAmount(
+  double value,
+  double availableBalance,
+  double percentage,
+) {
+  if (availableBalance <= 2 || percentage >= 1) {
+    final fixed = value.toStringAsFixed(8);
+    return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
+  }
+  return value.floor().toString();
 }
 
 class _Hip3ModeLeverageCard extends StatelessWidget {

@@ -8,6 +8,8 @@ part of 'market_stats.dart';
 
 class _$MarketStats extends MarketStats {
   @override
+  final BstocksReferenceQuotation? quotation;
+  @override
   final String? high24h;
   @override
   final String? low24h;
@@ -42,7 +44,8 @@ class _$MarketStats extends MarketStats {
       (MarketStatsBuilder()..update(updates))._build();
 
   _$MarketStats._(
-      {this.high24h,
+      {this.quotation,
+      this.high24h,
       this.low24h,
       this.turnover24hUsd,
       this.volume24h,
@@ -69,6 +72,7 @@ class _$MarketStats extends MarketStats {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is MarketStats &&
+        quotation == other.quotation &&
         high24h == other.high24h &&
         low24h == other.low24h &&
         turnover24hUsd == other.turnover24hUsd &&
@@ -89,6 +93,7 @@ class _$MarketStats extends MarketStats {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, quotation.hashCode);
     _$hash = $jc(_$hash, high24h.hashCode);
     _$hash = $jc(_$hash, low24h.hashCode);
     _$hash = $jc(_$hash, turnover24hUsd.hashCode);
@@ -111,6 +116,7 @@ class _$MarketStats extends MarketStats {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'MarketStats')
+          ..add('quotation', quotation)
           ..add('high24h', high24h)
           ..add('low24h', low24h)
           ..add('turnover24hUsd', turnover24hUsd)
@@ -132,6 +138,12 @@ class _$MarketStats extends MarketStats {
 
 class MarketStatsBuilder implements Builder<MarketStats, MarketStatsBuilder> {
   _$MarketStats? _$v;
+
+  BstocksReferenceQuotationBuilder? _quotation;
+  BstocksReferenceQuotationBuilder get quotation =>
+      _$this._quotation ??= BstocksReferenceQuotationBuilder();
+  set quotation(BstocksReferenceQuotationBuilder? quotation) =>
+      _$this._quotation = quotation;
 
   String? _high24h;
   String? get high24h => _$this._high24h;
@@ -209,6 +221,7 @@ class MarketStatsBuilder implements Builder<MarketStats, MarketStatsBuilder> {
   MarketStatsBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _quotation = $v.quotation?.toBuilder();
       _high24h = $v.high24h;
       _low24h = $v.low24h;
       _turnover24hUsd = $v.turnover24hUsd;
@@ -243,24 +256,38 @@ class MarketStatsBuilder implements Builder<MarketStats, MarketStatsBuilder> {
   MarketStats build() => _build();
 
   _$MarketStats _build() {
-    final _$result = _$v ??
-        _$MarketStats._(
-          high24h: high24h,
-          low24h: low24h,
-          turnover24hUsd: turnover24hUsd,
-          volume24h: volume24h,
-          volume24hUnit: volume24hUnit,
-          referenceLabel: referenceLabel,
-          referencePrice: referencePrice,
-          relativeLabel: relativeLabel,
-          relativePercent: relativePercent,
-          spreadPercent: spreadPercent,
-          bestBid: bestBid,
-          bestAsk: bestAsk,
-          fundingRate: fundingRate,
-          nextFundingAt: nextFundingAt,
-          openInterestUsd: openInterestUsd,
-        );
+    _$MarketStats _$result;
+    try {
+      _$result = _$v ??
+          _$MarketStats._(
+            quotation: _quotation?.build(),
+            high24h: high24h,
+            low24h: low24h,
+            turnover24hUsd: turnover24hUsd,
+            volume24h: volume24h,
+            volume24hUnit: volume24hUnit,
+            referenceLabel: referenceLabel,
+            referencePrice: referencePrice,
+            relativeLabel: relativeLabel,
+            relativePercent: relativePercent,
+            spreadPercent: spreadPercent,
+            bestBid: bestBid,
+            bestAsk: bestAsk,
+            fundingRate: fundingRate,
+            nextFundingAt: nextFundingAt,
+            openInterestUsd: openInterestUsd,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'quotation';
+        _quotation?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'MarketStats', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

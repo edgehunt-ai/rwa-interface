@@ -39,11 +39,17 @@ const PrivyAuthorizationBodyCaip2Enum
     _$privyAuthorizationBodyCaip2Enum_eip155Colon56 =
     const PrivyAuthorizationBodyCaip2Enum._('eip155Colon56');
 const PrivyAuthorizationBodyCaip2Enum
+    _$privyAuthorizationBodyCaip2Enum_eip155Colon97 =
+    const PrivyAuthorizationBodyCaip2Enum._('eip155Colon97');
+const PrivyAuthorizationBodyCaip2Enum
     _$privyAuthorizationBodyCaip2Enum_eip155Colon8453 =
     const PrivyAuthorizationBodyCaip2Enum._('eip155Colon8453');
 const PrivyAuthorizationBodyCaip2Enum
     _$privyAuthorizationBodyCaip2Enum_eip155Colon42161 =
     const PrivyAuthorizationBodyCaip2Enum._('eip155Colon42161');
+const PrivyAuthorizationBodyCaip2Enum
+    _$privyAuthorizationBodyCaip2Enum_eip155Colon421614 =
+    const PrivyAuthorizationBodyCaip2Enum._('eip155Colon421614');
 const PrivyAuthorizationBodyCaip2Enum
     _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi =
     const PrivyAuthorizationBodyCaip2Enum._('unknownDefaultOpenApi');
@@ -55,10 +61,14 @@ PrivyAuthorizationBodyCaip2Enum _$privyAuthorizationBodyCaip2EnumValueOf(
       return _$privyAuthorizationBodyCaip2Enum_eip155Colon1;
     case 'eip155Colon56':
       return _$privyAuthorizationBodyCaip2Enum_eip155Colon56;
+    case 'eip155Colon97':
+      return _$privyAuthorizationBodyCaip2Enum_eip155Colon97;
     case 'eip155Colon8453':
       return _$privyAuthorizationBodyCaip2Enum_eip155Colon8453;
     case 'eip155Colon42161':
       return _$privyAuthorizationBodyCaip2Enum_eip155Colon42161;
+    case 'eip155Colon421614':
+      return _$privyAuthorizationBodyCaip2Enum_eip155Colon421614;
     case 'unknownDefaultOpenApi':
       return _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi;
     default:
@@ -71,8 +81,10 @@ final BuiltSet<PrivyAuthorizationBodyCaip2Enum>
         PrivyAuthorizationBodyCaip2Enum>(const <PrivyAuthorizationBodyCaip2Enum>[
   _$privyAuthorizationBodyCaip2Enum_eip155Colon1,
   _$privyAuthorizationBodyCaip2Enum_eip155Colon56,
+  _$privyAuthorizationBodyCaip2Enum_eip155Colon97,
   _$privyAuthorizationBodyCaip2Enum_eip155Colon8453,
   _$privyAuthorizationBodyCaip2Enum_eip155Colon42161,
+  _$privyAuthorizationBodyCaip2Enum_eip155Colon421614,
   _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi,
 ]);
 
@@ -147,15 +159,19 @@ class _$PrivyAuthorizationBodyCaip2EnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'eip155Colon1': 'eip155:1',
     'eip155Colon56': 'eip155:56',
+    'eip155Colon97': 'eip155:97',
     'eip155Colon8453': 'eip155:8453',
     'eip155Colon42161': 'eip155:42161',
+    'eip155Colon421614': 'eip155:421614',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eip155:1': 'eip155Colon1',
     'eip155:56': 'eip155Colon56',
+    'eip155:97': 'eip155Colon97',
     'eip155:8453': 'eip155Colon8453',
     'eip155:42161': 'eip155Colon42161',
+    'eip155:421614': 'eip155Colon421614',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

@@ -18,7 +18,7 @@ part 'bstocks_supported_token.g.dart';
 /// * [feedSymbol] 
 /// * [asset] 
 /// * [decimals] 
-/// * [multiplier] 
+/// * [multiplier] - 十进制字符串，避免浮点误差
 /// * [lastUpdateTime] 
 /// * [assetType] 
 /// * [displayEnabled] 
@@ -44,6 +44,7 @@ abstract class BstocksSupportedToken implements Built<BstocksSupportedToken, Bst
   @BuiltValueField(wireName: r'decimals')
   int get decimals;
 
+  /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'multiplier')
   String? get multiplier;
 

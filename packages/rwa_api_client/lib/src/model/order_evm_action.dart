@@ -3,8 +3,8 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/gas_payment_quote.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/order_action_gas_payment.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -68,7 +68,7 @@ abstract class OrderEvmAction implements Built<OrderEvmAction, OrderEvmActionBui
   DateTime get validUntil;
 
   @BuiltValueField(wireName: r'gas_payment')
-  GasPaymentQuote get gasPayment;
+  OrderActionGasPayment get gasPayment;
 
   OrderEvmAction._();
 
@@ -151,7 +151,7 @@ class _$OrderEvmActionSerializer implements PrimitiveSerializer<OrderEvmAction> 
     yield r'gas_payment';
     yield serializers.serialize(
       object.gasPayment,
-      specifiedType: const FullType(GasPaymentQuote),
+      specifiedType: const FullType(OrderActionGasPayment),
     );
   }
 
@@ -256,8 +256,8 @@ class _$OrderEvmActionSerializer implements PrimitiveSerializer<OrderEvmAction> 
         case r'gas_payment':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(GasPaymentQuote),
-          ) as GasPaymentQuote;
+            specifiedType: const FullType(OrderActionGasPayment),
+          ) as OrderActionGasPayment;
           result.gasPayment.replace(valueDes);
           break;
         default:

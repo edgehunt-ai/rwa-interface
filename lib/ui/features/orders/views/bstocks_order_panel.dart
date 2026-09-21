@@ -66,10 +66,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   var _refreshingPreview = false;
   var _quoting = false;
   DecimalValue? _liveMarketPrice;
+  late final OrderCommandNotifier _orderCommands;
 
   @override
   void initState() {
     super.initState();
+    _orderCommands = ref.read(orderCommandProvider.notifier);
     side = widget.initialSide;
     amount.addListener(_refreshAmount);
     limitPrice.addListener(_scheduleQuote);
@@ -137,7 +139,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     }
 
     final nextAmount = available * value / 100;
-    final nextText = _formatInputAmount(nextAmount);
+    final nextText = _formatInputAmount(
+      nextAmount,
+      available: available,
+      percentage: value,
+    );
     _percentageWaitingForAmount = false;
     amount.value = TextEditingValue(
       text: nextText,
@@ -191,11 +197,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             _quoting = false;
           });
         }
-      } on Object {
+      } on Object catch (quoteError) {
         if (mounted && generation == _quoteGeneration) {
           setState(() {
             quotePreview = null;
             _quoting = false;
+            error = _errorMessage(
+              error: quoteError,
+              fallback: AppLocalizations.of(context).prepareOrderFailed,
+            );
           });
         }
       }
@@ -204,7 +214,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   @override
   void dispose() {
-    ref.read(orderCommandProvider.notifier).cancelSubmission();
+    _orderCommands.cancelSubmission();
     _quoteDebounce?.cancel();
     _previewPollingTimer?.cancel();
     amount.removeListener(_refreshAmount);
@@ -240,10 +250,22 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ? cachedQuote!
           : await ref.read(orderPreviewProvider(intent).future);
       if (!mounted) return;
+      if (!next.executionReady) {
+        setState(() {
+          quotePreview = next;
+          error = '预览费用和预估数量可用，但缺少下单所需的确认绑定，暂时不能提交订单。';
+        });
+        return;
+      }
       await _prepareConfirmation(next);
-    } on Object {
+    } on Object catch (error) {
       if (mounted) {
-        setState(() => error = AppLocalizations.of(context).prepareOrderFailed);
+        setState(
+          () => this.error = _errorMessage(
+            error: error,
+            fallback: AppLocalizations.of(context).prepareOrderFailed,
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -302,12 +324,16 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       );
       if (mounted) await _prepareConfirmation(refreshed);
     } on Object {
-      if (mounted) {
-        setState(() {
-          error = AppLocalizations.of(context).prepareFundingFailed;
-        });
-      }
+      rethrow;
     }
+  }
+
+  String _errorMessage({required Object error, required String fallback}) {
+    if (error is ApiFailure) {
+      return apiFailureMessage(error, fallback: fallback);
+    }
+    final message = error.toString().trim();
+    return message.isEmpty ? fallback : message;
   }
 
   void _showConfirmation(OrderPreview next) {
@@ -377,8 +403,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     OrderPreview preview,
     List<TradingAccount> accounts,
   ) {
-    // bStocks settles through the BSC account. Do not use the preview chain
-    // fields for this balance gate; the settlement asset is the discriminator.
+    // bStocks settles through the BSC account. Match both the asset and chain
+    // so a same-symbol balance on another network cannot satisfy the check.
     final asset = preview.settlementAsset ?? preview.orderValue.asset;
     if (asset == null) {
       debugPrint(
@@ -390,14 +416,26 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       return false;
     }
     try {
-      final required = preview.fee == null
+      final fee = preview.fee;
+      // fee_asset belongs to network_fee. The fee field itself is included
+      // when it is denominated in the settlement asset.
+      final required =
+          fee == null ||
+              fee.asset?.toLowerCase() !=
+                  preview.orderValue.asset?.toLowerCase()
           ? preview.orderValue
-          : preview.orderValue.plusMagnitude(preview.fee!);
+          : preview.orderValue.plusMagnitude(fee);
       final balances = accounts
-          .where((account) => account.kind == TradingAccountKind.bstocks)
+          .where(
+            (account) =>
+                account.kind == TradingAccountKind.bstocks &&
+                _sameChain(account.chain, preview.settlementChain),
+          )
           .expand((account) => account.balances)
           .where(
-            (balance) => balance.symbol.toLowerCase() == asset.toLowerCase(),
+            (balance) =>
+                balance.symbol.toLowerCase() == asset.toLowerCase() &&
+                _sameChain(balance.chain, preview.settlementChain),
           )
           .map((balance) => balance.balance);
       final balance = balances.firstOrNull;
@@ -416,6 +454,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       // Fall through to the server funding plan instead of failing locally.
       return false;
     }
+  }
+
+  bool _sameChain(String? left, String? right) {
+    if (right == null || right.isEmpty) return true;
+    if (left == null || left.isEmpty) return false;
+    return left.toLowerCase() == right.toLowerCase();
   }
 
   Future<List<TradingAccount>> _readTradingAccountsForFundingCheck() async {
@@ -554,7 +598,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final formHeight =
         490.0 +
         (type == TradingOrderType.limit ? 64 : 0) +
-        (error != null ? 52 : 0);
+        // Keep enough room for the bounded, scrollable error notice without
+        // allowing a long server message to overflow the form column.
+        (error != null ? 190 : 0);
     return SizedBox(
       height: formHeight,
       child: Column(
@@ -860,10 +906,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ],
         if (error case final message?) ...[
           const SizedBox(height: 8),
-          _OrderFailureNotice(
-            message: message,
-            onRetry: _canRetryInline(message) ? _submit : null,
-          ),
+          _OrderFailureNotice(message: message),
         ],
         const SizedBox(height: 20),
         Row(
@@ -900,11 +943,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       ],
     );
   }
-
-  bool _canRetryInline(String message) =>
-      !message.toLowerCase().contains('timeout') &&
-      !message.contains('timed out') &&
-      !message.contains('超时');
 
   Widget _submitted(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -1028,7 +1066,19 @@ DecimalValue? _availableAmount({
   return DecimalValue(value, asset: symbol, unit: 'token');
 }
 
-String _formatInputAmount(double value) {
+String _formatInputAmount(
+  double value, {
+  double? available,
+  double? percentage,
+}) {
+  final shouldKeepDecimals =
+      available == null ||
+      percentage == null ||
+      available <= 2 ||
+      percentage >= 100;
+  if (!shouldKeepDecimals) {
+    return value.floor().toString();
+  }
   final fixed = value.toStringAsFixed(8);
   return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
 }
@@ -1516,6 +1566,7 @@ class _BstocksConfirmationConversion extends StatelessWidget {
     children: [
       IntrinsicHeight(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: _BstocksConfirmationAmountCard(
@@ -1659,10 +1710,9 @@ class _BstocksConfirmationAssetMark extends StatelessWidget {
 }
 
 class _OrderFailureNotice extends StatelessWidget {
-  const _OrderFailureNotice({required this.message, this.onRetry});
+  const _OrderFailureNotice({required this.message});
 
   final String message;
-  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -1689,16 +1739,18 @@ class _OrderFailureNotice extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(message, style: TextStyle(color: colors.primaryText)),
-            ),
-            if (onRetry != null) ...[
-              const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('重试'),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 160),
+                child: Scrollbar(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      message,
+                      style: TextStyle(color: colors.primaryText),
+                    ),
+                  ),
+                ),
               ),
-            ],
+            ),
           ],
         ),
       ),

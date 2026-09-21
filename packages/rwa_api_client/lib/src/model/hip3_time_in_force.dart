@@ -1,3 +1,4 @@
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //

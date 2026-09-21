@@ -10,15 +10,27 @@ final class GeneratedOrdersService implements OrdersService {
   final ApiFailureMapper _mapper;
 
   @override
-  Future<OrderPreview> previewOrder(
+  Future<PreviewOrderResponse> previewOrder(
     OrderPreviewRequest request, {
     required String idempotencyKey,
-  }) => _body(
-    () => _api.previewOrder(
-      idempotencyKey: idempotencyKey,
-      orderPreviewRequest: request,
-    ),
-  );
+  }) async {
+    try {
+      final response = await _api.previewOrder(
+        idempotencyKey: idempotencyKey,
+        orderPreviewRequest: request,
+      );
+      final value = response.data;
+      if (value == null) throw const FormatException('Missing preview body');
+      return PreviewOrderResponse.parsed(value);
+    } on DioException catch (error) {
+      final body = error.response?.data;
+      final status = error.response?.statusCode;
+      if (status != null && status >= 200 && status < 300 && body is Map) {
+        return PreviewOrderResponse.raw(Map<String, dynamic>.from(body));
+      }
+      throw _mapper.fromDio(error);
+    }
+  }
 
   @override
   Future<Order> createOrder(

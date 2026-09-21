@@ -3,20 +3,22 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/bstocks_reference_quotation.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'market_stats.g.dart';
 
-/// HIP-3 成交量/成交额与前日基准来自同场所 asset context；高低价按最近24小时的一分钟成交K线聚合， 边界按分钟包含，可能包含当前未收盘的一根；没有成交K线时省略高低字段，不填零。 HIP-3 reference_price 为该场所 oracle，reference_label 必须明确其来源，不冒充美股报价。 盘口缺少一侧时省略相应最优价和 spread；上游请求失败不是空盘口。 next_funding_at 没有已验证来源时为空。可选统计缺失不代表数值为零。 
+/// HIP-3 成交量/成交额与前日基准来自同场所 asset context；高低价按最近24小时的一分钟成交K线聚合， 边界按分钟包含，可能包含当前未收盘的一根；没有成交K线时省略高低字段，不填零。 HIP-3 reference_price 为该场所 oracle，reference_label 必须明确其来源，不冒充美股报价。 HIP3 盘口缺少一侧时省略相应最优价和 spread；上游请求失败不是空盘口。 bStocks 的参考价来自 candle feed，premium 是 Binance 买卖中价相对该参考价的偏离， 不是独立美股现货溢价；报价不可用时相关字段为 null。next_funding_at 没有已验证来源时为空。 
 ///
 /// Properties:
+/// * [quotation] 
 /// * [high24h] - 十进制字符串，避免浮点误差
 /// * [low24h] - 十进制字符串，避免浮点误差
 /// * [turnover24hUsd] - 十进制字符串，避免浮点误差
 /// * [volume24h] - 十进制字符串，避免浮点误差
 /// * [volume24hUnit] 
-/// * [referenceLabel] - bStocks 为 `US Stock Reference`；HIP-3 为 `Spot / Reference Price`
+/// * [referenceLabel] - 服务端来源标签；当前 bStocks 为对应交易对 candle feed，不可硬编码为独立美股现货报价。
 /// * [referencePrice] - 十进制字符串，避免浮点误差
 /// * [relativeLabel] - bStocks 为 `Premium`；HIP-3 为 `Basis`
 /// * [relativePercent] - 十进制字符串，避免浮点误差
@@ -28,6 +30,9 @@ part 'market_stats.g.dart';
 /// * [openInterestUsd] - 仅 HIP-3
 @BuiltValue()
 abstract class MarketStats implements Built<MarketStats, MarketStatsBuilder> {
+  @BuiltValueField(wireName: r'quotation')
+  BstocksReferenceQuotation? get quotation;
+
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'high_24h')
   String? get high24h;
@@ -47,7 +52,7 @@ abstract class MarketStats implements Built<MarketStats, MarketStatsBuilder> {
   @BuiltValueField(wireName: r'volume_24h_unit')
   String? get volume24hUnit;
 
-  /// bStocks 为 `US Stock Reference`；HIP-3 为 `Spot / Reference Price`
+  /// 服务端来源标签；当前 bStocks 为对应交易对 candle feed，不可硬编码为独立美股现货报价。
   @BuiltValueField(wireName: r'reference_label')
   String? get referenceLabel;
 
@@ -109,6 +114,13 @@ class _$MarketStatsSerializer implements PrimitiveSerializer<MarketStats> {
     MarketStats object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.quotation != null) {
+      yield r'quotation';
+      yield serializers.serialize(
+        object.quotation,
+        specifiedType: const FullType(BstocksReferenceQuotation),
+      );
+    }
     if (object.high24h != null) {
       yield r'high_24h';
       yield serializers.serialize(
@@ -169,28 +181,28 @@ class _$MarketStatsSerializer implements PrimitiveSerializer<MarketStats> {
       yield r'relative_percent';
       yield serializers.serialize(
         object.relativePercent,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.spreadPercent != null) {
       yield r'spread_percent';
       yield serializers.serialize(
         object.spreadPercent,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.bestBid != null) {
       yield r'best_bid';
       yield serializers.serialize(
         object.bestBid,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.bestAsk != null) {
       yield r'best_ask';
       yield serializers.serialize(
         object.bestAsk,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.fundingRate != null) {
@@ -237,6 +249,14 @@ class _$MarketStatsSerializer implements PrimitiveSerializer<MarketStats> {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'quotation':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksReferenceQuotation),
+          ) as BstocksReferenceQuotation?;
+          if (valueDes == null) continue;
+          result.quotation.replace(valueDes);
+          break;
         case r'high_24h':
           final valueDes = serializers.deserialize(
             value,

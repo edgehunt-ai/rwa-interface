@@ -22,6 +22,7 @@ final class OrderPreview {
     this.feeRate,
     this.feeNote,
     this.details = const [],
+    this.executionReady = true,
   });
   final String previewId;
   final OrderIntent intent;
@@ -41,6 +42,7 @@ final class OrderPreview {
   final DecimalValue? feeRate;
   final String? feeNote;
   final List<PreviewDetail> details;
+  final bool executionReady;
   bool get isExpired => expiresAt?.isBefore(DateTime.now().toUtc()) ?? false;
   bool get openingProtectionMatchesIntent {
     final requested = intent.openingProtection;

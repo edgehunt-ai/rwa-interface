@@ -14,6 +14,10 @@ const SelfCustodialWithdrawalChainId _$n8453 =
     const SelfCustodialWithdrawalChainId._('n8453');
 const SelfCustodialWithdrawalChainId _$n56 =
     const SelfCustodialWithdrawalChainId._('n56');
+const SelfCustodialWithdrawalChainId _$n97 =
+    const SelfCustodialWithdrawalChainId._('n97');
+const SelfCustodialWithdrawalChainId _$n421614 =
+    const SelfCustodialWithdrawalChainId._('n421614');
 const SelfCustodialWithdrawalChainId _$unknownDefaultOpenApi =
     const SelfCustodialWithdrawalChainId._('unknownDefaultOpenApi');
 
@@ -27,6 +31,10 @@ SelfCustodialWithdrawalChainId _$valueOf(String name) {
       return _$n8453;
     case 'n56':
       return _$n56;
+    case 'n97':
+      return _$n97;
+    case 'n421614':
+      return _$n421614;
     case 'unknownDefaultOpenApi':
       return _$unknownDefaultOpenApi;
     default:
@@ -40,6 +48,8 @@ final BuiltSet<SelfCustodialWithdrawalChainId> _$values = BuiltSet<
   _$n42161,
   _$n8453,
   _$n56,
+  _$n97,
+  _$n421614,
   _$unknownDefaultOpenApi,
 ]);
 
@@ -49,6 +59,8 @@ class _$SelfCustodialWithdrawalChainIdMeta {
   SelfCustodialWithdrawalChainId get n42161 => _$n42161;
   SelfCustodialWithdrawalChainId get n8453 => _$n8453;
   SelfCustodialWithdrawalChainId get n56 => _$n56;
+  SelfCustodialWithdrawalChainId get n97 => _$n97;
+  SelfCustodialWithdrawalChainId get n421614 => _$n421614;
   SelfCustodialWithdrawalChainId get unknownDefaultOpenApi =>
       _$unknownDefaultOpenApi;
   SelfCustodialWithdrawalChainId valueOf(String name) => _$valueOf(name);
@@ -72,6 +84,8 @@ class _$SelfCustodialWithdrawalChainIdSerializer
     'n42161': '42161',
     'n8453': '8453',
     'n56': '56',
+    'n97': '97',
+    'n421614': '421614',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -79,6 +93,8 @@ class _$SelfCustodialWithdrawalChainIdSerializer
     '42161': 'n42161',
     '8453': 'n8453',
     '56': 'n56',
+    '97': 'n97',
+    '421614': 'n421614',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

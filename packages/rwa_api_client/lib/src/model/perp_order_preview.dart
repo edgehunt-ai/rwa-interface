@@ -4,10 +4,14 @@
 
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/key_value.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_route.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_economics.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
+import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_preview_common.dart';
 import 'package:built_value/built_value.dart';
@@ -18,8 +22,24 @@ part 'perp_order_preview.g.dart';
 /// PerpOrderPreview
 ///
 /// Properties:
+/// * [bstocks] 
+/// * [timeInForce] 
+/// * [limitPrice] - 十进制字符串，避免浮点误差
+/// * [priceConditionMet] 
+/// * [fundingMode] 
+/// * [fundsReserved] 
+/// * [requiredFundingRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [fundingToken] 
+/// * [balanceRaw] - 十进制字符串，避免浮点误差
+/// * [allowanceRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [balanceSufficient] 
+/// * [allowanceSufficient] 
+/// * [approvalRequired] 
+/// * [orderRouter] 
+/// * [route] 
+/// * [cancellationPolicy] 
 /// * [hip3Execution] 
-/// * [previewId] - 本次报价的标识。下单时回传到 `CreateOrderRequest.preview_id` 可锁定价格； 超过 `quote_expires_at` 后失效，需重新预览。 
+/// * [previewId] - 服务端预览标识。bStocks 绑定账户、owner、输入、准入版本和经济量上限，不是锁价或成交承诺。 当前非 localnet 下单必须引用自己的有效预览；quote_expires_at 是最多120秒的服务端确认期限， 还必须满足独立的 Quoter 区块窗口。审批会消费预览，成功后必须重新 preview/create。 
 /// * [symbol] 
 /// * [side] 
 /// * [type] 
@@ -45,16 +65,16 @@ part 'perp_order_preview.g.dart';
 /// * [feeNote] - Optional localized display note, for example Included.
 /// * [kind] 
 /// * [network] 
-/// * [settlementAsset] - 服务端返回的实际结算资产标识。
+/// * [settlementAsset] 
 /// * [settlementChainId] 
 /// * [settlementAssetId] 
 /// * [settlementTokenContract] 
 /// * [settlementTokenDecimals] 
 @BuiltValue()
 abstract class PerpOrderPreview implements OrderPreviewCommon, Built<PerpOrderPreview, PerpOrderPreviewBuilder> {
-  /// 服务端返回的实际结算资产标识。
   @BuiltValueField(wireName: r'settlement_asset')
-  String get settlementAsset;
+  PerpOrderPreviewSettlementAssetEnum get settlementAsset;
+  // enum settlementAssetEnum {  USDC,  };
 
   @BuiltValueField(wireName: r'settlement_token_contract')
   PerpOrderPreviewSettlementTokenContractEnum get settlementTokenContract;
@@ -106,13 +126,34 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
     yield r'settlement_asset';
     yield serializers.serialize(
       object.settlementAsset,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType(PerpOrderPreviewSettlementAssetEnum),
     );
+    if (object.fundingMode != null) {
+      yield r'funding_mode';
+      yield serializers.serialize(
+        object.fundingMode,
+        specifiedType: const FullType(OrderPreviewCommonFundingModeEnum),
+      );
+    }
+    if (object.orderRouter != null) {
+      yield r'order_router';
+      yield serializers.serialize(
+        object.orderRouter,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'symbol';
     yield serializers.serialize(
       object.symbol,
       specifiedType: const FullType(String),
     );
+    if (object.allowanceRaw != null) {
+      yield r'allowance_raw';
+      yield serializers.serialize(
+        object.allowanceRaw,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.marketPrice != null) {
       yield r'market_price';
       yield serializers.serialize(
@@ -148,11 +189,25 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
         specifiedType: const FullType(String),
       );
     }
+    if (object.bstocks != null) {
+      yield r'bstocks';
+      yield serializers.serialize(
+        object.bstocks,
+        specifiedType: const FullType(BstocksPreviewEconomics),
+      );
+    }
     if (object.liquidationPrice != null) {
       yield r'liquidation_price';
       yield serializers.serialize(
         object.liquidationPrice,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.fundingToken != null) {
+      yield r'funding_token';
+      yield serializers.serialize(
+        object.fundingToken,
+        specifiedType: const FullType(String),
       );
     }
     if (object.orderBookImpactPercent != null) {
@@ -217,6 +272,13 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
         specifiedType: const FullType(String),
       );
     }
+    if (object.fundsReserved != null) {
+      yield r'funds_reserved';
+      yield serializers.serialize(
+        object.fundsReserved,
+        specifiedType: const FullType(bool),
+      );
+    }
     if (object.estimatedReceive != null) {
       yield r'estimated_receive';
       yield serializers.serialize(
@@ -236,6 +298,20 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
       object.previewId,
       specifiedType: const FullType(String),
     );
+    if (object.timeInForce != null) {
+      yield r'time_in_force';
+      yield serializers.serialize(
+        object.timeInForce,
+        specifiedType: const FullType(Hip3TimeInForce),
+      );
+    }
+    if (object.balanceSufficient != null) {
+      yield r'balance_sufficient';
+      yield serializers.serialize(
+        object.balanceSufficient,
+        specifiedType: const FullType(bool),
+      );
+    }
     yield r'side';
     yield serializers.serialize(
       object.side,
@@ -250,6 +326,13 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
       yield r'estimated_receive_unit';
       yield serializers.serialize(
         object.estimatedReceiveUnit,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.limitPrice != null) {
+      yield r'limit_price';
+      yield serializers.serialize(
+        object.limitPrice,
         specifiedType: const FullType(String),
       );
     }
@@ -284,6 +367,41 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
         specifiedType: const FullType(String),
       );
     }
+    if (object.balanceRaw != null) {
+      yield r'balance_raw';
+      yield serializers.serialize(
+        object.balanceRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.requiredFundingRaw != null) {
+      yield r'required_funding_raw';
+      yield serializers.serialize(
+        object.requiredFundingRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.route != null) {
+      yield r'route';
+      yield serializers.serialize(
+        object.route,
+        specifiedType: const FullType(BstocksPreviewRoute),
+      );
+    }
+    if (object.allowanceSufficient != null) {
+      yield r'allowance_sufficient';
+      yield serializers.serialize(
+        object.allowanceSufficient,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.approvalRequired != null) {
+      yield r'approval_required';
+      yield serializers.serialize(
+        object.approvalRequired,
+        specifiedType: const FullType(bool),
+      );
+    }
     if (object.feeAsset != null) {
       yield r'fee_asset';
       yield serializers.serialize(
@@ -296,11 +414,25 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
       object.settlementChainId,
       specifiedType: const FullType(PerpOrderPreviewSettlementChainIdEnum),
     );
+    if (object.priceConditionMet != null) {
+      yield r'price_condition_met';
+      yield serializers.serialize(
+        object.priceConditionMet,
+        specifiedType: const FullType(bool),
+      );
+    }
     if (object.settlementAccount != null) {
       yield r'settlement_account';
       yield serializers.serialize(
         object.settlementAccount,
         specifiedType: const FullType(AccountKind),
+      );
+    }
+    if (object.cancellationPolicy != null) {
+      yield r'cancellation_policy';
+      yield serializers.serialize(
+        object.cancellationPolicy,
+        specifiedType: const FullType(BstocksCancellationPolicy),
       );
     }
   }
@@ -329,9 +461,25 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType(PerpOrderPreviewSettlementAssetEnum),
+          ) as PerpOrderPreviewSettlementAssetEnum;
           result.settlementAsset = valueDes;
+          break;
+        case r'funding_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(OrderPreviewCommonFundingModeEnum),
+          ) as OrderPreviewCommonFundingModeEnum?;
+          if (valueDes == null) continue;
+          result.fundingMode = valueDes;
+          break;
+        case r'order_router':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.orderRouter = valueDes;
           break;
         case r'symbol':
           final valueDes = serializers.deserialize(
@@ -339,6 +487,14 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
             specifiedType: const FullType(String),
           ) as String;
           result.symbol = valueDes;
+          break;
+        case r'allowance_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.allowanceRaw = valueDes;
           break;
         case r'market_price':
           final valueDes = serializers.deserialize(
@@ -380,6 +536,14 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           if (valueDes == null) continue;
           result.fee = valueDes;
           break;
+        case r'bstocks':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksPreviewEconomics),
+          ) as BstocksPreviewEconomics?;
+          if (valueDes == null) continue;
+          result.bstocks.replace(valueDes);
+          break;
         case r'liquidation_price':
           final valueDes = serializers.deserialize(
             value,
@@ -387,6 +551,14 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           ) as String?;
           if (valueDes == null) continue;
           result.liquidationPrice = valueDes;
+          break;
+        case r'funding_token':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.fundingToken = valueDes;
           break;
         case r'order_book_impact_percent':
           final valueDes = serializers.deserialize(
@@ -464,6 +636,14 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           if (valueDes == null) continue;
           result.estimatedPrice = valueDes;
           break;
+        case r'funds_reserved':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.fundsReserved = valueDes;
+          break;
         case r'estimated_receive':
           final valueDes = serializers.deserialize(
             value,
@@ -487,6 +667,22 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           ) as String;
           result.previewId = valueDes;
           break;
+        case r'time_in_force':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3TimeInForce),
+          ) as Hip3TimeInForce?;
+          if (valueDes == null) continue;
+          result.timeInForce = valueDes;
+          break;
+        case r'balance_sufficient':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.balanceSufficient = valueDes;
+          break;
         case r'side':
           final valueDes = serializers.deserialize(
             value,
@@ -508,6 +704,14 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           ) as String?;
           if (valueDes == null) continue;
           result.estimatedReceiveUnit = valueDes;
+          break;
+        case r'limit_price':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.limitPrice = valueDes;
           break;
         case r'kind':
           final valueDes = serializers.deserialize(
@@ -547,6 +751,46 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           if (valueDes == null) continue;
           result.settlementAccountLabel = valueDes;
           break;
+        case r'balance_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.balanceRaw = valueDes;
+          break;
+        case r'required_funding_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.requiredFundingRaw = valueDes;
+          break;
+        case r'route':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksPreviewRoute),
+          ) as BstocksPreviewRoute?;
+          if (valueDes == null) continue;
+          result.route.replace(valueDes);
+          break;
+        case r'allowance_sufficient':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.allowanceSufficient = valueDes;
+          break;
+        case r'approval_required':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.approvalRequired = valueDes;
+          break;
         case r'fee_asset':
           final valueDes = serializers.deserialize(
             value,
@@ -562,6 +806,14 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           ) as PerpOrderPreviewSettlementChainIdEnum;
           result.settlementChainId = valueDes;
           break;
+        case r'price_condition_met':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.priceConditionMet = valueDes;
+          break;
         case r'settlement_account':
           final valueDes = serializers.deserialize(
             value,
@@ -569,6 +821,14 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
           ) as AccountKind?;
           if (valueDes == null) continue;
           result.settlementAccount = valueDes;
+          break;
+        case r'cancellation_policy':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksCancellationPolicy),
+          ) as BstocksCancellationPolicy?;
+          if (valueDes == null) continue;
+          result.cancellationPolicy.replace(valueDes);
           break;
         default:
           unhandled.add(key);
@@ -599,6 +859,21 @@ class _$PerpOrderPreviewSerializer implements PrimitiveSerializer<PerpOrderPrevi
   }
 }
 
+class PerpOrderPreviewFundingModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
+  static const PerpOrderPreviewFundingModeEnum unreservedTransferFrom = _$perpOrderPreviewFundingModeEnum_unreservedTransferFrom;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const PerpOrderPreviewFundingModeEnum unknownDefaultOpenApi = _$perpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+
+  static Serializer<PerpOrderPreviewFundingModeEnum> get serializer => _$perpOrderPreviewFundingModeEnumSerializer;
+
+  const PerpOrderPreviewFundingModeEnum._(String name): super(name);
+
+  static BuiltSet<PerpOrderPreviewFundingModeEnum> get values => _$perpOrderPreviewFundingModeEnumValues;
+  static PerpOrderPreviewFundingModeEnum valueOf(String name) => _$perpOrderPreviewFundingModeEnumValueOf(name);
+}
+
 class PerpOrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
@@ -627,6 +902,21 @@ class PerpOrderPreviewNetworkEnum extends EnumClass {
 
   static BuiltSet<PerpOrderPreviewNetworkEnum> get values => _$perpOrderPreviewNetworkEnumValues;
   static PerpOrderPreviewNetworkEnum valueOf(String name) => _$perpOrderPreviewNetworkEnumValueOf(name);
+}
+
+class PerpOrderPreviewSettlementAssetEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'USDC')
+  static const PerpOrderPreviewSettlementAssetEnum USDC = _$perpOrderPreviewSettlementAssetEnum_USDC;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const PerpOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+
+  static Serializer<PerpOrderPreviewSettlementAssetEnum> get serializer => _$perpOrderPreviewSettlementAssetEnumSerializer;
+
+  const PerpOrderPreviewSettlementAssetEnum._(String name): super(name);
+
+  static BuiltSet<PerpOrderPreviewSettlementAssetEnum> get values => _$perpOrderPreviewSettlementAssetEnumValues;
+  static PerpOrderPreviewSettlementAssetEnum valueOf(String name) => _$perpOrderPreviewSettlementAssetEnumValueOf(name);
 }
 
 class PerpOrderPreviewSettlementChainIdEnum extends EnumClass {

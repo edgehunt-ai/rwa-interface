@@ -6,6 +6,34 @@ part of 'bstock_order_wallet_action_state.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const BstockOrderWalletActionStateFundingModeEnum
+    _$bstockOrderWalletActionStateFundingModeEnum_unreservedTransferFrom =
+    const BstockOrderWalletActionStateFundingModeEnum._(
+        'unreservedTransferFrom');
+const BstockOrderWalletActionStateFundingModeEnum
+    _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi =
+    const BstockOrderWalletActionStateFundingModeEnum._(
+        'unknownDefaultOpenApi');
+
+BstockOrderWalletActionStateFundingModeEnum
+    _$bstockOrderWalletActionStateFundingModeEnumValueOf(String name) {
+  switch (name) {
+    case 'unreservedTransferFrom':
+      return _$bstockOrderWalletActionStateFundingModeEnum_unreservedTransferFrom;
+    case 'unknownDefaultOpenApi':
+      return _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi;
+    default:
+      return _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi;
+  }
+}
+
+final BuiltSet<BstockOrderWalletActionStateFundingModeEnum>
+    _$bstockOrderWalletActionStateFundingModeEnumValues = BuiltSet<
+        BstockOrderWalletActionStateFundingModeEnum>(const <BstockOrderWalletActionStateFundingModeEnum>[
+  _$bstockOrderWalletActionStateFundingModeEnum_unreservedTransferFrom,
+  _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi,
+]);
+
 const BstockOrderWalletActionStateKindEnum
     _$bstockOrderWalletActionStateKindEnum_bstock =
     const BstockOrderWalletActionStateKindEnum._('bstock');
@@ -74,12 +102,48 @@ final BuiltSet<BstockOrderWalletActionStateWalletActionBlockerEnum>
   _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi,
 ]);
 
+Serializer<BstockOrderWalletActionStateFundingModeEnum>
+    _$bstockOrderWalletActionStateFundingModeEnumSerializer =
+    _$BstockOrderWalletActionStateFundingModeEnumSerializer();
 Serializer<BstockOrderWalletActionStateKindEnum>
     _$bstockOrderWalletActionStateKindEnumSerializer =
     _$BstockOrderWalletActionStateKindEnumSerializer();
 Serializer<BstockOrderWalletActionStateWalletActionBlockerEnum>
     _$bstockOrderWalletActionStateWalletActionBlockerEnumSerializer =
     _$BstockOrderWalletActionStateWalletActionBlockerEnumSerializer();
+
+class _$BstockOrderWalletActionStateFundingModeEnumSerializer
+    implements
+        PrimitiveSerializer<BstockOrderWalletActionStateFundingModeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'unreservedTransferFrom': 'unreserved_transfer_from',
+    'unknownDefaultOpenApi': 'unknown_default_open_api',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'unreserved_transfer_from': 'unreservedTransferFrom',
+    'unknown_default_open_api': 'unknownDefaultOpenApi',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockOrderWalletActionStateFundingModeEnum
+  ];
+  @override
+  final String wireName = 'BstockOrderWalletActionStateFundingModeEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockOrderWalletActionStateFundingModeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockOrderWalletActionStateFundingModeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockOrderWalletActionStateFundingModeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
 
 class _$BstockOrderWalletActionStateKindEnumSerializer
     implements PrimitiveSerializer<BstockOrderWalletActionStateKindEnum> {
@@ -153,6 +217,14 @@ class _$BstockOrderWalletActionStateWalletActionBlockerEnumSerializer
 
 class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   @override
+  final bool? approvalRequired;
+  @override
+  final BstockOrderWalletActionStateFundingModeEnum? fundingMode;
+  @override
+  final bool? fundsReserved;
+  @override
+  final BstocksCancellationPolicy? cancellationPolicy;
+  @override
   final BstockOrderWalletActionStateKindEnum kind;
   @override
   final OrderEvmAction? nextAction;
@@ -173,7 +245,11 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
       (BstockOrderWalletActionStateBuilder()..update(updates))._build();
 
   _$BstockOrderWalletActionState._(
-      {required this.kind,
+      {this.approvalRequired,
+      this.fundingMode,
+      this.fundsReserved,
+      this.cancellationPolicy,
+      required this.kind,
       this.nextAction,
       this.walletActionBlocker,
       this.actionStatus,
@@ -194,6 +270,10 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is BstockOrderWalletActionState &&
+        approvalRequired == other.approvalRequired &&
+        fundingMode == other.fundingMode &&
+        fundsReserved == other.fundsReserved &&
+        cancellationPolicy == other.cancellationPolicy &&
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
@@ -206,6 +286,10 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, approvalRequired.hashCode);
+    _$hash = $jc(_$hash, fundingMode.hashCode);
+    _$hash = $jc(_$hash, fundsReserved.hashCode);
+    _$hash = $jc(_$hash, cancellationPolicy.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
@@ -220,6 +304,10 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'BstockOrderWalletActionState')
+          ..add('approvalRequired', approvalRequired)
+          ..add('fundingMode', fundingMode)
+          ..add('fundsReserved', fundsReserved)
+          ..add('cancellationPolicy', cancellationPolicy)
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
@@ -236,6 +324,29 @@ class BstockOrderWalletActionStateBuilder
         Builder<BstockOrderWalletActionState,
             BstockOrderWalletActionStateBuilder> {
   _$BstockOrderWalletActionState? _$v;
+
+  bool? _approvalRequired;
+  bool? get approvalRequired => _$this._approvalRequired;
+  set approvalRequired(bool? approvalRequired) =>
+      _$this._approvalRequired = approvalRequired;
+
+  BstockOrderWalletActionStateFundingModeEnum? _fundingMode;
+  BstockOrderWalletActionStateFundingModeEnum? get fundingMode =>
+      _$this._fundingMode;
+  set fundingMode(BstockOrderWalletActionStateFundingModeEnum? fundingMode) =>
+      _$this._fundingMode = fundingMode;
+
+  bool? _fundsReserved;
+  bool? get fundsReserved => _$this._fundsReserved;
+  set fundsReserved(bool? fundsReserved) =>
+      _$this._fundsReserved = fundsReserved;
+
+  BstocksCancellationPolicyBuilder? _cancellationPolicy;
+  BstocksCancellationPolicyBuilder get cancellationPolicy =>
+      _$this._cancellationPolicy ??= BstocksCancellationPolicyBuilder();
+  set cancellationPolicy(
+          BstocksCancellationPolicyBuilder? cancellationPolicy) =>
+      _$this._cancellationPolicy = cancellationPolicy;
 
   BstockOrderWalletActionStateKindEnum? _kind;
   BstockOrderWalletActionStateKindEnum? get kind => _$this._kind;
@@ -282,6 +393,10 @@ class BstockOrderWalletActionStateBuilder
   BstockOrderWalletActionStateBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _approvalRequired = $v.approvalRequired;
+      _fundingMode = $v.fundingMode;
+      _fundsReserved = $v.fundsReserved;
+      _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
       _kind = $v.kind;
       _nextAction = $v.nextAction?.toBuilder();
       _walletActionBlocker = $v.walletActionBlocker;
@@ -312,6 +427,10 @@ class BstockOrderWalletActionStateBuilder
     try {
       _$result = _$v ??
           _$BstockOrderWalletActionState._(
+            approvalRequired: approvalRequired,
+            fundingMode: fundingMode,
+            fundsReserved: fundsReserved,
+            cancellationPolicy: _cancellationPolicy?.build(),
             kind: BuiltValueNullFieldError.checkNotNull(
                 kind, r'BstockOrderWalletActionState', 'kind'),
             nextAction: _nextAction?.build(),
@@ -324,6 +443,9 @@ class BstockOrderWalletActionStateBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'cancellationPolicy';
+        _cancellationPolicy?.build();
+
         _$failedField = 'nextAction';
         _nextAction?.build();
       } catch (e) {

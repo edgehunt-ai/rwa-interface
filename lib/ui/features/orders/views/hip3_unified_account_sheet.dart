@@ -27,20 +27,25 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
     try {
       await widget.onConfirm();
       if (mounted) Navigator.of(context).pop(true);
-    } on ServerFailure catch (failure) {
+    } on ApiFailure catch (failure) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = apiFailureMessage(
+            failure,
+            fallback: _isZh ? '统一交易账户设置失败' : 'Unified Trading setup failed',
+          );
+        });
+      }
+    } on Object catch (error, stackTrace) {
+      debugPrint('HIP-3 unified account conversion failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
         setState(() {
           _loading = false;
           _error = _isZh
-              ? '转换请求冲突（${failure.code}），请重试。'
-              : 'Conversion conflict (${failure.code}). Try again.';
-        });
-      }
-    } on Object {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = _isZh ? '转换失败，请重试。' : 'Conversion failed. Try again.';
+              ? '${error.runtimeType}: $error'
+              : '${error.runtimeType}: $error';
         });
       }
     }

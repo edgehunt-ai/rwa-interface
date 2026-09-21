@@ -16,7 +16,7 @@ class _$FundingSession extends FundingSession {
   @override
   final OrderPreviewRequest trade;
   @override
-  final FundingSessionContinuation continuation;
+  final FundingSessionContinuation? continuation;
   @override
   final ProductKind rail;
   @override
@@ -66,7 +66,7 @@ class _$FundingSession extends FundingSession {
       required this.status,
       required this.version,
       required this.trade,
-      required this.continuation,
+      this.continuation,
       required this.rail,
       required this.targetSnapshot,
       required this.requiredTargetBalance,
@@ -328,7 +328,7 @@ class FundingSessionBuilder
       _status = $v.status;
       _version = $v.version;
       _trade = $v.trade.toBuilder();
-      _continuation = $v.continuation.toBuilder();
+      _continuation = $v.continuation?.toBuilder();
       _rail = $v.rail;
       _targetSnapshot = $v.targetSnapshot.toBuilder();
       _requiredTargetBalance = $v.requiredTargetBalance;
@@ -379,7 +379,7 @@ class FundingSessionBuilder
             version: BuiltValueNullFieldError.checkNotNull(
                 version, r'FundingSession', 'version'),
             trade: trade.build(),
-            continuation: continuation.build(),
+            continuation: _continuation?.build(),
             rail: BuiltValueNullFieldError.checkNotNull(
                 rail, r'FundingSession', 'rail'),
             targetSnapshot: targetSnapshot.build(),
@@ -432,7 +432,7 @@ class FundingSessionBuilder
         _$failedField = 'trade';
         trade.build();
         _$failedField = 'continuation';
-        continuation.build();
+        _continuation?.build();
 
         _$failedField = 'targetSnapshot';
         targetSnapshot.build();

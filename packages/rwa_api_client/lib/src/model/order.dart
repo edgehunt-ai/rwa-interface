@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/order_fill.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
+import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
@@ -24,6 +25,10 @@ part 'order.g.dart';
 /// Order
 ///
 /// Properties:
+/// * [approvalRequired] 
+/// * [fundingMode] 
+/// * [fundsReserved] 
+/// * [cancellationPolicy] 
 /// * [kind] 
 /// * [nextAction] - 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
 /// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
@@ -65,6 +70,19 @@ part 'order.g.dart';
 /// * [updatedAt] 
 @BuiltValue()
 abstract class Order implements Built<Order, OrderBuilder> {
+  @BuiltValueField(wireName: r'approval_required')
+  bool? get approvalRequired;
+
+  @BuiltValueField(wireName: r'funding_mode')
+  OrderFundingModeEnum? get fundingMode;
+  // enum fundingModeEnum {  unreserved_transfer_from,  };
+
+  @BuiltValueField(wireName: r'funds_reserved')
+  bool? get fundsReserved;
+
+  @BuiltValueField(wireName: r'cancellation_policy')
+  BstocksCancellationPolicy? get cancellationPolicy;
+
   @BuiltValueField(wireName: r'kind')
   ProductKind get kind;
   // enum kindEnum {  bstock,  perp,  };
@@ -230,6 +248,34 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
     Order object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.approvalRequired != null) {
+      yield r'approval_required';
+      yield serializers.serialize(
+        object.approvalRequired,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.fundingMode != null) {
+      yield r'funding_mode';
+      yield serializers.serialize(
+        object.fundingMode,
+        specifiedType: const FullType(OrderFundingModeEnum),
+      );
+    }
+    if (object.fundsReserved != null) {
+      yield r'funds_reserved';
+      yield serializers.serialize(
+        object.fundsReserved,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.cancellationPolicy != null) {
+      yield r'cancellation_policy';
+      yield serializers.serialize(
+        object.cancellationPolicy,
+        specifiedType: const FullType(BstocksCancellationPolicy),
+      );
+    }
     yield r'kind';
     yield serializers.serialize(
       object.kind,
@@ -508,6 +554,38 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'approval_required':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.approvalRequired = valueDes;
+          break;
+        case r'funding_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(OrderFundingModeEnum),
+          ) as OrderFundingModeEnum?;
+          if (valueDes == null) continue;
+          result.fundingMode = valueDes;
+          break;
+        case r'funds_reserved':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.fundsReserved = valueDes;
+          break;
+        case r'cancellation_policy':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksCancellationPolicy),
+          ) as BstocksCancellationPolicy?;
+          if (valueDes == null) continue;
+          result.cancellationPolicy.replace(valueDes);
+          break;
         case r'kind':
           final valueDes = serializers.deserialize(
             value,
@@ -840,6 +918,21 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
     );
     return result.build();
   }
+}
+
+class OrderFundingModeEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
+  static const OrderFundingModeEnum unreservedTransferFrom = _$orderFundingModeEnum_unreservedTransferFrom;
+  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
+  static const OrderFundingModeEnum unknownDefaultOpenApi = _$orderFundingModeEnum_unknownDefaultOpenApi;
+
+  static Serializer<OrderFundingModeEnum> get serializer => _$orderFundingModeEnumSerializer;
+
+  const OrderFundingModeEnum._(String name): super(name);
+
+  static BuiltSet<OrderFundingModeEnum> get values => _$orderFundingModeEnumValues;
+  static OrderFundingModeEnum valueOf(String name) => _$orderFundingModeEnumValueOf(name);
 }
 
 class OrderWalletActionBlockerEnum extends EnumClass {

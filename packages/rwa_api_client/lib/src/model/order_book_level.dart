@@ -11,17 +11,50 @@ part 'order_book_level.g.dart';
 /// OrderBookLevel
 ///
 /// Properties:
-/// * [price] - 十进制字符串，避免浮点误差
-/// * [size] - 十进制字符串，避免浮点误差
+/// * [price] - HIP3 为档位价；PropAMM 为整笔 quote_amount/size 均价，买入向上、卖出向下舍入到最多18位。
+/// * [size] - PropAMM 为整笔基础资产总量。卖出含基础资产输入费，买入为预计收到量；不可跨行相加。
+/// * [quoteAmount] - 仅 PropAMM，整笔报价资产金额；买入含输入费，卖出为预计收到量。
+/// * [nominalInputRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [grossInputRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [inputFeeRaw] - 输入 token 手续费原始整数单位，不是 BNB gas。
+/// * [outputRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [validAfterBlock] 
+/// * [validUntilBlock] 
 @BuiltValue()
 abstract class OrderBookLevel implements Built<OrderBookLevel, OrderBookLevelBuilder> {
-  /// 十进制字符串，避免浮点误差
+  /// HIP3 为档位价；PropAMM 为整笔 quote_amount/size 均价，买入向上、卖出向下舍入到最多18位。
   @BuiltValueField(wireName: r'price')
   String get price;
 
-  /// 十进制字符串，避免浮点误差
+  /// PropAMM 为整笔基础资产总量。卖出含基础资产输入费，买入为预计收到量；不可跨行相加。
   @BuiltValueField(wireName: r'size')
   String get size;
+
+  /// 仅 PropAMM，整笔报价资产金额；买入含输入费，卖出为预计收到量。
+  @BuiltValueField(wireName: r'quote_amount')
+  String? get quoteAmount;
+
+  /// 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+  @BuiltValueField(wireName: r'nominal_input_raw')
+  String? get nominalInputRaw;
+
+  /// 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+  @BuiltValueField(wireName: r'gross_input_raw')
+  String? get grossInputRaw;
+
+  /// 输入 token 手续费原始整数单位，不是 BNB gas。
+  @BuiltValueField(wireName: r'input_fee_raw')
+  String? get inputFeeRaw;
+
+  /// 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+  @BuiltValueField(wireName: r'output_raw')
+  String? get outputRaw;
+
+  @BuiltValueField(wireName: r'valid_after_block')
+  int? get validAfterBlock;
+
+  @BuiltValueField(wireName: r'valid_until_block')
+  int? get validUntilBlock;
 
   OrderBookLevel._();
 
@@ -56,6 +89,55 @@ class _$OrderBookLevelSerializer implements PrimitiveSerializer<OrderBookLevel> 
       object.size,
       specifiedType: const FullType(String),
     );
+    if (object.quoteAmount != null) {
+      yield r'quote_amount';
+      yield serializers.serialize(
+        object.quoteAmount,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.nominalInputRaw != null) {
+      yield r'nominal_input_raw';
+      yield serializers.serialize(
+        object.nominalInputRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.grossInputRaw != null) {
+      yield r'gross_input_raw';
+      yield serializers.serialize(
+        object.grossInputRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.inputFeeRaw != null) {
+      yield r'input_fee_raw';
+      yield serializers.serialize(
+        object.inputFeeRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.outputRaw != null) {
+      yield r'output_raw';
+      yield serializers.serialize(
+        object.outputRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.validAfterBlock != null) {
+      yield r'valid_after_block';
+      yield serializers.serialize(
+        object.validAfterBlock,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.validUntilBlock != null) {
+      yield r'valid_until_block';
+      yield serializers.serialize(
+        object.validUntilBlock,
+        specifiedType: const FullType(int),
+      );
+    }
   }
 
   @override
@@ -92,6 +174,62 @@ class _$OrderBookLevelSerializer implements PrimitiveSerializer<OrderBookLevel> 
             specifiedType: const FullType(String),
           ) as String;
           result.size = valueDes;
+          break;
+        case r'quote_amount':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.quoteAmount = valueDes;
+          break;
+        case r'nominal_input_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.nominalInputRaw = valueDes;
+          break;
+        case r'gross_input_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.grossInputRaw = valueDes;
+          break;
+        case r'input_fee_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.inputFeeRaw = valueDes;
+          break;
+        case r'output_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.outputRaw = valueDes;
+          break;
+        case r'valid_after_block':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.validAfterBlock = valueDes;
+          break;
+        case r'valid_until_block':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.validUntilBlock = valueDes;
           break;
         default:
           unhandled.add(key);

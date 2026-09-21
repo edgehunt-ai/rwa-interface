@@ -1,3 +1,4 @@
+import 'package:rwa_api_client/src/model/order_type.dart';
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //

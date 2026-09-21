@@ -62,6 +62,7 @@ void main() {
     kind: MarketProductKind.perp,
     side: TradingSide.long,
     type: TradingOrderType.market,
+    marginMode: TradingMarginMode.cross,
     amount: DecimalValue('15'),
     openingProtection: Hip3OpeningProtection(
       takeProfit: Hip3OpeningProtectionLeg(triggerPrice: DecimalValue('110')),
@@ -132,6 +133,7 @@ void main() {
           kind: MarketProductKind.perp,
           side: TradingSide.long,
           type: TradingOrderType.market,
+          marginMode: TradingMarginMode.cross,
           amount: DecimalValue('15'),
         ),
         idempotencyKey: 'preview-key',
@@ -183,7 +185,7 @@ final class _PreviewOrders implements OrdersService {
   Map<String, Object?>? previewWire;
   Map<String, Object?>? createWire;
   @override
-  Future<api.OrderPreview> previewOrder(
+  Future<PreviewOrderResponse> previewOrder(
     api.OrderPreviewRequest request, {
     required String idempotencyKey,
   }) async {
@@ -256,7 +258,7 @@ final class _PreviewOrders implements OrdersService {
         )
         ..kind = api.PerpOrderPreviewKindEnum.perp
         ..network = api.PerpOrderPreviewNetworkEnum.hyperliquid
-        ..settlementAsset = 'USDC'
+        ..settlementAsset = api.PerpOrderPreviewSettlementAssetEnum.USDC
         ..settlementChainId =
             api.PerpOrderPreviewSettlementChainIdEnum.number1337
         ..settlementAssetId = api
@@ -268,11 +270,13 @@ final class _PreviewOrders implements OrdersService {
         ..settlementTokenDecimals =
             api.PerpOrderPreviewSettlementTokenDecimalsEnum.number8,
     );
-    return api.OrderPreview(
-      (b) => b.oneOf = OneOfDynamic(
-        typeIndex: 1,
-        types: const [api.BstockOrderPreview, api.PerpOrderPreview],
-        value: value,
+    return PreviewOrderResponse.parsed(
+      api.OrderPreview(
+        (b) => b.oneOf = OneOfDynamic(
+          typeIndex: 1,
+          types: const [api.BstockOrderPreview, api.PerpOrderPreview],
+          value: value,
+        ),
       ),
     );
   }

@@ -17,7 +17,7 @@ import 'package:one_of/one_of.dart';
 
 part 'create_order_request.g.dart';
 
-/// 根据 `kind` 分派为 bStocks 现货或 HIP-3 永续订单，并可携带预览锁价 id。
+/// 根据 kind 分派具体产品；preview_id 引用服务端确认绑定，不是任意市场价锁定承诺。
 ///
 /// Properties:
 /// * [symbol] 
@@ -34,7 +34,7 @@ part 'create_order_request.g.dart';
 /// * [contextId] - 必须与所引用 preview 的 context 相同；账户/环境不由客户端决定。
 /// * [protection] 
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
-/// * [marginMode] 
+/// * [marginMode] - 必须显式传入，并与当前 HIP-3 trading context 及所引用 preview 冻结的保证金模式一致。
 /// * [reduceOnly] 
 @BuiltValue()
 abstract class CreateOrderRequest implements Built<CreateOrderRequest, CreateOrderRequestBuilder> {

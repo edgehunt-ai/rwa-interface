@@ -173,8 +173,8 @@ class MarketsApi {
     );
   }
 
-  /// 订单簿深度
-  /// 
+  /// 订单簿或 PropAMM 参考报价深度
+  /// kind&#x3D;perp 保持传统订单簿语义。kind&#x3D;bstock 返回 PropAMM-only 参考报价深度： 每行是一个独立完整交易规模的含输入 token 手续费均价，不是挂单或可累加档位， 不合并 Pancake、不复制 Binance 盘口。必须检查 level_semantics/status/sides； 部分可用或两侧不可报价可返回 200 + partial/unavailable，空数组不代表零价格。 depth 是每侧最多尝试的采样数，并非保证返回数量。查询不签名、不预占 RFQ exposure。 下单必须重新 preview/选路；不得用本响应构造交易。配置、身份、readiness、过期或 资源限制失败仍返回 503，例如 bstocks_orderbook_unconfigured、bstocks_orderbook_not_admitted、 bstocks_orderbook_chain_mismatch、bstocks_orderbook_quoter_mismatch、bstocks_quoter_not_ready、 bstocks_orderbook_invalid、bstocks_orderbook_stale、bstocks_orderbook_busy、bstocks_orderbook_timeout。 
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
@@ -347,7 +347,7 @@ class MarketsApi {
   }
 
   /// 24h 行情统计
-  /// 24h 高 / 低、成交额、成交量、参考价与相对偏离（bStocks 为 Premium，HIP-3 为 Basis）、 价差、买一卖一；HIP-3 额外返回资金费率与未平仓合约量。 
+  /// 24h 高 / 低、成交额、成交量、参考价与相对偏离（bStocks 为 Premium，HIP-3 为 Basis）、 价差、买一卖一；HIP-3 额外返回资金费率与未平仓合约量。 bStocks 的 quotation 是可选 Binance reference top-of-book，不是 PropAMM depth 或 firm RFQ。 参考盘口不可用时 best_bid/best_ask/spread_percent/relative_percent 为 null，K线统计仍可返回。 
   ///
   /// Parameters:
   /// * [symbol] - 股票代码
@@ -430,7 +430,7 @@ class MarketsApi {
   }
 
   /// bStocks support-list metadata
-  /// Returns Binance-discovered BNB Chain bStocks metadata selected by the platform&#39;s discovery manifest. &#x60;discovery_only&#x60; entries are displayable candidates, not executable markets; only &#x60;admitted&#x60; entries also passed signed-manifest and platform-catalog checks. 
+  /// Returns Binance-discovered BNB Chain bStocks metadata selected by the platform&#39;s discovery manifest. &#x60;discovery_only&#x60; entries are displayable candidates, not executable markets; only &#x60;admitted&#x60; entries also passed admission-manifest and platform-catalog checks. The manifest is operator-managed configuration, not a user signature. 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation

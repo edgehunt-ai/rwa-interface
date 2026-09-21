@@ -21,7 +21,6 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
-import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 

@@ -27,7 +27,7 @@ abstract class PrivyAuthorizationBody implements Built<PrivyAuthorizationBody, P
 
   @BuiltValueField(wireName: r'caip2')
   PrivyAuthorizationBodyCaip2Enum get caip2;
-  // enum caip2Enum {  eip155:1,  eip155:56,  eip155:8453,  eip155:42161,  };
+  // enum caip2Enum {  eip155:1,  eip155:56,  eip155:97,  eip155:8453,  eip155:42161,  eip155:421614,  };
 
   @BuiltValueField(wireName: r'chain_type')
   PrivyAuthorizationBodyChainTypeEnum get chainType;
@@ -211,10 +211,14 @@ class PrivyAuthorizationBodyCaip2Enum extends EnumClass {
   static const PrivyAuthorizationBodyCaip2Enum eip155Colon1 = _$privyAuthorizationBodyCaip2Enum_eip155Colon1;
   @BuiltValueEnumConst(wireName: r'eip155:56')
   static const PrivyAuthorizationBodyCaip2Enum eip155Colon56 = _$privyAuthorizationBodyCaip2Enum_eip155Colon56;
+  @BuiltValueEnumConst(wireName: r'eip155:97')
+  static const PrivyAuthorizationBodyCaip2Enum eip155Colon97 = _$privyAuthorizationBodyCaip2Enum_eip155Colon97;
   @BuiltValueEnumConst(wireName: r'eip155:8453')
   static const PrivyAuthorizationBodyCaip2Enum eip155Colon8453 = _$privyAuthorizationBodyCaip2Enum_eip155Colon8453;
   @BuiltValueEnumConst(wireName: r'eip155:42161')
   static const PrivyAuthorizationBodyCaip2Enum eip155Colon42161 = _$privyAuthorizationBodyCaip2Enum_eip155Colon42161;
+  @BuiltValueEnumConst(wireName: r'eip155:421614')
+  static const PrivyAuthorizationBodyCaip2Enum eip155Colon421614 = _$privyAuthorizationBodyCaip2Enum_eip155Colon421614;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const PrivyAuthorizationBodyCaip2Enum unknownDefaultOpenApi = _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi;
 

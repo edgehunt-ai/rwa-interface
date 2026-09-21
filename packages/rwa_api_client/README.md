@@ -111,6 +111,7 @@ Class | Method | HTTP request | Description
 [*FundingApi*](doc/FundingApi.md) | [**createDeposit**](doc/FundingApi.md#createdeposit) | **POST** /v1/deposits | 获取旧版入金指引响应（兼容窗口）
 [*FundingApi*](doc/FundingApi.md) | [**createFundingPlan**](doc/FundingApi.md#createfundingplan) | **POST** /v1/funding/plans | 创建资金准备计划
 [*FundingApi*](doc/FundingApi.md) | [**createFundingSession**](doc/FundingApi.md#createfundingsession) | **POST** /v1/funding/sessions | 创建可恢复的资金准备会话
+[*FundingApi*](doc/FundingApi.md) | [**createHip3Withdrawal**](doc/FundingApi.md#createhip3withdrawal) | **POST** /v1/hip3/withdrawals | 创建 HIP-3 统一账户提现
 [*FundingApi*](doc/FundingApi.md) | [**createSelfCustodialWithdrawal**](doc/FundingApi.md#createselfcustodialwithdrawal) | **POST** /v1/self-custodial-withdrawals | 创建自托管提现审计意图
 [*FundingApi*](doc/FundingApi.md) | [**createSelfCustodialWithdrawalExecution**](doc/FundingApi.md#createselfcustodialwithdrawalexecution) | **POST** /v1/self-custodial-withdrawals/{withdrawal_id}/executions | 创建自托管提现钱包动作执行
 [*FundingApi*](doc/FundingApi.md) | [**createTransfer**](doc/FundingApi.md#createtransfer) | **POST** /v1/transfers | 按资金计划创建划转
@@ -124,6 +125,7 @@ Class | Method | HTTP request | Description
 [*FundingApi*](doc/FundingApi.md) | [**getFundingCatalog**](doc/FundingApi.md#getfundingcatalog) | **GET** /v1/funding/catalog | 资金网络与结算资产目录
 [*FundingApi*](doc/FundingApi.md) | [**getFundingPlan**](doc/FundingApi.md#getfundingplan) | **GET** /v1/funding/plans/{plan_id} | 资金准备计划详情与权威状态
 [*FundingApi*](doc/FundingApi.md) | [**getFundingSession**](doc/FundingApi.md#getfundingsession) | **GET** /v1/funding/sessions/{funding_session_id} | 获取资金准备会话
+[*FundingApi*](doc/FundingApi.md) | [**getHip3Withdrawal**](doc/FundingApi.md#gethip3withdrawal) | **GET** /v1/hip3/withdrawals/{withdrawal_id} | 获取 HIP-3 提现状态
 [*FundingApi*](doc/FundingApi.md) | [**getSelfCustodialWithdrawal**](doc/FundingApi.md#getselfcustodialwithdrawal) | **GET** /v1/self-custodial-withdrawals/{withdrawal_id} | 获取自托管提现审计状态
 [*FundingApi*](doc/FundingApi.md) | [**getTransfer**](doc/FundingApi.md#gettransfer) | **GET** /v1/transfers/{transfer_id} | 划转详情与权威状态
 [*FundingApi*](doc/FundingApi.md) | [**getUnifiedFundingAccount**](doc/FundingApi.md#getunifiedfundingaccount) | **GET** /v1/funding/account | 获取非托管统一资金账户
@@ -131,11 +133,12 @@ Class | Method | HTTP request | Description
 [*FundingApi*](doc/FundingApi.md) | [**listDepositObservations**](doc/FundingApi.md#listdepositobservations) | **GET** /v1/deposit-observations | 获取脱敏入金观察进度
 [*FundingApi*](doc/FundingApi.md) | [**listDeposits**](doc/FundingApi.md#listdeposits) | **GET** /v1/deposits | 入金记录列表
 [*FundingApi*](doc/FundingApi.md) | [**listWithdrawals**](doc/FundingApi.md#listwithdrawals) | **GET** /v1/withdrawals | 提现列表
+[*FundingApi*](doc/FundingApi.md) | [**submitHip3Withdrawal**](doc/FundingApi.md#submithip3withdrawal) | **POST** /v1/hip3/withdrawals/{withdrawal_id}/submission | 提交 HIP-3 提现签名
 [*FundingApi*](doc/FundingApi.md) | [**submitSelfCustodialWithdrawal**](doc/FundingApi.md#submitselfcustodialwithdrawal) | **POST** /v1/self-custodial-withdrawals/{withdrawal_id}/submission | 提交自托管提现交易哈希
 [*FundingApi*](doc/FundingApi.md) | [**updateFundingSessionSelection**](doc/FundingApi.md#updatefundingsessionselection) | **PUT** /v1/funding/sessions/{funding_session_id}/selection | 更新用户选择的补资来源与金额
 [*MarketsApi*](doc/MarketsApi.md) | [**addFavorite**](doc/MarketsApi.md#addfavorite) | **PUT** /v1/markets/{symbol}/products/{kind}/favorite | 加入自选
 [*MarketsApi*](doc/MarketsApi.md) | [**getAssetInfo**](doc/MarketsApi.md#getassetinfo) | **GET** /v1/markets/{symbol}/asset-info | 资产详情与权益
-[*MarketsApi*](doc/MarketsApi.md) | [**getOrderBook**](doc/MarketsApi.md#getorderbook) | **GET** /v1/markets/{symbol}/products/{kind}/orderbook | 订单簿深度
+[*MarketsApi*](doc/MarketsApi.md) | [**getOrderBook**](doc/MarketsApi.md#getorderbook) | **GET** /v1/markets/{symbol}/products/{kind}/orderbook | 订单簿或 PropAMM 参考报价深度
 [*MarketsApi*](doc/MarketsApi.md) | [**getProduct**](doc/MarketsApi.md#getproduct) | **GET** /v1/markets/{symbol}/products/{kind} | 产品详情
 [*MarketsApi*](doc/MarketsApi.md) | [**getProductStats**](doc/MarketsApi.md#getproductstats) | **GET** /v1/markets/{symbol}/products/{kind}/stats | 24h 行情统计
 [*MarketsApi*](doc/MarketsApi.md) | [**listBstocksSupportedTokens**](doc/MarketsApi.md#listbstockssupportedtokens) | **GET** /v1/markets/bstocks/supported | bStocks support-list metadata
@@ -227,10 +230,30 @@ Class | Method | HTTP request | Description
  - [BstockFundingTargetBalanceSnapshot](doc/BstockFundingTargetBalanceSnapshot.md)
  - [BstockFundingTargetCreditObservation](doc/BstockFundingTargetCreditObservation.md)
  - [BstockFundingTransferTarget](doc/BstockFundingTransferTarget.md)
+ - [BstockLimitOrderPreview](doc/BstockLimitOrderPreview.md)
+ - [BstockLocalnetOrderPreview](doc/BstockLocalnetOrderPreview.md)
  - [BstockOrderPreview](doc/BstockOrderPreview.md)
  - [BstockOrderPreviewRequest](doc/BstockOrderPreviewRequest.md)
  - [BstockOrderWalletActionState](doc/BstockOrderWalletActionState.md)
+ - [BstockTestnetOrderPreview](doc/BstockTestnetOrderPreview.md)
  - [BstocksActionStatus](doc/BstocksActionStatus.md)
+ - [BstocksBlockQuoteValidity](doc/BstocksBlockQuoteValidity.md)
+ - [BstocksCancellationPolicy](doc/BstocksCancellationPolicy.md)
+ - [BstocksConfirmationBinding](doc/BstocksConfirmationBinding.md)
+ - [BstocksDepthSampling](doc/BstocksDepthSampling.md)
+ - [BstocksDepthSideState](doc/BstocksDepthSideState.md)
+ - [BstocksDepthSides](doc/BstocksDepthSides.md)
+ - [BstocksDepthStatus](doc/BstocksDepthStatus.md)
+ - [BstocksFeeAsset](doc/BstocksFeeAsset.md)
+ - [BstocksPortfolioAvailability](doc/BstocksPortfolioAvailability.md)
+ - [BstocksPreviewEconomics](doc/BstocksPreviewEconomics.md)
+ - [BstocksPreviewEconomicsQuoteValidity](doc/BstocksPreviewEconomicsQuoteValidity.md)
+ - [BstocksPreviewFee](doc/BstocksPreviewFee.md)
+ - [BstocksPreviewFees](doc/BstocksPreviewFees.md)
+ - [BstocksPreviewRoute](doc/BstocksPreviewRoute.md)
+ - [BstocksPreviewRouteLeg](doc/BstocksPreviewRouteLeg.md)
+ - [BstocksReferenceQuotation](doc/BstocksReferenceQuotation.md)
+ - [BstocksRequoteValidity](doc/BstocksRequoteValidity.md)
  - [BstocksSupportedToken](doc/BstocksSupportedToken.md)
  - [BstocksSupportedTokenPage](doc/BstocksSupportedTokenPage.md)
  - [BstocksTimeInForce](doc/BstocksTimeInForce.md)
@@ -401,6 +424,11 @@ Class | Method | HTTP request | Description
  - [Hip3TradingContext](doc/Hip3TradingContext.md)
  - [Hip3TradingRules](doc/Hip3TradingRules.md)
  - [Hip3TriggerSpec](doc/Hip3TriggerSpec.md)
+ - [Hip3Withdrawal](doc/Hip3Withdrawal.md)
+ - [Hip3WithdrawalCreateRequest](doc/Hip3WithdrawalCreateRequest.md)
+ - [Hip3WithdrawalRail](doc/Hip3WithdrawalRail.md)
+ - [Hip3WithdrawalStatus](doc/Hip3WithdrawalStatus.md)
+ - [Hip3WithdrawalSubmissionRequest](doc/Hip3WithdrawalSubmissionRequest.md)
  - [HoldingGroup](doc/HoldingGroup.md)
  - [HoldingStock](doc/HoldingStock.md)
  - [HyperliquidSignature](doc/HyperliquidSignature.md)
@@ -437,6 +465,7 @@ Class | Method | HTTP request | Description
  - [NonCompletedFundingTransferState](doc/NonCompletedFundingTransferState.md)
  - [NotificationQueuedResponse](doc/NotificationQueuedResponse.md)
  - [Order](doc/Order.md)
+ - [OrderActionGasPayment](doc/OrderActionGasPayment.md)
  - [OrderBook](doc/OrderBook.md)
  - [OrderBookLevel](doc/OrderBookLevel.md)
  - [OrderEvmAction](doc/OrderEvmAction.md)
