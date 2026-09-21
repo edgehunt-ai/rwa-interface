@@ -133,7 +133,7 @@ void main() {
     );
   });
 
-  testWidgets('Assets derives allocation from available account balances', (
+  testWidgets('Assets renders allocation from asset allocation data', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -150,7 +150,7 @@ void main() {
 
     expect(find.text('Allocation unavailable'), findsNothing);
     expect(
-      find.text('Cash 100.0% · bStocks 0.0% · Perps 0.0%'),
+      find.text('Cash 100.0%'),
       findsOneWidget,
     );
   });

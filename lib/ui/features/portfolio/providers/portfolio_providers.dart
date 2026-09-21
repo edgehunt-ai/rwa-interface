@@ -8,6 +8,7 @@ import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/portfolio.dart';
 import '../../../../domain/models/portfolio_history.dart';
+import '../../../../domain/models/portfolio_allocation.dart';
 import '../../../../domain/repositories/portfolio_repository.dart';
 import '../../../../domain/models/trading_account.dart';
 
@@ -55,6 +56,68 @@ final portfolioSummaryProvider = FutureProvider.autoDispose<Portfolio>((ref) {
   ref.watch(sessionGenerationProvider);
   return ref.watch(portfolioRepositoryProvider).getSummary();
 });
+
+final portfolioRailAllocationProvider =
+    FutureProvider.autoDispose<PortfolioRailAllocation>((ref) {
+      _cachePortfolioList(ref);
+      ref.watch(sessionGenerationProvider);
+      final repository = ref.watch(portfolioRepositoryProvider);
+      if (repository is PortfolioAllocationRepository) {
+        return (repository as PortfolioAllocationRepository)
+            .getRailAllocation();
+      }
+      return repository.listAccounts().then(_legacyAllocation);
+    });
+
+PortfolioRailAllocation _legacyAllocation(List<TradingAccount> accounts) {
+  final labels = <TradingAccountKind, String>{
+    TradingAccountKind.app: 'Cash',
+    TradingAccountKind.bstocks: 'bStocks',
+    TradingAccountKind.hip3: 'Perps',
+  };
+  final values = <TradingAccountKind, double>{};
+  for (final account in accounts) {
+    final accountValue = account.totalValueUsd == null
+        ? account.balances.fold<double>(
+            0,
+            (sum, balance) =>
+                sum +
+                double.parse((balance.valueUsd ?? DecimalValue('0')).value),
+          )
+        : double.parse(account.totalValueUsd!.value);
+    values[account.kind] = (values[account.kind] ?? 0) + accountValue;
+  }
+  final total = values.values.fold<double>(0, (sum, value) => sum + value);
+  return PortfolioRailAllocation(
+    items: values.entries
+        .where((entry) => labels.containsKey(entry.key))
+        .map(
+          (entry) => PortfolioRailAllocationItem(
+            rail: entry.key == TradingAccountKind.app
+                ? 'cash'
+                : entry.key == TradingAccountKind.bstocks
+                ? 'bstock'
+                : 'perp',
+            valueUsd: DecimalValue(
+              entry.value.toStringAsFixed(2),
+              asset: 'USD',
+              unit: 'fiat',
+            ),
+            percent: DecimalValue(
+              total == 0 ? '0' : (entry.value / total * 100).toStringAsFixed(1),
+              unit: 'percent',
+            ),
+          ),
+        )
+        .toList(growable: false),
+    valuedTotalUsd: DecimalValue(
+      total.toStringAsFixed(2),
+      asset: 'USD',
+      unit: 'fiat',
+    ),
+    unvaluedAssetCount: 0,
+  );
+}
 
 final portfolioHistoryProvider = FutureProvider.autoDispose
     .family<PortfolioHistory?, PortfolioHistoryRange>((ref, range) {

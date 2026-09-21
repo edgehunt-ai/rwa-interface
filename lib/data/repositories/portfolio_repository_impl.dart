@@ -5,6 +5,7 @@ import '../../domain/models/domain_page.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/portfolio.dart';
 import '../../domain/models/portfolio_asset.dart';
+import '../../domain/models/portfolio_allocation.dart';
 import '../../domain/models/portfolio_history.dart' as domain;
 import '../../domain/models/position.dart';
 import '../../domain/models/trading_account.dart';
@@ -19,7 +20,8 @@ final class PortfolioRepositoryImpl
     implements
         PortfolioRepository,
         PortfolioHistoryRepository,
-        PortfolioAssetsRepository {
+        PortfolioAssetsRepository,
+        PortfolioAllocationRepository {
   PortfolioRepositoryImpl(this._service);
   final PortfolioService _service;
 
@@ -34,6 +36,28 @@ final class PortfolioRepositoryImpl
       marginInUseUsd: _optionalUsd(value.marginInUseUsd),
       stocksValueUsd: _optionalUsd(value.stocksValueUsd),
       updatedAt: value.calculatedAt.toUtc(),
+    );
+  }
+
+  @override
+  Future<PortfolioRailAllocation> getRailAllocation() async {
+    final value = await _service.getRailAllocation();
+    final asset = value.oneOf.value;
+    if (asset is! api.RailPortfolioAllocation) {
+      throw const FormatException('Expected rail portfolio allocation');
+    }
+    return PortfolioRailAllocation(
+      items: List.unmodifiable(
+        asset.items.map(
+          (item) => PortfolioRailAllocationItem(
+            rail: item.rail.name,
+            valueUsd: _usd(item.valueUsd),
+            percent: _optional(item.percent, 'percent')!,
+          ),
+        ),
+      ),
+      valuedTotalUsd: _usd(asset.valuedTotalUsd),
+      unvaluedAssetCount: asset.unvaluedAssetCount,
     );
   }
 

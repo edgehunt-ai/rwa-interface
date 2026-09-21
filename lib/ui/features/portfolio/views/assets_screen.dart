@@ -8,6 +8,7 @@ import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/domain/models/portfolio_history.dart';
+import 'package:rwa_interface/domain/models/portfolio_allocation.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
@@ -38,6 +39,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final authentication = ref.watch(authenticationProvider);
     if (authentication is AuthenticationInitializing) {
       return Scaffold(
@@ -69,9 +71,9 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
     }
     final portfolio = ref.watch(portfolioSummaryProvider);
     final accounts = ref.watch(tradingAccountsProvider);
+    final allocation = ref.watch(portfolioRailAllocationProvider);
     final holdings = ref.watch(holdingsProvider(null));
     final history = ref.watch(portfolioHistoryProvider(trendRange));
-    final l10n = AppLocalizations.of(context);
     return Scaffold(
       bottomNavigationBar: const AppBottomNavigation(
         current: AppDestination.assets,
@@ -107,6 +109,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                           await Future.wait([
                             ref.refresh(portfolioSummaryProvider.future),
                             ref.refresh(tradingAccountsProvider.future),
+                            ref.refresh(portfolioRailAllocationProvider.future),
                             ref.refresh(holdingsProvider(null).future),
                           ]);
                           ref.invalidate(activeHip3ActionsProvider);
@@ -162,7 +165,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                               ],
                             ),
                             _Allocation(
-                              accounts: accounts,
+                              allocation: allocation,
                               expanded: allocationExpanded,
                               onTap: () => setState(
                                 () => allocationExpanded = !allocationExpanded,
@@ -210,6 +213,13 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
   }
 }
 
+String _railLabel(String rail, AppLocalizations l10n) => switch (rail) {
+  'cash' => l10n.cash,
+  'bstock' => l10n.bstocks,
+  'perp' => l10n.perps,
+  _ => rail,
+};
+
 bool _isEmptyPortfolio(Portfolio portfolio) =>
     portfolio.totalValueUsd.compareTo(
       DecimalValue('0', asset: 'USD', unit: 'fiat'),
@@ -221,8 +231,8 @@ class _EmptyAssets extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       children: [
@@ -421,20 +431,16 @@ class _PortfolioSummary extends StatelessWidget {
 
 class _Allocation extends StatelessWidget {
   const _Allocation({
-    required this.accounts,
+    required this.allocation,
     required this.expanded,
     required this.onTap,
   });
-  final AsyncValue<List<TradingAccount>> accounts;
+  final AsyncValue<PortfolioRailAllocation> allocation;
   final bool expanded;
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    if (accounts.hasValue &&
-        _PortfolioAllocation.fromAccounts(accounts.value!) == null) {
-      return const SizedBox.shrink();
-    }
     return Semantics(
       button: true,
       label: expanded
@@ -463,7 +469,7 @@ class _Allocation extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              accounts.when(
+              allocation.when(
                 loading: () => const SkeletonBlock(
                   width: double.infinity,
                   height: 6,
@@ -473,19 +479,7 @@ class _Allocation extends StatelessWidget {
                   AppLocalizations.of(context).allocationUnavailable,
                   style: TextStyle(fontSize: 12, color: colors.secondaryText),
                 ),
-                data: (accounts) {
-                  final allocation = _PortfolioAllocation.fromAccounts(
-                    accounts,
-                  );
-                  if (allocation == null) {
-                    return Text(
-                      AppLocalizations.of(context).allocationUnavailable,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colors.secondaryText,
-                      ),
-                    );
-                  }
+                data: (allocation) {
                   return _AllocationValues(
                     allocation: allocation,
                     colors: colors,
@@ -508,7 +502,7 @@ class _AllocationValues extends StatelessWidget {
     required this.expanded,
   });
 
-  final _PortfolioAllocation allocation;
+  final PortfolioRailAllocation allocation;
   final AppRwaColors colors;
   final bool expanded;
 
@@ -521,21 +515,16 @@ class _AllocationValues extends StatelessWidget {
         Row(
           children: [
             for (final entry
-                in allocation.entries
-                    .where((entry) => entry.basisPoints > 0)
+                in allocation.items
+                    .where((entry) => double.parse(entry.percent.value) > 0)
                     .indexed) ...[
               if (entry.$1 > 0) const SizedBox(width: 4),
               Expanded(
-                flex: entry.$2.basisPoints,
+                flex: (double.parse(entry.$2.percent.value) * 100).round(),
                 child: Container(
                   height: 6,
                   decoration: BoxDecoration(
-                    color: switch (entry.$2.kind) {
-                      TradingAccountKind.app => colors.primaryAction,
-                      TradingAccountKind.bstocks => colors.secondaryText,
-                      TradingAccountKind.hip3 => colors.selected,
-                      TradingAccountKind.unknown => colors.border,
-                    },
+                    color: colors.selected,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -545,133 +534,26 @@ class _AllocationValues extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          allocation.entries
-              .map((entry) => '${entry.label(l10n)} ${entry.percentLabel}')
+          allocation.items
+              .map(
+                (entry) =>
+                    '${_railLabel(entry.rail, l10n)} ${entry.percent.value}%',
+              )
               .join(' · '),
           style: TextStyle(fontSize: 12, color: colors.secondaryText),
         ),
         if (expanded) ...[
           const SizedBox(height: 8),
-          for (final entry in allocation.entries)
+          for (final entry in allocation.items)
             _ValueRow(
-              label: '${entry.label(l10n)} · ${entry.percentLabel}',
-              value: TokenAmountFormatter.formatUsd(entry.value),
+              label:
+                  '${_railLabel(entry.rail, l10n)} · ${entry.percent.value}%',
+              value: TokenAmountFormatter.formatUsd(entry.valueUsd),
             ),
         ],
       ],
     );
   }
-}
-
-class _PortfolioAllocation {
-  const _PortfolioAllocation(this.entries);
-
-  final List<_AllocationEntry> entries;
-
-  static _PortfolioAllocation? fromAccounts(List<TradingAccount> accounts) {
-    const kinds = [
-      TradingAccountKind.app,
-      TradingAccountKind.bstocks,
-      TradingAccountKind.hip3,
-    ];
-    if (accounts.isEmpty) return null;
-
-    final values = <TradingAccountKind, DecimalValue>{
-      for (final kind in kinds)
-        kind: DecimalValue('0', asset: 'USD', unit: 'fiat'),
-    };
-    for (final account in accounts) {
-      if (kinds.contains(account.kind)) {
-        final accountValue =
-            account.totalValueUsd ??
-            _sumUsdValues(account.balances.map((balance) => balance.valueUsd));
-        values[account.kind] = _sumUsdValues([
-          values[account.kind],
-          accountValue,
-        ]);
-      }
-    }
-
-    final total = values.values.fold<double>(
-      0,
-      (sum, value) => sum + double.parse(value.value),
-    );
-    if (total <= 0) return null;
-
-    return _PortfolioAllocation([
-      _AllocationEntry(
-        kind: TradingAccountKind.app,
-        value: values[TradingAccountKind.app]!,
-        percent:
-            double.parse(values[TradingAccountKind.app]!.value) / total * 100,
-      ),
-      _AllocationEntry(
-        kind: TradingAccountKind.bstocks,
-        value: values[TradingAccountKind.bstocks]!,
-        percent:
-            double.parse(values[TradingAccountKind.bstocks]!.value) /
-            total *
-            100,
-      ),
-      _AllocationEntry(
-        kind: TradingAccountKind.hip3,
-        value: values[TradingAccountKind.hip3]!,
-        percent:
-            double.parse(values[TradingAccountKind.hip3]!.value) / total * 100,
-      ),
-    ]);
-  }
-}
-
-DecimalValue _sumUsdValues(Iterable<DecimalValue?> values) {
-  final amounts = values.whereType<DecimalValue>().toList(growable: false);
-  if (amounts.isEmpty) {
-    return DecimalValue('0', asset: 'USD', unit: 'fiat');
-  }
-  final scale = amounts.fold<int>(
-    0,
-    (current, amount) => current > amount.scale ? current : amount.scale,
-  );
-  var sum = BigInt.zero;
-  for (final amount in amounts) {
-    final negative = amount.value.startsWith('-');
-    final unsigned = negative ? amount.value.substring(1) : amount.value;
-    final parts = unsigned.split('.');
-    final digits = '${parts.first}${parts.length == 1 ? '' : parts.last}'
-        .padRight(parts.first.length + scale, '0');
-    final parsed = BigInt.parse(digits);
-    sum += negative ? -parsed : parsed;
-  }
-  final negative = sum.isNegative;
-  final digits = sum.abs().toString().padLeft(scale + 1, '0');
-  final value = scale == 0
-      ? '${negative ? '-' : ''}$digits'
-      : '${negative ? '-' : ''}'
-            '${digits.substring(0, digits.length - scale)}.'
-            '${digits.substring(digits.length - scale)}';
-  return DecimalValue(value, asset: 'USD', unit: 'fiat');
-}
-
-class _AllocationEntry {
-  const _AllocationEntry({
-    required this.kind,
-    required this.value,
-    required this.percent,
-  });
-
-  final TradingAccountKind kind;
-  final DecimalValue value;
-  final double percent;
-
-  int get basisPoints => (percent * 100).round();
-  String get percentLabel => '${percent.toStringAsFixed(1)}%';
-
-  String label(AppLocalizations l10n) => switch (kind) {
-    TradingAccountKind.app => l10n.cash,
-    TradingAccountKind.bstocks => l10n.bstocks,
-    TradingAccountKind.hip3 => l10n.perps,
-    TradingAccountKind.unknown => l10n.allocationUnavailable,
-  };
 }
 
 class _TrendExpanded extends StatelessWidget {

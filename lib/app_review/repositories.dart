@@ -18,6 +18,7 @@ import '../domain/models/order_intent.dart';
 import '../domain/models/order_preview.dart';
 import '../domain/models/portfolio.dart';
 import '../domain/models/portfolio_history.dart';
+import '../domain/models/portfolio_allocation.dart';
 import '../domain/models/position.dart';
 import '../domain/models/registered_device.dart';
 import '../domain/models/realtime_replay_page.dart';
@@ -236,7 +237,10 @@ final class AppReviewAccountRepository implements AccountRepository {
 }
 
 final class AppReviewPortfolioRepository
-    implements PortfolioRepository, PortfolioHistoryRepository {
+    implements
+        PortfolioRepository,
+        PortfolioHistoryRepository,
+        PortfolioAllocationRepository {
   static final positions = <Position>[
     Position(
       positionId: 'review-position-nvda',
@@ -355,6 +359,30 @@ final class AppReviewPortfolioRepository
     accounts: accounts,
     holdings: _holdings,
   );
+
+  @override
+  Future<PortfolioRailAllocation> getRailAllocation() async =>
+      PortfolioRailAllocation(
+        items: [
+          PortfolioRailAllocationItem(
+            rail: 'cash',
+            valueUsd: _usd('4375.00'),
+            percent: DecimalValue('14.1129', unit: 'percent'),
+          ),
+          PortfolioRailAllocationItem(
+            rail: 'bstock',
+            valueUsd: _usd('20625.00'),
+            percent: DecimalValue('66.5323', unit: 'percent'),
+          ),
+          PortfolioRailAllocationItem(
+            rail: 'perp',
+            valueUsd: _usd('6000.00'),
+            percent: DecimalValue('19.3548', unit: 'percent'),
+          ),
+        ],
+        valuedTotalUsd: _usd('31000.00'),
+        unvaluedAssetCount: 0,
+      );
 
   @override
   Future<PortfolioHistory> getHistory(PortfolioHistoryRange range) async {
