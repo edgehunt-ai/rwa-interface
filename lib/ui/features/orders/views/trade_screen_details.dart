@@ -1018,7 +1018,7 @@ class _DetailsCard extends ConsumerWidget {
     );
     final snapshot = snapshotState.value;
     final loading = snapshotState.isLoading;
-    final referencePrice = snapshot?.referencePrice ?? snapshot?.price;
+    final referencePrice = snapshot?.referencePrice;
     final reference = referencePrice == null
         ? '—'
         : TokenAmountFormatter.formatUsd(referencePrice);
@@ -1038,13 +1038,13 @@ class _DetailsCard extends ConsumerWidget {
               Text(l10n.price, style: _sectionStyle),
               const SizedBox(height: 12),
               _MarketDetailRow(
-                snapshot?.referenceLabel ?? l10n.price,
+                l10n.tradeUsStockReference,
                 reference,
                 loading: loading,
                 skeletonKey: const Key('trade-details-price-skeleton'),
               ),
               _MarketDetailRow(
-                snapshot?.relativeLabel ?? l10n.tradeBasis,
+                l10n.tradeBasis,
                 snapshot?.basisPercent == null
                     ? '—'
                     : TokenAmountFormatter.formatPercent(
@@ -1305,9 +1305,7 @@ class MarketHoursSheet extends ConsumerWidget {
                           for (final segment in todaySegments)
                             _MarketSession(
                               asset: marketSessionAsset(segment.kind),
-                              title:
-                                  segment.label ??
-                                  marketSessionLabel(l10n, segment.kind),
+                              title: marketSessionLabel(l10n, segment.kind),
                               schedule: _sessionSchedule(segment),
                               liquidity: _sessionLiquidity(segment.kind, l10n),
                               activeBars: _sessionBars(segment.kind),

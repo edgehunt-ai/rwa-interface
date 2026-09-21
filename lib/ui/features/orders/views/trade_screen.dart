@@ -1139,11 +1139,10 @@ class _SessionBand extends StatelessWidget {
                     builder: (context, constraints) => constraints.maxWidth < 68
                         ? const SizedBox.shrink()
                         : Text(
-                            segment.label ??
-                                marketSessionLabel(
-                                  AppLocalizations.of(context),
-                                  segment.kind,
-                                ),
+                            marketSessionLabel(
+                              AppLocalizations.of(context),
+                              segment.kind,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.clip,
                             style: TextStyle(

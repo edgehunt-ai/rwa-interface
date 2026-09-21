@@ -658,8 +658,8 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
     final isOrder = record.category == ActivityCategory.orders;
     final isFunding = record.category == ActivityCategory.funding;
     final type = isOrder
-        ? _orderTypeLabel(record)
-        : _activityTypeLabel(record.type);
+        ? _orderTypeLabel(record, AppLocalizations.of(context))
+        : _activityTypeLabel(record.type, AppLocalizations.of(context));
     final networks = _networks(record);
     final title = isOrder ? _orderTitle(record) : record.title;
     return InkWell(
@@ -696,12 +696,18 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                             const SizedBox(width: 4),
                             if (isFunding) ...[
                               _TypeBadge(
-                                label: _fundingSide(record),
+                                label: _fundingSide(
+                                  record,
+                                  AppLocalizations.of(context),
+                                ),
                                 order: true,
                               ),
                               const SizedBox(width: 4),
                               _TypeBadge(
-                                label: _fundingDirection(record),
+                                label: _fundingDirection(
+                                  record,
+                                  AppLocalizations.of(context),
+                                ),
                                 order: true,
                                 positive: true,
                               ),
@@ -1040,20 +1046,21 @@ class _CompactCopyValue extends StatelessWidget {
   }
 }
 
-String _activityTypeLabel(String type) => switch (type) {
-  'deposit' => 'Deposit',
-  'transfer' => 'Transfer',
-  'bridge' => 'Transfer',
-  _ => type.isEmpty ? 'Activity' : type[0].toUpperCase() + type.substring(1),
+String _activityTypeLabel(String type, AppLocalizations l10n) => switch (type) {
+  'deposit' => l10n.deposit,
+  'transfer' || 'bridge' => l10n.transfer,
+  _ => type.isEmpty ? l10n.activity : type[0].toUpperCase() + type.substring(1),
 };
 
-String _orderTypeLabel(ActivityRecord record) {
+String _orderTypeLabel(ActivityRecord record, AppLocalizations l10n) {
   final value = record.type.toLowerCase();
-  if (value == 'tpsl' || value == 'take_profit') return 'TP';
-  if (value == 'close' || value == 'stop_loss') return 'SL';
+  if (value == 'tpsl' || value == 'take_profit') return l10n.takeProfit;
+  if (value == 'close' || value == 'stop_loss') return l10n.stopLoss;
   final title = record.title.toLowerCase();
-  if (title.contains('sell') || title.contains('short')) return 'Sell / Limit';
-  return 'Buy / Limit';
+  if (title.contains('sell') || title.contains('short')) {
+    return '${l10n.sell} / ${l10n.limitPrice}';
+  }
+  return '${l10n.buy} / ${l10n.limitPrice}';
 }
 
 String _orderTitle(ActivityRecord record) {
@@ -1064,14 +1071,18 @@ String _orderTitle(ActivityRecord record) {
   return '$symbol/${quote == null || quote.isEmpty ? 'USDT' : quote}';
 }
 
-String _fundingSide(ActivityRecord record) {
+String _fundingSide(ActivityRecord record, AppLocalizations l10n) {
   final value = '${record.title} ${record.context ?? ''}'.toLowerCase();
-  return value.contains('short') || value.contains('sell') ? 'Short' : 'Long';
+  return value.contains('short') || value.contains('sell')
+      ? l10n.short
+      : l10n.long;
 }
 
-String _fundingDirection(ActivityRecord record) {
+String _fundingDirection(ActivityRecord record, AppLocalizations l10n) {
   final value = '${record.title} ${record.context ?? ''}'.toLowerCase();
-  return value.contains('pay') || value.contains('fee') ? 'Pay' : 'Receive';
+  return value.contains('pay') || value.contains('fee')
+      ? l10n.pay
+      : l10n.receive;
 }
 
 List<String> _networks(ActivityRecord record) {

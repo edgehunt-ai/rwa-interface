@@ -764,6 +764,24 @@ abstract class AppLocalizations {
   /// **'Cash balances'**
   String get cashBalances;
 
+  /// No description provided for @activity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activity;
+
+  /// No description provided for @pay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay'**
+  String get pay;
+
+  /// No description provided for @receive.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive'**
+  String get receive;
+
   /// No description provided for @buy.
   ///
   /// In en, this message translates to:

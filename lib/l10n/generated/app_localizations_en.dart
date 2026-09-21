@@ -353,6 +353,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cashBalances => 'Cash balances';
 
   @override
+  String get activity => 'Activity';
+
+  @override
+  String get pay => 'Pay';
+
+  @override
+  String get receive => 'Receive';
+
+  @override
   String get buy => 'Buy';
 
   @override

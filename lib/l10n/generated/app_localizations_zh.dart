@@ -347,6 +347,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cashBalances => '现金余额';
 
   @override
+  String get activity => '活动';
+
+  @override
+  String get pay => '支付';
+
+  @override
+  String get receive => '收取';
+
+  @override
   String get buy => '买入';
 
   @override

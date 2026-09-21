@@ -139,12 +139,9 @@ class MarketSessionBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final value = hours;
     final segment = value == null ? null : currentMarketSegment(value);
-    final label =
-        segment?.label ??
-        value?.currentLabel ??
-        (value == null
-            ? l10n.usMarket
-            : marketSessionLabel(l10n, value.current));
+    final label = value == null
+        ? l10n.usMarket
+        : marketSessionLabel(l10n, segment?.kind ?? value.current);
     final style = TextStyle(
       fontSize: 11,
       height: 16 / 11,
