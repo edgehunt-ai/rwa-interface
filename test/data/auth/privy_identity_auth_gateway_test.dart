@@ -365,6 +365,42 @@ void main() {
       expect(signed, isFalse);
     });
 
+    test('preserves provider error when authorization signing fails', () async {
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(
+          authState: Authenticated(
+            _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet()]),
+          ),
+        ),
+        signAuthorization: (_, _) async => const Failure(
+          PrivyException(
+            'GENERATE_AUTHORIZATION_SIGNATURE_ERROR: EIP-7702 unsupported',
+          ),
+        ),
+      );
+      await gateway.initialize(configuration);
+
+      await expectLater(
+        gateway.signWalletAuthorization(
+          expectedSigner: wallet().address,
+          request: request(),
+        ),
+        throwsA(
+          isA<WalletAuthorizationFailure>()
+              .having(
+                (failure) => failure.code,
+                'code',
+                WalletAuthorizationFailureCode.rejected,
+              )
+              .having(
+                (failure) => failure.reason,
+                'reason',
+                contains('EIP-7702 unsupported'),
+              ),
+        ),
+      );
+    });
+
     test('refuses a request aimed anywhere but the Privy wallet API', () async {
       var signed = false;
       final gateway = PrivyIdentityAuthGateway(

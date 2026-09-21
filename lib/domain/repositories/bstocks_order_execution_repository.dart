@@ -6,5 +6,6 @@ abstract interface class BstocksOrderExecutionRepository {
   Future<ResourceResult<TradingOrder>> execute({
     required OrderIntent intent,
     required ResourceResult<TradingOrder> created,
+    bool Function()? isCancelled,
   });
 }

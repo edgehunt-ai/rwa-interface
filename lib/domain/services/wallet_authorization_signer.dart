@@ -23,10 +23,17 @@ enum WalletAuthorizationFailureCode {
 }
 
 final class WalletAuthorizationFailure implements Exception {
-  const WalletAuthorizationFailure(this.code, {this.retryable = false});
+  const WalletAuthorizationFailure(
+    this.code, {
+    this.retryable = false,
+    this.reason,
+  });
 
   final WalletAuthorizationFailureCode code;
   final bool retryable;
+
+  /// Provider/SDK detail safe to show when authorization cannot be created.
+  final String? reason;
 }
 
 /// Signs the server-issued Privy wallet-API request so the backend can relay it

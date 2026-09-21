@@ -354,16 +354,26 @@ final class PrivyIdentityAuthGateway
       );
       return switch (result) {
         Success<String>(:final value) when value.isNotEmpty => value,
+        Failure<String>(:final error) => throw WalletAuthorizationFailure(
+          WalletAuthorizationFailureCode.rejected,
+          reason: error.toString(),
+        ),
         _ => throw const WalletAuthorizationFailure(
           WalletAuthorizationFailureCode.rejected,
         ),
       };
     } on WalletAuthorizationFailure {
       rethrow;
-    } catch (_) {
-      throw const WalletAuthorizationFailure(
+    } catch (error, stackTrace) {
+      final reason = error.toString().trim();
+      _reportDiagnostic(
+        operation: 'generate_authorization_signature',
+        message: '$reason\n$stackTrace',
+      );
+      throw WalletAuthorizationFailure(
         WalletAuthorizationFailureCode.walletUnavailable,
         retryable: true,
+        reason: reason.isEmpty ? null : reason,
       );
     }
   }

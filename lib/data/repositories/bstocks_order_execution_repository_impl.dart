@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../domain/auth/authentication.dart';
 import '../../domain/models/api_failure.dart';
 import '../../domain/models/order.dart';
@@ -31,11 +33,15 @@ final class BstocksOrderExecutionRepositoryImpl
   Future<ResourceResult<TradingOrder>> execute({
     required OrderIntent intent,
     required ResourceResult<TradingOrder> created,
+    bool Function()? isCancelled,
   }) async {
     var current = created;
     var awaitingApprovalConfirmation = false;
     final submittedSteps = <String>{};
     for (var attempt = 0; attempt < 60; attempt++) {
+      if (isCancelled?.call() ?? false) {
+        throw const CancelledFailure();
+      }
       final order = current.resource;
       if (order.isTerminal) return current;
       final action = order.nextAction;
@@ -80,7 +86,10 @@ final class BstocksOrderExecutionRepositoryImpl
         }
       }
 
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(seconds: 1));
+      if (isCancelled?.call() ?? false) {
+        throw const CancelledFailure();
+      }
       final refreshed = await _orders.get(order.orderId);
       final approvalConfirmed =
           awaitingApprovalConfirmation &&
@@ -101,7 +110,10 @@ final class BstocksOrderExecutionRepositoryImpl
         current = refreshed;
       }
     }
-    return current;
+    throw const UnknownFailure(
+      retryable: true,
+      userAction: 'bStocks order confirmation timed out after 60 attempts',
+    );
   }
 
   Future<void> _sendSponsored(
@@ -129,20 +141,65 @@ final class BstocksOrderExecutionRepositoryImpl
       );
     }
     try {
-      final signature = await signer.signWalletAuthorization(
-        expectedSigner: action.from,
-        request: authorization,
-      );
-      await executions.submitAuthorization(
-        executionId: execution.executionId,
-        signature: signature,
-        idempotencyKey: 'bstocks-sponsored-submit-${execution.executionId}',
+      final signature = await signer
+          .signWalletAuthorization(
+            expectedSigner: action.from,
+            request: authorization,
+          )
+          .timeout(const Duration(seconds: 55));
+      final submitted = await executions
+          .submitAuthorization(
+            executionId: execution.executionId,
+            signature: signature,
+            idempotencyKey: 'bstocks-sponsored-submit-${execution.executionId}',
+          )
+          .timeout(const Duration(seconds: 20));
+      switch (submitted.status) {
+        case WalletActionExecutionState.providerSubmitted ||
+            WalletActionExecutionState.submitting ||
+            WalletActionExecutionState.chainConfirmed ||
+            WalletActionExecutionState.completed:
+          return;
+        case WalletActionExecutionState.ambiguous ||
+            WalletActionExecutionState.failed ||
+            WalletActionExecutionState.manualReview:
+          throw UnknownFailure(
+            retryable: submitted.status == WalletActionExecutionState.ambiguous,
+            userAction: [
+              'bStocks sponsored execution ${submitted.status.name}',
+              if (submitted.failureReason case final reason?
+                  when reason.trim().isNotEmpty)
+                reason,
+              'provider=${submitted.gasPayment.decision.name}',
+            ].join(' - '),
+          );
+        case WalletActionExecutionState.awaitingUserAuthorization:
+          throw const UnknownFailure(
+            retryable: true,
+            userAction: 'bStocks authorization was accepted but execution is still awaiting signature',
+          );
+        case WalletActionExecutionState.userGasConfirmationRequired ||
+            WalletActionExecutionState.unknown:
+          throw UnknownFailure(
+            retryable: true,
+            userAction:
+                'bStocks sponsored execution returned ${submitted.status.name}',
+          );
+      }
+    } on TimeoutException catch (error) {
+      throw UnknownFailure(
+        retryable: true,
+        userAction:
+            'bStocks sponsored authorization timed out: ${error.message ?? 'Privy did not return a signature'}',
       );
     } on WalletAuthorizationFailure catch (failure) {
       throw UnknownFailure(
         retryable: failure.retryable,
-        userAction:
-            'bStocks sponsored authorization failed: ${failure.code.name}',
+        userAction: [
+          'bStocks sponsored authorization failed: ${failure.code.name}',
+          if (failure.reason case final reason? when reason.trim().isNotEmpty)
+            reason,
+        ].join(' - '),
       );
     }
   }

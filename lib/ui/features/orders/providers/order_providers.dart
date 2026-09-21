@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'dart:math';
@@ -158,6 +159,7 @@ final class OrderCommandNotifier
   String? _fingerprint;
   String? _idempotencyKey;
   Future<ResourceResult<TradingOrder>>? _inFlight;
+  var _submissionGeneration = 0;
 
   @override
   CommandState<OrderIntent, ResourceResult<TradingOrder>> build() {
@@ -165,6 +167,7 @@ final class OrderCommandNotifier
     _fingerprint = null;
     _idempotencyKey = null;
     _inFlight = null;
+    _submissionGeneration = 0;
     return const CommandIdle();
   }
 
@@ -174,21 +177,34 @@ final class OrderCommandNotifier
   }) async {
     const operation = 'create_order';
     final generation = ref.read(sessionGenerationProvider);
-    bool isCurrent() =>
-        ref.mounted && ref.read(sessionGenerationProvider) == generation;
     if (_inFlight case final active?) {
       try {
         final result = await active;
-        return isCurrent() ? result : null;
+        return ref.mounted && ref.read(sessionGenerationProvider) == generation
+            ? result
+            : null;
       } on ApiFailure {
+        return null;
+      } catch (_) {
+        // The owner of the in-flight request records the concrete failure.
+        // Concurrent callers should not leak an SDK/plugin exception.
         return null;
       }
     }
+    final submissionGeneration = ++_submissionGeneration;
+    bool isCurrent() =>
+        ref.mounted &&
+        ref.read(sessionGenerationProvider) == generation &&
+        _submissionGeneration == submissionGeneration;
     if (_fingerprint != intent.fingerprint) {
       _fingerprint = intent.fingerprint;
       _idempotencyKey = 'order-${DateTime.now().microsecondsSinceEpoch}';
     }
     final key = _idempotencyKey!;
+    debugPrint(
+      'bStocks/order submit: creating order '
+      'preview=$previewId key=$key kind=${intent.kind.name}',
+    );
     state = CommandSubmitting<OrderIntent, ResourceResult<TradingOrder>>(
       intent,
       key,
@@ -197,6 +213,7 @@ final class OrderCommandNotifier
       intent,
       idempotencyKey: key,
       previewId: previewId,
+      submissionGeneration: submissionGeneration,
     );
     _inFlight = request;
     ref
@@ -218,6 +235,9 @@ final class OrderCommandNotifier
           .read(observabilityReporterProvider)
           .recordOperation(operation, outcome: 'succeeded');
       return result;
+    } on CancelledFailure {
+      if (isCurrent()) state = const CommandIdle();
+      return null;
     } on ApiFailure catch (failure, stackTrace) {
       ref
           .read(observabilityReporterProvider)
@@ -246,6 +266,31 @@ final class OrderCommandNotifier
         failure: failure,
       );
       return null;
+    } catch (error, stackTrace) {
+      // SDK/plugin exceptions are not always ApiFailure instances. Convert
+      // them here so the order sheet can show the provider's actual reason.
+      final message = error.toString().trim();
+      final failure = UnknownFailure(
+        retryable: true,
+        userAction: message.isEmpty ? '订单提交失败' : '订单提交失败: $message',
+      );
+      ref
+          .read(observabilityReporterProvider)
+          .recordOperation(operation, outcome: 'failed');
+      ref
+          .read(observabilityReporterProvider)
+          .recordApiFailure(
+            operation: operation,
+            failure: failure,
+            stackTrace: stackTrace,
+          );
+      if (!isCurrent()) return null;
+      state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
+        intent: intent,
+        idempotencyKey: key,
+        failure: failure,
+      );
+      return null;
     } finally {
       if (isCurrent() && identical(_inFlight, request)) _inFlight = null;
     }
@@ -255,10 +300,18 @@ final class OrderCommandNotifier
     OrderIntent intent, {
     required String idempotencyKey,
     String? previewId,
+    required int submissionGeneration,
   }) async {
     final created = await ref
         .read(ordersRepositoryProvider)
         .create(intent, idempotencyKey: idempotencyKey, previewId: previewId);
+    debugPrint(
+      'bStocks/order submit: order created '
+      'order=${created.resource.orderId} '
+      'status=${created.resource.status.name} '
+      'action=${created.resource.actionStatus?.name} '
+      'nextAction=${created.resource.nextAction?.kind.name}',
+    );
     // The API may create the order before releasing its first frozen wallet
     // action. In that state `next_action` is temporarily null and the Web
     // client keeps polling. Only skip the executor for terminal/review orders
@@ -277,7 +330,19 @@ final class OrderCommandNotifier
     }
     return ref
         .read(bstocksOrderExecutionRepositoryProvider)
-        .execute(intent: intent, created: created);
+        .execute(
+          intent: intent,
+          created: created,
+          isCancelled: () => _submissionGeneration != submissionGeneration,
+        );
+  }
+
+  /// Stops client-side bStocks polling when the order sheet is dismissed.
+  /// This does not cancel a transaction already accepted by the server.
+  void cancelSubmission() {
+    _submissionGeneration++;
+    _inFlight = null;
+    if (ref.mounted) state = const CommandIdle();
   }
 
   Future<void> cancel(TradingOrder order) async {

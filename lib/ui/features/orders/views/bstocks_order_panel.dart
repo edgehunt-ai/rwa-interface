@@ -204,6 +204,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   @override
   void dispose() {
+    ref.read(orderCommandProvider.notifier).cancelSubmission();
     _quoteDebounce?.cancel();
     _previewPollingTimer?.cancel();
     amount.removeListener(_refreshAmount);
@@ -451,6 +452,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   Future<void> _submit() async {
     final current = preview;
     if (current == null) return;
+    debugPrint(
+      'bStocks submit: started preview=${current.previewId} '
+      'intent=${current.intent.fingerprint}',
+    );
     _stopPreviewPolling();
     setState(() {
       error = null;
@@ -459,6 +464,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final result = await ref
         .read(orderCommandProvider.notifier)
         .submit(current.intent, previewId: current.previewId);
+    debugPrint(
+      'bStocks submit: completed preview=${current.previewId} '
+      'success=${result != null}',
+    );
     if (!mounted) return;
     setState(() {
       reviewing = false;
@@ -851,7 +860,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ],
         if (error case final message?) ...[
           const SizedBox(height: 8),
-          _OrderFailureNotice(message: message),
+          _OrderFailureNotice(
+            message: message,
+            onRetry: _canRetryInline(message) ? _submit : null,
+          ),
         ],
         const SizedBox(height: 20),
         Row(
@@ -888,6 +900,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       ],
     );
   }
+
+  bool _canRetryInline(String message) =>
+      !message.toLowerCase().contains('timeout') &&
+      !message.contains('timed out') &&
+      !message.contains('超时');
 
   Widget _submitted(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -1642,9 +1659,10 @@ class _BstocksConfirmationAssetMark extends StatelessWidget {
 }
 
 class _OrderFailureNotice extends StatelessWidget {
-  const _OrderFailureNotice({required this.message});
+  const _OrderFailureNotice({required this.message, this.onRetry});
 
   final String message;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -1673,6 +1691,14 @@ class _OrderFailureNotice extends StatelessWidget {
             Expanded(
               child: Text(message, style: TextStyle(color: colors.primaryText)),
             ),
+            if (onRetry != null) ...[
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('重试'),
+              ),
+            ],
           ],
         ),
       ),
