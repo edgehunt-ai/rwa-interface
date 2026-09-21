@@ -12,8 +12,18 @@ abstract final class TokenAmountFormatter {
     );
   }
 
-  static String formatUsd(DecimalValue amount) =>
-      '\$${_groupIntegerDigits(_trimInsignificantZeros(amount.value))}';
+  /// Formats USD values with at most two fractional digits, while preserving
+  /// sub-dollar precision so small balances do not collapse to `$0`.
+  static String formatUsd(DecimalValue amount) {
+    final absoluteValue = amount.value.startsWith('-')
+        ? amount.value.substring(1)
+        : amount.value;
+    final integerPart = absoluteValue.split('.').first;
+    final formatted = integerPart == '0'
+        ? _trimInsignificantZeros(amount.value)
+        : _trimInsignificantZeros(_roundToFractionDigits(amount.value, 2));
+    return '\$${_groupIntegerDigits(formatted)}';
+  }
 
   /// Formats large values with a compact uppercase suffix while preserving
   /// decimal precision without converting through binary floating point.
@@ -50,12 +60,14 @@ abstract final class TokenAmountFormatter {
     DecimalValue amount, {
     bool signed = true,
     int maxFractionDigits = 2,
+    bool trimInsignificantZeros = true,
   }) {
     _validateDecimals(maxFractionDigits);
+    final rounded = _roundToFractionDigits(amount.value, maxFractionDigits);
     final normalized = _groupIntegerDigits(
-      _trimInsignificantZeros(
-        _roundToFractionDigits(amount.value, maxFractionDigits),
-      ),
+      trimInsignificantZeros
+          ? _trimInsignificantZeros(rounded)
+          : _padFractionDigits(rounded, maxFractionDigits),
     );
     if (!signed || normalized.startsWith('-') || normalized == '0') {
       return '$normalized%';
@@ -192,6 +204,16 @@ abstract final class TokenAmountFormatter {
     return withoutZeros.endsWith('.')
         ? withoutZeros.substring(0, withoutZeros.length - 1)
         : withoutZeros;
+  }
+
+  static String _padFractionDigits(String value, int fractionDigits) {
+    if (fractionDigits == 0) return value;
+    final separator = value.indexOf('.');
+    if (separator == -1) return '$value.${'0' * fractionDigits}';
+    final fraction = value.substring(separator + 1);
+    return fraction.length >= fractionDigits
+        ? value
+        : '$value${'0' * (fractionDigits - fraction.length)}';
   }
 
   static String _roundToFractionDigits(String value, int maxFractionDigits) {

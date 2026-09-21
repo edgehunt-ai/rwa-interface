@@ -149,10 +149,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Allocation unavailable'), findsNothing);
-    expect(
-      find.text('Cash 100.0%'),
-      findsOneWidget,
-    );
+    expect(find.text('Cash 100%'), findsOneWidget);
   });
 
   testWidgets('Assets bStocks rows match the holding design content', (

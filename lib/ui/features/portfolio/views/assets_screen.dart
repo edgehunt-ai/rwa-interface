@@ -537,7 +537,8 @@ class _AllocationValues extends StatelessWidget {
           allocation.items
               .map(
                 (entry) =>
-                    '${_railLabel(entry.rail, l10n)} ${entry.percent.value}%',
+                    '${_railLabel(entry.rail, l10n)} '
+                    '${TokenAmountFormatter.formatPercent(entry.percent, signed: false, maxFractionDigits: 1)}',
               )
               .join(' · '),
           style: TextStyle(fontSize: 12, color: colors.secondaryText),
@@ -547,7 +548,8 @@ class _AllocationValues extends StatelessWidget {
           for (final entry in allocation.items)
             _ValueRow(
               label:
-                  '${_railLabel(entry.rail, l10n)} · ${entry.percent.value}%',
+                  '${_railLabel(entry.rail, l10n)} · '
+                  '${TokenAmountFormatter.formatPercent(entry.percent, signed: false, maxFractionDigits: 1)}',
               value: TokenAmountFormatter.formatUsd(entry.valueUsd),
             ),
         ],

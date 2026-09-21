@@ -47,6 +47,18 @@ void main() {
           r'$12,580.42',
         );
         expect(
+          TokenAmountFormatter.formatUsd(DecimalValue('281.622076628')),
+          r'$281.62',
+        );
+        expect(
+          TokenAmountFormatter.formatUsd(DecimalValue('0.839996378700433967')),
+          r'$0.839996378700433967',
+        );
+        expect(
+          TokenAmountFormatter.formatUsd(DecimalValue('-0.0049')),
+          r'$-0.0049',
+        );
+        expect(
           TokenAmountFormatter.formatPercent(DecimalValue('2.01')),
           '+2.01%',
         );
@@ -63,6 +75,28 @@ void main() {
         expect(
           TokenAmountFormatter.formatPercent(DecimalValue('2.316')),
           '+2.32%',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(
+            DecimalValue('83.9988362167685387'),
+            signed: false,
+          ),
+          '84%',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(
+            DecimalValue('16.0011637832314613'),
+            signed: false,
+          ),
+          '16%',
+        );
+        expect(
+          TokenAmountFormatter.formatPercent(
+            DecimalValue('44.64'),
+            signed: false,
+            maxFractionDigits: 1,
+          ),
+          '44.6%',
         );
         expect(
           TokenAmountFormatter.formatPercent(DecimalValue('-0.0049')),
@@ -177,7 +211,7 @@ void main() {
           DecimalValue('0.009', asset: 'USD', unit: 'fiat'),
           DecimalValue('-0.004', asset: 'USD', unit: 'fiat'),
         ]),
-        r'$12,345,678,901,234,567,890.015',
+        r'$12,345,678,901,234,567,890.02',
       );
       expect(TokenAmountFormatter.sumUsd(const []), '—');
     });
