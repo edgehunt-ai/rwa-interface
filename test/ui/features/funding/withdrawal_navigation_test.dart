@@ -6,9 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
+import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/views/withdrawal_screen.dart';
+import 'package:rwa_interface/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 void main() {
@@ -40,6 +42,17 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          withdrawalAssetsProvider.overrideWith(
+            (_) async => [
+              WithdrawableAsset(
+                symbol: 'USDC',
+                chain: 'Arbitrum',
+                balance: DecimalValue('100', asset: 'USDC', unit: 'token'),
+                decimals: 6,
+                withdrawable: true,
+              ),
+            ],
+          ),
           tradingAccountsProvider.overrideWith(
             (_) async => [
               TradingAccount(
@@ -75,7 +88,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Withdraw USDC'), findsOneWidget);
 
-    await tester.tap(find.byType(IconButton).first);
+    await tester.tap(find.text('Withdraw USDC'));
     await tester.pumpAndSettle();
     expect(find.text('Select asset'), findsOneWidget);
   });

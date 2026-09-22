@@ -525,7 +525,7 @@ final class _CountingFunding extends _Funding {
     selfCustodialCreateRequests += 1;
     // The canonical identity is what this endpoint accepts; the opaque
     // portfolio asset id is rejected with 422.
-    expect(assetId, 'eip155:42161/erc20:$_usdcContract');
+    expect(assetId, 'eip155:421614/erc20:$_usdcContract');
     return PreparedSelfCustodialWithdrawal(
       withdrawalId: 'withdrawal-1',
       sourceWalletId: walletId,
@@ -535,7 +535,7 @@ final class _CountingFunding extends _Funding {
       amount: DecimalValue(amount, asset: 'USDC', unit: 'token'),
       destinationAddress: destinationAddress,
       transaction: SelfCustodialWithdrawalTransaction(
-        chainId: 42161,
+        chainId: 421614,
         from: _walletAddress,
         to: _usdcContract,
         data: '0xa9059cbb',

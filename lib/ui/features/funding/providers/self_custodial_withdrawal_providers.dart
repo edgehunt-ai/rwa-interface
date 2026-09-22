@@ -462,7 +462,8 @@ final class SelfCustodialWithdrawalCommands {
 
   int _chainId(String chain) => switch (normalizeChainLabel(chain)) {
     'ethereum' => 1,
-    'arbitrum' => 42161,
+    // Arbitrum testnet is used by the withdrawal contract in this app.
+    'arbitrum' => 421614,
     'base' => 8453,
     'bsc' => 56,
     _ => -1,
