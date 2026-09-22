@@ -136,7 +136,6 @@ GitHub Actions 会在 push 和 pull request 上运行质量检查。`main` 分�
 
 - [API 客户端和应用调用边界](#api-客户端)
 - [推送通知配置](docs/push-notifications.md)
-- [HIP-3 测试网验收](docs/hip3-testnet-acceptance.md)
 - [Flutter 文档](https://docs.flutter.dev/)
 
 ## 许可证
