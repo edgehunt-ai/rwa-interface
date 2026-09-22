@@ -1,213 +1,144 @@
-# rwa_interface
+# RWA Interface
 
-跨平台 RWA 交易界面（Flutter）。
+跨平台 RWA 交易界面，基于 Flutter 构建，支持 Android、iOS 和 Web。
+
+## 技术栈
+
+- Flutter 3.47 / Dart 3.13
+- Riverpod、GoRouter、Dio
+- OpenAPI Generator `dart-dio` 客户端
+- Privy 身份认证与 Reown AppKit 钱包连接
 
 ## 快速开始
 
-环境要求：Node.js 22、Flutter 3.47/Dart 3.13。生成 API 客户端时还需要可用的 Docker daemon。
+### 环境要求
 
-安装依赖：
+- Node.js 22
+- Flutter 3.47 / Dart 3.13
+- Docker daemon（仅在更新或生成 API 客户端时需要）
+
+### 安装依赖
 
 ```bash
 npm ci --ignore-scripts
 flutter pub get
 ```
 
-完整质量验证：
+### 配置环境变量
+
+复制配置模板并填写本地开发所需的公开客户端配置：
 
 ```bash
-npm run quality:check
+cp .env.example .env
 ```
 
-## API 客户端
+至少需要配置 API 地址、Privy App/Client ID 和 Reown Project ID。密钥、token 或其他服务端凭据不得写入 `.env`、源码或构建参数。
 
-### 契约与生成
-
-`git@github.com:edgehunt-ai/rwa-api-contract.git` 是后端和客户端共享的唯一公共 API 契约。
-本仓库通过 `contracts/rwa-api-contract` submodule 固定消费其某个 commit；不得在本仓库修改该目录内容。
-使用以下命令管理 API 客户端：
+### 启动应用
 
 ```bash
-# 初始化契约 submodule
-npm run api:init
-
-# 拉取当前配置分支（默认 main）的最新契约，生成并检查
-npm run api:update
-
-# 切换到指定契约分支，拉取最新契约，生成并检查
-npm run api:update:branch -- feat/mainnet-cross-chain-acceptance
+make run
 ```
 
-`api:update` 和 `api:update:branch` 会更新 submodule、生成 Dart 客户端，并运行 Flutter 的格式、分析和测试。
-成功后提交 submodule 指针、`.gitmodules`（仅切换分支时）和 `packages/rwa_api_client`。
+也可以指定环境文件和 Flutter 参数：
 
-客户端使用 OpenAPI Generator 7.24.0 的 `dart-dio` 生成器，并通过 Docker 运行，以避免依赖宿主机
-Java 版本。生成配置位于 `openapitools.json`，生成器版本记录在：
+```bash
+make run ENV_FILE=.env.staging FLUTTER_ARGS='-d android'
+```
+
+Web 端需要先生成 Privy 浏览器 bundle：
+
+```bash
+npm run privy:web:build
+flutter run -d chrome --dart-define-from-file=.env
+```
+
+## 项目结构
 
 ```text
-openapitools.json
-packages/rwa_api_client/.openapi-generator/VERSION
+lib/                         Flutter 应用、domain、data 和 presentation 层
+packages/rwa_api_client/     由 OpenAPI 生成的 Dart 客户端
+contracts/rwa-api-contract/  API 契约 submodule，只读输入
+private-key-export/          私钥导出页
+web/privy-auth/              Web 端 Privy bridge
+assets/                      设计稿和应用资源
+test/                        单元测试和 Widget 测试
+scripts/                     API 客户端和构建辅助脚本
 ```
 
-生成文件位于 `packages/rwa_api_client`，不得手动编辑。
+## 架构约束
 
-### 应用调用边界
-
-API 请求的标准依赖方向是：
+应用请求遵循以下依赖方向：
 
 ```text
 Widget/页面 → Riverpod provider/notifier → repository/use case
            → data service → generated dart-dio client → Dio
 ```
 
-- Widget、页面和普通业务类不得直接创建 Dio 或调用 generated API。
-- Riverpod 负责依赖装配、生命周期和异步状态，不替代 Dio。
+- 页面和普通业务类不得直接创建 Dio 或调用 generated API。
 - Repository 负责将 wire DTO 映射为 domain model。
-- Presentation/state 层只暴露 domain value 和稳定的 `ApiFailure`，不暴露 DTO、`Response` 或
-  `DioException`。
-- 只有启动初始化、非 Flutter isolate、传输基础设施和 focused test 可以在明确记录理由后直接调用
-  底层 API。
+- Presentation/state 层只暴露 domain value 和稳定的 `ApiFailure`。
+- API 和金融数值处理保持无损；金融数值使用 `String` 表示。
+- 只有启动初始化、非 Flutter isolate、传输基础设施和 focused test 可以在明确记录理由后调用底层 API。
 
-### 请求、失败与实时事件
+## API 客户端
 
-- 普通请求使用显式 connect/send/receive timeout。
-- 401 使用 single-flight refresh，每个请求最多安全重试一次；重要命令只有在可证明可重放且带
-  `Idempotency-Key` 时才允许重试。
-- 所有 Dio/generated 异常在 data 边界映射为 `ApiFailure`，诊断不记录 token、raw body、stack
-  trace 或金融 payload。
-- SSE 使用独立的长连接，支持 chunk frame、多行 `data`、heartbeat、去重、Last-Event-ID、有界
-  退避、取消和 `resync_required`。
-- 金融数值保持无损 `String`；分页保留 items 和 continuation cursor。
+`git@github.com:edgehunt-ai/rwa-api-contract.git` 是后端和客户端共享的 API 契约。本仓库通过
+`contracts/rwa-api-contract` submodule 固定消费契约版本，不要直接修改该目录或手动编辑生成文件。
 
-## 可观测性
-
-提供 `SENTRY_DSN` 后启用 Sentry 错误上报和采样性能监控。运行时参数通过
-`--dart-define` 提供：
+初始化或更新客户端：
 
 ```bash
-flutter run \
-  --dart-define=SENTRY_DSN=https://public-key@example.ingest.sentry.io/project \
-  --dart-define=SENTRY_ENVIRONMENT=staging \
-  --dart-define=SENTRY_TRACES_SAMPLE_RATE=0.10 \
-  --dart-define=SENTRY_PROFILES_SAMPLE_RATE=0.10 \
-  --dart-define=SENTRY_RELEASE=app@1.0.0+1
+# 初始化契约 submodule
+npm run api:init
+
+# 更新默认契约分支并生成客户端
+npm run api:update
+
+# 更新指定契约分支并生成客户端
+npm run api:update:branch -- feat/mainnet-cross-chain-acceptance
 ```
 
-未设置或将 `SENTRY_DSN` 设为空值均可禁用遥测。禁止把 Sentry auth token 写入源码、变量、日志或 workflow；
-`SENTRY_AUTH_TOKEN` 只能存放在 GitHub Actions Secrets 中。
+生成流程会运行格式化、静态分析和测试。OpenAPI Generator 配置位于 `openapitools.json`，生成版本记录在
+`packages/rwa_api_client/.openapi-generator/VERSION`。
 
-Actions Variables：
+## 认证与平台支持
 
-```text
-REOWN_PROJECT_ID
-SENTRY_DSN
-SENTRY_ENVIRONMENT
-SENTRY_TRACES_SAMPLE_RATE
-SENTRY_PROFILES_SAMPLE_RATE
-SENTRY_ORG=dodo-k4
-SENTRY_PROJECT=rwa
+- Android 支持 API 28+；iOS 支持 iOS 17+。
+- Android/iOS 使用 `privy_flutter`，Web 使用 React Privy bridge。
+- 当前支持 email、Google OAuth、passkey 和外部 EVM 钱包登录。
+- macOS、Windows 和 Linux 会返回明确的 `unsupportedPlatform` 状态，不初始化 native channel。
+- Privy SDK 独占身份凭据持久化；应用不保存或记录 access token、邮件验证码和原始 SDK 错误。
+
+完整的设备联调说明和构建参数请参考 `specs/005-privy-auth-integration/`。
+
+## 测试与质量检查
+
+运行完整质量检查：
+
+```bash
+npm run quality:check
 ```
 
-未配置 `SENTRY_AUTH_TOKEN` 时，打包仍会成功，只跳过 Dart 调试符号、Android R8 mapping 和 iOS
-dSYM 上传。iOS artifact 默认未签名；可安装或 App Store IPA 还需要 Apple 证书和 provisioning
-profile secrets。Android release 启用 R8 代码和资源压缩。
+该命令包含 Dart 格式检查、静态分析和 Flutter 测试。单独运行测试：
+
+```bash
+flutter test
+```
 
 ## CI 与发布
 
-- GitHub Actions 对 push 和 pull request 执行 Flutter 的 `npm run quality:check`。
-- GitHub Actions 会在手动触发时构建并部署独立的 Privy 私钥导出页到 Vercel；同仓库 PR 会部署 Vercel Preview，来自 fork 的 PR 会跳过部署，避免向不受信任代码提供部署凭据。
-- PR 使用 concurrency，新提交会取消旧的质量运行；Release 运行不会自动取消。
-- `main` 上修改 `pubspec.yaml` 版本会触发 Android/iOS 发布构建、创建 `v<version>` 标签并发布
-  GitHub Release。
-- 手动 Release 只构建产物，不创建标签或 Release。
-- Release 使用同一 commit 的完整质量验证后才打包，并只在 summary 中报告 artifact size；不设置
-  体积阈值，不生成 checksum，也不做 production URL 阻断。
-- 契约审批、兼容性校验和文档发布由 `rwa-api-contract` 仓库负责。
+GitHub Actions 会在 push 和 pull request 上运行质量检查。`main` 分支的版本变更可触发移动端构建和 GitHub Release；Web 和私钥导出页的部署由对应 workflow 负责。
 
-## 多语言
-
-API 生成层和 data/domain 层不保存翻译后的 UI 文案，只传递稳定的错误 `code`、`userAction` 和
-结构化字段。后续 UI 本地化由 presentation 层按 locale 映射；后端 `message` 仅作为受控兜底。
-
-## Privy 登录集成
-
-- Android API 28+ 和 iOS 17+ 使用官方 `privy_flutter` SDK。Web 使用同站点内的 React Privy bridge，
-  由 Flutter 通过条件导入调用；macOS、Windows 和 Linux 会返回明确的 `unsupportedPlatform` 状态，不会初始化
-  native channel。Web bridge 的 React bundle 只位于 `web/privy-auth/dist`，不进入 APK/IPA。
-- Android 使用 compile SDK 36（target SDK 仍由 Flutter 配置），用于满足当前 native plugins 与
-  Privy Core 的 AndroidX metadata；最低安装版本仍为 API 28。
-- App ID、移动端 Client ID 和 OAuth 回跳 scheme 通过编译期环境变量 `PRIVY_APP_ID`、`PRIVY_CLIENT_ID`、
-  `PRIVY_APP_URL_SCHEME` 提供；`make run` 会将 scheme 同步到 Android 和 iOS 原生回调配置，修改时只需更新
-  环境文件。Web bridge 只将 `PRIVY_APP_ID` 传给 React SDK，不能传入移动端 `PRIVY_CLIENT_ID`，否则 Privy 会在
-  OAuth 初始化时返回 `invalid_native_app_id`。允许的
-  登录方式集中定义在 `lib/app/config/privy_configuration.dart`，当前包含 email、Google OAuth 和
-  passkey。OAuth 回跳使用 `PRIVY_APP_URL_SCHEME`，passkey 需要
-  `PRIVY_RELYING_PARTY`（默认 `https://rwa.dxd.ink`）。这些都是公开
-  客户端标识，Privy secret 不得进入源码或客户端构建参数。
-- `authenticationProvider` 提供启动恢复、邮件验证码请求/校验和登出命令；最终登录页面将在设计稿
-  确认后消费这些状态与命令。
-- Privy SDK 独占身份凭据持久化。应用不会保存或记录 access token、邮件验证码和原始 SDK 错误。
-
-真机联调前，需在 Privy Dashboard 为 staging App 注册 Android application ID
-`com.orbit.rwa_interface` 和 iOS bundle identifier，并确认 staging 配置启用了 `email` 登录。
-Google OAuth 和 passkey 的原生回跳配置已在工程中注册。Android OAuth 回调由
-`io.privy.sdk.oAuth.PrivyRedirectActivity` 接收；不要将同一 scheme 另行注册给 `MainActivity`。在 Privy
-  Dashboard 中还必须为当前 `PRIVY_CLIENT_ID` 启用 Google 登录，并登记 Android application ID
-`com.orbit.rwa_interface`（iOS 为对应 bundle identifier），否则第三方登录页面无法由客户端修复。外部钱包登录使用 Reown AppKit 连接 EVM
-钱包并请求 `personal_sign`，再由 Privy SIWE 登录换取现有 API 所需的 Privy access token。需要在
-Privy Dashboard 启用外部 EVM 钱包登录，并在 Reown Dashboard 为对应 Android/iOS App 注册
-`REOWN_PROJECT_ID` 与 `rwa://` 回跳。
-
-复制环境配置模板并填写 Privy 和 Reown 的公开客户端标识：
-
-```bash
-cp .env.example .env
-make run
-```
-
-也可以显式选择配置文件或附加 Flutter 参数：
-
-```bash
-make run ENV_FILE=.env.staging FLUTTER_ARGS='-d android'
-```
-
-Release CI 从同名 GitHub Actions Variables 生成临时 `.env.ci`，缺少 `API_BASE_URL`、
-`PRIVY_APP_ID`、`PRIVY_CLIENT_ID` 或 `REOWN_PROJECT_ID` 时停止构建。
-
-Web 发布前先生成 Privy 浏览器 bundle，再运行 Flutter Web 构建：
-
-```bash
-npm run privy:web:build
-flutter build web --dart-define-from-file=.env
-```
-
-项目主站由 `.github/workflows/build-web.yml`（`Build and Deploy Web`）独立打包部署，在推送到 `main`、
-创建或更新 PR 时运行，也支持手动触发。流程先构建 Privy 浏览器 bundle，再构建 Flutter Web
-release，将完整 `build/web/` 上传为 `rwa-interface-web` artifact，保留 7 天，可在 Actions
-运行页面下载。构建成功后使用 Vercel `--prebuilt` 部署：`main` 发布生产版本，PR 和手动选择的
-其他分支发布预览版本；来自 fork 的 PR 只构建，不部署。部署配置包含 SPA 路由回退到 `index.html`。
-需在 GitHub Actions Variables 配置 `API_BASE_URL`、`PRIVY_APP_ID`、`PRIVY_CLIENT_ID`、
-`PRIVY_EXPORT_URL`、`PRIVY_APP_URL_SCHEME` 和 `REOWN_PROJECT_ID`，缺失时会停止构建；
-可选的 `APP_REVIEW_*` 和 `SENTRY_*` 构建配置沿用移动端 Release CI；预览构建的
-`SENTRY_ENVIRONMENT` 为 `preview`，`SENTRY_RELEASE` 使用提交 SHA。
-`PRIVY_RELYING_PARTY` 默认使用 `https://rwa.dxd.ink`，可通过同名 Variable 覆盖。
-主站部署复用 Secrets `VERCEL_TOKEN`、`VERCEL_ORG_ID`，需新增 `VERCEL_WEB_PROJECT_ID`
-指向主站的 Vercel 项目；现有 `VERCEL_PROJECT_ID` 继续用于私钥导出页，两个项目 ID 必须不同。
-
-在 Privy Dashboard 的 Allowed origins 中登记 Web 的生产、staging 和本地开发地址；Web 使用的
-`PRIVY_APP_ID` 必须启用所需登录方式。移动端 `PRIVY_CLIENT_ID` 仅供原生 SDK 使用。
-移动端 WebView 使用 `PRIVY_EXPORT_URL` 加载独立部署的私钥导出页，生产构建必须配置为 HTTPS 地址。
-
-Vercel 自动部署使用 GitHub Actions，不依赖 Vercel 的 Git 集成。当前 workflow 部署
-`private-key-export/dist`，请将目标 Vercel 项目设置为独立的私钥导出页项目，并在仓库 Secrets 中配置
-`VERCEL_TOKEN`、`VERCEL_ORG_ID` 和 `VERCEL_PROJECT_ID`；其中 ID 可通过 `vercel link` 生成的
-`.vercel/project.json` 获取。导出页构建只需要现有 GitHub Actions Variable：`PRIVY_APP_ID`。
-`PRIVY_CLIENT_ID` 仅用于 Flutter 原生端，不会进入导出页构建。
+发布构建所需的 GitHub Actions Variables、Secrets 和签名配置不放在 README 中，具体以 workflow 文件和仓库设置为准。
 
 ## 相关文档
 
-- 项目架构和 agent 执行约束：[AGENTS.md](AGENTS.md)
-- 项目宪章：[.specify/memory/constitution.md](.specify/memory/constitution.md)
-- 功能规格与实现计划：[specs/003-generate-api-client/](specs/003-generate-api-client/)
-- Privy 认证规格与真机验证步骤：[specs/005-privy-auth-integration/](specs/005-privy-auth-integration/)
+- [API 客户端和应用调用边界](#api-客户端)
+- [推送通知配置](docs/push-notifications.md)
+- [HIP-3 测试网验收](docs/hip3-testnet-acceptance.md)
 - [Flutter 文档](https://docs.flutter.dev/)
+
+## 许可证
+
+本项目采用 [GNU General Public License v3.0](LICENSE) 授权。
