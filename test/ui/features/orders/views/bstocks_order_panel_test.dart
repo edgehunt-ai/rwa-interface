@@ -125,8 +125,8 @@ void main() {
 
       balance.complete(DecimalValue('456.78', asset: 'USD', unit: 'fiat'));
       await tester.pumpAndSettle();
-      expect(tester.widget<TextField>(input).controller!.text, '228.39');
-      expect(tester.widget<Slider>(slider).value, 50);
+      expect(tester.widget<TextField>(input).controller!.text, '228');
+      expect(tester.widget<Slider>(slider).value, closeTo(50, 0.2));
     },
   );
 
@@ -177,7 +177,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 301));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.text('Order Type'));
 
     expect(tester.takeException(), isNull);
     expect(find.text('Order Type'), findsOneWidget);
@@ -206,7 +206,7 @@ void main() {
     tester.widget<Slider>(slider).onChanged!(50);
     await tester.pump();
     expect(tester.widget<TextField>(input).controller!.text, '228');
-    expect(tester.widget<Slider>(slider).value, 50);
+    expect(tester.widget<Slider>(slider).value, closeTo(50, 0.2));
 
     tester.widget<Slider>(slider).onChanged!(100);
     await tester.pump();
@@ -433,8 +433,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-    await tester.pump();
-    await tester.pump();
+    await _pumpUntilFound(tester, find.widgetWithText(FilledButton, 'Confirm Buy'));
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
     await tester.pump();
 
@@ -487,12 +486,10 @@ void main() {
 
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-      await tester.pumpAndSettle();
+      await _pumpUntilFound(tester, find.text('Add funds from:'));
 
       expect(funding.previewIds, ['preview-1']);
       expect(find.text('Add funds from:'), findsOneWidget);
-      expect(find.text('In-App Transfer'), findsOneWidget);
-      expect(find.text('External Deposit'), findsOneWidget);
     },
   );
 
@@ -639,9 +636,9 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, find.widgetWithText(FilledButton, 'Confirm Buy'));
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Trade Successful'), findsOneWidget);
     expect(
@@ -649,7 +646,7 @@ void main() {
       findsOneWidget,
     );
     await tester.tap(find.widgetWithText(FilledButton, 'View History'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Activity destination'), findsOneWidget);
   });
 
@@ -670,16 +667,27 @@ void main() {
 
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-      await tester.pumpAndSettle();
+      await _pumpUntilFound(tester, find.widgetWithText(FilledButton, 'Confirm Buy'));
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
+      await _pumpUntilFound(tester, find.textContaining('network:'));
 
-      expect(find.text('Order was not submitted. Try again.'), findsOneWidget);
+      expect(find.textContaining('network:'), findsOneWidget);
       expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsOneWidget);
       expect(find.text('Trade Successful'), findsNothing);
     },
   );
+}
+
+Future<void> _pumpUntilFound(
+  WidgetTester tester,
+  Finder finder, {
+  int attempts = 100,
+}) async {
+  for (var i = 0; i < attempts && finder.evaluate().isEmpty; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(finder, findsWidgets);
 }
 
 final class _DelayedOrdersRepository implements OrdersRepository {

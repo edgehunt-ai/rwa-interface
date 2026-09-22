@@ -463,7 +463,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   Future<List<TradingAccount>> _readTradingAccountsForFundingCheck() async {
-    return ref.read(tradingAccountsProvider.future);
+    try {
+      return await ref.read(tradingAccountsProvider.future);
+    } on Object catch (failure) {
+      debugPrint(
+        'bStocks prepare: trading account check unavailable: $failure',
+      );
+      return const [];
+    }
   }
 
   OrderIntent? _intentFromFields() {

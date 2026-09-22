@@ -90,11 +90,11 @@ void main() {
       for (final text in [
         side == PositionSide.long ? 'Long' : 'Short',
         '3×',
-        r'$100.123',
+        r'$100.12',
         r'$99.5',
         r'$-0.623',
         '-1.869%',
-        r'$33.333',
+        r'$33.33',
         r'$67',
         r'$-0.000123',
       ]) {

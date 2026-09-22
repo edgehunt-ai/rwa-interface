@@ -322,7 +322,6 @@ final class OrderCommandNotifier
         !order.isTerminal &&
         order.status != TradingOrderStatus.manualReview &&
         (order.nextAction != null ||
-            order.status == TradingOrderStatus.pendingSignature ||
             order.actionStatus != null ||
             order.walletActionBlocker == 'action_not_ready');
     if (!shouldExecuteBstocks) {

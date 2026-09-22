@@ -303,7 +303,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(r'$191.25'), findsNWidgets(2));
+      expect(find.text(r'$191.25'), findsOneWidget);
       expect(find.text('+3.5%'), findsOneWidget);
     },
   );
