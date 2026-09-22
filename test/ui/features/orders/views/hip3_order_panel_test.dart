@@ -21,7 +21,6 @@ import 'package:rwa_interface/domain/repositories/hip3_order_execution_repositor
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
-import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 
 import 'package:rwa_interface/app/observability/observability_reporter.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
@@ -1026,7 +1025,6 @@ void main() {
   testWidgets('pending HIP-3 order is signed and submitted before success', (
     tester,
   ) async {
-    addTearDown(AppToast.dismiss);
     final orders = _ExecutableHip3Orders();
     final execution = _Hip3Execution();
     await tester.pumpWidget(
@@ -1047,6 +1045,12 @@ void main() {
 
     expect(execution.orderId, 'order-1');
     expect(find.text('Order submitted'), findsOneWidget);
+    final successImage = tester.widget<Image>(find.byType(Image));
+    expect(
+      (successImage.image as AssetImage).assetName,
+      'assets/figma/trade/order_success.png',
+    );
+    expect(find.text('Close & View Later'), findsOneWidget);
   });
 }
 

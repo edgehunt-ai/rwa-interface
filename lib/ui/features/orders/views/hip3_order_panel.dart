@@ -623,21 +623,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       builder: (_) => Hip3ConfirmSheet(preview: preview),
     );
     if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
-    if (submitted != null) {
-      final l10n = AppLocalizations.of(context);
-      AppToast.showSuccess(
-        context,
-        submitted.status == TradingOrderStatus.filled
-            ? l10n.tradeSuccessful
-            : l10n.orderSubmitted,
-      );
-      Navigator.of(context).pop();
-      return;
-    }
     setState(() {
-      // Keep the latest preview visible after dismissing confirmation. A
-      // later input/settings change will invalidate and refresh it normally.
-      _preview = null;
+      _submitted = submitted;
+      if (submitted == null) {
+        _preview = null;
+        _quotePreview = null;
+      }
     });
   }
 
@@ -1077,27 +1068,51 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   Widget _result(BuildContext context) => Material(
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.check_circle_outline, size: 48),
-          const SizedBox(height: 12),
-          Text(
-            _submitted!.status == TradingOrderStatus.filled
-                ? AppLocalizations.of(context).tradeSuccessful
-                : AppLocalizations.of(context).orderSubmitted,
-            style: Theme.of(context).textTheme.titleLarge,
+    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Image.asset(
+                'assets/figma/trade/order_success.png',
+                width: 160,
+                height: 160,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _submitted!.status == TradingOrderStatus.filled
+                    ? AppLocalizations.of(context).tradeSuccessful
+                    : AppLocalizations.of(context).orderSubmitted,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _submitted!.status == TradingOrderStatus.filled
+                    ? AppLocalizations.of(context).orderStatusInActivity
+                    : AppLocalizations.of(context).orderProcessingInDetails,
+                textAlign: TextAlign.center,
+              ),
+              if (_preview?.intent.openingProtection != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  AppLocalizations.of(context).openingProtectionPendingNotice,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(AppLocalizations.of(context).closeViewLater),
+              ),
+            ],
           ),
-          if (_preview?.intent.openingProtection != null)
-            Text(AppLocalizations.of(context).openingProtectionPendingNotice),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context).closeViewLater),
-          ),
-        ],
+        ),
       ),
     ),
   );

@@ -1061,6 +1061,7 @@ final class _PositionsRepository implements PositionsRepository {
   @override
   Future<TradingOrder> close(
     String positionId, {
+    bool confirmBeforeSigning = true,
     String? quantity,
     String? percent,
     TradingOrderType type = TradingOrderType.market,
