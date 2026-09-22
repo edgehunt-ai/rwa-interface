@@ -83,9 +83,8 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
     await _executor.resume(
       actionId: action.actionId,
       binding: binding,
-      confirm: (action, step) => (confirm ?? _confirm)(
-        mapHip3StepConfirmation(action, step),
-      ),
+      confirm: (action, step) =>
+          (confirm ?? _confirm)(mapHip3StepConfirmation(action, step)),
     );
     // The action may be accepted before the venue context reflects the new
     // settings. Poll the authoritative context while keeping the same action

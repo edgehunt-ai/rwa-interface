@@ -40,7 +40,8 @@ api.OrderPreviewRequest orderPreviewRequest(OrderIntent intent) {
           if (intent.tpSl != null) {
             throw ArgumentError('Use openingProtection for HIP3 orders');
           }
-          builder.protection = _openingProtection(intent.openingProtection)?.toBuilder();
+          builder.protection = _openingProtection(intent.openingProtection)
+              ?.toBuilder();
         });
   return api.OrderPreviewRequest(
     (builder) => builder.oneOf = OneOfDynamic(
@@ -64,20 +65,25 @@ api.Hip3OrderProtectionSpec? _openingProtection(Hip3OpeningProtection? value) {
   if (value == null) return null;
   api.Hip3TriggerSpec? leg(Hip3OpeningProtectionLeg? value) => value == null
       ? null
-      : api.Hip3TriggerSpec((b) => b
-          ..triggerPrice = value.triggerPrice.value
-          ..triggerReference = api.Hip3TriggerSpecTriggerReferenceEnum.mark
-          ..executionType = value.limitPrice == null
-              ? api.Hip3TriggerSpecExecutionTypeEnum.market
-              : api.Hip3TriggerSpecExecutionTypeEnum.limit
-          ..limitPrice = value.limitPrice?.value);
-  return api.Hip3OrderProtectionSpec((b) => b
-    ..takeProfit = leg(value.takeProfit)?.toBuilder()
-    ..stopLoss = leg(value.stopLoss)?.toBuilder());
+      : api.Hip3TriggerSpec(
+          (b) => b
+            ..triggerPrice = value.triggerPrice.value
+            ..triggerReference = api.Hip3TriggerSpecTriggerReferenceEnum.mark
+            ..executionType = value.limitPrice == null
+                ? api.Hip3TriggerSpecExecutionTypeEnum.market
+                : api.Hip3TriggerSpecExecutionTypeEnum.limit
+            ..limitPrice = value.limitPrice?.value,
+        );
+  return api.Hip3OrderProtectionSpec(
+    (b) => b
+      ..takeProfit = leg(value.takeProfit)?.toBuilder()
+      ..stopLoss = leg(value.stopLoss)?.toBuilder(),
+  );
 }
 
-api.OrderType _type(TradingOrderType value) =>
-    value == TradingOrderType.market ? api.OrderType.market : api.OrderType.limit;
+api.OrderType _type(TradingOrderType value) => value == TradingOrderType.market
+    ? api.OrderType.market
+    : api.OrderType.limit;
 
 api.MarginMode? _margin(TradingMarginMode? value) => switch (value) {
   TradingMarginMode.isolated => api.MarginMode.isolated,
