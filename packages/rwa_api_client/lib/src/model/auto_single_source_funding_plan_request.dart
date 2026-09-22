@@ -30,7 +30,7 @@ abstract class AutoSingleSourceFundingPlanRequest implements Built<AutoSingleSou
   /// Optional exact canonical source asset constraint. If supplied, planning must not quote or select any other source.
   @BuiltValueField(wireName: r'source_asset_id')
   FundingSourceAssetId? get sourceAssetId;
-  // enum sourceAssetIdEnum {  eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,  eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7,  eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831,  eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9,  eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913,  eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2,  eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d,  eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955,  };
+  // enum sourceAssetIdEnum {  eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,  eip155:1/erc20:0xdac17f958d2ee523a2206206994597c13d831ec7,  eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831,  eip155:42161/erc20:0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9,  eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913,  eip155:8453/erc20:0xfde4c96c8593536e31f229ea8f37b2ada2699bb2,  eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d,  eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955,  eip155:421614/erc20:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d,  eip155:421614/erc20:0x1baabb04529d43a73232b713c0fe471f7c7334d5,  eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0,  };
 
   AutoSingleSourceFundingPlanRequest._();
 

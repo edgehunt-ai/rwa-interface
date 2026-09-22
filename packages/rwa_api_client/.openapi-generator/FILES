@@ -62,8 +62,10 @@ lib/src/model/bstock_localnet_order_preview.dart
 lib/src/model/bstock_order_preview.dart
 lib/src/model/bstock_order_preview_request.dart
 lib/src/model/bstock_order_wallet_action_state.dart
+lib/src/model/bstock_testnet_funding_rail.dart
 lib/src/model/bstock_testnet_order_preview.dart
 lib/src/model/bstocks_action_status.dart
+lib/src/model/bstocks_approval_mode.dart
 lib/src/model/bstocks_block_quote_validity.dart
 lib/src/model/bstocks_cancellation_policy.dart
 lib/src/model/bstocks_confirmation_binding.dart
@@ -276,6 +278,7 @@ lib/src/model/legacy_transfer.dart
 lib/src/model/legacy_transfer_status.dart
 lib/src/model/list_app_versions200_response.dart
 lib/src/model/locked_executable_action_transfer_state.dart
+lib/src/model/mainnet_funding_source_asset_catalog.dart
 lib/src/model/margin_mode.dart
 lib/src/model/market_product_group.dart
 lib/src/model/market_session_info.dart
@@ -408,6 +411,7 @@ lib/src/model/system_environment_bstocks.dart
 lib/src/model/system_environment_bstocks_quote_token.dart
 lib/src/model/system_environment_execution.dart
 lib/src/model/system_environment_hip3.dart
+lib/src/model/testnet_funding_source_asset_catalog.dart
 lib/src/model/token_balance.dart
 lib/src/model/tp_sl_spec.dart
 lib/src/model/trade_intent.dart

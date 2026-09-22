@@ -11,18 +11,28 @@ part 'funding_asset_provenance.g.dart';
 
 class FundingAssetProvenance extends EnumClass {
 
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'circle_native')
   static const FundingAssetProvenance circleNative = _$circleNative;
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'tether_native')
   static const FundingAssetProvenance tetherNative = _$tetherNative;
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'tether_usdt0')
   static const FundingAssetProvenance tetherUsdt0 = _$tetherUsdt0;
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'l2_standard_bridged')
   static const FundingAssetProvenance l2StandardBridged = _$l2StandardBridged;
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'binance_peg')
   static const FundingAssetProvenance binancePeg = _$binancePeg;
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'hyperliquid_perps')
   static const FundingAssetProvenance hyperliquidPerps = _$hyperliquidPerps;
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
+  @BuiltValueEnumConst(wireName: r'testnet_mock')
+  static const FundingAssetProvenance testnetMock = _$testnetMock;
+  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingAssetProvenance unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 

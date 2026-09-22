@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/order_fill.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
+import 'package:rwa_api_client/src/model/bstocks_approval_mode.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
@@ -25,7 +26,9 @@ part 'order.g.dart';
 /// Order
 ///
 /// Properties:
-/// * [approvalRequired] 
+/// * [approvalRequired] - 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
+/// * [approvalMode] 
+/// * [approvalAmountRaw] - approve动作冻结的授权额度，原始单位字符串；与required_funding_raw交易输入预算区分。
 /// * [fundingMode] 
 /// * [fundsReserved] 
 /// * [cancellationPolicy] 
@@ -35,7 +38,8 @@ part 'order.g.dart';
 /// * [actionStatus] 
 /// * [submittedTransactionHash] 
 /// * [confirmedTransactionHash] 
-/// * [requiredFundingRaw] - Exact input-token maximum encoded by the immutable Router action.
+/// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
+/// * [quantity] - bStocks 市价approve动作尚无最终交易数量，返回null；不能据此认定已成交或补造数量。
 /// * [settlementAsset] - 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
 /// * [productId] - HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
 /// * [hip3ActionId] - 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
@@ -53,7 +57,6 @@ part 'order.g.dart';
 /// * [type] 
 /// * [status] 
 /// * [limitPrice] - 十进制字符串，避免浮点误差
-/// * [quantity] - 十进制字符串，避免浮点误差
 /// * [filledQuantity] - 十进制字符串，避免浮点误差
 /// * [averageFillPrice] - 十进制字符串，避免浮点误差
 /// * [orderValue] - 十进制字符串，避免浮点误差
@@ -70,8 +73,17 @@ part 'order.g.dart';
 /// * [updatedAt] 
 @BuiltValue()
 abstract class Order implements Built<Order, OrderBuilder> {
+  /// 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
   @BuiltValueField(wireName: r'approval_required')
   bool? get approvalRequired;
+
+  @BuiltValueField(wireName: r'approval_mode')
+  BstocksApprovalMode? get approvalMode;
+  // enum approvalModeEnum {  unlimited,  slippage,  };
+
+  /// approve动作冻结的授权额度，原始单位字符串；与required_funding_raw交易输入预算区分。
+  @BuiltValueField(wireName: r'approval_amount_raw')
+  String? get approvalAmountRaw;
 
   @BuiltValueField(wireName: r'funding_mode')
   OrderFundingModeEnum? get fundingMode;
@@ -106,9 +118,13 @@ abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'confirmed_transaction_hash')
   String? get confirmedTransactionHash;
 
-  /// Exact input-token maximum encoded by the immutable Router action.
+  /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
   @BuiltValueField(wireName: r'required_funding_raw')
   String? get requiredFundingRaw;
+
+  /// bStocks 市价approve动作尚无最终交易数量，返回null；不能据此认定已成交或补造数量。
+  @BuiltValueField(wireName: r'quantity')
+  String? get quantity;
 
   /// 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
   @BuiltValueField(wireName: r'settlement_asset')
@@ -170,10 +186,6 @@ abstract class Order implements Built<Order, OrderBuilder> {
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'quantity')
-  String? get quantity;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'filled_quantity')
@@ -255,6 +267,20 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
         specifiedType: const FullType(bool),
       );
     }
+    if (object.approvalMode != null) {
+      yield r'approval_mode';
+      yield serializers.serialize(
+        object.approvalMode,
+        specifiedType: const FullType(BstocksApprovalMode),
+      );
+    }
+    if (object.approvalAmountRaw != null) {
+      yield r'approval_amount_raw';
+      yield serializers.serialize(
+        object.approvalAmountRaw,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.fundingMode != null) {
       yield r'funding_mode';
       yield serializers.serialize(
@@ -317,6 +343,13 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       yield serializers.serialize(
         object.requiredFundingRaw,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.quantity != null) {
+      yield r'quantity';
+      yield serializers.serialize(
+        object.quantity,
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.settlementAsset != null) {
@@ -426,13 +459,6 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       yield serializers.serialize(
         object.limitPrice,
         specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.quantity != null) {
-      yield r'quantity';
-      yield serializers.serialize(
-        object.quantity,
-        specifiedType: const FullType(String),
       );
     }
     if (object.filledQuantity != null) {
@@ -562,6 +588,22 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           if (valueDes == null) continue;
           result.approvalRequired = valueDes;
           break;
+        case r'approval_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksApprovalMode),
+          ) as BstocksApprovalMode?;
+          if (valueDes == null) continue;
+          result.approvalMode = valueDes;
+          break;
+        case r'approval_amount_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.approvalAmountRaw = valueDes;
+          break;
         case r'funding_mode':
           final valueDes = serializers.deserialize(
             value,
@@ -640,6 +682,14 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           ) as String?;
           if (valueDes == null) continue;
           result.requiredFundingRaw = valueDes;
+          break;
+        case r'quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.quantity = valueDes;
           break;
         case r'settlement_asset':
           final valueDes = serializers.deserialize(
@@ -771,14 +821,6 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           ) as String?;
           if (valueDes == null) continue;
           result.limitPrice = valueDes;
-          break;
-        case r'quantity':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.quantity = valueDes;
           break;
         case r'filled_quantity':
           final valueDes = serializers.deserialize(

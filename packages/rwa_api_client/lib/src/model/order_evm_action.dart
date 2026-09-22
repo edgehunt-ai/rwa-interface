@@ -10,7 +10,7 @@ import 'package:built_value/serializer.dart';
 
 part 'order_evm_action.g.dart';
 
-/// 服务端为 bStocks 订单冻结的单笔 EVM 钱包动作。`chain_id/from/to/data/value` 与 `payload_hash` 均为服务端权威值；客户端只能引用 `step_id` 创建 execution，不能回传 或覆盖交易内容。HIP-3 EIP-712 action 不属于此类型。 
+/// 服务端为 bStocks 订单冻结的单笔 EVM 钱包动作。`chain_id/from/to/data/value` 与 `payload_hash` 均为服务端权威值；客户端只能引用 `step_id` 创建 execution，不能回传 或覆盖交易内容。HIP-3 EIP-712 action 不属于此类型。 kind=erc20_approval 时 to 是输入token合约，spender 在 calldata 内绑定 Router；其余类型仍为 spot_swap。 valid_until 是服务端动作提交窗口，区别于 quote_expires_at；action过期不会撤销已成功的链上allowance。 
 ///
 /// Properties:
 /// * [orderId] - Durable bStocks action/order identifier that owns this frozen transaction.

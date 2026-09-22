@@ -32,7 +32,7 @@ abstract class FundingRouteQuote implements Built<FundingRouteQuote, FundingRout
 
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
-  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
+  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  platform_float,  };
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'input_amount')

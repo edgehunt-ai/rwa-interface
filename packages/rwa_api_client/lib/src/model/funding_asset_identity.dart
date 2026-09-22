@@ -50,7 +50,7 @@ abstract class FundingAssetIdentity implements Built<FundingAssetIdentity, Fundi
 
   @BuiltValueField(wireName: r'provenance')
   FundingAssetProvenance get provenance;
-  // enum provenanceEnum {  circle_native,  tether_native,  tether_usdt0,  l2_standard_bridged,  binance_peg,  hyperliquid_perps,  };
+  // enum provenanceEnum {  circle_native,  tether_native,  tether_usdt0,  l2_standard_bridged,  binance_peg,  hyperliquid_perps,  testnet_mock,  };
 
   FundingAssetIdentity._();
 

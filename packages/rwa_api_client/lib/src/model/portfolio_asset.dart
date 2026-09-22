@@ -26,6 +26,7 @@ part 'portfolio_asset.g.dart';
 /// * [accountRef] - Server-issued opaque account reference; clients cannot override it.
 /// * [contractAddress] 
 /// * [native_] 
+/// * [withdrawable] - 服务端判定的自托管提现资格：资产在提现 allowlist、为受支持链上的 ERC-20 且所属钱包已验证时为 true。缺省或 false 表示该资产不能进入 self-custodial withdrawal 流程；客户端 picker 只应列出 true 的资产， 不得由余额形状自行推断可提性。 
 /// * [symbol] 
 /// * [decimals] 
 /// * [balanceRaw] - 无符号十进制整数形式的最小单位余额，不允许小数点或负号。
@@ -66,6 +67,10 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
 
   @BuiltValueField(wireName: r'native')
   bool get native_;
+
+  /// 服务端判定的自托管提现资格：资产在提现 allowlist、为受支持链上的 ERC-20 且所属钱包已验证时为 true。缺省或 false 表示该资产不能进入 self-custodial withdrawal 流程；客户端 picker 只应列出 true 的资产， 不得由余额形状自行推断可提性。 
+  @BuiltValueField(wireName: r'withdrawable')
+  bool? get withdrawable;
 
   @BuiltValueField(wireName: r'symbol')
   String get symbol;
@@ -181,6 +186,13 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
       object.native_,
       specifiedType: const FullType(bool),
     );
+    if (object.withdrawable != null) {
+      yield r'withdrawable';
+      yield serializers.serialize(
+        object.withdrawable,
+        specifiedType: const FullType(bool),
+      );
+    }
     yield r'symbol';
     yield serializers.serialize(
       object.symbol,
@@ -331,6 +343,14 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
             specifiedType: const FullType(bool),
           ) as bool;
           result.native_ = valueDes;
+          break;
+        case r'withdrawable':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.withdrawable = valueDes;
           break;
         case r'symbol':
           final valueDes = serializers.deserialize(

@@ -7,6 +7,7 @@ final class PortfolioAsset {
     required this.symbol,
     required this.decimals,
     required this.balance,
+    this.withdrawable = false,
     this.walletId,
     this.contractAddress,
     this.native = false,
@@ -21,6 +22,7 @@ final class PortfolioAsset {
   final String symbol;
   final int decimals;
   final DecimalValue balance;
+  final bool withdrawable;
   final String? walletId;
   final String? contractAddress;
   final bool native;

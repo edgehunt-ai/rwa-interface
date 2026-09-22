@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/bstocks_preview_route.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
+import 'package:rwa_api_client/src/model/bstocks_approval_mode.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/account_kind.dart';
@@ -22,6 +23,8 @@ part 'order_preview_common.g.dart';
 ///
 /// Properties:
 /// * [bstocks] 
+/// * [approvalMode] 
+/// * [approvalAmountRaw] - bStocks 服务端授权目标，输入token最小单位字符串，不是交易预算；历史/localnet响应可省略。
 /// * [timeInForce] 
 /// * [limitPrice] - 十进制字符串，避免浮点误差
 /// * [priceConditionMet] 
@@ -46,7 +49,7 @@ part 'order_preview_common.g.dart';
 /// * [estimatedPrice] - 预计成交价；与 `market_price` 不同时前端提示「价格已更新」
 /// * [priceUpdated] - 报价较用户上次看到的价格是否已变化
 /// * [estimatedQuantity] - 十进制字符串，避免浮点误差
-/// * [estimatedReceive] - 预计获得数量（扣除滑点后）
+/// * [estimatedReceive] - 预计获得数量。bStocks 为本次预览的报价输出，尚未扣减用户滑点； 真正的预览同意下限在 bstocks.confirmation_binding.minimum_output_raw，以token原始单位表示。 
 /// * [estimatedReceiveUnit] 
 /// * [orderValue] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
@@ -58,7 +61,7 @@ part 'order_preview_common.g.dart';
 /// * [settlementAccountLabel] 
 /// * [marginRequired] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 仅 HIP-3
-/// * [quoteExpiresAt] 
+/// * [quoteExpiresAt] - bStocks 为服务器preview期限（最多120秒），不是approve allowance期限或链上route deadline；仍须满足独立报价区块有效期。
 /// * [details] - 「查看详情」中逐行展示的键值对
 /// * [feeAsset] - Asset used to denominate network_fee, for example BNB or USDC.
 /// * [feeNote] - Optional localized display note, for example Included.
@@ -66,6 +69,14 @@ part 'order_preview_common.g.dart';
 abstract class OrderPreviewCommon  {
   @BuiltValueField(wireName: r'bstocks')
   BstocksPreviewEconomics? get bstocks;
+
+  @BuiltValueField(wireName: r'approval_mode')
+  BstocksApprovalMode? get approvalMode;
+  // enum approvalModeEnum {  unlimited,  slippage,  };
+
+  /// bStocks 服务端授权目标，输入token最小单位字符串，不是交易预算；历史/localnet响应可省略。
+  @BuiltValueField(wireName: r'approval_amount_raw')
+  String? get approvalAmountRaw;
 
   @BuiltValueField(wireName: r'time_in_force')
   Hip3TimeInForce? get timeInForce;
@@ -152,7 +163,7 @@ abstract class OrderPreviewCommon  {
   @BuiltValueField(wireName: r'estimated_quantity')
   String? get estimatedQuantity;
 
-  /// 预计获得数量（扣除滑点后）
+  /// 预计获得数量。bStocks 为本次预览的报价输出，尚未扣减用户滑点； 真正的预览同意下限在 bstocks.confirmation_binding.minimum_output_raw，以token原始单位表示。 
   @BuiltValueField(wireName: r'estimated_receive')
   String? get estimatedReceive;
 
@@ -199,6 +210,7 @@ abstract class OrderPreviewCommon  {
   @BuiltValueField(wireName: r'liquidation_price')
   String? get liquidationPrice;
 
+  /// bStocks 为服务器preview期限（最多120秒），不是approve allowance期限或链上route deadline；仍须满足独立报价区块有效期。
   @BuiltValueField(wireName: r'quote_expires_at')
   DateTime? get quoteExpiresAt;
 
@@ -235,6 +247,20 @@ class _$OrderPreviewCommonSerializer implements PrimitiveSerializer<OrderPreview
       yield serializers.serialize(
         object.bstocks,
         specifiedType: const FullType(BstocksPreviewEconomics),
+      );
+    }
+    if (object.approvalMode != null) {
+      yield r'approval_mode';
+      yield serializers.serialize(
+        object.approvalMode,
+        specifiedType: const FullType(BstocksApprovalMode),
+      );
+    }
+    if (object.approvalAmountRaw != null) {
+      yield r'approval_amount_raw';
+      yield serializers.serialize(
+        object.approvalAmountRaw,
+        specifiedType: const FullType(String),
       );
     }
     if (object.timeInForce != null) {
@@ -577,6 +603,22 @@ class _$$OrderPreviewCommonSerializer implements PrimitiveSerializer<$OrderPrevi
           ) as BstocksPreviewEconomics?;
           if (valueDes == null) continue;
           result.bstocks.replace(valueDes);
+          break;
+        case r'approval_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksApprovalMode),
+          ) as BstocksApprovalMode?;
+          if (valueDes == null) continue;
+          result.approvalMode = valueDes;
+          break;
+        case r'approval_amount_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.approvalAmountRaw = valueDes;
           break;
         case r'time_in_force':
           final valueDes = serializers.deserialize(

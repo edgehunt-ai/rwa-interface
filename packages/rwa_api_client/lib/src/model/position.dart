@@ -38,7 +38,7 @@ part 'position.g.dart';
 /// * [entryPrice] - 十进制字符串，避免浮点误差
 /// * [markPrice] - 十进制字符串，避免浮点误差
 /// * [unrealizedPnl] - 十进制字符串，避免浮点误差
-/// * [unrealizedPnlPercent] - 十进制字符串，避免浮点误差
+/// * [unrealizedPnlPercent] - bStocks 在正FIFO成本已知且参考估值新鲜时返回 (参考估值 - FIFO参考成本)/FIFO参考成本×100， 18位小数half-even舍入，配合 valuation_status=reference_only；不是实际美元结算收益。 未知/零成本、估值缺失/stale或数值越界时省略字段，不返回null或伪造0；HIP3口径不变。 
 /// * [realizedPnl] - 十进制字符串，避免浮点误差
 /// * [costBasis] - 十进制字符串，避免浮点误差
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
@@ -143,7 +143,7 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'unrealized_pnl')
   String? get unrealizedPnl;
 
-  /// 十进制字符串，避免浮点误差
+  /// bStocks 在正FIFO成本已知且参考估值新鲜时返回 (参考估值 - FIFO参考成本)/FIFO参考成本×100， 18位小数half-even舍入，配合 valuation_status=reference_only；不是实际美元结算收益。 未知/零成本、估值缺失/stale或数值越界时省略字段，不返回null或伪造0；HIP3口径不变。 
   @BuiltValueField(wireName: r'unrealized_pnl_percent')
   String? get unrealizedPnlPercent;
 

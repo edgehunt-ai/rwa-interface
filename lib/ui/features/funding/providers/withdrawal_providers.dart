@@ -9,38 +9,41 @@ import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/withdrawal.dart';
-import '../../portfolio/providers/portfolio_providers.dart';
+import '../../../../domain/repositories/portfolio_repository.dart';
 
 final withdrawalAssetsProvider =
     FutureProvider.autoDispose<List<WithdrawableAsset>>((ref) async {
-      final accounts = await ref.watch(tradingAccountsProvider.future);
-      final assets = <String, WithdrawableAsset>{};
-      for (final account in accounts) {
-        for (final balance in account.balances) {
-          final chain = balance.chain ?? account.chain;
-          if (chain == null ||
-              balance.balance.compareTo(
-                    DecimalValue(
-                      '0',
-                      asset: balance.balance.asset,
-                      unit: balance.balance.unit,
-                    ),
-                  ) <=
-                  0) {
-            continue;
-          }
-          final asset = WithdrawableAsset(
-            symbol: balance.symbol,
-            chain: chain,
-            balance: balance.balance,
-            valueUsd: balance.valueUsd,
-            decimals: balance.decimals,
-          );
-          if (!asset.isWithdrawalSupported) continue;
-          assets[asset.key] = asset;
-        }
-      }
-      return assets.values.toList(growable: false);
+      final repository = ref.watch(portfolioRepositoryProvider);
+      if (repository is! PortfolioAssetsRepository) return const [];
+      final assets = await (repository as PortfolioAssetsRepository)
+          .listAssets();
+      return assets
+          .where(
+            (asset) =>
+                asset.withdrawable &&
+                asset.balance.compareTo(
+                      DecimalValue(
+                        '0',
+                        asset: asset.balance.asset,
+                        unit: asset.balance.unit,
+                      ),
+                    ) >
+                    0,
+          )
+          .map(
+            (asset) => WithdrawableAsset(
+              symbol: asset.symbol,
+              chain: asset.network,
+              balance: asset.balance,
+              decimals: asset.decimals,
+              assetId: asset.assetId,
+              walletId: asset.walletId,
+              contractAddress: asset.contractAddress,
+              native: asset.native,
+              withdrawable: asset.withdrawable,
+            ),
+          )
+          .toList(growable: false);
     });
 
 final withdrawalsProvider = FutureProvider.autoDispose

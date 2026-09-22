@@ -207,6 +207,8 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   final String? context;
   @override
+  final String? failureReason;
+  @override
   final String? symbol;
   @override
   final ProductKind? kind;
@@ -241,6 +243,7 @@ class _$ActivityRecord extends ActivityRecord {
       required this.title,
       this.amount,
       this.context,
+      this.failureReason,
       this.symbol,
       this.kind,
       this.fields,
@@ -272,6 +275,7 @@ class _$ActivityRecord extends ActivityRecord {
         title == other.title &&
         amount == other.amount &&
         context == other.context &&
+        failureReason == other.failureReason &&
         symbol == other.symbol &&
         kind == other.kind &&
         fields == other.fields &&
@@ -296,6 +300,7 @@ class _$ActivityRecord extends ActivityRecord {
     _$hash = $jc(_$hash, title.hashCode);
     _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, context.hashCode);
+    _$hash = $jc(_$hash, failureReason.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, fields.hashCode);
@@ -322,6 +327,7 @@ class _$ActivityRecord extends ActivityRecord {
           ..add('title', title)
           ..add('amount', amount)
           ..add('context', context)
+          ..add('failureReason', failureReason)
           ..add('symbol', symbol)
           ..add('kind', kind)
           ..add('fields', fields)
@@ -373,6 +379,11 @@ class ActivityRecordBuilder
   String? _context;
   String? get context => _$this._context;
   set context(String? context) => _$this._context = context;
+
+  String? _failureReason;
+  String? get failureReason => _$this._failureReason;
+  set failureReason(String? failureReason) =>
+      _$this._failureReason = failureReason;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
@@ -438,6 +449,7 @@ class ActivityRecordBuilder
       _title = $v.title;
       _amount = $v.amount;
       _context = $v.context;
+      _failureReason = $v.failureReason;
       _symbol = $v.symbol;
       _kind = $v.kind;
       _fields = $v.fields?.toBuilder();
@@ -485,6 +497,7 @@ class ActivityRecordBuilder
                 title, r'ActivityRecord', 'title'),
             amount: amount,
             context: context,
+            failureReason: failureReason,
             symbol: symbol,
             kind: kind,
             fields: _fields?.build(),

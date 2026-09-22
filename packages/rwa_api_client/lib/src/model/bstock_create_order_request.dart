@@ -23,7 +23,7 @@ part 'bstock_create_order_request.g.dart';
 /// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
-/// * [slippagePercent] - 最大可接受滑点；超出则下单失败
+/// * [slippagePercent] - 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 必须匹配 preview 的规范化输入，不增加最大输入预算。新路由最低输出不得低于冻结最低输出； 链上 minAmountOut 当前使用新路由报价输出，没有另行放宽百分比。限价单不得传非null值（含\"0\"）， 限价 IOC/GTC 每次成交由合约检查买入均价不高于限价、卖出均价不低于限价。 
 /// * [tpSl] 
 /// * [previewId] - 引用账户绑定的有效预览和经济量边界，不锁定成交；审批消费后或过期后重新预览。
 @BuiltValue()
@@ -59,7 +59,7 @@ abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderReques
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// 最大可接受滑点；超出则下单失败
+  /// 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 必须匹配 preview 的规范化输入，不增加最大输入预算。新路由最低输出不得低于冻结最低输出； 链上 minAmountOut 当前使用新路由报价输出，没有另行放宽百分比。限价单不得传非null值（含\"0\"）， 限价 IOC/GTC 每次成交由合约检查买入均价不高于限价、卖出均价不低于限价。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 

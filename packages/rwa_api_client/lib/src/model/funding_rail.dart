@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_rail.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/funding_asset_provenance.dart';
 import 'package:rwa_api_client/src/model/legacy_perp_funding_rail.dart';
@@ -15,7 +16,7 @@ import 'package:one_of/one_of.dart';
 
 part 'funding_rail.g.dart';
 
-/// 根据 `rail` 锁定目标结算身份：bstock => BSC/USDT，perp => Hyperliquid Perps/USDC。
+/// 根据 `rail` 锁定目标结算身份：bstock => BSC/USDT（testnet 为 TUSDT@chain 97），perp => Hyperliquid Perps/USDC。 
 ///
 /// Properties:
 /// * [rail] 
@@ -29,7 +30,7 @@ part 'funding_rail.g.dart';
 /// * [minimumAmount] - 十进制字符串，避免浮点误差
 @BuiltValue()
 abstract class FundingRail implements Built<FundingRail, FundingRailBuilder> {
-  /// One Of [BstockFundingRail], [LegacyBstockFundingRail], [LegacyPerpFundingRail], [PerpFundingRail]
+  /// One Of [BstockFundingRail], [BstockTestnetFundingRail], [LegacyBstockFundingRail], [LegacyPerpFundingRail], [PerpFundingRail]
   OneOf get oneOf;
 
   static const String discriminatorFieldName = r'rail';
@@ -182,8 +183,8 @@ class FundingRailSettlementAssetEnum extends EnumClass {
 
 class FundingRailChainIdEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireNumber: 1337)
-  static const FundingRailChainIdEnum number1337 = _$fundingRailChainIdEnum_number1337;
+  @BuiltValueEnumConst(wireNumber: 97)
+  static const FundingRailChainIdEnum number97 = _$fundingRailChainIdEnum_number97;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
   static const FundingRailChainIdEnum unknownDefaultOpenApi = _$fundingRailChainIdEnum_unknownDefaultOpenApi;
 
@@ -197,8 +198,8 @@ class FundingRailChainIdEnum extends EnumClass {
 
 class FundingRailSettlementAssetIdEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'hyperliquid:1337/perps:USDC-PERPS')
-  static const FundingRailSettlementAssetIdEnum hyperliquidColon1337SlashPerpsColonUSDCPERPS = _$fundingRailSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
+  @BuiltValueEnumConst(wireName: r'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0')
+  static const FundingRailSettlementAssetIdEnum eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0 = _$fundingRailSettlementAssetIdEnum_eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingRailSettlementAssetIdEnum unknownDefaultOpenApi = _$fundingRailSettlementAssetIdEnum_unknownDefaultOpenApi;
 
@@ -212,8 +213,8 @@ class FundingRailSettlementAssetIdEnum extends EnumClass {
 
 class FundingRailTokenContractEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'0x2100000000000000000000000000000000000000')
-  static const FundingRailTokenContractEnum n0x2100000000000000000000000000000000000000 = _$fundingRailTokenContractEnum_n0x2100000000000000000000000000000000000000;
+  @BuiltValueEnumConst(wireName: r'0xd7beebb53879df47b5cca32b3680e70c13f093a0')
+  static const FundingRailTokenContractEnum n0xd7beebb53879df47b5cca32b3680e70c13f093a0 = _$fundingRailTokenContractEnum_n0xd7beebb53879df47b5cca32b3680e70c13f093a0;
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingRailTokenContractEnum unknownDefaultOpenApi = _$fundingRailTokenContractEnum_unknownDefaultOpenApi;
 
@@ -227,8 +228,8 @@ class FundingRailTokenContractEnum extends EnumClass {
 
 class FundingRailTokenDecimalsEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireNumber: 8)
-  static const FundingRailTokenDecimalsEnum number8 = _$fundingRailTokenDecimalsEnum_number8;
+  @BuiltValueEnumConst(wireNumber: 18)
+  static const FundingRailTokenDecimalsEnum number18 = _$fundingRailTokenDecimalsEnum_number18;
   @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
   static const FundingRailTokenDecimalsEnum unknownDefaultOpenApi = _$fundingRailTokenDecimalsEnum_unknownDefaultOpenApi;
 

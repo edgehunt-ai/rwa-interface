@@ -171,7 +171,7 @@ Class | Method | HTTP request | Description
 [*OrdersApi*](doc/OrdersApi.md) | [**prepareHip3AccountAbstraction**](doc/OrdersApi.md#preparehip3accountabstraction) | **POST** /v1/hip3/account-abstraction/prepare | 准备一次性切换到 Unified Account
 [*OrdersApi*](doc/OrdersApi.md) | [**previewHip3ClosePosition**](doc/OrdersApi.md#previewhip3closeposition) | **POST** /v1/positions/{position_id}/close/preview | 预览 HIP-3 全部或部分平仓
 [*OrdersApi*](doc/OrdersApi.md) | [**previewOrder**](doc/OrdersApi.md#previeworder) | **POST** /v1/orders/preview | 预览 bStocks 或 HIP-3 订单
-[*OrdersApi*](doc/OrdersApi.md) | [**submitBstocksWalletAction**](doc/OrdersApi.md#submitbstockswalletaction) | **POST** /v1/orders/{order_id}/wallet-actions/{step_id}/submissions | Record a submitted bStocks Router transaction
+[*OrdersApi*](doc/OrdersApi.md) | [**submitBstocksWalletAction**](doc/OrdersApi.md#submitbstockswalletaction) | **POST** /v1/orders/{order_id}/wallet-actions/{step_id}/submissions | Record a submitted bStocks wallet transaction
 [*OrdersApi*](doc/OrdersApi.md) | [**submitHip3ActionStep**](doc/OrdersApi.md#submithip3actionstep) | **POST** /v1/hip3/actions/{action_id}/steps/{step_id}/submissions | 提交当前 HIP-3 步骤签名并由后端广播
 [*PortfolioApi*](doc/PortfolioApi.md) | [**getPortfolioAllocation**](doc/PortfolioApi.md#getportfolioallocation) | **GET** /v1/portfolio/allocation | 获取资产组合配置分布
 [*PortfolioApi*](doc/PortfolioApi.md) | [**getPortfolioHistory**](doc/PortfolioApi.md#getportfoliohistory) | **GET** /v1/portfolio/history | 获取资产组合历史
@@ -235,8 +235,10 @@ Class | Method | HTTP request | Description
  - [BstockOrderPreview](doc/BstockOrderPreview.md)
  - [BstockOrderPreviewRequest](doc/BstockOrderPreviewRequest.md)
  - [BstockOrderWalletActionState](doc/BstockOrderWalletActionState.md)
+ - [BstockTestnetFundingRail](doc/BstockTestnetFundingRail.md)
  - [BstockTestnetOrderPreview](doc/BstockTestnetOrderPreview.md)
  - [BstocksActionStatus](doc/BstocksActionStatus.md)
+ - [BstocksApprovalMode](doc/BstocksApprovalMode.md)
  - [BstocksBlockQuoteValidity](doc/BstocksBlockQuoteValidity.md)
  - [BstocksCancellationPolicy](doc/BstocksCancellationPolicy.md)
  - [BstocksConfirmationBinding](doc/BstocksConfirmationBinding.md)
@@ -448,6 +450,7 @@ Class | Method | HTTP request | Description
  - [LegacyTransferStatus](doc/LegacyTransferStatus.md)
  - [ListAppVersions200Response](doc/ListAppVersions200Response.md)
  - [LockedExecutableActionTransferState](doc/LockedExecutableActionTransferState.md)
+ - [MainnetFundingSourceAssetCatalog](doc/MainnetFundingSourceAssetCatalog.md)
  - [MarginMode](doc/MarginMode.md)
  - [MarketProductGroup](doc/MarketProductGroup.md)
  - [MarketSessionInfo](doc/MarketSessionInfo.md)
@@ -580,6 +583,7 @@ Class | Method | HTTP request | Description
  - [SystemEnvironmentBstocksQuoteToken](doc/SystemEnvironmentBstocksQuoteToken.md)
  - [SystemEnvironmentExecution](doc/SystemEnvironmentExecution.md)
  - [SystemEnvironmentHip3](doc/SystemEnvironmentHip3.md)
+ - [TestnetFundingSourceAssetCatalog](doc/TestnetFundingSourceAssetCatalog.md)
  - [TokenBalance](doc/TokenBalance.md)
  - [TpSlSpec](doc/TpSlSpec.md)
  - [TradeIntent](doc/TradeIntent.md)

@@ -54,7 +54,7 @@ abstract class PerpFundingRail implements Built<PerpFundingRail, PerpFundingRail
 
   @BuiltValueField(wireName: r'provenance')
   FundingAssetProvenance get provenance;
-  // enum provenanceEnum {  circle_native,  tether_native,  tether_usdt0,  l2_standard_bridged,  binance_peg,  hyperliquid_perps,  };
+  // enum provenanceEnum {  circle_native,  tether_native,  tether_usdt0,  l2_standard_bridged,  binance_peg,  hyperliquid_perps,  testnet_mock,  };
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'minimum_amount')

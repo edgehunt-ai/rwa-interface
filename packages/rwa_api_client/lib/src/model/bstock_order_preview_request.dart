@@ -23,7 +23,7 @@ part 'bstock_order_preview_request.g.dart';
 /// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
-/// * [slippagePercent] - 最大可接受滑点；超出则下单失败
+/// * [slippagePercent] - 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 冻结最低输出=floor(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。限价单不得传非null值（含\"0\"）。 
 /// * [tpSl] 
 @BuiltValue()
 abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequest, BstockOrderPreviewRequestBuilder> {
@@ -58,7 +58,7 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// 最大可接受滑点；超出则下单失败
+  /// 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 冻结最低输出=floor(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。限价单不得传非null值（含\"0\"）。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 

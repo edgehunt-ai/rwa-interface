@@ -91,9 +91,12 @@ final class PortfolioRepositoryImpl
 
   @override
   Future<List<PortfolioAsset>> listAssets({String? cursor}) async {
-    final page = await _service.listAssets(cursor: cursor);
-    return page.items
-        .map(
+    final values = <PortfolioAsset>[];
+    var nextCursor = cursor;
+    do {
+      final page = await _service.listAssets(cursor: nextCursor);
+      values.addAll(
+        page.items.map(
           (asset) => PortfolioAsset(
             assetId: asset.assetId,
             network: asset.network.name,
@@ -104,12 +107,16 @@ final class PortfolioRepositoryImpl
               asset: asset.symbol,
               unit: 'token',
             ),
+            withdrawable: asset.withdrawable ?? false,
             walletId: asset.walletId,
             contractAddress: asset.contractAddress,
             native: asset.native_,
           ),
-        )
-        .toList(growable: false);
+        ),
+      );
+      nextCursor = page.nextCursor;
+    } while (nextCursor != null);
+    return values;
   }
 
   @override

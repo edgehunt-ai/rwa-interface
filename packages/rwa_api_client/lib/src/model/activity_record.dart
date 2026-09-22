@@ -27,6 +27,7 @@ part 'activity_record.g.dart';
 /// * [title] 
 /// * [amount] - Decimal amount without a unit suffix.
 /// * [context] - 副标题，说明市场与当前状态
+/// * [failureReason] - 终态失败/人工复核时的可读原因（venue 拒因、reconciliation 说明等）， 来自资源 metadata 的 `last_error_message`/`failure_reason`；非终态或无失败时为 null。 
 /// * [symbol] 
 /// * [kind] 
 /// * [fields] - 展开后的键值对明细
@@ -70,6 +71,10 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
   /// 副标题，说明市场与当前状态
   @BuiltValueField(wireName: r'context')
   String? get context;
+
+  /// 终态失败/人工复核时的可读原因（venue 拒因、reconciliation 说明等）， 来自资源 metadata 的 `last_error_message`/`failure_reason`；非终态或无失败时为 null。 
+  @BuiltValueField(wireName: r'failure_reason')
+  String? get failureReason;
 
   @BuiltValueField(wireName: r'symbol')
   String? get symbol;
@@ -174,6 +179,13 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
       yield serializers.serialize(
         object.context,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.failureReason != null) {
+      yield r'failure_reason';
+      yield serializers.serialize(
+        object.failureReason,
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.symbol != null) {
@@ -320,6 +332,14 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
           ) as String?;
           if (valueDes == null) continue;
           result.context = valueDes;
+          break;
+        case r'failure_reason':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.failureReason = valueDes;
           break;
         case r'symbol':
           final valueDes = serializers.deserialize(

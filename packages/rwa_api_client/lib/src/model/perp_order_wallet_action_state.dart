@@ -13,11 +13,16 @@ part 'perp_order_wallet_action_state.g.dart';
 /// PerpOrderWalletActionState
 ///
 /// Properties:
+/// * [quantity] - 十进制字符串，避免浮点误差
 /// * [kind] 
 /// * [nextAction] 
 /// * [walletActionBlocker] 
 @BuiltValue()
 abstract class PerpOrderWalletActionState implements Built<PerpOrderWalletActionState, PerpOrderWalletActionStateBuilder> {
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'quantity')
+  String? get quantity;
+
   @BuiltValueField(wireName: r'kind')
   PerpOrderWalletActionStateKindEnum get kind;
   // enum kindEnum {  perp,  };
@@ -52,6 +57,13 @@ class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<Perp
     PerpOrderWalletActionState object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.quantity != null) {
+      yield r'quantity';
+      yield serializers.serialize(
+        object.quantity,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'kind';
     yield serializers.serialize(
       object.kind,
@@ -90,6 +102,14 @@ class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<Perp
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.quantity = valueDes;
+          break;
         case r'kind':
           final valueDes = serializers.deserialize(
             value,

@@ -219,6 +219,10 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   @override
   final bool? approvalRequired;
   @override
+  final BstocksApprovalMode? approvalMode;
+  @override
+  final String? approvalAmountRaw;
+  @override
   final BstockOrderWalletActionStateFundingModeEnum? fundingMode;
   @override
   final bool? fundsReserved;
@@ -246,6 +250,8 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
 
   _$BstockOrderWalletActionState._(
       {this.approvalRequired,
+      this.approvalMode,
+      this.approvalAmountRaw,
       this.fundingMode,
       this.fundsReserved,
       this.cancellationPolicy,
@@ -271,6 +277,8 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
     if (identical(other, this)) return true;
     return other is BstockOrderWalletActionState &&
         approvalRequired == other.approvalRequired &&
+        approvalMode == other.approvalMode &&
+        approvalAmountRaw == other.approvalAmountRaw &&
         fundingMode == other.fundingMode &&
         fundsReserved == other.fundsReserved &&
         cancellationPolicy == other.cancellationPolicy &&
@@ -287,6 +295,8 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, approvalRequired.hashCode);
+    _$hash = $jc(_$hash, approvalMode.hashCode);
+    _$hash = $jc(_$hash, approvalAmountRaw.hashCode);
     _$hash = $jc(_$hash, fundingMode.hashCode);
     _$hash = $jc(_$hash, fundsReserved.hashCode);
     _$hash = $jc(_$hash, cancellationPolicy.hashCode);
@@ -305,6 +315,8 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   String toString() {
     return (newBuiltValueToStringHelper(r'BstockOrderWalletActionState')
           ..add('approvalRequired', approvalRequired)
+          ..add('approvalMode', approvalMode)
+          ..add('approvalAmountRaw', approvalAmountRaw)
           ..add('fundingMode', fundingMode)
           ..add('fundsReserved', fundsReserved)
           ..add('cancellationPolicy', cancellationPolicy)
@@ -329,6 +341,16 @@ class BstockOrderWalletActionStateBuilder
   bool? get approvalRequired => _$this._approvalRequired;
   set approvalRequired(bool? approvalRequired) =>
       _$this._approvalRequired = approvalRequired;
+
+  BstocksApprovalMode? _approvalMode;
+  BstocksApprovalMode? get approvalMode => _$this._approvalMode;
+  set approvalMode(BstocksApprovalMode? approvalMode) =>
+      _$this._approvalMode = approvalMode;
+
+  String? _approvalAmountRaw;
+  String? get approvalAmountRaw => _$this._approvalAmountRaw;
+  set approvalAmountRaw(String? approvalAmountRaw) =>
+      _$this._approvalAmountRaw = approvalAmountRaw;
 
   BstockOrderWalletActionStateFundingModeEnum? _fundingMode;
   BstockOrderWalletActionStateFundingModeEnum? get fundingMode =>
@@ -394,6 +416,8 @@ class BstockOrderWalletActionStateBuilder
     final $v = _$v;
     if ($v != null) {
       _approvalRequired = $v.approvalRequired;
+      _approvalMode = $v.approvalMode;
+      _approvalAmountRaw = $v.approvalAmountRaw;
       _fundingMode = $v.fundingMode;
       _fundsReserved = $v.fundsReserved;
       _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
@@ -428,6 +452,8 @@ class BstockOrderWalletActionStateBuilder
       _$result = _$v ??
           _$BstockOrderWalletActionState._(
             approvalRequired: approvalRequired,
+            approvalMode: approvalMode,
+            approvalAmountRaw: approvalAmountRaw,
             fundingMode: fundingMode,
             fundsReserved: fundsReserved,
             cancellationPolicy: _cancellationPolicy?.build(),

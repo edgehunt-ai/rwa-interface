@@ -11,12 +11,19 @@ part 'funding_provider.g.dart';
 
 class FundingProvider extends EnumClass {
 
+  /// `platform_float` 是平台垫付池：观测源链到池转账后由池在目标端垫付， 当前用于 testnet 与不依赖第三方桥的 rail。 
   @BuiltValueEnumConst(wireName: r'across')
   static const FundingProvider across = _$across;
+  /// `platform_float` 是平台垫付池：观测源链到池转账后由池在目标端垫付， 当前用于 testnet 与不依赖第三方桥的 rail。 
   @BuiltValueEnumConst(wireName: r'relay')
   static const FundingProvider relay = _$relay;
+  /// `platform_float` 是平台垫付池：观测源链到池转账后由池在目标端垫付， 当前用于 testnet 与不依赖第三方桥的 rail。 
   @BuiltValueEnumConst(wireName: r'hyperliquid_bridge2')
   static const FundingProvider hyperliquidBridge2 = _$hyperliquidBridge2;
+  /// `platform_float` 是平台垫付池：观测源链到池转账后由池在目标端垫付， 当前用于 testnet 与不依赖第三方桥的 rail。 
+  @BuiltValueEnumConst(wireName: r'platform_float')
+  static const FundingProvider platformFloat = _$platformFloat;
+  /// `platform_float` 是平台垫付池：观测源链到池转账后由池在目标端垫付， 当前用于 testnet 与不依赖第三方桥的 rail。 
   @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
   static const FundingProvider unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 

@@ -145,6 +145,10 @@ class _$Order extends Order {
   @override
   final bool? approvalRequired;
   @override
+  final BstocksApprovalMode? approvalMode;
+  @override
+  final String? approvalAmountRaw;
+  @override
   final OrderFundingModeEnum? fundingMode;
   @override
   final bool? fundsReserved;
@@ -164,6 +168,8 @@ class _$Order extends Order {
   final String? confirmedTransactionHash;
   @override
   final String? requiredFundingRaw;
+  @override
+  final String? quantity;
   @override
   final String? settlementAsset;
   @override
@@ -199,8 +205,6 @@ class _$Order extends Order {
   @override
   final String? limitPrice;
   @override
-  final String? quantity;
-  @override
   final String? filledQuantity;
   @override
   final String? averageFillPrice;
@@ -234,6 +238,8 @@ class _$Order extends Order {
 
   _$Order._(
       {this.approvalRequired,
+      this.approvalMode,
+      this.approvalAmountRaw,
       this.fundingMode,
       this.fundsReserved,
       this.cancellationPolicy,
@@ -244,6 +250,7 @@ class _$Order extends Order {
       this.submittedTransactionHash,
       this.confirmedTransactionHash,
       this.requiredFundingRaw,
+      this.quantity,
       this.settlementAsset,
       this.productId,
       this.hip3ActionId,
@@ -261,7 +268,6 @@ class _$Order extends Order {
       required this.type,
       required this.status,
       this.limitPrice,
-      this.quantity,
       this.filledQuantity,
       this.averageFillPrice,
       this.orderValue,
@@ -289,6 +295,8 @@ class _$Order extends Order {
     if (identical(other, this)) return true;
     return other is Order &&
         approvalRequired == other.approvalRequired &&
+        approvalMode == other.approvalMode &&
+        approvalAmountRaw == other.approvalAmountRaw &&
         fundingMode == other.fundingMode &&
         fundsReserved == other.fundsReserved &&
         cancellationPolicy == other.cancellationPolicy &&
@@ -299,6 +307,7 @@ class _$Order extends Order {
         submittedTransactionHash == other.submittedTransactionHash &&
         confirmedTransactionHash == other.confirmedTransactionHash &&
         requiredFundingRaw == other.requiredFundingRaw &&
+        quantity == other.quantity &&
         settlementAsset == other.settlementAsset &&
         productId == other.productId &&
         hip3ActionId == other.hip3ActionId &&
@@ -316,7 +325,6 @@ class _$Order extends Order {
         type == other.type &&
         status == other.status &&
         limitPrice == other.limitPrice &&
-        quantity == other.quantity &&
         filledQuantity == other.filledQuantity &&
         averageFillPrice == other.averageFillPrice &&
         orderValue == other.orderValue &&
@@ -337,6 +345,8 @@ class _$Order extends Order {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, approvalRequired.hashCode);
+    _$hash = $jc(_$hash, approvalMode.hashCode);
+    _$hash = $jc(_$hash, approvalAmountRaw.hashCode);
     _$hash = $jc(_$hash, fundingMode.hashCode);
     _$hash = $jc(_$hash, fundsReserved.hashCode);
     _$hash = $jc(_$hash, cancellationPolicy.hashCode);
@@ -347,6 +357,7 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
     _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
     _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
+    _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, hip3ActionId.hashCode);
@@ -364,7 +375,6 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, type.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, limitPrice.hashCode);
-    _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, filledQuantity.hashCode);
     _$hash = $jc(_$hash, averageFillPrice.hashCode);
     _$hash = $jc(_$hash, orderValue.hashCode);
@@ -387,6 +397,8 @@ class _$Order extends Order {
   String toString() {
     return (newBuiltValueToStringHelper(r'Order')
           ..add('approvalRequired', approvalRequired)
+          ..add('approvalMode', approvalMode)
+          ..add('approvalAmountRaw', approvalAmountRaw)
           ..add('fundingMode', fundingMode)
           ..add('fundsReserved', fundsReserved)
           ..add('cancellationPolicy', cancellationPolicy)
@@ -397,6 +409,7 @@ class _$Order extends Order {
           ..add('submittedTransactionHash', submittedTransactionHash)
           ..add('confirmedTransactionHash', confirmedTransactionHash)
           ..add('requiredFundingRaw', requiredFundingRaw)
+          ..add('quantity', quantity)
           ..add('settlementAsset', settlementAsset)
           ..add('productId', productId)
           ..add('hip3ActionId', hip3ActionId)
@@ -414,7 +427,6 @@ class _$Order extends Order {
           ..add('type', type)
           ..add('status', status)
           ..add('limitPrice', limitPrice)
-          ..add('quantity', quantity)
           ..add('filledQuantity', filledQuantity)
           ..add('averageFillPrice', averageFillPrice)
           ..add('orderValue', orderValue)
@@ -440,6 +452,16 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   bool? get approvalRequired => _$this._approvalRequired;
   set approvalRequired(bool? approvalRequired) =>
       _$this._approvalRequired = approvalRequired;
+
+  BstocksApprovalMode? _approvalMode;
+  BstocksApprovalMode? get approvalMode => _$this._approvalMode;
+  set approvalMode(BstocksApprovalMode? approvalMode) =>
+      _$this._approvalMode = approvalMode;
+
+  String? _approvalAmountRaw;
+  String? get approvalAmountRaw => _$this._approvalAmountRaw;
+  set approvalAmountRaw(String? approvalAmountRaw) =>
+      _$this._approvalAmountRaw = approvalAmountRaw;
 
   OrderFundingModeEnum? _fundingMode;
   OrderFundingModeEnum? get fundingMode => _$this._fundingMode;
@@ -491,6 +513,10 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   String? get requiredFundingRaw => _$this._requiredFundingRaw;
   set requiredFundingRaw(String? requiredFundingRaw) =>
       _$this._requiredFundingRaw = requiredFundingRaw;
+
+  String? _quantity;
+  String? get quantity => _$this._quantity;
+  set quantity(String? quantity) => _$this._quantity = quantity;
 
   String? _settlementAsset;
   String? get settlementAsset => _$this._settlementAsset;
@@ -571,10 +597,6 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   String? get limitPrice => _$this._limitPrice;
   set limitPrice(String? limitPrice) => _$this._limitPrice = limitPrice;
 
-  String? _quantity;
-  String? get quantity => _$this._quantity;
-  set quantity(String? quantity) => _$this._quantity = quantity;
-
   String? _filledQuantity;
   String? get filledQuantity => _$this._filledQuantity;
   set filledQuantity(String? filledQuantity) =>
@@ -642,6 +664,8 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
     final $v = _$v;
     if ($v != null) {
       _approvalRequired = $v.approvalRequired;
+      _approvalMode = $v.approvalMode;
+      _approvalAmountRaw = $v.approvalAmountRaw;
       _fundingMode = $v.fundingMode;
       _fundsReserved = $v.fundsReserved;
       _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
@@ -652,6 +676,7 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _submittedTransactionHash = $v.submittedTransactionHash;
       _confirmedTransactionHash = $v.confirmedTransactionHash;
       _requiredFundingRaw = $v.requiredFundingRaw;
+      _quantity = $v.quantity;
       _settlementAsset = $v.settlementAsset;
       _productId = $v.productId;
       _hip3ActionId = $v.hip3ActionId;
@@ -669,7 +694,6 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _type = $v.type;
       _status = $v.status;
       _limitPrice = $v.limitPrice;
-      _quantity = $v.quantity;
       _filledQuantity = $v.filledQuantity;
       _averageFillPrice = $v.averageFillPrice;
       _orderValue = $v.orderValue;
@@ -708,6 +732,8 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _$result = _$v ??
           _$Order._(
             approvalRequired: approvalRequired,
+            approvalMode: approvalMode,
+            approvalAmountRaw: approvalAmountRaw,
             fundingMode: fundingMode,
             fundsReserved: fundsReserved,
             cancellationPolicy: _cancellationPolicy?.build(),
@@ -718,6 +744,7 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             submittedTransactionHash: submittedTransactionHash,
             confirmedTransactionHash: confirmedTransactionHash,
             requiredFundingRaw: requiredFundingRaw,
+            quantity: quantity,
             settlementAsset: settlementAsset,
             productId: productId,
             hip3ActionId: hip3ActionId,
@@ -738,7 +765,6 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             status: BuiltValueNullFieldError.checkNotNull(
                 status, r'Order', 'status'),
             limitPrice: limitPrice,
-            quantity: quantity,
             filledQuantity: filledQuantity,
             averageFillPrice: averageFillPrice,
             orderValue: orderValue,

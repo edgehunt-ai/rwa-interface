@@ -30,7 +30,7 @@ part 'product_listing.g.dart';
 /// * [volume24h] - 24h 成交量（以基础资产计价）
 /// * [volume24hUnit] 
 /// * [turnover24hUsd] - 十进制字符串，避免浮点误差
-/// * [hotRank] 
+/// * [hotRank] - 当前产品列表筛选集合内的24h成交额热度名次；缺失/非法成交额为 null，不使用目录序号伪造热度。
 /// * [isFavorite] 
 /// * [tradable] - 产品级可交易性。bStocks catalog 展示条目为 false；未返回时按产品类型默认处理。
 /// * [executionStatus] - bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
@@ -98,6 +98,7 @@ abstract class ProductListing implements Built<ProductListing, ProductListingBui
   @BuiltValueField(wireName: r'turnover_24h_usd')
   String? get turnover24hUsd;
 
+  /// 当前产品列表筛选集合内的24h成交额热度名次；缺失/非法成交额为 null，不使用目录序号伪造热度。
   @BuiltValueField(wireName: r'hot_rank')
   int? get hotRank;
 

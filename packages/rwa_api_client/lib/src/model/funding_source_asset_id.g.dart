@@ -38,6 +38,18 @@ const FundingSourceAssetId
     _$eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 =
     const FundingSourceAssetId._(
         'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955');
+const FundingSourceAssetId
+    _$eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d =
+    const FundingSourceAssetId._(
+        'eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d');
+const FundingSourceAssetId
+    _$eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5 =
+    const FundingSourceAssetId._(
+        'eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5');
+const FundingSourceAssetId
+    _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0 =
+    const FundingSourceAssetId._(
+        'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0');
 const FundingSourceAssetId _$unknownDefaultOpenApi =
     const FundingSourceAssetId._('unknownDefaultOpenApi');
 
@@ -59,6 +71,12 @@ FundingSourceAssetId _$valueOf(String name) {
       return _$eip155Colon56SlashErc20Colon0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
     case 'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
       return _$eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
+    case 'eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d':
+      return _$eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d;
+    case 'eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5':
+      return _$eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5;
+    case 'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0':
+      return _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0;
     case 'unknownDefaultOpenApi':
       return _$unknownDefaultOpenApi;
     default:
@@ -76,6 +94,9 @@ final BuiltSet<FundingSourceAssetId> _$values =
   _$eip155Colon8453SlashErc20Colon0xfde4c96c8593536e31f229ea8f37b2ada2699bb2,
   _$eip155Colon56SlashErc20Colon0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d,
   _$eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955,
+  _$eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d,
+  _$eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5,
+  _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0,
   _$unknownDefaultOpenApi,
 ]);
 
@@ -105,6 +126,15 @@ class _$FundingSourceAssetIdMeta {
   FundingSourceAssetId
       get eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 =>
           _$eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
+  FundingSourceAssetId
+      get eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d =>
+          _$eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d;
+  FundingSourceAssetId
+      get eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5 =>
+          _$eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5;
+  FundingSourceAssetId
+      get eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0 =>
+          _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0;
   FundingSourceAssetId get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingSourceAssetId valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingSourceAssetId> get values => _$values;
@@ -138,6 +168,12 @@ class _$FundingSourceAssetIdSerializer
         'eip155:56/erc20:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
         'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
+    'eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d':
+        'eip155:421614/erc20:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+    'eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5':
+        'eip155:421614/erc20:0x1baabb04529d43a73232b713c0fe471f7c7334d5',
+    'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0':
+        'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -157,6 +193,12 @@ class _$FundingSourceAssetIdSerializer
         'eip155Colon56SlashErc20Colon0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
     'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955':
         'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955',
+    'eip155:421614/erc20:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d':
+        'eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d',
+    'eip155:421614/erc20:0x1baabb04529d43a73232b713c0fe471f7c7334d5':
+        'eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5',
+    'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0':
+        'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

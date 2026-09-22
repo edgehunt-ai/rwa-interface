@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
@@ -126,11 +127,11 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         // empty native balance. Confirming raises it if it turns out to apply.
         error = null;
       });
-    } on Object {
+    } on Object catch (failure) {
       if (!mounted) return;
       setState(() {
         quoting = false;
-        error = AppLocalizations.of(context).prepareWithdrawalFailed;
+        error = _withdrawalErrorMessage(failure);
       });
     }
   }
@@ -178,12 +179,9 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
       if (mounted) setState(() => submitting = false);
     } on InsufficientWithdrawalGas catch (failure) {
       if (mounted) setState(() => error = _gasError(failure.estimate));
-    } on Object {
+    } on Object catch (failure) {
       if (mounted) {
-        AppToast.showFailure(
-          context,
-          AppLocalizations.of(context).prepareWithdrawalFailed,
-        );
+        AppToast.showFailure(context, _withdrawalErrorMessage(failure));
       }
     } finally {
       if (mounted) setState(() => submitting = false);
@@ -210,14 +208,26 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
       }
     } on InsufficientWithdrawalGas catch (failure) {
       if (mounted) setState(() => error = _gasError(failure.estimate));
-    } on Object {
+    } on Object catch (failure) {
       if (mounted) {
-        AppToast.showFailure(
-          context,
-          AppLocalizations.of(context).prepareWithdrawalFailed,
-        );
+        AppToast.showFailure(context, _withdrawalErrorMessage(failure));
       }
     }
+  }
+
+  String _withdrawalErrorMessage(Object failure) {
+    if (failure is ApiFailure) {
+      return apiFailureMessage(
+        failure,
+        fallback: AppLocalizations.of(context).prepareWithdrawalFailed,
+      );
+    }
+    if (failure is FormatException && failure.message.trim().isNotEmpty) {
+      return failure.message;
+    }
+    final message = failure.toString().trim();
+    if (message.isNotEmpty && message != 'null') return message;
+    return AppLocalizations.of(context).prepareWithdrawalFailed;
   }
 
   Future<DecimalValue?> _readWithdrawableBalance(WithdrawalQuote quote) async {
@@ -1104,8 +1114,6 @@ class _AssetSelectorState extends ConsumerState<_AssetSelector> {
                 title: l10n.unableToLoadAssets,
                 description: l10n.checkConnectionRetry,
                 onRetry: () async {
-                  ref.invalidate(tradingAccountsProvider);
-                  await ref.read(tradingAccountsProvider.future);
                   ref.invalidate(withdrawalAssetsProvider);
                   await ref.read(withdrawalAssetsProvider.future);
                 },

@@ -30,7 +30,7 @@ abstract class FundingRouteCapability implements Built<FundingRouteCapability, F
 
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
-  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
+  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  platform_float,  };
 
   @BuiltValueField(wireName: r'status')
   FundingRouteCapabilityStatus get status;

@@ -131,6 +131,8 @@ class _$PerpOrderWalletActionStateWalletActionBlockerEnumSerializer
 
 class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
   @override
+  final String? quantity;
+  @override
   final PerpOrderWalletActionStateKindEnum kind;
   @override
   final JsonObject? nextAction;
@@ -142,7 +144,10 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
       (PerpOrderWalletActionStateBuilder()..update(updates))._build();
 
   _$PerpOrderWalletActionState._(
-      {required this.kind, this.nextAction, required this.walletActionBlocker})
+      {this.quantity,
+      required this.kind,
+      this.nextAction,
+      required this.walletActionBlocker})
       : super._();
   @override
   PerpOrderWalletActionState rebuild(
@@ -157,6 +162,7 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is PerpOrderWalletActionState &&
+        quantity == other.quantity &&
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker;
@@ -165,6 +171,7 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
@@ -175,6 +182,7 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'PerpOrderWalletActionState')
+          ..add('quantity', quantity)
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker))
@@ -186,6 +194,10 @@ class PerpOrderWalletActionStateBuilder
     implements
         Builder<PerpOrderWalletActionState, PerpOrderWalletActionStateBuilder> {
   _$PerpOrderWalletActionState? _$v;
+
+  String? _quantity;
+  String? get quantity => _$this._quantity;
+  set quantity(String? quantity) => _$this._quantity = quantity;
 
   PerpOrderWalletActionStateKindEnum? _kind;
   PerpOrderWalletActionStateKindEnum? get kind => _$this._kind;
@@ -210,6 +222,7 @@ class PerpOrderWalletActionStateBuilder
   PerpOrderWalletActionStateBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _quantity = $v.quantity;
       _kind = $v.kind;
       _nextAction = $v.nextAction;
       _walletActionBlocker = $v.walletActionBlocker;
@@ -234,6 +247,7 @@ class PerpOrderWalletActionStateBuilder
   _$PerpOrderWalletActionState _build() {
     final _$result = _$v ??
         _$PerpOrderWalletActionState._(
+          quantity: quantity,
           kind: BuiltValueNullFieldError.checkNotNull(
               kind, r'PerpOrderWalletActionState', 'kind'),
           nextAction: nextAction,

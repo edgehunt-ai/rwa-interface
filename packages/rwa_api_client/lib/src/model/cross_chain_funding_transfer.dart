@@ -120,7 +120,7 @@ abstract class CrossChainFundingTransfer implements Built<CrossChainFundingTrans
 
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
-  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
+  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  platform_float,  };
 
   @BuiltValueField(wireName: r'refund_status')
   TransferRefundStatus get refundStatus;

@@ -12,6 +12,7 @@ final class WithdrawableAsset {
     this.walletId,
     this.contractAddress,
     this.native = false,
+    this.withdrawable = false,
   });
 
   final String symbol;
@@ -23,9 +24,10 @@ final class WithdrawableAsset {
   final String? walletId;
   final String? contractAddress;
   final bool native;
+  final bool withdrawable;
 
   String get key => '$symbol|$chain';
-  bool get isWithdrawalSupported => symbol == 'USDC' && !native;
+  bool get isWithdrawalSupported => withdrawable;
 }
 
 final class WithdrawalIntent {

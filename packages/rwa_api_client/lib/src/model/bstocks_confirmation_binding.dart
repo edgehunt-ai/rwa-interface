@@ -16,7 +16,7 @@ part 'bstocks_confirmation_binding.g.dart';
 /// * [expiresAt] 
 /// * [deadlineKind] 
 /// * [maximumInputRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
-/// * [minimumOutputRaw] - IOC 的最低输出边界；GTC 为 null。
+/// * [minimumOutputRaw] - IOC 预览同意的最低输出边界（原始单位，向下取整），GTC 为 null。 与 estimated_receive 区分：这是旧预览对后续新报价的下限，不表示原样编码成链上 minAmountOut。 当前新路由必须不突破该下限，交易编码却使用新路由自身的报价输出作为更严格的下限。 
 /// * [approvalRequiresNewPreview] 
 @BuiltValue()
 abstract class BstocksConfirmationBinding implements Built<BstocksConfirmationBinding, BstocksConfirmationBindingBuilder> {
@@ -35,7 +35,7 @@ abstract class BstocksConfirmationBinding implements Built<BstocksConfirmationBi
   @BuiltValueField(wireName: r'maximum_input_raw')
   String get maximumInputRaw;
 
-  /// IOC 的最低输出边界；GTC 为 null。
+  /// IOC 预览同意的最低输出边界（原始单位，向下取整），GTC 为 null。 与 estimated_receive 区分：这是旧预览对后续新报价的下限，不表示原样编码成链上 minAmountOut。 当前新路由必须不突破该下限，交易编码却使用新路由自身的报价输出作为更严格的下限。 
   @BuiltValueField(wireName: r'minimum_output_raw')
   String? get minimumOutputRaw;
 

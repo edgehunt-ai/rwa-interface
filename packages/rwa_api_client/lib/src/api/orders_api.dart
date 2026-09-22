@@ -725,7 +725,7 @@ class OrdersApi {
   }
 
   /// 创建订单
-  /// 
+  /// bStocks 响应可能只是 erc20_approval 钱包动作，不代表买卖已成交；顶层 kind 仍为 bstock。 非 localnet 新订单必须携带账户绑定的有效 preview_id；缺失、查无本账户记录、超过服务端期限 或报价区块期限返回409 preview_expired。输入/授权策略/经济量边界变化返回409 bstocks_preview_changed。 原预览被另一个创建请求消费则返回409 bstocks_preview_already_consumed；完全相同的创建幂等请求 重放原 action，不刷新其交易或有效期。approve 确认后用新 preview 和新创建键请求独立交易动作。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -1544,7 +1544,7 @@ class OrdersApi {
   }
 
   /// 订单详情与权威状态
-  /// 
+  /// 对 bstocks-action:&lt;UUID&gt; 仅返回本账户数据库中已持久化的 action，不现场查询链、不触发确认。 客户端先通过 submissions 上报交易哈希，后台 Worker 独立核验回执并写入状态。 approve 完成应检查该动作 action_status&#x3D;confirmed；此时 status&#x3D;open、next_action&#x3D;null， 不是 filled，不自动生成下一笔交易。approval_required 是动作创建时快照，可能仍为 true。 必须结合 action_status 判断成功，不能只依据交易哈希存在或浏览器已显示打包。 
   ///
   /// Parameters:
   /// * [orderId] 
@@ -2323,7 +2323,7 @@ class OrdersApi {
   }
 
   /// 预览 bStocks 或 HIP-3 订单
-  /// 
+  /// bStocks 非 localnet 预览持久化账户、输入、准入及授权策略，服务端有效期最多120秒， 市价预览还受 Quoter 的 valid_until_block 限制。重复使用同一个 Idempotency-Key 读取原预览， 不刷新价格或延长期限；重新报价应使用新键，同一次请求的网络重试仍复用原键。 过期返回409 preview_expired，user_action&#x3D;refresh_preview；approve 消费旧预览后必须重新获取。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -2426,8 +2426,8 @@ class OrdersApi {
     );
   }
 
-  /// Record a submitted bStocks Router transaction
-  /// Accepts only the user wallet&#39;s transaction hash for the exact durable Router action. The server never accepts replacement calldata, target, value, receipt, block, or success claims; canonical confirmation and reorg handling are performed by the Router observer. 
+  /// Record a submitted bStocks wallet transaction
+  /// Accepts only tx_hash for the exact durable action: erc20_approval targets the input token; order placement/execution/cancellation targets the Router. order_id is bstocks-action:&lt;UUID&gt; and step_id must be that same bare UUID. The server checks chain/from/to/calldata/value through RPC before first recording submitted; this is not proof of a successful receipt. Replacement calldata, receipt, block and client success claims are never accepted. The Worker confirms approvals from a canonical successful receipt after configured confirmations, with a matching Approval log or sufficient on-chain allowance. Router order evidence is handled by the Router observer/reconciliation path. GET polling does not accelerate either process. 
   ///
   /// Parameters:
   /// * [orderId] 

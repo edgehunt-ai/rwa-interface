@@ -20,7 +20,7 @@ part 'funding_provider_observation.g.dart';
 abstract class FundingProviderObservation implements Built<FundingProviderObservation, FundingProviderObservationBuilder> {
   @BuiltValueField(wireName: r'provider')
   FundingProvider get provider;
-  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  };
+  // enum providerEnum {  across,  relay,  hyperliquid_bridge2,  platform_float,  };
 
   @BuiltValueField(wireName: r'status')
   TransferProviderStatus get status;

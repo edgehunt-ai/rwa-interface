@@ -18,6 +18,8 @@ const FundingAssetProvenance _$binancePeg =
     const FundingAssetProvenance._('binancePeg');
 const FundingAssetProvenance _$hyperliquidPerps =
     const FundingAssetProvenance._('hyperliquidPerps');
+const FundingAssetProvenance _$testnetMock =
+    const FundingAssetProvenance._('testnetMock');
 const FundingAssetProvenance _$unknownDefaultOpenApi =
     const FundingAssetProvenance._('unknownDefaultOpenApi');
 
@@ -35,6 +37,8 @@ FundingAssetProvenance _$valueOf(String name) {
       return _$binancePeg;
     case 'hyperliquidPerps':
       return _$hyperliquidPerps;
+    case 'testnetMock':
+      return _$testnetMock;
     case 'unknownDefaultOpenApi':
       return _$unknownDefaultOpenApi;
     default:
@@ -50,6 +54,7 @@ final BuiltSet<FundingAssetProvenance> _$values =
   _$l2StandardBridged,
   _$binancePeg,
   _$hyperliquidPerps,
+  _$testnetMock,
   _$unknownDefaultOpenApi,
 ]);
 
@@ -61,6 +66,7 @@ class _$FundingAssetProvenanceMeta {
   FundingAssetProvenance get l2StandardBridged => _$l2StandardBridged;
   FundingAssetProvenance get binancePeg => _$binancePeg;
   FundingAssetProvenance get hyperliquidPerps => _$hyperliquidPerps;
+  FundingAssetProvenance get testnetMock => _$testnetMock;
   FundingAssetProvenance get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingAssetProvenance valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingAssetProvenance> get values => _$values;
@@ -84,6 +90,7 @@ class _$FundingAssetProvenanceSerializer
     'l2StandardBridged': 'l2_standard_bridged',
     'binancePeg': 'binance_peg',
     'hyperliquidPerps': 'hyperliquid_perps',
+    'testnetMock': 'testnet_mock',
     'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
@@ -93,6 +100,7 @@ class _$FundingAssetProvenanceSerializer
     'l2_standard_bridged': 'l2StandardBridged',
     'binance_peg': 'binancePeg',
     'hyperliquid_perps': 'hyperliquidPerps',
+    'testnet_mock': 'testnetMock',
     'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 

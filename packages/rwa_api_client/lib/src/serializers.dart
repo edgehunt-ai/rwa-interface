@@ -54,8 +54,10 @@ import 'package:rwa_api_client/src/model/bstock_localnet_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_rail.dart';
 import 'package:rwa_api_client/src/model/bstock_testnet_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
+import 'package:rwa_api_client/src/model/bstocks_approval_mode.dart';
 import 'package:rwa_api_client/src/model/bstocks_block_quote_validity.dart';
 import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/bstocks_confirmation_binding.dart';
@@ -267,6 +269,7 @@ import 'package:rwa_api_client/src/model/legacy_transfer.dart';
 import 'package:rwa_api_client/src/model/legacy_transfer_status.dart';
 import 'package:rwa_api_client/src/model/list_app_versions200_response.dart';
 import 'package:rwa_api_client/src/model/locked_executable_action_transfer_state.dart';
+import 'package:rwa_api_client/src/model/mainnet_funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/market_product_group.dart';
 import 'package:rwa_api_client/src/model/market_session_info.dart';
@@ -399,6 +402,7 @@ import 'package:rwa_api_client/src/model/system_environment_bstocks.dart';
 import 'package:rwa_api_client/src/model/system_environment_bstocks_quote_token.dart';
 import 'package:rwa_api_client/src/model/system_environment_execution.dart';
 import 'package:rwa_api_client/src/model/system_environment_hip3.dart';
+import 'package:rwa_api_client/src/model/testnet_funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/token_balance.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
 import 'package:rwa_api_client/src/model/trade_intent.dart';
@@ -498,8 +502,10 @@ part 'serializers.g.dart';
   BstockOrderPreview,
   BstockOrderPreviewRequest,
   BstockOrderWalletActionState,
+  BstockTestnetFundingRail,
   BstockTestnetOrderPreview,
   BstocksActionStatus,
+  BstocksApprovalMode,
   BstocksBlockQuoteValidity,
   BstocksCancellationPolicy,
   BstocksConfirmationBinding,
@@ -711,6 +717,7 @@ part 'serializers.g.dart';
   LegacyTransferStatus,
   ListAppVersions200Response,
   LockedExecutableActionTransferState,
+  MainnetFundingSourceAssetCatalog,
   MarginMode,
   MarketProductGroup,
   MarketSessionInfo,
@@ -843,6 +850,7 @@ part 'serializers.g.dart';
   SystemEnvironmentBstocksQuoteToken,
   SystemEnvironmentExecution,
   SystemEnvironmentHip3,
+  TestnetFundingSourceAssetCatalog,
   TokenBalance,
   TpSlSpec,
   TradeIntent,

@@ -72,6 +72,12 @@ abstract class OrderPreviewCommonBuilder {
   BstocksPreviewEconomicsBuilder get bstocks;
   set bstocks(BstocksPreviewEconomicsBuilder? bstocks);
 
+  BstocksApprovalMode? get approvalMode;
+  set approvalMode(BstocksApprovalMode? approvalMode);
+
+  String? get approvalAmountRaw;
+  set approvalAmountRaw(String? approvalAmountRaw);
+
   Hip3TimeInForce? get timeInForce;
   set timeInForce(Hip3TimeInForce? timeInForce);
 
@@ -197,6 +203,10 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   @override
   final BstocksPreviewEconomics? bstocks;
   @override
+  final BstocksApprovalMode? approvalMode;
+  @override
+  final String? approvalAmountRaw;
+  @override
   final Hip3TimeInForce? timeInForce;
   @override
   final String? limitPrice;
@@ -283,6 +293,8 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
 
   _$$OrderPreviewCommon._(
       {this.bstocks,
+      this.approvalMode,
+      this.approvalAmountRaw,
       this.timeInForce,
       this.limitPrice,
       this.priceConditionMet,
@@ -338,6 +350,8 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
     if (identical(other, this)) return true;
     return other is $OrderPreviewCommon &&
         bstocks == other.bstocks &&
+        approvalMode == other.approvalMode &&
+        approvalAmountRaw == other.approvalAmountRaw &&
         timeInForce == other.timeInForce &&
         limitPrice == other.limitPrice &&
         priceConditionMet == other.priceConditionMet &&
@@ -384,6 +398,8 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, bstocks.hashCode);
+    _$hash = $jc(_$hash, approvalMode.hashCode);
+    _$hash = $jc(_$hash, approvalAmountRaw.hashCode);
     _$hash = $jc(_$hash, timeInForce.hashCode);
     _$hash = $jc(_$hash, limitPrice.hashCode);
     _$hash = $jc(_$hash, priceConditionMet.hashCode);
@@ -432,6 +448,8 @@ class _$$OrderPreviewCommon extends $OrderPreviewCommon {
   String toString() {
     return (newBuiltValueToStringHelper(r'$OrderPreviewCommon')
           ..add('bstocks', bstocks)
+          ..add('approvalMode', approvalMode)
+          ..add('approvalAmountRaw', approvalAmountRaw)
           ..add('timeInForce', timeInForce)
           ..add('limitPrice', limitPrice)
           ..add('priceConditionMet', priceConditionMet)
@@ -487,6 +505,16 @@ class $OrderPreviewCommonBuilder
       _$this._bstocks ??= BstocksPreviewEconomicsBuilder();
   set bstocks(covariant BstocksPreviewEconomicsBuilder? bstocks) =>
       _$this._bstocks = bstocks;
+
+  BstocksApprovalMode? _approvalMode;
+  BstocksApprovalMode? get approvalMode => _$this._approvalMode;
+  set approvalMode(covariant BstocksApprovalMode? approvalMode) =>
+      _$this._approvalMode = approvalMode;
+
+  String? _approvalAmountRaw;
+  String? get approvalAmountRaw => _$this._approvalAmountRaw;
+  set approvalAmountRaw(covariant String? approvalAmountRaw) =>
+      _$this._approvalAmountRaw = approvalAmountRaw;
 
   Hip3TimeInForce? _timeInForce;
   Hip3TimeInForce? get timeInForce => _$this._timeInForce;
@@ -693,6 +721,8 @@ class $OrderPreviewCommonBuilder
     final $v = _$v;
     if ($v != null) {
       _bstocks = $v.bstocks?.toBuilder();
+      _approvalMode = $v.approvalMode;
+      _approvalAmountRaw = $v.approvalAmountRaw;
       _timeInForce = $v.timeInForce;
       _limitPrice = $v.limitPrice;
       _priceConditionMet = $v.priceConditionMet;
@@ -757,6 +787,8 @@ class $OrderPreviewCommonBuilder
       _$result = _$v ??
           _$$OrderPreviewCommon._(
             bstocks: _bstocks?.build(),
+            approvalMode: approvalMode,
+            approvalAmountRaw: approvalAmountRaw,
             timeInForce: timeInForce,
             limitPrice: limitPrice,
             priceConditionMet: priceConditionMet,

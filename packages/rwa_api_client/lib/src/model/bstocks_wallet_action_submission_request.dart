@@ -11,10 +11,10 @@ part 'bstocks_wallet_action_submission_request.g.dart';
 /// BstocksWalletActionSubmissionRequest
 ///
 /// Properties:
-/// * [txHash] - Untrusted transaction locator; the Router observer independently verifies it.
+/// * [txHash] - Untrusted transaction locator; first submission binds exact transaction facts, then the approval receipt Worker or Router evidence path independently confirms execution.
 @BuiltValue()
 abstract class BstocksWalletActionSubmissionRequest implements Built<BstocksWalletActionSubmissionRequest, BstocksWalletActionSubmissionRequestBuilder> {
-  /// Untrusted transaction locator; the Router observer independently verifies it.
+  /// Untrusted transaction locator; first submission binds exact transaction facts, then the approval receipt Worker or Router evidence path independently confirms execution.
   @BuiltValueField(wireName: r'tx_hash')
   String get txHash;
 

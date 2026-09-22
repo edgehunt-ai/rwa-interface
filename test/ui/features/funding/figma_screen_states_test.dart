@@ -20,6 +20,7 @@ import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
 import 'package:rwa_interface/ui/features/account/providers/account_providers.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
+import 'package:rwa_interface/ui/features/funding/providers/withdrawal_providers.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
 import 'package:rwa_interface/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -202,7 +203,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          tradingAccountsProvider.overrideWith((_) async => _accounts),
+          withdrawalAssetsProvider.overrideWith(
+            (ref) async => [_withdrawableAsset],
+          ),
+          portfolioRepositoryProvider.overrideWithValue(
+            _WithdrawablePortfolio(),
+          ),
         ],
         child: buildRouterTestApp(router),
       ),
@@ -220,18 +226,21 @@ void main() {
     expect(find.text('Withdraw USDC'), findsOneWidget);
   });
 
-  testWidgets('withdrawal picker retry refreshes account balances', (
+  testWidgets('withdrawal picker retry refreshes portfolio assets', (
     tester,
   ) async {
     var requests = 0;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          tradingAccountsProvider.overrideWith((_) async {
+          withdrawalAssetsProvider.overrideWith((ref) async {
             requests += 1;
-            if (requests == 1) throw StateError('accounts unavailable');
-            return _accounts;
+            if (requests == 1) throw StateError('assets unavailable');
+            return [_withdrawableAsset];
           }),
+          portfolioRepositoryProvider.overrideWithValue(
+            _WithdrawablePortfolio(),
+          ),
         ],
         child: buildTestApp(const WithdrawalScreen(showSelector: true)),
       ),
@@ -291,6 +300,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          withdrawalAssetsProvider.overrideWith(
+            (ref) async => [_withdrawableAsset],
+          ),
           fundingRepositoryProvider.overrideWithValue(funding),
           tradingAccountsProvider.overrideWith((_) async => _accounts),
           portfolioRepositoryProvider.overrideWithValue(
@@ -576,6 +588,7 @@ final class _WithdrawablePortfolio
       symbol: 'USDC',
       decimals: 6,
       balance: DecimalValue('100.000000', asset: 'USDC', unit: 'token'),
+      withdrawable: true,
       walletId: 'wallet-1',
       contractAddress: _usdcContract,
     ),
@@ -584,3 +597,14 @@ final class _WithdrawablePortfolio
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+final _withdrawableAsset = WithdrawableAsset(
+  symbol: 'USDC',
+  chain: 'Arbitrum',
+  balance: DecimalValue('100', asset: 'USDC', unit: 'token'),
+  decimals: 6,
+  assetId: 'portfolio-1',
+  walletId: 'wallet-1',
+  contractAddress: _usdcContract,
+  withdrawable: true,
+);

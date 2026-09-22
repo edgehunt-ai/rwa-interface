@@ -24,6 +24,8 @@ class _$PortfolioAsset extends PortfolioAsset {
   @override
   final bool native_;
   @override
+  final bool? withdrawable;
+  @override
   final String symbol;
   @override
   final int decimals;
@@ -60,6 +62,7 @@ class _$PortfolioAsset extends PortfolioAsset {
       this.accountRef,
       this.contractAddress,
       required this.native_,
+      this.withdrawable,
       required this.symbol,
       required this.decimals,
       required this.balanceRaw,
@@ -92,6 +95,7 @@ class _$PortfolioAsset extends PortfolioAsset {
         accountRef == other.accountRef &&
         contractAddress == other.contractAddress &&
         native_ == other.native_ &&
+        withdrawable == other.withdrawable &&
         symbol == other.symbol &&
         decimals == other.decimals &&
         balanceRaw == other.balanceRaw &&
@@ -117,6 +121,7 @@ class _$PortfolioAsset extends PortfolioAsset {
     _$hash = $jc(_$hash, accountRef.hashCode);
     _$hash = $jc(_$hash, contractAddress.hashCode);
     _$hash = $jc(_$hash, native_.hashCode);
+    _$hash = $jc(_$hash, withdrawable.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, decimals.hashCode);
     _$hash = $jc(_$hash, balanceRaw.hashCode);
@@ -144,6 +149,7 @@ class _$PortfolioAsset extends PortfolioAsset {
           ..add('accountRef', accountRef)
           ..add('contractAddress', contractAddress)
           ..add('native_', native_)
+          ..add('withdrawable', withdrawable)
           ..add('symbol', symbol)
           ..add('decimals', decimals)
           ..add('balanceRaw', balanceRaw)
@@ -198,6 +204,10 @@ class PortfolioAssetBuilder
   bool? _native_;
   bool? get native_ => _$this._native_;
   set native_(bool? native_) => _$this._native_ = native_;
+
+  bool? _withdrawable;
+  bool? get withdrawable => _$this._withdrawable;
+  set withdrawable(bool? withdrawable) => _$this._withdrawable = withdrawable;
 
   String? _symbol;
   String? get symbol => _$this._symbol;
@@ -265,6 +275,7 @@ class PortfolioAssetBuilder
       _accountRef = $v.accountRef;
       _contractAddress = $v.contractAddress;
       _native_ = $v.native_;
+      _withdrawable = $v.withdrawable;
       _symbol = $v.symbol;
       _decimals = $v.decimals;
       _balanceRaw = $v.balanceRaw;
@@ -312,6 +323,7 @@ class PortfolioAssetBuilder
             contractAddress: contractAddress,
             native_: BuiltValueNullFieldError.checkNotNull(
                 native_, r'PortfolioAsset', 'native_'),
+            withdrawable: withdrawable,
             symbol: BuiltValueNullFieldError.checkNotNull(
                 symbol, r'PortfolioAsset', 'symbol'),
             decimals: BuiltValueNullFieldError.checkNotNull(

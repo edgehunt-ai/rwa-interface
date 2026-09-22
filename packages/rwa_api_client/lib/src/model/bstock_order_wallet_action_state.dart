@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/bstocks_approval_mode.dart';
 import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
 import 'package:rwa_api_client/src/model/order_evm_action.dart';
 import 'package:built_collection/built_collection.dart';
@@ -15,7 +16,9 @@ part 'bstock_order_wallet_action_state.g.dart';
 /// action_status 是钱包动作状态，不等于最终订单成交。审批确认仍是 status=open、 action_status=confirmed、next_action=null；必须新建预览和交易动作，不能当作已买入。 
 ///
 /// Properties:
-/// * [approvalRequired] 
+/// * [approvalRequired] - 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
+/// * [approvalMode] 
+/// * [approvalAmountRaw] - approve动作冻结的授权额度，原始单位字符串；与required_funding_raw交易输入预算区分。
 /// * [fundingMode] 
 /// * [fundsReserved] 
 /// * [cancellationPolicy] 
@@ -25,11 +28,20 @@ part 'bstock_order_wallet_action_state.g.dart';
 /// * [actionStatus] 
 /// * [submittedTransactionHash] 
 /// * [confirmedTransactionHash] 
-/// * [requiredFundingRaw] - Exact input-token maximum encoded by the immutable Router action.
+/// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
 @BuiltValue()
 abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletActionState, BstockOrderWalletActionStateBuilder> {
+  /// 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
   @BuiltValueField(wireName: r'approval_required')
   bool? get approvalRequired;
+
+  @BuiltValueField(wireName: r'approval_mode')
+  BstocksApprovalMode? get approvalMode;
+  // enum approvalModeEnum {  unlimited,  slippage,  };
+
+  /// approve动作冻结的授权额度，原始单位字符串；与required_funding_raw交易输入预算区分。
+  @BuiltValueField(wireName: r'approval_amount_raw')
+  String? get approvalAmountRaw;
 
   @BuiltValueField(wireName: r'funding_mode')
   BstockOrderWalletActionStateFundingModeEnum? get fundingMode;
@@ -63,7 +75,7 @@ abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletAc
   @BuiltValueField(wireName: r'confirmed_transaction_hash')
   String? get confirmedTransactionHash;
 
-  /// Exact input-token maximum encoded by the immutable Router action.
+  /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
   @BuiltValueField(wireName: r'required_funding_raw')
   String? get requiredFundingRaw;
 
@@ -95,6 +107,20 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       yield serializers.serialize(
         object.approvalRequired,
         specifiedType: const FullType(bool),
+      );
+    }
+    if (object.approvalMode != null) {
+      yield r'approval_mode';
+      yield serializers.serialize(
+        object.approvalMode,
+        specifiedType: const FullType(BstocksApprovalMode),
+      );
+    }
+    if (object.approvalAmountRaw != null) {
+      yield r'approval_amount_raw';
+      yield serializers.serialize(
+        object.approvalAmountRaw,
+        specifiedType: const FullType(String),
       );
     }
     if (object.fundingMode != null) {
@@ -191,6 +217,22 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
           ) as bool?;
           if (valueDes == null) continue;
           result.approvalRequired = valueDes;
+          break;
+        case r'approval_mode':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksApprovalMode),
+          ) as BstocksApprovalMode?;
+          if (valueDes == null) continue;
+          result.approvalMode = valueDes;
+          break;
+        case r'approval_amount_raw':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.approvalAmountRaw = valueDes;
           break;
         case r'funding_mode':
           final valueDes = serializers.deserialize(

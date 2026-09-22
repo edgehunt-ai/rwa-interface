@@ -251,6 +251,10 @@ class _$BstockLimitOrderPreview extends BstockLimitOrderPreview {
   @override
   final BstocksPreviewEconomics? bstocks;
   @override
+  final BstocksApprovalMode? approvalMode;
+  @override
+  final String? approvalAmountRaw;
+  @override
   final Hip3TimeInForce? timeInForce;
   @override
   final String? limitPrice;
@@ -339,6 +343,8 @@ class _$BstockLimitOrderPreview extends BstockLimitOrderPreview {
       {required this.kind,
       required this.network,
       this.bstocks,
+      this.approvalMode,
+      this.approvalAmountRaw,
       this.timeInForce,
       this.limitPrice,
       this.priceConditionMet,
@@ -396,6 +402,8 @@ class _$BstockLimitOrderPreview extends BstockLimitOrderPreview {
         kind == other.kind &&
         network == other.network &&
         bstocks == other.bstocks &&
+        approvalMode == other.approvalMode &&
+        approvalAmountRaw == other.approvalAmountRaw &&
         timeInForce == other.timeInForce &&
         limitPrice == other.limitPrice &&
         priceConditionMet == other.priceConditionMet &&
@@ -444,6 +452,8 @@ class _$BstockLimitOrderPreview extends BstockLimitOrderPreview {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, network.hashCode);
     _$hash = $jc(_$hash, bstocks.hashCode);
+    _$hash = $jc(_$hash, approvalMode.hashCode);
+    _$hash = $jc(_$hash, approvalAmountRaw.hashCode);
     _$hash = $jc(_$hash, timeInForce.hashCode);
     _$hash = $jc(_$hash, limitPrice.hashCode);
     _$hash = $jc(_$hash, priceConditionMet.hashCode);
@@ -494,6 +504,8 @@ class _$BstockLimitOrderPreview extends BstockLimitOrderPreview {
           ..add('kind', kind)
           ..add('network', network)
           ..add('bstocks', bstocks)
+          ..add('approvalMode', approvalMode)
+          ..add('approvalAmountRaw', approvalAmountRaw)
           ..add('timeInForce', timeInForce)
           ..add('limitPrice', limitPrice)
           ..add('priceConditionMet', priceConditionMet)
@@ -559,6 +571,16 @@ class BstockLimitOrderPreviewBuilder
       _$this._bstocks ??= BstocksPreviewEconomicsBuilder();
   set bstocks(covariant BstocksPreviewEconomicsBuilder? bstocks) =>
       _$this._bstocks = bstocks;
+
+  BstocksApprovalMode? _approvalMode;
+  BstocksApprovalMode? get approvalMode => _$this._approvalMode;
+  set approvalMode(covariant BstocksApprovalMode? approvalMode) =>
+      _$this._approvalMode = approvalMode;
+
+  String? _approvalAmountRaw;
+  String? get approvalAmountRaw => _$this._approvalAmountRaw;
+  set approvalAmountRaw(covariant String? approvalAmountRaw) =>
+      _$this._approvalAmountRaw = approvalAmountRaw;
 
   Hip3TimeInForce? _timeInForce;
   Hip3TimeInForce? get timeInForce => _$this._timeInForce;
@@ -767,6 +789,8 @@ class BstockLimitOrderPreviewBuilder
       _kind = $v.kind;
       _network = $v.network;
       _bstocks = $v.bstocks?.toBuilder();
+      _approvalMode = $v.approvalMode;
+      _approvalAmountRaw = $v.approvalAmountRaw;
       _timeInForce = $v.timeInForce;
       _limitPrice = $v.limitPrice;
       _priceConditionMet = $v.priceConditionMet;
@@ -835,6 +859,8 @@ class BstockLimitOrderPreviewBuilder
             network: BuiltValueNullFieldError.checkNotNull(
                 network, r'BstockLimitOrderPreview', 'network'),
             bstocks: _bstocks?.build(),
+            approvalMode: approvalMode,
+            approvalAmountRaw: approvalAmountRaw,
             timeInForce: timeInForce,
             limitPrice: limitPrice,
             priceConditionMet: priceConditionMet,
