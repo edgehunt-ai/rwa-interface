@@ -366,7 +366,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         if (mounted &&
             preview?.previewId == next.previewId &&
             generation == _previewPollingGeneration) {
-          setState(() => _liveMarketPrice = refreshed.marketPrice);
+          // The preview ID binds the quote used by both the initial order
+          // creation and the post-approval order recreation. Keep the full
+          // refreshed preview, not only its display price, so submissions do
+          // not send an expired or stale preview ID.
+          setState(() {
+            preview = refreshed;
+            _liveMarketPrice = refreshed.marketPrice;
+          });
         }
       } on Object {
         // Keep the last confirmed preview price when a transient refresh fails.
@@ -377,7 +384,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
     refresh();
     _previewPollingTimer = Timer.periodic(
-      const Duration(seconds: 2),
+      const Duration(seconds: 3),
       (_) => refresh(),
     );
   }
