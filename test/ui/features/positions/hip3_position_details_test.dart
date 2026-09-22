@@ -288,6 +288,7 @@ class _Repository implements PositionsRepository {
   Future<Position> updateLeverage(
     Position position, {
     required String leverage,
+    PositionMarginMode? marginMode,
     required String idempotencyKey,
   }) async {
     calls++;

@@ -25,6 +25,28 @@ void main() {
     expect(failure.requestId, 'req-1');
     expect((failure as ServerFailure).code, 'idempotency_conflict');
   });
+  test('uses server failure_reason as the user-facing message', () {
+    final request = RequestOptions(path: '/submissions');
+    final failure = mapper.fromDio(
+      DioException(
+        requestOptions: request,
+        response: Response(
+          requestOptions: request,
+          statusCode: 422,
+          data: {
+            'code': 'submission_failed',
+            'failure_reason': 'Position is already closed',
+          },
+        ),
+        type: DioExceptionType.badResponse,
+      ),
+    ) as ServerFailure;
+
+    expect(
+      apiFailureMessage(failure, fallback: 'fallback'),
+      'Position is already closed',
+    );
+  });
   test('maps timeout and cancellation', () {
     final request = RequestOptions(path: '/');
     expect(

@@ -10,6 +10,7 @@ import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
@@ -24,6 +25,7 @@ import '../../../../domain/models/funding_transfer.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
 import '../../../../domain/models/hip3_opening_protection.dart';
 import '../../../../domain/models/hip3_opening_context.dart';
+import '../../../../domain/models/hip3_action_pending.dart';
 import '../../../../app/providers/session_scope.dart';
 
 /// HIP-3-specific order composition. Keeping it separate from bStocks prevents
@@ -64,6 +66,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _percentageWaitingForBalance = false;
   var _percentageSyncScheduled = false;
   var _submitting = false;
+  var _settingsUpdating = false;
   String? _error;
   OrderPreview? _preview;
   OrderPreview? _quotePreview;
@@ -110,6 +113,17 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _error = null;
       });
       _scheduleQuote();
+    } on Hip3ActionPending catch (pending, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: 'hip3.order.settings.pending',
+            error: pending,
+            stackTrace: stackTrace,
+          );
+      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+        setState(() => _error = '调整尚未确认，请在待处理操作中继续：${pending.actionId}');
+      }
     } on Object catch (error, stackTrace) {
       // Without a context there is no quote and no submission; surface it
       // instead of leaving the panel silently inert.
@@ -162,6 +176,54 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             error: error,
             stackTrace: stackTrace,
           );
+    }
+  }
+
+  Future<void> _updateTradingSettings({
+    required int leverage,
+    required TradingMarginMode marginMode,
+  }) async {
+    final productId = _context?.productId ?? widget.productId;
+    if (productId == null || _settingsUpdating || !mounted) return;
+    final generation = ref.read(sessionGenerationProvider);
+    setState(() {
+      _settingsUpdating = true;
+      _error = null;
+    });
+    try {
+      final updated = await ref
+          .read(hip3OpeningRepositoryProvider)
+          .setLeverage(
+            productId,
+            leverage,
+            marginMode,
+            idempotencyKey:
+                'hip3-order-settings-$productId-${DateTime.now().microsecondsSinceEpoch}',
+            confirm: (_) async => true,
+          );
+      if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      setState(() {
+        _context = updated;
+        _leverage = updated.currentLeverage ?? leverage;
+        _marginMode = updated.currentMarginMode ?? marginMode;
+        _quotePreview = null;
+      });
+      _scheduleQuote();
+    } on Object catch (error, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: 'hip3.order.settings.update',
+            error: error,
+            stackTrace: stackTrace,
+          );
+      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+        setState(() => _error = _specificErrorMessage(error));
+      }
+    } finally {
+      if (mounted && ref.read(sessionGenerationProvider) == generation) {
+        setState(() => _settingsUpdating = false);
+      }
     }
   }
 
@@ -706,26 +768,32 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
   }
 
-  String _signingError(Hip3SigningFailure failure) => switch (failure.code) {
-    Hip3SigningFailureCode.walletMismatch => AppLocalizations.of(
-      context,
-    ).walletConnectRequired,
-    Hip3SigningFailureCode.actionExpired => AppLocalizations.of(
-      context,
-    ).hip3SigningRequestExpired,
-    Hip3SigningFailureCode.rejected => AppLocalizations.of(
-      context,
-    ).signatureCancelled,
-    Hip3SigningFailureCode.actionNotReady => AppLocalizations.of(
-      context,
-    ).hip3OrderStillPreparing,
-    Hip3SigningFailureCode.walletUnavailable => AppLocalizations.of(
-      context,
-    ).hip3SigningWalletUnavailable,
-    Hip3SigningFailureCode.invalidPayload => AppLocalizations.of(
-      context,
-    ).hip3SigningRequestInvalid,
-  };
+  String _signingError(Hip3SigningFailure failure) {
+    final reason = failure.reason?.trim();
+    if (reason != null && reason.isNotEmpty) {
+      return reason;
+    }
+    return switch (failure.code) {
+      Hip3SigningFailureCode.walletMismatch => AppLocalizations.of(
+        context,
+      ).walletConnectRequired,
+      Hip3SigningFailureCode.actionExpired => AppLocalizations.of(
+        context,
+      ).hip3SigningRequestExpired,
+      Hip3SigningFailureCode.rejected => AppLocalizations.of(
+        context,
+      ).signatureCancelled,
+      Hip3SigningFailureCode.actionNotReady => AppLocalizations.of(
+        context,
+      ).hip3OrderStillPreparing,
+      Hip3SigningFailureCode.walletUnavailable => AppLocalizations.of(
+        context,
+      ).hip3SigningWalletUnavailable,
+      Hip3SigningFailureCode.invalidPayload => AppLocalizations.of(
+        context,
+      ).hip3SigningRequestInvalid,
+    };
+  }
 
   String _specificErrorMessage(Object error, {String? fallback}) {
     if (error is ApiFailure) {
@@ -855,7 +923,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   availableMarginLoading: _contextLoading,
                   percentage: _percentage,
                   onMarginModeTap: () async {
-                    if (_submitting) return;
+                    if (_submitting || _settingsUpdating) return;
                     final modes =
                         _context?.marginModes ??
                         TradingMarginMode.values.toSet();
@@ -866,43 +934,34 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       builder: (_) => Hip3MarginModeSheet(
                         initialMode: _marginMode,
                         availableModes: modes,
+                        onConfirm: (mode) => _updateTradingSettings(
+                          leverage: _leverage,
+                          marginMode: mode,
+                        ),
                       ),
                     );
                     if (mode == null ||
                         !mounted ||
-                        ref.read(sessionGenerationProvider) != generation ||
-                        mode == _marginMode) {
+                        ref.read(sessionGenerationProvider) != generation) {
                       return;
                     }
-                    setState(() {
-                      _marginMode = mode;
-                      _quotePreview = null;
-                      _error = null;
-                    });
-                    _scheduleQuote();
                   },
                   onLeverageTap: () async {
-                    final generation = ref.read(sessionGenerationProvider);
                     final rules = _context;
-                    if (_submitting) return;
-                    final leverage = await showModalBottomSheet<int>(
+                    if (_submitting || _settingsUpdating) return;
+                    await showModalBottomSheet<int>(
                       context: context,
                       isScrollControlled: true,
                       builder: (_) => Hip3LeverageSheet(
                         initialLeverage: _leverage,
                         maximumLeverage: rules?.maximumLeverage ?? 20,
+                        onConfirm: (value) => _updateTradingSettings(
+                          leverage: value,
+                          marginMode: _marginMode,
+                        ),
                       ),
                     );
-                    if (leverage != null &&
-                        mounted &&
-                        ref.read(sessionGenerationProvider) == generation) {
-                      setState(() {
-                        _leverage = leverage;
-                        _quotePreview = null;
-                        _error = null;
-                      });
-                      _scheduleQuote();
-                    }
+                    // The sheet performs the update before it closes.
                   },
                   onPercentageChanged: (value) {
                     // A percentage of spendable balance needs no quote, so the
@@ -1781,15 +1840,35 @@ class _Hip3AmountRail extends StatelessWidget {
   }
 }
 
-class Hip3MarginModeSheet extends StatelessWidget {
+class Hip3MarginModeSheet extends StatefulWidget {
   const Hip3MarginModeSheet({
     super.key,
     required this.initialMode,
     required this.availableModes,
+    required this.onConfirm,
   });
 
   final TradingMarginMode initialMode;
   final Set<TradingMarginMode> availableModes;
+  final Future<void> Function(TradingMarginMode) onConfirm;
+
+  @override
+  State<Hip3MarginModeSheet> createState() => _Hip3MarginModeSheetState();
+}
+
+class _Hip3MarginModeSheetState extends State<Hip3MarginModeSheet> {
+  late TradingMarginMode _mode = widget.initialMode;
+  var _loading = false;
+
+  Future<void> _submit() async {
+    setState(() => _loading = true);
+    try {
+      await widget.onConfirm(_mode);
+      if (mounted) Navigator.of(context).pop(_mode);
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1841,23 +1920,42 @@ class Hip3MarginModeSheet extends StatelessWidget {
               const SizedBox(height: 8),
               _MarginModeOption(
                 mode: TradingMarginMode.cross,
-                selected: initialMode == TradingMarginMode.cross,
-                enabled: availableModes.contains(TradingMarginMode.cross),
+                selected: _mode == TradingMarginMode.cross,
+                enabled: widget.availableModes.contains(
+                  TradingMarginMode.cross,
+                ),
                 title: l10n.cross,
                 description: l10n.crossMarginDescription,
                 icon: Icons.account_tree_outlined,
-                onTap: () => Navigator.of(context).pop(TradingMarginMode.cross),
+                onTap: () => setState(() => _mode = TradingMarginMode.cross),
               ),
               const SizedBox(height: 12),
               _MarginModeOption(
                 mode: TradingMarginMode.isolated,
-                selected: initialMode == TradingMarginMode.isolated,
-                enabled: availableModes.contains(TradingMarginMode.isolated),
+                selected: _mode == TradingMarginMode.isolated,
+                enabled: widget.availableModes.contains(
+                  TradingMarginMode.isolated,
+                ),
                 title: l10n.isolated,
                 description: l10n.isolatedMarginDescription,
                 icon: Icons.view_agenda_outlined,
-                onTap: () =>
-                    Navigator.of(context).pop(TradingMarginMode.isolated),
+                onTap: () => setState(() => _mode = TradingMarginMode.isolated),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _loading || _mode == widget.initialMode
+                      ? null
+                      : _submit,
+                  child: _loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.hip3ConfirmSign),
+                ),
               ),
             ],
           ),
@@ -1947,10 +2045,12 @@ class Hip3LeverageSheet extends StatefulWidget {
     super.key,
     required this.initialLeverage,
     required this.maximumLeverage,
+    required this.onConfirm,
   });
 
   final int initialLeverage;
   final int maximumLeverage;
+  final Future<void> Function(int) onConfirm;
 
   @override
   State<Hip3LeverageSheet> createState() => _Hip3LeverageSheetState();
@@ -1958,6 +2058,17 @@ class Hip3LeverageSheet extends StatefulWidget {
 
 class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
   late var _leverage = widget.initialLeverage.clamp(1, widget.maximumLeverage);
+  var _loading = false;
+
+  Future<void> _submit() async {
+    setState(() => _loading = true);
+    try {
+      await widget.onConfirm(_leverage);
+      if (mounted) Navigator.of(context).pop(_leverage);
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2056,8 +2167,21 @@ class _Hip3LeverageSheetState extends State<Hip3LeverageSheet> {
                           backgroundColor: colors.primaryAction,
                           foregroundColor: colors.onPrimaryAction,
                         ),
-                        onPressed: () => Navigator.of(context).pop(_leverage),
-                        child: Text(AppLocalizations.of(context).confirm),
+                        onPressed:
+                            _loading || _leverage == widget.initialLeverage
+                            ? null
+                            : _submit,
+                        child: _loading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                AppLocalizations.of(context).hip3ConfirmSign,
+                              ),
                       ),
                     ),
                   ],

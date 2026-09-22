@@ -88,12 +88,17 @@ abstract final class Hip3PositionIntents {
 
   static api.Hip3ActionCreateRequest leverage(
     api.Hip3TradingContext context,
-    String value,
-  ) {
+    String value, {
+    PositionMarginMode? marginMode,
+  }) {
     if (!RegExp(r'^[1-9][0-9]*$').hasMatch(value)) {
       throw ArgumentError('Leverage must be a positive integer');
     }
-    final mode = context.currentMarginMode;
+    final mode = switch (marginMode) {
+      PositionMarginMode.cross => api.MarginMode.cross,
+      PositionMarginMode.isolated => api.MarginMode.isolated,
+      _ => context.currentMarginMode,
+    };
     if (DecimalValue(
           value,
           unit: 'leverage',
@@ -103,6 +108,9 @@ abstract final class Hip3PositionIntents {
     }
     if (mode != api.MarginMode.cross && mode != api.MarginMode.isolated) {
       throw ArgumentError('Current margin mode is unavailable');
+    }
+    if (!context.rules.marginModes.contains(mode)) {
+      throw ArgumentError('Selected margin mode is not supported');
     }
     return _request({
       'operation': 'set_leverage',

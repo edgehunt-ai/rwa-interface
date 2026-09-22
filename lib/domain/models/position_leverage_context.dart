@@ -9,11 +9,13 @@ final class PositionLeverageContext {
     required this.canChange,
     this.current,
     this.marginMode,
+    this.marginModes = const {},
   });
   final String productId;
   final DecimalValue maximum;
   final DecimalValue? current;
   final PositionMarginMode? marginMode;
+  final Set<PositionMarginMode> marginModes;
   final DateTime validUntil;
   final bool canChange;
 

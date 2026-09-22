@@ -1,5 +1,6 @@
 import '../models/hip3_opening_context.dart';
 import '../models/order_intent.dart';
+import '../models/hip3_step_confirmation.dart';
 
 abstract interface class Hip3OpeningRepository {
   Future<Hip3OpeningContext> context(String productOrSymbol);
@@ -8,5 +9,6 @@ abstract interface class Hip3OpeningRepository {
     int leverage,
     TradingMarginMode mode, {
     required String idempotencyKey,
+    Future<bool> Function(Hip3StepConfirmation confirmation)? confirm,
   });
 }

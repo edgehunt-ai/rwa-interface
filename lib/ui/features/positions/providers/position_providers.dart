@@ -191,13 +191,22 @@ final class PositionCommands {
     return result;
   }
 
-  Future<Position> updateLeverage(Position position, String leverage) async {
+  Future<Position> updateLeverage(
+    Position position,
+    String leverage, {
+    PositionMarginMode? marginMode,
+  }) async {
     final result = await _run(
       operation: 'leverage',
-      fingerprint: '${position.positionId}|$leverage',
+      fingerprint: '${position.positionId}|$leverage|$marginMode',
       command: (key) => _ref
           .read(positionsRepositoryProvider)
-          .updateLeverage(position, leverage: leverage, idempotencyKey: key),
+          .updateLeverage(
+            position,
+            leverage: leverage,
+            marginMode: marginMode,
+            idempotencyKey: key,
+          ),
     );
     _ref.invalidate(positionProvider(position.positionId));
     _ref.invalidate(positionsProvider);

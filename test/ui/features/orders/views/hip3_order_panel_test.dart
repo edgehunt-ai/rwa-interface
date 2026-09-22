@@ -15,6 +15,7 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_protection.dart';
+import 'package:rwa_interface/domain/models/hip3_step_confirmation.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
@@ -102,7 +103,7 @@ void main() {
       await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('20x'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
       await tester.pumpAndSettle();
 
       await tester.enterText(find.byType(TextField).first, '20');
@@ -128,9 +129,10 @@ void main() {
       expect(funding.transfers, 1);
       // The second session is the loop re-checking funding after the transfer.
       expect(funding.sessions, 2);
-      // The refresh, on top of the initial load.
-      expect(opening.contextCalls, 2);
-      // The mid-flow selection survived that refresh.
+      // The settings action refreshes the authoritative context, and the
+      // completed transfer refreshes it once more.
+      expect(opening.contextCalls, 3);
+      // The setting action and transfer refresh both preserve the selection.
       expect(orders.intent?.leverage?.value, '20');
     },
   );
@@ -332,7 +334,7 @@ void main() {
       );
       container.read(sessionGenerationProvider.notifier).clearUserScope();
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
       await tester.pumpAndSettle();
       expect(opening.settingsRequests, 0);
       expect(opening.leverage, 10);
@@ -489,7 +491,7 @@ void main() {
     await tester.pumpAndSettle();
     release.complete();
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(FilledButton, 'Confirm'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Confirm and sign'), findsNothing);
     expect(find.byType(TextField), findsWidgets);
     expect(
       tester.widget<TextField>(find.byType(TextField).first).controller!.text,
@@ -692,7 +694,7 @@ void main() {
     await tester.tap(find.byKey(const Key('hip3-slippage-row')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('hip3-slippage-input')), '0.5');
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
     await tester.pumpAndSettle();
 
     // The override only takes effect through a fresh quote.
@@ -739,7 +741,7 @@ void main() {
     }
   });
   testWidgets(
-    'leverage options follow product maximum and stay local until order review',
+    'leverage options follow product maximum and update the trading context',
     (tester) async {
       final opening = _Opening(maximum: 7)..leverage = 3;
       await tester.pumpWidget(_app(const Hip3OrderPanel(), opening: opening));
@@ -749,10 +751,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('20x'), findsNothing);
       await tester.tap(find.text('7x'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
       await tester.pumpAndSettle();
-      expect(opening.leverage, 3);
-      expect(opening.settingsRequests, 0);
+      expect(opening.leverage, 7);
+      expect(opening.settingsRequests, 1);
       expect(find.text('7×'), findsWidgets);
     },
   );
@@ -843,7 +845,7 @@ void main() {
     expect(find.bySemanticsLabel('Drag to set leverage'), findsOneWidget);
     expect(find.text('20x'), findsOneWidget);
     await tester.tap(find.text('20x'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
     await tester.pumpAndSettle();
 
     expect(find.text('20×'), findsWidgets);
@@ -888,7 +890,7 @@ void main() {
       await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('20x'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
       await tester.pumpAndSettle();
@@ -947,17 +949,21 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Margin mode'), findsOneWidget);
       await tester.tap(find.text('Isolated'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
       await tester.pumpAndSettle();
       expect(find.text('Margin mode'), findsNothing);
       expect(find.text('Isolated'), findsOneWidget);
-      expect(opening.mode, TradingMarginMode.cross);
+      expect(opening.mode, TradingMarginMode.isolated);
+      expect(opening.settingsRequests, 1);
 
       await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cross'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
       await tester.pumpAndSettle();
       expect(find.text('Cross'), findsOneWidget);
       expect(opening.mode, TradingMarginMode.cross);
+      expect(opening.settingsRequests, 2);
 
       await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
       await tester.pumpAndSettle();
@@ -987,6 +993,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Margin mode'), findsOneWidget);
     await tester.tap(find.text('Isolated'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
@@ -1179,6 +1186,7 @@ final class _Opening implements Hip3OpeningRepository {
     int leverage,
     TradingMarginMode mode, {
     required String idempotencyKey,
+    Future<bool> Function(Hip3StepConfirmation confirmation)? confirm,
   }) async {
     settingsRequests++;
     this.leverage = leverage;
@@ -1202,6 +1210,7 @@ final class _DelayedOpening implements Hip3OpeningRepository {
     int leverage,
     TradingMarginMode mode, {
     required String idempotencyKey,
+    Future<bool> Function(Hip3StepConfirmation confirmation)? confirm,
   }) => delegate.setLeverage(
     productId,
     leverage,

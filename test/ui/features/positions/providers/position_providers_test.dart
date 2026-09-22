@@ -304,6 +304,7 @@ final class _PositionsRepository implements PositionsRepository {
   Future<Position> updateLeverage(
     Position position, {
     required String leverage,
+    PositionMarginMode? marginMode,
     required String idempotencyKey,
   }) async {
     leverageKeys.add(idempotencyKey);

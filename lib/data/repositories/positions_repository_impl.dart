@@ -48,6 +48,16 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       api.MarginMode.isolated => PositionMarginMode.isolated,
       _ => null,
     };
+    final modes = context.rules.marginModes
+        .map(
+          (value) => switch (value) {
+            api.MarginMode.cross => PositionMarginMode.cross,
+            api.MarginMode.isolated => PositionMarginMode.isolated,
+            _ => null,
+          },
+        )
+        .whereType<PositionMarginMode>()
+        .toSet();
     return PositionLeverageContext(
       productId: productId,
       maximum: DecimalValue(context.rules.maxLeverage),
@@ -55,6 +65,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
           ? null
           : DecimalValue(context.currentLeverage!),
       marginMode: mode,
+      marginModes: Set.unmodifiable(modes),
       validUntil: context.validUntil.toUtc(),
       canChange:
           mode != null &&
@@ -282,6 +293,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
   Future<Position> updateLeverage(
     Position position, {
     required String leverage,
+    PositionMarginMode? marginMode,
     required String idempotencyKey,
   }) async {
     if (!RegExp(r'^[1-9][0-9]*$').hasMatch(leverage)) {
@@ -295,6 +307,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         position.positionId,
         position.productId,
         leverage,
+        marginMode?.name,
       ]),
       () => _actions.context(position.productId!),
     );
@@ -303,7 +316,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     }
     await _run(
       position,
-      Hip3PositionIntents.leverage(context, leverage),
+      Hip3PositionIntents.leverage(context, leverage, marginMode: marginMode),
       api.Hip3Operation.setLeverage,
       idempotencyKey,
       bindPosition: false,

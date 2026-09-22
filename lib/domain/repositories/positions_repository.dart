@@ -37,6 +37,7 @@ abstract interface class PositionsRepository {
   Future<Position> updateLeverage(
     Position position, {
     required String leverage,
+    PositionMarginMode? marginMode,
     required String idempotencyKey,
   });
   Future<TradingOrder> close(

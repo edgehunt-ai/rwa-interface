@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/position.dart';
+import '../../../../domain/models/api_failure.dart';
+import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../domain/models/session_generation.dart';
 import '../../../../domain/models/hip3_action_pending.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -26,6 +28,7 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
     sessionGenerationProvider,
   );
   String? _message;
+  PositionMarginMode? _marginMode;
   @override
   void dispose() {
     _input.dispose();
@@ -47,7 +50,11 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
     try {
       await ref
           .read(positionCommandProvider)
-          .updateLeverage(widget.position, _input.text.trim());
+          .updateLeverage(
+            widget.position,
+            _input.text.trim(),
+            marginMode: _marginMode,
+          );
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
       setState(() {
         _message = AppLocalizations.of(context).leverageUpdated;
@@ -57,6 +64,21 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
       setState(() {
         _pending = true;
         _message = AppLocalizations.of(context).leveragePending;
+      });
+    } on Hip3SigningFailure catch (error) {
+      if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      setState(() {
+        _message = error.reason?.trim().isNotEmpty == true
+            ? error.reason!.trim()
+            : AppLocalizations.of(context).leverageNotConfirmed;
+      });
+    } on ApiFailure catch (error) {
+      if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      setState(() {
+        _message = apiFailureMessage(
+          error,
+          fallback: AppLocalizations.of(context).leverageNotConfirmed,
+        );
       });
     } catch (_) {
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
@@ -133,6 +155,39 @@ class _LeverageState extends ConsumerState<Hip3PositionLeverageSheet> {
                             ),
                           ),
                           Text(l10n.leverageSignatureNotice),
+                          if (limits.marginModes.length > 1) ...[
+                            const SizedBox(height: 12),
+                            Text(l10n.marginMode),
+                            const SizedBox(height: 8),
+                            SegmentedButton<PositionMarginMode>(
+                              segments: [
+                                if (limits.marginModes.contains(
+                                  PositionMarginMode.cross,
+                                ))
+                                  ButtonSegment(
+                                    value: PositionMarginMode.cross,
+                                    label: Text(l10n.cross),
+                                  ),
+                                if (limits.marginModes.contains(
+                                  PositionMarginMode.isolated,
+                                ))
+                                  ButtonSegment(
+                                    value: PositionMarginMode.isolated,
+                                    label: Text(l10n.isolated),
+                                  ),
+                              ],
+                              selected: {
+                                _marginMode ??
+                                    limits.marginMode ??
+                                    limits.marginModes.first,
+                              },
+                              onSelectionChanged: _busy || _pending
+                                  ? null
+                                  : (value) => setState(
+                                      () => _marginMode = value.first,
+                                    ),
+                            ),
+                          ],
                           if (!limits.canChange)
                             Text(l10n.leverageChangesUnavailable),
                           TextFormField(

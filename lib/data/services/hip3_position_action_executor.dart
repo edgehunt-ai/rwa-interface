@@ -40,6 +40,23 @@ final class Hip3PositionActionExecutor {
       var current = await _read(actionId);
       for (var attempt = 0; attempt < 30; attempt++) {
         _checkSession(actionId);
+        final failureReason = _failureReason(current);
+        final hasFailedStep = current.steps.any(
+          (step) => step.status == api.Hip3ActionStepStatusEnum.failed,
+        );
+        final terminal = switch (current.status) {
+          api.Hip3ActionStatus.failed ||
+          api.Hip3ActionStatus.cancelled ||
+          api.Hip3ActionStatus.expired ||
+          api.Hip3ActionStatus.unknownDefaultOpenApi => true,
+          _ => false,
+        };
+        if (failureReason != null && (hasFailedStep || terminal)) {
+          throw Hip3SigningFailure(
+            Hip3SigningFailureCode.invalidPayload,
+            reason: failureReason,
+          );
+        }
         binding.validate(current, expectedActionId: actionId);
         switch (current.status) {
           case api.Hip3ActionStatus.succeeded:
@@ -47,14 +64,16 @@ final class Hip3PositionActionExecutor {
           case api.Hip3ActionStatus.manualReview:
             throw Hip3ActionPending(actionId, requiresReview: true);
           case api.Hip3ActionStatus.expired:
-            throw const Hip3SigningFailure(
+            throw Hip3SigningFailure(
               Hip3SigningFailureCode.actionExpired,
+              reason: _failureReason(current),
             );
           case api.Hip3ActionStatus.failed:
           case api.Hip3ActionStatus.cancelled:
           case api.Hip3ActionStatus.unknownDefaultOpenApi:
-            throw const Hip3SigningFailure(
+            throw Hip3SigningFailure(
               Hip3SigningFailureCode.invalidPayload,
+              reason: _failureReason(current),
             );
           default:
             break;
@@ -185,4 +204,17 @@ final class Hip3PositionActionExecutor {
       (failure is ServerFailure &&
           failure.retryable &&
           (failure.statusCode == 429 || failure.statusCode >= 500));
+
+  String? _failureReason(api.Hip3Action action) {
+    final step = action.steps
+        .where(
+          (step) =>
+              step.status == api.Hip3ActionStepStatusEnum.failed &&
+              (step.failureReason?.trim().isNotEmpty ?? false),
+        )
+        .lastOrNull;
+    final reason = step?.failureReason ?? action.failureReason;
+    final trimmed = reason?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
 }

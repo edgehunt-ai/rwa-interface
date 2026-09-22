@@ -41,6 +41,10 @@ sealed class ApiFailure implements Exception {
 
 String apiFailureMessage(ApiFailure failure, {required String fallback}) {
   if (failure is ServerFailure) {
+    if (failure.failureReason case final reason?
+        when reason.trim().isNotEmpty) {
+      return reason.trim();
+    }
     final detail = failure.details.entries
         .map((entry) => '${entry.key}: ${entry.value}')
         .join(', ');
@@ -61,10 +65,12 @@ final class ServerFailure extends ApiFailure {
     super.requestId,
     super.retryable,
     super.userAction,
+    this.failureReason,
     this.details = const {},
   });
   final int statusCode;
   final String code;
+  final String? failureReason;
   final Map<String, Object?> details;
 
   @override
@@ -82,6 +88,7 @@ final class ServerFailure extends ApiFailure {
     ...super._properties,
     statusCode,
     code,
+    failureReason,
     Object.hashAllUnordered(
       details.entries.map((e) => Object.hash(e.key, e.value)),
     ),
