@@ -332,6 +332,7 @@ final class OrderCommandNotifier
         .execute(
           intent: intent,
           created: created,
+          previewId: previewId!,
           isCancelled: () => _submissionGeneration != submissionGeneration,
         );
   }

@@ -33,6 +33,7 @@ final class BstocksOrderExecutionRepositoryImpl
   Future<ResourceResult<TradingOrder>> execute({
     required OrderIntent intent,
     required ResourceResult<TradingOrder> created,
+    required String previewId,
     bool Function()? isCancelled,
   }) async {
     var current = created;
@@ -102,6 +103,7 @@ final class BstocksOrderExecutionRepositoryImpl
         // replayed after allowance confirmation.
         current = await _orders.create(
           intent,
+          previewId: previewId,
           idempotencyKey:
               'bstocks-recreate-${order.orderId}-${DateTime.now().microsecondsSinceEpoch}',
         );

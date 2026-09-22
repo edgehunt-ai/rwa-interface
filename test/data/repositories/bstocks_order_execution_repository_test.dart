@@ -12,138 +12,156 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/services/embedded_wallet_transaction_sender.dart';
 
 void main() {
-  test('approval confirmation recreates the order and executes the swap', () async {
-    final approval = _action(
-      orderId: 'order-1',
-      stepId: 'approval-1',
-      kind: BstocksOrderActionKind.erc20Approval,
-    );
-    final swap = _action(
-      orderId: 'order-2',
-      stepId: 'swap-1',
-      kind: BstocksOrderActionKind.spotSwap,
-    );
-    final orders = _ScriptedOrders(
-      initial: _order('order-1', action: approval),
-      refreshes: [
-        _order(
-          'order-1',
-          action: approval,
-          actionStatus: BstocksOrderActionStatus.submitted,
-        ),
-        _order('order-1', actionStatus: BstocksOrderActionStatus.confirmed),
-        _order('order-2', action: swap),
-        _order(
-          'order-2',
-          status: TradingOrderStatus.filled,
-          actionStatus: BstocksOrderActionStatus.confirmed,
-        ),
-      ],
-      recreated: _order('order-2', action: swap),
-    );
-    final actions = _Actions();
-    final sender = _Sender();
+  test(
+    'approval confirmation recreates the order and executes the swap',
+    () async {
+      final approval = _action(
+        orderId: 'order-1',
+        stepId: 'approval-1',
+        kind: BstocksOrderActionKind.erc20Approval,
+      );
+      final swap = _action(
+        orderId: 'order-2',
+        stepId: 'swap-1',
+        kind: BstocksOrderActionKind.spotSwap,
+      );
+      final orders = _ScriptedOrders(
+        initial: _order('order-1', action: approval),
+        refreshes: [
+          _order(
+            'order-1',
+            action: approval,
+            actionStatus: BstocksOrderActionStatus.submitted,
+          ),
+          _order('order-1', actionStatus: BstocksOrderActionStatus.confirmed),
+          _order('order-2', action: swap),
+          _order(
+            'order-2',
+            status: TradingOrderStatus.filled,
+            actionStatus: BstocksOrderActionStatus.confirmed,
+          ),
+        ],
+        recreated: _order('order-2', action: swap),
+      );
+      final actions = _Actions();
+      final sender = _Sender();
 
-    final result = await BstocksOrderExecutionRepositoryImpl(
-      orders,
-      actions,
-      sender,
-    ).execute(
-      intent: _intent(),
-      created: ResourceResult(resource: orders.initial),
-    );
+      final result =
+          await BstocksOrderExecutionRepositoryImpl(
+            orders,
+            actions,
+            sender,
+          ).execute(
+            intent: _intent(),
+            created: ResourceResult(resource: orders.initial),
+            previewId: 'preview-1',
+          );
 
-    expect(result.resource.status, TradingOrderStatus.filled);
-    expect(sender.steps, ['approval-1', 'swap-1']);
-    expect(actions.steps, ['approval-1', 'swap-1']);
-    expect(orders.createCalls, 1);
-  });
+      expect(result.resource.status, TradingOrderStatus.filled);
+      expect(sender.steps, ['approval-1', 'swap-1']);
+      expect(actions.steps, ['approval-1', 'swap-1']);
+      expect(orders.createCalls, 1);
+      expect(orders.createdPreviewIds, ['preview-1']);
+    },
+  );
 
-  test('a submitted action is not sent again while confirmation is pending', () async {
-    final swap = _action(
-      orderId: 'order-1',
-      stepId: 'swap-1',
-      kind: BstocksOrderActionKind.spotSwap,
-    );
-    final orders = _ScriptedOrders(
-      initial: _order('order-1', action: swap),
-      refreshes: [
-        _order(
-          'order-1',
-          action: swap,
-          actionStatus: BstocksOrderActionStatus.submitted,
-        ),
-        _order('order-1', status: TradingOrderStatus.filled),
-      ],
-    );
-    final sender = _Sender();
+  test(
+    'a submitted action is not sent again while confirmation is pending',
+    () async {
+      final swap = _action(
+        orderId: 'order-1',
+        stepId: 'swap-1',
+        kind: BstocksOrderActionKind.spotSwap,
+      );
+      final orders = _ScriptedOrders(
+        initial: _order('order-1', action: swap),
+        refreshes: [
+          _order(
+            'order-1',
+            action: swap,
+            actionStatus: BstocksOrderActionStatus.submitted,
+          ),
+          _order('order-1', status: TradingOrderStatus.filled),
+        ],
+      );
+      final sender = _Sender();
 
-    await BstocksOrderExecutionRepositoryImpl(
-      orders,
-      _Actions(),
-      sender,
-    ).execute(
-      intent: _intent(),
-      created: ResourceResult(resource: orders.initial),
-    );
-
-    expect(sender.steps, ['swap-1']);
-  });
-
-  test('polls when the order is created before its first action is released', () async {
-    final swap = _action(
-      orderId: 'order-1',
-      stepId: 'swap-1',
-      kind: BstocksOrderActionKind.spotSwap,
-    );
-    final orders = _ScriptedOrders(
-      initial: _order(
-        'order-1',
-        status: TradingOrderStatus.pendingSignature,
-      ),
-      refreshes: [
-        _order('order-1', action: swap),
-        _order('order-1', status: TradingOrderStatus.filled),
-      ],
-    );
-    final sender = _Sender();
-
-    await BstocksOrderExecutionRepositoryImpl(
-      orders,
-      _Actions(),
-      sender,
-    ).execute(
-      intent: _intent(),
-      created: ResourceResult(resource: orders.initial),
-    );
-
-    expect(sender.steps, ['swap-1']);
-  });
-
-  test('wallet action without an embedded signer fails before submission', () async {
-    final action = _action(
-      orderId: 'order-1',
-      stepId: 'swap-1',
-      kind: BstocksOrderActionKind.spotSwap,
-    );
-    final actions = _Actions();
-
-    expect(
-      () => BstocksOrderExecutionRepositoryImpl(
-        _ScriptedOrders(
-          initial: _order('order-1', action: action),
-          refreshes: const [],
-        ),
-        actions,
-        null,
+      await BstocksOrderExecutionRepositoryImpl(
+        orders,
+        _Actions(),
+        sender,
       ).execute(
         intent: _intent(),
-        created: ResourceResult(resource: _order('order-1', action: action)),
-      ),
-      throwsA(isA<Exception>()),
-    );
-    expect(actions.steps, isEmpty);
-  });
+        created: ResourceResult(resource: orders.initial),
+        previewId: 'preview-1',
+      );
+
+      expect(sender.steps, ['swap-1']);
+    },
+  );
+
+  test(
+    'polls when the order is created before its first action is released',
+    () async {
+      final swap = _action(
+        orderId: 'order-1',
+        stepId: 'swap-1',
+        kind: BstocksOrderActionKind.spotSwap,
+      );
+      final orders = _ScriptedOrders(
+        initial: _order('order-1', status: TradingOrderStatus.pendingSignature),
+        refreshes: [
+          _order('order-1', action: swap),
+          _order('order-1', status: TradingOrderStatus.filled),
+        ],
+      );
+      final sender = _Sender();
+
+      await BstocksOrderExecutionRepositoryImpl(
+        orders,
+        _Actions(),
+        sender,
+      ).execute(
+        intent: _intent(),
+        created: ResourceResult(resource: orders.initial),
+        previewId: 'preview-1',
+      );
+
+      expect(sender.steps, ['swap-1']);
+    },
+  );
+
+  test(
+    'wallet action without an embedded signer fails before submission',
+    () async {
+      final action = _action(
+        orderId: 'order-1',
+        stepId: 'swap-1',
+        kind: BstocksOrderActionKind.spotSwap,
+      );
+      final actions = _Actions();
+
+      expect(
+        () =>
+            BstocksOrderExecutionRepositoryImpl(
+              _ScriptedOrders(
+                initial: _order('order-1', action: action),
+                refreshes: const [],
+              ),
+              actions,
+              null,
+            ).execute(
+              intent: _intent(),
+              created: ResourceResult(
+                resource: _order('order-1', action: action),
+              ),
+              previewId: 'preview-1',
+            ),
+        throwsA(isA<Exception>()),
+      );
+      expect(actions.steps, isEmpty);
+    },
+  );
 }
 
 OrderIntent _intent() => OrderIntent(
@@ -200,13 +218,12 @@ final class _ScriptedOrders implements OrdersRepository {
   final List<TradingOrder> refreshes;
   final TradingOrder? recreated;
   var createCalls = 0;
+  final createdPreviewIds = <String?>[];
   var _refreshIndex = 0;
 
   @override
   Future<ResourceResult<TradingOrder>> get(String orderId) async =>
-      ResourceResult(
-        resource: refreshes[_refreshIndex++],
-      );
+      ResourceResult(resource: refreshes[_refreshIndex++]);
 
   @override
   Future<ResourceResult<TradingOrder>> create(
@@ -215,6 +232,7 @@ final class _ScriptedOrders implements OrdersRepository {
     String? previewId,
   }) async {
     createCalls++;
+    createdPreviewIds.add(previewId);
     return ResourceResult(resource: recreated!);
   }
 
