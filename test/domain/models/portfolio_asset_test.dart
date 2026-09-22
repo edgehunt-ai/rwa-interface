@@ -14,15 +14,15 @@ void main() {
 
     expect(
       asset.canonicalEvmId,
-      'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+      'eip155:421614/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     );
     expect(asset.canonicalEvmId, isNot(contains('portfolio-')));
   });
 
   test('every allowlisted EVM chain resolves its decimal chain id', () {
     expect(_asset(network: 'ethereum').evmChainId, 1);
-    expect(_asset(network: 'arbitrum').evmChainId, 42161);
-    expect(_asset(network: 'bsc').evmChainId, 56);
+    expect(_asset(network: 'arbitrum').evmChainId, 421614);
+    expect(_asset(network: 'bsc').evmChainId, 97);
     // `Base` reaches the domain as the generated enum name `base_`.
     expect(_asset(network: 'base_').evmChainId, 8453);
     expect(_asset(network: 'Base').evmChainId, 8453);

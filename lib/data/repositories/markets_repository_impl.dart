@@ -107,7 +107,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
       name: value.name ?? value.symbol,
       kind: _kind(value.kind),
       price: DecimalValue(value.quote.price, asset: 'USDC', unit: 'price'),
-      settlementAsset: 'USDC',
+      settlementAsset: value.kind == api.ProductKind.bstock ? 'TUSDT' : 'USDC',
       network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',
       tradable: value.kind == api.ProductKind.perp
           ? (value.hip3Market?.tradable ?? false)
@@ -252,7 +252,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     name: value.name ?? value.symbol,
     kind: _kind(value.kind),
     price: DecimalValue(value.price, asset: 'USDC', unit: 'price'),
-    settlementAsset: 'USDC',
+    settlementAsset: value.kind == api.ProductKind.bstock ? 'TUSDT' : 'USDC',
     network: value.kind == api.ProductKind.bstock ? 'BSC' : 'Arbitrum',
     tradable: true,
     productId: value.hip3Market?.productId,

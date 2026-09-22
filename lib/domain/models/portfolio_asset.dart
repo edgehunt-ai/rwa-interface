@@ -47,9 +47,10 @@ final class PortfolioAsset {
   /// allowlisted EVM chains.
   int? get evmChainId => switch (normalizedNetwork) {
     'ethereum' => 1,
-    'arbitrum' => 42161,
+    // Temporary testnet mapping for self-custodial withdrawal asset IDs.
+    'arbitrum' => 421614,
     'base' => 8453,
-    'bsc' => 56,
+    'bsc' => 97,
     _ => null,
   };
 

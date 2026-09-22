@@ -488,7 +488,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       side: side,
       type: type,
       amount: type == TradingOrderType.market && !sellsBstocks
-          ? DecimalValue(amountValue, asset: 'USDT', unit: 'token')
+          ? DecimalValue(
+              amountValue,
+              asset: _settlementAssetForInput,
+              unit: 'token',
+            )
           : null,
       quantity: type == TradingOrderType.limit || sellsBstocks
           ? DecimalValue(amountValue, asset: widget.symbol, unit: 'token')
@@ -499,6 +503,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       slippage: DecimalValue(slippage.toString(), unit: 'percent'),
     );
   }
+
+  String get _settlementAssetForInput =>
+      quotePreview?.settlementAsset ?? 'TUSDT';
 
   Future<void> _submit() async {
     final current = preview;
@@ -577,12 +584,16 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final isBuy = side == TradingSide.buy;
+    final settlementAsset = quotePreview?.settlementAsset ?? 'TUSDT';
+    final settlementBalance = ref.watch(
+      bstocksSettlementBalanceProvider(settlementAsset),
+    );
     final amountAsset = type == TradingOrderType.market && isBuy
-        ? quotePreview?.settlementAsset ?? 'USDT'
+        ? settlementAsset
         : widget.symbol;
     final enteredAmount = amount.text.trim();
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
-    final availableBalance = ref.watch(bstocksOrderAvailableBalanceProvider);
+    final availableBalance = settlementBalance;
     final holdings = ref.watch(holdingsProvider(null));
     _schedulePendingPercentageSync(
       availableBalance: availableBalance.value,
@@ -597,7 +608,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final balance = availableAmount == null
         ? null
         : isBuy
-        ? TokenAmountFormatter.formatUsd(availableAmount)
+        ? '${TokenAmountFormatter.formatValue(availableAmount)} $settlementAsset'
         : '${TokenAmountFormatter.formatValue(availableAmount)} ${widget.symbol}';
     final balanceLoading = isBuy
         ? availableBalance.isLoading || availableBalance.isRefreshing

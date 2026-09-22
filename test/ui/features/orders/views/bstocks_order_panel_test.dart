@@ -147,7 +147,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Balance: '), findsOneWidget);
-    expect(find.text(r'$456.78'), findsOneWidget);
+    expect(find.text('456.78 TUSDT'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.pump(const Duration(milliseconds: 301));
@@ -328,7 +328,7 @@ void main() {
     balance.complete(DecimalValue('0', asset: 'USD', unit: 'fiat'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('bstocks-balance-loading')), findsNothing);
-    expect(find.text(r'$0'), findsOneWidget);
+    expect(find.text('0 TUSDT'), findsOneWidget);
   });
 
   testWidgets('bStocks order panel validates an empty order value', (
@@ -433,7 +433,10 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-    await _pumpUntilFound(tester, find.widgetWithText(FilledButton, 'Confirm Buy'));
+    await _pumpUntilFound(
+      tester,
+      find.widgetWithText(FilledButton, 'Confirm Buy'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
     await tester.pump();
 
@@ -636,7 +639,10 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-    await _pumpUntilFound(tester, find.widgetWithText(FilledButton, 'Confirm Buy'));
+    await _pumpUntilFound(
+      tester,
+      find.widgetWithText(FilledButton, 'Confirm Buy'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
     await tester.pump(const Duration(milliseconds: 100));
 
@@ -667,7 +673,10 @@ void main() {
 
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-      await _pumpUntilFound(tester, find.widgetWithText(FilledButton, 'Confirm Buy'));
+      await _pumpUntilFound(
+        tester,
+        find.widgetWithText(FilledButton, 'Confirm Buy'),
+      );
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
       await tester.pump(const Duration(milliseconds: 100));
       await _pumpUntilFound(tester, find.textContaining('network:'));

@@ -143,6 +143,56 @@ final bstocksOrderAvailableBalanceProvider =
       );
     });
 
+final bstocksSettlementBalanceProvider = FutureProvider.autoDispose
+    .family<DecimalValue, String>((ref, settlementAsset) async {
+      final accounts = await ref
+          .watch(tradingAccountsProvider.future)
+          .catchError((_) => const <TradingAccount>[]);
+      final normalized = settlementAsset.toLowerCase();
+      final balances = accounts
+          .where((account) => account.kind == TradingAccountKind.bstocks)
+          .expand((account) => account.balances)
+          .where((balance) {
+            final symbol = balance.symbol.toLowerCase();
+            return symbol == normalized ||
+                (normalized == 'usdt' && symbol == 'tusdt') ||
+                (normalized == 'tusdt' && symbol == 'usdt');
+          })
+          .map((balance) => balance.balance);
+      final values = balances.toList(growable: false);
+      if (values.isEmpty) {
+        // Keep compatibility with older test fixtures and partial account
+        // snapshots. Live bStocks responses should contain the token balance.
+        final legacy = await ref
+            .watch(bstocksOrderAvailableBalanceProvider.future)
+            .catchError((_) => DecimalValue('0', asset: 'USD', unit: 'fiat'));
+        return DecimalValue(
+          legacy.value,
+          asset: settlementAsset,
+          unit: 'token',
+        );
+      }
+      final scale = values.fold<int>(
+        0,
+        (current, value) => current > value.scale ? current : value.scale,
+      );
+      var total = BigInt.zero;
+      for (final value in values) {
+        final parts = value.value.split('.');
+        total += BigInt.parse(
+          '${parts.first}${parts.length == 1 ? '' : parts.last}'.padRight(
+            parts.first.length + scale,
+            '0',
+          ),
+        );
+      }
+      final digits = total.toString().padLeft(scale + 1, '0');
+      final raw = scale == 0
+          ? digits
+          : '${digits.substring(0, digits.length - scale)}.${digits.substring(digits.length - scale)}';
+      return DecimalValue(raw, asset: settlementAsset, unit: 'token');
+    });
+
 DecimalValue _sumAvailableUsd(Iterable<TradingAccount> accounts) {
   final amounts = accounts
       .map((account) => account.availableUsd)

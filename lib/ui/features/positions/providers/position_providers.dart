@@ -225,6 +225,7 @@ final class PositionCommands {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    bool confirmBeforeSigning = true,
   }) async {
     final result = await _run(
       operation: 'close-position',
@@ -239,6 +240,7 @@ final class PositionCommands {
             type: type,
             limitPrice: limitPrice,
             expectedPosition: expectedPosition,
+            confirmBeforeSigning: confirmBeforeSigning,
             idempotencyKey: key,
           ),
     );

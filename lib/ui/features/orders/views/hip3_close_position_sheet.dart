@@ -53,6 +53,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
             type: TradingOrderType.market,
             quantity: quantity,
             percent: null,
+            confirmBeforeSigning: false,
           );
       if (mounted) {
         AppToast.showSuccess(
@@ -371,7 +372,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                               position.side == PositionSide.none
                           ? null
                           : _submit,
-                      child: Text(_busy ? l10n.preparing : l10n.confirm),
+                      child: Text(_busy ? l10n.preparing : l10n.signAndConfirm),
                     ),
                   ),
                 ],

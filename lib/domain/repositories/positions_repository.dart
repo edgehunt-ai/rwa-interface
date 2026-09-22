@@ -48,6 +48,7 @@ abstract interface class PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   });
 }

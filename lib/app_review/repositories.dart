@@ -604,6 +604,7 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
     final position = await get(positionId);

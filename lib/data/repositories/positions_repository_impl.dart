@@ -145,8 +145,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         positionId: action.positionId,
         orderId: action.orderId,
       ),
-      confirm: (current, step) =>
-          _confirm(mapHip3StepConfirmation(current, step)),
+      confirm: (_, _) async => true,
     );
   }
 
@@ -342,6 +341,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
     if (quantity != null && percent != null) {
@@ -434,6 +434,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       api.Hip3Operation.closePosition,
       idempotencyKey,
       environment: preview.environment,
+      confirmBeforeSigning: confirmBeforeSigning,
     );
     final orderId = completed.orderId;
     if (orderId == null) {
