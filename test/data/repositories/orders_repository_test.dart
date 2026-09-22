@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
+import 'package:rwa_interface/data/api/order_preview_payload.dart';
 import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
 import 'package:rwa_interface/data/services/orders_service.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
@@ -270,12 +271,19 @@ final class _PreviewOrders implements OrdersService {
         ..settlementTokenDecimals =
             api.PerpOrderPreviewSettlementTokenDecimalsEnum.number8,
     );
-    return PreviewOrderResponse.parsed(
+    return PreviewOrderResponse(
       api.OrderPreview(
         (b) => b.oneOf = OneOfDynamic(
-          typeIndex: 1,
-          types: const [api.BstockOrderPreview, api.PerpOrderPreview],
-          value: value,
+          typeIndex: 0,
+          types: const [OrderPreviewPayload],
+          value: OrderPreviewPayload(
+            common: value,
+            fields: const {
+              'kind': 'perp',
+              'network': 'Hyperliquid',
+              'settlement_asset': 'USDC',
+            },
+          ),
         ),
       ),
     );

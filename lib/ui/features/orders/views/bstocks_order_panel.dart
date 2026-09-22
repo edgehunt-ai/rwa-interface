@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +27,7 @@ import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.da
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import 'order_funding_sheet.dart';
+import 'slippage_controls.dart';
 
 part 'bstocks_funding_required.dart';
 part 'bstocks_transfer_flow.dart';
@@ -542,7 +542,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final next = await showModalBottomSheet<double>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _SlippageSheet(initialValue: slippage),
+      builder: (_) => SlippageSheet(
+        initialValue: slippage,
+        inputKey: const Key('bstocks-slippage-input'),
+      ),
     );
     if (next == null || !mounted) return;
     setState(() => slippage = next);
@@ -788,7 +791,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           const SizedBox(height: 16),
           Divider(color: colors.subtleSurface),
           const SizedBox(height: 14),
-          _SlippageRow(value: slippage, onEdit: _editSlippage),
+          SlippageRow(
+            value: slippage,
+            onEdit: _editSlippage,
+            editKey: const Key('bstocks-edit-slippage'),
+          ),
           if (_quoting)
             _LoadingSummaryRow(label: l10n.estimatedFee)
           else
@@ -1316,155 +1323,6 @@ class _LoadingSummaryRow extends StatelessWidget {
         Expanded(child: Text(label)),
         const SkeletonBlock(width: 52, height: 14, radius: 4),
       ],
-    ),
-  );
-}
-
-class _SlippageRow extends StatelessWidget {
-  const _SlippageRow({required this.value, required this.onEdit});
-
-  final double value;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context).slippage,
-              style: TextStyle(color: colors.secondaryText),
-            ),
-          ),
-          Text('$value%', style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(width: 2),
-          IconButton(
-            key: const Key('bstocks-edit-slippage'),
-            tooltip: AppLocalizations.of(context).editSlippage,
-            onPressed: onEdit,
-            icon: const Icon(Icons.edit_outlined, size: 16),
-            visualDensity: VisualDensity.compact,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SlippageSheet extends StatefulWidget {
-  const _SlippageSheet({required this.initialValue});
-
-  final double initialValue;
-
-  @override
-  State<_SlippageSheet> createState() => _SlippageSheetState();
-}
-
-class _SlippageSheetState extends State<_SlippageSheet> {
-  late final TextEditingController _controller = TextEditingController(
-    text: widget.initialValue.toString(),
-  );
-  String? _error;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _confirm() {
-    final value = double.tryParse(_controller.text.trim());
-    if (value == null || !value.isFinite || value < 0 || value > 100) {
-      setState(() => _error = AppLocalizations.of(context).invalidSlippage);
-      return;
-    }
-    Navigator.of(context).pop(value);
-  }
-
-  @override
-  Widget build(BuildContext context) => Material(
-    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-    child: SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          20,
-          20,
-          24 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context).slippageTolerance,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              key: const Key('bstocks-slippage-input'),
-              controller: _controller,
-              autofocus: true,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                TextInputFormatter.withFunction((oldValue, newValue) {
-                  return RegExp(r'^(?:|0|[1-9]\d{0,2})(?:\.\d{0,2})?$')
-                          .hasMatch(newValue.text)
-                      ? newValue
-                      : oldValue;
-                }),
-              ],
-              decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).maximumSlippage,
-                suffixText: '%',
-                errorText: _error,
-              ),
-              onChanged: (_) {
-                if (_error != null) setState(() => _error = null);
-              },
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final option in const [0.1, 0.5, 1.0])
-                  ChoiceChip(
-                    label: Text('$option%'),
-                    selected: _controller.text == option.toString(),
-                    onSelected: (_) => setState(() {
-                      _controller.text = option.toString();
-                      _error = null;
-                    }),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(AppLocalizations.of(context).cancel),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _confirm,
-                    child: Text(AppLocalizations.of(context).confirm),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     ),
   );
 }

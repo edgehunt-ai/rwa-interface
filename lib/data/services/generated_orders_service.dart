@@ -4,10 +4,26 @@ import 'package:rwa_api_client/rwa_api_client.dart';
 import '../api/api_failure_mapper.dart';
 import 'orders_service.dart';
 
+/// Reports a 2xx response the generated client could not decode.
+///
+/// A body that does not match the contract is a contract mismatch, not a
+/// transport error, and the failure it raises reads like any other request
+/// failure. Surface it separately so it is diagnosable.
+typedef WireDecodeFailureReporter = void Function({
+  required String operation,
+  required Object error,
+  StackTrace? stackTrace,
+});
+
 final class GeneratedOrdersService implements OrdersService {
-  GeneratedOrdersService(this._api, {this._mapper = const ApiFailureMapper()});
+  GeneratedOrdersService(
+    this._api, {
+    this._mapper = const ApiFailureMapper(),
+    this._onDecodeFailure,
+  });
   final OrdersApi _api;
   final ApiFailureMapper _mapper;
+  final WireDecodeFailureReporter? _onDecodeFailure;
 
   @override
   Future<PreviewOrderResponse> previewOrder(
@@ -21,12 +37,17 @@ final class GeneratedOrdersService implements OrdersService {
       );
       final value = response.data;
       if (value == null) throw const FormatException('Missing preview body');
-      return PreviewOrderResponse.parsed(value);
+      return PreviewOrderResponse(value);
     } on DioException catch (error) {
-      final body = error.response?.data;
       final status = error.response?.statusCode;
-      if (status != null && status >= 200 && status < 300 && body is Map) {
-        return PreviewOrderResponse.raw(Map<String, dynamic>.from(body));
+      // A 2xx the client cannot decode used to degrade to the untyped body,
+      // which silently dropped the typed execution terms. Fail loudly instead.
+      if (status != null && status >= 200 && status < 300) {
+        _onDecodeFailure?.call(
+          operation: 'orders.preview.decode_failed',
+          error: error.error ?? error,
+          stackTrace: error.stackTrace,
+        );
       }
       throw _mapper.fromDio(error);
     }

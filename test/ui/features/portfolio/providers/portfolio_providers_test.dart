@@ -34,7 +34,7 @@ void main() {
     expect(repository.accountCalls, 0);
   });
 
-  test('order balances are derived from portfolio accounts', () async {
+  test('the bStocks order balance excludes the HIP-3 account', () async {
     final container = ProviderContainer(
       overrides: [
         tradingAccountsProvider.overrideWith(
@@ -52,10 +52,6 @@ void main() {
     expect(
       (await container.read(bstocksOrderAvailableBalanceProvider.future)).value,
       '11.5',
-    );
-    expect(
-      (await container.read(hip3OrderAvailableBalanceProvider.future)).value,
-      '21.5',
     );
   });
 }

@@ -29,6 +29,7 @@ import '../../data/services/generated_activity_service.dart';
 import '../../data/services/generated_markets_service.dart';
 import '../../data/services/generated_funding_service.dart';
 import '../../data/services/generated_orders_service.dart';
+import 'observability_providers.dart';
 import '../../data/services/generated_charts_service.dart';
 import '../../data/services/generated_portfolio_service.dart';
 import '../../data/services/generated_positions_service.dart';
@@ -142,20 +143,38 @@ final fundingRepositoryProvider = Provider<FundingRepository>((ref) {
     GeneratedFundingService(source.client.getFundingApi()),
   );
 });
+
+/// Decoding a 2xx response into the untyped body drops typed fields such as
+/// the HIP-3 execution terms. Surface it instead of degrading silently.
+WireDecodeFailureReporter _decodeFallbackReporter(Ref ref) =>
+    ({required operation, required error, stackTrace}) => ref
+        .read(observabilityReporterProvider)
+        .recordError(
+          operation: operation,
+          error: error,
+          stackTrace: stackTrace,
+        );
+
 final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
     final source = ref.watch(apiDataSourceProvider);
     return AppReviewOrdersRepository(
       ref.watch(appReviewStoreProvider),
       previewDelegate: OrdersRepositoryImpl(
-        GeneratedOrdersService(source.client.getOrdersApi()),
+        GeneratedOrdersService(
+          source.client.getOrdersApi(),
+          onDecodeFailure: _decodeFallbackReporter(ref),
+        ),
       ),
       marketsDelegate: ref.watch(marketsRepositoryProvider),
     );
   }
   final source = ref.watch(apiDataSourceProvider);
   return OrdersRepositoryImpl(
-    GeneratedOrdersService(source.client.getOrdersApi()),
+    GeneratedOrdersService(
+      source.client.getOrdersApi(),
+      onDecodeFailure: _decodeFallbackReporter(ref),
+    ),
   );
 });
 
@@ -167,6 +186,7 @@ final bstocksOrderExecutionRepositoryProvider =
         BstocksOrderActionRepositoryImpl(
           GeneratedOrdersService(
             ref.watch(apiDataSourceProvider).client.getOrdersApi(),
+            onDecodeFailure: _decodeFallbackReporter(ref),
           ),
         ),
         gateway is EmbeddedWalletTransactionSender

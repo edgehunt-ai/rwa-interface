@@ -1001,7 +1001,7 @@ abstract class AppLocalizations {
   /// No description provided for @orderQuoteUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'This quote is unavailable or expired. Go back and request a new quote.'**
+  /// **'This quote is unavailable or expired. Request a new quote before placing the order.'**
   String get orderQuoteUnavailable;
 
   /// No description provided for @hip3TradingContextUnavailable.
@@ -3137,7 +3137,7 @@ abstract class AppLocalizations {
   /// No description provided for @entryPrice.
   ///
   /// In en, this message translates to:
-  /// **'Entry price'**
+  /// **'Entry'**
   String get entryPrice;
 
   /// No description provided for @markPrice.
@@ -3749,7 +3749,7 @@ abstract class AppLocalizations {
   /// No description provided for @hip3ExecutionDetailsUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Execution details are unavailable. Go back and request a new quote.'**
+  /// **'Execution details are unavailable. Request a new quote before placing the order.'**
   String get hip3ExecutionDetailsUnavailable;
 
   /// No description provided for @environment.
@@ -3809,7 +3809,7 @@ abstract class AppLocalizations {
   /// No description provided for @protectionConfirmationMismatch.
   ///
   /// In en, this message translates to:
-  /// **'Protection confirmation is missing or differs from your order. Go back and request a new quote.'**
+  /// **'Protection confirmation is missing or differs from your order. Request a new quote before placing the order.'**
   String get protectionConfirmationMismatch;
 
   /// No description provided for @fixedQuantityThisOrder.
@@ -4104,6 +4104,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Balance: {value} USDC'**
   String marginValue(Object value);
+
+  /// No description provided for @orderSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get orderSizeLabel;
+
+  /// No description provided for @hip3MarginChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin {amount}'**
+  String hip3MarginChip(String amount);
+
+  /// No description provided for @hip3SignAndConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign & Confirm {direction}'**
+  String hip3SignAndConfirm(String direction);
 }
 
 class _AppLocalizationsDelegate

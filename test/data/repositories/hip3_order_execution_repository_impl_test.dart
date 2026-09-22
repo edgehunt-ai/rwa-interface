@@ -26,6 +26,55 @@ void main() {
     expect(service.submitCalls, 1);
     expect(signer.calls, 1);
   });
+  test('a refused signature carries the server\'s failure reason', () async {
+    final service = _Service(
+      createdAction: _action(
+        status: 'failed',
+        stepStatus: 'failed',
+        stepFailureReason: 'Insufficient margin after the last fill',
+        actionFailureReason: 'action level reason',
+      ),
+    );
+    await expectLater(
+      Hip3OrderExecutionRepositoryImpl(
+        _Signer(),
+        service,
+        now: () => DateTime.utc(2026, 9, 9),
+        delay: (_) async {},
+      ).awaitActionAndSubmit('order-1'),
+      throwsA(
+        isA<Hip3SigningFailure>().having(
+          (e) => e.reason,
+          'reason',
+          // The failing step explains more than the action-level summary.
+          'Insufficient margin after the last fill',
+        ),
+      ),
+    );
+  });
+  test('the action reason is used when no step carries one', () async {
+    final service = _Service(
+      createdAction: _action(
+        status: 'failed',
+        actionFailureReason: 'Venue rejected the order',
+      ),
+    );
+    await expectLater(
+      Hip3OrderExecutionRepositoryImpl(
+        _Signer(),
+        service,
+        now: () => DateTime.utc(2026, 9, 9),
+        delay: (_) async {},
+      ).awaitActionAndSubmit('order-1'),
+      throwsA(
+        isA<Hip3SigningFailure>().having(
+          (e) => e.reason,
+          'reason',
+          'Venue rejected the order',
+        ),
+      ),
+    );
+  });
   test(
     'unresolved broadcast reports pending with the original order identity',
     () async {
@@ -223,6 +272,9 @@ api.Hip3Action _action({
   String status = 'awaiting_signature',
   bool signable = false,
   String validUntil = '2026-09-10T00:00:00Z',
+  String? stepFailureReason,
+  String? actionFailureReason,
+  String? stepStatus,
 }) {
   final json = <String, Object?>{
     'intent': {'operation': operation, 'order_id': 'order-1'},
@@ -239,7 +291,7 @@ api.Hip3Action _action({
         'step_id': 'step-1',
         'sequence': 1,
         'kind': operation,
-        'status': signable ? 'prepared' : 'waiting',
+        'status': stepStatus ?? (signable ? 'prepared' : 'waiting'),
         'signing': signable
             ? {
                 'expected_signer': _wallet,
@@ -271,12 +323,12 @@ api.Hip3Action _action({
                 'valid_until': validUntil,
               }
             : null,
-        'failure_reason': null,
+        'failure_reason': stepFailureReason,
       },
     ],
     'affected_order_ids': ['order-1'],
     'effects_applied': status == 'succeeded',
-    'failure_reason': null,
+    'failure_reason': actionFailureReason,
     'created_at': '2026-09-09T00:00:00Z',
     'updated_at': '2026-09-09T00:00:00Z',
   };

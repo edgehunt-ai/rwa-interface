@@ -4,6 +4,7 @@ import 'package:rwa_api_client/rwa_api_client.dart';
 import 'privy_access_token_provider.dart';
 import 'privy_auth_interceptor.dart';
 import 'api_environment.dart';
+import 'order_preview_payload.dart';
 
 /// Data-layer owner of the generated wire client.
 ///
@@ -26,7 +27,11 @@ class RwaApiDataSource {
       ),
     );
     final interceptor = PrivyAuthInterceptor(dio, tokenProvider);
-    final client = RwaApiClient(dio: dio, interceptors: [interceptor]);
+    final client = RwaApiClient(
+      dio: dio,
+      interceptors: [interceptor],
+      serializers: appApiSerializers,
+    );
     return RwaApiDataSource._(client: client, dio: dio);
   }
 

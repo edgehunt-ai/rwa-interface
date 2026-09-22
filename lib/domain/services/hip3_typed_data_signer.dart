@@ -8,10 +8,16 @@ enum Hip3SigningFailureCode {
 }
 
 final class Hip3SigningFailure implements Exception {
-  const Hip3SigningFailure(this.code, {this.retryable = false});
+  const Hip3SigningFailure(this.code, {this.retryable = false, this.reason});
 
   final Hip3SigningFailureCode code;
   final bool retryable;
+
+  /// The server's `failure_reason` for a terminal action or step.
+  ///
+  /// It names why this particular signature was refused, which the generic
+  /// code cannot; prefer it over the code's fallback copy when present.
+  final String? reason;
 }
 
 abstract interface class Hip3TypedDataSigner {

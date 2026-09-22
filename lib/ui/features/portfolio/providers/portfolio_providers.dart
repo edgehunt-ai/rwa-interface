@@ -143,12 +143,6 @@ final bstocksOrderAvailableBalanceProvider =
       );
     });
 
-final hip3OrderAvailableBalanceProvider =
-    FutureProvider.autoDispose<DecimalValue>((ref) async {
-      final accounts = await ref.watch(tradingAccountsProvider.future);
-      return _sumAvailableUsd(accounts);
-    });
-
 DecimalValue _sumAvailableUsd(Iterable<TradingAccount> accounts) {
   final amounts = accounts
       .map((account) => account.availableUsd)

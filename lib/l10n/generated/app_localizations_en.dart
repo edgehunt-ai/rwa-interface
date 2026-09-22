@@ -477,7 +477,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderQuoteUnavailable =>
-      'This quote is unavailable or expired. Go back and request a new quote.';
+      'This quote is unavailable or expired. Request a new quote before placing the order.';
 
   @override
   String get hip3TradingContextUnavailable =>
@@ -1669,7 +1669,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get direction => 'Direction';
 
   @override
-  String get entryPrice => 'Entry price';
+  String get entryPrice => 'Entry';
 
   @override
   String get markPrice => 'Mark price';
@@ -2046,7 +2046,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hip3ExecutionDetailsUnavailable =>
-      'Execution details are unavailable. Go back and request a new quote.';
+      'Execution details are unavailable. Request a new quote before placing the order.';
 
   @override
   String get environment => 'Environment';
@@ -2079,7 +2079,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get protectionConfirmationMismatch =>
-      'Protection confirmation is missing or differs from your order. Go back and request a new quote.';
+      'Protection confirmation is missing or differs from your order. Request a new quote before placing the order.';
 
   @override
   String fixedQuantityThisOrder(Object quantity) {
@@ -2266,5 +2266,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String marginValue(Object value) {
     return 'Balance: $value USDC';
+  }
+
+  @override
+  String get orderSizeLabel => 'Size';
+
+  @override
+  String hip3MarginChip(String amount) {
+    return 'Margin $amount';
+  }
+
+  @override
+  String hip3SignAndConfirm(String direction) {
+    return 'Sign & Confirm $direction';
   }
 }

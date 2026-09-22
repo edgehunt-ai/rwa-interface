@@ -106,6 +106,26 @@ final class OrderIntent {
   final TakeProfitStopLoss? tpSl;
   final Hip3OpeningProtection? openingProtection;
 
+  /// The same order at a different slippage tolerance.
+  ///
+  /// Changing it invalidates the server's frozen terms, so the caller must
+  /// re-quote rather than reuse the preview this intent produced.
+  OrderIntent withSlippage(DecimalValue? value) => OrderIntent(
+    symbol: symbol,
+    kind: kind,
+    side: side,
+    type: type,
+    amount: amount,
+    quantity: quantity,
+    limitPrice: limitPrice,
+    slippage: value,
+    leverage: leverage,
+    marginMode: marginMode,
+    reduceOnly: reduceOnly,
+    tpSl: tpSl,
+    openingProtection: openingProtection,
+  );
+
   String get fingerprint => [
     symbol,
     kind.name,

@@ -18,8 +18,8 @@ import 'package:rwa_interface/domain/models/hip3_opening_protection.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
-import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import 'package:rwa_interface/app/observability/observability_reporter.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
@@ -40,6 +40,8 @@ import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repos
 import 'package:rwa_interface/domain/repositories/hip3_opening_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
+import 'package:rwa_interface/domain/models/withdrawal.dart';
+import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
 
 void main() {
   testWidgets(
@@ -70,6 +72,69 @@ void main() {
     },
   );
 
+  testWidgets(
+    'a completed transfer re-reads the balance without resetting the leverage',
+    (tester) async {
+      final opening = _Opening(availableMargin: '16');
+      final orders = _CapturingHip3Orders();
+      final funding = _TransferThenFunded(
+        onTransfer: () => opening.availableMargin = '40',
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(orders),
+            walletsRepositoryProvider.overrideWithValue(_FundingWallets()),
+          ],
+          child: _app(
+            const Hip3OrderPanel(),
+            opening: opening,
+            funding: funding,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Balance: 16 USDC'), findsOneWidget);
+      expect(opening.contextCalls, 1);
+
+      // Pick a leverage the server context does not report, so a full context
+      // reload would visibly overwrite the selection.
+      await tester.tap(find.byKey(const Key('hip3-leverage-toggle')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('20x'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).first, '20');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(FilledButton).first);
+      await tester.tap(find.byType(FilledButton).first);
+      // The parent submit button animates while the funding sheet is open, so
+      // there is no stable frame for pumpAndSettle until the sheet closes.
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Completing the transfer closes the sheet and resumes the order.
+      final transfer = find.widgetWithText(FilledButton, 'In-App Transfer');
+      await tester.ensureVisible(transfer);
+      // Let the scroll settle without pumpAndSettle, which the parent's
+      // indeterminate animation would never allow to return.
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      await tester.tap(transfer);
+      await tester.pumpAndSettle();
+
+      expect(funding.transfers, 1);
+      // The second session is the loop re-checking funding after the transfer.
+      expect(funding.sessions, 2);
+      // The refresh, on top of the initial load.
+      expect(opening.contextCalls, 2);
+      // The mid-flow selection survived that refresh.
+      expect(orders.intent?.leverage?.value, '20');
+    },
+  );
+
   testWidgets('order form uses a USDC amount input without a quantity tab', (
     tester,
   ) async {
@@ -81,79 +146,42 @@ void main() {
     expect(find.text(r'Long NVDA · $2'), findsOneWidget);
   });
 
-  testWidgets(
-    'slider selection is preserved while the available balance loads',
-    (tester) async {
-      final balance = Completer<DecimalValue>();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            hip3OrderAvailableBalanceProvider.overrideWith(
-              (ref) => balance.future,
-            ),
-          ],
-          child: _app(const Hip3OrderPanel()),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
+  testWidgets('slider selection is preserved while the trading context loads', (
+    tester,
+  ) async {
+    final opening = _Opening();
+    final rules = Completer<Hip3OpeningContext>();
+    await tester.pumpWidget(
+      _app(
+        const Hip3OrderPanel(),
+        opening: _DelayedOpening(opening, rules.future),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
 
-      final sliderFinder = find.byType(Slider);
-      expect(sliderFinder, findsOneWidget);
-      await tester.drag(sliderFinder, const Offset(80, 0));
-      await tester.pump();
-      final selectedBeforeBalance = tester.widget<Slider>(sliderFinder).value;
-      expect(selectedBeforeBalance, greaterThan(0));
+    final sliderFinder = find.byType(Slider);
+    expect(sliderFinder, findsOneWidget);
+    await tester.drag(sliderFinder, const Offset(80, 0));
+    await tester.pump();
+    final selectedBeforeBalance = tester.widget<Slider>(sliderFinder).value;
+    expect(selectedBeforeBalance, greaterThan(0));
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      isEmpty,
+    );
 
-      balance.complete(DecimalValue('1000', asset: 'USD', unit: 'fiat'));
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump(const Duration(milliseconds: 350));
+    rules.complete(opening._context('NVDA'));
+    await tester.pumpAndSettle();
 
-      final selectedAfterBalance = tester.widget<Slider>(sliderFinder).value;
-      expect(selectedAfterBalance, closeTo(selectedBeforeBalance, 0.01));
-      expect(find.text('0.0'), findsNothing);
-      expect(find.byType(TextField).first, findsOneWidget);
-      expect(
-        (tester
-            .widget<TextField>(find.byType(TextField).first)
-            .controller
-            ?.text),
-        isNotEmpty,
-      );
-    },
-  );
-
-  testWidgets(
-    'slider selection is applied when balance arrives before trading rules',
-    (tester) async {
-      final balance = Completer<DecimalValue>();
-      final opening = _Opening();
-      final rules = Completer<Hip3OpeningContext>();
-      await tester.pumpWidget(
-        _app(
-          const Hip3OrderPanel(),
-          opening: _DelayedOpening(opening, rules.future),
-          availableBalance: balance.future,
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.drag(find.byType(Slider), const Offset(80, 0));
-      await tester.pump();
-
-      balance.complete(DecimalValue('1000', asset: 'USD', unit: 'fiat'));
-      await tester.pump();
-      expect(
-        tester.widget<TextField>(find.byType(TextField).first).controller?.text,
-        isEmpty,
-      );
-
-      rules.complete(opening._context('NVDA'));
-      await tester.pumpAndSettle();
-      expect(
-        tester.widget<TextField>(find.byType(TextField).first).controller?.text,
-        isNotEmpty,
-      );
-    },
-  );
+    final selectedAfterBalance = tester.widget<Slider>(sliderFinder).value;
+    expect(selectedAfterBalance, closeTo(selectedBeforeBalance, 0.01));
+    expect(find.text('0.0'), findsNothing);
+    expect(find.byType(TextField).first, findsOneWidget);
+    expect(
+      (tester.widget<TextField>(find.byType(TextField).first).controller?.text),
+      isNotEmpty,
+    );
+  });
 
   testWidgets(
     'an unreachable trading context explains itself on submit and is reported',
@@ -207,9 +235,6 @@ void main() {
             (ref, product) =>
                 ref.watch(hip3OpeningRepositoryProvider).context(product),
           ),
-          hip3OrderAvailableBalanceProvider.overrideWith(
-            (ref) async => DecimalValue('1000', asset: 'USD', unit: 'fiat'),
-          ),
         ],
         child: buildTestApp(const Hip3OrderPanel()),
       ),
@@ -236,10 +261,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          hip3OrderAvailableBalanceProvider.overrideWith(
-            (ref) async => DecimalValue('16', asset: 'USD', unit: 'fiat'),
+          hip3OpeningRepositoryProvider.overrideWithValue(
+            _Opening(availableMargin: '16'),
           ),
-          hip3OpeningRepositoryProvider.overrideWithValue(_Opening()),
           hip3OpeningContextProvider.overrideWith(
             (ref, product) =>
                 ref.watch(hip3OpeningRepositoryProvider).context(product),
@@ -340,15 +364,15 @@ void main() {
       await tester.ensureVisible(find.byType(FilledButton).first);
       await tester.tap(find.byType(FilledButton).first);
       await tester.pumpAndSettle();
-      expect(find.text('Fixed quantity: 1 (this order only)'), findsOneWidget);
       expect(
-        find.textContaining(
-          'Mark trigger 120 USDC · Market price bound 108 USDC',
+        find.descendant(
+          of: find.byType(Hip3ConfirmSheet),
+          matching: find.text('\$120/—'),
         ),
         findsOneWidget,
       );
-      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.ensureVisible(find.byKey(const Key('hip3-confirm-button')));
+      await tester.tap(find.byKey(const Key('hip3-confirm-button')));
       await tester.pumpAndSettle();
       expect(execution.calls, 1);
       expect(
@@ -415,14 +439,18 @@ void main() {
         await tester.enterText(find.byType(TextField).first, '100');
         await tester.tap(find.byType(FilledButton).first);
         await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+        await tester.tap(find.byKey(const Key('hip3-confirm-button')));
         await tester.pump();
         expect(execution.orderId, 'order-1');
         final container = ProviderScope.containerOf(
           tester.element(find.byType(Hip3OrderPanel)),
         );
         container.read(sessionGenerationProvider.notifier).clearUserScope();
-        await tester.pumpAndSettle();
+        // The confirm action spins while the execution is in flight, so there
+        // is no settled frame to wait for until it resolves.
+        for (var i = 0; i < 5; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
         release.complete();
         await tester.pumpAndSettle();
         expect(find.text('Order submitted'), findsNothing);
@@ -594,10 +622,97 @@ void main() {
     expect(hip3OpeningNotional(balance, 2, 50, quote: quote), '6');
   });
 
-  testWidgets('missing or expired quotes cannot create a new order', (
+  testWidgets('a quote that lapses on the confirmation is re-requested', (
     tester,
   ) async {
-    for (final missing in [false, true]) {
+    final requote = Completer<void>();
+    final orders = _ExecutableHip3Orders(
+      // Long enough to survive the sheet's open animation, short enough to
+      // lapse inside the test.
+      firstQuoteLifetime: const Duration(seconds: 2),
+      holdRequote: requote,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.tap(find.byType(FilledButton).first);
+    await tester.pumpAndSettle();
+    expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+    expect(orders.previews, 1);
+
+    // Letting the window lapse must not report anything to the trader: the
+    // sheet asks for new terms and the action shows it is busy.
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump();
+    expect(find.byKey(const Key('hip3-confirm-busy')), findsOneWidget);
+    expect(find.textContaining('quote is unavailable'), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('hip3-confirm-button')))
+          .onPressed,
+      isNull,
+    );
+
+    requote.complete();
+    await tester.pumpAndSettle();
+    expect(orders.previews, 2);
+    expect(find.byKey(const Key('hip3-confirm-busy')), findsNothing);
+    expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('hip3-confirm-button')))
+          .onPressed,
+      isNotNull,
+    );
+  });
+
+  testWidgets('slippage is edited on the confirmation and re-quoted', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.tap(find.byType(FilledButton).first);
+    await tester.pumpAndSettle();
+    // The first quote carries no client tolerance: the server's value is shown.
+    expect(orders.intents.single.slippage, isNull);
+    expect(find.text('1%'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('hip3-slippage-row')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('hip3-slippage-input')), '0.5');
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+
+    // The override only takes effect through a fresh quote.
+    expect(orders.intents.length, 2);
+    expect(orders.intents.last.slippage?.value, '0.5');
+    expect(find.text('0.5%'), findsOneWidget);
+    expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+  });
+
+  testWidgets('missing or expired quotes never open the confirmation view', (
+    tester,
+  ) async {
+    // An unsubmittable quote used to open a confirmation sheet with no terms
+    // and a dead Confirm button. It now stays on the form and reports the
+    // reason in the failure notice above the order button.
+    const expectations = {
+      false: 'This quote is unavailable or expired',
+      true: 'Execution details are unavailable',
+    };
+    for (final missing in expectations.keys) {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -612,14 +727,14 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.byType(FilledButton).first);
       await tester.pumpAndSettle();
-      final confirm = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Confirm'),
+      expect(find.byType(Hip3ConfirmSheet), findsNothing);
+      expect(find.byKey(const Key('hip3-form-error')), findsOneWidget);
+      expect(find.textContaining(expectations[missing]!), findsOneWidget);
+      // The order button stays live so a fresh quote can be requested.
+      final submit = tester.widget<FilledButton>(
+        find.byKey(const Key('hip3-submit-button')),
       );
-      expect(confirm.onPressed, isNull);
-      expect(
-        find.textContaining('This quote is unavailable or expired'),
-        findsOneWidget,
-      );
+      expect(submit.onPressed, isNotNull);
       await tester.pumpWidget(const SizedBox());
     }
   });
@@ -659,7 +774,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.byType(FilledButton).first);
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.byKey(const Key('hip3-confirm-button')));
       await tester.pumpAndSettle();
       expect(find.textContaining('Confirming this order.'), findsOneWidget);
       expect(find.text('Order submitted'), findsNothing);
@@ -802,12 +917,19 @@ void main() {
       expect(orders.intent?.openingProtection?.takeProfit?.limitPrice, isNull);
       expect(orders.intent?.openingProtection?.stopLoss?.limitPrice, isNull);
       expect(orders.intent?.tpSl, isNull);
-      expect(find.text('Review Long NVDA'), findsOneWidget);
-      expect(find.text('Isolated'), findsOneWidget);
-      expect(find.text('20x'), findsOneWidget);
+      expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(Hip3ConfirmSheet),
+          matching: find.text('20x・Isolated'),
+        ),
+        findsOneWidget,
+      );
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Back'));
+      // Dismissing the modal is the way back to the form.
+      await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
+      expect(find.byType(Hip3ConfirmSheet), findsNothing);
       expect(find.text('20×'), findsWidgets);
       expect(find.text('Remove'), findsOneWidget);
     },
@@ -850,9 +972,6 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          hip3OrderAvailableBalanceProvider.overrideWith(
-            (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
-          ),
           hip3OpeningContextProvider.overrideWith(
             (ref, product) async => throw StateError('unavailable'),
           ),
@@ -893,7 +1012,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.tap(find.byKey(const Key('hip3-confirm-button')));
     await tester.pumpAndSettle();
 
     expect(execution.orderId, 'order-1');
@@ -929,7 +1048,6 @@ Widget _app(
   Hip3OpeningRepository? opening,
   ObservabilityReporter? observability,
   FundingRepository? funding,
-  Future<DecimalValue>? availableBalance,
 }) => ProviderScope(
   overrides: [
     fundingTransferCommandsProvider.overrideWith(
@@ -942,11 +1060,6 @@ Widget _app(
     if (observability != null)
       observabilityReporterProvider.overrideWithValue(observability),
     hip3OpeningRepositoryProvider.overrideWithValue(opening ?? _Opening()),
-    hip3OrderAvailableBalanceProvider.overrideWith(
-      (ref) =>
-          availableBalance ??
-          Future.value(DecimalValue('1000', asset: 'USD', unit: 'fiat')),
-    ),
     hip3OpeningContextProvider.overrideWith(
       (ref, product) =>
           ref.watch(hip3OpeningRepositoryProvider).context(product),
@@ -1022,15 +1135,19 @@ final class _Opening implements Hip3OpeningRepository {
     this.maximum = 20,
     this.failing = false,
     this.maximumNotional = '1000',
+    this.availableMargin = '1000',
   });
   final int maximum;
   final bool failing;
   final String maximumNotional;
+  String availableMargin;
+  int contextCalls = 0;
   int settingsRequests = 0;
   int leverage = 10;
   TradingMarginMode mode = TradingMarginMode.cross;
   @override
   Future<Hip3OpeningContext> context(String productOrSymbol) async {
+    contextCalls++;
     if (failing) {
       throw const ServerFailure(statusCode: 503, code: 'unavailable');
     }
@@ -1049,7 +1166,7 @@ final class _Opening implements Hip3OpeningRepository {
     marginModes: {TradingMarginMode.cross, TradingMarginMode.isolated},
     orderTypes: {TradingOrderType.market, TradingOrderType.limit},
     timeInForce: {'gtc', 'ioc'},
-    availableMargin: DecimalValue('100'),
+    availableMargin: DecimalValue(availableMargin),
     minimumNotional: DecimalValue('12'),
     maximumNotional: DecimalValue(maximumNotional),
     sizeDecimals: 3,
@@ -1094,20 +1211,45 @@ final class _DelayedOpening implements Hip3OpeningRepository {
 }
 
 final class _ExecutableHip3Orders implements OrdersRepository {
-  _ExecutableHip3Orders({this.expired = false, this.missingExecution = false});
+  _ExecutableHip3Orders({
+    this.expired = false,
+    this.missingExecution = false,
+    this.firstQuoteLifetime,
+    this.holdRequote,
+  });
   final bool expired;
   final bool missingExecution;
+
+  /// When set, only the first quote gets this (short) window.
+  final Duration? firstQuoteLifetime;
+
+  /// Holds every quote after the first, so a re-request can be observed.
+  final Completer<void>? holdRequote;
+  var previews = 0;
+
+  final intents = <OrderIntent>[];
+
   @override
   Future<OrderPreview> preview(
     OrderIntent intent, {
     required String idempotencyKey,
-  }) async => OrderPreview(
-    previewId: 'hip3-preview',
-    intent: intent,
-    orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
-    hip3Execution: missingExecution ? null : _previewExecution(intent),
-    expiresAt: DateTime.now().toUtc().add(Duration(minutes: expired ? -1 : 1)),
-  );
+  }) async {
+    intents.add(intent);
+    if (previews > 0 && holdRequote != null) await holdRequote!.future;
+    final lifetime = previews == 0 && firstQuoteLifetime != null
+        ? firstQuoteLifetime!
+        : Duration(minutes: expired ? -1 : 1);
+    previews++;
+    return OrderPreview(
+      previewId: 'hip3-preview-$previews',
+      intent: intent,
+      orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+      hip3Execution: missingExecution
+          ? null
+          : _previewExecution(intent, slippage: intent.slippage?.value ?? '1'),
+      expiresAt: DateTime.now().toUtc().add(lifetime),
+    );
+  }
 
   @override
   Future<ResourceResult<TradingOrder>> create(
@@ -1171,6 +1313,7 @@ Hip3PreviewExecution _previewExecution(
   OrderIntent intent, {
   String maximum = '1',
   String margin = '20',
+  String slippage = '1',
 }) => Hip3PreviewExecution(
   openingProtection: intent.openingProtection == null
       ? null
@@ -1206,10 +1349,106 @@ Hip3PreviewExecution _previewExecution(
   availableMargin: DecimalValue(margin),
   maximumQuantity: DecimalValue(maximum),
   estimatedFee: DecimalValue('0.05'),
-  slippagePercent: DecimalValue('1'),
+  slippagePercent: DecimalValue(slippage),
   liquidationPriceUnavailableReason:
       'cross_margin_requires_full_account_simulation',
 );
+
+/// One transfer satisfies the order: the first session needs funding, the
+/// second is already funded.
+class _TransferThenFunded implements FundingRepository {
+  _TransferThenFunded({required this.onTransfer});
+  final void Function() onTransfer;
+  int sessions = 0;
+  int transfers = 0;
+
+  @override
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  }) async {
+    sessions++;
+    return FundingSessionSummary(
+      sessionId: 'session-$sessions',
+      status: sessions == 1 ? 'ready_to_confirm' : 'funded',
+      version: 1,
+      canConfirmTransfer: sessions == 1,
+      expiresAt: DateTime.now().toUtc().add(const Duration(hours: 24)),
+    );
+  }
+
+  @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) async => FundingPlan(
+    planId: 'hip3-plan',
+    tradePreviewId: fundingSessionId,
+    shortfall: DecimalValue('5'),
+    status: FundingPlanState.ready,
+    sourceWalletId: 'wallet-1',
+    sourceAsset: 'USDC',
+    sourceMaximum: DecimalValue('24', asset: 'USDC', unit: 'token'),
+    legs: [
+      FundingLeg(
+        legId: 'leg-1',
+        walletId: 'wallet-1',
+        asset: 'USDC',
+        maximumAmount: DecimalValue('24', asset: 'USDC', unit: 'token'),
+        outputAmount: DecimalValue('24', asset: 'USDC', unit: 'token'),
+        status: FundingLegState.actionReleased,
+      ),
+    ],
+  );
+
+  @override
+  Future<FundingTransfer> createFundingTransfer({
+    required String planId,
+    required String legId,
+    required String authorizationId,
+    required String idempotencyKey,
+  }) async {
+    transfers++;
+    onTransfer();
+    return FundingTransfer(
+      transferId: 'hip3-transfer',
+      planId: planId,
+      amount: DecimalValue('24'),
+      status: FundingTransferState.completed,
+    );
+  }
+
+  @override
+  Future<FundingPlan> getFundingPlan(String id) async => FundingPlan(
+    planId: id,
+    tradePreviewId: 'session-1',
+    shortfall: DecimalValue('0'),
+    status: FundingPlanState.alreadyFunded,
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _FundingWallets implements WalletsRepository {
+  @override
+  Future<WalletAuthorization> authorizeFundingTransfer({
+    required String walletId,
+    required String planId,
+    required String asset,
+    required String maximumAmount,
+    required String idempotencyKey,
+  }) async => WalletAuthorization(
+    authorizationId: 'funding-authorization',
+    walletId: walletId,
+    status: WalletAuthorizationState.authorized,
+    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class _ShortfallFunding extends FundedRepository {
   @override

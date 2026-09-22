@@ -30,9 +30,7 @@ abstract interface class OrdersService {
 }
 
 final class PreviewOrderResponse {
-  const PreviewOrderResponse.parsed(this.value) : raw = null;
-  const PreviewOrderResponse.raw(this.raw) : value = null;
+  const PreviewOrderResponse(this.value);
 
-  final api.OrderPreview? value;
-  final Map<String, dynamic>? raw;
+  final api.OrderPreview value;
 }

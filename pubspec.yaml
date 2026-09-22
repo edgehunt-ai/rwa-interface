@@ -44,6 +44,7 @@ dependencies:
     path: packages/rwa_api_client
   # Public union wrapper required by the generated OpenAPI request models.
   one_of: ^1.5.0
+  built_value: ^8.9.0
   flutter_localizations:
     sdk: flutter
   sentry_flutter: ^9.28.0

@@ -466,7 +466,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterValidOrderValues => '请输入有效的订单参数。';
 
   @override
-  String get orderQuoteUnavailable => '报价不可用或已过期，请返回并重新请求报价。';
+  String get orderQuoteUnavailable => '报价不可用或已过期，请重新获取报价后再下单。';
 
   @override
   String get hip3TradingContextUnavailable => '交易服务异常，请稍后重试。';
@@ -1592,7 +1592,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get direction => '方向';
 
   @override
-  String get entryPrice => '开仓价';
+  String get entryPrice => '入场价';
 
   @override
   String get markPrice => '标记价格';
@@ -1942,7 +1942,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get amountRequiredForPercentage => '请输入金额以获取当前最大数量后，再使用百分比滑块。';
 
   @override
-  String get hip3ExecutionDetailsUnavailable => '执行详情不可用，请返回并重新获取报价。';
+  String get hip3ExecutionDetailsUnavailable => '执行详情不可用，请重新获取报价后再下单。';
 
   @override
   String get environment => '环境';
@@ -1972,7 +1972,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quoteExpiresUtc => '报价过期时间（UTC）';
 
   @override
-  String get protectionConfirmationMismatch => '保护确认缺失或与订单不符，请返回并重新获取报价。';
+  String get protectionConfirmationMismatch => '保护确认缺失或与订单不符，请重新获取报价后再下单。';
 
   @override
   String fixedQuantityThisOrder(Object quantity) {
@@ -2147,5 +2147,18 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String marginValue(Object value) {
     return '余额：$value USDC';
+  }
+
+  @override
+  String get orderSizeLabel => '份额';
+
+  @override
+  String hip3MarginChip(String amount) {
+    return '保证金 $amount';
+  }
+
+  @override
+  String hip3SignAndConfirm(String direction) {
+    return '签名并确认$direction';
   }
 }

@@ -11,6 +11,7 @@ import '../../domain/models/hip3_opening_protection.dart';
 import '../../domain/models/resource_result.dart';
 import '../../domain/models/unsupported_capability.dart';
 import '../../domain/repositories/orders_repository.dart';
+import '../api/order_preview_payload.dart';
 import '../services/orders_service.dart';
 import '../mappers/order_preview_request_mapper.dart';
 import '../mappers/chain_name_mapper.dart';
@@ -28,22 +29,19 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       _previewRequest(intent),
       idempotencyKey: idempotencyKey,
     );
-    if (response.raw case final raw?) return _rawPreview(raw, intent);
-    final wire = response.value!;
-    final value = wire.oneOf.value;
-    final common = value as api.OrderPreviewCommon;
-    final settlementAsset = switch (value) {
-      api.BstockOrderPreview(:final settlementAsset) => settlementAsset.name,
-      api.PerpOrderPreview(:final settlementAsset) => settlementAsset.name,
-      _ => null,
-    };
-    final settlementChain = switch (value) {
-      api.BstockOrderPreview(:final network) => canonicalSettlementChainName(
-        network: network.name,
-      ),
-      api.PerpOrderPreview(:final network) => canonicalChainName(network.name),
-      _ => null,
-    };
+    final payload = response.value.oneOf.value as OrderPreviewPayload;
+    final common = payload.common;
+    // Settlement identity is read as text: the generated enums fall back to
+    // `unknown_default_open_api`, which would make testnet TUSDT and mainnet
+    // USDT indistinguishable.
+    final settlementAsset = payload.text('settlement_asset');
+    final network = payload.text('network');
+    final isBstock = payload.text('kind') == 'bstock';
+    final settlementChain = network == null
+        ? null
+        : isBstock
+        ? canonicalSettlementChainName(network: network)
+        : canonicalChainName(network);
     final preview = OrderPreview(
       previewId: common.previewId,
       intent: intent,
@@ -90,6 +88,8 @@ final class OrdersRepositoryImpl implements OrdersRepository {
             ) ??
             const <PreviewDetail>[],
       ),
+      // Only bStocks submission depends on a confirmation binding.
+      executionReady: !isBstock || _hasBstocksExecutionBinding(payload.fields),
     );
     if (!preview.openingProtectionMatchesIntent) {
       throw const FormatException(
@@ -99,65 +99,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     return preview;
   }
 
-  OrderPreview _rawPreview(Map<String, dynamic> raw, OrderIntent intent) {
-    String? text(String key) => raw[key]?.toString();
-    DecimalValue? decimal(String key, String unit, {String? asset}) {
-      final value = text(key);
-      return value == null
-          ? null
-          : DecimalValue(value, unit: unit, asset: asset);
-    }
-
-    final orderValue = text('order_value');
-    if (orderValue == null) throw const FormatException('Missing order_value');
-    final details =
-        (raw['details'] as List?)
-            ?.whereType<Map<String, dynamic>>()
-            .map(
-              (entry) => PreviewDetail(
-                entry['label']?.toString() ?? '',
-                entry['value']?.toString() ?? '',
-                tone: entry['tone']?.toString(),
-              ),
-            )
-            .toList() ??
-        const <PreviewDetail>[];
-    final settlementAsset = text('settlement_asset');
-    return OrderPreview(
-      previewId: text('preview_id') ?? '',
-      intent: intent,
-      orderValue: _value(orderValue, 'notional', asset: settlementAsset),
-      marketPrice: decimal('market_price', 'price', asset: 'USD'),
-      estimatedPrice: decimal('estimated_price', 'price', asset: 'USD'),
-      estimatedQuantity: decimal(
-        'estimated_quantity',
-        'quantity',
-        asset: intent.symbol,
-      ),
-      estimatedReceive: decimal(
-        'estimated_receive',
-        'quantity',
-        asset: text('estimated_receive_unit') ?? intent.symbol,
-      ),
-      // fee_asset denotes network_fee, not the trading fee field above.
-      fee: decimal('fee', 'fee', asset: settlementAsset),
-      marginRequired: decimal(
-        'margin_required',
-        'margin',
-        asset: settlementAsset,
-      ),
-      settlementAsset: settlementAsset,
-      settlementChain: text('network'),
-      priceUpdated: raw['price_updated'] == true,
-      expiresAt: DateTime.tryParse(text('quote_expires_at') ?? '')?.toUtc(),
-      feeRate: decimal('fee_rate', 'rate'),
-      feeNote: text('fee_note'),
-      details: List.unmodifiable(details),
-      executionReady: _hasBstocksExecutionBinding(raw),
-    );
-  }
-
-  bool _hasBstocksExecutionBinding(Map<String, dynamic> raw) {
+  bool _hasBstocksExecutionBinding(Map<String, Object?> raw) {
     final bstocks = raw['bstocks'];
     final binding = bstocks is Map ? bstocks['confirmation_binding'] : null;
     return binding is Map &&

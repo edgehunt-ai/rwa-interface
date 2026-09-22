@@ -153,7 +153,7 @@
   "minimumAmountPlaceholder": "最低 {minimum}",
   "@minimumAmountPlaceholder": {"placeholders": {"minimum": {}}},
   "enterValidOrderValues": "请输入有效的订单参数。",
-  "orderQuoteUnavailable": "报价不可用或已过期，请返回并重新请求报价。",
+  "orderQuoteUnavailable": "报价不可用或已过期，请重新获取报价后再下单。",
   "hip3TradingContextUnavailable": "交易服务异常，请稍后重试。",
   "hip3LeverageAboveMaximum": "杠杆超出该产品 {maximum}× 上限。",
   "@hip3LeverageAboveMaximum": {"placeholders": {"maximum": {}}},
@@ -658,7 +658,7 @@
   "entirePositionProtectionNotice": "全仓位保护会在触发时使用仓位数量。",
   "protectionSignatureNotice": "触发执行不需要新的签名。修改和取消需要签名。关闭某一保护会取消它；其他修改可能需要额外签名。",
   "amountRequiredForPercentage": "请输入金额以获取当前最大数量后，再使用百分比滑块。",
-  "hip3ExecutionDetailsUnavailable": "执行详情不可用，请返回并重新获取报价。",
+  "hip3ExecutionDetailsUnavailable": "执行详情不可用，请重新获取报价后再下单。",
   "environment": "环境",
   "product": "产品",
   "feeReserveRate": "费用预留费率",
@@ -668,7 +668,7 @@
   "crossMarginLiquidationUnavailable": "全仓强平价取决于完整账户状态，无法在此可靠估算。",
   "noReliableLiquidationEstimate": "未返回可靠估算值。",
   "quoteExpiresUtc": "报价过期时间（UTC）",
-  "protectionConfirmationMismatch": "保护确认缺失或与订单不符，请返回并重新获取报价。",
+  "protectionConfirmationMismatch": "保护确认缺失或与订单不符，请重新获取报价后再下单。",
   "fixedQuantityThisOrder": "固定数量：{quantity}（仅此订单）",
   "@fixedQuantityThisOrder": {"placeholders": {"quantity": {}}},
   "marketPriceBound": "市价保护边界",
@@ -727,5 +727,23 @@
   "reviewOrder": "核对{side} {symbol}",
   "@reviewOrder": {"placeholders": {"side": {}, "symbol": {}}},
   "marginValue": "余额：{value} USDC",
-  "@marginValue": {"placeholders": {"value": {}}}
+  "@marginValue": {"placeholders": {"value": {}}},
+  "orderSizeLabel": "份额",
+  "entryPrice": "入场价",
+  "hip3MarginChip": "保证金 {amount}",
+  "@hip3MarginChip": {
+    "placeholders": {
+        "amount": {
+            "type": "String"
+        }
+    }
+},
+  "hip3SignAndConfirm": "签名并确认{direction}",
+  "@hip3SignAndConfirm": {
+    "placeholders": {
+        "direction": {
+            "type": "String"
+        }
+    }
+}
 }

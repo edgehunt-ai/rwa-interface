@@ -189,7 +189,7 @@
   "minimumAmountPlaceholder": "Min {minimum}",
   "@minimumAmountPlaceholder": {"placeholders": {"minimum": {}}},
   "enterValidOrderValues": "Enter valid order values.",
-  "orderQuoteUnavailable": "This quote is unavailable or expired. Go back and request a new quote.",
+  "orderQuoteUnavailable": "This quote is unavailable or expired. Request a new quote before placing the order.",
   "hip3TradingContextUnavailable": "Trading service is unavailable. Try again in a moment.",
   "hip3LeverageAboveMaximum": "Leverage exceeds the {maximum}x limit for this product.",
   "@hip3LeverageAboveMaximum": {"placeholders": {"maximum": {}}},
@@ -696,7 +696,7 @@
   "entirePositionProtectionNotice": "Entire position protection uses the position size at trigger time.",
   "protectionSignatureNotice": "Trigger execution needs no new signature. Changes and cancellations require signing. Switching a leg off cancels it; other edits may require additional signatures.",
   "amountRequiredForPercentage": "Enter an amount to get a current maximum quantity before using the percentage slider.",
-  "hip3ExecutionDetailsUnavailable": "Execution details are unavailable. Go back and request a new quote.",
+  "hip3ExecutionDetailsUnavailable": "Execution details are unavailable. Request a new quote before placing the order.",
   "environment": "Environment",
   "product": "Product",
   "feeReserveRate": "Fee reserve rate",
@@ -706,7 +706,7 @@
   "crossMarginLiquidationUnavailable": "Cross-margin liquidation depends on the full account and cannot be estimated reliably here.",
   "noReliableLiquidationEstimate": "No reliable estimate was returned.",
   "quoteExpiresUtc": "Quote expires (UTC)",
-  "protectionConfirmationMismatch": "Protection confirmation is missing or differs from your order. Go back and request a new quote.",
+  "protectionConfirmationMismatch": "Protection confirmation is missing or differs from your order. Request a new quote before placing the order.",
   "fixedQuantityThisOrder": "Fixed quantity: {quantity} (this order only)",
   "@fixedQuantityThisOrder": {"placeholders": {"quantity": {}}},
   "marketPriceBound": "Market price bound",
@@ -765,5 +765,23 @@
   "reviewOrder": "Review {side} {symbol}",
   "@reviewOrder": {"placeholders": {"side": {}, "symbol": {}}},
   "marginValue": "Balance: {value} USDC",
-  "@marginValue": {"placeholders": {"value": {}}}
+  "@marginValue": {"placeholders": {"value": {}}},
+  "orderSizeLabel": "Size",
+  "entryPrice": "Entry",
+  "hip3MarginChip": "Margin {amount}",
+  "@hip3MarginChip": {
+    "placeholders": {
+        "amount": {
+            "type": "String"
+        }
+    }
+},
+  "hip3SignAndConfirm": "Sign & Confirm {direction}",
+  "@hip3SignAndConfirm": {
+    "placeholders": {
+        "direction": {
+            "type": "String"
+        }
+    }
+}
 }

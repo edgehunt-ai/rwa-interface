@@ -10,18 +10,15 @@ import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
-import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
-import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 
-import 'hip3_preview_details.dart';
+import 'hip3_confirm_sheet.dart';
 import 'order_funding_sheet.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
@@ -73,7 +70,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   TradingOrder? _submitted;
   String? _pendingOrderId;
   Timer? _quoteDebounce;
-  Timer? _previewExpiry;
   var _quoteGeneration = 0;
 
   @override
@@ -88,8 +84,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.invalidate(tradingAccountsProvider);
-        ref.invalidate(hip3OrderAvailableBalanceProvider);
+        // The spendable balance comes from the trading context's
+        // available_margin_usdc, which _loadContext refreshes.
         _loadContext();
       }
     });
@@ -141,10 +137,37 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
   }
 
+  /// Re-reads the trading context so the displayed available margin reflects a
+  /// transfer that just completed. Unlike [_loadContext] this keeps the
+  /// leverage and margin mode: they are mid-flow selections the user made, not
+  /// values to be reset from the server halfway through an order. A failure is
+  /// recorded and swallowed, because funding has already succeeded and a stale
+  /// balance must not abort the order.
+  Future<void> _refreshAvailableMargin() async {
+    final generation = ref.read(sessionGenerationProvider);
+    try {
+      ref.invalidate(
+        hip3OpeningContextProvider(widget.productId ?? widget.symbol),
+      );
+      final context = await ref.read(
+        hip3OpeningContextProvider(widget.productId ?? widget.symbol).future,
+      );
+      if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+      setState(() => _context = context);
+    } on Object catch (error, stackTrace) {
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: 'hip3.trading_context.refresh',
+            error: error,
+            stackTrace: stackTrace,
+          );
+    }
+  }
+
   @override
   void dispose() {
     _quoteDebounce?.cancel();
-    _previewExpiry?.cancel();
     _amount.removeListener(_onAmountChanged);
     _limitPrice.removeListener(_scheduleQuote);
     _amount.dispose();
@@ -371,15 +394,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   void _syncPercentageFromAmount() {
-    final bounds = _amountBounds(
-      ref.read(hip3OrderAvailableBalanceProvider).value,
-    );
+    final bounds = _amountBounds(_context?.availableMargin);
     if (bounds == null) return;
 
     if (_percentageWaitingForBalance) {
       final input = bounds.$1 + (bounds.$2 - bounds.$1) * _percentage;
       _percentageWaitingForBalance = false;
-      final balance = ref.read(hip3OrderAvailableBalanceProvider).value;
+      final balance = _context?.availableMargin;
       final available = double.tryParse(balance?.value ?? '');
       _amount.text = available == null
           ? input.toString()
@@ -452,6 +473,26 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     return null;
   }
 
+  /// Why the frozen quote cannot be submitted, as a ready-to-show message.
+  ///
+  /// The form and the confirmation view render it in the same failure notice,
+  /// so there is a single place that decides whether an order can proceed.
+  String? _previewUnusableReason(OrderPreview preview) {
+    // A signature is already pending server-side; the quote no longer gates it.
+    if (_pendingOrderId != null) return null;
+    final l10n = AppLocalizations.of(context);
+    if (preview.hip3Execution == null) {
+      return l10n.hip3ExecutionDetailsUnavailable;
+    }
+    if (!preview.openingProtectionMatchesIntent) {
+      return l10n.protectionConfirmationMismatch;
+    }
+    if (preview.expiresAt == null || preview.isExpired) {
+      return l10n.orderQuoteUnavailable;
+    }
+    return null;
+  }
+
   bool _isObviousInputError(String? message, AppLocalizations l10n) {
     if (message == null) return false;
     return message == l10n.enterOrderValue ||
@@ -501,6 +542,31 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         });
       }
     }
+    // Opened only once the form has left its submitting state: the button's
+    // progress animation would otherwise never yield a settled frame.
+    if (mounted && _preview != null) await _confirm(_preview!);
+  }
+
+  /// The confirmation step is its own modal, so dismissing it returns to this
+  /// form. That is why the design carries no back control inside the sheet.
+  Future<void> _confirm(OrderPreview preview) async {
+    final generation = ref.read(sessionGenerationProvider);
+    final submitted = await showModalBottomSheet<TradingOrder>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => Hip3ConfirmSheet(preview: preview),
+    );
+    if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+    setState(() {
+      _submitted = submitted;
+      // A dismissed confirmation drops the frozen quote so the next review
+      // prices the order again instead of reusing terms the user backed out of.
+      // A submitted one keeps it: the result still reports on those terms.
+      if (submitted == null) {
+        _preview = null;
+        _quotePreview = null;
+      }
+    });
   }
 
   Future<void> _reviewInternal() async {
@@ -559,8 +625,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       setState(() {
         _error = null;
       });
-      // The funding API reads Hyperliquid Perps available margin, not the
-      // aggregated balance used by the form's percentage selector.
+      // The funding API and the form's percentage selector now read the same
+      // Hyperliquid Perps available margin from the trading context.
       while (!intent.reduceOnly) {
         _setProcessingStep('checking funding requirements');
         final plan = await ref
@@ -584,6 +650,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           );
           return;
         }
+        await _refreshAvailableMargin();
+        if (!isCurrent()) return;
       }
       final cachedQuote = _quotePreview;
       _setProcessingStep(
@@ -602,16 +670,20 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         setState(() => _error = 'The server returned no HIP-3 preview.');
         return;
       }
-      if (isCurrent()) {
-        setState(() => _preview = preview);
-        _previewExpiry?.cancel();
-        final expiry = preview.expiresAt;
-        if (expiry != null && expiry.isAfter(DateTime.now().toUtc())) {
-          _previewExpiry = Timer(expiry.difference(DateTime.now().toUtc()), () {
-            if (isCurrent()) setState(() {});
-          });
-        }
+      // A quote that cannot be submitted must never open the confirmation
+      // view; it would render an empty sheet with a dead button. Report it in
+      // the form's failure notice and drop the cached quote so the next tap
+      // requests a fresh one.
+      if (_previewUnusableReason(preview) case final reason?) {
+        setState(() {
+          _error = reason;
+          _preview = null;
+          _quotePreview = null;
+        });
+        return;
       }
+      if (!isCurrent() || !mounted) return;
+      setState(() => _preview = preview);
     } on FormatException catch (error) {
       if (isCurrent()) {
         setState(() => _error = _specificErrorMessage(error));
@@ -631,81 +703,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (isCurrent()) {
         setState(() => _error = _specificErrorMessage(error));
       }
-    }
-  }
-
-  Future<void> _submit() async {
-    final generation = ref.read(sessionGenerationProvider);
-    bool isCurrent() =>
-        mounted && ref.read(sessionGenerationProvider) == generation;
-    final preview = _preview;
-    if (preview == null) {
-      setState(() => _error = 'There is no HIP-3 preview to submit.');
-      return;
-    }
-    if (_pendingOrderId == null &&
-        (preview.hip3Execution == null ||
-            !preview.openingProtectionMatchesIntent ||
-            preview.expiresAt == null ||
-            preview.isExpired)) {
-      setState(
-        () => _error = AppLocalizations.of(context).orderQuoteUnavailable,
-      );
-      return;
-    }
-    setState(() => _submitting = true);
-    try {
-      var submitted = _pendingOrderId != null
-          ? await ref
-                .read(hip3OrderExecutionRepositoryProvider)
-                .awaitActionAndSubmit(_pendingOrderId!)
-          : await ref
-                .read(orderCommandProvider.notifier)
-                .submit(preview.intent, previewId: preview.previewId);
-      if (!isCurrent()) return;
-      if (submitted?.resource.status == TradingOrderStatus.pendingSignature) {
-        _pendingOrderId = submitted!.resource.orderId;
-        submitted = await ref
-            .read(hip3OrderExecutionRepositoryProvider)
-            .awaitActionAndSubmit(_pendingOrderId!);
-      }
-      if (!isCurrent()) return;
-      ref.invalidate(hip3OrdersProvider);
-      setState(() {
-        _submitted = submitted?.resource;
-        _error = submitted == null
-            ? 'The server did not return a submitted HIP-3 order.'
-            : null;
-      });
-    } on Hip3ExecutionPending catch (pending) {
-      if (!isCurrent()) return;
-      setState(() {
-        _pendingOrderId = pending.orderId;
-        _error = pending.requiresReview
-            ? AppLocalizations.of(context).hip3OrderNeedsReview
-            : AppLocalizations.of(context).hip3OrderConfirming;
-      });
-    } on Hip3SigningFailure catch (failure) {
-      if (!isCurrent()) return;
-      setState(() => _error = _signingError(failure));
-    } on ApiFailure catch (failure) {
-      if (!isCurrent()) return;
-      setState(() => _error = _specificErrorMessage(failure));
-    } on FormatException catch (error) {
-      if (!isCurrent()) return;
-      setState(() => _error = _specificErrorMessage(error));
-    } on Object catch (error, stackTrace) {
-      ref
-          .read(observabilityReporterProvider)
-          .recordError(
-            operation: 'hip3.order.submit',
-            error: error,
-            stackTrace: stackTrace,
-          );
-      if (!isCurrent()) return;
-      setState(() => _error = _specificErrorMessage(error));
-    } finally {
-      if (isCurrent()) setState(() => _submitting = false);
     }
   }
 
@@ -749,17 +746,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<DecimalValue>>(hip3OrderAvailableBalanceProvider, (
-      previous,
-      next,
-    ) {
-      if (!next.hasValue || !_percentageWaitingForBalance) return;
-      _schedulePendingPercentageSync(next.value);
-    });
     ref.listen(sessionGenerationProvider, (previous, next) {
       if (previous == next) return;
       _quoteDebounce?.cancel();
-      _previewExpiry?.cancel();
       ++_quoteGeneration;
       setState(() {
         _context = null;
@@ -784,7 +773,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       });
     });
     if (_submitted != null) return _result(context);
-    if (_preview != null) return _confirmation(context);
     return IgnorePointer(ignoring: _submitting, child: _form(context));
   }
 
@@ -796,8 +784,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final actionColor = isShort ? semantic.loss : semantic.success;
     final amount = _amount.text.trim();
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
-    final availableBalance = ref.watch(hip3OrderAvailableBalanceProvider);
-    _schedulePendingPercentageSync(availableBalance.value);
+    final availableBalance = _context?.availableMargin;
+    _schedulePendingPercentageSync(availableBalance);
     final formError = _amountError() ?? _error;
     final disabledReason = _disabledReason(l10n);
     final visibleError = _isObviousInputError(formError, l10n)
@@ -857,14 +845,14 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   leverage: _leverage,
                   maximumLeverage: _context?.maximumLeverage,
                   minimumAmount: _context?.minimumNotional.value,
-                  amountBounds: _amountBounds(availableBalance.value),
+                  amountBounds: _amountBounds(availableBalance),
                   limitPrice: null,
                   controller: _amount,
                   settlementAsset: settlementAsset,
                   inputAsset: _inputNotional ? settlementAsset : widget.symbol,
                   quantityInput: !_inputNotional,
-                  availableMargin: availableBalance.value?.value,
-                  availableMarginLoading: availableBalance.value == null,
+                  availableMargin: availableBalance?.value,
+                  availableMarginLoading: _contextLoading,
                   percentage: _percentage,
                   onMarginModeTap: () async {
                     if (_submitting) return;
@@ -919,7 +907,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   onPercentageChanged: (value) {
                     // A percentage of spendable balance needs no quote, so the
                     // slider works before an amount has been typed.
-                    final balance = availableBalance.value;
+                    final balance = availableBalance;
                     if (balance == null) {
                       setState(() {
                         _percentage = value;
@@ -1016,108 +1004,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         ),
       ),
     );
-  }
-
-  Widget _confirmation(BuildContext context) => Material(
-    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-    child: SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _Hip3SheetHeader(
-              title: AppLocalizations.of(context).reviewOrder(
-                _preview!.intent.side == TradingSide.long
-                    ? AppLocalizations.of(context).long
-                    : AppLocalizations.of(context).short,
-                _preview!.intent.symbol,
-              ),
-              leverage:
-                  int.tryParse(_preview!.hip3Execution?.leverage.value ?? '') ??
-                  _leverage,
-              color: _side == TradingSide.short
-                  ? Theme.of(context).extension<AppSemanticColors>()!.loss
-                  : Theme.of(context).extension<AppSemanticColors>()!.success,
-              onClose: () => Navigator.of(context).pop(),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Hip3PreviewDetails(preview: _preview!),
-              ),
-            ),
-            if (_pendingOrderId == null &&
-                (_preview!.isExpired ||
-                    _preview!.hip3Execution == null ||
-                    _preview!.expiresAt == null))
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text(AppLocalizations.of(context).orderQuoteUnavailable),
-              ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _submitting || _pendingOrderId != null
-                        ? null
-                        : () {
-                            _previewExpiry?.cancel();
-                            setState(() {
-                              _preview = null;
-                              _quotePreview = null;
-                            });
-                            _scheduleQuote();
-                          },
-                    child: Text(AppLocalizations.of(context).back),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    style: _actionStyle(context),
-                    onPressed:
-                        _submitting ||
-                            (_pendingOrderId == null &&
-                                (_preview!.isExpired ||
-                                    _preview!.hip3Execution == null ||
-                                    !_preview!.openingProtectionMatchesIntent ||
-                                    _preview!.expiresAt == null))
-                        ? null
-                        : _submit,
-                    child: Text(
-                      _submitting
-                          ? (_pendingOrderId == null
-                                ? AppLocalizations.of(context).submitting
-                                : AppLocalizations.of(context).checkingOrder)
-                          : (_pendingOrderId == null
-                                ? AppLocalizations.of(context).confirm
-                                : AppLocalizations.of(context)
-                                      .checkOrderStatus),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (_error case final error?)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(error),
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
-
-  ButtonStyle _actionStyle(BuildContext context) {
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final color = _side == TradingSide.short || _reduceOnly
-        ? semantic.loss
-        : semantic.success;
-    return FilledButton.styleFrom(backgroundColor: color);
   }
 
   Widget _result(BuildContext context) => Material(
@@ -1750,7 +1636,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                         color: colors.secondaryText,
                       ),
                     ),
-                    if (availableMarginLoading || availableMargin == null)
+                    if (availableMarginLoading)
                       const SizedBox(
                         key: Key('hip3-margin-loading'),
                         width: 12,
@@ -1760,7 +1646,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                     else
                       Text(
                         AppLocalizations.of(context)
-                            .marginValue(availableMargin!),
+                            .marginValue(availableMargin ?? '—'),
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

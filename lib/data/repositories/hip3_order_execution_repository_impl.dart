@@ -229,16 +229,38 @@ final class Hip3OrderExecutionRepositoryImpl
   }
 
   void _throwIfTerminal(api.Hip3Action action) {
+    final reason = _failureReason(action);
     switch (action.status) {
       case api.Hip3ActionStatus.expired:
-        throw const Hip3SigningFailure(Hip3SigningFailureCode.actionExpired);
+        throw Hip3SigningFailure(
+          Hip3SigningFailureCode.actionExpired,
+          reason: reason,
+        );
       case api.Hip3ActionStatus.failed:
       case api.Hip3ActionStatus.cancelled:
       case api.Hip3ActionStatus.unknownDefaultOpenApi:
-        throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+        throw Hip3SigningFailure(
+          Hip3SigningFailureCode.invalidPayload,
+          reason: reason,
+        );
       default:
         return;
     }
+  }
+
+  /// The step that actually failed explains more than the action-level reason,
+  /// so prefer it and fall back to the action's own.
+  String? _failureReason(api.Hip3Action action) {
+    final step = action.steps
+        .where(
+          (step) =>
+              step.status == api.Hip3ActionStepStatusEnum.failed &&
+              (step.failureReason?.trim().isNotEmpty ?? false),
+        )
+        .lastOrNull;
+    final reason = step?.failureReason ?? action.failureReason;
+    final trimmed = reason?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
   }
 
   api.Hip3ActionSubmissionRequest _request(Hip3RsvSignature signature) =>
