@@ -152,6 +152,7 @@ final class PositionCommands {
     String? stopLimit,
     String? quantity,
     ProtectionClearScope? clearScope,
+    bool confirmBeforeSigning = true,
   }) async {
     final result = await _run(
       operation: 'tp-sl',
@@ -167,6 +168,7 @@ final class PositionCommands {
             stopLimit: stopLimit,
             quantity: quantity,
             clearScope: clearScope,
+            confirmBeforeSigning: confirmBeforeSigning,
             idempotencyKey: key,
           ),
     );

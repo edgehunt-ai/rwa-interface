@@ -133,8 +133,10 @@ void main() {
           .value,
       isTrue,
     );
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Sign and confirm'),
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
     await tester.pumpAndSettle();
     expect(repo.quantity, '1');
     expect(repo.takeProfit, '130');
@@ -256,8 +258,10 @@ void main() {
       );
       await tester.tap(find.byType(Switch).first);
       if (both) await tester.tap(find.byType(Switch).last);
-      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
       await tester.pumpAndSettle();
       expect(
         repo.clearScope,
@@ -316,8 +320,10 @@ void main() {
         find.textContaining('will not adjust automatically'),
         findsOneWidget,
       );
-      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
       await tester.pumpAndSettle();
       expect(repo.quantity, '0.123');
       expect(repo.clearScope, isNull);
@@ -444,6 +450,7 @@ class _Positions implements PositionsRepository {
     String? stopLimit,
     String? quantity,
     ProtectionClearScope? clearScope,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
     this.takeProfit = takeProfit;

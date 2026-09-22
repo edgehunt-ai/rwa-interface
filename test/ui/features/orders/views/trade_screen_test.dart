@@ -1022,6 +1022,7 @@ final class _PositionsRepository implements PositionsRepository {
     String? stopLimit,
     String? quantity,
     ProtectionClearScope? clearScope,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
     return position;

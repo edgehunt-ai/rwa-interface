@@ -158,6 +158,12 @@ abstract class AppLocalizations {
   /// **'Confirm and sign'**
   String get hip3ConfirmSign;
 
+  /// No description provided for @signAndConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign and confirm'**
+  String get signAndConfirm;
+
   /// No description provided for @hip3ConfirmLeverage.
   ///
   /// In en, this message translates to:

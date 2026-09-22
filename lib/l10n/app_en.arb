@@ -9,6 +9,7 @@
   "hip3ConfirmReview": "Review this step before signing. Earlier completed steps remain effective if you decline.",
   "hip3ConfirmDecline": "Decline signature",
   "hip3ConfirmSign": "Confirm and sign",
+  "signAndConfirm": "Sign and confirm",
   "hip3ConfirmLeverage": "Leverage",
   "hip3ConfirmMargin": "Margin mode",
   "hip3ConfirmScope": "Protection to cancel",

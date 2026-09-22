@@ -9,6 +9,7 @@
   "hip3ConfirmReview": "签名前请核对当前步骤。即使拒绝签名，此前已完成的步骤仍然生效。",
   "hip3ConfirmDecline": "拒绝签名",
   "hip3ConfirmSign": "确认并签名",
+  "signAndConfirm": "签名并确认",
   "hip3ConfirmLeverage": "杠杆",
   "hip3ConfirmMargin": "保证金模式",
   "hip3ConfirmScope": "要取消的保护单",

@@ -41,6 +41,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3ConfirmSign => 'Confirm and sign';
 
   @override
+  String get signAndConfirm => 'Sign and confirm';
+
+  @override
   String get hip3ConfirmLeverage => 'Leverage';
 
   @override

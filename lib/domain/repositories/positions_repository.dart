@@ -27,6 +27,7 @@ abstract interface class PositionsRepository {
     String? stopLimit,
     String? quantity,
     ProtectionClearScope? clearScope,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   });
   Future<Position> clearTpSl(

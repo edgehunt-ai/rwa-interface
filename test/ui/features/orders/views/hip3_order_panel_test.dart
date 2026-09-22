@@ -21,6 +21,7 @@ import 'package:rwa_interface/domain/repositories/hip3_order_execution_repositor
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
+import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 
 import 'package:rwa_interface/app/observability/observability_reporter.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
@@ -65,7 +66,7 @@ void main() {
       // The parent submit button keeps its indeterminate loading animation
       // while the funding sheet is open, so there is intentionally no stable
       // frame for pumpAndSettle to wait for here.
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(seconds: 1));
       expect(funding.previewIds, hasLength(1));
       expect(find.text('Hyperliquid Perps USDC'), findsOneWidget);
       expect(find.textContaining('5 USDC'), findsOneWidget);
@@ -113,7 +114,7 @@ void main() {
       await tester.tap(find.byType(FilledButton).first);
       // The parent submit button animates while the funding sheet is open, so
       // there is no stable frame for pumpAndSettle until the sheet closes.
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(seconds: 1));
 
       // Completing the transfer closes the sheet and resumes the order.
       final transfer = find.widgetWithText(FilledButton, 'In-App Transfer');
@@ -833,6 +834,27 @@ void main() {
     expect(find.text('USDC'), findsOneWidget);
   });
 
+  testWidgets('HIP-3 amount input refreshes preview risk details', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders(missingLiquidationPrice: true);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(orders.previews, 1);
+    expect(find.text('-'), findsOneWidget);
+    expect(find.text('10 USDC'), findsOneWidget);
+  });
+
   testWidgets('HIP-3 leverage sheet retains a confirmed selection', (
     tester,
   ) async {
@@ -1004,6 +1026,7 @@ void main() {
   testWidgets('pending HIP-3 order is signed and submitted before success', (
     tester,
   ) async {
+    addTearDown(AppToast.dismiss);
     final orders = _ExecutableHip3Orders();
     final execution = _Hip3Execution();
     await tester.pumpWidget(
@@ -1020,7 +1043,7 @@ void main() {
     await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('hip3-confirm-button')));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(execution.orderId, 'order-1');
     expect(find.text('Order submitted'), findsOneWidget);
@@ -1223,11 +1246,13 @@ final class _ExecutableHip3Orders implements OrdersRepository {
   _ExecutableHip3Orders({
     this.expired = false,
     this.missingExecution = false,
+    this.missingLiquidationPrice = false,
     this.firstQuoteLifetime,
     this.holdRequote,
   });
   final bool expired;
   final bool missingExecution;
+  final bool missingLiquidationPrice;
 
   /// When set, only the first quote gets this (short) window.
   final Duration? firstQuoteLifetime;
@@ -1255,7 +1280,11 @@ final class _ExecutableHip3Orders implements OrdersRepository {
       orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
       hip3Execution: missingExecution
           ? null
-          : _previewExecution(intent, slippage: intent.slippage?.value ?? '1'),
+          : _previewExecution(
+              intent,
+              slippage: intent.slippage?.value ?? '1',
+              missingLiquidationPrice: missingLiquidationPrice,
+            ),
       expiresAt: DateTime.now().toUtc().add(lifetime),
     );
   }
@@ -1323,6 +1352,7 @@ Hip3PreviewExecution _previewExecution(
   String maximum = '1',
   String margin = '20',
   String slippage = '1',
+  bool missingLiquidationPrice = false,
 }) => Hip3PreviewExecution(
   openingProtection: intent.openingProtection == null
       ? null
@@ -1361,6 +1391,7 @@ Hip3PreviewExecution _previewExecution(
   slippagePercent: DecimalValue(slippage),
   liquidationPriceUnavailableReason:
       'cross_margin_requires_full_account_simulation',
+  liquidationPrice: missingLiquidationPrice ? null : DecimalValue('90'),
 );
 
 /// One transfer satisfies the order: the first session needs funding, the

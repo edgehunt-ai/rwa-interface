@@ -180,6 +180,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     String? stopLimit,
     String? quantity,
     ProtectionClearScope? clearScope,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
     if (clearScope != null) {
@@ -218,6 +219,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         Hip3PositionIntents.clearProtection(initial, scope: clearScope),
         api.Hip3Operation.clearTpsl,
         '$idempotencyKey-clear',
+        confirmBeforeSigning: confirmBeforeSigning,
       );
       if (takeProfit == null && stopLoss == null) {
         return get(position.positionId);
@@ -240,6 +242,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         stopLoss: stopLoss,
         stopLimit: stopLimit,
         quantity: quantity,
+        confirmBeforeSigning: confirmBeforeSigning,
         idempotencyKey: '$idempotencyKey-set',
       );
     }
@@ -265,7 +268,13 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         quantity: quantity,
       ),
     );
-    await _run(position, intent, api.Hip3Operation.setTpsl, idempotencyKey);
+    await _run(
+      position,
+      intent,
+      api.Hip3Operation.setTpsl,
+      idempotencyKey,
+      confirmBeforeSigning: confirmBeforeSigning,
+    );
     return get(position.positionId);
   }
 
@@ -440,6 +449,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     String key, {
     bool bindPosition = true,
     api.Hip3Environment? environment,
+    bool confirmBeforeSigning = true,
   }) async {
     _requireProduct(position);
     final binding = Hip3ActionBinding(
@@ -454,8 +464,9 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     return _executor.resume(
       actionId: created.actionId,
       binding: binding,
-      confirm: (action, step) =>
-          _confirm(mapHip3StepConfirmation(action, step)),
+      confirm: confirmBeforeSigning
+          ? (action, step) => _confirm(mapHip3StepConfirmation(action, step))
+          : (_, _) async => true,
     );
   }
 

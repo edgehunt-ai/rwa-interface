@@ -40,6 +40,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3ConfirmSign => '确认并签名';
 
   @override
+  String get signAndConfirm => '签名并确认';
+
+  @override
   String get hip3ConfirmLeverage => '杠杆';
 
   @override

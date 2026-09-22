@@ -13,6 +13,7 @@ import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
+import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
@@ -70,6 +71,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   String? _error;
   OrderPreview? _preview;
   OrderPreview? _quotePreview;
+  var _quoteLoading = false;
   TradingOrder? _submitted;
   String? _pendingOrderId;
   Timer? _quoteDebounce;
@@ -363,16 +365,17 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       if (_quotePreview?.intent.fingerprint != intent?.fingerprint) {
         _quotePreview = null;
       }
+      _quoteLoading = _context != null && intent != null;
     });
-    // Opening orders must establish funding readiness before requesting an
-    // immutable order quote. Reduce-only orders do not require funding.
-    if (!_reduceOnly) return;
     if (_context == null || intent == null) return;
     _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
       try {
         final quote = await ref.read(orderPreviewProvider(intent).future);
         if (mounted && generation == _quoteGeneration) {
-          setState(() => _quotePreview = quote);
+          setState(() {
+            _quotePreview = quote;
+            _quoteLoading = false;
+          });
         }
       } on Object catch (error, stackTrace) {
         ref
@@ -385,6 +388,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         if (mounted && generation == _quoteGeneration) {
           setState(() {
             _quotePreview = null;
+            _quoteLoading = false;
             _error = _specificErrorMessage(
               error,
               fallback: 'Unable to refresh the HIP-3 preview.',
@@ -619,15 +623,21 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       builder: (_) => Hip3ConfirmSheet(preview: preview),
     );
     if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
+    if (submitted != null) {
+      final l10n = AppLocalizations.of(context);
+      AppToast.showSuccess(
+        context,
+        submitted.status == TradingOrderStatus.filled
+            ? l10n.tradeSuccessful
+            : l10n.orderSubmitted,
+      );
+      Navigator.of(context).pop();
+      return;
+    }
     setState(() {
-      _submitted = submitted;
-      // A dismissed confirmation drops the frozen quote so the next review
-      // prices the order again instead of reusing terms the user backed out of.
-      // A submitted one keeps it: the result still reports on those terms.
-      if (submitted == null) {
-        _preview = null;
-        _quotePreview = null;
-      }
+      // Keep the latest preview visible after dismissing confirmation. A
+      // later input/settings change will invalidate and refresh it normally.
+      _preview = null;
     });
   }
 
@@ -993,6 +1003,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 _Hip3RiskSummary(
                   settlementAsset: settlementAsset,
                   execution: _quotePreview?.hip3Execution,
+                  loading: _quoteLoading,
                   showTpSl: _showTpSl,
                   allowProtection: !_reduceOnly,
                   onTpSlTap: () {
@@ -1338,6 +1349,7 @@ class _Hip3RiskSummary extends StatelessWidget {
     required this.showTpSl,
     required this.onTpSlTap,
     this.execution,
+    this.loading = false,
     this.allowProtection = true,
   });
 
@@ -1345,6 +1357,7 @@ class _Hip3RiskSummary extends StatelessWidget {
   final bool showTpSl;
   final VoidCallback onTpSlTap;
   final Hip3PreviewExecution? execution;
+  final bool loading;
   final bool allowProtection;
 
   @override
@@ -1352,13 +1365,16 @@ class _Hip3RiskSummary extends StatelessWidget {
     children: [
       _Hip3RiskRow(
         AppLocalizations.of(context).liquidationPrice,
-        execution?.liquidationPrice?.value ??
-            AppLocalizations.of(context).unavailable,
+        loading ? null : execution?.liquidationPrice?.value ?? '-',
+        loading: loading,
       ),
       const SizedBox(height: 8),
       _Hip3RiskRow(
         AppLocalizations.of(context).marginRequired,
-        '${execution?.marginRequired.value ?? '—'} $settlementAsset',
+        loading
+            ? null
+            : '${execution?.marginRequired.value ?? '—'} $settlementAsset',
+        loading: loading,
       ),
       if (execution case final value?)
         _Hip3RiskRow(
@@ -2238,16 +2254,20 @@ class _LeverageOption extends StatelessWidget {
 }
 
 class _Hip3RiskRow extends StatelessWidget {
-  const _Hip3RiskRow(this.label, this.value);
+  const _Hip3RiskRow(this.label, this.value, {this.loading = false});
 
   final String label;
-  final String value;
+  final String? value;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
       Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
-      Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+      if (loading)
+        const SkeletonBlock(width: 72, height: 14, radius: 4)
+      else
+        Text(value ?? '-', style: const TextStyle(fontWeight: FontWeight.w600)),
     ],
   );
 }

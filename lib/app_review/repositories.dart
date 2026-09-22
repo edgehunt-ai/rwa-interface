@@ -577,6 +577,7 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     String? stopLimit,
     String? quantity,
     ProtectionClearScope? clearScope,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async => position;
 

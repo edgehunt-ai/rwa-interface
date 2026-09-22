@@ -191,6 +191,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                 : null,
             quantity: hasSet && _fixedQuantity ? _quantity.text.trim() : null,
             clearScope: clearScope,
+            confirmBeforeSigning: false,
             takeLimit: _takeProfitEnabled && _takeIsLimit
                 ? _takeLimit.text.trim()
                 : null,
@@ -407,7 +408,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                             ? null
                             : _save,
                         child: Text(
-                          _submitting ? l10n.loadingLabel : l10n.confirm,
+                          _submitting ? l10n.loadingLabel : l10n.signAndConfirm,
                         ),
                       ),
                     ),
