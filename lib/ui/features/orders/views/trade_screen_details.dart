@@ -6,35 +6,35 @@ class _Details extends ConsumerWidget {
     required this.onChanged,
     required this.kind,
     required this.symbol,
+    required this.productId,
   });
   final String activeTab;
   final ValueChanged<String> onChanged;
   final MarketProductKind kind;
   final String symbol;
+  final String? productId;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final positionState = activeTab == 'Position'
+    final positionState = ref.watch(
+      positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+    );
+    final selectedProductId =
+        productId ??
+        positionState.value?.items
+            .where((p) => p.symbol == symbol && p.kind == kind)
+            .firstOrNull
+            ?.productId;
+    final openState = kind == MarketProductKind.perp
         ? ref.watch(
-            positionsProvider((symbol: symbol, kind: kind, cursor: null)),
+            hip3OpenOrdersProvider((
+              symbol: symbol,
+              productId: selectedProductId,
+              cursor: null,
+            )),
           )
-        : null;
-    final productId = positionState?.value?.items
-        .where((p) => p.symbol == symbol && p.kind == kind)
-        .firstOrNull
-        ?.productId;
-    final openState = activeTab == 'Open'
-        ? kind == MarketProductKind.perp
-              ? ref.watch(
-                  hip3OpenOrdersProvider((
-                    symbol: symbol,
-                    productId: productId,
-                    cursor: null,
-                  )),
-                )
-              : ref.watch(bstocksOrdersProvider(null))
-        : null;
-    final positionCount = positionState?.value?.items.length;
+        : ref.watch(bstocksOrdersProvider(null));
+    final positionCount = positionState.value?.items.length;
     final openCount = openState?.value?.items
         .map((item) => item.resource)
         .where(
@@ -114,7 +114,7 @@ class _Details extends ConsumerWidget {
           Hip3OpenOrdersPanel(
             key: ValueKey('hip3-open-$symbol'),
             symbol: symbol,
-            productId: productId,
+            productId: selectedProductId,
           ),
         if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
@@ -123,7 +123,7 @@ class _Details extends ConsumerWidget {
             symbol: symbol,
           ),
         if (activeTab == 'Position')
-          _PositionTab(positions: positionState!, kind: kind, symbol: symbol),
+          _PositionTab(positions: positionState, kind: kind, symbol: symbol),
         if (activeTab == 'Details') _DetailsCard(kind: kind, symbol: symbol),
       ],
     );

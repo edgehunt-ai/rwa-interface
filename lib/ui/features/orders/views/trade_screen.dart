@@ -362,6 +362,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     onChanged: (tab) => setState(() => detailTab = tab),
                     kind: productKind,
                     symbol: symbol,
+                    productId: _productId,
                   ),
                 ],
               ],
