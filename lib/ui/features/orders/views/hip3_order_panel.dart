@@ -418,7 +418,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       }
       _quoteLoading = _context != null && intent != null;
     });
-    if (_context == null || intent == null) return;
+    if (_context == null || intent == null || _amountError() != null) return;
     _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
       try {
         final quote = await ref.read(orderPreviewProvider(intent).future);
@@ -500,6 +500,21 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final rules = _context;
     final amount = double.tryParse(_amount.text.trim());
     if (rules == null || amount == null) return null;
+    if (_inputNotional && _type == TradingOrderType.market) {
+      final marketMinimum = _side == TradingSide.long
+          ? rules.marketOrderMinimumLong
+          : rules.marketOrderMinimumShort;
+      final minimum = marketMinimum ?? rules.minimumNotional;
+      final entered = DecimalValue(
+        _amount.text.trim(),
+        asset: minimum.asset,
+        unit: minimum.unit,
+      );
+      if (entered.compareMagnitudeTo(minimum) < 0) {
+        return AppLocalizations.of(context)
+            .hip3NotionalBelowMinimum(minimum.value);
+      }
+    }
     final maximum = rules.maximumNotional == null
         ? null
         : double.tryParse(rules.maximumNotional!.value);
@@ -584,9 +599,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   String? _disabledReason(AppLocalizations l10n) {
     if (_submitting) return null;
+    if (_amountError() case final error?) return error;
     // Context/rule/preview validation happens in _review after the user
-    // presses the button. Local input is intentionally validated there too,
-    // so an async rebuild cannot leave a visibly enabled button inert.
+    // presses the button. Local input is also validated here so the button
+    // cannot trigger a preview for an amount already known to be invalid.
     return null;
   }
 

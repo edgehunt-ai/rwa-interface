@@ -14,6 +14,8 @@ final class Hip3OpeningContext {
     required this.timeInForce,
     required this.availableMargin,
     required this.minimumNotional,
+    this.marketOrderMinimumLong,
+    this.marketOrderMinimumShort,
     required this.maximumNotional,
     required this.sizeDecimals,
     required this.validUntil,
@@ -31,6 +33,8 @@ final class Hip3OpeningContext {
   final Set<String> timeInForce;
   final DecimalValue availableMargin;
   final DecimalValue minimumNotional;
+  final DecimalValue? marketOrderMinimumLong;
+  final DecimalValue? marketOrderMinimumShort;
   final DecimalValue? maximumNotional;
   final int sizeDecimals;
   final DateTime validUntil;

@@ -112,6 +112,9 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
     if (maximum == null || maximum < 1) {
       throw const FormatException('Invalid maximum leverage');
     }
+    DecimalValue? marketMinimum(String? value) => value == null
+        ? null
+        : DecimalValue(value, asset: 'USDC', unit: 'notional');
     return Hip3OpeningContext(
       contextId: value.contextId,
       productId: value.productId,
@@ -140,6 +143,12 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
       minimumNotional: DecimalValue(
         value.rules.minimumNotionalUsdc,
         asset: 'USDC',
+      ),
+      marketOrderMinimumLong: marketMinimum(
+        value.marketOrderMinimums?.long?.minimumAmountUsdc,
+      ),
+      marketOrderMinimumShort: marketMinimum(
+        value.marketOrderMinimums?.short?.minimumAmountUsdc,
       ),
       maximumNotional: value.rules.maximumNotionalUsdc == null
           ? null
