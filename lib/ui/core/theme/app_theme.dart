@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const kShortTradeColor = Color(0xFFDE596E);
+
 @immutable
 class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   const AppSemanticColors({

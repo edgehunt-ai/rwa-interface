@@ -4,6 +4,7 @@ import 'package:rwa_interface/ui/features/home/views/details_screen.dart';
 import 'package:rwa_interface/ui/features/home/views/home_screen.dart';
 import 'package:rwa_interface/ui/features/funding/views/deposit_screen.dart';
 import 'package:rwa_interface/ui/features/funding/views/withdrawal_screen.dart';
+import 'package:rwa_interface/ui/features/funding/views/transfer_screen.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_screen.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_search_screen.dart';
 import 'package:rwa_interface/ui/features/not_found/views/not_found_screen.dart';
@@ -28,6 +29,11 @@ abstract final class AppRouter {
           name: AppRoutes.homeName,
           path: AppRoutes.homePath,
           builder: (context, state) => const HomeScreen(),
+        ),
+        GoRoute(
+          name: AppRoutes.transferName,
+          path: AppRoutes.transferPath,
+          builder: (context, state) => const TransferScreen(),
         ),
         GoRoute(
           name: AppRoutes.loginName,

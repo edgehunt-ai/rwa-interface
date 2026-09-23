@@ -162,6 +162,15 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
                                     child: Text(l10n.withdraw),
                                   ),
                                 ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () => context.pushNamed(
+                                      AppRoutes.transferName,
+                                    ),
+                                    child: Text(l10n.transfer),
+                                  ),
+                                ),
                               ],
                             ),
                             _Allocation(

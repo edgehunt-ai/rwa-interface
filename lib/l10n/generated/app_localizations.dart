@@ -3662,6 +3662,44 @@ abstract class AppLocalizations {
   /// **'Position'**
   String get position;
 
+  /// No description provided for @yourPositions.
+  ///
+  /// In en, this message translates to:
+  /// **'Your positions'**
+  String get yourPositions;
+
+  /// No description provided for @positionWillBe.
+  ///
+  /// In en, this message translates to:
+  /// **'Position will be'**
+  String get positionWillBe;
+
+  /// No description provided for @positionWillBeTooltipIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Opposite orders reduce the current position first; any excess reverses the position.'**
+  String get positionWillBeTooltipIntro;
+
+  /// No description provided for @positionWillBeTooltipExampleOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Long {longValue} + Short {shortValue} → Long {resultValue}'**
+  String positionWillBeTooltipExampleOne(
+    Object longValue,
+    Object resultValue,
+    Object shortValue,
+  );
+
+  /// No description provided for @positionWillBeTooltipExampleTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Long {longValue} + Short {shortValue} → Short {resultValue}'**
+  String positionWillBeTooltipExampleTwo(
+    Object longValue,
+    Object resultValue,
+    Object shortValue,
+  );
+
   /// No description provided for @tokenPosition.
   ///
   /// In en, this message translates to:

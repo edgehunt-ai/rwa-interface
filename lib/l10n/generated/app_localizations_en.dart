@@ -1996,6 +1996,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get position => 'Position';
 
   @override
+  String get yourPositions => 'Your positions';
+
+  @override
+  String get positionWillBe => 'Position will be';
+
+  @override
+  String get positionWillBeTooltipIntro =>
+      'Opposite orders reduce the current position first; any excess reverses the position.';
+
+  @override
+  String positionWillBeTooltipExampleOne(
+    Object longValue,
+    Object resultValue,
+    Object shortValue,
+  ) {
+    return 'Long $longValue + Short $shortValue → Long $resultValue';
+  }
+
+  @override
+  String positionWillBeTooltipExampleTwo(
+    Object longValue,
+    Object resultValue,
+    Object shortValue,
+  ) {
+    return 'Long $longValue + Short $shortValue → Short $resultValue';
+  }
+
+  @override
   String get tokenPosition => 'Token position';
 
   @override

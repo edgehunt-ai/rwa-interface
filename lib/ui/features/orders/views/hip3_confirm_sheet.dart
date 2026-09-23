@@ -222,7 +222,7 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
     final execution = _preview.hip3Execution;
     final isLong = _preview.intent.side == TradingSide.long;
     final direction = isLong ? l10n.long : l10n.short;
-    final actionColor = isLong ? semantic.success : semantic.loss;
+    final actionColor = isLong ? semantic.success : kShortTradeColor;
     final unusable = _unusableReason();
     final message = _error ?? unusable;
     final busy = _submitting || _refreshing;

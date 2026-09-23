@@ -98,7 +98,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Balance: 16 USDC'), findsOneWidget);
+      expect(find.text('Perps balance: 16 USDC'), findsOneWidget);
       expect(opening.contextCalls, 1);
 
       // Pick a leverage the server context does not report, so a full context

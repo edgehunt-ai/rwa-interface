@@ -852,7 +852,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final action = isBuy ? l10n.buy : l10n.sell;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final actionColor = isBuy ? semantic.success : semantic.loss;
+    final actionColor = isBuy ? semantic.success : kShortTradeColor;
     final settlementAsset =
         current.orderValue.asset ?? current.settlementAsset ?? 'USDT';
     final quantity = current.estimatedQuantity ?? current.intent.quantity;

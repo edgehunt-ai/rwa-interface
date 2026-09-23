@@ -9,16 +9,20 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
+import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
+import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
+import 'package:rwa_interface/ui/core/feedback/rwa_tooltip.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
 import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
@@ -41,12 +45,14 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
     this.initialReduceOnly = false,
     this.symbol = 'NVDA',
     this.productId,
+    this.onYourPositionTap,
   });
 
   final TradingSide initialSide;
   final bool initialReduceOnly;
   final String symbol;
   final String? productId;
+  final VoidCallback? onYourPositionTap;
 
   @override
   ConsumerState<Hip3OrderPanel> createState() => _Hip3OrderPanelState();
@@ -894,7 +900,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final isShort = _side == TradingSide.short || _reduceOnly;
-    final actionColor = isShort ? semantic.loss : semantic.success;
+    final actionColor = isShort ? kShortTradeColor : semantic.success;
     final amount = _amount.text.trim();
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
     final availableBalance = _context?.availableMargin;
@@ -908,6 +914,35 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final visibleDisabledReason = _isObviousInputError(disabledReason, l10n)
         ? null
         : disabledReason;
+    Position? currentPosition;
+    if (widget.onYourPositionTap != null) {
+      currentPosition = ref
+          .watch(
+            positionsProvider((
+              symbol: widget.symbol,
+              kind: MarketProductKind.perp,
+              cursor: null,
+            )),
+          )
+          .value
+          ?.items
+          .where(
+            (position) =>
+                position.symbol == widget.symbol &&
+                (widget.productId == null ||
+                    position.productId == widget.productId),
+          )
+          .firstOrNull;
+    }
+    final enteredAmount = double.tryParse(amount);
+    final reference = _protectionReference();
+    final enteredOrderValue = enteredAmount == null
+        ? null
+        : _inputNotional
+        ? enteredAmount
+        : reference == null
+        ? null
+        : enteredAmount * reference;
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -954,7 +989,16 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   const SizedBox(height: 16),
                 ],
                 if (_reduceOnly) const SizedBox(height: 12),
+                if (currentPosition != null &&
+                    widget.onYourPositionTap != null) ...[
+                  _Hip3YourPositionCard(
+                    position: currentPosition,
+                    onTap: widget.onYourPositionTap!,
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 _Hip3ModeLeverageCard(
+                  showSettings: currentPosition == null,
                   marginMode: _marginMode,
                   leverage: _leverage,
                   maximumLeverage: _context?.maximumLeverage,
@@ -1042,6 +1086,9 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   loading: _quoteLoading,
                   showTpSl: _showTpSl,
                   allowProtection: !_reduceOnly,
+                  position: currentPosition,
+                  orderSide: _side,
+                  orderValue: enteredOrderValue,
                   onTpSlTap: () {
                     if (_reduceOnly) return;
                     if (_showTpSl) {
@@ -1533,6 +1580,68 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
   }
 }
 
+class _Hip3YourPositionCard extends StatelessWidget {
+  const _Hip3YourPositionCard({required this.position, required this.onTap});
+
+  final Position position;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    final side = switch (position.side) {
+      PositionSide.long => l10n.long,
+      PositionSide.short => l10n.short,
+      PositionSide.none => '—',
+    };
+    final margin = switch (position.marginMode) {
+      PositionMarginMode.cross => l10n.cross,
+      PositionMarginMode.isolated => l10n.isolated,
+      _ => '—',
+    };
+    final leverage = position.leverage == null
+        ? '—'
+        : '${TokenAmountFormatter.formatValue(position.leverage!)}x';
+    return Material(
+      color: colors.subtleSurface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        key: const Key('hip3-your-position'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.yourPositions,
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 16 / 11,
+                    color: colors.secondaryText,
+                  ),
+                ),
+              ),
+              Text(
+                '$side · $margin · $leverage',
+                style: const TextStyle(
+                  fontSize: 12,
+                  height: 16 / 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Hip3RiskSummary extends StatelessWidget {
   const _Hip3RiskSummary({
     required this.settlementAsset,
@@ -1541,6 +1650,9 @@ class _Hip3RiskSummary extends StatelessWidget {
     this.execution,
     this.loading = false,
     this.allowProtection = true,
+    this.position,
+    this.orderSide,
+    this.orderValue,
   });
 
   final String settlementAsset;
@@ -1549,6 +1661,9 @@ class _Hip3RiskSummary extends StatelessWidget {
   final Hip3PreviewExecution? execution;
   final bool loading;
   final bool allowProtection;
+  final Position? position;
+  final TradingSide? orderSide;
+  final double? orderValue;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -1617,6 +1732,15 @@ class _Hip3RiskSummary extends StatelessWidget {
             ],
           ),
         ),
+      if (position case final current?
+          when orderSide != null && orderValue != null && orderValue! > 0) ...[
+        const SizedBox(height: 8),
+        _Hip3PositionWillBeRow(
+          position: current,
+          orderSide: orderSide!,
+          orderValue: orderValue!,
+        ),
+      ],
     ],
   );
 }
@@ -1723,6 +1847,7 @@ String _formatHip3SliderAmount(
 
 class _Hip3ModeLeverageCard extends StatelessWidget {
   const _Hip3ModeLeverageCard({
+    this.showSettings = true,
     required this.marginMode,
     required this.leverage,
     this.maximumLeverage,
@@ -1741,6 +1866,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     required this.onPercentageChanged,
   });
 
+  final bool showSettings;
   final TradingMarginMode marginMode;
   final int leverage;
   final int? maximumLeverage;
@@ -1770,68 +1896,70 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          SizedBox(
-            height: 36,
-            child: Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    key: const Key('hip3-margin-mode-toggle'),
-                    onTap: onMarginModeTap,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          marginMode == TradingMarginMode.cross
-                              ? AppLocalizations.of(context).cross
-                              : AppLocalizations.of(context).isolated,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.keyboard_arrow_down, size: 18),
-                      ],
-                    ),
-                  ),
-                ),
-                Container(width: 2, height: 16, color: colors.surface),
-                Expanded(
-                  child: InkWell(
-                    key: const Key('hip3-leverage-toggle'),
-                    onTap: onLeverageTap,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$leverage×',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (maximumLeverage case final maximum?) ...[
-                          const SizedBox(width: 4),
+          if (showSettings) ...[
+            SizedBox(
+              height: 36,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      key: const Key('hip3-margin-mode-toggle'),
+                      onTap: onMarginModeTap,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                           Text(
-                            AppLocalizations.of(context)
-                                .hip3MaximumLeverageHint('$maximum'),
-                            key: const Key('hip3-maximum-leverage'),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: colors.secondaryText,
+                            marginMode == TradingMarginMode.cross
+                                ? AppLocalizations.of(context).cross
+                                : AppLocalizations.of(context).isolated,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down, size: 18),
                         ],
-                        const Icon(Icons.keyboard_arrow_down, size: 18),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  Container(width: 2, height: 16, color: colors.surface),
+                  Expanded(
+                    child: InkWell(
+                      key: const Key('hip3-leverage-toggle'),
+                      onTap: onLeverageTap,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '$leverage×',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (maximumLeverage case final maximum?) ...[
+                            const SizedBox(width: 4),
+                            Text(
+                              AppLocalizations.of(context)
+                                  .hip3MaximumLeverageHint('$maximum'),
+                              key: const Key('hip3-maximum-leverage'),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colors.secondaryText,
+                              ),
+                            ),
+                          ],
+                          const Icon(Icons.keyboard_arrow_down, size: 18),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(height: 1, color: colors.surface),
+            Container(height: 1, color: colors.surface),
+          ],
           if (limitPrice case final controller?) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -2441,6 +2569,157 @@ class _LeverageOption extends StatelessWidget {
       ),
     );
   }
+}
+
+class _Hip3PositionWillBeRow extends StatelessWidget {
+  const _Hip3PositionWillBeRow({
+    required this.position,
+    required this.orderSide,
+    required this.orderValue,
+  });
+
+  final Position position;
+  final TradingSide orderSide;
+  final double orderValue;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final currentValue = double.tryParse(position.valueUsd.value) ?? 0;
+    final currentSide = position.side == PositionSide.short
+        ? TradingSide.short
+        : TradingSide.long;
+    final currentSignedValue = currentSide == TradingSide.long
+        ? currentValue
+        : -currentValue;
+    final orderSignedValue = orderSide == TradingSide.long
+        ? orderValue
+        : -orderValue;
+    final signedValue = currentSignedValue + orderSignedValue;
+    final nextSide = signedValue < 0 ? TradingSide.short : TradingSide.long;
+    final nextValue = signedValue.abs();
+    final currentLabel = currentSide == TradingSide.long
+        ? AppLocalizations.of(context).long
+        : AppLocalizations.of(context).short;
+    final nextLabel = nextValue == 0
+        ? '—'
+        : nextSide == TradingSide.long
+        ? AppLocalizations.of(context).long
+        : AppLocalizations.of(context).short;
+    const shortColor = kShortTradeColor;
+    final currentColor = currentSide == TradingSide.long
+        ? semantic.success
+        : shortColor;
+    final nextColor = nextSide == TradingSide.long
+        ? semantic.success
+        : shortColor;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            AppLocalizations.of(context).positionWillBe,
+            style: TextStyle(color: colors.secondaryText, fontSize: 13),
+          ),
+        ),
+        RichText(
+          text: TextSpan(
+            style: TextStyle(
+              color: nextColor,
+              fontSize: 13,
+              height: 18 / 13,
+              fontWeight: FontWeight.w600,
+            ),
+            children: [
+              TextSpan(
+                text: '$currentLabel ${_formatPositionUsd(currentValue)}',
+                style: TextStyle(color: currentColor.withValues(alpha: .5)),
+              ),
+              TextSpan(
+                text: ' → ',
+                style: TextStyle(color: colors.primaryText),
+              ),
+              TextSpan(
+                text: '$nextLabel ${_formatPositionUsd(nextValue)}',
+                style: TextStyle(color: nextColor),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 2),
+        RwaRichTooltip(
+          message: _positionWillBeTooltip(context),
+          child: Icon(
+            Icons.help_outline,
+            size: 14,
+            color: colors.secondaryText,
+          ),
+        ),
+      ],
+    );
+  }
+
+  InlineSpan _positionWillBeTooltip(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    const longColor = Color(0xFF04A08B);
+    const shortColor = kShortTradeColor;
+    final base = const TextStyle(
+      fontSize: 12,
+      height: 16 / 12,
+      color: Color(0xFF676776),
+    );
+    final strong = base.copyWith(fontWeight: FontWeight.w600);
+    final currentValue = double.tryParse(position.valueUsd.value) ?? 0;
+    final currentSide = position.side == PositionSide.short
+        ? TradingSide.short
+        : TradingSide.long;
+    final currentLabel = currentSide == TradingSide.long
+        ? l10n.long
+        : l10n.short;
+    final orderLabel = orderSide == TradingSide.long ? l10n.long : l10n.short;
+    final nextSignedValue =
+        (currentSide == TradingSide.long ? currentValue : -currentValue) +
+        (orderSide == TradingSide.long ? orderValue : -orderValue);
+    final nextSide = nextSignedValue < 0 ? TradingSide.short : TradingSide.long;
+    final nextLabel = nextSide == TradingSide.long ? l10n.long : l10n.short;
+    final nextColor = nextSide == TradingSide.long ? longColor : shortColor;
+    final currentColor = currentSide == TradingSide.long
+        ? longColor
+        : shortColor;
+    final orderColor = orderSide == TradingSide.long ? longColor : shortColor;
+    return TextSpan(
+      style: base,
+      children: [
+        TextSpan(text: l10n.positionWillBeTooltipIntro),
+        const TextSpan(text: '\n\n'),
+        TextSpan(
+          text: '$currentLabel ${_formatPositionUsd(currentValue)}',
+          style: strong.copyWith(color: currentColor),
+        ),
+        TextSpan(
+          text: ' + ',
+          style: strong.copyWith(color: const Color(0xFF676776)),
+        ),
+        TextSpan(
+          text: '$orderLabel ${_formatPositionUsd(orderValue)}',
+          style: strong.copyWith(color: orderColor),
+        ),
+        TextSpan(
+          text: ' → ',
+          style: strong.copyWith(color: const Color(0xFF676776)),
+        ),
+        TextSpan(
+          text: '$nextLabel ${_formatPositionUsd(nextSignedValue.abs())}',
+          style: strong.copyWith(color: nextColor),
+        ),
+      ],
+    );
+  }
+}
+
+String _formatPositionUsd(double value) {
+  final fixed = value.toStringAsFixed(value >= 100 ? 0 : 2);
+  return '\$$fixed'.replaceFirst(RegExp(r'\.00$'), '');
 }
 
 class _Hip3RiskRow extends StatelessWidget {

@@ -2,17 +2,20 @@ part of 'trade_screen.dart';
 
 class _Details extends ConsumerWidget {
   const _Details({
+    super.key,
     required this.activeTab,
     required this.onChanged,
     required this.kind,
     required this.symbol,
     required this.productId,
+    required this.positionCardKey,
   });
   final String activeTab;
   final ValueChanged<String> onChanged;
   final MarketProductKind kind;
   final String symbol;
   final String? productId;
+  final GlobalKey positionCardKey;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -123,7 +126,12 @@ class _Details extends ConsumerWidget {
             symbol: symbol,
           ),
         if (activeTab == 'Position')
-          _PositionTab(positions: positionState, kind: kind, symbol: symbol),
+          _PositionTab(
+            positions: positionState,
+            kind: kind,
+            symbol: symbol,
+            positionCardKey: positionCardKey,
+          ),
         if (activeTab == 'Details') _DetailsCard(kind: kind, symbol: symbol),
       ],
     );
@@ -460,10 +468,12 @@ class _PositionTab extends ConsumerWidget {
     required this.positions,
     required this.kind,
     required this.symbol,
+    required this.positionCardKey,
   });
   final AsyncValue<DomainPage<Position>> positions;
   final MarketProductKind kind;
   final String symbol;
+  final GlobalKey positionCardKey;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -487,8 +497,11 @@ class _PositionTab extends ConsumerWidget {
         }
         return Column(
           children: [
-            for (final position in page.items)
-              _PositionCard(position, kind: kind),
+            for (final (index, position) in page.items.indexed)
+              KeyedSubtree(
+                key: index == 0 ? positionCardKey : null,
+                child: _PositionCard(position, kind: kind),
+              ),
           ],
         );
       },

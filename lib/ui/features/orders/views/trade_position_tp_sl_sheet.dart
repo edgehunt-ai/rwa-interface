@@ -484,7 +484,7 @@ class _SideBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final short = side == PositionSide.short;
-    final tone = short ? semantic.loss : semantic.success;
+    final tone = short ? kShortTradeColor : semantic.success;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(

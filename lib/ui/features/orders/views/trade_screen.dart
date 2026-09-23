@@ -72,6 +72,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   late String symbol;
   String? _productId;
   var _orderPanelOpen = false;
+  final _detailsKey = GlobalKey();
+  final _positionCardKey = GlobalKey();
+  final _pageScrollController = ScrollController();
 
   /// Product the user selected from the switch that this underlying does not
   /// offer; the tab stays selectable and the body shows an empty state.
@@ -86,6 +89,32 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     symbol = widget.symbol?.trim().toUpperCase().isNotEmpty == true
         ? widget.symbol!.trim().toUpperCase()
         : _defaultSymbolFor(productKind);
+  }
+
+  @override
+  void dispose() {
+    _pageScrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showPositionDetailsAfterClosingOrder() async {
+    if (!mounted) return;
+    setState(() => detailTab = 'Position');
+    for (var attempt = 0; attempt < 6; attempt++) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return;
+      final target = _positionCardKey.currentContext;
+      if (target != null && target.mounted) {
+        await Scrollable.ensureVisible(
+          target,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+        );
+        return;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
   }
 
   static String _defaultSymbolFor(MarketProductKind kind) =>
@@ -192,10 +221,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
     if (!mounted) return;
     setState(() => _orderPanelOpen = true);
-    await showModalBottomSheet<void>(
+    final showPosition = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => productKind == MarketProductKind.bstock
+      builder: (sheetContext) => productKind == MarketProductKind.bstock
           ? BstocksOrderPanel(symbol: symbol, initialSide: side)
           : Hip3OrderPanel(
               symbol: symbol,
@@ -203,9 +232,14 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
               initialSide: side == TradingSide.buy
                   ? TradingSide.long
                   : TradingSide.short,
+              onYourPositionTap: () => Navigator.of(sheetContext).pop(true),
             ),
     );
-    if (mounted) setState(() => _orderPanelOpen = false);
+    if (!mounted) return;
+    setState(() => _orderPanelOpen = false);
+    if (showPosition == true) {
+      await _showPositionDetailsAfterClosingOrder();
+    }
   }
 
   @override
@@ -290,6 +324,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         child: Stack(
           children: [
             ListView(
+              controller: _pageScrollController,
               padding: const EdgeInsets.fromLTRB(20, 30, 20, 160),
               children: [
                 _NavigationBar(
@@ -357,6 +392,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   ),
                   const SizedBox(height: 16),
                   _Details(
+                    key: _detailsKey,
+                    positionCardKey: _positionCardKey,
                     activeTab: detailTab,
                     onChanged: (tab) => setState(() => detailTab = tab),
                     kind: productKind,

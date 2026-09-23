@@ -1895,6 +1895,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get position => '仓位';
 
   @override
+  String get yourPositions => '你的仓位';
+
+  @override
+  String get positionWillBe => '仓位将变为';
+
+  @override
+  String get positionWillBeTooltipIntro => '反向订单会优先减少当前仓位，超出部分会反转仓位方向。';
+
+  @override
+  String positionWillBeTooltipExampleOne(
+    Object longValue,
+    Object resultValue,
+    Object shortValue,
+  ) {
+    return '做多 $longValue + 做空 $shortValue → 做多 $resultValue';
+  }
+
+  @override
+  String positionWillBeTooltipExampleTwo(
+    Object longValue,
+    Object resultValue,
+    Object shortValue,
+  ) {
+    return '做多 $longValue + 做空 $shortValue → 做空 $resultValue';
+  }
+
+  @override
   String get tokenPosition => '代币持仓';
 
   @override
