@@ -1910,8 +1910,8 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                       )
                     else
                       Text(
-                        AppLocalizations.of(context)
-                            .marginValue(availableMargin ?? '—'),
+                        '${AppLocalizations.of(context).perpsBalance}: '
+                        '${availableMargin ?? '—'} USDC',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

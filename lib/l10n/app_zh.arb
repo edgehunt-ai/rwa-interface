@@ -742,7 +742,7 @@
   "marginValue": "余额：{value} USDC",
   "@marginValue": {"placeholders": {"value": {}}},
   "spotBalance": "现货余额",
-  "perpsBalance": "Perps 余额",
+  "perpsBalance": "合约余额",
   "orderSizeLabel": "份额",
   "entryPrice": "入场价",
   "hip3MarginChip": "保证金 {amount}",

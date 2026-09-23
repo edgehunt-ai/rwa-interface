@@ -2193,7 +2193,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get spotBalance => '现货余额';
 
   @override
-  String get perpsBalance => 'Perps 余额';
+  String get perpsBalance => '合约余额';
 
   @override
   String get orderSizeLabel => '份额';
