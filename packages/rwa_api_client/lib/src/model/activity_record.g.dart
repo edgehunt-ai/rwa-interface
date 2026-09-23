@@ -217,6 +217,10 @@ class _$ActivityRecord extends ActivityRecord {
   @override
   final String? relatedId;
   @override
+  final String? selfCustodialWithdrawalId;
+  @override
+  final BstocksActivityContinuation? continuation;
+  @override
   final ActivityRecordReference? reference;
   @override
   final ActivityRecordChainEnum? chain;
@@ -248,6 +252,8 @@ class _$ActivityRecord extends ActivityRecord {
       this.kind,
       this.fields,
       this.relatedId,
+      this.selfCustodialWithdrawalId,
+      this.continuation,
       this.reference,
       this.chain,
       this.txHash,
@@ -280,6 +286,8 @@ class _$ActivityRecord extends ActivityRecord {
         kind == other.kind &&
         fields == other.fields &&
         relatedId == other.relatedId &&
+        selfCustodialWithdrawalId == other.selfCustodialWithdrawalId &&
+        continuation == other.continuation &&
         reference == other.reference &&
         chain == other.chain &&
         txHash == other.txHash &&
@@ -305,6 +313,8 @@ class _$ActivityRecord extends ActivityRecord {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, fields.hashCode);
     _$hash = $jc(_$hash, relatedId.hashCode);
+    _$hash = $jc(_$hash, selfCustodialWithdrawalId.hashCode);
+    _$hash = $jc(_$hash, continuation.hashCode);
     _$hash = $jc(_$hash, reference.hashCode);
     _$hash = $jc(_$hash, chain.hashCode);
     _$hash = $jc(_$hash, txHash.hashCode);
@@ -332,6 +342,8 @@ class _$ActivityRecord extends ActivityRecord {
           ..add('kind', kind)
           ..add('fields', fields)
           ..add('relatedId', relatedId)
+          ..add('selfCustodialWithdrawalId', selfCustodialWithdrawalId)
+          ..add('continuation', continuation)
           ..add('reference', reference)
           ..add('chain', chain)
           ..add('txHash', txHash)
@@ -402,6 +414,17 @@ class ActivityRecordBuilder
   String? get relatedId => _$this._relatedId;
   set relatedId(String? relatedId) => _$this._relatedId = relatedId;
 
+  String? _selfCustodialWithdrawalId;
+  String? get selfCustodialWithdrawalId => _$this._selfCustodialWithdrawalId;
+  set selfCustodialWithdrawalId(String? selfCustodialWithdrawalId) =>
+      _$this._selfCustodialWithdrawalId = selfCustodialWithdrawalId;
+
+  BstocksActivityContinuationBuilder? _continuation;
+  BstocksActivityContinuationBuilder get continuation =>
+      _$this._continuation ??= BstocksActivityContinuationBuilder();
+  set continuation(BstocksActivityContinuationBuilder? continuation) =>
+      _$this._continuation = continuation;
+
   ActivityRecordReferenceBuilder? _reference;
   ActivityRecordReferenceBuilder get reference =>
       _$this._reference ??= ActivityRecordReferenceBuilder();
@@ -454,6 +477,8 @@ class ActivityRecordBuilder
       _kind = $v.kind;
       _fields = $v.fields?.toBuilder();
       _relatedId = $v.relatedId;
+      _selfCustodialWithdrawalId = $v.selfCustodialWithdrawalId;
+      _continuation = $v.continuation?.toBuilder();
       _reference = $v.reference?.toBuilder();
       _chain = $v.chain;
       _txHash = $v.txHash;
@@ -502,6 +527,8 @@ class ActivityRecordBuilder
             kind: kind,
             fields: _fields?.build(),
             relatedId: relatedId,
+            selfCustodialWithdrawalId: selfCustodialWithdrawalId,
+            continuation: _continuation?.build(),
             reference: _reference?.build(),
             chain: chain,
             txHash: txHash,
@@ -518,6 +545,8 @@ class ActivityRecordBuilder
         _$failedField = 'fields';
         _fields?.build();
 
+        _$failedField = 'continuation';
+        _continuation?.build();
         _$failedField = 'reference';
         _reference?.build();
 

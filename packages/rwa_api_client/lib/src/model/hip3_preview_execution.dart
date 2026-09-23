@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/hip3_cross_liquidation_impact.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
 import 'package:built_value/built_value.dart';
@@ -34,6 +35,7 @@ part 'hip3_preview_execution.g.dart';
 /// * [estimatedFeeUsdc] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 十进制字符串，避免浮点误差
 /// * [liquidationPriceUnavailableReason] 
+/// * [crossLiquidationImpacts] - 本次订单如果成交，对其他 USDC 全仓仓位强平价的账户级影响；不重复返回本单目标商品。 当前强平价不可用或无法可靠模拟时保留仓位身份和方向，并在 unavailable_reason 说明原因。 
 /// * [slippagePercent] - 十进制字符串，避免浮点误差
 @BuiltValue()
 abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3PreviewExecutionBuilder> {
@@ -104,6 +106,10 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
 
   @BuiltValueField(wireName: r'liquidation_price_unavailable_reason')
   String? get liquidationPriceUnavailableReason;
+
+  /// 本次订单如果成交，对其他 USDC 全仓仓位强平价的账户级影响；不重复返回本单目标商品。 当前强平价不可用或无法可靠模拟时保留仓位身份和方向，并在 unavailable_reason 说明原因。 
+  @BuiltValueField(wireName: r'cross_liquidation_impacts')
+  BuiltList<Hip3CrossLiquidationImpact> get crossLiquidationImpacts;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'slippage_percent')
@@ -223,6 +229,11 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
     yield object.liquidationPriceUnavailableReason == null ? null : serializers.serialize(
       object.liquidationPriceUnavailableReason,
       specifiedType: const FullType.nullable(String),
+    );
+    yield r'cross_liquidation_impacts';
+    yield serializers.serialize(
+      object.crossLiquidationImpacts,
+      specifiedType: const FullType(BuiltList, [FullType(Hip3CrossLiquidationImpact)]),
     );
     yield r'slippage_percent';
     yield serializers.serialize(
@@ -380,6 +391,13 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
           ) as String?;
           if (valueDes == null) continue;
           result.liquidationPriceUnavailableReason = valueDes;
+          break;
+        case r'cross_liquidation_impacts':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(Hip3CrossLiquidationImpact)]),
+          ) as BuiltList<Hip3CrossLiquidationImpact>;
+          result.crossLiquidationImpacts.replace(valueDes);
           break;
         case r'slippage_percent':
           final valueDes = serializers.deserialize(

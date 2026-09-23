@@ -5,7 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/funding_session_source_allocation.dart';
 import 'package:rwa_api_client/src/model/funding_session_continuation.dart';
-import 'package:rwa_api_client/src/model/order_preview_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_trade.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/funding_fee_breakdown.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
@@ -58,7 +58,7 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
   int get version;
 
   @BuiltValueField(wireName: r'trade')
-  OrderPreviewRequest get trade;
+  FundingSessionTrade get trade;
 
   /// Server-owned navigation hint for resuming the frozen trade after funding completes; `null` unless the funded session still owes a follow-up order action. It never carries an executable quote, calldata or auto-submission.
   @BuiltValueField(wireName: r'continuation')
@@ -176,7 +176,7 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
     yield r'trade';
     yield serializers.serialize(
       object.trade,
-      specifiedType: const FullType(OrderPreviewRequest),
+      specifiedType: const FullType(FundingSessionTrade),
     );
     yield r'continuation';
     yield object.continuation == null ? null : serializers.serialize(
@@ -330,8 +330,8 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
         case r'trade':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(OrderPreviewRequest),
-          ) as OrderPreviewRequest;
+            specifiedType: const FullType(FundingSessionTrade),
+          ) as FundingSessionTrade;
           result.trade.replace(valueDes);
           break;
         case r'continuation':

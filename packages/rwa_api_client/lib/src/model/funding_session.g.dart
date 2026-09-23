@@ -14,7 +14,7 @@ class _$FundingSession extends FundingSession {
   @override
   final int version;
   @override
-  final OrderPreviewRequest trade;
+  final FundingSessionTrade trade;
   @override
   final FundingSessionContinuation? continuation;
   @override
@@ -207,10 +207,10 @@ class FundingSessionBuilder
   int? get version => _$this._version;
   set version(int? version) => _$this._version = version;
 
-  OrderPreviewRequestBuilder? _trade;
-  OrderPreviewRequestBuilder get trade =>
-      _$this._trade ??= OrderPreviewRequestBuilder();
-  set trade(OrderPreviewRequestBuilder? trade) => _$this._trade = trade;
+  FundingSessionTradeBuilder? _trade;
+  FundingSessionTradeBuilder get trade =>
+      _$this._trade ??= FundingSessionTradeBuilder();
+  set trade(FundingSessionTradeBuilder? trade) => _$this._trade = trade;
 
   FundingSessionContinuationBuilder? _continuation;
   FundingSessionContinuationBuilder get continuation =>

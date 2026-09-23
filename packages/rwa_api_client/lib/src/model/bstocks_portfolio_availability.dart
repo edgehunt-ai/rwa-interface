@@ -9,11 +9,13 @@ import 'package:built_value/serializer.dart';
 
 part 'bstocks_portfolio_availability.g.dart';
 
-/// 已确认 GTC 卖单和已提交 GTC 卖动作的账户钱包级可用数量投影；不是链上托管或真实锁币。 未签名动作不计入 reservation，缺少钱包身份时数量为null。 
+/// 已确认GTC卖单、已提交GTC卖动作和已提交bStock提现的账户钱包级可用数量投影；不是链上托管或真实锁币。 提现占用由pending_withdrawal_quantity解释，不扩展既有unavailable_reasons枚举。已挖矿但未完成观察确认时可能保守扣减，最终确认后解除。 未签名动作不计入 reservation，缺少钱包身份时数量为null。 
 ///
 /// Properties:
 /// * [rail] 
 /// * [productId] 
+/// * [withdrawalAssetId] - 可用于自托管提现asset_id的服务端链/token身份，不等同于顶层内部asset_id。
+/// * [pendingWithdrawalQuantity] - 已提交、确认中、noncanonical或manual_review的bStock提现数量；身份/覆盖未知时null。未签名意图不计入。
 /// * [availableQuantity] - 十进制字符串，避免浮点误差
 /// * [unavailableQuantity] - 十进制字符串，避免浮点误差
 /// * [reservationQuantity] - 十进制字符串，避免浮点误差
@@ -27,6 +29,14 @@ abstract class BstocksPortfolioAvailability implements Built<BstocksPortfolioAva
 
   @BuiltValueField(wireName: r'product_id')
   String get productId;
+
+  /// 可用于自托管提现asset_id的服务端链/token身份，不等同于顶层内部asset_id。
+  @BuiltValueField(wireName: r'withdrawal_asset_id')
+  String? get withdrawalAssetId;
+
+  /// 已提交、确认中、noncanonical或manual_review的bStock提现数量；身份/覆盖未知时null。未签名意图不计入。
+  @BuiltValueField(wireName: r'pending_withdrawal_quantity')
+  String? get pendingWithdrawalQuantity;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'available_quantity')
@@ -81,6 +91,20 @@ class _$BstocksPortfolioAvailabilitySerializer implements PrimitiveSerializer<Bs
       object.productId,
       specifiedType: const FullType(String),
     );
+    if (object.withdrawalAssetId != null) {
+      yield r'withdrawal_asset_id';
+      yield serializers.serialize(
+        object.withdrawalAssetId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.pendingWithdrawalQuantity != null) {
+      yield r'pending_withdrawal_quantity';
+      yield serializers.serialize(
+        object.pendingWithdrawalQuantity,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'available_quantity';
     yield object.availableQuantity == null ? null : serializers.serialize(
       object.availableQuantity,
@@ -142,6 +166,22 @@ class _$BstocksPortfolioAvailabilitySerializer implements PrimitiveSerializer<Bs
             specifiedType: const FullType(String),
           ) as String;
           result.productId = valueDes;
+          break;
+        case r'withdrawal_asset_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.withdrawalAssetId = valueDes;
+          break;
+        case r'pending_withdrawal_quantity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.pendingWithdrawalQuantity = valueDes;
           break;
         case r'available_quantity':
           final valueDes = serializers.deserialize(

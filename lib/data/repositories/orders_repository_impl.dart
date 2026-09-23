@@ -199,6 +199,35 @@ final class OrdersRepositoryImpl implements OrdersRepository {
         ? null
         : DecimalValue(value.liquidationPrice!, asset: 'USDC', unit: 'price'),
     liquidationPriceUnavailableReason: value.liquidationPriceUnavailableReason,
+    crossLiquidationImpacts: List.unmodifiable(
+      value.crossLiquidationImpacts.map(
+        (impact) => Hip3CrossLiquidationImpact(
+          productId: impact.productId,
+          side: switch (impact.side) {
+            api.Hip3CrossLiquidationImpactSideEnum.long => TradingSide.long,
+            api.Hip3CrossLiquidationImpactSideEnum.short => TradingSide.short,
+            _ => throw const FormatException(
+              'Unsupported cross liquidation impact side',
+            ),
+          },
+          beforeLiquidationPrice: impact.beforeLiquidationPrice == null
+              ? null
+              : DecimalValue(
+                  impact.beforeLiquidationPrice!,
+                  asset: 'USDC',
+                  unit: 'price',
+                ),
+          afterLiquidationPrice: impact.afterLiquidationPrice == null
+              ? null
+              : DecimalValue(
+                  impact.afterLiquidationPrice!,
+                  asset: 'USDC',
+                  unit: 'price',
+                ),
+          unavailableReason: impact.unavailableReason?.name,
+        ),
+      ),
+    ),
   );
 
   @override

@@ -25,7 +25,7 @@ class ActivityApi {
   const ActivityApi(this._dio, this._serializers);
 
   /// 交易与资金活动列表
-  /// 返回当前账号已经实际发生且具有外部证据的交易与资金活动。Deposit 只有完成链上独立核验后 才出现；Order 只有被交易场所接受并取得稳定 Provider 订单身份，或具有链上交易证明后才出现。 Session、Intent、Preview、Authorization、等待付款和内部重试不得进入用户 History。  &#x60;cursor&#x60; 是不透明 continuation token，绑定当前账户、稳定排序快照和完整规范化 filter tuple： &#x60;category,status,type,chain,from,to,product_or_asset&#x60;。客户端使用 cursor 获取后续页时必须提交 与首请求相同的 filters；缺省值也参与绑定。cursor 与 filter 不匹配、过期或属于其他账户时 返回 400，不得跨过滤条件复用或重新解释。时间窗口采用 &#x60;[from,to)&#x60;。 
+  /// 返回当前账号已经实际发生且具有外部证据的交易与资金活动。Deposit 只有完成链上独立核验后 才出现；Order 通常仅在被交易场所接受或具有链上交易证明后出现。例外是已持久化、幂等且仍等待 钱包签名的 bStocks 动作：它以 &#x60;orderSign/pending&#x60; 暴露一个 Continue 入口，提交后原 Activity 行原地 转为实际订单类型，不创建第二个业务对象。Session、Preview、Authorization、等待付款和内部重试 不得进入用户 History。  &#x60;cursor&#x60; 是不透明 continuation token，绑定当前账户、稳定排序快照和完整规范化 filter tuple： &#x60;category,status,type,chain,from,to,product_or_asset&#x60;。客户端使用 cursor 获取后续页时必须提交 与首请求相同的 filters；缺省值也参与绑定。cursor 与 filter 不匹配、过期或属于其他账户时 返回 400，不得跨过滤条件复用或重新解释。时间窗口采用 &#x60;[from,to)&#x60;。 
   ///
   /// Parameters:
   /// * [category] 

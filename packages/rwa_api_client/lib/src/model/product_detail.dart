@@ -9,6 +9,7 @@ import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/quote.dart';
 import 'package:rwa_api_client/src/model/asset_info.dart';
 import 'package:rwa_api_client/src/model/hip3_public_market.dart';
+import 'package:rwa_api_client/src/model/bstock_order_assets.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -18,6 +19,8 @@ part 'product_detail.g.dart';
 ///
 /// Properties:
 /// * [hip3Market] 
+/// * [tradable] - 仅 bStock 详情返回；catalog 展示条目为 false，不表示账户已获交易授权。
+/// * [orderAssets] 
 /// * [isFavorite] 
 /// * [symbol] 
 /// * [name] 
@@ -33,6 +36,13 @@ part 'product_detail.g.dart';
 abstract class ProductDetail implements Built<ProductDetail, ProductDetailBuilder> {
   @BuiltValueField(wireName: r'hip3_market')
   Hip3PublicMarket? get hip3Market;
+
+  /// 仅 bStock 详情返回；catalog 展示条目为 false，不表示账户已获交易授权。
+  @BuiltValueField(wireName: r'tradable')
+  bool? get tradable;
+
+  @BuiltValueField(wireName: r'order_assets')
+  BstockOrderAssets? get orderAssets;
 
   @BuiltValueField(wireName: r'is_favorite')
   bool? get isFavorite;
@@ -103,6 +113,20 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
       yield serializers.serialize(
         object.hip3Market,
         specifiedType: const FullType(Hip3PublicMarket),
+      );
+    }
+    if (object.tradable != null) {
+      yield r'tradable';
+      yield serializers.serialize(
+        object.tradable,
+        specifiedType: const FullType(bool),
+      );
+    }
+    if (object.orderAssets != null) {
+      yield r'order_assets';
+      yield serializers.serialize(
+        object.orderAssets,
+        specifiedType: const FullType(BstockOrderAssets),
       );
     }
     if (object.isFavorite != null) {
@@ -204,6 +228,22 @@ class _$ProductDetailSerializer implements PrimitiveSerializer<ProductDetail> {
           ) as Hip3PublicMarket?;
           if (valueDes == null) continue;
           result.hip3Market = valueDes;
+          break;
+        case r'tradable':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(bool),
+          ) as bool?;
+          if (valueDes == null) continue;
+          result.tradable = valueDes;
+          break;
+        case r'order_assets':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstockOrderAssets),
+          ) as BstockOrderAssets?;
+          if (valueDes == null) continue;
+          result.orderAssets.replace(valueDes);
           break;
         case r'is_favorite':
           final valueDes = serializers.deserialize(

@@ -109,6 +109,8 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
   final String? liquidationPriceUnavailableReason;
   @override
+  final BuiltList<Hip3CrossLiquidationImpact> crossLiquidationImpacts;
+  @override
   final String slippagePercent;
 
   factory _$Hip3PreviewExecution(
@@ -134,6 +136,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
       required this.estimatedFeeUsdc,
       this.liquidationPrice,
       this.liquidationPriceUnavailableReason,
+      required this.crossLiquidationImpacts,
       required this.slippagePercent})
       : super._();
   @override
@@ -168,6 +171,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
         liquidationPrice == other.liquidationPrice &&
         liquidationPriceUnavailableReason ==
             other.liquidationPriceUnavailableReason &&
+        crossLiquidationImpacts == other.crossLiquidationImpacts &&
         slippagePercent == other.slippagePercent;
   }
 
@@ -192,6 +196,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
     _$hash = $jc(_$hash, estimatedFeeUsdc.hashCode);
     _$hash = $jc(_$hash, liquidationPrice.hashCode);
     _$hash = $jc(_$hash, liquidationPriceUnavailableReason.hashCode);
+    _$hash = $jc(_$hash, crossLiquidationImpacts.hashCode);
     _$hash = $jc(_$hash, slippagePercent.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -219,6 +224,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
           ..add('liquidationPrice', liquidationPrice)
           ..add('liquidationPriceUnavailableReason',
               liquidationPriceUnavailableReason)
+          ..add('crossLiquidationImpacts', crossLiquidationImpacts)
           ..add('slippagePercent', slippagePercent))
         .toString();
   }
@@ -314,6 +320,14 @@ class Hip3PreviewExecutionBuilder
       _$this._liquidationPriceUnavailableReason =
           liquidationPriceUnavailableReason;
 
+  ListBuilder<Hip3CrossLiquidationImpact>? _crossLiquidationImpacts;
+  ListBuilder<Hip3CrossLiquidationImpact> get crossLiquidationImpacts =>
+      _$this._crossLiquidationImpacts ??=
+          ListBuilder<Hip3CrossLiquidationImpact>();
+  set crossLiquidationImpacts(
+          ListBuilder<Hip3CrossLiquidationImpact>? crossLiquidationImpacts) =>
+      _$this._crossLiquidationImpacts = crossLiquidationImpacts;
+
   String? _slippagePercent;
   String? get slippagePercent => _$this._slippagePercent;
   set slippagePercent(String? slippagePercent) =>
@@ -344,6 +358,7 @@ class Hip3PreviewExecutionBuilder
       _estimatedFeeUsdc = $v.estimatedFeeUsdc;
       _liquidationPrice = $v.liquidationPrice;
       _liquidationPriceUnavailableReason = $v.liquidationPriceUnavailableReason;
+      _crossLiquidationImpacts = $v.crossLiquidationImpacts.toBuilder();
       _slippagePercent = $v.slippagePercent;
       _$v = null;
     }
@@ -406,6 +421,7 @@ class Hip3PreviewExecutionBuilder
             liquidationPrice: liquidationPrice,
             liquidationPriceUnavailableReason:
                 liquidationPriceUnavailableReason,
+            crossLiquidationImpacts: crossLiquidationImpacts.build(),
             slippagePercent: BuiltValueNullFieldError.checkNotNull(
                 slippagePercent, r'Hip3PreviewExecution', 'slippagePercent'),
           );
@@ -414,6 +430,9 @@ class Hip3PreviewExecutionBuilder
       try {
         _$failedField = 'openingProtection';
         _openingProtection?.build();
+
+        _$failedField = 'crossLiquidationImpacts';
+        crossLiquidationImpacts.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'Hip3PreviewExecution', _$failedField, e.toString());

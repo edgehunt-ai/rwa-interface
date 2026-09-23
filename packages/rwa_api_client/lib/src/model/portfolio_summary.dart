@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/hyperliquid_usdc_collateral.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:built_value/built_value.dart';
@@ -22,6 +23,7 @@ part 'portfolio_summary.g.dart';
 /// * [availableToTradeUsd] - 可证明可用的余额子集；普通钱包余额不会自动等于 available to trade。 Hyperliquid Unified Account 使用 USDC spot total 减去 hold，最低为零， 并在上游提供 tokenToAvailableAfterMaintenance 时受该 USDC 上限约束。 过期或不可用来源不计入此金额，调用方必须同时展示 freshness、data_status 和 warnings。 这是只读快照估计值，不是可提款额或下单承诺；具体订单仍需通过实时预览、费用和风险检查。 
 /// * [pendingTransferUsd] - 尚未划转到任何交易场所的钱包资产小计（`assets` 中未带 `account_ref` 的条目）， 需要先 Transfer 才能计入 available_to_trade_usd。与 `/v1/portfolio/accounts` 中 `available_requires_transfer: true` 分组的 `available_usd` 之和为同一口径。 
 /// * [marginInUseUsd] - Hyperliquid 所覆盖 DEX 持仓报告的 margin used 合计；不表示独立于统一抵押物之外的额外资产。
+/// * [hyperliquidUsdcCollateral] - Hyperliquid Unified Account 的 USDC 抵押资产明细，按已验证的钱包分别返回。 B（total）、I（isolated_margin_used）、M（cross_maintenance_margin_required） 与 H（hold）是不同用途的余额和风险指标，不能相加，也不能用 total - isolated_margin_used - cross_maintenance_margin_required - hold 推导可用资产。账户模式不适用或来源不可用时为空；账户余额来源状态见 sources。 
 /// * [stocksValueUsd] - Legacy optional aggregate retained for older clients; new clients use source-aware assets.
 /// * [unvaluedAssetCount] 
 /// * [dataStatus] - 当 `unvalued_asset_count > 0` 时必须为 `partial`。
@@ -56,6 +58,10 @@ abstract class PortfolioSummary implements Built<PortfolioSummary, PortfolioSumm
   /// Hyperliquid 所覆盖 DEX 持仓报告的 margin used 合计；不表示独立于统一抵押物之外的额外资产。
   @BuiltValueField(wireName: r'margin_in_use_usd')
   String get marginInUseUsd;
+
+  /// Hyperliquid Unified Account 的 USDC 抵押资产明细，按已验证的钱包分别返回。 B（total）、I（isolated_margin_used）、M（cross_maintenance_margin_required） 与 H（hold）是不同用途的余额和风险指标，不能相加，也不能用 total - isolated_margin_used - cross_maintenance_margin_required - hold 推导可用资产。账户模式不适用或来源不可用时为空；账户余额来源状态见 sources。 
+  @BuiltValueField(wireName: r'hyperliquid_usdc_collateral')
+  BuiltList<HyperliquidUsdcCollateral>? get hyperliquidUsdcCollateral;
 
   /// Legacy optional aggregate retained for older clients; new clients use source-aware assets.
   @Deprecated('stocksValueUsd has been deprecated')
@@ -150,6 +156,13 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
       object.marginInUseUsd,
       specifiedType: const FullType(String),
     );
+    if (object.hyperliquidUsdcCollateral != null) {
+      yield r'hyperliquid_usdc_collateral';
+      yield serializers.serialize(
+        object.hyperliquidUsdcCollateral,
+        specifiedType: const FullType(BuiltList, [FullType(HyperliquidUsdcCollateral)]),
+      );
+    }
     if (object.stocksValueUsd != null) {
       yield r'stocks_value_usd';
       yield serializers.serialize(
@@ -268,6 +281,14 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
             specifiedType: const FullType(String),
           ) as String;
           result.marginInUseUsd = valueDes;
+          break;
+        case r'hyperliquid_usdc_collateral':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltList, [FullType(HyperliquidUsdcCollateral)]),
+          ) as BuiltList<HyperliquidUsdcCollateral>?;
+          if (valueDes == null) continue;
+          result.hyperliquidUsdcCollateral.replace(valueDes);
           break;
         case r'stocks_value_usd':
           final valueDes = serializers.deserialize(

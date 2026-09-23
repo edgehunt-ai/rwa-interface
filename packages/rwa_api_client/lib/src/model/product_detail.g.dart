@@ -77,6 +77,10 @@ class _$ProductDetail extends ProductDetail {
   @override
   final Hip3PublicMarket? hip3Market;
   @override
+  final bool? tradable;
+  @override
+  final BstockOrderAssets? orderAssets;
+  @override
   final bool? isFavorite;
   @override
   final String symbol;
@@ -104,6 +108,8 @@ class _$ProductDetail extends ProductDetail {
 
   _$ProductDetail._(
       {this.hip3Market,
+      this.tradable,
+      this.orderAssets,
       this.isFavorite,
       required this.symbol,
       this.name,
@@ -128,6 +134,8 @@ class _$ProductDetail extends ProductDetail {
     if (identical(other, this)) return true;
     return other is ProductDetail &&
         hip3Market == other.hip3Market &&
+        tradable == other.tradable &&
+        orderAssets == other.orderAssets &&
         isFavorite == other.isFavorite &&
         symbol == other.symbol &&
         name == other.name &&
@@ -145,6 +153,8 @@ class _$ProductDetail extends ProductDetail {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, hip3Market.hashCode);
+    _$hash = $jc(_$hash, tradable.hashCode);
+    _$hash = $jc(_$hash, orderAssets.hashCode);
     _$hash = $jc(_$hash, isFavorite.hashCode);
     _$hash = $jc(_$hash, symbol.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
@@ -164,6 +174,8 @@ class _$ProductDetail extends ProductDetail {
   String toString() {
     return (newBuiltValueToStringHelper(r'ProductDetail')
           ..add('hip3Market', hip3Market)
+          ..add('tradable', tradable)
+          ..add('orderAssets', orderAssets)
           ..add('isFavorite', isFavorite)
           ..add('symbol', symbol)
           ..add('name', name)
@@ -187,6 +199,16 @@ class ProductDetailBuilder
   Hip3PublicMarket? get hip3Market => _$this._hip3Market;
   set hip3Market(Hip3PublicMarket? hip3Market) =>
       _$this._hip3Market = hip3Market;
+
+  bool? _tradable;
+  bool? get tradable => _$this._tradable;
+  set tradable(bool? tradable) => _$this._tradable = tradable;
+
+  BstockOrderAssetsBuilder? _orderAssets;
+  BstockOrderAssetsBuilder get orderAssets =>
+      _$this._orderAssets ??= BstockOrderAssetsBuilder();
+  set orderAssets(BstockOrderAssetsBuilder? orderAssets) =>
+      _$this._orderAssets = orderAssets;
 
   bool? _isFavorite;
   bool? get isFavorite => _$this._isFavorite;
@@ -241,6 +263,8 @@ class ProductDetailBuilder
     final $v = _$v;
     if ($v != null) {
       _hip3Market = $v.hip3Market;
+      _tradable = $v.tradable;
+      _orderAssets = $v.orderAssets?.toBuilder();
       _isFavorite = $v.isFavorite;
       _symbol = $v.symbol;
       _name = $v.name;
@@ -276,6 +300,8 @@ class ProductDetailBuilder
       _$result = _$v ??
           _$ProductDetail._(
             hip3Market: hip3Market,
+            tradable: tradable,
+            orderAssets: _orderAssets?.build(),
             isFavorite: isFavorite,
             symbol: BuiltValueNullFieldError.checkNotNull(
                 symbol, r'ProductDetail', 'symbol'),
@@ -293,6 +319,9 @@ class ProductDetailBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'orderAssets';
+        _orderAssets?.build();
+
         _$failedField = 'quote';
         quote.build();
         _$failedField = 'stats';

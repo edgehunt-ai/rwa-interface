@@ -1922,6 +1922,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String crossPositionsAffected(int count) {
+    return '$count 个全仓仓位将受影响';
+  }
+
+  @override
+  String get liquidationPriceShort => '强平价';
+
+  @override
   String get tokenPosition => '代币持仓';
 
   @override

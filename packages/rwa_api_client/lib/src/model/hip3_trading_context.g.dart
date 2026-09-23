@@ -84,6 +84,8 @@ class _$Hip3TradingContext extends Hip3TradingContext {
   @override
   final Hip3TradingRules rules;
   @override
+  final Hip3MarketOrderMinimums? marketOrderMinimums;
+  @override
   final String? currentLeverage;
   @override
   final MarginMode? currentMarginMode;
@@ -112,6 +114,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
       required this.venue,
       required this.settlementAsset,
       required this.rules,
+      this.marketOrderMinimums,
       this.currentLeverage,
       this.currentMarginMode,
       required this.availableMarginUsdc,
@@ -141,6 +144,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
         venue == other.venue &&
         settlementAsset == other.settlementAsset &&
         rules == other.rules &&
+        marketOrderMinimums == other.marketOrderMinimums &&
         currentLeverage == other.currentLeverage &&
         currentMarginMode == other.currentMarginMode &&
         availableMarginUsdc == other.availableMarginUsdc &&
@@ -161,6 +165,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
     _$hash = $jc(_$hash, venue.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, rules.hashCode);
+    _$hash = $jc(_$hash, marketOrderMinimums.hashCode);
     _$hash = $jc(_$hash, currentLeverage.hashCode);
     _$hash = $jc(_$hash, currentMarginMode.hashCode);
     _$hash = $jc(_$hash, availableMarginUsdc.hashCode);
@@ -183,6 +188,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
           ..add('venue', venue)
           ..add('settlementAsset', settlementAsset)
           ..add('rules', rules)
+          ..add('marketOrderMinimums', marketOrderMinimums)
           ..add('currentLeverage', currentLeverage)
           ..add('currentMarginMode', currentMarginMode)
           ..add('availableMarginUsdc', availableMarginUsdc)
@@ -230,6 +236,13 @@ class Hip3TradingContextBuilder
   Hip3TradingRulesBuilder get rules =>
       _$this._rules ??= Hip3TradingRulesBuilder();
   set rules(Hip3TradingRulesBuilder? rules) => _$this._rules = rules;
+
+  Hip3MarketOrderMinimumsBuilder? _marketOrderMinimums;
+  Hip3MarketOrderMinimumsBuilder get marketOrderMinimums =>
+      _$this._marketOrderMinimums ??= Hip3MarketOrderMinimumsBuilder();
+  set marketOrderMinimums(
+          Hip3MarketOrderMinimumsBuilder? marketOrderMinimums) =>
+      _$this._marketOrderMinimums = marketOrderMinimums;
 
   String? _currentLeverage;
   String? get currentLeverage => _$this._currentLeverage;
@@ -283,6 +296,7 @@ class Hip3TradingContextBuilder
       _venue = $v.venue;
       _settlementAsset = $v.settlementAsset;
       _rules = $v.rules.toBuilder();
+      _marketOrderMinimums = $v.marketOrderMinimums?.toBuilder();
       _currentLeverage = $v.currentLeverage;
       _currentMarginMode = $v.currentMarginMode;
       _availableMarginUsdc = $v.availableMarginUsdc;
@@ -327,6 +341,7 @@ class Hip3TradingContextBuilder
             settlementAsset: BuiltValueNullFieldError.checkNotNull(
                 settlementAsset, r'Hip3TradingContext', 'settlementAsset'),
             rules: rules.build(),
+            marketOrderMinimums: _marketOrderMinimums?.build(),
             currentLeverage: currentLeverage,
             currentMarginMode: currentMarginMode,
             availableMarginUsdc: BuiltValueNullFieldError.checkNotNull(
@@ -347,6 +362,8 @@ class Hip3TradingContextBuilder
       try {
         _$failedField = 'rules';
         rules.build();
+        _$failedField = 'marketOrderMinimums';
+        _marketOrderMinimums?.build();
 
         _$failedField = 'supportedOperations';
         supportedOperations.build();

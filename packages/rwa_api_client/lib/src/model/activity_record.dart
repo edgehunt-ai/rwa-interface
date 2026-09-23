@@ -11,6 +11,7 @@ import 'package:rwa_api_client/src/model/activity_record_explorer.dart';
 import 'package:rwa_api_client/src/model/activity_status.dart';
 import 'package:rwa_api_client/src/model/activity_type.dart';
 import 'package:rwa_api_client/src/model/activity_category.dart';
+import 'package:rwa_api_client/src/model/bstocks_activity_continuation.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -32,6 +33,8 @@ part 'activity_record.g.dart';
 /// * [kind] 
 /// * [fields] - 展开后的键值对明细
 /// * [relatedId] - 关联记录 id（如划转失败 ↔ Claim 退款）
+/// * [selfCustodialWithdrawalId] - bStock自托管提现活动的详情入口ID，等于reference.id；使用GET /v1/self-custodial-withdrawals/{id}查询，不路由到旧提现接口。
+/// * [continuation] - 仅 `orderSign/pending` bStocks Activity 返回；其他记录省略。
 /// * [reference] 
 /// * [chain] 
 /// * [txHash] 
@@ -90,6 +93,14 @@ abstract class ActivityRecord implements Built<ActivityRecord, ActivityRecordBui
   /// 关联记录 id（如划转失败 ↔ Claim 退款）
   @BuiltValueField(wireName: r'related_id')
   String? get relatedId;
+
+  /// bStock自托管提现活动的详情入口ID，等于reference.id；使用GET /v1/self-custodial-withdrawals/{id}查询，不路由到旧提现接口。
+  @BuiltValueField(wireName: r'self_custodial_withdrawal_id')
+  String? get selfCustodialWithdrawalId;
+
+  /// 仅 `orderSign/pending` bStocks Activity 返回；其他记录省略。
+  @BuiltValueField(wireName: r'continuation')
+  BstocksActivityContinuation? get continuation;
 
   @BuiltValueField(wireName: r'reference')
   ActivityRecordReference? get reference;
@@ -214,6 +225,20 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
       yield serializers.serialize(
         object.relatedId,
         specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.selfCustodialWithdrawalId != null) {
+      yield r'self_custodial_withdrawal_id';
+      yield serializers.serialize(
+        object.selfCustodialWithdrawalId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.continuation != null) {
+      yield r'continuation';
+      yield serializers.serialize(
+        object.continuation,
+        specifiedType: const FullType(BstocksActivityContinuation),
       );
     }
     yield r'reference';
@@ -372,6 +397,22 @@ class _$ActivityRecordSerializer implements PrimitiveSerializer<ActivityRecord> 
           ) as String?;
           if (valueDes == null) continue;
           result.relatedId = valueDes;
+          break;
+        case r'self_custodial_withdrawal_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.selfCustodialWithdrawalId = valueDes;
+          break;
+        case r'continuation':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstocksActivityContinuation),
+          ) as BstocksActivityContinuation?;
+          if (valueDes == null) continue;
+          result.continuation.replace(valueDes);
           break;
         case r'reference':
           final valueDes = serializers.deserialize(

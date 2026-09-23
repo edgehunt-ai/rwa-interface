@@ -38,7 +38,7 @@ class _Details extends ConsumerWidget {
           )
         : ref.watch(bstocksOrdersProvider(null));
     final positionCount = positionState.value?.items.length;
-    final openCount = openState?.value?.items
+    final openCount = openState.value?.items
         .map((item) => item.resource)
         .where(
           (order) =>

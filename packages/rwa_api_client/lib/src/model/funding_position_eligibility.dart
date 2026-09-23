@@ -23,13 +23,6 @@ abstract class FundingPositionEligibility implements Built<FundingPositionEligib
   /// One Of [EligibleFundingPositionEligibility], [IneligibleFundingPositionEligibility]
   OneOf get oneOf;
 
-  static const String discriminatorFieldName = r'status';
-
-  static const Map<String, Type> discriminatorMapping = {
-    r'eligible': EligibleFundingPositionEligibility,
-    r'ineligible': IneligibleFundingPositionEligibility,
-  };
-
   FundingPositionEligibility._();
 
   factory FundingPositionEligibility([void updates(FundingPositionEligibilityBuilder b)]) = _$FundingPositionEligibility;
@@ -39,29 +32,6 @@ abstract class FundingPositionEligibility implements Built<FundingPositionEligib
 
   @BuiltValueSerializer(custom: true)
   static Serializer<FundingPositionEligibility> get serializer => _$FundingPositionEligibilitySerializer();
-}
-
-extension FundingPositionEligibilityDiscriminatorExt on FundingPositionEligibility {
-    String? get discriminatorValue {
-        if (this is EligibleFundingPositionEligibility) {
-            return r'eligible';
-        }
-        if (this is IneligibleFundingPositionEligibility) {
-            return r'ineligible';
-        }
-        return null;
-    }
-}
-extension FundingPositionEligibilityBuilderDiscriminatorExt on FundingPositionEligibilityBuilder {
-    String? get discriminatorValue {
-        if (this is EligibleFundingPositionEligibilityBuilder) {
-            return r'eligible';
-        }
-        if (this is IneligibleFundingPositionEligibilityBuilder) {
-            return r'ineligible';
-        }
-        return null;
-    }
 }
 
 class _$FundingPositionEligibilitySerializer implements PrimitiveSerializer<FundingPositionEligibility> {
@@ -96,32 +66,9 @@ class _$FundingPositionEligibilitySerializer implements PrimitiveSerializer<Fund
   }) {
     final result = FundingPositionEligibilityBuilder();
     Object? oneOfDataSrc;
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final discIndex = serializedList.indexOf(FundingPositionEligibility.discriminatorFieldName) + 1;
-    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    final targetType = const FullType(OneOf, [FullType(EligibleFundingPositionEligibility), FullType(IneligibleFundingPositionEligibility), ]);
     oneOfDataSrc = serialized;
-    final oneOfTypes = [EligibleFundingPositionEligibility, IneligibleFundingPositionEligibility, ];
-    Object oneOfResult;
-    Type oneOfType;
-    switch (discValue) {
-      case r'eligible':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(EligibleFundingPositionEligibility),
-        ) as EligibleFundingPositionEligibility;
-        oneOfType = EligibleFundingPositionEligibility;
-        break;
-      case r'ineligible':
-        oneOfResult = serializers.deserialize(
-          oneOfDataSrc,
-          specifiedType: FullType(IneligibleFundingPositionEligibility),
-        ) as IneligibleFundingPositionEligibility;
-        oneOfType = IneligibleFundingPositionEligibility;
-        break;
-      default:
-        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
-    }
-    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }

@@ -59,12 +59,15 @@ lib/src/model/bstock_funding_target_credit_observation.dart
 lib/src/model/bstock_funding_transfer_target.dart
 lib/src/model/bstock_limit_order_preview.dart
 lib/src/model/bstock_localnet_order_preview.dart
+lib/src/model/bstock_order_asset.dart
+lib/src/model/bstock_order_assets.dart
 lib/src/model/bstock_order_preview.dart
 lib/src/model/bstock_order_preview_request.dart
 lib/src/model/bstock_order_wallet_action_state.dart
 lib/src/model/bstock_testnet_funding_rail.dart
 lib/src/model/bstock_testnet_order_preview.dart
 lib/src/model/bstocks_action_status.dart
+lib/src/model/bstocks_activity_continuation.dart
 lib/src/model/bstocks_approval_mode.dart
 lib/src/model/bstocks_block_quote_validity.dart
 lib/src/model/bstocks_cancellation_policy.dart
@@ -167,7 +170,12 @@ lib/src/model/funding_session_selection_request.dart
 lib/src/model/funding_session_source_allocation.dart
 lib/src/model/funding_session_source_allocation_input.dart
 lib/src/model/funding_session_status.dart
+lib/src/model/funding_session_trade.dart
+lib/src/model/funding_session_trade_create_request.dart
 lib/src/model/funding_session_trade_intent_create_request.dart
+lib/src/model/funding_session_transfer_create_request.dart
+lib/src/model/funding_session_transfer_intent.dart
+lib/src/model/funding_session_transfer_snapshot.dart
 lib/src/model/funding_source_asset.dart
 lib/src/model/funding_source_asset_catalog.dart
 lib/src/model/funding_source_asset_id.dart
@@ -208,6 +216,7 @@ lib/src/model/hip3_close_action_request.dart
 lib/src/model/hip3_close_preview.dart
 lib/src/model/hip3_close_preview_request.dart
 lib/src/model/hip3_conditional_order.dart
+lib/src/model/hip3_cross_liquidation_impact.dart
 lib/src/model/hip3_eip712_domain.dart
 lib/src/model/hip3_eip712_field.dart
 lib/src/model/hip3_eip712_message.dart
@@ -223,6 +232,8 @@ lib/src/model/hip3_liquidation_history_coverage.dart
 lib/src/model/hip3_liquidation_page.dart
 lib/src/model/hip3_liquidation_position.dart
 lib/src/model/hip3_mainnet_product.dart
+lib/src/model/hip3_market_order_minimum.dart
+lib/src/model/hip3_market_order_minimums.dart
 lib/src/model/hip3_opening_protection_confirmation.dart
 lib/src/model/hip3_opening_protection_confirmation_legs_inner.dart
 lib/src/model/hip3_operation.dart
@@ -262,6 +273,7 @@ lib/src/model/hip3_withdrawal_submission_request.dart
 lib/src/model/holding_group.dart
 lib/src/model/holding_stock.dart
 lib/src/model/hyperliquid_signature.dart
+lib/src/model/hyperliquid_usdc_collateral.dart
 lib/src/model/ineligible_funding_position_eligibility.dart
 lib/src/model/key_value.dart
 lib/src/model/legacy_bstock_funding_plan.dart

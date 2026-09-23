@@ -76,6 +76,7 @@ final class Hip3PreviewExecution {
     this.liquidationPrice,
     this.liquidationPriceUnavailableReason,
     this.openingProtection,
+    this.crossLiquidationImpacts = const [],
   });
   final String contextId;
   final String productId;
@@ -96,6 +97,23 @@ final class Hip3PreviewExecution {
   final DecimalValue? liquidationPrice;
   final String? liquidationPriceUnavailableReason;
   final Hip3OpeningProtectionConfirmation? openingProtection;
+  final List<Hip3CrossLiquidationImpact> crossLiquidationImpacts;
+}
+
+final class Hip3CrossLiquidationImpact {
+  const Hip3CrossLiquidationImpact({
+    required this.productId,
+    required this.side,
+    this.beforeLiquidationPrice,
+    this.afterLiquidationPrice,
+    this.unavailableReason,
+  });
+
+  final String productId;
+  final TradingSide side;
+  final DecimalValue? beforeLiquidationPrice;
+  final DecimalValue? afterLiquidationPrice;
+  final String? unavailableReason;
 }
 
 final class PreviewDetail {

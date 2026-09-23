@@ -117,7 +117,13 @@ final class FundingRepositoryImpl implements FundingRepository {
   }) async {
     final value = await _service.createFundingSession(
       api.FundingSessionCreateRequest(
-        (request) => request.trade.replace(orderPreviewRequest(intent)),
+        (request) => request.oneOf = OneOfDynamic(
+          typeIndex: 0,
+          types: const [api.FundingSessionTradeCreateRequest],
+          value: api.FundingSessionTradeCreateRequest(
+            (trade) => trade.trade.replace(orderPreviewRequest(intent)),
+          ),
+        ),
       ),
       idempotencyKey: idempotencyKey,
     );

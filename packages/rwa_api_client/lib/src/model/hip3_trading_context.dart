@@ -5,6 +5,7 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/hip3_market_order_minimums.dart';
 import 'package:rwa_api_client/src/model/hip3_operation.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
@@ -13,7 +14,7 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_trading_context.g.dart';
 
-/// 服务端从当前账户绑定及运行环境推导 context_id。无可靠账户余额返回 503。 supported_operations 只描述 client-signed 路径，不因 Agent 路径可用而开启。 available_margin_usdc 是扣除本地未结预留后的可交易保证金，与 withdrawable_usdc 分开； 均非账户总权益。最大可开量受方向、价格与杠杆影响，在订单 preview 中返回。 
+/// 服务端从当前账户绑定及运行环境推导 context_id。无可靠账户余额返回 503。 supported_operations 只描述 client-signed 路径，不因 Agent 路径可用而开启。 available_margin_usdc 是扣除本地未结预留后的可交易保证金，与 withdrawable_usdc 分开； 均非账户总权益。market_order_minimums 供下单前展示币种、方向对应的最小市价单金额及 当前杠杆下最低保证金；最大可开量仍受方向、价格与杠杆影响，在订单 preview 中返回。 
 ///
 /// Properties:
 /// * [contextId] 
@@ -23,6 +24,7 @@ part 'hip3_trading_context.g.dart';
 /// * [venue] 
 /// * [settlementAsset] 
 /// * [rules] 
+/// * [marketOrderMinimums] - 当前盘口可用时返回；不支持市价单或无法取得新鲜盘口时为 null。
 /// * [currentLeverage] - 十进制字符串，避免浮点误差
 /// * [currentMarginMode] 
 /// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
@@ -55,6 +57,10 @@ abstract class Hip3TradingContext implements Built<Hip3TradingContext, Hip3Tradi
 
   @BuiltValueField(wireName: r'rules')
   Hip3TradingRules get rules;
+
+  /// 当前盘口可用时返回；不支持市价单或无法取得新鲜盘口时为 null。
+  @BuiltValueField(wireName: r'market_order_minimums')
+  Hip3MarketOrderMinimums? get marketOrderMinimums;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'current_leverage')
@@ -141,6 +147,11 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
     yield serializers.serialize(
       object.rules,
       specifiedType: const FullType(Hip3TradingRules),
+    );
+    yield r'market_order_minimums';
+    yield object.marketOrderMinimums == null ? null : serializers.serialize(
+      object.marketOrderMinimums,
+      specifiedType: const FullType.nullable(Hip3MarketOrderMinimums),
     );
     yield r'current_leverage';
     yield object.currentLeverage == null ? null : serializers.serialize(
@@ -253,6 +264,14 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
             specifiedType: const FullType(Hip3TradingRules),
           ) as Hip3TradingRules;
           result.rules.replace(valueDes);
+          break;
+        case r'market_order_minimums':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3MarketOrderMinimums),
+          ) as Hip3MarketOrderMinimums?;
+          if (valueDes == null) continue;
+          result.marketOrderMinimums.replace(valueDes);
           break;
         case r'current_leverage':
           final valueDes = serializers.deserialize(

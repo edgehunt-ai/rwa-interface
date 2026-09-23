@@ -51,12 +51,15 @@ import 'package:rwa_api_client/src/model/bstock_funding_target_credit_observatio
 import 'package:rwa_api_client/src/model/bstock_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/bstock_limit_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_localnet_order_preview.dart';
+import 'package:rwa_api_client/src/model/bstock_order_asset.dart';
+import 'package:rwa_api_client/src/model/bstock_order_assets.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
 import 'package:rwa_api_client/src/model/bstock_testnet_funding_rail.dart';
 import 'package:rwa_api_client/src/model/bstock_testnet_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
+import 'package:rwa_api_client/src/model/bstocks_activity_continuation.dart';
 import 'package:rwa_api_client/src/model/bstocks_approval_mode.dart';
 import 'package:rwa_api_client/src/model/bstocks_block_quote_validity.dart';
 import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
@@ -158,7 +161,12 @@ import 'package:rwa_api_client/src/model/funding_session_selection_request.dart'
 import 'package:rwa_api_client/src/model/funding_session_source_allocation.dart';
 import 'package:rwa_api_client/src/model/funding_session_source_allocation_input.dart';
 import 'package:rwa_api_client/src/model/funding_session_status.dart';
+import 'package:rwa_api_client/src/model/funding_session_trade.dart';
+import 'package:rwa_api_client/src/model/funding_session_trade_create_request.dart';
 import 'package:rwa_api_client/src/model/funding_session_trade_intent_create_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_transfer_create_request.dart';
+import 'package:rwa_api_client/src/model/funding_session_transfer_intent.dart';
+import 'package:rwa_api_client/src/model/funding_session_transfer_snapshot.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
@@ -199,6 +207,7 @@ import 'package:rwa_api_client/src/model/hip3_close_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview_request.dart';
 import 'package:rwa_api_client/src/model/hip3_conditional_order.dart';
+import 'package:rwa_api_client/src/model/hip3_cross_liquidation_impact.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_domain.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_field.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_message.dart';
@@ -214,6 +223,8 @@ import 'package:rwa_api_client/src/model/hip3_liquidation_history_coverage.dart'
 import 'package:rwa_api_client/src/model/hip3_liquidation_page.dart';
 import 'package:rwa_api_client/src/model/hip3_liquidation_position.dart';
 import 'package:rwa_api_client/src/model/hip3_mainnet_product.dart';
+import 'package:rwa_api_client/src/model/hip3_market_order_minimum.dart';
+import 'package:rwa_api_client/src/model/hip3_market_order_minimums.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation_legs_inner.dart';
 import 'package:rwa_api_client/src/model/hip3_operation.dart';
@@ -253,6 +264,7 @@ import 'package:rwa_api_client/src/model/hip3_withdrawal_submission_request.dart
 import 'package:rwa_api_client/src/model/holding_group.dart';
 import 'package:rwa_api_client/src/model/holding_stock.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
+import 'package:rwa_api_client/src/model/hyperliquid_usdc_collateral.dart';
 import 'package:rwa_api_client/src/model/ineligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
@@ -499,12 +511,15 @@ part 'serializers.g.dart';
   BstockFundingTransferTarget,
   BstockLimitOrderPreview,
   BstockLocalnetOrderPreview,
+  BstockOrderAsset,
+  BstockOrderAssets,
   BstockOrderPreview,
   BstockOrderPreviewRequest,
   BstockOrderWalletActionState,
   BstockTestnetFundingRail,
   BstockTestnetOrderPreview,
   BstocksActionStatus,
+  BstocksActivityContinuation,
   BstocksApprovalMode,
   BstocksBlockQuoteValidity,
   BstocksCancellationPolicy,
@@ -606,7 +621,12 @@ part 'serializers.g.dart';
   FundingSessionSourceAllocation,
   FundingSessionSourceAllocationInput,
   FundingSessionStatus,
+  FundingSessionTrade,
+  FundingSessionTradeCreateRequest,
   FundingSessionTradeIntentCreateRequest,
+  FundingSessionTransferCreateRequest,
+  FundingSessionTransferIntent,
+  FundingSessionTransferSnapshot,
   FundingSourceAsset,
   FundingSourceAssetCatalog,
   FundingSourceAssetId,
@@ -647,6 +667,7 @@ part 'serializers.g.dart';
   Hip3ClosePreview,
   Hip3ClosePreviewRequest,
   Hip3ConditionalOrder,
+  Hip3CrossLiquidationImpact,
   Hip3Eip712Domain,
   Hip3Eip712Field,
   Hip3Eip712Message,
@@ -662,6 +683,8 @@ part 'serializers.g.dart';
   Hip3LiquidationPage,
   Hip3LiquidationPosition,
   Hip3MainnetProduct,
+  Hip3MarketOrderMinimum,
+  Hip3MarketOrderMinimums,
   Hip3OpeningProtectionConfirmation,
   Hip3OpeningProtectionConfirmationLegsInner,
   Hip3Operation,
@@ -701,6 +724,7 @@ part 'serializers.g.dart';
   HoldingGroup,
   HoldingStock,
   HyperliquidSignature,
+  HyperliquidUsdcCollateral,
   IneligibleFundingPositionEligibility,
   KeyValue,
   LegacyBstockFundingPlan,
@@ -961,6 +985,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<Hip3LiquidationPosition>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3CrossLiquidationImpact)]),
+        () => ListBuilder<Hip3CrossLiquidationImpact>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(ProductRef)]),
         () => ListBuilder<ProductRef>(),
       )
@@ -1151,6 +1179,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(OrderFill)]),
         () => ListBuilder<OrderFill>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(HyperliquidUsdcCollateral)]),
+        () => ListBuilder<HyperliquidUsdcCollateral>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(SessionSegment)]),

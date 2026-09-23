@@ -20,6 +20,8 @@ class _$PortfolioSummary extends PortfolioSummary {
   @override
   final String marginInUseUsd;
   @override
+  final BuiltList<HyperliquidUsdcCollateral>? hyperliquidUsdcCollateral;
+  @override
   final String? stocksValueUsd;
   @override
   final int unvaluedAssetCount;
@@ -49,6 +51,7 @@ class _$PortfolioSummary extends PortfolioSummary {
       required this.availableToTradeUsd,
       this.pendingTransferUsd,
       required this.marginInUseUsd,
+      this.hyperliquidUsdcCollateral,
       this.stocksValueUsd,
       required this.unvaluedAssetCount,
       required this.dataStatus,
@@ -77,6 +80,7 @@ class _$PortfolioSummary extends PortfolioSummary {
         availableToTradeUsd == other.availableToTradeUsd &&
         pendingTransferUsd == other.pendingTransferUsd &&
         marginInUseUsd == other.marginInUseUsd &&
+        hyperliquidUsdcCollateral == other.hyperliquidUsdcCollateral &&
         stocksValueUsd == other.stocksValueUsd &&
         unvaluedAssetCount == other.unvaluedAssetCount &&
         dataStatus == other.dataStatus &&
@@ -97,6 +101,7 @@ class _$PortfolioSummary extends PortfolioSummary {
     _$hash = $jc(_$hash, availableToTradeUsd.hashCode);
     _$hash = $jc(_$hash, pendingTransferUsd.hashCode);
     _$hash = $jc(_$hash, marginInUseUsd.hashCode);
+    _$hash = $jc(_$hash, hyperliquidUsdcCollateral.hashCode);
     _$hash = $jc(_$hash, stocksValueUsd.hashCode);
     _$hash = $jc(_$hash, unvaluedAssetCount.hashCode);
     _$hash = $jc(_$hash, dataStatus.hashCode);
@@ -119,6 +124,7 @@ class _$PortfolioSummary extends PortfolioSummary {
           ..add('availableToTradeUsd', availableToTradeUsd)
           ..add('pendingTransferUsd', pendingTransferUsd)
           ..add('marginInUseUsd', marginInUseUsd)
+          ..add('hyperliquidUsdcCollateral', hyperliquidUsdcCollateral)
           ..add('stocksValueUsd', stocksValueUsd)
           ..add('unvaluedAssetCount', unvaluedAssetCount)
           ..add('dataStatus', dataStatus)
@@ -164,6 +170,14 @@ class PortfolioSummaryBuilder
   String? get marginInUseUsd => _$this._marginInUseUsd;
   set marginInUseUsd(String? marginInUseUsd) =>
       _$this._marginInUseUsd = marginInUseUsd;
+
+  ListBuilder<HyperliquidUsdcCollateral>? _hyperliquidUsdcCollateral;
+  ListBuilder<HyperliquidUsdcCollateral> get hyperliquidUsdcCollateral =>
+      _$this._hyperliquidUsdcCollateral ??=
+          ListBuilder<HyperliquidUsdcCollateral>();
+  set hyperliquidUsdcCollateral(
+          ListBuilder<HyperliquidUsdcCollateral>? hyperliquidUsdcCollateral) =>
+      _$this._hyperliquidUsdcCollateral = hyperliquidUsdcCollateral;
 
   String? _stocksValueUsd;
   String? get stocksValueUsd => _$this._stocksValueUsd;
@@ -223,6 +237,7 @@ class PortfolioSummaryBuilder
       _availableToTradeUsd = $v.availableToTradeUsd;
       _pendingTransferUsd = $v.pendingTransferUsd;
       _marginInUseUsd = $v.marginInUseUsd;
+      _hyperliquidUsdcCollateral = $v.hyperliquidUsdcCollateral?.toBuilder();
       _stocksValueUsd = $v.stocksValueUsd;
       _unvaluedAssetCount = $v.unvaluedAssetCount;
       _dataStatus = $v.dataStatus;
@@ -266,6 +281,7 @@ class PortfolioSummaryBuilder
             pendingTransferUsd: pendingTransferUsd,
             marginInUseUsd: BuiltValueNullFieldError.checkNotNull(
                 marginInUseUsd, r'PortfolioSummary', 'marginInUseUsd'),
+            hyperliquidUsdcCollateral: _hyperliquidUsdcCollateral?.build(),
             stocksValueUsd: stocksValueUsd,
             unvaluedAssetCount: BuiltValueNullFieldError.checkNotNull(
                 unvaluedAssetCount, r'PortfolioSummary', 'unvaluedAssetCount'),
@@ -283,6 +299,9 @@ class PortfolioSummaryBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'hyperliquidUsdcCollateral';
+        _hyperliquidUsdcCollateral?.build();
+
         _$failedField = 'warnings';
         warnings.build();
         _$failedField = 'sources';

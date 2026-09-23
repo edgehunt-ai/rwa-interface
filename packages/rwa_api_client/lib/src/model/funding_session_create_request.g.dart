@@ -8,13 +8,13 @@ part of 'funding_session_create_request.dart';
 
 class _$FundingSessionCreateRequest extends FundingSessionCreateRequest {
   @override
-  final OrderPreviewRequest trade;
+  final OneOf oneOf;
 
   factory _$FundingSessionCreateRequest(
           [void Function(FundingSessionCreateRequestBuilder)? updates]) =>
       (FundingSessionCreateRequestBuilder()..update(updates))._build();
 
-  _$FundingSessionCreateRequest._({required this.trade}) : super._();
+  _$FundingSessionCreateRequest._({required this.oneOf}) : super._();
   @override
   FundingSessionCreateRequest rebuild(
           void Function(FundingSessionCreateRequestBuilder) updates) =>
@@ -27,13 +27,13 @@ class _$FundingSessionCreateRequest extends FundingSessionCreateRequest {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is FundingSessionCreateRequest && trade == other.trade;
+    return other is FundingSessionCreateRequest && oneOf == other.oneOf;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, trade.hashCode);
+    _$hash = $jc(_$hash, oneOf.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -41,7 +41,7 @@ class _$FundingSessionCreateRequest extends FundingSessionCreateRequest {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'FundingSessionCreateRequest')
-          ..add('trade', trade))
+          ..add('oneOf', oneOf))
         .toString();
   }
 }
@@ -52,10 +52,9 @@ class FundingSessionCreateRequestBuilder
             FundingSessionCreateRequestBuilder> {
   _$FundingSessionCreateRequest? _$v;
 
-  OrderPreviewRequestBuilder? _trade;
-  OrderPreviewRequestBuilder get trade =>
-      _$this._trade ??= OrderPreviewRequestBuilder();
-  set trade(OrderPreviewRequestBuilder? trade) => _$this._trade = trade;
+  OneOf? _oneOf;
+  OneOf? get oneOf => _$this._oneOf;
+  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
 
   FundingSessionCreateRequestBuilder() {
     FundingSessionCreateRequest._defaults(this);
@@ -64,7 +63,7 @@ class FundingSessionCreateRequestBuilder
   FundingSessionCreateRequestBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _trade = $v.trade.toBuilder();
+      _oneOf = $v.oneOf;
       _$v = null;
     }
     return this;
@@ -84,23 +83,11 @@ class FundingSessionCreateRequestBuilder
   FundingSessionCreateRequest build() => _build();
 
   _$FundingSessionCreateRequest _build() {
-    _$FundingSessionCreateRequest _$result;
-    try {
-      _$result = _$v ??
-          _$FundingSessionCreateRequest._(
-            trade: trade.build(),
-          );
-    } catch (_) {
-      late String _$failedField;
-      try {
-        _$failedField = 'trade';
-        trade.build();
-      } catch (e) {
-        throw BuiltValueNestedFieldError(
-            r'FundingSessionCreateRequest', _$failedField, e.toString());
-      }
-      rethrow;
-    }
+    final _$result = _$v ??
+        _$FundingSessionCreateRequest._(
+          oneOf: BuiltValueNullFieldError.checkNotNull(
+              oneOf, r'FundingSessionCreateRequest', 'oneOf'),
+        );
     replace(_$result);
     return _$result;
   }

@@ -28,6 +28,7 @@ import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
 import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
 
 import 'hip3_confirm_sheet.dart';
+import 'hip3_cross_liquidation_impacts_card.dart';
 import 'order_funding_sheet.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
@@ -1666,83 +1667,92 @@ class _Hip3RiskSummary extends StatelessWidget {
   final double? orderValue;
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      _Hip3RiskRow(
-        AppLocalizations.of(context).liquidationPrice,
-        loading ? null : execution?.liquidationPrice?.value ?? '-',
-        loading: loading,
-      ),
-      const SizedBox(height: 8),
-      _Hip3RiskRow(
-        AppLocalizations.of(context).marginRequired,
-        loading
-            ? null
-            : '${execution?.marginRequired.value ?? '—'} $settlementAsset',
-        loading: loading,
-      ),
-      if (execution case final value?)
+  Widget build(BuildContext context) {
+    final impacts = execution?.crossLiquidationImpacts ?? const [];
+    return Column(
+      children: [
         _Hip3RiskRow(
-          AppLocalizations.of(context).maximumQuantity,
-          value.maximumQuantity.value,
+          AppLocalizations.of(context).liquidationPrice,
+          loading ? null : execution?.liquidationPrice?.value ?? '-',
+          loading: loading,
         ),
-      const SizedBox(height: 8),
-      if (allowProtection)
-        InkWell(
-          key: const Key('hip3-tp-sl-toggle'),
-          onTap: onTpSlTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(context).takeProfitStopLoss,
-                  style: TextStyle(
-                    color: Theme.of(context)
-                        .extension<AppRwaColors>()!
-                        .secondaryText,
-                    fontSize: 13,
+        const SizedBox(height: 8),
+        _Hip3RiskRow(
+          AppLocalizations.of(context).marginRequired,
+          loading
+              ? null
+              : '${execution?.marginRequired.value ?? '—'} $settlementAsset',
+          loading: loading,
+        ),
+        if (execution case final value?)
+          _Hip3RiskRow(
+            AppLocalizations.of(context).maximumQuantity,
+            value.maximumQuantity.value,
+          ),
+        const SizedBox(height: 8),
+        if (allowProtection)
+          InkWell(
+            key: const Key('hip3-tp-sl-toggle'),
+            onTap: onTpSlTap,
+            borderRadius: BorderRadius.circular(8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).takeProfitStopLoss,
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .extension<AppRwaColors>()!
+                          .secondaryText,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                width: 18,
-                height: 18,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFF7BE5),
-                  shape: BoxShape.circle,
+                Container(
+                  width: 18,
+                  height: 18,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF7BE5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    showTpSl ? Icons.remove : Icons.add,
+                    color: Colors.white,
+                    size: 14,
+                  ),
                 ),
-                child: Icon(
-                  showTpSl ? Icons.remove : Icons.add,
-                  color: Colors.white,
-                  size: 14,
+                const SizedBox(width: 4),
+                Text(
+                  showTpSl
+                      ? AppLocalizations.of(context).remove
+                      : AppLocalizations.of(context).add,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                showTpSl
-                    ? AppLocalizations.of(context).remove
-                    : AppLocalizations.of(context).add,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      if (position case final current?
-          when orderSide != null && orderValue != null && orderValue! > 0) ...[
-        const SizedBox(height: 8),
-        _Hip3PositionWillBeRow(
-          position: current,
-          orderSide: orderSide!,
-          orderValue: orderValue!,
-        ),
+        if (position case final current?
+            when orderSide != null &&
+                orderValue != null &&
+                orderValue! > 0) ...[
+          const SizedBox(height: 8),
+          _Hip3PositionWillBeRow(
+            position: current,
+            orderSide: orderSide!,
+            orderValue: orderValue!,
+          ),
+        ],
+        if (impacts.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Hip3CrossLiquidationImpactsCard(impacts: impacts),
+        ],
       ],
-    ],
-  );
+    );
+  }
 }
 
 class _Hip3SheetHeader extends StatelessWidget {

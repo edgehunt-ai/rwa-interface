@@ -3700,6 +3700,18 @@ abstract class AppLocalizations {
     Object shortValue,
   );
 
+  /// No description provided for @crossPositionsAffected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 Cross position will be affected} other{{count} Cross positions will be affected}}'**
+  String crossPositionsAffected(int count);
+
+  /// No description provided for @liquidationPriceShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Liq. Price'**
+  String get liquidationPriceShort;
+
   /// No description provided for @tokenPosition.
   ///
   /// In en, this message translates to:

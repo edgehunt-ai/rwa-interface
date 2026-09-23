@@ -246,6 +246,10 @@ class _$BstocksPortfolioAvailability extends BstocksPortfolioAvailability {
   @override
   final String productId;
   @override
+  final String? withdrawalAssetId;
+  @override
+  final String? pendingWithdrawalQuantity;
+  @override
   final String? availableQuantity;
   @override
   final String? unavailableQuantity;
@@ -264,6 +268,8 @@ class _$BstocksPortfolioAvailability extends BstocksPortfolioAvailability {
   _$BstocksPortfolioAvailability._(
       {required this.rail,
       required this.productId,
+      this.withdrawalAssetId,
+      this.pendingWithdrawalQuantity,
       this.availableQuantity,
       this.unavailableQuantity,
       this.reservationQuantity,
@@ -285,6 +291,8 @@ class _$BstocksPortfolioAvailability extends BstocksPortfolioAvailability {
     return other is BstocksPortfolioAvailability &&
         rail == other.rail &&
         productId == other.productId &&
+        withdrawalAssetId == other.withdrawalAssetId &&
+        pendingWithdrawalQuantity == other.pendingWithdrawalQuantity &&
         availableQuantity == other.availableQuantity &&
         unavailableQuantity == other.unavailableQuantity &&
         reservationQuantity == other.reservationQuantity &&
@@ -297,6 +305,8 @@ class _$BstocksPortfolioAvailability extends BstocksPortfolioAvailability {
     var _$hash = 0;
     _$hash = $jc(_$hash, rail.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
+    _$hash = $jc(_$hash, withdrawalAssetId.hashCode);
+    _$hash = $jc(_$hash, pendingWithdrawalQuantity.hashCode);
     _$hash = $jc(_$hash, availableQuantity.hashCode);
     _$hash = $jc(_$hash, unavailableQuantity.hashCode);
     _$hash = $jc(_$hash, reservationQuantity.hashCode);
@@ -311,6 +321,8 @@ class _$BstocksPortfolioAvailability extends BstocksPortfolioAvailability {
     return (newBuiltValueToStringHelper(r'BstocksPortfolioAvailability')
           ..add('rail', rail)
           ..add('productId', productId)
+          ..add('withdrawalAssetId', withdrawalAssetId)
+          ..add('pendingWithdrawalQuantity', pendingWithdrawalQuantity)
           ..add('availableQuantity', availableQuantity)
           ..add('unavailableQuantity', unavailableQuantity)
           ..add('reservationQuantity', reservationQuantity)
@@ -333,6 +345,16 @@ class BstocksPortfolioAvailabilityBuilder
   String? _productId;
   String? get productId => _$this._productId;
   set productId(String? productId) => _$this._productId = productId;
+
+  String? _withdrawalAssetId;
+  String? get withdrawalAssetId => _$this._withdrawalAssetId;
+  set withdrawalAssetId(String? withdrawalAssetId) =>
+      _$this._withdrawalAssetId = withdrawalAssetId;
+
+  String? _pendingWithdrawalQuantity;
+  String? get pendingWithdrawalQuantity => _$this._pendingWithdrawalQuantity;
+  set pendingWithdrawalQuantity(String? pendingWithdrawalQuantity) =>
+      _$this._pendingWithdrawalQuantity = pendingWithdrawalQuantity;
 
   String? _availableQuantity;
   String? get availableQuantity => _$this._availableQuantity;
@@ -376,6 +398,8 @@ class BstocksPortfolioAvailabilityBuilder
     if ($v != null) {
       _rail = $v.rail;
       _productId = $v.productId;
+      _withdrawalAssetId = $v.withdrawalAssetId;
+      _pendingWithdrawalQuantity = $v.pendingWithdrawalQuantity;
       _availableQuantity = $v.availableQuantity;
       _unavailableQuantity = $v.unavailableQuantity;
       _reservationQuantity = $v.reservationQuantity;
@@ -408,6 +432,8 @@ class BstocksPortfolioAvailabilityBuilder
                 rail, r'BstocksPortfolioAvailability', 'rail'),
             productId: BuiltValueNullFieldError.checkNotNull(
                 productId, r'BstocksPortfolioAvailability', 'productId'),
+            withdrawalAssetId: withdrawalAssetId,
+            pendingWithdrawalQuantity: pendingWithdrawalQuantity,
             availableQuantity: availableQuantity,
             unavailableQuantity: unavailableQuantity,
             reservationQuantity: reservationQuantity,

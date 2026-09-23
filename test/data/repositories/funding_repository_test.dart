@@ -3,8 +3,43 @@ import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:rwa_interface/data/repositories/funding_repository_impl.dart';
 import 'package:rwa_interface/data/services/funding_service.dart';
+import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/order_intent.dart';
 
 void main() {
+  test('funding session wraps the order draft in the trade variant', () async {
+    final service = _CaptureFunding();
+    final repository = FundingRepositoryImpl(service);
+
+    await expectLater(
+      repository.createFundingSession(
+        intent: OrderIntent(
+          symbol: 'NVDA',
+          kind: MarketProductKind.perp,
+          side: TradingSide.long,
+          type: TradingOrderType.market,
+          amount: DecimalValue('100'),
+          marginMode: TradingMarginMode.cross,
+        ),
+        idempotencyKey: 'session-key',
+      ),
+      throwsStateError,
+    );
+
+    expect(service.session, {
+      'trade': {
+        'symbol': 'NVDA',
+        'kind': 'perp',
+        'side': 'long',
+        'type': 'market',
+        'amount': '100',
+        'margin_mode': 'cross',
+        'reduce_only': false,
+      },
+    });
+  });
+
   test(
     'generated request type update preserves multi-source funding wire',
     () async {
@@ -117,9 +152,23 @@ void main() {
 }
 
 final class _CaptureFunding implements FundingService {
+  Object? session;
   Object? plan;
   Object? transfer;
   Object? selfCustodialWithdrawal;
+
+  @override
+  Future<api.FundingSession> createFundingSession(
+    api.FundingSessionCreateRequest request, {
+    required String idempotencyKey,
+  }) async {
+    session = api.standardSerializers.serializeWith(
+      api.FundingSessionCreateRequest.serializer,
+      request,
+    );
+    throw StateError('captured without sending');
+  }
+
   @override
   Future<api.FundingPlan> createPlan(
     api.FundingPlanRequest request, {

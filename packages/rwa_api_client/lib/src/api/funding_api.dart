@@ -261,7 +261,7 @@ class FundingApi {
   }
 
   /// 创建可恢复的资金准备会话
-  /// 根据订单草稿创建一个 24 小时可恢复的资金准备会话。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 20% 建议缓冲均由服务端推导；建议值不构成准入限制。 
+  /// 创建一个 24 小时可恢复的资金准备会话。请求体二选一：&#x60;trade&#x60; 按订单草稿推导补资需求； &#x60;transfer&#x60; 按账户划转意图（如现货补 HIP-3 保证金）推导补资需求。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 建议缓冲均由服务端推导；建议值不构成准入限制。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -469,7 +469,7 @@ class FundingApi {
   }
 
   /// 创建自托管提现审计意图
-  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call，不支持原生币转账。  创建 intent 后应通过 &#x60;POST /v1/self-custodial-withdrawals/{withdrawal_id}/executions&#x60; 创建 &#x60;app_sponsored&#x60; 执行并签署返回的 &#x60;privy_authorization_payload&#x60;，由服务端 relay 到 Privy 代付 Gas；只有在赞助于广播前被明确拒绝后，用户才可再次确认并自行广播 冻结交易。服务端不会 approve、sign 或 broadcast，也不会返回可由后端 执行的授权或签名接口。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
+  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call，不支持原生币转账。  用户自付路径可签名并广播冻结交易，再调用 submission 上报哈希。若选择代付，先通过 &#x60;POST /v1/self-custodial-withdrawals/{withdrawal_id}/executions&#x60; 创建受运行时门禁控制的 app_sponsored execution，并签署其准确的 privy_authorization_payload。已经绑定execution的意图 不得同时走直接上报路径；execution中的user-paid回退仍要求广播前明确拒绝及显式门禁。 创建/直接上报接口不替用户approve、sign或broadcast，不接收任意calldata。  bStocks支持当前manifest和support catalog共同准入的BSC 56/97基础token，asset_id可来自 PortfolioAsset.bstocks.withdrawal_asset_id。先检查真实RPC余额、已知GTC占用及已提交提现； 必须有Gas估算配置。此预检查不锁币，链上余额并发变化仍可能导致交易失败。 bStocks必须有精确Transfer事件证据并达到冻结的required_confirmations才确认；无事件的 MockERC20进入manual_review，不沿用TUSDT的无事件例外。幂等重放保留原交易及期限，不重复创建。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
