@@ -177,6 +177,7 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
               minimum: minimum,
               maximum: maximum,
               divisions: 20,
+              unbounded: true,
               enabled: editable,
               onChanged: (next) => widget.controller.text = _formatPrice(next),
             ),
@@ -310,6 +311,7 @@ class TpSlTickRuler extends StatefulWidget {
     required this.divisions,
     required this.onChanged,
     this.enabled = true,
+    this.unbounded = false,
   });
 
   final String semanticLabel;
@@ -319,6 +321,7 @@ class TpSlTickRuler extends StatefulWidget {
   final int divisions;
   final ValueChanged<double> onChanged;
   final bool enabled;
+  final bool unbounded;
 
   @override
   State<TpSlTickRuler> createState() => _TpSlTickRulerState();
@@ -328,8 +331,12 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   double? _dragValue;
   var _dragging = false;
 
-  double get _currentValue =>
-      (_dragValue ?? widget.value).clamp(widget.minimum, widget.maximum);
+  double get _currentValue {
+    final value = _dragValue ?? widget.value;
+    return widget.unbounded
+        ? value.clamp(double.minPositive, double.infinity)
+        : value.clamp(widget.minimum, widget.maximum);
+  }
 
   @override
   void didUpdateWidget(covariant TpSlTickRuler oldWidget) {
@@ -352,10 +359,10 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
     if (range <= 0 || width <= 0) return;
     // The ruler ticks move with the finger, so dragging right lowers the
     // value while dragging left raises it.
-    final next = (_currentValue - details.delta.dx / width * range).clamp(
-      widget.minimum,
-      widget.maximum,
-    );
+    final rawNext = _currentValue - details.delta.dx / width * range;
+    final next = widget.unbounded
+        ? rawNext.clamp(double.minPositive, double.infinity)
+        : rawNext.clamp(widget.minimum, widget.maximum);
     if (next == _currentValue) return;
     setState(() => _dragValue = next);
     widget.onChanged(next);
@@ -370,6 +377,13 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final current = _currentValue;
+    final visualRange = widget.maximum - widget.minimum;
+    final visualMinimum = widget.unbounded
+        ? (current - visualRange / 2).clamp(0.0, double.infinity)
+        : widget.minimum;
+    final visualMaximum = widget.unbounded
+        ? visualMinimum + visualRange
+        : widget.maximum;
     final tickCount = (widget.divisions + 1).clamp(2, 21);
     return Semantics(
       container: true,
@@ -396,8 +410,8 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
                 CustomPaint(
                   painter: _TpSlRulerPainter(
                     value: current,
-                    minimum: widget.minimum,
-                    maximum: widget.maximum,
+                    minimum: visualMinimum,
+                    maximum: visualMaximum,
                     divisions: widget.divisions,
                     tickCount: tickCount,
                     tickColor: colors.border,
@@ -418,29 +432,30 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
                     ),
                   ),
                 ),
-                IgnorePointer(
-                  child: SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      activeTrackColor: Colors.transparent,
-                      inactiveTrackColor: Colors.transparent,
-                      disabledActiveTrackColor: Colors.transparent,
-                      disabledInactiveTrackColor: Colors.transparent,
-                      thumbColor: Colors.transparent,
-                      disabledThumbColor: Colors.transparent,
-                      overlayColor: Colors.transparent,
-                      overlayShape: SliderComponentShape.noOverlay,
-                      thumbShape: SliderComponentShape.noThumb,
-                      trackHeight: 48,
-                    ),
-                    child: Slider(
-                      value: current,
-                      min: widget.minimum,
-                      max: widget.maximum,
-                      divisions: widget.divisions,
-                      onChanged: null,
+                if (!widget.unbounded)
+                  IgnorePointer(
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: Colors.transparent,
+                        inactiveTrackColor: Colors.transparent,
+                        disabledActiveTrackColor: Colors.transparent,
+                        disabledInactiveTrackColor: Colors.transparent,
+                        thumbColor: Colors.transparent,
+                        disabledThumbColor: Colors.transparent,
+                        overlayColor: Colors.transparent,
+                        overlayShape: SliderComponentShape.noOverlay,
+                        thumbShape: SliderComponentShape.noThumb,
+                        trackHeight: 48,
+                      ),
+                      child: Slider(
+                        value: current,
+                        min: widget.minimum,
+                        max: widget.maximum,
+                        divisions: widget.divisions,
+                        onChanged: null,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
