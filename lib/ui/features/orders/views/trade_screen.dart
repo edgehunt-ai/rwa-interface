@@ -7,7 +7,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:rwa_interface/app/routing/routes.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/application_state.dart';
@@ -37,6 +36,8 @@ import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_unified_account_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
+import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
+import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
@@ -153,9 +154,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
     if (productKind == MarketProductKind.perp) {
       try {
-        final status = await ref
-            .read(hip3AccountAbstractionRepositoryProvider)
-            .getStatus();
+        final status = await ref.read(hip3AccountAbstractionProvider.future);
         if (!mounted) return;
         if (!status.isUnifiedAccount) {
           if (!status.switchAvailable) {

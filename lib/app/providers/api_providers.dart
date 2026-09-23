@@ -37,6 +37,7 @@ import '../../data/services/generated_session_service.dart';
 import '../../data/services/generated_wallets_service.dart';
 import '../../data/services/hip3_order_action_service.dart';
 import '../../data/services/hip3_account_abstraction_service.dart';
+import '../../data/services/hip3_account_abstraction_cache.dart';
 import '../../data/services/dio_realtime_service.dart';
 import '../../data/services/generated_system_service.dart';
 import '../../data/services/package_info_service.dart';
@@ -275,6 +276,11 @@ final hip3AccountAbstractionRepositoryProvider =
         ref.watch(hip3TypedDataSignerProvider),
       );
     });
+
+final hip3AccountAbstractionCacheProvider =
+    Provider<Hip3AccountAbstractionCache>(
+      (ref) => const Hip3AccountAbstractionCache(),
+    );
 
 final positionsRepositoryProvider = Provider<PositionsRepository>((ref) {
   if (AppReviewConfiguration.buildEnabled && ref.watch(appReviewModeProvider)) {
