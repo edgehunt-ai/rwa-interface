@@ -490,16 +490,20 @@ class _TpSlRulerPainter extends CustomPainter {
     final trackRight = size.width - 12;
     final trackWidth = trackRight - trackLeft;
     final centerX = size.width / 2;
-    final progress = ((value - minimum) / (maximum - minimum)).clamp(0.0, 1.0);
-    final selectedX = trackLeft + progress * trackWidth;
     final gradient = const LinearGradient(
       colors: [Color(0x1A676776), Color(0x80676776), Color(0x1A676776)],
       stops: [0, 0.5, 1],
     ).createShader(Rect.fromLTWH(trackLeft, 0, trackWidth, size.height));
     final paint = Paint()..shader = gradient;
     final tickSpacing = trackWidth / divisions;
-    for (var index = 0; index < tickCount; index++) {
-      final x = centerX + (trackLeft + index * tickSpacing - selectedX);
+    final selectedIndex = ((value - minimum) / (maximum - minimum) * divisions)
+        .round()
+        .clamp(0, divisions);
+    final halfTicks = tickCount ~/ 2;
+    final firstIndex = (selectedIndex - halfTicks).clamp(0, divisions);
+    final lastIndex = (firstIndex + tickCount - 1).clamp(0, divisions);
+    for (var index = firstIndex; index <= lastIndex; index++) {
+      final x = centerX + (index - selectedIndex) * tickSpacing;
       if (x < trackLeft || x > trackRight) continue;
       final height = index % 5 == 0 ? 25.0 : 18.0;
       canvas.drawRect(

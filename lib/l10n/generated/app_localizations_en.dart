@@ -668,6 +668,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editTpSl => 'Edit TP/SL';
 
   @override
+  String get tpSlButtonLabel => 'TP/SL';
+
+  @override
   String get takeProfit => 'Take profit';
 
   @override
@@ -742,6 +745,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirm => 'Confirm';
+
+  @override
+  String get positionSettingsTitle => 'Position Settings';
+
+  @override
+  String get marginModeOpenPositionNotice =>
+      '*Margin mode can’t be changed while you have an open position. Close the position first to switch modes.';
+
+  @override
+  String get leverageSharedMarginWarning =>
+      'Changing leverage may change the amount of shared margin';
 
   @override
   String get tradeUsStockReference => 'US Stock Reference';

@@ -50,6 +50,7 @@ final class ApiFailureMapper {
         requestId: requestId ?? json['request_id']?.toString(),
         retryable: json['retryable'] == true,
         userAction: json['user_action']?.toString(),
+        message: json['message']?.toString(),
         failureReason: json['failure_reason']?.toString(),
         details: _safeDetails(json['details']),
       );

@@ -1340,6 +1340,12 @@ abstract class AppLocalizations {
   /// **'Edit TP/SL'**
   String get editTpSl;
 
+  /// No description provided for @tpSlButtonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'TP/SL'**
+  String get tpSlButtonLabel;
+
   /// No description provided for @takeProfit.
   ///
   /// In en, this message translates to:
@@ -1483,6 +1489,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// No description provided for @positionSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Position Settings'**
+  String get positionSettingsTitle;
+
+  /// No description provided for @marginModeOpenPositionNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'*Margin mode can’t be changed while you have an open position. Close the position first to switch modes.'**
+  String get marginModeOpenPositionNotice;
+
+  /// No description provided for @leverageSharedMarginWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Changing leverage may change the amount of shared margin'**
+  String get leverageSharedMarginWarning;
 
   /// No description provided for @tradeUsStockReference.
   ///

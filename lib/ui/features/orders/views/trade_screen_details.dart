@@ -851,11 +851,23 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _Hip3ActionButton(
-                  label: l10n.editTpSl,
+                  label: l10n.tpSlButtonLabel,
                   onPressed: () => showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
                     builder: (_) => PositionTpSlSheet(position: position),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _Hip3ActionButton(
+                  label: l10n.settingsTitle,
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) =>
+                        Hip3PositionSettingsSheet(position: position),
                   ),
                 ),
               ),

@@ -33,6 +33,7 @@ import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstract
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_position_settings_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_unified_account_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';

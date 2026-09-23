@@ -651,6 +651,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editTpSl => '编辑止盈止损';
 
   @override
+  String get tpSlButtonLabel => '止盈/止损';
+
+  @override
   String get takeProfit => '止盈';
 
   @override
@@ -722,6 +725,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get confirm => '确认';
+
+  @override
+  String get positionSettingsTitle => '仓位设置';
+
+  @override
+  String get marginModeOpenPositionNotice => '*持有仓位时无法更改保证金模式。请先平仓再切换模式。';
+
+  @override
+  String get leverageSharedMarginWarning => '调整杠杆可能会改变共享保证金金额';
 
   @override
   String get tradeUsStockReference => '美股参考价';
