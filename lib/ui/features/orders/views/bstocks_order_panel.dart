@@ -713,7 +713,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '${l10n.balance}: ',
+                          '${l10n.spotBalance}: ',
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),

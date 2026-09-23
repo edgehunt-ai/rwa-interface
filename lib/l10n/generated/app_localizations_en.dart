@@ -1570,6 +1570,48 @@ class AppLocalizationsEn extends AppLocalizations {
       'By using this app, you agree to the Terms & Conditions.';
 
   @override
+  String get tpSlRiskAgreementPrefix => 'I have read and agree to the ';
+
+  @override
+  String get tpSlRiskAgreementLink => 'TP/SL risk disclosure';
+
+  @override
+  String get tpSlRiskAgreementTitle => 'TP/SL risk disclosure';
+
+  @override
+  String get tpSlRiskAgreementDetails =>
+      'Take Profit and Stop Loss orders may be set for your entire position or for the quantity associated with a specific order.\n\nPosition-based TP/SL may apply to your current position size and may change as your position changes. Order-based TP/SL applies only to the quantity associated with that order.\n\nIf multiple TP/SL orders are active at the same time, changes to your position size—such as adding, reducing, or partially closing a position—may cause the remaining TP/SL quantities to differ from your current position. As a result, a later order or newly added position quantity may be reduced when an existing TP/SL is triggered.\n\nTP/SL orders are intended to reduce a position and do not guarantee that your entire intended quantity will be closed. During rapid price movements or periods of low liquidity, an order may be partially filled, filled at a different price, or remain unfilled after being triggered.\n\nPlease review your active TP/SL orders after changing your position size and adjust or cancel them when necessary.';
+
+  @override
+  String get tpSlRiskAgreementConsent =>
+      'I understand and accept the TP/SL risks.';
+
+  @override
+  String get tpSlRiskAgreementAccept => 'Agree and continue';
+
+  @override
+  String get tpSlRequired => 'Set at least one take-profit or stop-loss price.';
+
+  @override
+  String get tpSlInvalidPrice => 'Enter a valid positive price.';
+
+  @override
+  String get tpSlTakeProfitAboveReference =>
+      'Take-profit price must be above the reference price.';
+
+  @override
+  String get tpSlTakeProfitBelowReference =>
+      'Take-profit price must be below the reference price.';
+
+  @override
+  String get tpSlStopLossBelowReference =>
+      'Stop-loss price must be below the reference price.';
+
+  @override
+  String get tpSlStopLossAboveReference =>
+      'Stop-loss price must be above the reference price.';
+
+  @override
   String get invalidConfirmationCode => 'That code is invalid or expired.';
 
   @override
@@ -2270,6 +2312,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String marginValue(Object value) {
     return 'Balance: $value USDC';
   }
+
+  @override
+  String get spotBalance => 'Spot balance';
+
+  @override
+  String get perpsBalance => 'Perps balance';
 
   @override
   String get orderSizeLabel => 'Size';

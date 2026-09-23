@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +20,8 @@ import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
+import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
+import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
 
 import 'hip3_confirm_sheet.dart';
 import 'order_funding_sheet.dart';
@@ -53,6 +56,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   final _amount = TextEditingController();
   final _limitPrice = TextEditingController();
   final _protectionPrices = List.generate(4, (_) => TextEditingController());
+  final _protectionReferenceNotifier = ValueNotifier<double?>(null);
   var _side = TradingSide.long;
   final _type = TradingOrderType.market;
   final _inputNotional = true;
@@ -84,6 +88,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _reduceOnly = widget.initialReduceOnly;
     _amount.addListener(_onAmountChanged);
     _limitPrice.addListener(_scheduleQuote);
+    ref.listenManual(
+      marketSnapshotProvider(
+        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
+      ),
+      (_, _) {
+        _protectionReferenceNotifier.value = _protectionReference();
+        if (mounted) setState(() {});
+      },
+    );
     for (final controller in _protectionPrices) {
       controller.addListener(_scheduleQuote);
     }
@@ -236,6 +249,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _limitPrice.removeListener(_scheduleQuote);
     _amount.dispose();
     _limitPrice.dispose();
+    _protectionReferenceNotifier.dispose();
     for (final controller in _protectionPrices) {
       controller.removeListener(_scheduleQuote);
       controller.dispose();
@@ -320,6 +334,34 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     return double.tryParse(snapshot?.price.value ?? '');
   }
 
+  List<String> _openingProtectionValidationErrors() {
+    if (!_showTpSl) return const [];
+    final reference = _protectionReference();
+    if (reference == null || !reference.isFinite || reference <= 0) {
+      return const [];
+    }
+    final take = double.tryParse(_protectionPrices[0].text.trim());
+    final stop = double.tryParse(_protectionPrices[2].text.trim());
+    final l10n = AppLocalizations.of(context);
+    final isLong = _side == TradingSide.long;
+    final errors = <String>[];
+    if (take != null && (isLong ? take <= reference : take >= reference)) {
+      errors.add(
+        isLong
+            ? l10n.tpSlTakeProfitAboveReference
+            : l10n.tpSlTakeProfitBelowReference,
+      );
+    }
+    if (stop != null && (isLong ? stop >= reference : stop <= reference)) {
+      errors.add(
+        isLong
+            ? l10n.tpSlStopLossBelowReference
+            : l10n.tpSlStopLossAboveReference,
+      );
+    }
+    return errors;
+  }
+
   Future<void> _editTpSl() async {
     final result = await showModalBottomSheet<_Hip3TpSlSelection>(
       context: context,
@@ -330,6 +372,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         takeProfit: _protectionPrices[0].text,
         stopLoss: _protectionPrices[2].text,
         referencePrice: _protectionReference(),
+        referencePriceListenable: _protectionReferenceNotifier,
       ),
     );
     if (result == null || !mounted) return;
@@ -359,6 +402,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _quoteDebounce?.cancel();
     final generation = ++_quoteGeneration;
     final intent = _intentFromFields();
+    _protectionReferenceNotifier.value = _protectionReference();
     _syncPercentageFromAmount();
     // Update the entered amount/unit immediately, even before a quote returns.
     setState(() {
@@ -855,7 +899,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
     final availableBalance = _context?.availableMargin;
     _schedulePendingPercentageSync(availableBalance);
-    final formError = _amountError() ?? _error;
+    final protectionErrors = _openingProtectionValidationErrors();
+    final formError = protectionErrors.firstOrNull ?? _amountError() ?? _error;
     final disabledReason = _disabledReason(l10n);
     final visibleError = _isObviousInputError(formError, l10n)
         ? null
@@ -1221,6 +1266,7 @@ class _Hip3TpSlSheet extends StatefulWidget {
     required this.takeProfit,
     required this.stopLoss,
     required this.referencePrice,
+    this.referencePriceListenable,
   });
 
   final String symbol;
@@ -1228,6 +1274,7 @@ class _Hip3TpSlSheet extends StatefulWidget {
   final String takeProfit;
   final String stopLoss;
   final double? referencePrice;
+  final ValueListenable<double?>? referencePriceListenable;
 
   @override
   State<_Hip3TpSlSheet> createState() => _Hip3TpSlSheetState();
@@ -1238,29 +1285,140 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
   late final _stopLoss = TextEditingController(text: widget.stopLoss);
   late var _takeProfitEnabled = true;
   late var _stopLossEnabled = true;
+  var _riskAccepted = false;
+  var _consentLoading = true;
+  String? _error;
+  final _consentService = const TpSlRiskConsentService();
+
+  @override
+  void initState() {
+    super.initState();
+    _takeProfit.addListener(_onPriceChanged);
+    _stopLoss.addListener(_onPriceChanged);
+    widget.referencePriceListenable?.addListener(_onReferenceChanged);
+    _loadConsent();
+  }
+
+  void _onPriceChanged() {
+    if (_error != null && mounted) {
+      setState(() => _error = null);
+    }
+  }
+
+  void _onReferenceChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _loadConsent() async {
+    final accepted = await _consentService.read();
+    if (!mounted) return;
+    setState(() {
+      _riskAccepted = accepted;
+      _consentLoading = false;
+    });
+  }
 
   @override
   void dispose() {
+    _takeProfit.removeListener(_onPriceChanged);
+    _stopLoss.removeListener(_onPriceChanged);
     _takeProfit.dispose();
     _stopLoss.dispose();
+    widget.referencePriceListenable?.removeListener(_onReferenceChanged);
     super.dispose();
   }
 
-  void _confirm() => Navigator.of(context).pop(
-    _Hip3TpSlSelection(
-      takeProfit: _takeProfitEnabled && _takeProfit.text.trim().isNotEmpty
-          ? _takeProfit.text.trim()
-          : null,
-      stopLoss: _stopLossEnabled && _stopLoss.text.trim().isNotEmpty
-          ? _stopLoss.text.trim()
-          : null,
-    ),
-  );
+  double? get _referencePrice =>
+      widget.referencePriceListenable?.value ?? widget.referencePrice;
+
+  Future<void> _confirm() async {
+    if (_consentLoading) return;
+    if (!_riskAccepted) {
+      await _showRiskAgreement();
+      return;
+    }
+    final takeProfit = _takeProfitEnabled && _takeProfit.text.trim().isNotEmpty
+        ? _takeProfit.text.trim()
+        : null;
+    final stopLoss = _stopLossEnabled && _stopLoss.text.trim().isNotEmpty
+        ? _stopLoss.text.trim()
+        : null;
+    final validationError = _validatePrices(takeProfit, stopLoss);
+    if (validationError != null) {
+      setState(() => _error = validationError);
+      return;
+    }
+    Navigator.of(context)
+        .pop(_Hip3TpSlSelection(takeProfit: takeProfit, stopLoss: stopLoss));
+  }
+
+  String? _validatePrices(String? takeProfit, String? stopLoss) {
+    final errors = _validatePriceMessages(takeProfit, stopLoss);
+    return errors.firstOrNull;
+  }
+
+  List<String> _validatePriceMessages(String? takeProfit, String? stopLoss) {
+    final reference = _referencePrice;
+    if (reference == null || !reference.isFinite || reference <= 0) {
+      return const [];
+    }
+    final normalizedTakeProfit = takeProfit?.trim();
+    final normalizedStopLoss = stopLoss?.trim();
+    final hasTakeProfit = normalizedTakeProfit?.isNotEmpty ?? false;
+    final hasStopLoss = normalizedStopLoss?.isNotEmpty ?? false;
+    final l10n = AppLocalizations.of(context);
+    final take = hasTakeProfit ? double.tryParse(normalizedTakeProfit!) : null;
+    final stop = hasStopLoss ? double.tryParse(normalizedStopLoss!) : null;
+    if (hasTakeProfit && (take == null || !take.isFinite || take <= 0)) {
+      return [l10n.tpSlInvalidPrice];
+    }
+    if (hasStopLoss && (stop == null || !stop.isFinite || stop <= 0)) {
+      return [l10n.tpSlInvalidPrice];
+    }
+    final isLong = widget.side == TradingSide.long;
+    final errors = <String>[];
+    if (take != null && (isLong ? take <= reference : take >= reference)) {
+      errors.add(
+        isLong
+            ? l10n.tpSlTakeProfitAboveReference
+            : l10n.tpSlTakeProfitBelowReference,
+      );
+    }
+    if (stop != null && (isLong ? stop >= reference : stop <= reference)) {
+      errors.add(
+        isLong
+            ? l10n.tpSlStopLossBelowReference
+            : l10n.tpSlStopLossAboveReference,
+      );
+    }
+    return errors;
+  }
+
+  Future<void> _showRiskAgreement() async {
+    final accepted = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => TpSlRiskAgreementSheet(
+        onAccepted: () => Navigator.of(context).pop(true),
+      ),
+    );
+    if (accepted != true || !mounted) return;
+    await _consentService.record();
+    if (!mounted) return;
+    setState(() {
+      _riskAccepted = true;
+      _error = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
+    final errors = _validatePriceMessages(
+      _takeProfitEnabled ? _takeProfit.text.trim() : null,
+      _stopLossEnabled ? _stopLoss.text.trim() : null,
+    );
     return Material(
       color: colors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -1304,7 +1462,8 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                   title: l10n.takeProfit,
                   controller: _takeProfit,
                   enabled: _takeProfitEnabled,
-                  referencePrice: widget.referencePrice,
+                  referencePrice: _referencePrice,
+                  referencePriceListenable: widget.referencePriceListenable,
                   inputKey: const Key('opening-protection-0'),
                   rulerKey: const Key('take-profit-ruler'),
                   onEnabledChanged: (value) =>
@@ -1315,12 +1474,28 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                   title: l10n.stopLoss,
                   controller: _stopLoss,
                   enabled: _stopLossEnabled,
-                  referencePrice: widget.referencePrice,
+                  referencePrice: _referencePrice,
+                  referencePriceListenable: widget.referencePriceListenable,
                   inputKey: const Key('opening-protection-2'),
                   rulerKey: const Key('stop-loss-ruler'),
                   onEnabledChanged: (value) =>
                       setState(() => _stopLossEnabled = value),
                 ),
+                const SizedBox(height: 16),
+                TpSlConsentRow(
+                  accepted: _riskAccepted,
+                  onChanged: (value) async {
+                    setState(() => _riskAccepted = value);
+                    if (value) await _consentService.record();
+                  },
+                  onOpenDetails: _showRiskAgreement,
+                ),
+                if (_error != null || errors.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  TpSlInlineError(
+                    messages: {...errors, if (_error != null) _error!}.toList(),
+                  ),
+                ],
                 const SizedBox(height: 48),
                 Row(
                   children: [
@@ -1343,7 +1518,7 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                           backgroundColor: colors.primaryAction,
                           foregroundColor: colors.onPrimaryAction,
                         ),
-                        onPressed: _confirm,
+                        onPressed: _consentLoading ? null : _confirm,
                         child: Text(l10n.confirm),
                       ),
                     ),

@@ -1508,6 +1508,43 @@ class AppLocalizationsZh extends AppLocalizations {
   String get termsAgreement => '使用本应用即表示你同意条款与条件。';
 
   @override
+  String get tpSlRiskAgreementPrefix => '我已阅读并同意';
+
+  @override
+  String get tpSlRiskAgreementLink => '止盈止损风险披露';
+
+  @override
+  String get tpSlRiskAgreementTitle => '止盈止损风险披露';
+
+  @override
+  String get tpSlRiskAgreementDetails =>
+      '止盈和止损订单可以针对整个持仓设置，也可以针对特定订单对应的数量设置。\n\n基于持仓的止盈止损可能适用于当前持仓数量，并会随着持仓变化而变化。基于订单的止盈止损仅适用于该订单对应的数量。\n\n如果同时存在多个止盈止损订单，增加、减少或部分平仓等持仓数量变化，可能导致剩余止盈止损数量与当前持仓数量不同。因此，当已有止盈止损被触发时，后续订单或新增持仓数量可能会被减少。\n\n止盈止损订单用于减少持仓，但不保证能够平掉你计划的全部数量。在价格快速波动或流动性不足时，订单可能部分成交、以不同价格成交，或触发后仍未成交。\n\n持仓数量变化后，请检查当前生效的止盈止损订单，并在必要时进行调整或取消。';
+
+  @override
+  String get tpSlRiskAgreementConsent => '我理解并接受止盈止损相关风险。';
+
+  @override
+  String get tpSlRiskAgreementAccept => '同意并继续';
+
+  @override
+  String get tpSlRequired => '请至少设置一个止盈或止损价格。';
+
+  @override
+  String get tpSlInvalidPrice => '请输入有效的正数价格。';
+
+  @override
+  String get tpSlTakeProfitAboveReference => '止盈价格必须高于参考价格。';
+
+  @override
+  String get tpSlTakeProfitBelowReference => '止盈价格必须低于参考价格。';
+
+  @override
+  String get tpSlStopLossBelowReference => '止损价格必须低于参考价格。';
+
+  @override
+  String get tpSlStopLossAboveReference => '止损价格必须高于参考价格。';
+
+  @override
   String get invalidConfirmationCode => '验证码无效或已过期。';
 
   @override
@@ -2151,6 +2188,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String marginValue(Object value) {
     return '余额：$value USDC';
   }
+
+  @override
+  String get spotBalance => '现货余额';
+
+  @override
+  String get perpsBalance => 'Perps 余额';
 
   @override
   String get orderSizeLabel => '份额';

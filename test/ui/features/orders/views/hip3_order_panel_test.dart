@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
@@ -45,6 +46,8 @@ import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   testWidgets(
     'HIP-3 checks Hyperliquid funding despite a high display balance',
     (tester) async {
@@ -344,6 +347,9 @@ void main() {
         find.byKey(const Key('opening-protection-0')),
         '120',
       );
+      await tester.ensureVisible(find.byKey(const Key('tpsl-risk-checkbox')));
+      await tester.tap(find.byKey(const Key('tpsl-risk-checkbox')));
+      await tester.ensureVisible(find.byKey(const Key('hip3-tp-sl-confirm')));
       await tester.tap(find.byKey(const Key('hip3-tp-sl-confirm')));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byType(FilledButton).first);
@@ -913,6 +919,9 @@ void main() {
         find.byKey(const Key('opening-protection-2')),
         '90',
       );
+      await tester.ensureVisible(find.byKey(const Key('tpsl-risk-checkbox')));
+      await tester.tap(find.byKey(const Key('tpsl-risk-checkbox')));
+      await tester.ensureVisible(find.byKey(const Key('hip3-tp-sl-confirm')));
       await tester.tap(find.byKey(const Key('hip3-tp-sl-confirm')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, '100');

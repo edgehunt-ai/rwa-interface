@@ -2978,6 +2978,78 @@ abstract class AppLocalizations {
   /// **'By using this app, you agree to the Terms & Conditions.'**
   String get termsAgreement;
 
+  /// No description provided for @tpSlRiskAgreementPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read and agree to the '**
+  String get tpSlRiskAgreementPrefix;
+
+  /// No description provided for @tpSlRiskAgreementLink.
+  ///
+  /// In en, this message translates to:
+  /// **'TP/SL risk disclosure'**
+  String get tpSlRiskAgreementLink;
+
+  /// No description provided for @tpSlRiskAgreementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TP/SL risk disclosure'**
+  String get tpSlRiskAgreementTitle;
+
+  /// No description provided for @tpSlRiskAgreementDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Profit and Stop Loss orders may be set for your entire position or for the quantity associated with a specific order.\n\nPosition-based TP/SL may apply to your current position size and may change as your position changes. Order-based TP/SL applies only to the quantity associated with that order.\n\nIf multiple TP/SL orders are active at the same time, changes to your position size—such as adding, reducing, or partially closing a position—may cause the remaining TP/SL quantities to differ from your current position. As a result, a later order or newly added position quantity may be reduced when an existing TP/SL is triggered.\n\nTP/SL orders are intended to reduce a position and do not guarantee that your entire intended quantity will be closed. During rapid price movements or periods of low liquidity, an order may be partially filled, filled at a different price, or remain unfilled after being triggered.\n\nPlease review your active TP/SL orders after changing your position size and adjust or cancel them when necessary.'**
+  String get tpSlRiskAgreementDetails;
+
+  /// No description provided for @tpSlRiskAgreementConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand and accept the TP/SL risks.'**
+  String get tpSlRiskAgreementConsent;
+
+  /// No description provided for @tpSlRiskAgreementAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree and continue'**
+  String get tpSlRiskAgreementAccept;
+
+  /// No description provided for @tpSlRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Set at least one take-profit or stop-loss price.'**
+  String get tpSlRequired;
+
+  /// No description provided for @tpSlInvalidPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid positive price.'**
+  String get tpSlInvalidPrice;
+
+  /// No description provided for @tpSlTakeProfitAboveReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit price must be above the reference price.'**
+  String get tpSlTakeProfitAboveReference;
+
+  /// No description provided for @tpSlTakeProfitBelowReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Take-profit price must be below the reference price.'**
+  String get tpSlTakeProfitBelowReference;
+
+  /// No description provided for @tpSlStopLossBelowReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss price must be below the reference price.'**
+  String get tpSlStopLossBelowReference;
+
+  /// No description provided for @tpSlStopLossAboveReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop-loss price must be above the reference price.'**
+  String get tpSlStopLossAboveReference;
+
   /// No description provided for @invalidConfirmationCode.
   ///
   /// In en, this message translates to:
@@ -4110,6 +4182,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Balance: {value} USDC'**
   String marginValue(Object value);
+
+  /// No description provided for @spotBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot balance'**
+  String get spotBalance;
+
+  /// No description provided for @perpsBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Perps balance'**
+  String get perpsBalance;
 
   /// No description provided for @orderSizeLabel.
   ///

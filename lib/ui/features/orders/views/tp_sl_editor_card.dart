@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
@@ -11,6 +12,7 @@ class TpSlEditorCard extends StatefulWidget {
     required this.enabled,
     required this.onEnabledChanged,
     this.referencePrice,
+    this.referencePriceListenable,
     this.inputKey,
     this.changeKey,
     this.rulerKey,
@@ -25,6 +27,7 @@ class TpSlEditorCard extends StatefulWidget {
   /// the mark price for a position, the order price when opening one. Without
   /// it the card can only anchor on whatever the field already held.
   final double? referencePrice;
+  final ValueListenable<double?>? referencePriceListenable;
   final Key? inputKey;
   final Key? changeKey;
   final Key? rulerKey;
@@ -46,6 +49,7 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
     super.initState();
     widget.controller.addListener(_onPriceEdited);
     _change.addListener(_onChangeEdited);
+    widget.referencePriceListenable?.addListener(_onReferenceChanged);
     _pushChangeFromPrice();
   }
 
@@ -53,7 +57,12 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
   void dispose() {
     widget.controller.removeListener(_onPriceEdited);
     _change.dispose();
+    widget.referencePriceListenable?.removeListener(_onReferenceChanged);
     super.dispose();
+  }
+
+  void _onReferenceChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onPriceEdited() {
@@ -93,8 +102,10 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
-    final minimum = _referencePrice * .9;
-    final maximum = _referencePrice * 1.1;
+    final referencePrice =
+        widget.referencePriceListenable?.value ?? _referencePrice;
+    final minimum = referencePrice * .9;
+    final maximum = referencePrice * 1.1;
     final price = double.tryParse(widget.controller.text) ?? _referencePrice;
     final value = price.clamp(minimum, maximum);
     final editable = widget.enabled && widget.onEnabledChanged != null;
