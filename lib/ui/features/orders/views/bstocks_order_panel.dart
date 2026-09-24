@@ -787,6 +787,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final isBuy = side == TradingSide.buy;
+    final actionColor = isBuy ? success : kShortTradeColor;
     final settlementAsset = quotePreview?.settlementAsset ?? 'TUSDT';
     final snapshot = ref.watch(
       marketSnapshotProvider(
@@ -845,12 +846,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           Row(
             children: [
               Container(
+                key: const Key('bstocks-side-indicator'),
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .extension<AppSemanticColors>()!
-                      .success,
+                  color: actionColor,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -880,7 +880,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 width: 123,
                 values: const [TradingSide.buy, TradingSide.sell],
                 selected: side,
-                selectedColor: success,
+                selectedColor: actionColor,
                 selectedForeground: Colors.white,
                 label: (value) =>
                     value == TradingSide.buy ? l10n.buy : l10n.sell,
@@ -1093,10 +1093,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             child: FilledButton(
               key: const Key('bstocks-primary-order-action'),
               style: FilledButton.styleFrom(
-                backgroundColor: type == TradingOrderType.limit
+                backgroundColor: !isBuy
+                    ? actionColor
+                    : type == TradingOrderType.limit
                     ? colors.primaryAction
-                    : success,
-                foregroundColor: type == TradingOrderType.limit
+                    : actionColor,
+                foregroundColor: isBuy && type == TradingOrderType.limit
                     ? colors.onPrimaryAction
                     : Colors.white,
               ),

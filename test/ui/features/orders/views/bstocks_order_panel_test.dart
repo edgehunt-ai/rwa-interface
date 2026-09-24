@@ -21,6 +21,7 @@ import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
+import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
@@ -329,6 +330,37 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('bstocks-balance-loading')), findsNothing);
     expect(find.text('0 TUSDT'), findsOneWidget);
+  });
+
+  testWidgets('bStocks sell form uses the short trade color', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+        ],
+        child: buildTestApp(
+          const BstocksOrderPanel(
+            symbol: 'NVDAB',
+            initialSide: TradingSide.sell,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final indicator = tester.widget<Container>(
+      find.byKey(const Key('bstocks-side-indicator')),
+    );
+    final decoration = indicator.decoration! as BoxDecoration;
+    expect(decoration.color, kShortTradeColor);
+
+    final submit = tester.widget<FilledButton>(
+      find.byKey(const Key('bstocks-primary-order-action')),
+    );
+    expect(
+      submit.style?.backgroundColor?.resolve(<WidgetState>{}),
+      kShortTradeColor,
+    );
   });
 
   testWidgets('bStocks order panel validates an empty order value', (
