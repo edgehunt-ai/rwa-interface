@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -17,10 +18,15 @@ import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({TpSlRiskConsentService.key: true});
+  });
+
   for (final entry in {
     'unknown': 'Protection status unknown — not confirmed active',
     'pendingSubmission': 'Protection not submitted',
@@ -256,8 +262,13 @@ void main() {
           child: buildTestApp(PositionTpSlSheet(position: _position())),
         ),
       );
+      await tester.pumpAndSettle();
       await tester.tap(find.byType(Switch).first);
-      if (both) await tester.tap(find.byType(Switch).last);
+      await tester.pump();
+      if (both) {
+        await tester.tap(find.byType(Switch).last);
+        await tester.pump();
+      }
       await tester.ensureVisible(
         find.widgetWithText(FilledButton, 'Sign and confirm'),
       );

@@ -282,6 +282,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         child: Stack(
           children: [
             ListView(
+              key: const Key('trade-screen-scroll-view'),
               controller: _pageScrollController,
               padding: const EdgeInsets.fromLTRB(20, 30, 20, 160),
               children: [

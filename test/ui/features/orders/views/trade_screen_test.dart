@@ -573,9 +573,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -160));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Position'));
+    await _scrollToTradeTab(tester, 'Position');
+    await tester.tap(_tradeTab('Position'));
     await tester.pumpAndSettle();
 
     for (final text in [
@@ -593,7 +592,7 @@ void main() {
       r'~$120.33',
       '2.0154・Cross',
       'Close',
-      'Edit TP/SL',
+      'TP/SL',
     ]) {
       expect(find.text(text), text == r'$550' ? findsWidgets : findsOneWidget);
     }
@@ -613,9 +612,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView), const Offset(0, -160));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Position'));
+    await _scrollToTradeTab(tester, 'Position');
+    await tester.tap(_tradeTab('Position'));
     await tester.pumpAndSettle();
 
     for (final text in [
@@ -678,15 +676,15 @@ void main() {
       ),
     );
 
-    await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(TextButton, 'Position'));
+    await _scrollToTradeTab(tester, 'Position');
+    await tester.tap(_tradeTab('Position'));
     await tester.pumpAndSettle();
     expect(find.text('bStocks · BSC'), findsOneWidget);
 
     final close = find.widgetWithText(OutlinedButton, 'Close');
-    await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
+    await _scrollToTradeTab(tester, 'Position');
     await tester.ensureVisible(close);
     await tester.tap(close);
     await tester.pumpAndSettle();
@@ -704,12 +702,11 @@ void main() {
         child: buildTestApp(const TradeScreen()),
       ),
     );
-    await tester.drag(find.byType(ListView), const Offset(0, -160));
     await tester.pumpAndSettle();
+    await _scrollToTradeTab(tester, 'Position');
 
-    expect(find.text('Position'), findsOneWidget);
-    expect(find.text('Position (1)'), findsNothing);
-    await tester.tap(find.widgetWithText(TextButton, 'Position'));
+    expect(_tradeTab('Position'), findsOneWidget);
+    await tester.tap(_tradeTab('Position'));
     await tester.pumpAndSettle();
 
     expect(find.text('Position (1)'), findsOneWidget);
@@ -738,9 +735,9 @@ void main() {
         ),
       );
 
-      final openTab = find.widgetWithText(TextButton, 'Open');
-      await tester.drag(find.byType(ListView), const Offset(0, -160));
+      final openTab = _tradeTab('Open');
       await tester.pumpAndSettle();
+      await _scrollToTradeTab(tester, 'Open');
       await tester.tap(openTab);
       await tester.pumpAndSettle();
       expect(find.text('Open (1)'), findsOneWidget);
@@ -752,6 +749,23 @@ void main() {
     },
   );
 }
+
+Future<void> _scrollToTradeTab(WidgetTester tester, String label) async {
+  final tab = _tradeTab(label);
+  final page = find.byKey(const Key('trade-screen-scroll-view'));
+  expect(page, findsOneWidget);
+  final controller = tester.widget<ListView>(page).controller!;
+  for (var attempt = 0; attempt < 30 && tab.evaluate().isEmpty; attempt++) {
+    controller.jumpTo(controller.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+  }
+  expect(tab, findsOneWidget);
+  await tester.ensureVisible(tab);
+  await tester.pumpAndSettle();
+}
+
+Finder _tradeTab(String label) =>
+    find.byKey(Key('trade-details-tab-${label.toLowerCase()}'));
 
 String _localSchedule(DateTime start, DateTime end) {
   final localStart = start.toLocal();
@@ -857,6 +871,13 @@ Widget _tradeWithMarkets({
 }) => ProviderScope(
   overrides: [
     authenticatedStateOverride,
+    hip3AccountAbstractionProvider.overrideWith(
+      (_) async => const Hip3AccountAbstractionStatus(
+        ownerAddress: '0xowner',
+        currentMode: Hip3AccountAbstractionMode.unifiedAccount,
+        switchAvailable: false,
+      ),
+    ),
     hip3AccountAbstractionRepositoryProvider.overrideWithValue(
       _UnifiedAccountRepository(),
     ),

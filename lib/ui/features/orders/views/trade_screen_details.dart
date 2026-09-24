@@ -60,6 +60,7 @@ class _Details extends ConsumerWidget {
                 SizedBox(
                   height: 32,
                   child: TextButton(
+                    key: Key('trade-details-tab-${tab.toLowerCase()}'),
                     onPressed: () => onChanged(tab),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
