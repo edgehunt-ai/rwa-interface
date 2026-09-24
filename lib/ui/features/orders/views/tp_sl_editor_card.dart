@@ -312,6 +312,7 @@ class TpSlTickRuler extends StatefulWidget {
     required this.onChanged,
     this.enabled = true,
     this.unbounded = false,
+    this.step,
   });
 
   final String semanticLabel;
@@ -322,6 +323,7 @@ class TpSlTickRuler extends StatefulWidget {
   final ValueChanged<double> onChanged;
   final bool enabled;
   final bool unbounded;
+  final double? step;
 
   @override
   State<TpSlTickRuler> createState() => _TpSlTickRulerState();
@@ -334,7 +336,7 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   double get _currentValue {
     final value = _dragValue ?? widget.value;
     return widget.unbounded
-        ? value.clamp(double.minPositive, double.infinity)
+        ? value.clamp(widget.minimum, double.infinity)
         : value.clamp(widget.minimum, widget.maximum);
   }
 
@@ -360,9 +362,15 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
     // The ruler ticks move with the finger, so dragging right lowers the
     // value while dragging left raises it.
     final rawNext = _currentValue - details.delta.dx / width * range;
-    final next = widget.unbounded
-        ? rawNext.clamp(double.minPositive, double.infinity)
+    var next = widget.unbounded
+        ? rawNext.clamp(widget.minimum, double.infinity)
         : rawNext.clamp(widget.minimum, widget.maximum);
+    if (widget.step case final step? when step > 0) {
+      next = (next / step).round() * step;
+      next = widget.unbounded
+          ? next.clamp(widget.minimum, double.infinity)
+          : next.clamp(widget.minimum, widget.maximum);
+    }
     if (next == _currentValue) return;
     setState(() => _dragValue = next);
     widget.onChanged(next);

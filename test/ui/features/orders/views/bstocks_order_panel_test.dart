@@ -146,7 +146,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Balance: '), findsOneWidget);
+    expect(find.text('Spot balance: '), findsOneWidget);
     expect(find.text('456.78 TUSDT'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField).first, '100');
@@ -343,8 +343,8 @@ void main() {
     await tester.pump();
     expect(find.text('Enter a valid order value.'), findsOneWidget);
 
-    expect(find.text('Market'), findsNothing);
-    expect(find.text('Limit'), findsNothing);
+    expect(find.text('Market'), findsOneWidget);
+    expect(find.text('Limit'), findsOneWidget);
   });
 
   testWidgets(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
 /// Slippage tolerance shared by the bStocks and HIP-3 order forms: the value
@@ -27,26 +26,28 @@ class SlippageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    const secondaryLabelColor = Color(0xFF676776);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.zero,
       child: Row(
         children: [
           Expanded(
             child: Text(
               AppLocalizations.of(context).slippage,
-              style: TextStyle(color: colors.secondaryText),
+              style: const TextStyle(color: secondaryLabelColor),
             ),
           ),
-          Text('$value%', style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(width: 2),
           IconButton(
             key: editKey,
             tooltip: AppLocalizations.of(context).editSlippage,
             onPressed: onEdit,
             icon: const Icon(Icons.edit_outlined, size: 16),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 16, height: 20),
             visualDensity: VisualDensity.compact,
           ),
+          const SizedBox(width: 1),
+          Text('$value%', style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );

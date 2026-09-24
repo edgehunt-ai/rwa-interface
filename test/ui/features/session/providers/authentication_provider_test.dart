@@ -157,6 +157,31 @@ void main() {
     },
   );
 
+  test('retries a retryable backend session failure once', () async {
+    final repository = _SessionRepository()
+      ..createFailures.add(
+        const ServerFailure(
+          statusCode: 503,
+          code: 'temporarily_unavailable',
+          retryable: true,
+        ),
+      );
+    final container = _container(
+      FakeIdentityAuthGateway(
+        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+      ),
+      repository,
+    );
+
+    await container.read(authenticationProvider.notifier).bootstrap();
+
+    expect(repository.createCalls, 2);
+    expect(
+      container.read(authenticationProvider),
+      isA<AuthenticationAuthenticated>(),
+    );
+  });
+
   test('email is normalized and valid code establishes session', () async {
     final gateway = FakeIdentityAuthGateway(
       verifiedPrincipal: const IdentityPrincipal(
@@ -357,6 +382,7 @@ final class _SessionRepository implements SessionRepository {
   int createCalls = 0;
   int logoutCalls = 0;
   ApiFailure? createFailure;
+  final createFailures = <ApiFailure>[];
 
   @override
   Future<ProductSession> createOrRestore({
@@ -364,6 +390,9 @@ final class _SessionRepository implements SessionRepository {
     required int generation,
   }) async {
     createCalls++;
+    if (createFailures.isNotEmpty) {
+      throw createFailures.removeAt(0);
+    }
     if (createFailure case final failure?) throw failure;
     return ProductSession(
       sessionId: 'session-1',

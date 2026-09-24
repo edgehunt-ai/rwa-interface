@@ -334,19 +334,28 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     required String? language,
     required int generation,
   }) async {
-    try {
-      return await ref
-          .read(sessionRepositoryProvider)
-          .createOrRestore(language: language, generation: generation);
-    } on ApiFailure catch (failure) {
-      throw IdentityFailure(
-        failure is AuthenticationFailure
-            ? AuthenticationFailureCode.expired
-            : AuthenticationFailureCode.backendSession,
-        retryable: failure.retryable,
-        requestId: failure.requestId,
-      );
+    final repository = ref.read(sessionRepositoryProvider);
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await repository.createOrRestore(
+          language: language,
+          generation: generation,
+        );
+      } on ApiFailure catch (failure) {
+        if (attempt == 0 && failure.retryable) {
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+          continue;
+        }
+        throw IdentityFailure(
+          failure is AuthenticationFailure
+              ? AuthenticationFailureCode.expired
+              : AuthenticationFailureCode.backendSession,
+          retryable: failure.retryable,
+          requestId: failure.requestId,
+        );
+      }
     }
+    throw StateError('Backend session creation exhausted its retry budget');
   }
 
   Future<void> _syncWallet(ProductSession session) async {

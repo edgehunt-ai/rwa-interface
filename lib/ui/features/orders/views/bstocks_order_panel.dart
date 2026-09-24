@@ -22,12 +22,14 @@ import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import 'order_funding_sheet.dart';
 import 'slippage_controls.dart';
+import 'tp_sl_editor_card.dart';
 
 part 'bstocks_funding_required.dart';
 part 'bstocks_transfer_flow.dart';
@@ -47,6 +49,8 @@ class BstocksOrderPanel extends ConsumerStatefulWidget {
 
 class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   final amount = TextEditingController();
+  final quantity = TextEditingController();
+  final orderValue = TextEditingController();
   final limitPrice = TextEditingController();
   late TradingSide side;
   var type = TradingOrderType.market;
@@ -65,7 +69,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   var _previewPollingGeneration = 0;
   var _refreshingPreview = false;
   var _quoting = false;
+  var _syncingLimitFields = false;
+  double? _percentageAvailable;
+  double? _lastPercentageAvailable;
   DecimalValue? _liveMarketPrice;
+  String? _currentMarketPrice;
   late final OrderCommandNotifier _orderCommands;
 
   @override
@@ -74,7 +82,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _orderCommands = ref.read(orderCommandProvider.notifier);
     side = widget.initialSide;
     amount.addListener(_refreshAmount);
-    limitPrice.addListener(_scheduleQuote);
+    quantity.addListener(_refreshLimitFromQuantity);
+    orderValue.addListener(_refreshLimitFromOrderValue);
+    limitPrice.addListener(_onLimitPriceChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.invalidate(tradingAccountsProvider);
@@ -84,6 +94,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   void _refreshAmount() {
+    if (type == TradingOrderType.limit) return;
     _percentageWaitingForAmount = false;
     final available = double.tryParse(
       _availableAmount(
@@ -107,6 +118,97 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         : (entered / available * 100).clamp(0.0, 100.0);
     setState(() => percentage = nextPercentage);
     _scheduleQuote();
+  }
+
+  void _onLimitPriceChanged() {
+    if (type == TradingOrderType.limit) _syncLimitFieldsFromPrice();
+    _scheduleQuote();
+  }
+
+  void _refreshLimitFromQuantity() {
+    if (type != TradingOrderType.limit || _syncingLimitFields) return;
+    _syncLimitFields(() {
+      final q = double.tryParse(quantity.text.trim());
+      final p = double.tryParse(limitPrice.text.trim());
+      if (q != null && p != null && q >= 0 && p > 0) {
+        _setControllerText(orderValue, _formatDecimal(q * p));
+      }
+    });
+    _scheduleQuote();
+  }
+
+  void _refreshLimitFromOrderValue() {
+    if (type != TradingOrderType.limit || _syncingLimitFields) return;
+    _refreshLimitPercentage();
+    _syncLimitFields(() {
+      final value = double.tryParse(orderValue.text.trim());
+      final p = double.tryParse(limitPrice.text.trim());
+      if (value != null && p != null && p > 0 && value >= 0) {
+        _setControllerText(quantity, _formatDecimal(value / p));
+      }
+    });
+    _scheduleQuote();
+  }
+
+  void _refreshLimitPercentage() {
+    final available = _percentageAvailable;
+    final entered = double.tryParse(orderValue.text.trim());
+    final next =
+        available == null ||
+            available <= 0 ||
+            entered == null ||
+            !entered.isFinite ||
+            entered < 0
+        ? 0.0
+        : (entered / available * 100).clamp(0.0, 100.0);
+    if (mounted && percentage != next) {
+      setState(() => percentage = next);
+    }
+  }
+
+  void _scheduleLimitPercentageSync(double? available) {
+    if (type != TradingOrderType.limit || available == null) return;
+    if (_lastPercentageAvailable == available || _percentageSyncScheduled) {
+      return;
+    }
+    _lastPercentageAvailable = available;
+    _percentageSyncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _percentageSyncScheduled = false;
+      if (!mounted || type != TradingOrderType.limit) return;
+      _refreshLimitPercentage();
+    });
+  }
+
+  void _syncLimitFieldsFromPrice() {
+    if (type != TradingOrderType.limit || _syncingLimitFields) return;
+    final p = double.tryParse(limitPrice.text.trim());
+    if (p == null || p <= 0) return;
+    final q = double.tryParse(quantity.text.trim());
+    final value = double.tryParse(orderValue.text.trim());
+    if (q != null && q >= 0) {
+      _syncLimitFields(
+        () => _setControllerText(orderValue, _formatDecimal(q * p)),
+      );
+    } else if (value != null && value >= 0) {
+      _syncLimitFields(
+        () => _setControllerText(quantity, _formatDecimal(value / p)),
+      );
+    }
+  }
+
+  void _syncLimitFields(VoidCallback action) {
+    _syncingLimitFields = true;
+    action();
+    _syncingLimitFields = false;
+  }
+
+  void _setControllerText(TextEditingController controller, String text) {
+    if (controller.text == text) return;
+    controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 
   void _updateAmountFromPercentage(
@@ -145,7 +247,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       percentage: value,
     );
     _percentageWaitingForAmount = false;
-    amount.value = TextEditingValue(
+    if (mounted) setState(() => percentage = value);
+    final controller = type == TradingOrderType.limit && side == TradingSide.buy
+        ? orderValue
+        : amount;
+    controller.value = TextEditingValue(
       text: nextText,
       selection: TextSelection.collapsed(offset: nextText.length),
     );
@@ -218,21 +324,28 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _quoteDebounce?.cancel();
     _previewPollingTimer?.cancel();
     amount.removeListener(_refreshAmount);
-    limitPrice.removeListener(_scheduleQuote);
+    quantity.removeListener(_refreshLimitFromQuantity);
+    orderValue.removeListener(_refreshLimitFromOrderValue);
+    limitPrice.removeListener(_onLimitPriceChanged);
     amount.dispose();
+    quantity.dispose();
+    orderValue.dispose();
     limitPrice.dispose();
     super.dispose();
   }
 
   Future<void> _review() async {
-    final amountValue = amount.text.trim();
-    if (amountValue.isEmpty || !_isDecimal(amountValue)) {
+    final inputValue = type == TradingOrderType.limit
+        ? quantity.text.trim()
+        : amount.text.trim();
+    if (inputValue.isEmpty || !_isDecimal(inputValue)) {
       setState(() => error = AppLocalizations.of(context).validOrderValue);
       return;
     }
     if (type == TradingOrderType.limit &&
         (limitPrice.text.trim().isEmpty ||
-            !_isDecimal(limitPrice.text.trim()))) {
+            !_isDecimal(limitPrice.text.trim()) ||
+            double.tryParse(limitPrice.text.trim())! <= 0)) {
       setState(() => error = AppLocalizations.of(context).validLimitPrice);
       return;
     }
@@ -482,10 +595,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   OrderIntent? _intentFromFields() {
     final amountValue = amount.text.trim();
-    if (amountValue.isEmpty || !_isDecimal(amountValue)) return null;
     final rawPrice = limitPrice.text.trim();
     if (type == TradingOrderType.limit &&
         (rawPrice.isEmpty || !_isDecimal(rawPrice))) {
+      return null;
+    }
+    final limitQuantity = quantity.text.trim();
+    if (type == TradingOrderType.limit) {
+      if (limitQuantity.isEmpty || !_isDecimal(limitQuantity)) return null;
+    } else if (amountValue.isEmpty || !_isDecimal(amountValue)) {
       return null;
     }
     final sellsBstocks = side == TradingSide.sell;
@@ -502,7 +620,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             )
           : null,
       quantity: type == TradingOrderType.limit || sellsBstocks
-          ? DecimalValue(amountValue, asset: widget.symbol, unit: 'token')
+          ? DecimalValue(
+              type == TradingOrderType.limit ? limitQuantity : amountValue,
+              asset: widget.symbol,
+              unit: 'token',
+            )
           : null,
       limitPrice: type == TradingOrderType.limit
           ? DecimalValue(rawPrice, asset: 'USD', unit: 'fiat')
@@ -566,6 +688,51 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _scheduleQuote();
   }
 
+  Future<void> _setOrderType(TradingOrderType next) async {
+    if (next == type) return;
+    if (next == TradingOrderType.limit) {
+      final value = await showModalBottomSheet<String>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        builder: (_) => _BstocksLimitPriceSheet(
+          initialPrice: limitPrice.text.trim().isNotEmpty
+              ? limitPrice.text.trim()
+              : _currentMarketPrice ?? '',
+          marketPrice: _currentMarketPrice,
+        ),
+      );
+      if (!mounted || value == null) return;
+      setState(() => type = next);
+      _setControllerText(limitPrice, value);
+      _setControllerText(quantity, '');
+      _setControllerText(orderValue, '');
+      _scheduleQuote();
+      return;
+    }
+    setState(() => type = next);
+    quantity.clear();
+    orderValue.clear();
+    limitPrice.clear();
+    _scheduleQuote();
+  }
+
+  Future<void> _editLimitPrice() async {
+    final value = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      builder: (_) => _BstocksLimitPriceSheet(
+        initialPrice: limitPrice.text.trim(),
+        marketPrice: _currentMarketPrice,
+      ),
+    );
+    if (!mounted || value == null) return;
+    _setControllerText(limitPrice, value);
+  }
+
   @override
   Widget build(BuildContext context) => Material(
     borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -592,13 +759,22 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final isBuy = side == TradingSide.buy;
     final settlementAsset = quotePreview?.settlementAsset ?? 'TUSDT';
+    final snapshot = ref.watch(
+      marketSnapshotProvider(
+        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.bstock),
+      ),
+    );
+    _currentMarketPrice =
+        quotePreview?.marketPrice?.value ?? snapshot.value?.price.value;
     final settlementBalance = ref.watch(
       bstocksSettlementBalanceProvider(settlementAsset),
     );
     final amountAsset = type == TradingOrderType.market && isBuy
         ? settlementAsset
         : widget.symbol;
-    final enteredAmount = amount.text.trim();
+    final enteredAmount = type == TradingOrderType.limit
+        ? orderValue.text.trim()
+        : amount.text.trim();
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
     final availableBalance = settlementBalance;
     final holdings = ref.watch(holdingsProvider(null));
@@ -612,6 +788,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       availableBalance: availableBalance.value,
       holdings: holdings.value?.items,
     );
+    _percentageAvailable = double.tryParse(availableAmount?.value ?? '');
+    _scheduleLimitPercentageSync(_percentageAvailable);
     final balance = availableAmount == null
         ? null
         : isBuy
@@ -624,11 +802,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
     final formHeight =
-        490.0 +
-        (type == TradingOrderType.limit ? 64 : 0) +
-        // Keep enough room for the bounded, scrollable error notice without
-        // allowing a long server message to overflow the form column.
-        (error != null ? 190 : 0);
+        (type == TradingOrderType.limit ? 499.0 : 490.0) +
+        // The failure notice is normally one compact row. Its text scrolls
+        // internally when a server returns a longer message, so it must not
+        // reserve the old fixed 190px block in the whole order sheet.
+        (error != null ? 60 : 0);
     return SizedBox(
       height: formHeight,
       child: Column(
@@ -666,6 +844,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ),
           const SizedBox(height: 16),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _ChoiceRow<TradingSide>(
                 key: const Key('bstocks-side-tabs'),
@@ -680,12 +859,48 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                   setState(() => side = value);
                   _percentageWaitingForAmount = false;
                   amount.clear();
+                  quantity.clear();
+                  orderValue.clear();
                   _scheduleQuote();
                 },
+              ),
+              _ChoiceRow<TradingOrderType>(
+                key: const Key('bstocks-order-type-tabs'),
+                width: 151,
+                values: const [TradingOrderType.market, TradingOrderType.limit],
+                selected: type,
+                label: (value) =>
+                    value == TradingOrderType.market ? l10n.market : l10n.limit,
+                onChanged: _setOrderType,
               ),
             ],
           ),
           const SizedBox(height: 16),
+          if (type == TradingOrderType.limit && isBuy) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _LimitInput(
+                    controller: limitPrice,
+                    label: l10n.limitPrice,
+                    suffix: 'USDT',
+                    onTap: _editLimitPrice,
+                    inputKey: const Key('bstocks-limit-price-input'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _LimitInput(
+                    controller: quantity,
+                    label: l10n.quantity,
+                    suffix: widget.symbol,
+                    inputKey: const Key('bstocks-limit-quantity-input'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           Container(
             height: 93,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -702,7 +917,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                       type == TradingOrderType.market && isBuy
                           ? l10n.orderValue
                           : type == TradingOrderType.limit
-                          ? l10n.quantity
+                          ? l10n.orderValue
                           : l10n.amount,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: colors.secondaryText,
@@ -740,7 +955,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     children: [
                       Expanded(
                         child: TextField(
-                          controller: amount,
+                          controller: type == TradingOrderType.limit && isBuy
+                              ? orderValue
+                              : amount,
+                          key: type == TradingOrderType.limit && isBuy
+                              ? const Key('bstocks-limit-order-value-input')
+                              : const Key('bstocks-market-amount-input'),
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
@@ -774,7 +994,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ],
             ),
           ),
-          if (type == TradingOrderType.limit) ...[
+          if (type == TradingOrderType.limit && !isBuy) ...[
             const SizedBox(height: 8),
             TextField(
               controller: limitPrice,
@@ -787,51 +1007,83 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ),
             ),
           ],
-          const SizedBox(height: 8),
-          _OutlinedSummaryRow(
-            label: l10n.willReceive,
-            value: _quoting
-                ? const SkeletonBlock(width: 76, height: 14, radius: 4)
-                : Text(
-                    receive == null
-                        ? '- ${widget.symbol}'
-                        : TokenAmountFormatter.format(
-                            receive,
-                            symbol: receive.asset ?? widget.symbol,
-                          ),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-          ),
+          if (type == TradingOrderType.limit) ...[
+            const SizedBox(height: 16),
+            Divider(color: colors.subtleSurface),
+            const SizedBox(height: 14),
+            SlippageRow(
+              value: slippage,
+              onEdit: _editSlippage,
+              editKey: const Key('bstocks-edit-slippage'),
+            ),
+            const SizedBox(height: 8),
+            if (_quoting)
+              _LoadingSummaryRow(label: l10n.estimatedFee)
+            else
+              _SummaryRow(
+                label: l10n.estimatedFee,
+                value: fee == null
+                    ? '-'
+                    : TokenAmountFormatter.format(
+                        fee,
+                        symbol: fee.asset ?? widget.symbol,
+                      ),
+              ),
+          ] else ...[
+            const SizedBox(height: 8),
+            _OutlinedSummaryRow(
+              label: l10n.willReceive,
+              value: _quoting
+                  ? const SkeletonBlock(width: 76, height: 14, radius: 4)
+                  : Text(
+                      receive == null
+                          ? '- ${widget.symbol}'
+                          : TokenAmountFormatter.format(
+                              receive,
+                              symbol: receive.asset ?? widget.symbol,
+                            ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+            ),
+            const SizedBox(height: 16),
+            Divider(color: colors.subtleSurface),
+            const SizedBox(height: 14),
+            SlippageRow(
+              value: slippage,
+              onEdit: _editSlippage,
+              editKey: const Key('bstocks-edit-slippage'),
+            ),
+            const SizedBox(height: 8),
+            if (_quoting)
+              _LoadingSummaryRow(label: l10n.estimatedFee)
+            else
+              _SummaryRow(
+                label: l10n.estimatedFee,
+                value: fee == null
+                    ? '-'
+                    : TokenAmountFormatter.format(
+                        fee,
+                        symbol: fee.asset ?? widget.symbol,
+                      ),
+              ),
+          ],
           if (error case final error?) ...[
             const SizedBox(height: 8),
             _OrderFailureNotice(message: error),
           ],
-          const SizedBox(height: 16),
-          Divider(color: colors.subtleSurface),
-          const SizedBox(height: 14),
-          SlippageRow(
-            value: slippage,
-            onEdit: _editSlippage,
-            editKey: const Key('bstocks-edit-slippage'),
-          ),
-          if (_quoting)
-            _LoadingSummaryRow(label: l10n.estimatedFee)
-          else
-            _SummaryRow(
-              label: l10n.estimatedFee,
-              value: fee == null
-                  ? '-'
-                  : TokenAmountFormatter.format(
-                      fee,
-                      symbol: fee.asset ?? widget.symbol,
-                    ),
-            ),
           const Spacer(),
           SizedBox(
             width: double.infinity,
             child: FilledButton(
               key: const Key('bstocks-primary-order-action'),
-              style: FilledButton.styleFrom(backgroundColor: success),
+              style: FilledButton.styleFrom(
+                backgroundColor: type == TradingOrderType.limit
+                    ? colors.primaryAction
+                    : success,
+                foregroundColor: type == TradingOrderType.limit
+                    ? colors.onPrimaryAction
+                    : Colors.white,
+              ),
               onPressed: reviewing ? null : _review,
               child: Text(
                 reviewing
@@ -1338,7 +1590,12 @@ class _LoadingSummaryRow extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       children: [
-        Expanded(child: Text(label)),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(color: Color(0xFF676776)),
+          ),
+        ),
         const SkeletonBlock(width: 52, height: 14, radius: 4),
       ],
     ),
@@ -1355,7 +1612,12 @@ class _SummaryRow extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: Text(label)),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(color: Color(0xFF676776)),
+          ),
+        ),
         const SizedBox(width: 16),
         Expanded(
           child: Text(
@@ -1639,4 +1901,418 @@ class _OrderFailureNotice extends StatelessWidget {
       ),
     );
   }
+}
+
+class _LimitInput extends StatefulWidget {
+  const _LimitInput({
+    required this.controller,
+    required this.label,
+    required this.suffix,
+    this.onTap,
+    this.inputKey,
+  });
+  final TextEditingController controller;
+  final String label;
+  final String suffix;
+  final VoidCallback? onTap;
+  final Key? inputKey;
+
+  @override
+  State<_LimitInput> createState() => _LimitInputState();
+}
+
+class _LimitInputState extends State<_LimitInput> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Material(
+      color: colors.subtleSurface,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: widget.onTap ?? _focusNode.requestFocus,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+          child: SizedBox(
+            height: 69,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.label,
+                  style: Theme.of(context).textTheme.labelSmall
+                      ?.copyWith(color: colors.secondaryText),
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          key: widget.inputKey,
+                          controller: widget.controller,
+                          focusNode: _focusNode,
+                          onTap: widget.onTap,
+                          readOnly: widget.onTap != null,
+                          showCursor: widget.onTap == null,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: false,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        widget.suffix,
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BstocksLimitPriceSheet extends StatefulWidget {
+  const _BstocksLimitPriceSheet({required this.initialPrice, this.marketPrice});
+
+  final String initialPrice;
+  final String? marketPrice;
+
+  @override
+  State<_BstocksLimitPriceSheet> createState() =>
+      _BstocksLimitPriceSheetState();
+}
+
+class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
+  late final TextEditingController _controller;
+  late double _deviation;
+  double? _rulerPrice;
+
+  double? get _market => double.tryParse(widget.marketPrice ?? '');
+
+  @override
+  void initState() {
+    super.initState();
+    final market = _market;
+    final initial = double.tryParse(widget.initialPrice);
+    final initialPrice = initial ?? market;
+    _controller = TextEditingController(
+      text: initialPrice == null ? '' : _formatDecimal(initialPrice),
+    );
+    _rulerPrice = initialPrice;
+    _deviation = market == null || market <= 0 || initialPrice == null
+        ? 0
+        : ((initialPrice / market) - 1).clamp(0.0, double.infinity) * 100;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _setLimitPriceFromRuler(double value) {
+    _rulerPrice = value;
+    final formattedPrice = _formatDraggedLimitPrice(value);
+    final nextPrice = double.parse(formattedPrice);
+    setState(() {
+      _controller.text = formattedPrice;
+      if (_market case final market? when market > 0) {
+        _deviation = ((nextPrice / market) - 1) * 100;
+      }
+    });
+  }
+
+  void _priceChanged(String value) {
+    final market = _market;
+    final price = double.tryParse(value);
+    _rulerPrice = price;
+    if (market != null && market > 0 && price != null) {
+      _deviation = ((price / market) - 1) * 100;
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final price = double.tryParse(_controller.text);
+    final market = _market;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final displayedPrice = _rulerPrice ?? price ?? market ?? 0;
+
+    return SizedBox(
+      height: 543 + bottomInset,
+      child: Material(
+        key: const Key('bstocks-limit-price-sheet'),
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 24 + bottomInset),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: 34,
+                child: Row(
+                  children: [
+                    InkResponse(
+                      key: const Key('bstocks-limit-price-back-icon'),
+                      onTap: () => Navigator.pop(context),
+                      radius: 20,
+                      child: const SizedBox(
+                        width: 20,
+                        height: 34,
+                        child: Icon(Icons.chevron_left, size: 24),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      AppLocalizations.of(context).limitPrice,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 56),
+              Text(
+                AppLocalizations.of(context).limitPrice,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colors.tertiaryText,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _CenteredLimitPriceInput(
+                controller: _controller,
+                onChanged: _priceChanged,
+              ),
+              const SizedBox(height: 8),
+              if (market != null && market > 0)
+                Center(
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: colors.border),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: InkWell(
+                      key: const Key('bstocks-limit-use-market-price'),
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () {
+                        setState(() {
+                          _controller.text = _formatDecimal(market);
+                          _rulerPrice = market;
+                          _deviation = 0;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context).market,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 40),
+              TpSlTickRuler(
+                semanticLabel: AppLocalizations.of(context).dragToSet,
+                value: displayedPrice,
+                minimum: 0,
+                maximum: 20,
+                divisions: 20,
+                unbounded: true,
+                onChanged: _setLimitPriceFromRuler,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _LimitPriceFact(
+                    label: AppLocalizations.of(context).market,
+                    value: market == null ? '-' : '\$${_formatDecimal(market)}',
+                  ),
+                  _LimitPriceFact(
+                    label: 'Price Deviation',
+                    value:
+                        '${_deviation >= 0 ? '+' : ''}${_deviation.toStringAsFixed(0)}%',
+                    valueColor: _deviation >= 0
+                        ? semantic.success
+                        : colors.primaryText,
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 160,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(AppLocalizations.of(context).back),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: price == null || price <= 0
+                          ? null
+                          : () => Navigator.pop(context, _formatDecimal(price)),
+                      child: Text(AppLocalizations.of(context).confirm),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CenteredLimitPriceInput extends StatelessWidget {
+  const _CenteredLimitPriceInput({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.headlineMedium
+        ?.copyWith(fontSize: 28, height: 34 / 28, fontWeight: FontWeight.w600);
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: value.text.isEmpty ? '0' : value.text,
+            style: style,
+          ),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout();
+        final inputWidth = (painter.width + 8).clamp(24.0, 220.0);
+        return Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(r'$', style: style),
+              SizedBox(
+                width: inputWidth,
+                child: TextField(
+                  key: const Key('bstocks-limit-price-sheet-input'),
+                  controller: controller,
+                  textAlign: TextAlign.left,
+                  autofocus: false,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  style: style,
+                  decoration: const InputDecoration(
+                    hintText: '0',
+                    isDense: true,
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: onChanged,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LimitPriceFact extends StatelessWidget {
+  const _LimitPriceFact({
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: colors.tertiaryText,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: valueColor ?? colors.primaryText,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+String _formatDecimal(double value) {
+  final text = value.toStringAsFixed(8);
+  return text.replaceFirst(RegExp(r'\.?0+$'), '');
+}
+
+String _formatDraggedLimitPrice(double value) {
+  if (value.abs() >= 1) return value.round().toString();
+  return _formatDecimal(value);
 }
