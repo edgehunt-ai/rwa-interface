@@ -21,6 +21,7 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 
@@ -451,10 +452,50 @@ void main() {
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Long'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Long NVDA'), findsWidgets);
     expect(find.byKey(const Key('hip3-tp-sl-toggle')), findsOneWidget);
+  });
+
+  testWidgets('Trade opens a loading sheet before HIP-3 account status loads', (
+    tester,
+  ) async {
+    final status = Completer<Hip3AccountAbstractionStatus>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          hip3AccountAbstractionProvider.overrideWith((_) => status.future),
+        ],
+        child: buildTestApp(
+          const TradeScreen(
+            symbol: 'NVDA',
+            initialKind: MarketProductKind.perp,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Long'));
+    await tester.pump();
+
+    expect(find.byKey(const Key('order-panel-entry-loading')), findsOneWidget);
+    expect(find.byKey(const Key('order-panel-entry-skeleton')), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    status.complete(
+      const Hip3AccountAbstractionStatus(
+        ownerAddress: '0xowner',
+        currentMode: Hip3AccountAbstractionMode.unifiedAccount,
+        switchAvailable: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('order-panel-entry-loading')), findsNothing);
+    expect(find.text('Long NVDA'), findsWidgets);
   });
 
   testWidgets('Trade preserves the HIP-3 short side when opening its panel', (
@@ -466,6 +507,7 @@ void main() {
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Short'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Short NVDA'), findsWidgets);
@@ -485,7 +527,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Buy NVDAB'), findsWidgets);
-    expect(find.text('Limit'), findsNothing);
+    expect(
+      find.byKey(const Key('bstocks-market-amount-input')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Trade preserves the bStocks sell side when opening its panel', (

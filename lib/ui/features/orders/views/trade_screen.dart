@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/application_state.dart';
@@ -42,6 +43,7 @@ import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
+import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 import 'package:rwa_interface/ui/features/session/views/privy_login_screen.dart';
 
 part 'trade_screen_details.dart';
@@ -179,62 +181,17 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   }
 
   Future<void> _openOrderPanel(TradingSide side) async {
-    if (!await requireAuthentication(context, ref)) return;
-    if (!mounted) return;
-
-    if (productKind == MarketProductKind.perp) {
-      try {
-        final status = await ref.read(hip3AccountAbstractionProvider.future);
-        if (!mounted) return;
-        if (!status.isUnifiedAccount) {
-          if (!status.switchAvailable) {
-            AppToast.showFailure(
-              context,
-              'Unified Account is unavailable for this account.',
-            );
-            return;
-          }
-          final converted = await showModalBottomSheet<bool>(
-            context: context,
-            isScrollControlled: true,
-            isDismissible: false,
-            enableDrag: false,
-            backgroundColor: Colors.transparent,
-            barrierColor: const Color(0xB3000000),
-            builder: (_) => Hip3UnifiedAccountSheet(
-              onConfirm: () => ref
-                  .read(hip3AccountAbstractionCommandProvider)
-                  .convertToUnifiedAccount(),
-            ),
-          );
-          if (converted != true || !mounted) return;
-        }
-      } on Object {
-        if (mounted) {
-          AppToast.showFailure(
-            context,
-            'Unable to verify Unified Account. Try again.',
-          );
-        }
-        return;
-      }
-    }
-
-    if (!mounted) return;
     setState(() => _orderPanelOpen = true);
     final showPosition = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => productKind == MarketProductKind.bstock
-          ? BstocksOrderPanel(symbol: symbol, initialSide: side)
-          : Hip3OrderPanel(
-              symbol: symbol,
-              productId: _productId,
-              initialSide: side == TradingSide.buy
-                  ? TradingSide.long
-                  : TradingSide.short,
-              onYourPositionTap: () => Navigator.of(sheetContext).pop(true),
-            ),
+      builder: (sheetContext) => _OrderPanelEntrySheet(
+        symbol: symbol,
+        productId: _productId,
+        productKind: productKind,
+        side: side,
+        onYourPositionTap: () => Navigator.of(sheetContext).pop(true),
+      ),
     );
     if (!mounted) return;
     setState(() => _orderPanelOpen = false);
@@ -420,6 +377,180 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                 onClose: () => setState(() => marketHoursOpen = false),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OrderPanelEntrySheet extends ConsumerStatefulWidget {
+  const _OrderPanelEntrySheet({
+    required this.symbol,
+    required this.productId,
+    required this.productKind,
+    required this.side,
+    required this.onYourPositionTap,
+  });
+
+  final String symbol;
+  final String? productId;
+  final MarketProductKind productKind;
+  final TradingSide side;
+  final VoidCallback onYourPositionTap;
+
+  @override
+  ConsumerState<_OrderPanelEntrySheet> createState() =>
+      _OrderPanelEntrySheetState();
+}
+
+class _OrderPanelEntrySheetState extends ConsumerState<_OrderPanelEntrySheet> {
+  var _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.productKind == MarketProductKind.bstock &&
+        ref.read(authenticationProvider) is AuthenticationAuthenticated) {
+      _ready = true;
+      return;
+    }
+    _prepare();
+  }
+
+  Future<void> _prepare() async {
+    if (!await requireAuthentication(context, ref) || !mounted) {
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+
+    if (widget.productKind == MarketProductKind.perp) {
+      try {
+        final status = await ref.read(hip3AccountAbstractionProvider.future);
+        if (!mounted) return;
+        if (!status.isUnifiedAccount) {
+          if (!status.switchAvailable) {
+            AppToast.showFailure(
+              context,
+              'Unified Account is unavailable for this account.',
+            );
+            Navigator.of(context).pop();
+            return;
+          }
+          final converted = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            isDismissible: false,
+            enableDrag: false,
+            backgroundColor: Colors.transparent,
+            barrierColor: const Color(0xB3000000),
+            builder: (_) => Hip3UnifiedAccountSheet(
+              onConfirm: () => ref
+                  .read(hip3AccountAbstractionCommandProvider)
+                  .convertToUnifiedAccount(),
+            ),
+          );
+          if (!mounted) return;
+          if (converted != true) {
+            Navigator.of(context).pop();
+            return;
+          }
+        }
+      } on Object {
+        if (!mounted) return;
+        AppToast.showFailure(
+          context,
+          'Unable to verify Unified Account. Try again.',
+        );
+        Navigator.of(context).pop();
+        return;
+      }
+    }
+
+    if (mounted) setState(() => _ready = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_ready) return const _OrderPanelLoading();
+    return widget.productKind == MarketProductKind.bstock
+        ? BstocksOrderPanel(symbol: widget.symbol, initialSide: widget.side)
+        : Hip3OrderPanel(
+            symbol: widget.symbol,
+            productId: widget.productId,
+            initialSide: widget.side == TradingSide.buy
+                ? TradingSide.long
+                : TradingSide.short,
+            onYourPositionTap: widget.onYourPositionTap,
+          );
+  }
+}
+
+class _OrderPanelLoading extends StatelessWidget {
+  const _OrderPanelLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Material(
+      key: const Key('order-panel-entry-loading'),
+      color: colors.surface,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          key: const Key('order-panel-entry-skeleton'),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  SkeletonBlock(width: 8, height: 8, radius: 4),
+                  SizedBox(width: 8),
+                  SkeletonBlock(width: 112, height: 24),
+                  Spacer(),
+                  SkeletonBlock(width: 24, height: 24, radius: 12),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Expanded(child: SkeletonBlock(width: 123, height: 36)),
+                  SizedBox(width: 32),
+                  Expanded(child: SkeletonBlock(width: 151, height: 36)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const SkeletonBlock(width: double.infinity, height: 93),
+              const SizedBox(height: 8),
+              const SkeletonBlock(width: double.infinity, height: 46),
+              const SizedBox(height: 16),
+              Divider(color: colors.subtleSurface),
+              const SizedBox(height: 14),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SkeletonBlock(width: 88, height: 14),
+                  SkeletonBlock(width: 64, height: 14),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SkeletonBlock(width: 104, height: 14),
+                  SkeletonBlock(width: 72, height: 14),
+                ],
+              ),
+              const SizedBox(height: 32),
+              const SkeletonBlock(
+                width: double.infinity,
+                height: 48,
+                radius: 12,
+              ),
+            ],
+          ),
         ),
       ),
     );
