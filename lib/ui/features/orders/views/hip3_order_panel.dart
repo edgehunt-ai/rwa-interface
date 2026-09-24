@@ -83,6 +83,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   String? _error;
   OrderPreview? _preview;
   OrderPreview? _quotePreview;
+  String? _marketPrice;
   var _quoteLoading = false;
   TradingOrder? _submitted;
   String? _pendingOrderId;
@@ -118,7 +119,53 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     });
   }
 
-  void _onLimitPriceChanged() => _scheduleQuote();
+  void _onLimitPriceChanged() {
+    if (_type == TradingOrderType.limit) {
+      final price = double.tryParse(_limitPrice.text.trim());
+      if (price != null && price > 0) {
+        final quantity = double.tryParse(_amount.text.trim());
+        final orderValue = double.tryParse(_orderValue.text.trim());
+        if (quantity != null && quantity >= 0) {
+          final value = _formatHip3Price(quantity * price);
+          if (_orderValue.text != value) {
+            _orderValue.value = TextEditingValue(
+              text: value,
+              selection: TextSelection.collapsed(offset: value.length),
+            );
+          }
+        } else if (orderValue != null && orderValue >= 0) {
+          final nextQuantity = _formatHip3Price(orderValue / price);
+          if (_amount.text != nextQuantity) {
+            _amount.value = TextEditingValue(
+              text: nextQuantity,
+              selection: TextSelection.collapsed(offset: nextQuantity.length),
+            );
+          }
+        }
+      }
+    }
+    _scheduleQuote();
+  }
+
+  Future<String?> _loadHip3MarketPrice() async {
+    if (_marketPrice != null) return _marketPrice;
+    final ref = MarketProductRef(
+      symbol: widget.symbol,
+      kind: MarketProductKind.perp,
+    );
+    try {
+      final snapshot = await this.ref.read(marketSnapshotProvider(ref).future);
+      _marketPrice = snapshot.price.value;
+    } on Object {
+      try {
+        final product = await this.ref.read(marketProductProvider(ref).future);
+        _marketPrice = product.price.value;
+      } on Object {
+        // The price is optional for editing a limit order.
+      }
+    }
+    return _marketPrice;
+  }
 
   void _onOrderValueChanged() {
     if (_type != TradingOrderType.limit) return;
@@ -141,18 +188,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   Future<void> _setOrderType(TradingOrderType next) async {
     if (next == _type) return;
     if (next == TradingOrderType.limit) {
-      final snapshot = ref.read(
-        marketSnapshotProvider(
-          MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
-        ),
-      );
+      final marketPrice = await _loadHip3MarketPrice();
+      if (!mounted) return;
       final value = await showModalBottomSheet<String>(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (_) => _Hip3LimitPriceSheet(
           initialPrice: _limitPrice.text,
-          marketPrice: snapshot.value?.price.value,
+          marketPrice: marketPrice,
         ),
       );
       if (!mounted || value == null) return;
@@ -176,18 +220,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   Future<void> _editLimitPrice() async {
-    final snapshot = ref.read(
-      marketSnapshotProvider(
-        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
-      ),
-    );
+    final marketPrice = await _loadHip3MarketPrice();
+    if (!mounted) return;
     final value = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _Hip3LimitPriceSheet(
         initialPrice: _limitPrice.text,
-        marketPrice: snapshot.value?.price.value,
+        marketPrice: marketPrice,
       ),
     );
     if (!mounted || value == null) return;
@@ -591,7 +632,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   String? _amountError() {
     final rules = _context;
-    final amount = double.tryParse(_amount.text.trim());
+    final notionalText = _notionalInputText();
+    final amount = double.tryParse(notionalText);
     if (rules == null || amount == null) return null;
     if (_inputNotional && _type == TradingOrderType.market) {
       final marketMinimum = _side == TradingSide.long
@@ -599,7 +641,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           : rules.marketOrderMinimumShort;
       final minimum = marketMinimum ?? rules.minimumNotional;
       final entered = DecimalValue(
-        _amount.text.trim(),
+        notionalText,
         asset: minimum.asset,
         unit: minimum.unit,
       );
@@ -617,6 +659,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
     return null;
   }
+
+  String _notionalInputText() => _type == TradingOrderType.limit
+      ? _orderValue.text.trim()
+      : _amount.text.trim();
 
   void _syncPercentageFromAmount() {
     final bounds = _amountBounds(_context?.availableMargin);
@@ -676,7 +722,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       // server rule before comparing; compareTo intentionally rejects mixed
       // units such as `token` and `notional`.
       notional = DecimalValue(
-        _amount.text.trim(),
+        _notionalInputText(),
         asset: rules.minimumNotional.asset,
         unit: rules.minimumNotional.unit,
       );
@@ -1013,6 +1059,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
+    final marketSnapshot = ref.watch(
+      marketSnapshotProvider(
+        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
+      ),
+    );
+    _marketPrice = marketSnapshot.value?.price.value;
     final isShort = _side == TradingSide.short || _reduceOnly;
     final actionColor = isShort ? kShortTradeColor : semantic.success;
     final amount = _amount.text.trim();
@@ -1182,8 +1234,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   percentage: _percentage,
                   onMarginModeTap: () async {
                     if (_submitting || _settingsUpdating) return;
-                    final currentMode = _marginMode;
-                    if (currentMode == null) return;
+                    final currentMode = _marginMode ?? TradingMarginMode.cross;
                     final modes =
                         _context?.marginModes ??
                         TradingMarginMode.values.toSet();
@@ -1208,8 +1259,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   },
                   onLeverageTap: () async {
                     final rules = _context;
-                    final currentMode = _marginMode;
-                    if (currentMode == null) return;
+                    final currentMode = _marginMode ?? TradingMarginMode.cross;
                     if (_submitting || _settingsUpdating) return;
                     await showModalBottomSheet<int>(
                       context: context,
@@ -3149,33 +3199,9 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
                 style: TextStyle(color: colors.tertiaryText),
               ),
               const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    r'$',
-                    style: Theme.of(context).textTheme.headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: TextField(
-                      key: const Key('hip3-limit-price-sheet-input'),
-                      controller: _controller,
-                      textAlign: TextAlign.center,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      onChanged: _changed,
-                    ),
-                  ),
-                ],
+              _Hip3CenteredLimitPriceInput(
+                controller: _controller,
+                onChanged: _changed,
               ),
               const SizedBox(height: 8),
               if (market != null && market > 0)
@@ -3238,6 +3264,65 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _Hip3CenteredLimitPriceInput extends StatelessWidget {
+  const _Hip3CenteredLimitPriceInput({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.headlineMedium
+        ?.copyWith(fontSize: 28, height: 34 / 28, fontWeight: FontWeight.w600);
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: value.text.isEmpty ? '0' : value.text,
+            style: style,
+          ),
+          textDirection: TextDirection.ltr,
+          maxLines: 1,
+        )..layout();
+        final inputWidth = (painter.width + 8).clamp(24.0, 220.0);
+        return Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(r'$', style: style),
+              SizedBox(
+                width: inputWidth,
+                child: TextField(
+                  key: const Key('hip3-limit-price-sheet-input'),
+                  controller: controller,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  style: style,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: onChanged,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

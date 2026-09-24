@@ -691,9 +691,33 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _scheduleQuote();
   }
 
+  Future<String?> _loadBstocksMarketPrice() async {
+    if (_currentMarketPrice != null) return _currentMarketPrice;
+    final product = MarketProductRef(
+      symbol: widget.symbol,
+      kind: MarketProductKind.bstock,
+    );
+    try {
+      final snapshot = await ref.read(marketSnapshotProvider(product).future);
+      _currentMarketPrice = snapshot.price.value;
+    } on Object {
+      try {
+        final marketProduct = await ref.read(
+          marketProductProvider(product).future,
+        );
+        _currentMarketPrice = marketProduct.price.value;
+      } on Object {
+        // The limit-price editor can still be used without a market quote.
+      }
+    }
+    return _currentMarketPrice;
+  }
+
   Future<void> _setOrderType(TradingOrderType next) async {
     if (next == type) return;
     if (next == TradingOrderType.limit) {
+      final marketPrice = await _loadBstocksMarketPrice();
+      if (!mounted) return;
       final value = await showModalBottomSheet<String>(
         context: context,
         isScrollControlled: true,
@@ -702,8 +726,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         builder: (_) => _BstocksLimitPriceSheet(
           initialPrice: limitPrice.text.trim().isNotEmpty
               ? limitPrice.text.trim()
-              : _currentMarketPrice ?? '',
-          marketPrice: _currentMarketPrice,
+              : marketPrice ?? '',
+          marketPrice: marketPrice,
         ),
       );
       if (!mounted || value == null) return;
@@ -722,6 +746,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   Future<void> _editLimitPrice() async {
+    final marketPrice = await _loadBstocksMarketPrice();
+    if (!mounted) return;
     final value = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -729,7 +755,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       elevation: 0,
       builder: (_) => _BstocksLimitPriceSheet(
         initialPrice: limitPrice.text.trim(),
-        marketPrice: _currentMarketPrice,
+        marketPrice: marketPrice,
       ),
     );
     if (!mounted || value == null) return;
@@ -1581,10 +1607,7 @@ class _LoadingSummaryRow extends StatelessWidget {
     child: Row(
       children: [
         Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(color: Color(0xFF676776)),
-          ),
+          child: Text(label, style: const TextStyle(color: Color(0xFF676776))),
         ),
         const SkeletonBlock(width: 52, height: 14, radius: 4),
       ],
@@ -1603,10 +1626,7 @@ class _SummaryRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(color: Color(0xFF676776)),
-          ),
+          child: Text(label, style: const TextStyle(color: Color(0xFF676776))),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -2241,7 +2261,6 @@ class _CenteredLimitPriceInput extends StatelessWidget {
                   ),
                   style: style,
                   decoration: const InputDecoration(
-                    hintText: '0',
                     isDense: true,
                     filled: false,
                     border: InputBorder.none,
@@ -2297,7 +2316,7 @@ class _LimitPriceFact extends StatelessWidget {
   }
 }
 
-  String _formatDecimal(double value) {
+String _formatDecimal(double value) {
   final text = value.toStringAsFixed(8);
   return text.replaceFirst(RegExp(r'\.?0+$'), '');
 }
