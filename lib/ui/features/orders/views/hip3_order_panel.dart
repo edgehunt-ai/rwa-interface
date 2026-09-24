@@ -61,11 +61,12 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
 
 class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   final _amount = TextEditingController();
+  final _orderValue = TextEditingController();
   final _limitPrice = TextEditingController();
   final _protectionPrices = List.generate(4, (_) => TextEditingController());
   final _protectionReferenceNotifier = ValueNotifier<double?>(null);
   var _side = TradingSide.long;
-  final _type = TradingOrderType.market;
+  var _type = TradingOrderType.market;
   final _inputNotional = true;
   TradingMarginMode? _marginMode;
   var _leverage = 20;
@@ -94,7 +95,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _side = widget.initialSide;
     _reduceOnly = widget.initialReduceOnly;
     _amount.addListener(_onAmountChanged);
-    _limitPrice.addListener(_scheduleQuote);
+    _orderValue.addListener(_onOrderValueChanged);
+    _limitPrice.addListener(_onLimitPriceChanged);
     ref.listenManual(
       marketSnapshotProvider(
         MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
@@ -114,6 +116,82 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _loadContext();
       }
     });
+  }
+
+  void _onLimitPriceChanged() => _scheduleQuote();
+
+  void _onOrderValueChanged() {
+    if (_type != TradingOrderType.limit) return;
+    final price = double.tryParse(_limitPrice.text.trim());
+    final value = double.tryParse(_orderValue.text.trim());
+    if (price != null && price > 0 && value != null && value >= 0) {
+      final quantity = _formatHip3Price(value / price);
+      if (_amount.text != quantity) {
+        _amount.value = TextEditingValue(
+          text: quantity,
+          selection: TextSelection.collapsed(offset: quantity.length),
+        );
+      }
+    }
+    _scheduleQuote();
+  }
+
+  void _syncQuantityFromOrderValue() => _onOrderValueChanged();
+
+  Future<void> _setOrderType(TradingOrderType next) async {
+    if (next == _type) return;
+    if (next == TradingOrderType.limit) {
+      final snapshot = ref.read(
+        marketSnapshotProvider(
+          MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
+        ),
+      );
+      final value = await showModalBottomSheet<String>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _Hip3LimitPriceSheet(
+          initialPrice: _limitPrice.text,
+          marketPrice: snapshot.value?.price.value,
+        ),
+      );
+      if (!mounted || value == null) return;
+      setState(() {
+        _type = next;
+        _limitPrice.text = value;
+        _amount.clear();
+        _orderValue.clear();
+        _percentage = 0;
+      });
+    } else {
+      setState(() {
+        _type = next;
+        _limitPrice.clear();
+        _amount.clear();
+        _orderValue.clear();
+        _percentage = 0;
+      });
+    }
+    _scheduleQuote();
+  }
+
+  Future<void> _editLimitPrice() async {
+    final snapshot = ref.read(
+      marketSnapshotProvider(
+        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
+      ),
+    );
+    final value = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _Hip3LimitPriceSheet(
+        initialPrice: _limitPrice.text,
+        marketPrice: snapshot.value?.price.value,
+      ),
+    );
+    if (!mounted || value == null) return;
+    _limitPrice.text = value;
   }
 
   Future<void> _loadContext() async {
@@ -253,8 +331,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   void dispose() {
     _quoteDebounce?.cancel();
     _amount.removeListener(_onAmountChanged);
-    _limitPrice.removeListener(_scheduleQuote);
+    _orderValue.removeListener(_onOrderValueChanged);
+    _limitPrice.removeListener(_onLimitPriceChanged);
     _amount.dispose();
+    _orderValue.dispose();
     _limitPrice.dispose();
     _protectionReferenceNotifier.dispose();
     for (final controller in _protectionPrices) {
@@ -278,10 +358,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         kind: MarketProductKind.perp,
         side: _side,
         type: _type,
-        amount: _inputNotional
+        amount: _type == TradingOrderType.market && _inputNotional
             ? DecimalValue(rawAmount, asset: 'USDC', unit: 'token')
             : null,
-        quantity: !_inputNotional
+        quantity: _type == TradingOrderType.limit || !_inputNotional
             ? DecimalValue(rawAmount, asset: widget.symbol, unit: 'token')
             : null,
         limitPrice: _type == TradingOrderType.limit
@@ -492,6 +572,19 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     // A typed amount takes precedence over a slider value selected while the
     // asynchronous balance was still loading.
     _percentageWaitingForBalance = false;
+    if (_type == TradingOrderType.limit) {
+      final quantity = double.tryParse(_amount.text.trim());
+      final price = double.tryParse(_limitPrice.text.trim());
+      if (quantity != null && price != null && price > 0) {
+        final value = _formatHip3Price(quantity * price);
+        if (_orderValue.text != value) {
+          _orderValue.value = TextEditingValue(
+            text: value,
+            selection: TextSelection.collapsed(offset: value.length),
+          );
+        }
+      }
+    }
     _scheduleQuote();
     if (_error != null && mounted) setState(() => _error = null);
   }
@@ -534,13 +627,17 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       _percentageWaitingForBalance = false;
       final balance = _context?.availableMargin;
       final available = double.tryParse(balance?.value ?? '');
-      _amount.text = available == null
+      final controller = _type == TradingOrderType.limit
+          ? _orderValue
+          : _amount;
+      controller.text = available == null
           ? input.toString()
           : _formatHip3SliderAmount(input, available, _percentage);
       return;
     }
 
-    final amount = double.tryParse(_amount.text.trim());
+    final controller = _type == TradingOrderType.limit ? _orderValue : _amount;
+    final amount = double.tryParse(controller.text.trim());
     final next = amount == null || amount <= bounds.$1 || bounds.$2 <= bounds.$1
         ? 0.0
         : ((amount - bounds.$1) / (bounds.$2 - bounds.$1)).clamp(0.0, 1.0);
@@ -986,22 +1083,43 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 ),
                 const SizedBox(height: 16),
                 if (!_reduceOnly) ...[
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      width: 143,
-                      child: _Hip3SegmentedControl<TradingSide>(
-                        values: const [TradingSide.long, TradingSide.short],
-                        selected: _side,
-                        selectedColor: actionColor,
-                        label: (value) =>
-                            value == TradingSide.long ? l10n.long : l10n.short,
-                        onChanged: (value) {
-                          setState(() => _side = value);
-                          _scheduleQuote();
-                        },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 123,
+                        child: _Hip3SegmentedControl<TradingSide>(
+                          width: 123,
+                          values: const [TradingSide.long, TradingSide.short],
+                          selected: _side,
+                          selectedColor: actionColor,
+                          label: (value) => value == TradingSide.long
+                              ? l10n.long
+                              : l10n.short,
+                          onChanged: (value) {
+                            setState(() => _side = value);
+                            _scheduleQuote();
+                          },
+                        ),
                       ),
-                    ),
+                      SizedBox(
+                        width: 151,
+                        child: _Hip3SegmentedControl<TradingOrderType>(
+                          width: 151,
+                          values: const [
+                            TradingOrderType.market,
+                            TradingOrderType.limit,
+                          ],
+                          selected: _type,
+                          selectedColor: colors.surface,
+                          selectedForeground: colors.primaryText,
+                          label: (value) => value == TradingOrderType.market
+                              ? l10n.market
+                              : l10n.limit,
+                          onChanged: _setOrderType,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -1014,6 +1132,31 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   ),
                   const SizedBox(height: 8),
                 ],
+                if (_type == TradingOrderType.limit && !_reduceOnly) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _Hip3LimitInput(
+                          controller: _limitPrice,
+                          label: l10n.limitPrice,
+                          suffix: 'USDC',
+                          onTap: _editLimitPrice,
+                          inputKey: const Key('hip3-limit-price-input'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _Hip3LimitInput(
+                          controller: _amount,
+                          label: l10n.quantity,
+                          suffix: widget.symbol,
+                          inputKey: const Key('hip3-limit-quantity-input'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 _Hip3ModeLeverageCard(
                   showSettings: currentPosition == null,
                   marginMode: _marginMode,
@@ -1022,10 +1165,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   minimumAmount: _context?.minimumNotional.value,
                   amountBounds: _amountBounds(availableBalance),
                   limitPrice: null,
-                  controller: _amount,
+                  controller: _type == TradingOrderType.limit
+                      ? _orderValue
+                      : _amount,
+                  showAmountInput: true,
                   settlementAsset: settlementAsset,
-                  inputAsset: _inputNotional ? settlementAsset : widget.symbol,
-                  quantityInput: !_inputNotional,
+                  inputAsset: _type == TradingOrderType.limit
+                      ? settlementAsset
+                      : _inputNotional
+                      ? settlementAsset
+                      : widget.symbol,
+                  quantityInput:
+                      _type == TradingOrderType.market && !_inputNotional,
                   availableMargin: availableBalance?.value,
                   availableMarginLoading: _contextLoading,
                   percentage: _percentage,
@@ -1091,12 +1242,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     final available = double.tryParse(balance.value);
                     setState(() {
                       _percentage = value;
-                      _amount.text = available == null
+                      final controller = _type == TradingOrderType.limit
+                          ? _orderValue
+                          : _amount;
+                      controller.text = available == null
                           ? input.toString()
                           : _formatHip3SliderAmount(input, available, value);
                       _error = null;
                     });
                   },
+                  onAmountChanged: _type == TradingOrderType.limit
+                      ? (_) => _syncQuantityFromOrderValue()
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 Divider(color: colors.subtleSurface),
@@ -1233,27 +1390,34 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
 class _Hip3SegmentedControl<T> extends StatelessWidget {
   const _Hip3SegmentedControl({
+    required this.width,
     required this.values,
     required this.selected,
     required this.selectedColor,
     required this.label,
     required this.onChanged,
+    this.selectedForeground,
   });
 
+  final double width;
   final List<T> values;
   final T selected;
   final Color selectedColor;
+  final Color? selectedForeground;
   final String Function(T value) label;
   final ValueChanged<T> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final widths = width < 140 ? const [56.0, 55.0] : const [77.0, 63.0];
     final selectedIndex = values.indexOf(selected);
+    final selectionLeft = selectedIndex == 0 ? 0.0 : widths.first + 4.0;
     return Semantics(
       container: true,
       explicitChildNodes: true,
       child: Container(
+        width: width,
         height: 44,
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
@@ -1262,49 +1426,55 @@ class _Hip3SegmentedControl<T> extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            AnimatedAlign(
+            AnimatedPositioned(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeOutCubic,
-              alignment: selectedIndex == 0
-                  ? Alignment.centerLeft
-                  : Alignment.centerRight,
-              child: FractionallySizedBox(
-                widthFactor: 0.5,
-                heightFactor: 1,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: selectedColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              left: selectionLeft,
+              top: 0,
+              width: widths[selectedIndex],
+              height: 36,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: selectedColor,
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
             Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                for (final value in values)
-                  Expanded(
+                for (var index = 0; index < values.length; index++)
+                  SizedBox(
+                    width: widths[index],
+                    height: 36,
                     child: Semantics(
                       button: true,
                       inMutuallyExclusiveGroup: true,
-                      selected: selected == value,
-                      label: label(value),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(6),
-                        onTap: () => onChanged(value),
-                        child: Center(
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 180),
-                            curve: Curves.easeOutCubic,
-                            style: Theme.of(context).textTheme.labelLarge!
-                                .copyWith(
-                                  color: selected == value
-                                      ? colors.onPrimaryAction
-                                      : colors.secondaryText,
-                                  fontWeight: selected == value
-                                      ? FontWeight.w600
-                                      : FontWeight.w500,
-                                ),
-                            child: Text(label(value)),
+                      selected: selected == values[index],
+                      label: label(values[index]),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => onChanged(values[index]),
+                          child: Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 180),
+                              curve: Curves.easeOutCubic,
+                              style: Theme.of(context).textTheme.labelMedium!
+                                  .copyWith(
+                                    color: selected == values[index]
+                                        ? selectedForeground ??
+                                              colors.onPrimaryAction
+                                        : colors.secondaryText,
+                                    fontWeight: selected == values[index]
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                  ),
+                              child: Text(label(values[index])),
+                            ),
                           ),
                         ),
                       ),
@@ -1561,7 +1731,10 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                 if (_error != null || errors.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   TpSlInlineError(
-                    messages: {...errors, if (_error != null) _error!}.toList(),
+                    messages: {
+                      ...errors,
+                      ...?(_error == null ? null : [_error!]),
+                    }.toList(),
                   ),
                 ],
                 const SizedBox(height: 48),
@@ -1885,6 +2058,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     this.amountBounds,
     this.limitPrice,
     required this.controller,
+    this.showAmountInput = true,
     required this.settlementAsset,
     required this.inputAsset,
     required this.quantityInput,
@@ -1894,6 +2068,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     required this.onMarginModeTap,
     required this.onLeverageTap,
     required this.onPercentageChanged,
+    this.onAmountChanged,
   });
 
   final bool showSettings;
@@ -1906,6 +2081,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   /// Non-null only for a limit order, which cannot be submitted without it.
   final TextEditingController? limitPrice;
   final TextEditingController controller;
+  final bool showAmountInput;
   final String settlementAsset;
   final String inputAsset;
   final bool quantityInput;
@@ -1915,6 +2091,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   final VoidCallback onMarginModeTap;
   final VoidCallback onLeverageTap;
   final ValueChanged<double> onPercentageChanged;
+  final ValueChanged<String>? onAmountChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -2006,6 +2183,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                     child: TextField(
                       key: const Key('hip3-limit-price'),
                       controller: controller,
+                      onChanged: onAmountChanged,
                       textAlign: TextAlign.end,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -2045,91 +2223,93 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
             ),
             Container(height: 1, color: colors.surface),
           ],
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      quantityInput
-                          ? AppLocalizations.of(context).quantity
-                          : AppLocalizations.of(context).orderValue,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: colors.secondaryText,
-                      ),
-                    ),
-                    if (availableMarginLoading)
-                      const SizedBox(
-                        key: Key('hip3-margin-loading'),
-                        width: 12,
-                        height: 12,
-                        child: CircularProgressIndicator(strokeWidth: 1.5),
-                      )
-                    else
-                      Text(
-                        '${AppLocalizations.of(context).perpsBalance}: '
-                        '${availableMargin ?? '—'} USDC',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                  ],
-                ),
-                SizedBox(
-                  height: 36,
-                  child: Row(
+          if (showAmountInput)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: controller,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d{0,8}'),
-                            ),
-                          ],
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(color: colors.primaryText),
-                          decoration: InputDecoration(
-                            hintText: minimumAmount == null
-                                ? '0.0'
-                                : AppLocalizations.of(context)
-                                      .minimumAmountPlaceholder(minimumAmount!),
-                            hintStyle: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(color: colors.tertiaryText),
-                            filled: false,
-                            contentPadding: EdgeInsets.zero,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                          ),
-                        ),
-                      ),
                       Text(
-                        inputAsset,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                        quantityInput
+                            ? AppLocalizations.of(context).quantity
+                            : AppLocalizations.of(context).orderValue,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colors.secondaryText,
                         ),
                       ),
+                      if (availableMarginLoading)
+                        const SizedBox(
+                          key: Key('hip3-margin-loading'),
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(strokeWidth: 1.5),
+                        )
+                      else
+                        Text(
+                          '${AppLocalizations.of(context).perpsBalance}: '
+                          '${availableMargin ?? '—'} USDC',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                     ],
                   ),
-                ),
-                _Hip3AmountRail(
-                  // Keep the user's selection visible while balance/rules are
-                  // loading. The callback applies it once bounds are ready.
-                  value: percentage.clamp(0.0, 1.0),
-                  onChanged: onPercentageChanged,
-                ),
-              ],
+                  SizedBox(
+                    height: 36,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*\.?\d{0,8}'),
+                              ),
+                            ],
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(color: colors.primaryText),
+                            decoration: InputDecoration(
+                              hintText: minimumAmount == null
+                                  ? '0.0'
+                                  : AppLocalizations.of(
+                                      context,
+                                    ).minimumAmountPlaceholder(minimumAmount!),
+                              hintStyle: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(color: colors.tertiaryText),
+                              filled: false,
+                              contentPadding: EdgeInsets.zero,
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          inputAsset,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _Hip3AmountRail(
+                    // Keep the user's selection visible while balance/rules are
+                    // loading. The callback applies it once bounds are ready.
+                    value: percentage.clamp(0.0, 1.0),
+                    onChanged: onPercentageChanged,
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -2772,3 +2952,300 @@ class _Hip3RiskRow extends StatelessWidget {
     ],
   );
 }
+
+class _Hip3LimitInput extends StatefulWidget {
+  const _Hip3LimitInput({
+    required this.controller,
+    required this.label,
+    required this.suffix,
+    this.onTap,
+    required this.inputKey,
+  });
+  final TextEditingController controller;
+  final String label;
+  final String suffix;
+  final VoidCallback? onTap;
+  final Key inputKey;
+  @override
+  State<_Hip3LimitInput> createState() => _Hip3LimitInputState();
+}
+
+class _Hip3LimitInputState extends State<_Hip3LimitInput> {
+  late final FocusNode _focusNode = FocusNode();
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Material(
+      color: colors.subtleSurface,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: widget.onTap ?? _focusNode.requestFocus,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+          child: SizedBox(
+            height: 69,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.label,
+                  style: Theme.of(context).textTheme.labelSmall
+                      ?.copyWith(color: colors.secondaryText),
+                ),
+                const SizedBox(height: 4),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          key: widget.inputKey,
+                          controller: widget.controller,
+                          focusNode: _focusNode,
+                          readOnly: widget.onTap != null,
+                          showCursor: widget.onTap == null,
+                          onTap: widget.onTap ?? _focusNode.requestFocus,
+                          keyboardType: widget.onTap == null
+                              ? const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                )
+                              : TextInputType.text,
+                          inputFormatters: widget.onTap == null
+                              ? [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d{0,8}'),
+                                  ),
+                                ]
+                              : null,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: false,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Text(
+                        widget.suffix,
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Hip3LimitPriceSheet extends StatefulWidget {
+  const _Hip3LimitPriceSheet({required this.initialPrice, this.marketPrice});
+  final String initialPrice;
+  final String? marketPrice;
+  @override
+  State<_Hip3LimitPriceSheet> createState() => _Hip3LimitPriceSheetState();
+}
+
+class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
+  late final TextEditingController _controller;
+  double? _rulerPrice;
+  double _deviation = 0;
+  double? get _market => double.tryParse(widget.marketPrice ?? '');
+  @override
+  void initState() {
+    super.initState();
+    final initial = double.tryParse(widget.initialPrice) ?? _market;
+    _controller = TextEditingController(
+      text: initial == null ? '' : _formatHip3Price(initial),
+    );
+    _rulerPrice = initial;
+    final market = _market;
+    if (initial != null && market != null && market > 0) {
+      _deviation = (initial / market - 1) * 100;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _changed(String value) {
+    final price = double.tryParse(value);
+    _rulerPrice = price;
+    final market = _market;
+    if (price != null && market != null && market > 0) {
+      _deviation = (price / market - 1) * 100;
+    }
+    setState(() {});
+  }
+
+  void _dragged(double value) {
+    final text = _formatHip3DraggedPrice(value);
+    final price = double.parse(text);
+    setState(() {
+      _controller.text = text;
+      _rulerPrice = value;
+      final market = _market;
+      if (market != null && market > 0) {
+        _deviation = (price / market - 1) * 100;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final market = _market;
+    final price = double.tryParse(_controller.text);
+    final current = _rulerPrice ?? price ?? market ?? 0;
+    return SizedBox(
+      height: 543 + MediaQuery.viewPaddingOf(context).bottom,
+      child: Material(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            24 + MediaQuery.viewPaddingOf(context).bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    AppLocalizations.of(context).limitPrice,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 48),
+              Text(
+                AppLocalizations.of(context).limitPrice,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: colors.tertiaryText),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    r'$',
+                    style: Theme.of(context).textTheme.headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  SizedBox(
+                    width: 150,
+                    child: TextField(
+                      key: const Key('hip3-limit-price-sheet-input'),
+                      controller: _controller,
+                      textAlign: TextAlign.center,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      onChanged: _changed,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (market != null && market > 0)
+                Center(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _controller.text = _formatHip3Price(market);
+                        _rulerPrice = market;
+                        _deviation = 0;
+                      });
+                    },
+                    child: Text(AppLocalizations.of(context).market),
+                  ),
+                ),
+              const SizedBox(height: 36),
+              TpSlTickRuler(
+                semanticLabel: AppLocalizations.of(context).dragToSet,
+                value: current,
+                minimum: 0,
+                maximum: 20,
+                divisions: 20,
+                unbounded: true,
+                onChanged: _dragged,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${AppLocalizations.of(context).market}: ${market == null ? '-' : '\$${_formatHip3Price(market)}'}',
+                  ),
+                  Text(
+                    'Price Deviation ${_deviation >= 0 ? '+' : ' '}${_deviation.toStringAsFixed(0)}%',
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(AppLocalizations.of(context).back),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: price == null || price <= 0
+                          ? null
+                          : () =>
+                                Navigator.pop(context, _formatHip3Price(price)),
+                      child: Text(AppLocalizations.of(context).confirm),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _formatHip3Price(double value) {
+  final text = value.toStringAsFixed(8);
+  return text.replaceFirst(RegExp(r'\.?0+$'), '');
+}
+
+String _formatHip3DraggedPrice(double value) =>
+    value >= 1 ? value.round().toString() : _formatHip3Price(value);
