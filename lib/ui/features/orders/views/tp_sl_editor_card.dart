@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -357,7 +359,9 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   }
 
   void _updateDrag(DragUpdateDetails details, double width) {
-    final range = widget.maximum - widget.minimum;
+    final range = widget.unbounded
+        ? math.max(widget.maximum - widget.minimum, _currentValue.abs())
+        : widget.maximum - widget.minimum;
     if (range <= 0 || width <= 0) return;
     // The ruler ticks move with the finger, so dragging right lowers the
     // value while dragging left raises it.
@@ -385,7 +389,9 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final current = _currentValue;
-    final visualRange = widget.maximum - widget.minimum;
+    final visualRange = widget.unbounded
+        ? math.max(widget.maximum - widget.minimum, current.abs())
+        : widget.maximum - widget.minimum;
     final visualMinimum = widget.unbounded
         ? (current - visualRange / 2).clamp(0.0, double.infinity)
         : widget.minimum;

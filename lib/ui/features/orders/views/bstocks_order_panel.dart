@@ -127,6 +127,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   void _refreshLimitFromQuantity() {
     if (type != TradingOrderType.limit || _syncingLimitFields) return;
+    if (side == TradingSide.sell) _refreshLimitPercentage(quantity.text);
     _syncLimitFields(() {
       final q = double.tryParse(quantity.text.trim());
       final p = double.tryParse(limitPrice.text.trim());
@@ -139,7 +140,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   void _refreshLimitFromOrderValue() {
     if (type != TradingOrderType.limit || _syncingLimitFields) return;
-    _refreshLimitPercentage();
+    if (side == TradingSide.buy) _refreshLimitPercentage(orderValue.text);
     _syncLimitFields(() {
       final value = double.tryParse(orderValue.text.trim());
       final p = double.tryParse(limitPrice.text.trim());
@@ -150,9 +151,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _scheduleQuote();
   }
 
-  void _refreshLimitPercentage() {
+  void _refreshLimitPercentage([String? text]) {
     final available = _percentageAvailable;
-    final entered = double.tryParse(orderValue.text.trim());
+    final entered = double.tryParse((text ?? orderValue.text).trim());
     final next =
         available == null ||
             available <= 0 ||
@@ -176,7 +177,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _percentageSyncScheduled = false;
       if (!mounted || type != TradingOrderType.limit) return;
-      _refreshLimitPercentage();
+      _refreshLimitPercentage(
+        side == TradingSide.buy ? orderValue.text : quantity.text,
+      );
     });
   }
 
@@ -248,8 +251,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     );
     _percentageWaitingForAmount = false;
     if (mounted) setState(() => percentage = value);
-    final controller = type == TradingOrderType.limit && side == TradingSide.buy
-        ? orderValue
+    final controller = type == TradingOrderType.limit
+        ? (side == TradingSide.buy ? orderValue : quantity)
         : amount;
     controller.value = TextEditingValue(
       text: nextText,
@@ -769,11 +772,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final settlementBalance = ref.watch(
       bstocksSettlementBalanceProvider(settlementAsset),
     );
-    final amountAsset = type == TradingOrderType.market && isBuy
-        ? settlementAsset
-        : widget.symbol;
+    final amountAsset = type == TradingOrderType.market
+        ? (isBuy ? settlementAsset : widget.symbol)
+        : settlementAsset;
     final enteredAmount = type == TradingOrderType.limit
-        ? orderValue.text.trim()
+        ? (isBuy ? orderValue.text.trim() : quantity.text.trim())
         : amount.text.trim();
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
     final availableBalance = settlementBalance;
@@ -802,7 +805,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
     final formHeight =
-        (type == TradingOrderType.limit ? 499.0 : 490.0) +
+        (type == TradingOrderType.limit ? 575.0 : 560.0) +
         // The failure notice is normally one compact row. Its text scrolls
         // internally when a server returns a longer message, so it must not
         // reserve the old fixed 190px block in the whole order sheet.
@@ -876,7 +879,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             ],
           ),
           const SizedBox(height: 16),
-          if (type == TradingOrderType.limit && isBuy) ...[
+          if (type == TradingOrderType.limit) ...[
             Row(
               children: [
                 Expanded(
@@ -955,10 +958,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     children: [
                       Expanded(
                         child: TextField(
-                          controller: type == TradingOrderType.limit && isBuy
+                          controller: type == TradingOrderType.limit
                               ? orderValue
                               : amount,
-                          key: type == TradingOrderType.limit && isBuy
+                          key: type == TradingOrderType.limit
                               ? const Key('bstocks-limit-order-value-input')
                               : const Key('bstocks-market-amount-input'),
                           keyboardType: const TextInputType.numberWithOptions(
@@ -994,19 +997,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ],
             ),
           ),
-          if (type == TradingOrderType.limit && !isBuy) ...[
-            const SizedBox(height: 8),
-            TextField(
-              controller: limitPrice,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: InputDecoration(
-                labelText: l10n.limitPrice,
-                prefixText: r'$',
-              ),
-            ),
-          ],
           if (type == TradingOrderType.limit) ...[
             const SizedBox(height: 16),
             Divider(color: colors.subtleSurface),
@@ -2031,7 +2021,7 @@ class _BstocksLimitPriceSheetState extends State<_BstocksLimitPriceSheet> {
     _rulerPrice = initialPrice;
     _deviation = market == null || market <= 0 || initialPrice == null
         ? 0
-        : ((initialPrice / market) - 1).clamp(0.0, double.infinity) * 100;
+        : ((initialPrice / market) - 1) * 100;
   }
 
   @override
@@ -2307,7 +2297,7 @@ class _LimitPriceFact extends StatelessWidget {
   }
 }
 
-String _formatDecimal(double value) {
+  String _formatDecimal(double value) {
   final text = value.toStringAsFixed(8);
   return text.replaceFirst(RegExp(r'\.?0+$'), '');
 }
