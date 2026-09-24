@@ -67,7 +67,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _side = TradingSide.long;
   final _type = TradingOrderType.market;
   final _inputNotional = true;
-  var _marginMode = TradingMarginMode.cross;
+  TradingMarginMode? _marginMode;
   var _leverage = 20;
   Hip3OpeningContext? _context;
   var _contextLoading = true;
@@ -131,7 +131,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _context = context;
         _contextError = null;
         _leverage = context.currentLeverage ?? 20;
-        _marginMode = context.currentMarginMode ?? TradingMarginMode.cross;
+        _marginMode = context.currentMarginMode;
         _error = null;
       });
       _scheduleQuote();
@@ -227,7 +227,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       setState(() {
         _context = updated;
         _leverage = updated.currentLeverage ?? leverage;
-        _marginMode = updated.currentMarginMode ?? marginMode;
+        _marginMode = updated.currentMarginMode;
         _quotePreview = null;
       });
       _scheduleQuote();
@@ -569,7 +569,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     if (_leverage < 1 || _leverage > rules.maximumLeverage) {
       return l10n.hip3LeverageAboveMaximum('${rules.maximumLeverage}');
     }
-    if (!rules.marginModes.contains(_marginMode)) {
+    if (_marginMode == null || !rules.marginModes.contains(_marginMode)) {
       return l10n.hip3MarginModeUnsupported;
     }
     if (!_inputNotional) return null;
@@ -1031,6 +1031,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   percentage: _percentage,
                   onMarginModeTap: () async {
                     if (_submitting || _settingsUpdating) return;
+                    final currentMode = _marginMode;
+                    if (currentMode == null) return;
                     final modes =
                         _context?.marginModes ??
                         TradingMarginMode.values.toSet();
@@ -1039,7 +1041,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       context: context,
                       isScrollControlled: true,
                       builder: (_) => Hip3MarginModeSheet(
-                        initialMode: _marginMode,
+                        initialMode: currentMode,
                         availableModes: modes,
                         onConfirm: (mode) => _updateTradingSettings(
                           leverage: _leverage,
@@ -1055,6 +1057,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   },
                   onLeverageTap: () async {
                     final rules = _context;
+                    final currentMode = _marginMode;
+                    if (currentMode == null) return;
                     if (_submitting || _settingsUpdating) return;
                     await showModalBottomSheet<int>(
                       context: context,
@@ -1064,7 +1068,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                         maximumLeverage: rules?.maximumLeverage ?? 20,
                         onConfirm: (value) => _updateTradingSettings(
                           leverage: value,
-                          marginMode: _marginMode,
+                          marginMode: currentMode,
                         ),
                       ),
                     );
@@ -1893,7 +1897,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   });
 
   final bool showSettings;
-  final TradingMarginMode marginMode;
+  final TradingMarginMode? marginMode;
   final int leverage;
   final int? maximumLeverage;
   final String? minimumAmount;
@@ -1935,7 +1939,9 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            marginMode == TradingMarginMode.cross
+                            marginMode == null
+                                ? '—'
+                                : marginMode == TradingMarginMode.cross
                                 ? AppLocalizations.of(context).cross
                                 : AppLocalizations.of(context).isolated,
                             style: const TextStyle(

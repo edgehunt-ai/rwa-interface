@@ -1014,7 +1014,7 @@ void main() {
     await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
     await tester.pumpAndSettle();
     expect(find.text('Margin mode'), findsOneWidget);
-    await tester.tap(find.text('Isolated'));
+    await tester.tap(find.text('Isolated').last);
     await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));
     await tester.pumpAndSettle();
