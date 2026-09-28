@@ -134,7 +134,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             );
           }
         } else if (orderValue != null && orderValue >= 0) {
-          final nextQuantity = _formatHip3Price(orderValue / price);
+          final nextQuantity = _formatHip3Quantity(
+            orderValue / price,
+            _context?.sizeDecimals,
+          );
           if (_amount.text != nextQuantity) {
             _amount.value = TextEditingValue(
               text: nextQuantity,
@@ -172,7 +175,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final price = double.tryParse(_limitPrice.text.trim());
     final value = double.tryParse(_orderValue.text.trim());
     if (price != null && price > 0 && value != null && value >= 0) {
-      final quantity = _formatHip3Price(value / price);
+      final quantity = _formatHip3Quantity(
+        value / price,
+        _context?.sizeDecimals,
+      );
       if (_amount.text != quantity) {
         _amount.value = TextEditingValue(
           text: quantity,
@@ -253,6 +259,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _marginMode = context.currentMarginMode;
         _error = null;
       });
+      _truncateLimitQuantity(context.sizeDecimals);
       _scheduleQuote();
     } on Hip3ActionPending catch (pending, stackTrace) {
       ref
@@ -386,7 +393,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   OrderIntent? _intentFromFields() {
-    final rawAmount = _amount.text.trim();
+    final enteredAmount = _amount.text.trim();
+    final rawAmount = _type == TradingOrderType.limit
+        ? _truncateDecimal(enteredAmount, _context?.sizeDecimals)
+        : enteredAmount;
     if (rawAmount.isEmpty) return null;
     final rawLimitPrice = _limitPrice.text.trim();
     if (_type == TradingOrderType.limit && rawLimitPrice.isEmpty) return null;
@@ -628,6 +638,16 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
     _scheduleQuote();
     if (_error != null && mounted) setState(() => _error = null);
+  }
+
+  void _truncateLimitQuantity(int decimals) {
+    if (_type != TradingOrderType.limit) return;
+    final truncated = _truncateDecimal(_amount.text, decimals);
+    if (truncated == _amount.text) return;
+    _amount.value = TextEditingValue(
+      text: truncated,
+      selection: TextSelection.collapsed(offset: truncated.length),
+    );
   }
 
   String? _amountError() {
@@ -1203,6 +1223,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                           label: l10n.quantity,
                           suffix: widget.symbol,
                           inputKey: const Key('hip3-limit-quantity-input'),
+                          maxFractionDigits: _context?.sizeDecimals,
                         ),
                       ),
                     ],
@@ -3010,12 +3031,14 @@ class _Hip3LimitInput extends StatefulWidget {
     required this.suffix,
     this.onTap,
     required this.inputKey,
+    this.maxFractionDigits,
   });
   final TextEditingController controller;
   final String label;
   final String suffix;
   final VoidCallback? onTap;
   final Key inputKey;
+  final int? maxFractionDigits;
   @override
   State<_Hip3LimitInput> createState() => _Hip3LimitInputState();
 }
@@ -3068,8 +3091,8 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
                               : TextInputType.text,
                           inputFormatters: widget.onTap == null
                               ? [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d{0,8}'),
+                                  _decimalTruncatingFormatter(
+                                    widget.maxFractionDigits ?? 8,
                                   ),
                                 ]
                               : null,
@@ -3330,6 +3353,30 @@ class _Hip3CenteredLimitPriceInput extends StatelessWidget {
 String _formatHip3Price(double value) {
   final text = value.toStringAsFixed(8);
   return text.replaceFirst(RegExp(r'\.?0+$'), '');
+}
+
+String _formatHip3Quantity(double value, int? decimals) =>
+    _truncateDecimal(_formatHip3Price(value), decimals);
+
+TextInputFormatter _decimalTruncatingFormatter(int decimals) =>
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      if (!RegExp(r'^\d*\.?\d*$').hasMatch(newValue.text)) return oldValue;
+      final text = _truncateDecimal(newValue.text, decimals);
+      return TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(
+          offset: newValue.selection.end.clamp(0, text.length),
+        ),
+      );
+    });
+
+String _truncateDecimal(String value, int? decimals) {
+  if (decimals == null || decimals < 0) return value;
+  final separator = value.indexOf('.');
+  if (separator == -1) return value;
+  if (decimals == 0) return value.substring(0, separator);
+  final end = separator + 1 + decimals;
+  return value.length <= end ? value : value.substring(0, end);
 }
 
 String _formatHip3DraggedPrice(double value) =>

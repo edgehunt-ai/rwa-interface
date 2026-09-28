@@ -794,6 +794,39 @@ void main() {
     expect(find.text('Short NVDA'), findsWidgets);
   });
 
+  testWidgets(
+    'HIP-3 limit quantity is truncated to trading-context precision',
+    (tester) async {
+      await tester.pumpWidget(
+        _app(const Hip3OrderPanel(), opening: _Opening(sizeDecimals: 3)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Limit').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('hip3-limit-price-sheet-input')),
+        '10',
+      );
+      Navigator.of(
+        tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+      ).pop('10');
+      await tester.pumpAndSettle();
+
+      final quantity = find.byKey(const Key('hip3-limit-quantity-input'));
+      expect(quantity, findsOneWidget);
+
+      await tester.enterText(find.byType(TextField).last, '12.34567');
+      await tester.pump();
+      expect(tester.widget<TextField>(quantity).controller?.text, '1.234');
+
+      await tester.enterText(quantity, '1.23456');
+      await tester.pump();
+
+      expect(tester.widget<TextField>(quantity).controller?.text, '1.234');
+    },
+  );
+
   testWidgets('HIP-3 reduce-only flow identifies the close-position state', (
     tester,
   ) async {
@@ -1172,11 +1205,13 @@ final class _Opening implements Hip3OpeningRepository {
     this.failing = false,
     this.maximumNotional = '1000',
     this.availableMargin = '1000',
+    this.sizeDecimals = 3,
   });
   final int maximum;
   final bool failing;
   final String maximumNotional;
   String availableMargin;
+  final int sizeDecimals;
   int contextCalls = 0;
   int settingsRequests = 0;
   int leverage = 10;
@@ -1205,7 +1240,7 @@ final class _Opening implements Hip3OpeningRepository {
     availableMargin: DecimalValue(availableMargin),
     minimumNotional: DecimalValue('12'),
     maximumNotional: DecimalValue(maximumNotional),
-    sizeDecimals: 3,
+    sizeDecimals: sizeDecimals,
     validUntil: DateTime.now().toUtc().add(const Duration(minutes: 1)),
     operations: {'placeOrder', 'setLeverage'},
   );
