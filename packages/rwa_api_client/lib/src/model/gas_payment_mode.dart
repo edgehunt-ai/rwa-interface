@@ -15,8 +15,6 @@ class GasPaymentMode extends EnumClass {
   static const GasPaymentMode appSponsored = _$appSponsored;
   @BuiltValueEnumConst(wireName: r'user_paid_native')
   static const GasPaymentMode userPaidNative = _$userPaidNative;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const GasPaymentMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<GasPaymentMode> get serializer => _$gasPaymentModeSerializer;
 

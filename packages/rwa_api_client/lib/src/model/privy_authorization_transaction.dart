@@ -159,8 +159,6 @@ class PrivyAuthorizationTransactionValueEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x0')
   static const PrivyAuthorizationTransactionValueEnum n0x0 = _$privyAuthorizationTransactionValueEnum_n0x0;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationTransactionValueEnum unknownDefaultOpenApi = _$privyAuthorizationTransactionValueEnum_unknownDefaultOpenApi;
 
   static Serializer<PrivyAuthorizationTransactionValueEnum> get serializer => _$privyAuthorizationTransactionValueEnumSerializer;
 

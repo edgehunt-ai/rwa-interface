@@ -154,8 +154,6 @@ class Hip3RealtimeSnapshotEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3_snapshot')
   static const Hip3RealtimeSnapshotEventEventEnum hip3Snapshot = _$hip3RealtimeSnapshotEventEventEnum_hip3Snapshot;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimeSnapshotEventEventEnum unknownDefaultOpenApi = _$hip3RealtimeSnapshotEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimeSnapshotEventEventEnum> get serializer => _$hip3RealtimeSnapshotEventEventEnumSerializer;
 

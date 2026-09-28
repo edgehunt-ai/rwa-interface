@@ -39,6 +39,14 @@ part 'order.g.dart';
 /// * [submittedTransactionHash] 
 /// * [confirmedTransactionHash] 
 /// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
+/// * [previewId] - 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
+/// * [chainId] 
+/// * [router] 
+/// * [placementTransactionHash] - canonical GTC 的挂单交易；不是本次撤单或成交交易。
+/// * [transactionHash] - canonical IOC 执行交易；与 log_index 一起定位事件。
+/// * [logIndex] 
+/// * [cancellationReason] 
+/// * [targetOrderId] - 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
 /// * [quantity] - bStocks 市价approve动作尚无最终交易数量，返回null；不能据此认定已成交或补造数量。
 /// * [settlementAsset] - 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
 /// * [productId] - HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
@@ -121,6 +129,36 @@ abstract class Order implements Built<Order, OrderBuilder> {
   /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
   @BuiltValueField(wireName: r'required_funding_raw')
   String? get requiredFundingRaw;
+
+  /// 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
+  @BuiltValueField(wireName: r'preview_id')
+  String? get previewId;
+
+  @BuiltValueField(wireName: r'chain_id')
+  OrderChainIdEnum? get chainId;
+  // enum chainIdEnum {  56,  97,  31337,  };
+
+  @BuiltValueField(wireName: r'router')
+  String? get router;
+
+  /// canonical GTC 的挂单交易；不是本次撤单或成交交易。
+  @BuiltValueField(wireName: r'placement_transaction_hash')
+  String? get placementTransactionHash;
+
+  /// canonical IOC 执行交易；与 log_index 一起定位事件。
+  @BuiltValueField(wireName: r'transaction_hash')
+  String? get transactionHash;
+
+  @BuiltValueField(wireName: r'log_index')
+  int? get logIndex;
+
+  @BuiltValueField(wireName: r'cancellation_reason')
+  OrderCancellationReasonEnum? get cancellationReason;
+  // enum cancellationReasonEnum {  user_cancelled,  insufficient_balance,  insufficient_allowance,  };
+
+  /// 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
+  @BuiltValueField(wireName: r'target_order_id')
+  String? get targetOrderId;
 
   /// bStocks 市价approve动作尚无最终交易数量，返回null；不能据此认定已成交或补造数量。
   @BuiltValueField(wireName: r'quantity')
@@ -342,6 +380,62 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       yield r'required_funding_raw';
       yield serializers.serialize(
         object.requiredFundingRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.previewId != null) {
+      yield r'preview_id';
+      yield serializers.serialize(
+        object.previewId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.chainId != null) {
+      yield r'chain_id';
+      yield serializers.serialize(
+        object.chainId,
+        specifiedType: const FullType(OrderChainIdEnum),
+      );
+    }
+    if (object.router != null) {
+      yield r'router';
+      yield serializers.serialize(
+        object.router,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.placementTransactionHash != null) {
+      yield r'placement_transaction_hash';
+      yield serializers.serialize(
+        object.placementTransactionHash,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.transactionHash != null) {
+      yield r'transaction_hash';
+      yield serializers.serialize(
+        object.transactionHash,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.logIndex != null) {
+      yield r'log_index';
+      yield serializers.serialize(
+        object.logIndex,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.cancellationReason != null) {
+      yield r'cancellation_reason';
+      yield serializers.serialize(
+        object.cancellationReason,
+        specifiedType: const FullType.nullable(OrderCancellationReasonEnum),
+      );
+    }
+    if (object.targetOrderId != null) {
+      yield r'target_order_id';
+      yield serializers.serialize(
+        object.targetOrderId,
         specifiedType: const FullType(String),
       );
     }
@@ -683,6 +777,70 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           if (valueDes == null) continue;
           result.requiredFundingRaw = valueDes;
           break;
+        case r'preview_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.previewId = valueDes;
+          break;
+        case r'chain_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(OrderChainIdEnum),
+          ) as OrderChainIdEnum?;
+          if (valueDes == null) continue;
+          result.chainId = valueDes;
+          break;
+        case r'router':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.router = valueDes;
+          break;
+        case r'placement_transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.placementTransactionHash = valueDes;
+          break;
+        case r'transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.transactionHash = valueDes;
+          break;
+        case r'log_index':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.logIndex = valueDes;
+          break;
+        case r'cancellation_reason':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(OrderCancellationReasonEnum),
+          ) as OrderCancellationReasonEnum?;
+          if (valueDes == null) continue;
+          result.cancellationReason = valueDes;
+          break;
+        case r'target_order_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.targetOrderId = valueDes;
+          break;
         case r'quantity':
           final valueDes = serializers.deserialize(
             value,
@@ -966,8 +1124,6 @@ class OrderFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const OrderFundingModeEnum unreservedTransferFrom = _$orderFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderFundingModeEnum unknownDefaultOpenApi = _$orderFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderFundingModeEnum> get serializer => _$orderFundingModeEnumSerializer;
 
@@ -991,9 +1147,6 @@ class OrderWalletActionBlockerEnum extends EnumClass {
   /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueEnumConst(wireName: r'not_applicable')
   static const OrderWalletActionBlockerEnum notApplicable = _$orderWalletActionBlockerEnum_notApplicable;
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderWalletActionBlockerEnum unknownDefaultOpenApi = _$orderWalletActionBlockerEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderWalletActionBlockerEnum> get serializer => _$orderWalletActionBlockerEnumSerializer;
 
@@ -1001,5 +1154,39 @@ class OrderWalletActionBlockerEnum extends EnumClass {
 
   static BuiltSet<OrderWalletActionBlockerEnum> get values => _$orderWalletActionBlockerEnumValues;
   static OrderWalletActionBlockerEnum valueOf(String name) => _$orderWalletActionBlockerEnumValueOf(name);
+}
+
+class OrderChainIdEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireNumber: 56)
+  static const OrderChainIdEnum number56 = _$orderChainIdEnum_number56;
+  @BuiltValueEnumConst(wireNumber: 97)
+  static const OrderChainIdEnum number97 = _$orderChainIdEnum_number97;
+  @BuiltValueEnumConst(wireNumber: 31337)
+  static const OrderChainIdEnum number31337 = _$orderChainIdEnum_number31337;
+
+  static Serializer<OrderChainIdEnum> get serializer => _$orderChainIdEnumSerializer;
+
+  const OrderChainIdEnum._(String name): super(name);
+
+  static BuiltSet<OrderChainIdEnum> get values => _$orderChainIdEnumValues;
+  static OrderChainIdEnum valueOf(String name) => _$orderChainIdEnumValueOf(name);
+}
+
+class OrderCancellationReasonEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'user_cancelled')
+  static const OrderCancellationReasonEnum userCancelled = _$orderCancellationReasonEnum_userCancelled;
+  @BuiltValueEnumConst(wireName: r'insufficient_balance')
+  static const OrderCancellationReasonEnum insufficientBalance = _$orderCancellationReasonEnum_insufficientBalance;
+  @BuiltValueEnumConst(wireName: r'insufficient_allowance')
+  static const OrderCancellationReasonEnum insufficientAllowance = _$orderCancellationReasonEnum_insufficientAllowance;
+
+  static Serializer<OrderCancellationReasonEnum> get serializer => _$orderCancellationReasonEnumSerializer;
+
+  const OrderCancellationReasonEnum._(String name): super(name);
+
+  static BuiltSet<OrderCancellationReasonEnum> get values => _$orderCancellationReasonEnumValues;
+  static OrderCancellationReasonEnum valueOf(String name) => _$orderCancellationReasonEnumValueOf(name);
 }
 

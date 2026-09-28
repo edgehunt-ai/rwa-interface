@@ -9,10 +9,6 @@ part of 'completed_funding_source_transaction_observation.dart';
 const CompletedFundingSourceTransactionObservationStatusEnum
     _$completedFundingSourceTransactionObservationStatusEnum_confirmed =
     const CompletedFundingSourceTransactionObservationStatusEnum._('confirmed');
-const CompletedFundingSourceTransactionObservationStatusEnum
-    _$completedFundingSourceTransactionObservationStatusEnum_unknownDefaultOpenApi =
-    const CompletedFundingSourceTransactionObservationStatusEnum._(
-        'unknownDefaultOpenApi');
 
 CompletedFundingSourceTransactionObservationStatusEnum
     _$completedFundingSourceTransactionObservationStatusEnumValueOf(
@@ -20,10 +16,8 @@ CompletedFundingSourceTransactionObservationStatusEnum
   switch (name) {
     case 'confirmed':
       return _$completedFundingSourceTransactionObservationStatusEnum_confirmed;
-    case 'unknownDefaultOpenApi':
-      return _$completedFundingSourceTransactionObservationStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$completedFundingSourceTransactionObservationStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -31,7 +25,6 @@ final BuiltSet<CompletedFundingSourceTransactionObservationStatusEnum>
     _$completedFundingSourceTransactionObservationStatusEnumValues = BuiltSet<
         CompletedFundingSourceTransactionObservationStatusEnum>(const <CompletedFundingSourceTransactionObservationStatusEnum>[
   _$completedFundingSourceTransactionObservationStatusEnum_confirmed,
-  _$completedFundingSourceTransactionObservationStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<CompletedFundingSourceTransactionObservationStatusEnum>
@@ -44,11 +37,9 @@ class _$CompletedFundingSourceTransactionObservationStatusEnumSerializer
             CompletedFundingSourceTransactionObservationStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'confirmed': 'confirmed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'confirmed': 'confirmed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

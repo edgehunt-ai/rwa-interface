@@ -12,8 +12,6 @@ const Hip3Operation _$closePosition = const Hip3Operation._('closePosition');
 const Hip3Operation _$setTpsl = const Hip3Operation._('setTpsl');
 const Hip3Operation _$clearTpsl = const Hip3Operation._('clearTpsl');
 const Hip3Operation _$setLeverage = const Hip3Operation._('setLeverage');
-const Hip3Operation _$unknownDefaultOpenApi =
-    const Hip3Operation._('unknownDefaultOpenApi');
 
 Hip3Operation _$valueOf(String name) {
   switch (name) {
@@ -29,10 +27,8 @@ Hip3Operation _$valueOf(String name) {
       return _$clearTpsl;
     case 'setLeverage':
       return _$setLeverage;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -44,7 +40,6 @@ final BuiltSet<Hip3Operation> _$values =
   _$setTpsl,
   _$clearTpsl,
   _$setLeverage,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3OperationMeta {
@@ -55,7 +50,6 @@ class _$Hip3OperationMeta {
   Hip3Operation get setTpsl => _$setTpsl;
   Hip3Operation get clearTpsl => _$clearTpsl;
   Hip3Operation get setLeverage => _$setLeverage;
-  Hip3Operation get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3Operation valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3Operation> get values => _$values;
 }
@@ -76,7 +70,6 @@ class _$Hip3OperationSerializer implements PrimitiveSerializer<Hip3Operation> {
     'setTpsl': 'set_tpsl',
     'clearTpsl': 'clear_tpsl',
     'setLeverage': 'set_leverage',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'place_order': 'placeOrder',
@@ -85,7 +78,6 @@ class _$Hip3OperationSerializer implements PrimitiveSerializer<Hip3Operation> {
     'set_tpsl': 'setTpsl',
     'clear_tpsl': 'clearTpsl',
     'set_leverage': 'setLeverage',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

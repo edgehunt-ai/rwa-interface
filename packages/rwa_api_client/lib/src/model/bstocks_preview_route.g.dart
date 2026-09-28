@@ -10,9 +10,6 @@ const BstocksPreviewRouteKindEnum _$bstocksPreviewRouteKindEnum_single =
     const BstocksPreviewRouteKindEnum._('single');
 const BstocksPreviewRouteKindEnum _$bstocksPreviewRouteKindEnum_split =
     const BstocksPreviewRouteKindEnum._('split');
-const BstocksPreviewRouteKindEnum
-    _$bstocksPreviewRouteKindEnum_unknownDefaultOpenApi =
-    const BstocksPreviewRouteKindEnum._('unknownDefaultOpenApi');
 
 BstocksPreviewRouteKindEnum _$bstocksPreviewRouteKindEnumValueOf(String name) {
   switch (name) {
@@ -20,10 +17,8 @@ BstocksPreviewRouteKindEnum _$bstocksPreviewRouteKindEnumValueOf(String name) {
       return _$bstocksPreviewRouteKindEnum_single;
     case 'split':
       return _$bstocksPreviewRouteKindEnum_split;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPreviewRouteKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPreviewRouteKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +27,6 @@ final BuiltSet<BstocksPreviewRouteKindEnum>
     BuiltSet<BstocksPreviewRouteKindEnum>(const <BstocksPreviewRouteKindEnum>[
   _$bstocksPreviewRouteKindEnum_single,
   _$bstocksPreviewRouteKindEnum_split,
-  _$bstocksPreviewRouteKindEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksPreviewRouteKindEnum>
@@ -44,12 +38,10 @@ class _$BstocksPreviewRouteKindEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'single': 'single',
     'split': 'split',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'single': 'single',
     'split': 'split',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

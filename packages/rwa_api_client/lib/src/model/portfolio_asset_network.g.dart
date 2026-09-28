@@ -14,8 +14,6 @@ const PortfolioAssetNetwork _$ethereum =
     const PortfolioAssetNetwork._('ethereum');
 const PortfolioAssetNetwork _$hyperliquid =
     const PortfolioAssetNetwork._('hyperliquid');
-const PortfolioAssetNetwork _$unknownDefaultOpenApi =
-    const PortfolioAssetNetwork._('unknownDefaultOpenApi');
 
 PortfolioAssetNetwork _$valueOf(String name) {
   switch (name) {
@@ -29,10 +27,8 @@ PortfolioAssetNetwork _$valueOf(String name) {
       return _$ethereum;
     case 'hyperliquid':
       return _$hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -43,7 +39,6 @@ final BuiltSet<PortfolioAssetNetwork> _$values =
   _$base_,
   _$ethereum,
   _$hyperliquid,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioAssetNetworkMeta {
@@ -53,7 +48,6 @@ class _$PortfolioAssetNetworkMeta {
   PortfolioAssetNetwork get base_ => _$base_;
   PortfolioAssetNetwork get ethereum => _$ethereum;
   PortfolioAssetNetwork get hyperliquid => _$hyperliquid;
-  PortfolioAssetNetwork get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioAssetNetwork valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioAssetNetwork> get values => _$values;
 }
@@ -75,7 +69,6 @@ class _$PortfolioAssetNetworkSerializer
     'base_': 'Base',
     'ethereum': 'Ethereum',
     'hyperliquid': 'Hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
@@ -83,7 +76,6 @@ class _$PortfolioAssetNetworkSerializer
     'Base': 'base_',
     'Ethereum': 'ethereum',
     'Hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

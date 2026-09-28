@@ -16,8 +16,6 @@ const Hip3MainnetProduct _$xyzColonNVDA =
     const Hip3MainnetProduct._('xyzColonNVDA');
 const Hip3MainnetProduct _$xyzColonTSLA =
     const Hip3MainnetProduct._('xyzColonTSLA');
-const Hip3MainnetProduct _$unknownDefaultOpenApi =
-    const Hip3MainnetProduct._('unknownDefaultOpenApi');
 
 Hip3MainnetProduct _$valueOf(String name) {
   switch (name) {
@@ -31,10 +29,8 @@ Hip3MainnetProduct _$valueOf(String name) {
       return _$xyzColonNVDA;
     case 'xyzColonTSLA':
       return _$xyzColonTSLA;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -45,7 +41,6 @@ final BuiltSet<Hip3MainnetProduct> _$values =
   _$xyzColonGOLD,
   _$xyzColonNVDA,
   _$xyzColonTSLA,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3MainnetProductMeta {
@@ -55,7 +50,6 @@ class _$Hip3MainnetProductMeta {
   Hip3MainnetProduct get xyzColonGOLD => _$xyzColonGOLD;
   Hip3MainnetProduct get xyzColonNVDA => _$xyzColonNVDA;
   Hip3MainnetProduct get xyzColonTSLA => _$xyzColonTSLA;
-  Hip3MainnetProduct get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3MainnetProduct valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3MainnetProduct> get values => _$values;
 }
@@ -77,7 +71,6 @@ class _$Hip3MainnetProductSerializer
     'xyzColonGOLD': 'xyz:GOLD',
     'xyzColonNVDA': 'xyz:NVDA',
     'xyzColonTSLA': 'xyz:TSLA',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'xyz:SP500': 'xyzColonSP500',
@@ -85,7 +78,6 @@ class _$Hip3MainnetProductSerializer
     'xyz:GOLD': 'xyzColonGOLD',
     'xyz:NVDA': 'xyzColonNVDA',
     'xyz:TSLA': 'xyzColonTSLA',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

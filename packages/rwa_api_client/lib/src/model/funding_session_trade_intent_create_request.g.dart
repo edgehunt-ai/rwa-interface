@@ -10,10 +10,6 @@ const FundingSessionTradeIntentCreateRequestFundingModeEnum
     _$fundingSessionTradeIntentCreateRequestFundingModeEnum_fundingSession =
     const FundingSessionTradeIntentCreateRequestFundingModeEnum._(
         'fundingSession');
-const FundingSessionTradeIntentCreateRequestFundingModeEnum
-    _$fundingSessionTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi =
-    const FundingSessionTradeIntentCreateRequestFundingModeEnum._(
-        'unknownDefaultOpenApi');
 
 FundingSessionTradeIntentCreateRequestFundingModeEnum
     _$fundingSessionTradeIntentCreateRequestFundingModeEnumValueOf(
@@ -21,10 +17,8 @@ FundingSessionTradeIntentCreateRequestFundingModeEnum
   switch (name) {
     case 'fundingSession':
       return _$fundingSessionTradeIntentCreateRequestFundingModeEnum_fundingSession;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSessionTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingSessionTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +26,6 @@ final BuiltSet<FundingSessionTradeIntentCreateRequestFundingModeEnum>
     _$fundingSessionTradeIntentCreateRequestFundingModeEnumValues = BuiltSet<
         FundingSessionTradeIntentCreateRequestFundingModeEnum>(const <FundingSessionTradeIntentCreateRequestFundingModeEnum>[
   _$fundingSessionTradeIntentCreateRequestFundingModeEnum_fundingSession,
-  _$fundingSessionTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingSessionTradeIntentCreateRequestFundingModeEnum>
@@ -45,11 +38,9 @@ class _$FundingSessionTradeIntentCreateRequestFundingModeEnumSerializer
             FundingSessionTradeIntentCreateRequestFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'fundingSession': 'funding_session',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'funding_session': 'fundingSession',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

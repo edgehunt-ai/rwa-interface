@@ -84,9 +84,72 @@ class _$DepositInstructionSerializer implements PrimitiveSerializer<DepositInstr
   }) {
     final result = DepositInstructionBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(DepositInstructionsResponse), FullType(BscDepositAddress), FullType(ArbitrumDepositAddress), ]);
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    if (serializedList.length.isOdd) {
+      throw UnsupportedError('Malformed DepositInstruction key-value list');
+    }
+    final topLevel = <String, Object?>{};
+    for (var index = 0; index < serializedList.length; index += 2) {
+      final key = serializedList[index];
+      if (key is! String) {
+        throw UnsupportedError('DepositInstruction key must be a String');
+      }
+      if (topLevel.containsKey(key)) {
+        throw UnsupportedError('Duplicate DepositInstruction key');
+      }
+      topLevel[key] = serializedList[index + 1];
+    }
+
+    final hasCatalogVersion = topLevel.containsKey(r'catalog_version');
+    final hasItems = topLevel.containsKey(r'items');
+    final hasChain = topLevel.containsKey(r'chain');
+    final hasChainId = topLevel.containsKey(r'chain_id');
+    final hasToken = topLevel.containsKey(r'token');
+    final hasTokenContract = topLevel.containsKey(r'token_contract');
+    final hasLegacyTupleKey = hasChain || hasChainId || hasToken || hasTokenContract;
+    final chain = topLevel[r'chain'];
+    final oneOfTypes = [DepositInstructionsResponse, BscDepositAddress, ArbitrumDepositAddress];
+    late final Type oneOfType;
+    if (hasCatalogVersion || hasItems) {
+      if (!hasCatalogVersion || !hasItems || hasLegacyTupleKey) {
+        throw UnsupportedError('Unsupported or ambiguous DepositInstruction aggregate payload');
+      }
+      oneOfType = DepositInstructionsResponse;
+    } else {
+      switch (chain) {
+        case r'BSC':
+          if (topLevel[r'chain_id'] != 56 ||
+              topLevel[r'token'] != r'USDC' ||
+              topLevel[r'token_contract'] != r'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d') {
+            throw UnsupportedError('Unsupported or ambiguous BSC DepositInstruction tuple');
+          }
+          oneOfType = BscDepositAddress;
+          break;
+        case r'Arbitrum':
+          if (topLevel[r'chain_id'] != 42161 ||
+              topLevel[r'token'] != r'USDC' ||
+              topLevel[r'token_contract'] != r'0xaf88d065e77c8cc2239327c5edb3a432268e5831') {
+            throw UnsupportedError('Unsupported or ambiguous Arbitrum DepositInstruction tuple');
+          }
+          oneOfType = ArbitrumDepositAddress;
+          break;
+        default:
+          throw UnsupportedError('Unsupported or ambiguous DepositInstruction payload');
+      }
+    }
     oneOfDataSrc = serialized;
-    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
+    final oneOfResult = serializers.deserialize(
+      oneOfDataSrc,
+      specifiedType: FullType(oneOfType),
+    );
+    if (oneOfResult == null) {
+      throw UnsupportedError('DepositInstruction variant deserialized to null');
+    }
+    result.oneOf = OneOfDynamic(
+      typeIndex: oneOfTypes.indexOf(oneOfType),
+      types: oneOfTypes,
+      value: oneOfResult,
+    );
     return result.build();
   }
 }
@@ -95,8 +158,6 @@ class DepositInstructionChainEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const DepositInstructionChainEnum arbitrum = _$depositInstructionChainEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositInstructionChainEnum unknownDefaultOpenApi = _$depositInstructionChainEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositInstructionChainEnum> get serializer => _$depositInstructionChainEnumSerializer;
 
@@ -110,8 +171,6 @@ class DepositInstructionChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 42161)
   static const DepositInstructionChainIdEnum number42161 = _$depositInstructionChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const DepositInstructionChainIdEnum unknownDefaultOpenApi = _$depositInstructionChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositInstructionChainIdEnum> get serializer => _$depositInstructionChainIdEnumSerializer;
 
@@ -125,8 +184,6 @@ class DepositInstructionTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const DepositInstructionTokenEnum USDC = _$depositInstructionTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositInstructionTokenEnum unknownDefaultOpenApi = _$depositInstructionTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositInstructionTokenEnum> get serializer => _$depositInstructionTokenEnumSerializer;
 
@@ -140,8 +197,6 @@ class DepositInstructionTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0xaf88d065e77c8cc2239327c5edb3a432268e5831')
   static const DepositInstructionTokenContractEnum n0xaf88d065e77c8cc2239327c5edb3a432268e5831 = _$depositInstructionTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositInstructionTokenContractEnum unknownDefaultOpenApi = _$depositInstructionTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositInstructionTokenContractEnum> get serializer => _$depositInstructionTokenContractEnumSerializer;
 
@@ -155,8 +210,6 @@ class DepositInstructionTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 6)
   static const DepositInstructionTokenDecimalsEnum number6 = _$depositInstructionTokenDecimalsEnum_number6;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const DepositInstructionTokenDecimalsEnum unknownDefaultOpenApi = _$depositInstructionTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositInstructionTokenDecimalsEnum> get serializer => _$depositInstructionTokenDecimalsEnumSerializer;
 
@@ -170,8 +223,6 @@ class DepositInstructionConfirmationsRequiredEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 20)
   static const DepositInstructionConfirmationsRequiredEnum number20 = _$depositInstructionConfirmationsRequiredEnum_number20;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const DepositInstructionConfirmationsRequiredEnum unknownDefaultOpenApi = _$depositInstructionConfirmationsRequiredEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositInstructionConfirmationsRequiredEnum> get serializer => _$depositInstructionConfirmationsRequiredEnumSerializer;
 

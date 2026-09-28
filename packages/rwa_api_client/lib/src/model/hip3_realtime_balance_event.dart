@@ -154,8 +154,6 @@ class Hip3RealtimeBalanceEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3_balance')
   static const Hip3RealtimeBalanceEventEventEnum hip3Balance = _$hip3RealtimeBalanceEventEventEnum_hip3Balance;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimeBalanceEventEventEnum unknownDefaultOpenApi = _$hip3RealtimeBalanceEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimeBalanceEventEventEnum> get serializer => _$hip3RealtimeBalanceEventEventEnumSerializer;
 

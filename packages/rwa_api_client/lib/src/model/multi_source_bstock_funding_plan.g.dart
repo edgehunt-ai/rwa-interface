@@ -9,19 +9,14 @@ part of 'multi_source_bstock_funding_plan.dart';
 const MultiSourceBstockFundingPlanModeEnum
     _$multiSourceBstockFundingPlanModeEnum_autoMultiSource =
     const MultiSourceBstockFundingPlanModeEnum._('autoMultiSource');
-const MultiSourceBstockFundingPlanModeEnum
-    _$multiSourceBstockFundingPlanModeEnum_unknownDefaultOpenApi =
-    const MultiSourceBstockFundingPlanModeEnum._('unknownDefaultOpenApi');
 
 MultiSourceBstockFundingPlanModeEnum
     _$multiSourceBstockFundingPlanModeEnumValueOf(String name) {
   switch (name) {
     case 'autoMultiSource':
       return _$multiSourceBstockFundingPlanModeEnum_autoMultiSource;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourceBstockFundingPlanModeEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourceBstockFundingPlanModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<MultiSourceBstockFundingPlanModeEnum>
     _$multiSourceBstockFundingPlanModeEnumValues = BuiltSet<
         MultiSourceBstockFundingPlanModeEnum>(const <MultiSourceBstockFundingPlanModeEnum>[
   _$multiSourceBstockFundingPlanModeEnum_autoMultiSource,
-  _$multiSourceBstockFundingPlanModeEnum_unknownDefaultOpenApi,
 ]);
 
 const MultiSourceBstockFundingPlanRailEnum
     _$multiSourceBstockFundingPlanRailEnum_bstock =
     const MultiSourceBstockFundingPlanRailEnum._('bstock');
-const MultiSourceBstockFundingPlanRailEnum
-    _$multiSourceBstockFundingPlanRailEnum_unknownDefaultOpenApi =
-    const MultiSourceBstockFundingPlanRailEnum._('unknownDefaultOpenApi');
 
 MultiSourceBstockFundingPlanRailEnum
     _$multiSourceBstockFundingPlanRailEnumValueOf(String name) {
   switch (name) {
     case 'bstock':
       return _$multiSourceBstockFundingPlanRailEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourceBstockFundingPlanRailEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourceBstockFundingPlanRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,25 +44,19 @@ final BuiltSet<MultiSourceBstockFundingPlanRailEnum>
     _$multiSourceBstockFundingPlanRailEnumValues = BuiltSet<
         MultiSourceBstockFundingPlanRailEnum>(const <MultiSourceBstockFundingPlanRailEnum>[
   _$multiSourceBstockFundingPlanRailEnum_bstock,
-  _$multiSourceBstockFundingPlanRailEnum_unknownDefaultOpenApi,
 ]);
 
 const MultiSourceBstockFundingPlanNetworkEnum
     _$multiSourceBstockFundingPlanNetworkEnum_BSC =
     const MultiSourceBstockFundingPlanNetworkEnum._('BSC');
-const MultiSourceBstockFundingPlanNetworkEnum
-    _$multiSourceBstockFundingPlanNetworkEnum_unknownDefaultOpenApi =
-    const MultiSourceBstockFundingPlanNetworkEnum._('unknownDefaultOpenApi');
 
 MultiSourceBstockFundingPlanNetworkEnum
     _$multiSourceBstockFundingPlanNetworkEnumValueOf(String name) {
   switch (name) {
     case 'BSC':
       return _$multiSourceBstockFundingPlanNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourceBstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourceBstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -81,25 +64,19 @@ final BuiltSet<MultiSourceBstockFundingPlanNetworkEnum>
     _$multiSourceBstockFundingPlanNetworkEnumValues = BuiltSet<
         MultiSourceBstockFundingPlanNetworkEnum>(const <MultiSourceBstockFundingPlanNetworkEnum>[
   _$multiSourceBstockFundingPlanNetworkEnum_BSC,
-  _$multiSourceBstockFundingPlanNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const MultiSourceBstockFundingPlanAssetEnum
     _$multiSourceBstockFundingPlanAssetEnum_USDT =
     const MultiSourceBstockFundingPlanAssetEnum._('USDT');
-const MultiSourceBstockFundingPlanAssetEnum
-    _$multiSourceBstockFundingPlanAssetEnum_unknownDefaultOpenApi =
-    const MultiSourceBstockFundingPlanAssetEnum._('unknownDefaultOpenApi');
 
 MultiSourceBstockFundingPlanAssetEnum
     _$multiSourceBstockFundingPlanAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDT':
       return _$multiSourceBstockFundingPlanAssetEnum_USDT;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourceBstockFundingPlanAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourceBstockFundingPlanAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -107,7 +84,6 @@ final BuiltSet<MultiSourceBstockFundingPlanAssetEnum>
     _$multiSourceBstockFundingPlanAssetEnumValues = BuiltSet<
         MultiSourceBstockFundingPlanAssetEnum>(const <MultiSourceBstockFundingPlanAssetEnum>[
   _$multiSourceBstockFundingPlanAssetEnum_USDT,
-  _$multiSourceBstockFundingPlanAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<MultiSourceBstockFundingPlanModeEnum>
@@ -127,11 +103,9 @@ class _$MultiSourceBstockFundingPlanModeEnumSerializer
     implements PrimitiveSerializer<MultiSourceBstockFundingPlanModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'autoMultiSource': 'auto_multi_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_multi_source': 'autoMultiSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -159,11 +133,9 @@ class _$MultiSourceBstockFundingPlanRailEnumSerializer
     implements PrimitiveSerializer<MultiSourceBstockFundingPlanRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -191,11 +163,9 @@ class _$MultiSourceBstockFundingPlanNetworkEnumSerializer
     implements PrimitiveSerializer<MultiSourceBstockFundingPlanNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -223,11 +193,9 @@ class _$MultiSourceBstockFundingPlanAssetEnumSerializer
     implements PrimitiveSerializer<MultiSourceBstockFundingPlanAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDT': 'USDT',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDT': 'USDT',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -17,9 +17,6 @@ class BstocksTimeInForce extends EnumClass {
   /// bStocks 限价单的有效期。gtc 在 Router 上持续挂单；ioc 在同一笔 Router 交易中立即成交，未成交数量取消。
   @BuiltValueEnumConst(wireName: r'ioc')
   static const BstocksTimeInForce ioc = _$ioc;
-  /// bStocks 限价单的有效期。gtc 在 Router 上持续挂单；ioc 在同一笔 Router 交易中立即成交，未成交数量取消。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksTimeInForce unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<BstocksTimeInForce> get serializer => _$bstocksTimeInForceSerializer;
 

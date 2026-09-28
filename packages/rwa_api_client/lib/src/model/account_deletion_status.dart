@@ -29,9 +29,6 @@ class AccountDeletionStatus extends EnumClass {
   /// `requested` 已接受；`blocked` 异步处理发现 blocker；`processing` 正在执行； `anonymized` 产品账户数据已完成删除或匿名化；`manual_review` 需要人工复核； `failed` 处理失败且没有被当作成功。 
   @BuiltValueEnumConst(wireName: r'failed')
   static const AccountDeletionStatus failed = _$failed;
-  /// `requested` 已接受；`blocked` 异步处理发现 blocker；`processing` 正在执行； `anonymized` 产品账户数据已完成删除或匿名化；`manual_review` 需要人工复核； `failed` 处理失败且没有被当作成功。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const AccountDeletionStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<AccountDeletionStatus> get serializer => _$accountDeletionStatusSerializer;
 

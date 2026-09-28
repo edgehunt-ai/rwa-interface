@@ -352,8 +352,6 @@ class DepositAddressBaseChainIdEnum extends EnumClass {
   static const DepositAddressBaseChainIdEnum number8453 = _$depositAddressBaseChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
   static const DepositAddressBaseChainIdEnum number42161 = _$depositAddressBaseChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const DepositAddressBaseChainIdEnum unknownDefaultOpenApi = _$depositAddressBaseChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositAddressBaseChainIdEnum> get serializer => _$depositAddressBaseChainIdEnumSerializer;
 

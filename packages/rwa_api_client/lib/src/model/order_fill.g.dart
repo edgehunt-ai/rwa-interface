@@ -10,8 +10,6 @@ const OrderFillSideEnum _$orderFillSideEnum_buy =
     const OrderFillSideEnum._('buy');
 const OrderFillSideEnum _$orderFillSideEnum_sell =
     const OrderFillSideEnum._('sell');
-const OrderFillSideEnum _$orderFillSideEnum_unknownDefaultOpenApi =
-    const OrderFillSideEnum._('unknownDefaultOpenApi');
 
 OrderFillSideEnum _$orderFillSideEnumValueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ OrderFillSideEnum _$orderFillSideEnumValueOf(String name) {
       return _$orderFillSideEnum_buy;
     case 'sell':
       return _$orderFillSideEnum_sell;
-    case 'unknownDefaultOpenApi':
-      return _$orderFillSideEnum_unknownDefaultOpenApi;
     default:
-      return _$orderFillSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +26,6 @@ final BuiltSet<OrderFillSideEnum> _$orderFillSideEnumValues =
     BuiltSet<OrderFillSideEnum>(const <OrderFillSideEnum>[
   _$orderFillSideEnum_buy,
   _$orderFillSideEnum_sell,
-  _$orderFillSideEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<OrderFillSideEnum> _$orderFillSideEnumSerializer =
@@ -41,12 +36,10 @@ class _$OrderFillSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'buy': 'buy',
     'sell': 'sell',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'buy': 'buy',
     'sell': 'sell',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

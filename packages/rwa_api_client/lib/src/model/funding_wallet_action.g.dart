@@ -9,18 +9,13 @@ part of 'funding_wallet_action.dart';
 const FundingWalletActionKindEnum
     _$fundingWalletActionKindEnum_originTransaction =
     const FundingWalletActionKindEnum._('originTransaction');
-const FundingWalletActionKindEnum
-    _$fundingWalletActionKindEnum_unknownDefaultOpenApi =
-    const FundingWalletActionKindEnum._('unknownDefaultOpenApi');
 
 FundingWalletActionKindEnum _$fundingWalletActionKindEnumValueOf(String name) {
   switch (name) {
     case 'originTransaction':
       return _$fundingWalletActionKindEnum_originTransaction;
-    case 'unknownDefaultOpenApi':
-      return _$fundingWalletActionKindEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingWalletActionKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<FundingWalletActionKindEnum>
     _$fundingWalletActionKindEnumValues =
     BuiltSet<FundingWalletActionKindEnum>(const <FundingWalletActionKindEnum>[
   _$fundingWalletActionKindEnum_originTransaction,
-  _$fundingWalletActionKindEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingWalletActionChainIdEnum _$fundingWalletActionChainIdEnum_number1 =
@@ -41,9 +35,6 @@ const FundingWalletActionChainIdEnum
 const FundingWalletActionChainIdEnum
     _$fundingWalletActionChainIdEnum_number42161 =
     const FundingWalletActionChainIdEnum._('number42161');
-const FundingWalletActionChainIdEnum
-    _$fundingWalletActionChainIdEnum_unknownDefaultOpenApi =
-    const FundingWalletActionChainIdEnum._('unknownDefaultOpenApi');
 
 FundingWalletActionChainIdEnum _$fundingWalletActionChainIdEnumValueOf(
     String name) {
@@ -56,10 +47,8 @@ FundingWalletActionChainIdEnum _$fundingWalletActionChainIdEnumValueOf(
       return _$fundingWalletActionChainIdEnum_number8453;
     case 'number42161':
       return _$fundingWalletActionChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$fundingWalletActionChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingWalletActionChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -70,24 +59,18 @@ final BuiltSet<FundingWalletActionChainIdEnum>
   _$fundingWalletActionChainIdEnum_number56,
   _$fundingWalletActionChainIdEnum_number8453,
   _$fundingWalletActionChainIdEnum_number42161,
-  _$fundingWalletActionChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingWalletActionValueEnum _$fundingWalletActionValueEnum_n0x0 =
     const FundingWalletActionValueEnum._('n0x0');
-const FundingWalletActionValueEnum
-    _$fundingWalletActionValueEnum_unknownDefaultOpenApi =
-    const FundingWalletActionValueEnum._('unknownDefaultOpenApi');
 
 FundingWalletActionValueEnum _$fundingWalletActionValueEnumValueOf(
     String name) {
   switch (name) {
     case 'n0x0':
       return _$fundingWalletActionValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$fundingWalletActionValueEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingWalletActionValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -95,7 +78,6 @@ final BuiltSet<FundingWalletActionValueEnum>
     _$fundingWalletActionValueEnumValues =
     BuiltSet<FundingWalletActionValueEnum>(const <FundingWalletActionValueEnum>[
   _$fundingWalletActionValueEnum_n0x0,
-  _$fundingWalletActionValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingWalletActionKindEnum>
@@ -112,11 +94,9 @@ class _$FundingWalletActionKindEnumSerializer
     implements PrimitiveSerializer<FundingWalletActionKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'originTransaction': 'origin_transaction',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'origin_transaction': 'originTransaction',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -144,14 +124,12 @@ class _$FundingWalletActionChainIdEnumSerializer
     'number56': 56,
     'number8453': 8453,
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
     56: 'number56',
     8453: 'number8453',
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -177,11 +155,9 @@ class _$FundingWalletActionValueEnumSerializer
     implements PrimitiveSerializer<FundingWalletActionValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -20,9 +20,6 @@ class PortfolioRail extends EnumClass {
   /// 资产组合 rail 维度分组： * `bstock` —— BSC bStocks Token（现货） * `perp` —— HIP-3 Perpetual（永续合约） * `cash` —— 未匹配任何已知产品的钱包余额（如稳定币、原生代币），   需先划转才可用于下单 
   @BuiltValueEnumConst(wireName: r'cash')
   static const PortfolioRail cash = _$cash;
-  /// 资产组合 rail 维度分组： * `bstock` —— BSC bStocks Token（现货） * `perp` —— HIP-3 Perpetual（永续合约） * `cash` —— 未匹配任何已知产品的钱包余额（如稳定币、原生代币），   需先划转才可用于下单 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioRail unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioRail> get serializer => _$portfolioRailSerializer;
 

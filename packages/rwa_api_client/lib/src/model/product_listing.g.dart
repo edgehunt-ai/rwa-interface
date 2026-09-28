@@ -12,9 +12,6 @@ const ProductListingPriceKindEnum _$productListingPriceKindEnum_lastTrade =
     const ProductListingPriceKindEnum._('lastTrade');
 const ProductListingPriceKindEnum _$productListingPriceKindEnum_reference =
     const ProductListingPriceKindEnum._('reference');
-const ProductListingPriceKindEnum
-    _$productListingPriceKindEnum_unknownDefaultOpenApi =
-    const ProductListingPriceKindEnum._('unknownDefaultOpenApi');
 
 ProductListingPriceKindEnum _$productListingPriceKindEnumValueOf(String name) {
   switch (name) {
@@ -24,10 +21,8 @@ ProductListingPriceKindEnum _$productListingPriceKindEnumValueOf(String name) {
       return _$productListingPriceKindEnum_lastTrade;
     case 'reference':
       return _$productListingPriceKindEnum_reference;
-    case 'unknownDefaultOpenApi':
-      return _$productListingPriceKindEnum_unknownDefaultOpenApi;
     default:
-      return _$productListingPriceKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -37,16 +32,12 @@ final BuiltSet<ProductListingPriceKindEnum>
   _$productListingPriceKindEnum_mark,
   _$productListingPriceKindEnum_lastTrade,
   _$productListingPriceKindEnum_reference,
-  _$productListingPriceKindEnum_unknownDefaultOpenApi,
 ]);
 
 const ProductListingDataStatusEnum _$productListingDataStatusEnum_fresh =
     const ProductListingDataStatusEnum._('fresh');
 const ProductListingDataStatusEnum _$productListingDataStatusEnum_stale =
     const ProductListingDataStatusEnum._('stale');
-const ProductListingDataStatusEnum
-    _$productListingDataStatusEnum_unknownDefaultOpenApi =
-    const ProductListingDataStatusEnum._('unknownDefaultOpenApi');
 
 ProductListingDataStatusEnum _$productListingDataStatusEnumValueOf(
     String name) {
@@ -55,10 +46,8 @@ ProductListingDataStatusEnum _$productListingDataStatusEnumValueOf(
       return _$productListingDataStatusEnum_fresh;
     case 'stale':
       return _$productListingDataStatusEnum_stale;
-    case 'unknownDefaultOpenApi':
-      return _$productListingDataStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$productListingDataStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -67,16 +56,12 @@ final BuiltSet<ProductListingDataStatusEnum>
     BuiltSet<ProductListingDataStatusEnum>(const <ProductListingDataStatusEnum>[
   _$productListingDataStatusEnum_fresh,
   _$productListingDataStatusEnum_stale,
-  _$productListingDataStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const ProductListingProductTypeEnum _$productListingProductTypeEnum_spot =
     const ProductListingProductTypeEnum._('spot');
 const ProductListingProductTypeEnum _$productListingProductTypeEnum_contract =
     const ProductListingProductTypeEnum._('contract');
-const ProductListingProductTypeEnum
-    _$productListingProductTypeEnum_unknownDefaultOpenApi =
-    const ProductListingProductTypeEnum._('unknownDefaultOpenApi');
 
 ProductListingProductTypeEnum _$productListingProductTypeEnumValueOf(
     String name) {
@@ -85,10 +70,8 @@ ProductListingProductTypeEnum _$productListingProductTypeEnumValueOf(
       return _$productListingProductTypeEnum_spot;
     case 'contract':
       return _$productListingProductTypeEnum_contract;
-    case 'unknownDefaultOpenApi':
-      return _$productListingProductTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$productListingProductTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -97,7 +80,6 @@ final BuiltSet<ProductListingProductTypeEnum>
         ProductListingProductTypeEnum>(const <ProductListingProductTypeEnum>[
   _$productListingProductTypeEnum_spot,
   _$productListingProductTypeEnum_contract,
-  _$productListingProductTypeEnum_unknownDefaultOpenApi,
 ]);
 
 const ProductListingExecutionStatusEnum
@@ -112,9 +94,6 @@ const ProductListingExecutionStatusEnum
 const ProductListingExecutionStatusEnum
     _$productListingExecutionStatusEnum_baselineLiveCandidate =
     const ProductListingExecutionStatusEnum._('baselineLiveCandidate');
-const ProductListingExecutionStatusEnum
-    _$productListingExecutionStatusEnum_unknownDefaultOpenApi =
-    const ProductListingExecutionStatusEnum._('unknownDefaultOpenApi');
 
 ProductListingExecutionStatusEnum _$productListingExecutionStatusEnumValueOf(
     String name) {
@@ -127,10 +106,8 @@ ProductListingExecutionStatusEnum _$productListingExecutionStatusEnumValueOf(
       return _$productListingExecutionStatusEnum_indexedReadOnly;
     case 'baselineLiveCandidate':
       return _$productListingExecutionStatusEnum_baselineLiveCandidate;
-    case 'unknownDefaultOpenApi':
-      return _$productListingExecutionStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$productListingExecutionStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -141,7 +118,6 @@ final BuiltSet<ProductListingExecutionStatusEnum>
   _$productListingExecutionStatusEnum_catalogDisplay,
   _$productListingExecutionStatusEnum_indexedReadOnly,
   _$productListingExecutionStatusEnum_baselineLiveCandidate,
-  _$productListingExecutionStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<ProductListingPriceKindEnum>
@@ -163,13 +139,11 @@ class _$ProductListingPriceKindEnumSerializer
     'mark': 'mark',
     'lastTrade': 'last_trade',
     'reference': 'reference',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mark': 'mark',
     'last_trade': 'lastTrade',
     'reference': 'reference',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -195,12 +169,10 @@ class _$ProductListingDataStatusEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'fresh': 'fresh',
     'stale': 'stale',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'fresh': 'fresh',
     'stale': 'stale',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -226,12 +198,10 @@ class _$ProductListingProductTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'spot': 'spot',
     'contract': 'contract',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'spot': 'spot',
     'contract': 'contract',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -260,14 +230,12 @@ class _$ProductListingExecutionStatusEnumSerializer
     'catalogDisplay': 'catalog_display',
     'indexedReadOnly': 'indexed_read_only',
     'baselineLiveCandidate': 'baseline_live_candidate',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'discovery_only': 'discoveryOnly',
     'catalog_display': 'catalogDisplay',
     'indexed_read_only': 'indexedReadOnly',
     'baseline_live_candidate': 'baselineLiveCandidate',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

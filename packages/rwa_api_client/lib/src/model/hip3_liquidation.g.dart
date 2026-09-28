@@ -12,9 +12,6 @@ const Hip3LiquidationAccountValueScopeEnum
 const Hip3LiquidationAccountValueScopeEnum
     _$hip3LiquidationAccountValueScopeEnum_isolatedAccount =
     const Hip3LiquidationAccountValueScopeEnum._('isolatedAccount');
-const Hip3LiquidationAccountValueScopeEnum
-    _$hip3LiquidationAccountValueScopeEnum_unknownDefaultOpenApi =
-    const Hip3LiquidationAccountValueScopeEnum._('unknownDefaultOpenApi');
 
 Hip3LiquidationAccountValueScopeEnum
     _$hip3LiquidationAccountValueScopeEnumValueOf(String name) {
@@ -23,10 +20,8 @@ Hip3LiquidationAccountValueScopeEnum
       return _$hip3LiquidationAccountValueScopeEnum_crossAccount;
     case 'isolatedAccount':
       return _$hip3LiquidationAccountValueScopeEnum_isolatedAccount;
-    case 'unknownDefaultOpenApi':
-      return _$hip3LiquidationAccountValueScopeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3LiquidationAccountValueScopeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,16 +30,12 @@ final BuiltSet<Hip3LiquidationAccountValueScopeEnum>
         Hip3LiquidationAccountValueScopeEnum>(const <Hip3LiquidationAccountValueScopeEnum>[
   _$hip3LiquidationAccountValueScopeEnum_crossAccount,
   _$hip3LiquidationAccountValueScopeEnum_isolatedAccount,
-  _$hip3LiquidationAccountValueScopeEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3LiquidationMarginModeEnum _$hip3LiquidationMarginModeEnum_cross =
     const Hip3LiquidationMarginModeEnum._('cross');
 const Hip3LiquidationMarginModeEnum _$hip3LiquidationMarginModeEnum_isolated =
     const Hip3LiquidationMarginModeEnum._('isolated');
-const Hip3LiquidationMarginModeEnum
-    _$hip3LiquidationMarginModeEnum_unknownDefaultOpenApi =
-    const Hip3LiquidationMarginModeEnum._('unknownDefaultOpenApi');
 
 Hip3LiquidationMarginModeEnum _$hip3LiquidationMarginModeEnumValueOf(
     String name) {
@@ -53,10 +44,8 @@ Hip3LiquidationMarginModeEnum _$hip3LiquidationMarginModeEnumValueOf(
       return _$hip3LiquidationMarginModeEnum_cross;
     case 'isolated':
       return _$hip3LiquidationMarginModeEnum_isolated;
-    case 'unknownDefaultOpenApi':
-      return _$hip3LiquidationMarginModeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3LiquidationMarginModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -65,7 +54,6 @@ final BuiltSet<Hip3LiquidationMarginModeEnum>
         Hip3LiquidationMarginModeEnum>(const <Hip3LiquidationMarginModeEnum>[
   _$hip3LiquidationMarginModeEnum_cross,
   _$hip3LiquidationMarginModeEnum_isolated,
-  _$hip3LiquidationMarginModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3LiquidationAccountValueScopeEnum>
@@ -80,12 +68,10 @@ class _$Hip3LiquidationAccountValueScopeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'crossAccount': 'cross_account',
     'isolatedAccount': 'isolated_account',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'cross_account': 'crossAccount',
     'isolated_account': 'isolatedAccount',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -114,12 +100,10 @@ class _$Hip3LiquidationMarginModeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'cross': 'cross',
     'isolated': 'isolated',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'cross': 'cross',
     'isolated': 'isolated',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

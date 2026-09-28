@@ -18,8 +18,6 @@ const AccountDeletionBlocker _$legalRetention =
     const AccountDeletionBlocker._('legalRetention');
 const AccountDeletionBlocker _$identityReview =
     const AccountDeletionBlocker._('identityReview');
-const AccountDeletionBlocker _$unknownDefaultOpenApi =
-    const AccountDeletionBlocker._('unknownDefaultOpenApi');
 
 AccountDeletionBlocker _$valueOf(String name) {
   switch (name) {
@@ -35,10 +33,8 @@ AccountDeletionBlocker _$valueOf(String name) {
       return _$legalRetention;
     case 'identityReview':
       return _$identityReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -50,7 +46,6 @@ final BuiltSet<AccountDeletionBlocker> _$values =
   _$withdrawableAssetsRemaining,
   _$legalRetention,
   _$identityReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$AccountDeletionBlockerMeta {
@@ -62,7 +57,6 @@ class _$AccountDeletionBlockerMeta {
       _$withdrawableAssetsRemaining;
   AccountDeletionBlocker get legalRetention => _$legalRetention;
   AccountDeletionBlocker get identityReview => _$identityReview;
-  AccountDeletionBlocker get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   AccountDeletionBlocker valueOf(String name) => _$valueOf(name);
   BuiltSet<AccountDeletionBlocker> get values => _$values;
 }
@@ -85,7 +79,6 @@ class _$AccountDeletionBlockerSerializer
     'withdrawableAssetsRemaining': 'withdrawable_assets_remaining',
     'legalRetention': 'legal_retention',
     'identityReview': 'identity_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'open_orders': 'openOrders',
@@ -94,7 +87,6 @@ class _$AccountDeletionBlockerSerializer
     'withdrawable_assets_remaining': 'withdrawableAssetsRemaining',
     'legal_retention': 'legalRetention',
     'identity_review': 'identityReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

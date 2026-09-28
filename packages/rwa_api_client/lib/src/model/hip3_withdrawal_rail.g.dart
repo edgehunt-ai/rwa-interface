@@ -8,8 +8,6 @@ part of 'hip3_withdrawal_rail.dart';
 
 const Hip3WithdrawalRail _$bridge2 = const Hip3WithdrawalRail._('bridge2');
 const Hip3WithdrawalRail _$float = const Hip3WithdrawalRail._('float');
-const Hip3WithdrawalRail _$unknownDefaultOpenApi =
-    const Hip3WithdrawalRail._('unknownDefaultOpenApi');
 
 Hip3WithdrawalRail _$valueOf(String name) {
   switch (name) {
@@ -17,10 +15,8 @@ Hip3WithdrawalRail _$valueOf(String name) {
       return _$bridge2;
     case 'float':
       return _$float;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,14 +24,12 @@ final BuiltSet<Hip3WithdrawalRail> _$values =
     BuiltSet<Hip3WithdrawalRail>(const <Hip3WithdrawalRail>[
   _$bridge2,
   _$float,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3WithdrawalRailMeta {
   const _$Hip3WithdrawalRailMeta();
   Hip3WithdrawalRail get bridge2 => _$bridge2;
   Hip3WithdrawalRail get float => _$float;
-  Hip3WithdrawalRail get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3WithdrawalRail valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3WithdrawalRail> get values => _$values;
 }
@@ -54,12 +48,10 @@ class _$Hip3WithdrawalRailSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'bridge2': 'bridge2',
     'float': 'float',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bridge2': 'bridge2',
     'float': 'float',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

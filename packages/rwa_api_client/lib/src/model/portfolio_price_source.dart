@@ -20,9 +20,6 @@ class PortfolioPriceSource extends EnumClass {
   /// USD 价格来源。USDC/USDT 使用 `fixed_peg` 且价格固定为 1；其他资产使用 `dodoex`；无法获得有效价格时为 `unavailable`，不得转成零。 
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const PortfolioPriceSource unavailable = _$unavailable;
-  /// USD 价格来源。USDC/USDT 使用 `fixed_peg` 且价格固定为 1；其他资产使用 `dodoex`；无法获得有效价格时为 `unavailable`，不得转成零。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioPriceSource unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioPriceSource> get serializer => _$portfolioPriceSourceSerializer;
 

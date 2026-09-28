@@ -313,8 +313,6 @@ class Hip3TradingRulesOrderTypesEnum extends EnumClass {
   static const Hip3TradingRulesOrderTypesEnum market = _$hip3TradingRulesOrderTypesEnum_market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const Hip3TradingRulesOrderTypesEnum limit = _$hip3TradingRulesOrderTypesEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3TradingRulesOrderTypesEnum unknownDefaultOpenApi = _$hip3TradingRulesOrderTypesEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3TradingRulesOrderTypesEnum> get serializer => _$hip3TradingRulesOrderTypesEnumSerializer;
 
@@ -332,8 +330,6 @@ class Hip3TradingRulesTriggerReferencesEnum extends EnumClass {
   static const Hip3TradingRulesTriggerReferencesEnum oracle = _$hip3TradingRulesTriggerReferencesEnum_oracle;
   @BuiltValueEnumConst(wireName: r'last')
   static const Hip3TradingRulesTriggerReferencesEnum last = _$hip3TradingRulesTriggerReferencesEnum_last;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3TradingRulesTriggerReferencesEnum unknownDefaultOpenApi = _$hip3TradingRulesTriggerReferencesEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3TradingRulesTriggerReferencesEnum> get serializer => _$hip3TradingRulesTriggerReferencesEnumSerializer;
 

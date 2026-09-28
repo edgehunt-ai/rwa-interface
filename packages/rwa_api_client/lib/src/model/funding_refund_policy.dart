@@ -159,8 +159,6 @@ class FundingRefundPolicyAddressRoleEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'source_wallet')
   static const FundingRefundPolicyAddressRoleEnum sourceWallet = _$fundingRefundPolicyAddressRoleEnum_sourceWallet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRefundPolicyAddressRoleEnum unknownDefaultOpenApi = _$fundingRefundPolicyAddressRoleEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingRefundPolicyAddressRoleEnum> get serializer => _$fundingRefundPolicyAddressRoleEnumSerializer;
 

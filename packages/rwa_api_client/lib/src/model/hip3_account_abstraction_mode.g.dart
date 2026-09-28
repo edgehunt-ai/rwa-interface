@@ -12,8 +12,6 @@ const Hip3AccountAbstractionMode _$unifiedAccount =
     const Hip3AccountAbstractionMode._('unifiedAccount');
 const Hip3AccountAbstractionMode _$portfolioMargin =
     const Hip3AccountAbstractionMode._('portfolioMargin');
-const Hip3AccountAbstractionMode _$unknownDefaultOpenApi =
-    const Hip3AccountAbstractionMode._('unknownDefaultOpenApi');
 
 Hip3AccountAbstractionMode _$valueOf(String name) {
   switch (name) {
@@ -23,10 +21,8 @@ Hip3AccountAbstractionMode _$valueOf(String name) {
       return _$unifiedAccount;
     case 'portfolioMargin':
       return _$portfolioMargin;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +31,6 @@ final BuiltSet<Hip3AccountAbstractionMode> _$values =
   _$default_,
   _$unifiedAccount,
   _$portfolioMargin,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3AccountAbstractionModeMeta {
@@ -43,8 +38,6 @@ class _$Hip3AccountAbstractionModeMeta {
   Hip3AccountAbstractionMode get default_ => _$default_;
   Hip3AccountAbstractionMode get unifiedAccount => _$unifiedAccount;
   Hip3AccountAbstractionMode get portfolioMargin => _$portfolioMargin;
-  Hip3AccountAbstractionMode get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   Hip3AccountAbstractionMode valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3AccountAbstractionMode> get values => _$values;
 }
@@ -64,13 +57,11 @@ class _$Hip3AccountAbstractionModeSerializer
     'default_': 'default',
     'unifiedAccount': 'unifiedAccount',
     'portfolioMargin': 'portfolioMargin',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'default': 'default_',
     'unifiedAccount': 'unifiedAccount',
     'portfolioMargin': 'portfolioMargin',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

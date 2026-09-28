@@ -13,8 +13,6 @@ class DepositStatus extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'confirmed')
   static const DepositStatus confirmed = _$confirmed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<DepositStatus> get serializer => _$depositStatusSerializer;
 

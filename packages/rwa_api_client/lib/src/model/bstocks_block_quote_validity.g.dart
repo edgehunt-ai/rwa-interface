@@ -9,19 +9,14 @@ part of 'bstocks_block_quote_validity.dart';
 const BstocksBlockQuoteValidityKindEnum
     _$bstocksBlockQuoteValidityKindEnum_blockWindow =
     const BstocksBlockQuoteValidityKindEnum._('blockWindow');
-const BstocksBlockQuoteValidityKindEnum
-    _$bstocksBlockQuoteValidityKindEnum_unknownDefaultOpenApi =
-    const BstocksBlockQuoteValidityKindEnum._('unknownDefaultOpenApi');
 
 BstocksBlockQuoteValidityKindEnum _$bstocksBlockQuoteValidityKindEnumValueOf(
     String name) {
   switch (name) {
     case 'blockWindow':
       return _$bstocksBlockQuoteValidityKindEnum_blockWindow;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksBlockQuoteValidityKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksBlockQuoteValidityKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<BstocksBlockQuoteValidityKindEnum>
     _$bstocksBlockQuoteValidityKindEnumValues = BuiltSet<
         BstocksBlockQuoteValidityKindEnum>(const <BstocksBlockQuoteValidityKindEnum>[
   _$bstocksBlockQuoteValidityKindEnum_blockWindow,
-  _$bstocksBlockQuoteValidityKindEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksBlockQuoteValidityKindEnum>
@@ -40,11 +34,9 @@ class _$BstocksBlockQuoteValidityKindEnumSerializer
     implements PrimitiveSerializer<BstocksBlockQuoteValidityKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'blockWindow': 'block_window',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'block_window': 'blockWindow',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

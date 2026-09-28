@@ -10,8 +10,6 @@ const FundingRouteCapabilityStatus _$available =
     const FundingRouteCapabilityStatus._('available');
 const FundingRouteCapabilityStatus _$unavailable =
     const FundingRouteCapabilityStatus._('unavailable');
-const FundingRouteCapabilityStatus _$unknownDefaultOpenApi =
-    const FundingRouteCapabilityStatus._('unknownDefaultOpenApi');
 
 FundingRouteCapabilityStatus _$valueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ FundingRouteCapabilityStatus _$valueOf(String name) {
       return _$available;
     case 'unavailable':
       return _$unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,15 +26,12 @@ final BuiltSet<FundingRouteCapabilityStatus> _$values =
     BuiltSet<FundingRouteCapabilityStatus>(const <FundingRouteCapabilityStatus>[
   _$available,
   _$unavailable,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingRouteCapabilityStatusMeta {
   const _$FundingRouteCapabilityStatusMeta();
   FundingRouteCapabilityStatus get available => _$available;
   FundingRouteCapabilityStatus get unavailable => _$unavailable;
-  FundingRouteCapabilityStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   FundingRouteCapabilityStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingRouteCapabilityStatus> get values => _$values;
 }
@@ -58,12 +51,10 @@ class _$FundingRouteCapabilityStatusSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'available': 'available',
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'available': 'available',
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

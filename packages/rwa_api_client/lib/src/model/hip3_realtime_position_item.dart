@@ -127,8 +127,6 @@ class Hip3RealtimePositionItemEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3_position')
   static const Hip3RealtimePositionItemEventEnum hip3Position = _$hip3RealtimePositionItemEventEnum_hip3Position;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimePositionItemEventEnum unknownDefaultOpenApi = _$hip3RealtimePositionItemEventEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimePositionItemEventEnum> get serializer => _$hip3RealtimePositionItemEventEnumSerializer;
 

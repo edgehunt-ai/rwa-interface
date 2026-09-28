@@ -250,8 +250,6 @@ class BstockFundingRailRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockFundingRailRailEnum bstock = _$bstockFundingRailRailEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingRailRailEnum unknownDefaultOpenApi = _$bstockFundingRailRailEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingRailRailEnum> get serializer => _$bstockFundingRailRailEnumSerializer;
 
@@ -265,8 +263,6 @@ class BstockFundingRailNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const BstockFundingRailNetworkEnum BSC = _$bstockFundingRailNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingRailNetworkEnum unknownDefaultOpenApi = _$bstockFundingRailNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingRailNetworkEnum> get serializer => _$bstockFundingRailNetworkEnumSerializer;
 
@@ -280,8 +276,6 @@ class BstockFundingRailSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDT')
   static const BstockFundingRailSettlementAssetEnum USDT = _$bstockFundingRailSettlementAssetEnum_USDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingRailSettlementAssetEnum unknownDefaultOpenApi = _$bstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingRailSettlementAssetEnum> get serializer => _$bstockFundingRailSettlementAssetEnumSerializer;
 
@@ -295,8 +289,6 @@ class BstockFundingRailChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 56)
   static const BstockFundingRailChainIdEnum number56 = _$bstockFundingRailChainIdEnum_number56;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockFundingRailChainIdEnum unknownDefaultOpenApi = _$bstockFundingRailChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingRailChainIdEnum> get serializer => _$bstockFundingRailChainIdEnumSerializer;
 
@@ -310,8 +302,6 @@ class BstockFundingRailSettlementAssetIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955')
   static const BstockFundingRailSettlementAssetIdEnum eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 = _$bstockFundingRailSettlementAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingRailSettlementAssetIdEnum unknownDefaultOpenApi = _$bstockFundingRailSettlementAssetIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingRailSettlementAssetIdEnum> get serializer => _$bstockFundingRailSettlementAssetIdEnumSerializer;
 
@@ -325,8 +315,6 @@ class BstockFundingRailTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x55d398326f99059ff775485246999027b3197955')
   static const BstockFundingRailTokenContractEnum n0x55d398326f99059ff775485246999027b3197955 = _$bstockFundingRailTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingRailTokenContractEnum unknownDefaultOpenApi = _$bstockFundingRailTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingRailTokenContractEnum> get serializer => _$bstockFundingRailTokenContractEnumSerializer;
 
@@ -340,8 +328,6 @@ class BstockFundingRailTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 18)
   static const BstockFundingRailTokenDecimalsEnum number18 = _$bstockFundingRailTokenDecimalsEnum_number18;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockFundingRailTokenDecimalsEnum unknownDefaultOpenApi = _$bstockFundingRailTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingRailTokenDecimalsEnum> get serializer => _$bstockFundingRailTokenDecimalsEnumSerializer;
 

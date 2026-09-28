@@ -10,8 +10,6 @@ const FundingTargetBalanceSource _$bscRpc =
     const FundingTargetBalanceSource._('bscRpc');
 const FundingTargetBalanceSource _$hyperliquidInfo =
     const FundingTargetBalanceSource._('hyperliquidInfo');
-const FundingTargetBalanceSource _$unknownDefaultOpenApi =
-    const FundingTargetBalanceSource._('unknownDefaultOpenApi');
 
 FundingTargetBalanceSource _$valueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ FundingTargetBalanceSource _$valueOf(String name) {
       return _$bscRpc;
     case 'hyperliquidInfo':
       return _$hyperliquidInfo;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,15 +26,12 @@ final BuiltSet<FundingTargetBalanceSource> _$values =
     BuiltSet<FundingTargetBalanceSource>(const <FundingTargetBalanceSource>[
   _$bscRpc,
   _$hyperliquidInfo,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingTargetBalanceSourceMeta {
   const _$FundingTargetBalanceSourceMeta();
   FundingTargetBalanceSource get bscRpc => _$bscRpc;
   FundingTargetBalanceSource get hyperliquidInfo => _$hyperliquidInfo;
-  FundingTargetBalanceSource get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   FundingTargetBalanceSource valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingTargetBalanceSource> get values => _$values;
 }
@@ -57,12 +50,10 @@ class _$FundingTargetBalanceSourceSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'bscRpc': 'bsc_rpc',
     'hyperliquidInfo': 'hyperliquid_info',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bsc_rpc': 'bscRpc',
     'hyperliquid_info': 'hyperliquidInfo',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

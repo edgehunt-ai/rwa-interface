@@ -9,19 +9,14 @@ part of 'origin_transaction_action.dart';
 const OriginTransactionActionKindEnum
     _$originTransactionActionKindEnum_originTransaction =
     const OriginTransactionActionKindEnum._('originTransaction');
-const OriginTransactionActionKindEnum
-    _$originTransactionActionKindEnum_unknownDefaultOpenApi =
-    const OriginTransactionActionKindEnum._('unknownDefaultOpenApi');
 
 OriginTransactionActionKindEnum _$originTransactionActionKindEnumValueOf(
     String name) {
   switch (name) {
     case 'originTransaction':
       return _$originTransactionActionKindEnum_originTransaction;
-    case 'unknownDefaultOpenApi':
-      return _$originTransactionActionKindEnum_unknownDefaultOpenApi;
     default:
-      return _$originTransactionActionKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<OriginTransactionActionKindEnum>
     _$originTransactionActionKindEnumValues = BuiltSet<
         OriginTransactionActionKindEnum>(const <OriginTransactionActionKindEnum>[
   _$originTransactionActionKindEnum_originTransaction,
-  _$originTransactionActionKindEnum_unknownDefaultOpenApi,
 ]);
 
 const OriginTransactionActionChainIdEnum
@@ -44,9 +38,6 @@ const OriginTransactionActionChainIdEnum
 const OriginTransactionActionChainIdEnum
     _$originTransactionActionChainIdEnum_number42161 =
     const OriginTransactionActionChainIdEnum._('number42161');
-const OriginTransactionActionChainIdEnum
-    _$originTransactionActionChainIdEnum_unknownDefaultOpenApi =
-    const OriginTransactionActionChainIdEnum._('unknownDefaultOpenApi');
 
 OriginTransactionActionChainIdEnum _$originTransactionActionChainIdEnumValueOf(
     String name) {
@@ -59,10 +50,8 @@ OriginTransactionActionChainIdEnum _$originTransactionActionChainIdEnumValueOf(
       return _$originTransactionActionChainIdEnum_number8453;
     case 'number42161':
       return _$originTransactionActionChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$originTransactionActionChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$originTransactionActionChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -73,24 +62,18 @@ final BuiltSet<OriginTransactionActionChainIdEnum>
   _$originTransactionActionChainIdEnum_number56,
   _$originTransactionActionChainIdEnum_number8453,
   _$originTransactionActionChainIdEnum_number42161,
-  _$originTransactionActionChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const OriginTransactionActionValueEnum _$originTransactionActionValueEnum_n0x0 =
     const OriginTransactionActionValueEnum._('n0x0');
-const OriginTransactionActionValueEnum
-    _$originTransactionActionValueEnum_unknownDefaultOpenApi =
-    const OriginTransactionActionValueEnum._('unknownDefaultOpenApi');
 
 OriginTransactionActionValueEnum _$originTransactionActionValueEnumValueOf(
     String name) {
   switch (name) {
     case 'n0x0':
       return _$originTransactionActionValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$originTransactionActionValueEnum_unknownDefaultOpenApi;
     default:
-      return _$originTransactionActionValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -98,7 +81,6 @@ final BuiltSet<OriginTransactionActionValueEnum>
     _$originTransactionActionValueEnumValues = BuiltSet<
         OriginTransactionActionValueEnum>(const <OriginTransactionActionValueEnum>[
   _$originTransactionActionValueEnum_n0x0,
-  _$originTransactionActionValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<OriginTransactionActionKindEnum>
@@ -115,11 +97,9 @@ class _$OriginTransactionActionKindEnumSerializer
     implements PrimitiveSerializer<OriginTransactionActionKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'originTransaction': 'origin_transaction',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'origin_transaction': 'originTransaction',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -148,14 +128,12 @@ class _$OriginTransactionActionChainIdEnumSerializer
     'number56': 56,
     'number8453': 8453,
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
     56: 'number56',
     8453: 'number8453',
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -181,11 +159,9 @@ class _$OriginTransactionActionValueEnumSerializer
     implements PrimitiveSerializer<OriginTransactionActionValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

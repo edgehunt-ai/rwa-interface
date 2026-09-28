@@ -26,9 +26,6 @@ class ActivityStatus extends EnumClass {
   /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const ActivityStatus manualReview = _$manualReview;
-  /// `pending` 进行中 · `success` 已完成 · `failed` 失败 · `cancelled` 已取消 · `manual_review` 证据冲突待人工复核
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ActivityStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<ActivityStatus> get serializer => _$activityStatusSerializer;
 

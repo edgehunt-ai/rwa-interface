@@ -10,8 +10,6 @@ const Hip3AccountAbstractionExecutionMethod _$agent =
     const Hip3AccountAbstractionExecutionMethod._('agent');
 const Hip3AccountAbstractionExecutionMethod _$user =
     const Hip3AccountAbstractionExecutionMethod._('user');
-const Hip3AccountAbstractionExecutionMethod _$unknownDefaultOpenApi =
-    const Hip3AccountAbstractionExecutionMethod._('unknownDefaultOpenApi');
 
 Hip3AccountAbstractionExecutionMethod _$valueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ Hip3AccountAbstractionExecutionMethod _$valueOf(String name) {
       return _$agent;
     case 'user':
       return _$user;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,15 +26,12 @@ final BuiltSet<Hip3AccountAbstractionExecutionMethod> _$values = BuiltSet<
     Hip3AccountAbstractionExecutionMethod>(const <Hip3AccountAbstractionExecutionMethod>[
   _$agent,
   _$user,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3AccountAbstractionExecutionMethodMeta {
   const _$Hip3AccountAbstractionExecutionMethodMeta();
   Hip3AccountAbstractionExecutionMethod get agent => _$agent;
   Hip3AccountAbstractionExecutionMethod get user => _$user;
-  Hip3AccountAbstractionExecutionMethod get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   Hip3AccountAbstractionExecutionMethod valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3AccountAbstractionExecutionMethod> get values => _$values;
 }
@@ -59,12 +52,10 @@ class _$Hip3AccountAbstractionExecutionMethodSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'agent': 'agent',
     'user': 'user',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'agent': 'agent',
     'user': 'user',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

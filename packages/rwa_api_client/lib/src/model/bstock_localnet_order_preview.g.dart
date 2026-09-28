@@ -9,19 +9,14 @@ part of 'bstock_localnet_order_preview.dart';
 const BstockLocalnetOrderPreviewFundingModeEnum
     _$bstockLocalnetOrderPreviewFundingModeEnum_unreservedTransferFrom =
     const BstockLocalnetOrderPreviewFundingModeEnum._('unreservedTransferFrom');
-const BstockLocalnetOrderPreviewFundingModeEnum
-    _$bstockLocalnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
-    const BstockLocalnetOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
 
 BstockLocalnetOrderPreviewFundingModeEnum
     _$bstockLocalnetOrderPreviewFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$bstockLocalnetOrderPreviewFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLocalnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLocalnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<BstockLocalnetOrderPreviewFundingModeEnum>
     _$bstockLocalnetOrderPreviewFundingModeEnumValues = BuiltSet<
         BstockLocalnetOrderPreviewFundingModeEnum>(const <BstockLocalnetOrderPreviewFundingModeEnum>[
   _$bstockLocalnetOrderPreviewFundingModeEnum_unreservedTransferFrom,
-  _$bstockLocalnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLocalnetOrderPreviewTypeEnum
     _$bstockLocalnetOrderPreviewTypeEnum_market =
     const BstockLocalnetOrderPreviewTypeEnum._('market');
-const BstockLocalnetOrderPreviewTypeEnum
-    _$bstockLocalnetOrderPreviewTypeEnum_unknownDefaultOpenApi =
-    const BstockLocalnetOrderPreviewTypeEnum._('unknownDefaultOpenApi');
 
 BstockLocalnetOrderPreviewTypeEnum _$bstockLocalnetOrderPreviewTypeEnumValueOf(
     String name) {
   switch (name) {
     case 'market':
       return _$bstockLocalnetOrderPreviewTypeEnum_market;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLocalnetOrderPreviewTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLocalnetOrderPreviewTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,25 +44,19 @@ final BuiltSet<BstockLocalnetOrderPreviewTypeEnum>
     _$bstockLocalnetOrderPreviewTypeEnumValues = BuiltSet<
         BstockLocalnetOrderPreviewTypeEnum>(const <BstockLocalnetOrderPreviewTypeEnum>[
   _$bstockLocalnetOrderPreviewTypeEnum_market,
-  _$bstockLocalnetOrderPreviewTypeEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLocalnetOrderPreviewKindEnum
     _$bstockLocalnetOrderPreviewKindEnum_bstock =
     const BstockLocalnetOrderPreviewKindEnum._('bstock');
-const BstockLocalnetOrderPreviewKindEnum
-    _$bstockLocalnetOrderPreviewKindEnum_unknownDefaultOpenApi =
-    const BstockLocalnetOrderPreviewKindEnum._('unknownDefaultOpenApi');
 
 BstockLocalnetOrderPreviewKindEnum _$bstockLocalnetOrderPreviewKindEnumValueOf(
     String name) {
   switch (name) {
     case 'bstock':
       return _$bstockLocalnetOrderPreviewKindEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLocalnetOrderPreviewKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLocalnetOrderPreviewKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -81,25 +64,19 @@ final BuiltSet<BstockLocalnetOrderPreviewKindEnum>
     _$bstockLocalnetOrderPreviewKindEnumValues = BuiltSet<
         BstockLocalnetOrderPreviewKindEnum>(const <BstockLocalnetOrderPreviewKindEnum>[
   _$bstockLocalnetOrderPreviewKindEnum_bstock,
-  _$bstockLocalnetOrderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLocalnetOrderPreviewNetworkEnum
     _$bstockLocalnetOrderPreviewNetworkEnum_BSC =
     const BstockLocalnetOrderPreviewNetworkEnum._('BSC');
-const BstockLocalnetOrderPreviewNetworkEnum
-    _$bstockLocalnetOrderPreviewNetworkEnum_unknownDefaultOpenApi =
-    const BstockLocalnetOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 BstockLocalnetOrderPreviewNetworkEnum
     _$bstockLocalnetOrderPreviewNetworkEnumValueOf(String name) {
   switch (name) {
     case 'BSC':
       return _$bstockLocalnetOrderPreviewNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLocalnetOrderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLocalnetOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -107,26 +84,19 @@ final BuiltSet<BstockLocalnetOrderPreviewNetworkEnum>
     _$bstockLocalnetOrderPreviewNetworkEnumValues = BuiltSet<
         BstockLocalnetOrderPreviewNetworkEnum>(const <BstockLocalnetOrderPreviewNetworkEnum>[
   _$bstockLocalnetOrderPreviewNetworkEnum_BSC,
-  _$bstockLocalnetOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLocalnetOrderPreviewSettlementAssetEnum
     _$bstockLocalnetOrderPreviewSettlementAssetEnum_LUSDT =
     const BstockLocalnetOrderPreviewSettlementAssetEnum._('LUSDT');
-const BstockLocalnetOrderPreviewSettlementAssetEnum
-    _$bstockLocalnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const BstockLocalnetOrderPreviewSettlementAssetEnum._(
-        'unknownDefaultOpenApi');
 
 BstockLocalnetOrderPreviewSettlementAssetEnum
     _$bstockLocalnetOrderPreviewSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'LUSDT':
       return _$bstockLocalnetOrderPreviewSettlementAssetEnum_LUSDT;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLocalnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLocalnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -134,7 +104,6 @@ final BuiltSet<BstockLocalnetOrderPreviewSettlementAssetEnum>
     _$bstockLocalnetOrderPreviewSettlementAssetEnumValues = BuiltSet<
         BstockLocalnetOrderPreviewSettlementAssetEnum>(const <BstockLocalnetOrderPreviewSettlementAssetEnum>[
   _$bstockLocalnetOrderPreviewSettlementAssetEnum_LUSDT,
-  _$bstockLocalnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLocalnetOrderPreviewSettlementChainIdEnum
@@ -143,10 +112,6 @@ const BstockLocalnetOrderPreviewSettlementChainIdEnum
 const BstockLocalnetOrderPreviewSettlementChainIdEnum
     _$bstockLocalnetOrderPreviewSettlementChainIdEnum_number31337 =
     const BstockLocalnetOrderPreviewSettlementChainIdEnum._('number31337');
-const BstockLocalnetOrderPreviewSettlementChainIdEnum
-    _$bstockLocalnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi =
-    const BstockLocalnetOrderPreviewSettlementChainIdEnum._(
-        'unknownDefaultOpenApi');
 
 BstockLocalnetOrderPreviewSettlementChainIdEnum
     _$bstockLocalnetOrderPreviewSettlementChainIdEnumValueOf(String name) {
@@ -155,10 +120,8 @@ BstockLocalnetOrderPreviewSettlementChainIdEnum
       return _$bstockLocalnetOrderPreviewSettlementChainIdEnum_number56;
     case 'number31337':
       return _$bstockLocalnetOrderPreviewSettlementChainIdEnum_number31337;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLocalnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLocalnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -167,7 +130,6 @@ final BuiltSet<BstockLocalnetOrderPreviewSettlementChainIdEnum>
         BstockLocalnetOrderPreviewSettlementChainIdEnum>(const <BstockLocalnetOrderPreviewSettlementChainIdEnum>[
   _$bstockLocalnetOrderPreviewSettlementChainIdEnum_number56,
   _$bstockLocalnetOrderPreviewSettlementChainIdEnum_number31337,
-  _$bstockLocalnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockLocalnetOrderPreviewFundingModeEnum>
@@ -193,11 +155,9 @@ class _$BstockLocalnetOrderPreviewFundingModeEnumSerializer
     implements PrimitiveSerializer<BstockLocalnetOrderPreviewFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -225,11 +185,9 @@ class _$BstockLocalnetOrderPreviewTypeEnumSerializer
     implements PrimitiveSerializer<BstockLocalnetOrderPreviewTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -255,11 +213,9 @@ class _$BstockLocalnetOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<BstockLocalnetOrderPreviewKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -285,11 +241,9 @@ class _$BstockLocalnetOrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<BstockLocalnetOrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -318,11 +272,9 @@ class _$BstockLocalnetOrderPreviewSettlementAssetEnumSerializer
         PrimitiveSerializer<BstockLocalnetOrderPreviewSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'LUSDT': 'LUSDT',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'LUSDT': 'LUSDT',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -352,12 +304,10 @@ class _$BstockLocalnetOrderPreviewSettlementChainIdEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'number56': 56,
     'number31337': 31337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
     31337: 'number31337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

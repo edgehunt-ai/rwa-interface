@@ -8,18 +8,13 @@ part of 'realtime_order_event.dart';
 
 const RealtimeOrderEventEventEnum _$realtimeOrderEventEventEnum_order =
     const RealtimeOrderEventEventEnum._('order');
-const RealtimeOrderEventEventEnum
-    _$realtimeOrderEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeOrderEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeOrderEventEventEnum _$realtimeOrderEventEventEnumValueOf(String name) {
   switch (name) {
     case 'order':
       return _$realtimeOrderEventEventEnum_order;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeOrderEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeOrderEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -27,7 +22,6 @@ final BuiltSet<RealtimeOrderEventEventEnum>
     _$realtimeOrderEventEventEnumValues =
     BuiltSet<RealtimeOrderEventEventEnum>(const <RealtimeOrderEventEventEnum>[
   _$realtimeOrderEventEventEnum_order,
-  _$realtimeOrderEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeOrderEventEventEnum>
@@ -38,11 +32,9 @@ class _$RealtimeOrderEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeOrderEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'order': 'order',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

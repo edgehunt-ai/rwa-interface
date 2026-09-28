@@ -246,8 +246,6 @@ class AssetPortfolioAllocationDimensionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'asset')
   static const AssetPortfolioAllocationDimensionEnum asset = _$assetPortfolioAllocationDimensionEnum_asset;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const AssetPortfolioAllocationDimensionEnum unknownDefaultOpenApi = _$assetPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
 
   static Serializer<AssetPortfolioAllocationDimensionEnum> get serializer => _$assetPortfolioAllocationDimensionEnumSerializer;
 

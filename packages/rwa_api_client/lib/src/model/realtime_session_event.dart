@@ -154,8 +154,6 @@ class RealtimeSessionEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'session')
   static const RealtimeSessionEventEventEnum session = _$realtimeSessionEventEventEnum_session;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeSessionEventEventEnum unknownDefaultOpenApi = _$realtimeSessionEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeSessionEventEventEnum> get serializer => _$realtimeSessionEventEventEnumSerializer;
 

@@ -95,8 +95,6 @@ class FundingSessionTradeKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'account_transfer')
   static const FundingSessionTradeKindEnum accountTransfer = _$fundingSessionTradeKindEnum_accountTransfer;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionTradeKindEnum unknownDefaultOpenApi = _$fundingSessionTradeKindEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionTradeKindEnum> get serializer => _$fundingSessionTradeKindEnumSerializer;
 
@@ -112,8 +110,6 @@ class FundingSessionTradeSideEnum extends EnumClass {
   static const FundingSessionTradeSideEnum long = _$fundingSessionTradeSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
   static const FundingSessionTradeSideEnum short = _$fundingSessionTradeSideEnum_short;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionTradeSideEnum unknownDefaultOpenApi = _$fundingSessionTradeSideEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionTradeSideEnum> get serializer => _$fundingSessionTradeSideEnumSerializer;
 
@@ -127,8 +123,6 @@ class FundingSessionTradeDestinationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3_margin')
   static const FundingSessionTradeDestinationEnum hip3Margin = _$fundingSessionTradeDestinationEnum_hip3Margin;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionTradeDestinationEnum unknownDefaultOpenApi = _$fundingSessionTradeDestinationEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionTradeDestinationEnum> get serializer => _$fundingSessionTradeDestinationEnumSerializer;
 

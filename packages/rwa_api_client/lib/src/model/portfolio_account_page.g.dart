@@ -8,19 +8,14 @@ part of 'portfolio_account_page.dart';
 
 const PortfolioAccountPageScopeEnum _$portfolioAccountPageScopeEnum_portfolio =
     const PortfolioAccountPageScopeEnum._('portfolio');
-const PortfolioAccountPageScopeEnum
-    _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi =
-    const PortfolioAccountPageScopeEnum._('unknownDefaultOpenApi');
 
 PortfolioAccountPageScopeEnum _$portfolioAccountPageScopeEnumValueOf(
     String name) {
   switch (name) {
     case 'portfolio':
       return _$portfolioAccountPageScopeEnum_portfolio;
-    case 'unknownDefaultOpenApi':
-      return _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi;
     default:
-      return _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<PortfolioAccountPageScopeEnum>
     _$portfolioAccountPageScopeEnumValues = BuiltSet<
         PortfolioAccountPageScopeEnum>(const <PortfolioAccountPageScopeEnum>[
   _$portfolioAccountPageScopeEnum_portfolio,
-  _$portfolioAccountPageScopeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PortfolioAccountPageScopeEnum>
@@ -39,11 +33,9 @@ class _$PortfolioAccountPageScopeEnumSerializer
     implements PrimitiveSerializer<PortfolioAccountPageScopeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'portfolio': 'portfolio',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'portfolio': 'portfolio',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

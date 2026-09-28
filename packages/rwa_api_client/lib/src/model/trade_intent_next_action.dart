@@ -23,8 +23,6 @@ class TradeIntentNextAction extends EnumClass {
   static const TradeIntentNextAction waitOrder = _$waitOrder;
   @BuiltValueEnumConst(wireName: r'none')
   static const TradeIntentNextAction none = _$none;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentNextAction unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<TradeIntentNextAction> get serializer => _$tradeIntentNextActionSerializer;
 

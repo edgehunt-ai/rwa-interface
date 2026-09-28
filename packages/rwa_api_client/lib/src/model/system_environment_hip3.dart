@@ -115,9 +115,6 @@ class SystemEnvironmentHip3EnvironmentEnum extends EnumClass {
   /// HIP-3 数据源实际接入的 Hyperliquid 网络
   @BuiltValueEnumConst(wireName: r'mainnet')
   static const SystemEnvironmentHip3EnvironmentEnum mainnet = _$systemEnvironmentHip3EnvironmentEnum_mainnet;
-  /// HIP-3 数据源实际接入的 Hyperliquid 网络
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const SystemEnvironmentHip3EnvironmentEnum unknownDefaultOpenApi = _$systemEnvironmentHip3EnvironmentEnum_unknownDefaultOpenApi;
 
   static Serializer<SystemEnvironmentHip3EnvironmentEnum> get serializer => _$systemEnvironmentHip3EnvironmentEnumSerializer;
 

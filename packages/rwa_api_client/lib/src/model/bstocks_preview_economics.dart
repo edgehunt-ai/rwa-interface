@@ -250,8 +250,6 @@ class BstocksPreviewEconomicsInputSemanticsEnum extends EnumClass {
   static const BstocksPreviewEconomicsInputSemanticsEnum quotedGrossInput = _$bstocksPreviewEconomicsInputSemanticsEnum_quotedGrossInput;
   @BuiltValueEnumConst(wireName: r'maximum_funding')
   static const BstocksPreviewEconomicsInputSemanticsEnum maximumFunding = _$bstocksPreviewEconomicsInputSemanticsEnum_maximumFunding;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksPreviewEconomicsInputSemanticsEnum unknownDefaultOpenApi = _$bstocksPreviewEconomicsInputSemanticsEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksPreviewEconomicsInputSemanticsEnum> get serializer => _$bstocksPreviewEconomicsInputSemanticsEnumSerializer;
 

@@ -398,8 +398,6 @@ class UserSelectedMultiSourcePerpFundingPlanModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'user_selected_multi_source')
   static const UserSelectedMultiSourcePerpFundingPlanModeEnum userSelectedMultiSource = _$userSelectedMultiSourcePerpFundingPlanModeEnum_userSelectedMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourcePerpFundingPlanModeEnum unknownDefaultOpenApi = _$userSelectedMultiSourcePerpFundingPlanModeEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourcePerpFundingPlanModeEnum> get serializer => _$userSelectedMultiSourcePerpFundingPlanModeEnumSerializer;
 
@@ -413,8 +411,6 @@ class UserSelectedMultiSourcePerpFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const UserSelectedMultiSourcePerpFundingPlanRailEnum perp = _$userSelectedMultiSourcePerpFundingPlanRailEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourcePerpFundingPlanRailEnum unknownDefaultOpenApi = _$userSelectedMultiSourcePerpFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourcePerpFundingPlanRailEnum> get serializer => _$userSelectedMultiSourcePerpFundingPlanRailEnumSerializer;
 
@@ -428,8 +424,6 @@ class UserSelectedMultiSourcePerpFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
   static const UserSelectedMultiSourcePerpFundingPlanNetworkEnum hyperliquid = _$userSelectedMultiSourcePerpFundingPlanNetworkEnum_hyperliquid;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourcePerpFundingPlanNetworkEnum unknownDefaultOpenApi = _$userSelectedMultiSourcePerpFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourcePerpFundingPlanNetworkEnum> get serializer => _$userSelectedMultiSourcePerpFundingPlanNetworkEnumSerializer;
 
@@ -443,8 +437,6 @@ class UserSelectedMultiSourcePerpFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const UserSelectedMultiSourcePerpFundingPlanAssetEnum USDC = _$userSelectedMultiSourcePerpFundingPlanAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourcePerpFundingPlanAssetEnum unknownDefaultOpenApi = _$userSelectedMultiSourcePerpFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourcePerpFundingPlanAssetEnum> get serializer => _$userSelectedMultiSourcePerpFundingPlanAssetEnumSerializer;
 

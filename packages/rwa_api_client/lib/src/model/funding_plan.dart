@@ -3,7 +3,9 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_target_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/legacy_perp_funding_plan.dart';
+import 'package:rwa_api_client/src/model/multi_source_bstock_testnet_funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_plan_blocker.dart';
 import 'package:rwa_api_client/src/model/perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_wallet_action_summary.dart';
@@ -13,19 +15,21 @@ import 'package:rwa_api_client/src/model/user_selected_multi_source_perp_funding
 import 'package:rwa_api_client/src/model/multi_source_funding_plan_details.dart';
 import 'package:rwa_api_client/src/model/multi_source_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_plan.dart';
 import 'package:rwa_api_client/src/model/funding_circuit_snapshot.dart';
 import 'package:rwa_api_client/src/model/bstock_funding_plan.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/perp_funding_target_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/funding_source_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_testnet_funding_plan.dart';
 import 'package:rwa_api_client/src/model/multi_source_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/multi_source_funding_plan_status.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 import 'package:one_of/one_of.dart';
 
 part 'funding_plan.g.dart';
 
-/// 根据 `rail` 锁定目标结算身份：bstock => BSC/USDT，perp => Hyperliquid Perps/USDC。
+/// 按 rail、mode、asset 和 target_snapshot 的完整身份选择变体。 bstock 主网固定 USDT/56，测试网固定 TUSDT/97；不得混用或仅凭 rail 判断。 测试网可返回受环境门禁控制的 platform_float 路由，不代表它在主网启用。 
 ///
 /// Properties:
 /// * [planId] 
@@ -53,7 +57,7 @@ part 'funding_plan.g.dart';
 /// * [steps] 
 @BuiltValue()
 abstract class FundingPlan implements Built<FundingPlan, FundingPlanBuilder> {
-  /// One Of [BstockFundingPlan], [LegacyBstockFundingPlan], [LegacyPerpFundingPlan], [MultiSourceBstockFundingPlan], [MultiSourcePerpFundingPlan], [PerpFundingPlan], [UserSelectedMultiSourceBstockFundingPlan], [UserSelectedMultiSourcePerpFundingPlan]
+  /// One Of [BstockFundingPlan], [BstockTestnetFundingPlan], [LegacyBstockFundingPlan], [LegacyPerpFundingPlan], [MultiSourceBstockFundingPlan], [MultiSourceBstockTestnetFundingPlan], [MultiSourcePerpFundingPlan], [PerpFundingPlan], [UserSelectedMultiSourceBstockFundingPlan], [UserSelectedMultiSourceBstockTestnetFundingPlan], [UserSelectedMultiSourcePerpFundingPlan]
   OneOf get oneOf;
 
   FundingPlan._();
@@ -99,9 +103,82 @@ class _$FundingPlanSerializer implements PrimitiveSerializer<FundingPlan> {
   }) {
     final result = FundingPlanBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(BstockFundingPlan), FullType(PerpFundingPlan), FullType(MultiSourceBstockFundingPlan), FullType(MultiSourcePerpFundingPlan), FullType(UserSelectedMultiSourceBstockFundingPlan), FullType(UserSelectedMultiSourcePerpFundingPlan), FullType(LegacyBstockFundingPlan), FullType(LegacyPerpFundingPlan), ]);
     oneOfDataSrc = serialized;
-    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
+    final planEntries = (oneOfDataSrc as Iterable<Object?>).toList();
+    if (planEntries.length.isOdd) {
+      throw UnsupportedError('Malformed FundingPlan key-value list');
+    }
+    final planFields = <String, Object?>{};
+    for (var i = 0; i < planEntries.length; i += 2) {
+      final key = planEntries[i];
+      if (key is! String || planFields.containsKey(key)) {
+        throw UnsupportedError('Malformed FundingPlan key');
+      }
+      planFields[key] = planEntries[i + 1];
+    }
+    final planTypes = [BstockFundingPlan, PerpFundingPlan, MultiSourceBstockFundingPlan,
+      MultiSourcePerpFundingPlan, UserSelectedMultiSourceBstockFundingPlan,
+      UserSelectedMultiSourcePerpFundingPlan, LegacyBstockFundingPlan, LegacyPerpFundingPlan,
+      BstockTestnetFundingPlan, MultiSourceBstockTestnetFundingPlan,
+      UserSelectedMultiSourceBstockTestnetFundingPlan];
+    late final Type planType;
+    final planTuple = '${planFields[r'rail']}|${planFields[r'mode']}|${planFields[r'asset']}';
+    if (!planFields.containsKey(r'mode')) {
+      switch ('${planFields[r'rail']}|${planFields[r'network']}|${planFields[r'asset']}') {
+        case 'bstock|BSC|USDC':
+          planType = LegacyBstockFundingPlan;
+          break;
+        case 'perp|Arbitrum|USDC':
+          planType = LegacyPerpFundingPlan;
+          break;
+        default:
+          throw UnsupportedError('Unsupported legacy FundingPlan settlement tuple');
+      }
+    } else {
+      switch (planTuple) {
+        case 'bstock|auto_single_source|USDT':
+          planType = BstockFundingPlan;
+          break;
+        case 'perp|auto_single_source|USDC':
+          planType = PerpFundingPlan;
+          break;
+        case 'bstock|auto_multi_source|USDT':
+          planType = MultiSourceBstockFundingPlan;
+          break;
+        case 'perp|auto_multi_source|USDC':
+          planType = MultiSourcePerpFundingPlan;
+          break;
+        case 'bstock|user_selected_multi_source|USDT':
+          planType = UserSelectedMultiSourceBstockFundingPlan;
+          break;
+        case 'perp|user_selected_multi_source|USDC':
+          planType = UserSelectedMultiSourcePerpFundingPlan;
+          break;
+        case 'bstock|auto_single_source|TUSDT':
+          planType = BstockTestnetFundingPlan;
+          break;
+        case 'bstock|auto_multi_source|TUSDT':
+          planType = MultiSourceBstockTestnetFundingPlan;
+          break;
+        case 'bstock|user_selected_multi_source|TUSDT':
+          planType = UserSelectedMultiSourceBstockTestnetFundingPlan;
+          break;
+        default:
+          throw UnsupportedError('Unsupported FundingPlan rail/mode/asset tuple');
+      }
+    }
+    final planResult = serializers.deserialize(
+      oneOfDataSrc,
+      specifiedType: FullType(planType),
+    );
+    if (planResult == null) {
+      throw UnsupportedError('FundingPlan variant deserialized to null');
+    }
+    result.oneOf = OneOfDynamic(
+      typeIndex: planTypes.indexOf(planType),
+      types: planTypes,
+      value: planResult,
+    );
     return result.build();
   }
 }
@@ -110,8 +187,6 @@ class FundingPlanModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'user_selected_multi_source')
   static const FundingPlanModeEnum userSelectedMultiSource = _$fundingPlanModeEnum_userSelectedMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanModeEnum unknownDefaultOpenApi = _$fundingPlanModeEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingPlanModeEnum> get serializer => _$fundingPlanModeEnumSerializer;
 
@@ -121,31 +196,10 @@ class FundingPlanModeEnum extends EnumClass {
   static FundingPlanModeEnum valueOf(String name) => _$fundingPlanModeEnumValueOf(name);
 }
 
-class FundingPlanStatusEnum extends EnumClass {
-
-  @BuiltValueEnumConst(wireName: r'ready')
-  static const FundingPlanStatusEnum ready = _$fundingPlanStatusEnum_ready;
-  @BuiltValueEnumConst(wireName: r'expired')
-  static const FundingPlanStatusEnum expired = _$fundingPlanStatusEnum_expired;
-  @BuiltValueEnumConst(wireName: r'consumed')
-  static const FundingPlanStatusEnum consumed = _$fundingPlanStatusEnum_consumed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanStatusEnum unknownDefaultOpenApi = _$fundingPlanStatusEnum_unknownDefaultOpenApi;
-
-  static Serializer<FundingPlanStatusEnum> get serializer => _$fundingPlanStatusEnumSerializer;
-
-  const FundingPlanStatusEnum._(String name): super(name);
-
-  static BuiltSet<FundingPlanStatusEnum> get values => _$fundingPlanStatusEnumValues;
-  static FundingPlanStatusEnum valueOf(String name) => _$fundingPlanStatusEnumValueOf(name);
-}
-
 class FundingPlanRailEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'perp')
-  static const FundingPlanRailEnum perp = _$fundingPlanRailEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanRailEnum unknownDefaultOpenApi = _$fundingPlanRailEnum_unknownDefaultOpenApi;
+  @BuiltValueEnumConst(wireName: r'bstock')
+  static const FundingPlanRailEnum bstock = _$fundingPlanRailEnum_bstock;
 
   static Serializer<FundingPlanRailEnum> get serializer => _$fundingPlanRailEnumSerializer;
 
@@ -157,10 +211,8 @@ class FundingPlanRailEnum extends EnumClass {
 
 class FundingPlanNetworkEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'Arbitrum')
-  static const FundingPlanNetworkEnum arbitrum = _$fundingPlanNetworkEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanNetworkEnum unknownDefaultOpenApi = _$fundingPlanNetworkEnum_unknownDefaultOpenApi;
+  @BuiltValueEnumConst(wireName: r'BSC')
+  static const FundingPlanNetworkEnum BSC = _$fundingPlanNetworkEnum_BSC;
 
   static Serializer<FundingPlanNetworkEnum> get serializer => _$fundingPlanNetworkEnumSerializer;
 
@@ -172,10 +224,8 @@ class FundingPlanNetworkEnum extends EnumClass {
 
 class FundingPlanAssetEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'USDC')
-  static const FundingPlanAssetEnum USDC = _$fundingPlanAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanAssetEnum unknownDefaultOpenApi = _$fundingPlanAssetEnum_unknownDefaultOpenApi;
+  @BuiltValueEnumConst(wireName: r'TUSDT')
+  static const FundingPlanAssetEnum TUSDT = _$fundingPlanAssetEnum_TUSDT;
 
   static Serializer<FundingPlanAssetEnum> get serializer => _$fundingPlanAssetEnumSerializer;
 

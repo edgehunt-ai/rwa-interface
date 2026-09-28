@@ -8,19 +8,14 @@ part of 'realtime_deposit_event.dart';
 
 const RealtimeDepositEventEventEnum _$realtimeDepositEventEventEnum_deposit =
     const RealtimeDepositEventEventEnum._('deposit');
-const RealtimeDepositEventEventEnum
-    _$realtimeDepositEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeDepositEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeDepositEventEventEnum _$realtimeDepositEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'deposit':
       return _$realtimeDepositEventEventEnum_deposit;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeDepositEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeDepositEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<RealtimeDepositEventEventEnum>
     _$realtimeDepositEventEventEnumValues = BuiltSet<
         RealtimeDepositEventEventEnum>(const <RealtimeDepositEventEventEnum>[
   _$realtimeDepositEventEventEnum_deposit,
-  _$realtimeDepositEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeDepositEventEventEnum>
@@ -39,11 +33,9 @@ class _$RealtimeDepositEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeDepositEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'deposit': 'deposit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'deposit': 'deposit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -282,8 +282,6 @@ class BstockOrderPreviewRequestKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockOrderPreviewRequestKindEnum bstock = _$bstockOrderPreviewRequestKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewRequestKindEnum unknownDefaultOpenApi = _$bstockOrderPreviewRequestKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewRequestKindEnum> get serializer => _$bstockOrderPreviewRequestKindEnumSerializer;
 
@@ -299,8 +297,6 @@ class BstockOrderPreviewRequestSideEnum extends EnumClass {
   static const BstockOrderPreviewRequestSideEnum buy = _$bstockOrderPreviewRequestSideEnum_buy;
   @BuiltValueEnumConst(wireName: r'sell')
   static const BstockOrderPreviewRequestSideEnum sell = _$bstockOrderPreviewRequestSideEnum_sell;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewRequestSideEnum unknownDefaultOpenApi = _$bstockOrderPreviewRequestSideEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewRequestSideEnum> get serializer => _$bstockOrderPreviewRequestSideEnumSerializer;
 

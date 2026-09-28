@@ -177,8 +177,6 @@ class PrivyAuthorizationPayloadVersionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 1)
   static const PrivyAuthorizationPayloadVersionEnum number1 = _$privyAuthorizationPayloadVersionEnum_number1;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PrivyAuthorizationPayloadVersionEnum unknownDefaultOpenApi = _$privyAuthorizationPayloadVersionEnum_unknownDefaultOpenApi;
 
   static Serializer<PrivyAuthorizationPayloadVersionEnum> get serializer => _$privyAuthorizationPayloadVersionEnumSerializer;
 
@@ -192,8 +190,6 @@ class PrivyAuthorizationPayloadMethodEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'POST')
   static const PrivyAuthorizationPayloadMethodEnum POST = _$privyAuthorizationPayloadMethodEnum_POST;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationPayloadMethodEnum unknownDefaultOpenApi = _$privyAuthorizationPayloadMethodEnum_unknownDefaultOpenApi;
 
   static Serializer<PrivyAuthorizationPayloadMethodEnum> get serializer => _$privyAuthorizationPayloadMethodEnumSerializer;
 

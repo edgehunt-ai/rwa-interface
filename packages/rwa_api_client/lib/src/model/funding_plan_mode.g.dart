@@ -8,30 +8,24 @@ part of 'funding_plan_mode.dart';
 
 const FundingPlanMode _$autoSingleSource =
     const FundingPlanMode._('autoSingleSource');
-const FundingPlanMode _$unknownDefaultOpenApi =
-    const FundingPlanMode._('unknownDefaultOpenApi');
 
 FundingPlanMode _$valueOf(String name) {
   switch (name) {
     case 'autoSingleSource':
       return _$autoSingleSource;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingPlanMode> _$values =
     BuiltSet<FundingPlanMode>(const <FundingPlanMode>[
   _$autoSingleSource,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingPlanModeMeta {
   const _$FundingPlanModeMeta();
   FundingPlanMode get autoSingleSource => _$autoSingleSource;
-  FundingPlanMode get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingPlanMode valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingPlanMode> get values => _$values;
 }
@@ -48,11 +42,9 @@ class _$FundingPlanModeSerializer
     implements PrimitiveSerializer<FundingPlanMode> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'autoSingleSource': 'auto_single_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_single_source': 'autoSingleSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

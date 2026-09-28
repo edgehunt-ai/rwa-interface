@@ -18,9 +18,6 @@ const BstocksDepthSideStateReasonEnum
 const BstocksDepthSideStateReasonEnum
     _$bstocksDepthSideStateReasonEnum_samplingTimeout =
     const BstocksDepthSideStateReasonEnum._('samplingTimeout');
-const BstocksDepthSideStateReasonEnum
-    _$bstocksDepthSideStateReasonEnum_unknownDefaultOpenApi =
-    const BstocksDepthSideStateReasonEnum._('unknownDefaultOpenApi');
 
 BstocksDepthSideStateReasonEnum _$bstocksDepthSideStateReasonEnumValueOf(
     String name) {
@@ -33,10 +30,8 @@ BstocksDepthSideStateReasonEnum _$bstocksDepthSideStateReasonEnumValueOf(
       return _$bstocksDepthSideStateReasonEnum_quoterUnavailable;
     case 'samplingTimeout':
       return _$bstocksDepthSideStateReasonEnum_samplingTimeout;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksDepthSideStateReasonEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksDepthSideStateReasonEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -47,7 +42,6 @@ final BuiltSet<BstocksDepthSideStateReasonEnum>
   _$bstocksDepthSideStateReasonEnum_quoteRejected,
   _$bstocksDepthSideStateReasonEnum_quoterUnavailable,
   _$bstocksDepthSideStateReasonEnum_samplingTimeout,
-  _$bstocksDepthSideStateReasonEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksDepthSideStateReasonEnum>
@@ -61,14 +55,12 @@ class _$BstocksDepthSideStateReasonEnumSerializer
     'quoteRejected': 'quote_rejected',
     'quoterUnavailable': 'quoter_unavailable',
     'samplingTimeout': 'sampling_timeout',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'admission_input_limit': 'admissionInputLimit',
     'quote_rejected': 'quoteRejected',
     'quoter_unavailable': 'quoterUnavailable',
     'sampling_timeout': 'samplingTimeout',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -9,19 +9,14 @@ part of 'bstocks_requote_validity.dart';
 const BstocksRequoteValidityKindEnum
     _$bstocksRequoteValidityKindEnum_requoteOnConfirmation =
     const BstocksRequoteValidityKindEnum._('requoteOnConfirmation');
-const BstocksRequoteValidityKindEnum
-    _$bstocksRequoteValidityKindEnum_unknownDefaultOpenApi =
-    const BstocksRequoteValidityKindEnum._('unknownDefaultOpenApi');
 
 BstocksRequoteValidityKindEnum _$bstocksRequoteValidityKindEnumValueOf(
     String name) {
   switch (name) {
     case 'requoteOnConfirmation':
       return _$bstocksRequoteValidityKindEnum_requoteOnConfirmation;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksRequoteValidityKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksRequoteValidityKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<BstocksRequoteValidityKindEnum>
     _$bstocksRequoteValidityKindEnumValues = BuiltSet<
         BstocksRequoteValidityKindEnum>(const <BstocksRequoteValidityKindEnum>[
   _$bstocksRequoteValidityKindEnum_requoteOnConfirmation,
-  _$bstocksRequoteValidityKindEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksRequoteValidityKindEnum>
@@ -40,11 +34,9 @@ class _$BstocksRequoteValidityKindEnumSerializer
     implements PrimitiveSerializer<BstocksRequoteValidityKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'requoteOnConfirmation': 'requote_on_confirmation',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'requote_on_confirmation': 'requoteOnConfirmation',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

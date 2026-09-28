@@ -8,19 +8,14 @@ part of 'realtime_balance_event.dart';
 
 const RealtimeBalanceEventEventEnum _$realtimeBalanceEventEventEnum_balance =
     const RealtimeBalanceEventEventEnum._('balance');
-const RealtimeBalanceEventEventEnum
-    _$realtimeBalanceEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeBalanceEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeBalanceEventEventEnum _$realtimeBalanceEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'balance':
       return _$realtimeBalanceEventEventEnum_balance;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeBalanceEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeBalanceEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<RealtimeBalanceEventEventEnum>
     _$realtimeBalanceEventEventEnumValues = BuiltSet<
         RealtimeBalanceEventEventEnum>(const <RealtimeBalanceEventEventEnum>[
   _$realtimeBalanceEventEventEnum_balance,
-  _$realtimeBalanceEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeBalanceEventEventEnum>
@@ -39,11 +33,9 @@ class _$RealtimeBalanceEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeBalanceEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'balance': 'balance',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'balance': 'balance',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

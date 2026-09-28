@@ -8,19 +8,14 @@ part of 'create_withdrawal_request.dart';
 
 const CreateWithdrawalRequestAssetEnum _$createWithdrawalRequestAssetEnum_USDC =
     const CreateWithdrawalRequestAssetEnum._('USDC');
-const CreateWithdrawalRequestAssetEnum
-    _$createWithdrawalRequestAssetEnum_unknownDefaultOpenApi =
-    const CreateWithdrawalRequestAssetEnum._('unknownDefaultOpenApi');
 
 CreateWithdrawalRequestAssetEnum _$createWithdrawalRequestAssetEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$createWithdrawalRequestAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$createWithdrawalRequestAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$createWithdrawalRequestAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<CreateWithdrawalRequestAssetEnum>
     _$createWithdrawalRequestAssetEnumValues = BuiltSet<
         CreateWithdrawalRequestAssetEnum>(const <CreateWithdrawalRequestAssetEnum>[
   _$createWithdrawalRequestAssetEnum_USDC,
-  _$createWithdrawalRequestAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<CreateWithdrawalRequestAssetEnum>
@@ -39,11 +33,9 @@ class _$CreateWithdrawalRequestAssetEnumSerializer
     implements PrimitiveSerializer<CreateWithdrawalRequestAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

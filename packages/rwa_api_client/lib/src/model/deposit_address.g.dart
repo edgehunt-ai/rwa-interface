@@ -8,24 +8,19 @@ part of 'deposit_address.dart';
 
 const DepositAddressTokenEnum _$depositAddressTokenEnum_USDC =
     const DepositAddressTokenEnum._('USDC');
-const DepositAddressTokenEnum _$depositAddressTokenEnum_unknownDefaultOpenApi =
-    const DepositAddressTokenEnum._('unknownDefaultOpenApi');
 
 DepositAddressTokenEnum _$depositAddressTokenEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$depositAddressTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$depositAddressTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$depositAddressTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositAddressTokenEnum> _$depositAddressTokenEnumValues =
     BuiltSet<DepositAddressTokenEnum>(const <DepositAddressTokenEnum>[
   _$depositAddressTokenEnum_USDC,
-  _$depositAddressTokenEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<DepositAddressTokenEnum> _$depositAddressTokenEnumSerializer =
@@ -35,11 +30,9 @@ class _$DepositAddressTokenEnumSerializer
     implements PrimitiveSerializer<DepositAddressTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

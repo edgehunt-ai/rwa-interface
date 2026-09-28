@@ -191,8 +191,6 @@ class Hip3TriggerSpecTriggerReferenceEnum extends EnumClass {
   static const Hip3TriggerSpecTriggerReferenceEnum oracle = _$hip3TriggerSpecTriggerReferenceEnum_oracle;
   @BuiltValueEnumConst(wireName: r'last')
   static const Hip3TriggerSpecTriggerReferenceEnum last = _$hip3TriggerSpecTriggerReferenceEnum_last;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3TriggerSpecTriggerReferenceEnum unknownDefaultOpenApi = _$hip3TriggerSpecTriggerReferenceEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3TriggerSpecTriggerReferenceEnum> get serializer => _$hip3TriggerSpecTriggerReferenceEnumSerializer;
 
@@ -208,8 +206,6 @@ class Hip3TriggerSpecExecutionTypeEnum extends EnumClass {
   static const Hip3TriggerSpecExecutionTypeEnum market = _$hip3TriggerSpecExecutionTypeEnum_market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const Hip3TriggerSpecExecutionTypeEnum limit = _$hip3TriggerSpecExecutionTypeEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3TriggerSpecExecutionTypeEnum unknownDefaultOpenApi = _$hip3TriggerSpecExecutionTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3TriggerSpecExecutionTypeEnum> get serializer => _$hip3TriggerSpecExecutionTypeEnumSerializer;
 

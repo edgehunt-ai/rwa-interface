@@ -8,19 +8,14 @@ part of 'realtime_activity_event.dart';
 
 const RealtimeActivityEventEventEnum _$realtimeActivityEventEventEnum_activity =
     const RealtimeActivityEventEventEnum._('activity');
-const RealtimeActivityEventEventEnum
-    _$realtimeActivityEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeActivityEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeActivityEventEventEnum _$realtimeActivityEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'activity':
       return _$realtimeActivityEventEventEnum_activity;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeActivityEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeActivityEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<RealtimeActivityEventEventEnum>
     _$realtimeActivityEventEventEnumValues = BuiltSet<
         RealtimeActivityEventEventEnum>(const <RealtimeActivityEventEventEnum>[
   _$realtimeActivityEventEventEnum_activity,
-  _$realtimeActivityEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeActivityEventEventEnum>
@@ -39,11 +33,9 @@ class _$RealtimeActivityEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeActivityEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'activity': 'activity',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'activity': 'activity',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

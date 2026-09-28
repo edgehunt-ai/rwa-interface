@@ -166,8 +166,6 @@ class WalletAuthorizationRequestPurposeEnum extends EnumClass {
   static const WalletAuthorizationRequestPurposeEnum withdrawal = _$walletAuthorizationRequestPurposeEnum_withdrawal;
   @BuiltValueEnumConst(wireName: r'claim')
   static const WalletAuthorizationRequestPurposeEnum claim = _$walletAuthorizationRequestPurposeEnum_claim;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletAuthorizationRequestPurposeEnum unknownDefaultOpenApi = _$walletAuthorizationRequestPurposeEnum_unknownDefaultOpenApi;
 
   static Serializer<WalletAuthorizationRequestPurposeEnum> get serializer => _$walletAuthorizationRequestPurposeEnumSerializer;
 

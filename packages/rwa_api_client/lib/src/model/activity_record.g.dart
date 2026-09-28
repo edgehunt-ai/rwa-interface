@@ -17,9 +17,6 @@ const ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnum_stopLoss =
     const ActivityRecordBusinessTypeEnum._('stopLoss');
 const ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnum_unknown =
     const ActivityRecordBusinessTypeEnum._('unknown');
-const ActivityRecordBusinessTypeEnum
-    _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi =
-    const ActivityRecordBusinessTypeEnum._('unknownDefaultOpenApi');
 
 ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnumValueOf(
     String name) {
@@ -34,10 +31,8 @@ ActivityRecordBusinessTypeEnum _$activityRecordBusinessTypeEnumValueOf(
       return _$activityRecordBusinessTypeEnum_stopLoss;
     case 'unknown':
       return _$activityRecordBusinessTypeEnum_unknown;
-    case 'unknownDefaultOpenApi':
-      return _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -49,7 +44,6 @@ final BuiltSet<ActivityRecordBusinessTypeEnum>
   _$activityRecordBusinessTypeEnum_takeProfit,
   _$activityRecordBusinessTypeEnum_stopLoss,
   _$activityRecordBusinessTypeEnum_unknown,
-  _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi,
 ]);
 
 const ActivityRecordChainEnum _$activityRecordChainEnum_BSC =
@@ -66,8 +60,6 @@ const ActivityRecordChainEnum _$activityRecordChainEnum_polygon =
     const ActivityRecordChainEnum._('polygon');
 const ActivityRecordChainEnum _$activityRecordChainEnum_solana =
     const ActivityRecordChainEnum._('solana');
-const ActivityRecordChainEnum _$activityRecordChainEnum_unknownDefaultOpenApi =
-    const ActivityRecordChainEnum._('unknownDefaultOpenApi');
 
 ActivityRecordChainEnum _$activityRecordChainEnumValueOf(String name) {
   switch (name) {
@@ -85,10 +77,8 @@ ActivityRecordChainEnum _$activityRecordChainEnumValueOf(String name) {
       return _$activityRecordChainEnum_polygon;
     case 'solana':
       return _$activityRecordChainEnum_solana;
-    case 'unknownDefaultOpenApi':
-      return _$activityRecordChainEnum_unknownDefaultOpenApi;
     default:
-      return _$activityRecordChainEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -101,7 +91,6 @@ final BuiltSet<ActivityRecordChainEnum> _$activityRecordChainEnumValues =
   _$activityRecordChainEnum_hyperliquid,
   _$activityRecordChainEnum_polygon,
   _$activityRecordChainEnum_solana,
-  _$activityRecordChainEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<ActivityRecordBusinessTypeEnum>
@@ -118,7 +107,6 @@ class _$ActivityRecordBusinessTypeEnumSerializer
     'takeProfit': 'take_profit',
     'stopLoss': 'stop_loss',
     'unknown': 'unknown',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'opening': 'opening',
@@ -126,7 +114,6 @@ class _$ActivityRecordBusinessTypeEnumSerializer
     'take_profit': 'takeProfit',
     'stop_loss': 'stopLoss',
     'unknown': 'unknown',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -158,7 +145,6 @@ class _$ActivityRecordChainEnumSerializer
     'hyperliquid': 'Hyperliquid',
     'polygon': 'Polygon',
     'solana': 'Solana',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
@@ -168,7 +154,6 @@ class _$ActivityRecordChainEnumSerializer
     'Hyperliquid': 'hyperliquid',
     'Polygon': 'polygon',
     'Solana': 'solana',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -9,19 +9,14 @@ part of 'hip3_close_action_request.dart';
 const Hip3CloseActionRequestOperationEnum
     _$hip3CloseActionRequestOperationEnum_closePosition =
     const Hip3CloseActionRequestOperationEnum._('closePosition');
-const Hip3CloseActionRequestOperationEnum
-    _$hip3CloseActionRequestOperationEnum_unknownDefaultOpenApi =
-    const Hip3CloseActionRequestOperationEnum._('unknownDefaultOpenApi');
 
 Hip3CloseActionRequestOperationEnum
     _$hip3CloseActionRequestOperationEnumValueOf(String name) {
   switch (name) {
     case 'closePosition':
       return _$hip3CloseActionRequestOperationEnum_closePosition;
-    case 'unknownDefaultOpenApi':
-      return _$hip3CloseActionRequestOperationEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3CloseActionRequestOperationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3CloseActionRequestOperationEnum>
     _$hip3CloseActionRequestOperationEnumValues = BuiltSet<
         Hip3CloseActionRequestOperationEnum>(const <Hip3CloseActionRequestOperationEnum>[
   _$hip3CloseActionRequestOperationEnum_closePosition,
-  _$hip3CloseActionRequestOperationEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3CloseActionRequestOperationEnum>
@@ -40,11 +34,9 @@ class _$Hip3CloseActionRequestOperationEnumSerializer
     implements PrimitiveSerializer<Hip3CloseActionRequestOperationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'closePosition': 'close_position',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'close_position': 'closePosition',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

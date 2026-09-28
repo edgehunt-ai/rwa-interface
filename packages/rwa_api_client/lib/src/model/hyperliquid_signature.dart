@@ -144,8 +144,6 @@ class HyperliquidSignatureVEnum extends EnumClass {
   static const HyperliquidSignatureVEnum number27 = _$hyperliquidSignatureVEnum_number27;
   @BuiltValueEnumConst(wireNumber: 28)
   static const HyperliquidSignatureVEnum number28 = _$hyperliquidSignatureVEnum_number28;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const HyperliquidSignatureVEnum unknownDefaultOpenApi = _$hyperliquidSignatureVEnum_unknownDefaultOpenApi;
 
   static Serializer<HyperliquidSignatureVEnum> get serializer => _$hyperliquidSignatureVEnumSerializer;
 

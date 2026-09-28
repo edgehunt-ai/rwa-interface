@@ -830,8 +830,6 @@ class LegacyBstockOrderPreviewFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const LegacyBstockOrderPreviewFundingModeEnum unreservedTransferFrom = _$legacyBstockOrderPreviewFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewFundingModeEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockOrderPreviewFundingModeEnum> get serializer => _$legacyBstockOrderPreviewFundingModeEnumSerializer;
 
@@ -846,8 +844,6 @@ class LegacyBstockOrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const LegacyBstockOrderPreviewKindEnum bstock = _$legacyBstockOrderPreviewKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewKindEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewKindEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockOrderPreviewKindEnum> get serializer => _$legacyBstockOrderPreviewKindEnumSerializer;
 
@@ -862,8 +858,6 @@ class LegacyBstockOrderPreviewNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const LegacyBstockOrderPreviewNetworkEnum BSC = _$legacyBstockOrderPreviewNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewNetworkEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockOrderPreviewNetworkEnum> get serializer => _$legacyBstockOrderPreviewNetworkEnumSerializer;
 
@@ -878,8 +872,6 @@ class LegacyBstockOrderPreviewSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyBstockOrderPreviewSettlementAssetEnum USDC = _$legacyBstockOrderPreviewSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockOrderPreviewSettlementAssetEnum> get serializer => _$legacyBstockOrderPreviewSettlementAssetEnumSerializer;
 

@@ -9,19 +9,14 @@ part of 'privy_authorization_payload.dart';
 const PrivyAuthorizationPayloadVersionEnum
     _$privyAuthorizationPayloadVersionEnum_number1 =
     const PrivyAuthorizationPayloadVersionEnum._('number1');
-const PrivyAuthorizationPayloadVersionEnum
-    _$privyAuthorizationPayloadVersionEnum_unknownDefaultOpenApi =
-    const PrivyAuthorizationPayloadVersionEnum._('unknownDefaultOpenApi');
 
 PrivyAuthorizationPayloadVersionEnum
     _$privyAuthorizationPayloadVersionEnumValueOf(String name) {
   switch (name) {
     case 'number1':
       return _$privyAuthorizationPayloadVersionEnum_number1;
-    case 'unknownDefaultOpenApi':
-      return _$privyAuthorizationPayloadVersionEnum_unknownDefaultOpenApi;
     default:
-      return _$privyAuthorizationPayloadVersionEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<PrivyAuthorizationPayloadVersionEnum>
     _$privyAuthorizationPayloadVersionEnumValues = BuiltSet<
         PrivyAuthorizationPayloadVersionEnum>(const <PrivyAuthorizationPayloadVersionEnum>[
   _$privyAuthorizationPayloadVersionEnum_number1,
-  _$privyAuthorizationPayloadVersionEnum_unknownDefaultOpenApi,
 ]);
 
 const PrivyAuthorizationPayloadMethodEnum
     _$privyAuthorizationPayloadMethodEnum_POST =
     const PrivyAuthorizationPayloadMethodEnum._('POST');
-const PrivyAuthorizationPayloadMethodEnum
-    _$privyAuthorizationPayloadMethodEnum_unknownDefaultOpenApi =
-    const PrivyAuthorizationPayloadMethodEnum._('unknownDefaultOpenApi');
 
 PrivyAuthorizationPayloadMethodEnum
     _$privyAuthorizationPayloadMethodEnumValueOf(String name) {
   switch (name) {
     case 'POST':
       return _$privyAuthorizationPayloadMethodEnum_POST;
-    case 'unknownDefaultOpenApi':
-      return _$privyAuthorizationPayloadMethodEnum_unknownDefaultOpenApi;
     default:
-      return _$privyAuthorizationPayloadMethodEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +44,6 @@ final BuiltSet<PrivyAuthorizationPayloadMethodEnum>
     _$privyAuthorizationPayloadMethodEnumValues = BuiltSet<
         PrivyAuthorizationPayloadMethodEnum>(const <PrivyAuthorizationPayloadMethodEnum>[
   _$privyAuthorizationPayloadMethodEnum_POST,
-  _$privyAuthorizationPayloadMethodEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PrivyAuthorizationPayloadVersionEnum>
@@ -69,11 +57,9 @@ class _$PrivyAuthorizationPayloadVersionEnumSerializer
     implements PrimitiveSerializer<PrivyAuthorizationPayloadVersionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number1': 1,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,11 +87,9 @@ class _$PrivyAuthorizationPayloadMethodEnumSerializer
     implements PrimitiveSerializer<PrivyAuthorizationPayloadMethodEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'POST': 'POST',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'POST': 'POST',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -140,9 +140,6 @@ class BstocksDepthSideStateReasonEnum extends EnumClass {
   /// 首个失败点终止该侧。quote_rejected 不推断具体库存事实，最小规模失败也不证明所有规模均失败。
   @BuiltValueEnumConst(wireName: r'sampling_timeout')
   static const BstocksDepthSideStateReasonEnum samplingTimeout = _$bstocksDepthSideStateReasonEnum_samplingTimeout;
-  /// 首个失败点终止该侧。quote_rejected 不推断具体库存事实，最小规模失败也不证明所有规模均失败。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksDepthSideStateReasonEnum unknownDefaultOpenApi = _$bstocksDepthSideStateReasonEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksDepthSideStateReasonEnum> get serializer => _$bstocksDepthSideStateReasonEnumSerializer;
 

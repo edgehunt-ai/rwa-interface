@@ -17,8 +17,6 @@ class WalletStatus extends EnumClass {
   static const WalletStatus verificationRequired = _$verificationRequired;
   @BuiltValueEnumConst(wireName: r'disabled')
   static const WalletStatus disabled = _$disabled;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<WalletStatus> get serializer => _$walletStatusSerializer;
 

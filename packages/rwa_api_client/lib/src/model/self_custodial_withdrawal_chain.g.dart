@@ -14,8 +14,6 @@ const SelfCustodialWithdrawalChain _$base_ =
     const SelfCustodialWithdrawalChain._('base_');
 const SelfCustodialWithdrawalChain _$BSC =
     const SelfCustodialWithdrawalChain._('BSC');
-const SelfCustodialWithdrawalChain _$unknownDefaultOpenApi =
-    const SelfCustodialWithdrawalChain._('unknownDefaultOpenApi');
 
 SelfCustodialWithdrawalChain _$valueOf(String name) {
   switch (name) {
@@ -27,10 +25,8 @@ SelfCustodialWithdrawalChain _$valueOf(String name) {
       return _$base_;
     case 'BSC':
       return _$BSC;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -40,7 +36,6 @@ final BuiltSet<SelfCustodialWithdrawalChain> _$values =
   _$arbitrum,
   _$base_,
   _$BSC,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$SelfCustodialWithdrawalChainMeta {
@@ -49,8 +44,6 @@ class _$SelfCustodialWithdrawalChainMeta {
   SelfCustodialWithdrawalChain get arbitrum => _$arbitrum;
   SelfCustodialWithdrawalChain get base_ => _$base_;
   SelfCustodialWithdrawalChain get BSC => _$BSC;
-  SelfCustodialWithdrawalChain get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   SelfCustodialWithdrawalChain valueOf(String name) => _$valueOf(name);
   BuiltSet<SelfCustodialWithdrawalChain> get values => _$values;
 }
@@ -72,14 +65,12 @@ class _$SelfCustodialWithdrawalChainSerializer
     'arbitrum': 'Arbitrum',
     'base_': 'Base',
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Ethereum': 'ethereum',
     'Arbitrum': 'arbitrum',
     'Base': 'base_',
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

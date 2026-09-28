@@ -10,9 +10,6 @@ const Hip3ClosePreviewSideEnum _$hip3ClosePreviewSideEnum_long =
     const Hip3ClosePreviewSideEnum._('long');
 const Hip3ClosePreviewSideEnum _$hip3ClosePreviewSideEnum_short =
     const Hip3ClosePreviewSideEnum._('short');
-const Hip3ClosePreviewSideEnum
-    _$hip3ClosePreviewSideEnum_unknownDefaultOpenApi =
-    const Hip3ClosePreviewSideEnum._('unknownDefaultOpenApi');
 
 Hip3ClosePreviewSideEnum _$hip3ClosePreviewSideEnumValueOf(String name) {
   switch (name) {
@@ -20,10 +17,8 @@ Hip3ClosePreviewSideEnum _$hip3ClosePreviewSideEnumValueOf(String name) {
       return _$hip3ClosePreviewSideEnum_long;
     case 'short':
       return _$hip3ClosePreviewSideEnum_short;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ClosePreviewSideEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ClosePreviewSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -31,16 +26,12 @@ final BuiltSet<Hip3ClosePreviewSideEnum> _$hip3ClosePreviewSideEnumValues =
     BuiltSet<Hip3ClosePreviewSideEnum>(const <Hip3ClosePreviewSideEnum>[
   _$hip3ClosePreviewSideEnum_long,
   _$hip3ClosePreviewSideEnum_short,
-  _$hip3ClosePreviewSideEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ClosePreviewTypeEnum _$hip3ClosePreviewTypeEnum_market =
     const Hip3ClosePreviewTypeEnum._('market');
 const Hip3ClosePreviewTypeEnum _$hip3ClosePreviewTypeEnum_limit =
     const Hip3ClosePreviewTypeEnum._('limit');
-const Hip3ClosePreviewTypeEnum
-    _$hip3ClosePreviewTypeEnum_unknownDefaultOpenApi =
-    const Hip3ClosePreviewTypeEnum._('unknownDefaultOpenApi');
 
 Hip3ClosePreviewTypeEnum _$hip3ClosePreviewTypeEnumValueOf(String name) {
   switch (name) {
@@ -48,10 +39,8 @@ Hip3ClosePreviewTypeEnum _$hip3ClosePreviewTypeEnumValueOf(String name) {
       return _$hip3ClosePreviewTypeEnum_market;
     case 'limit':
       return _$hip3ClosePreviewTypeEnum_limit;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ClosePreviewTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ClosePreviewTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -59,7 +48,6 @@ final BuiltSet<Hip3ClosePreviewTypeEnum> _$hip3ClosePreviewTypeEnumValues =
     BuiltSet<Hip3ClosePreviewTypeEnum>(const <Hip3ClosePreviewTypeEnum>[
   _$hip3ClosePreviewTypeEnum_market,
   _$hip3ClosePreviewTypeEnum_limit,
-  _$hip3ClosePreviewTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ClosePreviewSideEnum> _$hip3ClosePreviewSideEnumSerializer =
@@ -72,12 +60,10 @@ class _$Hip3ClosePreviewSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'long': 'long',
     'short': 'short',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'long': 'long',
     'short': 'short',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -103,12 +89,10 @@ class _$Hip3ClosePreviewTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

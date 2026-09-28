@@ -265,8 +265,6 @@ class Hip3LiquidationPageQuerySourceEnum extends EnumClass {
   static const Hip3LiquidationPageQuerySourceEnum live = _$hip3LiquidationPageQuerySourceEnum_live;
   @BuiltValueEnumConst(wireName: r'archive')
   static const Hip3LiquidationPageQuerySourceEnum archive = _$hip3LiquidationPageQuerySourceEnum_archive;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3LiquidationPageQuerySourceEnum unknownDefaultOpenApi = _$hip3LiquidationPageQuerySourceEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3LiquidationPageQuerySourceEnum> get serializer => _$hip3LiquidationPageQuerySourceEnumSerializer;
 
@@ -282,8 +280,6 @@ class Hip3LiquidationPageWarningsEnum extends EnumClass {
   static const Hip3LiquidationPageWarningsEnum providerHistoryRetentionNotGuaranteed = _$hip3LiquidationPageWarningsEnum_providerHistoryRetentionNotGuaranteed;
   @BuiltValueEnumConst(wireName: r'history_archive_gaps')
   static const Hip3LiquidationPageWarningsEnum historyArchiveGaps = _$hip3LiquidationPageWarningsEnum_historyArchiveGaps;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3LiquidationPageWarningsEnum unknownDefaultOpenApi = _$hip3LiquidationPageWarningsEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3LiquidationPageWarningsEnum> get serializer => _$hip3LiquidationPageWarningsEnumSerializer;
 

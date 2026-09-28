@@ -9,20 +9,14 @@ part of 'bstock_funding_target_balance_snapshot.dart';
 const BstockFundingTargetBalanceSnapshotAccountEnum
     _$bstockFundingTargetBalanceSnapshotAccountEnum_bstocks =
     const BstockFundingTargetBalanceSnapshotAccountEnum._('bstocks');
-const BstockFundingTargetBalanceSnapshotAccountEnum
-    _$bstockFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetBalanceSnapshotAccountEnum._(
-        'unknownDefaultOpenApi');
 
 BstockFundingTargetBalanceSnapshotAccountEnum
     _$bstockFundingTargetBalanceSnapshotAccountEnumValueOf(String name) {
   switch (name) {
     case 'bstocks':
       return _$bstockFundingTargetBalanceSnapshotAccountEnum_bstocks;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,26 +24,19 @@ final BuiltSet<BstockFundingTargetBalanceSnapshotAccountEnum>
     _$bstockFundingTargetBalanceSnapshotAccountEnumValues = BuiltSet<
         BstockFundingTargetBalanceSnapshotAccountEnum>(const <BstockFundingTargetBalanceSnapshotAccountEnum>[
   _$bstockFundingTargetBalanceSnapshotAccountEnum_bstocks,
-  _$bstockFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetBalanceSnapshotSource_Enum
     _$bstockFundingTargetBalanceSnapshotSourceEnum_bscRpc =
     const BstockFundingTargetBalanceSnapshotSource_Enum._('bscRpc');
-const BstockFundingTargetBalanceSnapshotSource_Enum
-    _$bstockFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetBalanceSnapshotSource_Enum._(
-        'unknownDefaultOpenApi');
 
 BstockFundingTargetBalanceSnapshotSource_Enum
     _$bstockFundingTargetBalanceSnapshotSourceEnumValueOf(String name) {
   switch (name) {
     case 'bscRpc':
       return _$bstockFundingTargetBalanceSnapshotSourceEnum_bscRpc;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -57,7 +44,6 @@ final BuiltSet<BstockFundingTargetBalanceSnapshotSource_Enum>
     _$bstockFundingTargetBalanceSnapshotSourceEnumValues = BuiltSet<
         BstockFundingTargetBalanceSnapshotSource_Enum>(const <BstockFundingTargetBalanceSnapshotSource_Enum>[
   _$bstockFundingTargetBalanceSnapshotSourceEnum_bscRpc,
-  _$bstockFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockFundingTargetBalanceSnapshotAccountEnum>
@@ -72,11 +58,9 @@ class _$BstockFundingTargetBalanceSnapshotAccountEnumSerializer
         PrimitiveSerializer<BstockFundingTargetBalanceSnapshotAccountEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstocks': 'bstocks',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstocks': 'bstocks',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -105,11 +89,9 @@ class _$BstockFundingTargetBalanceSnapshotSource_EnumSerializer
         PrimitiveSerializer<BstockFundingTargetBalanceSnapshotSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bscRpc': 'bsc_rpc',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bsc_rpc': 'bscRpc',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

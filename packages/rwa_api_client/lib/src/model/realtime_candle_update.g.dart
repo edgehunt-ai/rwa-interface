@@ -18,9 +18,6 @@ const RealtimeCandleUpdateIntervalEnum _$realtimeCandleUpdateIntervalEnum_n4h =
     const RealtimeCandleUpdateIntervalEnum._('n4h');
 const RealtimeCandleUpdateIntervalEnum _$realtimeCandleUpdateIntervalEnum_n1d =
     const RealtimeCandleUpdateIntervalEnum._('n1d');
-const RealtimeCandleUpdateIntervalEnum
-    _$realtimeCandleUpdateIntervalEnum_unknownDefaultOpenApi =
-    const RealtimeCandleUpdateIntervalEnum._('unknownDefaultOpenApi');
 
 RealtimeCandleUpdateIntervalEnum _$realtimeCandleUpdateIntervalEnumValueOf(
     String name) {
@@ -37,10 +34,8 @@ RealtimeCandleUpdateIntervalEnum _$realtimeCandleUpdateIntervalEnumValueOf(
       return _$realtimeCandleUpdateIntervalEnum_n4h;
     case 'n1d':
       return _$realtimeCandleUpdateIntervalEnum_n1d;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeCandleUpdateIntervalEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeCandleUpdateIntervalEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -53,7 +48,6 @@ final BuiltSet<RealtimeCandleUpdateIntervalEnum>
   _$realtimeCandleUpdateIntervalEnum_n1h,
   _$realtimeCandleUpdateIntervalEnum_n4h,
   _$realtimeCandleUpdateIntervalEnum_n1d,
-  _$realtimeCandleUpdateIntervalEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeCandleUpdateIntervalEnum>
@@ -69,7 +63,6 @@ class _$RealtimeCandleUpdateIntervalEnumSerializer
     'n1h': '1h',
     'n4h': '4h',
     'n1d': '1d',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '1m': 'n1m',
@@ -78,7 +71,6 @@ class _$RealtimeCandleUpdateIntervalEnumSerializer
     '1h': 'n1h',
     '4h': 'n4h',
     '1d': 'n1d',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

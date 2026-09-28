@@ -15,9 +15,6 @@ const Hip3WithdrawalCreateRequestRailEnum
 const Hip3WithdrawalCreateRequestRailEnum
     _$hip3WithdrawalCreateRequestRailEnum_float =
     const Hip3WithdrawalCreateRequestRailEnum._('float');
-const Hip3WithdrawalCreateRequestRailEnum
-    _$hip3WithdrawalCreateRequestRailEnum_unknownDefaultOpenApi =
-    const Hip3WithdrawalCreateRequestRailEnum._('unknownDefaultOpenApi');
 
 Hip3WithdrawalCreateRequestRailEnum
     _$hip3WithdrawalCreateRequestRailEnumValueOf(String name) {
@@ -28,10 +25,8 @@ Hip3WithdrawalCreateRequestRailEnum
       return _$hip3WithdrawalCreateRequestRailEnum_bridge2;
     case 'float':
       return _$hip3WithdrawalCreateRequestRailEnum_float;
-    case 'unknownDefaultOpenApi':
-      return _$hip3WithdrawalCreateRequestRailEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3WithdrawalCreateRequestRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -41,7 +36,6 @@ final BuiltSet<Hip3WithdrawalCreateRequestRailEnum>
   _$hip3WithdrawalCreateRequestRailEnum_auto,
   _$hip3WithdrawalCreateRequestRailEnum_bridge2,
   _$hip3WithdrawalCreateRequestRailEnum_float,
-  _$hip3WithdrawalCreateRequestRailEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3WithdrawalCreateRequestRailEnum>
@@ -54,13 +48,11 @@ class _$Hip3WithdrawalCreateRequestRailEnumSerializer
     'auto': 'auto',
     'bridge2': 'bridge2',
     'float': 'float',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto': 'auto',
     'bridge2': 'bridge2',
     'float': 'float',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

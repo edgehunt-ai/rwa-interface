@@ -25,8 +25,6 @@ class Chain extends EnumClass {
   static const Chain polygon = _$polygon;
   @BuiltValueEnumConst(wireName: r'Solana')
   static const Chain solana = _$solana;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Chain unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Chain> get serializer => _$chainSerializer;
 

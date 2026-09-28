@@ -9,19 +9,14 @@ part of 'hip3_cancel_order_action_request.dart';
 const Hip3CancelOrderActionRequestOperationEnum
     _$hip3CancelOrderActionRequestOperationEnum_cancelOrder =
     const Hip3CancelOrderActionRequestOperationEnum._('cancelOrder');
-const Hip3CancelOrderActionRequestOperationEnum
-    _$hip3CancelOrderActionRequestOperationEnum_unknownDefaultOpenApi =
-    const Hip3CancelOrderActionRequestOperationEnum._('unknownDefaultOpenApi');
 
 Hip3CancelOrderActionRequestOperationEnum
     _$hip3CancelOrderActionRequestOperationEnumValueOf(String name) {
   switch (name) {
     case 'cancelOrder':
       return _$hip3CancelOrderActionRequestOperationEnum_cancelOrder;
-    case 'unknownDefaultOpenApi':
-      return _$hip3CancelOrderActionRequestOperationEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3CancelOrderActionRequestOperationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3CancelOrderActionRequestOperationEnum>
     _$hip3CancelOrderActionRequestOperationEnumValues = BuiltSet<
         Hip3CancelOrderActionRequestOperationEnum>(const <Hip3CancelOrderActionRequestOperationEnum>[
   _$hip3CancelOrderActionRequestOperationEnum_cancelOrder,
-  _$hip3CancelOrderActionRequestOperationEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3CancelOrderActionRequestOperationEnum>
@@ -40,11 +34,9 @@ class _$Hip3CancelOrderActionRequestOperationEnumSerializer
     implements PrimitiveSerializer<Hip3CancelOrderActionRequestOperationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'cancelOrder': 'cancel_order',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'cancel_order': 'cancelOrder',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

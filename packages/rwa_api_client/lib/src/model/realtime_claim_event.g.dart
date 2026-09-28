@@ -8,18 +8,13 @@ part of 'realtime_claim_event.dart';
 
 const RealtimeClaimEventEventEnum _$realtimeClaimEventEventEnum_claim =
     const RealtimeClaimEventEventEnum._('claim');
-const RealtimeClaimEventEventEnum
-    _$realtimeClaimEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeClaimEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeClaimEventEventEnum _$realtimeClaimEventEventEnumValueOf(String name) {
   switch (name) {
     case 'claim':
       return _$realtimeClaimEventEventEnum_claim;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeClaimEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeClaimEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -27,7 +22,6 @@ final BuiltSet<RealtimeClaimEventEventEnum>
     _$realtimeClaimEventEventEnumValues =
     BuiltSet<RealtimeClaimEventEventEnum>(const <RealtimeClaimEventEventEnum>[
   _$realtimeClaimEventEventEnum_claim,
-  _$realtimeClaimEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeClaimEventEventEnum>
@@ -38,11 +32,9 @@ class _$RealtimeClaimEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeClaimEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'claim': 'claim',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'claim': 'claim',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

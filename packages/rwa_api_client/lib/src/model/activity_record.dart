@@ -514,9 +514,6 @@ class ActivityRecordBusinessTypeEnum extends EnumClass {
   /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
   @BuiltValueEnumConst(wireName: r'unknown')
   static const ActivityRecordBusinessTypeEnum unknown = _$activityRecordBusinessTypeEnum_unknown;
-  /// HIP3 业务分类，与 market/limit 执行类型独立。仅依据持久化的开仓 preview 绑定、 reduce_only 或保护单角色判定，不从买卖方向推断开平仓。 无法证明的 HIP3 历史记录为 unknown；非 HIP3 记录为 null。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ActivityRecordBusinessTypeEnum unknownDefaultOpenApi = _$activityRecordBusinessTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<ActivityRecordBusinessTypeEnum> get serializer => _$activityRecordBusinessTypeEnumSerializer;
 
@@ -542,8 +539,6 @@ class ActivityRecordChainEnum extends EnumClass {
   static const ActivityRecordChainEnum polygon = _$activityRecordChainEnum_polygon;
   @BuiltValueEnumConst(wireName: r'Solana')
   static const ActivityRecordChainEnum solana = _$activityRecordChainEnum_solana;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ActivityRecordChainEnum unknownDefaultOpenApi = _$activityRecordChainEnum_unknownDefaultOpenApi;
 
   static Serializer<ActivityRecordChainEnum> get serializer => _$activityRecordChainEnumSerializer;
 

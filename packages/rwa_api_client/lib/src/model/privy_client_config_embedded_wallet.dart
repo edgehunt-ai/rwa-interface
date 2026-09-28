@@ -137,8 +137,6 @@ class PrivyClientConfigEmbeddedWalletCreateOnLoginEnum extends EnumClass {
   static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum allUsers = _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_allUsers;
   @BuiltValueEnumConst(wireName: r'false')
   static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum false_ = _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_false_;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum unknownDefaultOpenApi = _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_unknownDefaultOpenApi;
 
   static Serializer<PrivyClientConfigEmbeddedWalletCreateOnLoginEnum> get serializer => _$privyClientConfigEmbeddedWalletCreateOnLoginEnumSerializer;
 

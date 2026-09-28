@@ -270,8 +270,6 @@ class WalletActionChainObservationValueEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x0')
   static const WalletActionChainObservationValueEnum n0x0 = _$walletActionChainObservationValueEnum_n0x0;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionChainObservationValueEnum unknownDefaultOpenApi = _$walletActionChainObservationValueEnum_unknownDefaultOpenApi;
 
   static Serializer<WalletActionChainObservationValueEnum> get serializer => _$walletActionChainObservationValueEnumSerializer;
 

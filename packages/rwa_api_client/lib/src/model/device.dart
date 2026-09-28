@@ -226,8 +226,6 @@ class DevicePushProviderEnum extends EnumClass {
   static const DevicePushProviderEnum apns = _$devicePushProviderEnum_apns;
   @BuiltValueEnumConst(wireName: r'fcm')
   static const DevicePushProviderEnum fcm = _$devicePushProviderEnum_fcm;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DevicePushProviderEnum unknownDefaultOpenApi = _$devicePushProviderEnum_unknownDefaultOpenApi;
 
   static Serializer<DevicePushProviderEnum> get serializer => _$devicePushProviderEnumSerializer;
 

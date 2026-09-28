@@ -5,23 +5,24 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/funding_position_blocker.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/eligible_funding_position_eligibility.dart';
-import 'package:rwa_api_client/src/model/ineligible_funding_position_eligibility.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
-import 'package:one_of/one_of.dart';
 
 part 'funding_position_eligibility.g.dart';
 
-/// Structural eligible/ineligible union for one exact source position. Each child requires a singleton `status`; keeping it in the child makes generated clients retain the status value. 
+/// Eligibility for one exact source position. Eligible positions have no blockers; ineligible positions have at least one blocker. 
 ///
 /// Properties:
 /// * [status] 
 /// * [blockers] 
 @BuiltValue()
 abstract class FundingPositionEligibility implements Built<FundingPositionEligibility, FundingPositionEligibilityBuilder> {
-  /// One Of [EligibleFundingPositionEligibility], [IneligibleFundingPositionEligibility]
-  OneOf get oneOf;
+  @BuiltValueField(wireName: r'status')
+  FundingPositionEligibilityStatusEnum get status;
+  // enum statusEnum {  eligible,  ineligible,  };
+
+  @BuiltValueField(wireName: r'blockers')
+  BuiltSet<FundingPositionBlocker> get blockers;
 
   FundingPositionEligibility._();
 
@@ -46,6 +47,16 @@ class _$FundingPositionEligibilitySerializer implements PrimitiveSerializer<Fund
     FundingPositionEligibility object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'status';
+    yield serializers.serialize(
+      object.status,
+      specifiedType: const FullType(FundingPositionEligibilityStatusEnum),
+    );
+    yield r'blockers';
+    yield serializers.serialize(
+      object.blockers,
+      specifiedType: const FullType(BuiltSet, [FullType(FundingPositionBlocker)]),
+    );
   }
 
   @override
@@ -54,8 +65,41 @@ class _$FundingPositionEligibilitySerializer implements PrimitiveSerializer<Fund
     FundingPositionEligibility object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final oneOf = object.oneOf;
-    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
+    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  void _deserializeProperties(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+    required List<Object?> serializedList,
+    required FundingPositionEligibilityBuilder result,
+    required List<Object?> unhandled,
+  }) {
+    for (var i = 0; i < serializedList.length; i += 2) {
+      final key = serializedList[i] as String;
+      final value = serializedList[i + 1];
+      switch (key) {
+        case r'status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(FundingPositionEligibilityStatusEnum),
+          ) as FundingPositionEligibilityStatusEnum;
+          result.status = valueDes;
+          break;
+        case r'blockers':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltSet, [FullType(FundingPositionBlocker)]),
+          ) as BuiltSet<FundingPositionBlocker>;
+          result.blockers.replace(valueDes);
+          break;
+        default:
+          unhandled.add(key);
+          unhandled.add(value);
+          break;
+      }
+    }
   }
 
   @override
@@ -65,20 +109,26 @@ class _$FundingPositionEligibilitySerializer implements PrimitiveSerializer<Fund
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = FundingPositionEligibilityBuilder();
-    Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(EligibleFundingPositionEligibility), FullType(IneligibleFundingPositionEligibility), ]);
-    oneOfDataSrc = serialized;
-    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
+    final serializedList = (serialized as Iterable<Object?>).toList();
+    final unhandled = <Object?>[];
+    _deserializeProperties(
+      serializers,
+      serialized,
+      specifiedType: specifiedType,
+      serializedList: serializedList,
+      unhandled: unhandled,
+      result: result,
+    );
     return result.build();
   }
 }
 
 class FundingPositionEligibilityStatusEnum extends EnumClass {
 
+  @BuiltValueEnumConst(wireName: r'eligible')
+  static const FundingPositionEligibilityStatusEnum eligible = _$fundingPositionEligibilityStatusEnum_eligible;
   @BuiltValueEnumConst(wireName: r'ineligible')
   static const FundingPositionEligibilityStatusEnum ineligible = _$fundingPositionEligibilityStatusEnum_ineligible;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPositionEligibilityStatusEnum unknownDefaultOpenApi = _$fundingPositionEligibilityStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingPositionEligibilityStatusEnum> get serializer => _$fundingPositionEligibilityStatusEnumSerializer;
 

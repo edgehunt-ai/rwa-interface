@@ -8,34 +8,25 @@ part of 'create_order_request.dart';
 
 const CreateOrderRequestKindEnum _$createOrderRequestKindEnum_perp =
     const CreateOrderRequestKindEnum._('perp');
-const CreateOrderRequestKindEnum
-    _$createOrderRequestKindEnum_unknownDefaultOpenApi =
-    const CreateOrderRequestKindEnum._('unknownDefaultOpenApi');
 
 CreateOrderRequestKindEnum _$createOrderRequestKindEnumValueOf(String name) {
   switch (name) {
     case 'perp':
       return _$createOrderRequestKindEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$createOrderRequestKindEnum_unknownDefaultOpenApi;
     default:
-      return _$createOrderRequestKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<CreateOrderRequestKindEnum> _$createOrderRequestKindEnumValues =
     BuiltSet<CreateOrderRequestKindEnum>(const <CreateOrderRequestKindEnum>[
   _$createOrderRequestKindEnum_perp,
-  _$createOrderRequestKindEnum_unknownDefaultOpenApi,
 ]);
 
 const CreateOrderRequestSideEnum _$createOrderRequestSideEnum_long =
     const CreateOrderRequestSideEnum._('long');
 const CreateOrderRequestSideEnum _$createOrderRequestSideEnum_short =
     const CreateOrderRequestSideEnum._('short');
-const CreateOrderRequestSideEnum
-    _$createOrderRequestSideEnum_unknownDefaultOpenApi =
-    const CreateOrderRequestSideEnum._('unknownDefaultOpenApi');
 
 CreateOrderRequestSideEnum _$createOrderRequestSideEnumValueOf(String name) {
   switch (name) {
@@ -43,10 +34,8 @@ CreateOrderRequestSideEnum _$createOrderRequestSideEnumValueOf(String name) {
       return _$createOrderRequestSideEnum_long;
     case 'short':
       return _$createOrderRequestSideEnum_short;
-    case 'unknownDefaultOpenApi':
-      return _$createOrderRequestSideEnum_unknownDefaultOpenApi;
     default:
-      return _$createOrderRequestSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,7 +43,6 @@ final BuiltSet<CreateOrderRequestSideEnum> _$createOrderRequestSideEnumValues =
     BuiltSet<CreateOrderRequestSideEnum>(const <CreateOrderRequestSideEnum>[
   _$createOrderRequestSideEnum_long,
   _$createOrderRequestSideEnum_short,
-  _$createOrderRequestSideEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<CreateOrderRequestKindEnum> _$createOrderRequestKindEnumSerializer =
@@ -66,11 +54,9 @@ class _$CreateOrderRequestKindEnumSerializer
     implements PrimitiveSerializer<CreateOrderRequestKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -96,12 +82,10 @@ class _$CreateOrderRequestSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'long': 'long',
     'short': 'short',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'long': 'long',
     'short': 'short',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

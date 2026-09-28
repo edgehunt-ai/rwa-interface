@@ -47,8 +47,7 @@ final class Hip3PositionActionExecutor {
         final terminal = switch (current.status) {
           api.Hip3ActionStatus.failed ||
           api.Hip3ActionStatus.cancelled ||
-          api.Hip3ActionStatus.expired ||
-          api.Hip3ActionStatus.unknownDefaultOpenApi => true,
+          api.Hip3ActionStatus.expired => true,
           _ => false,
         };
         if (failureReason != null && (hasFailedStep || terminal)) {
@@ -70,7 +69,6 @@ final class Hip3PositionActionExecutor {
             );
           case api.Hip3ActionStatus.failed:
           case api.Hip3ActionStatus.cancelled:
-          case api.Hip3ActionStatus.unknownDefaultOpenApi:
             throw Hip3SigningFailure(
               Hip3SigningFailureCode.invalidPayload,
               reason: _failureReason(current),
@@ -91,10 +89,9 @@ final class Hip3PositionActionExecutor {
             );
           }
           final step = candidates.single;
-          if (step.kind == api.Hip3ActionStepKindEnum.unknownDefaultOpenApi ||
-              ((step.kind == api.Hip3ActionStepKindEnum.placeTakeProfit ||
-                      step.kind == api.Hip3ActionStepKindEnum.placeStopLoss) &&
-                  step.normalizedProtection == null)) {
+          if (((step.kind == api.Hip3ActionStepKindEnum.placeTakeProfit ||
+                  step.kind == api.Hip3ActionStepKindEnum.placeStopLoss) &&
+              step.normalizedProtection == null)) {
             throw const Hip3SigningFailure(
               Hip3SigningFailureCode.invalidPayload,
             );

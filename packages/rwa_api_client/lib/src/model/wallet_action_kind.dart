@@ -19,8 +19,6 @@ class WalletActionKind extends EnumClass {
   static const WalletActionKind erc20Transfer = _$erc20Transfer;
   @BuiltValueEnumConst(wireName: r'spot_swap')
   static const WalletActionKind spotSwap = _$spotSwap;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<WalletActionKind> get serializer => _$walletActionKindSerializer;
 

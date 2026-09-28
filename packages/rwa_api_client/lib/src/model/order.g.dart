@@ -8,24 +8,19 @@ part of 'order.dart';
 
 const OrderFundingModeEnum _$orderFundingModeEnum_unreservedTransferFrom =
     const OrderFundingModeEnum._('unreservedTransferFrom');
-const OrderFundingModeEnum _$orderFundingModeEnum_unknownDefaultOpenApi =
-    const OrderFundingModeEnum._('unknownDefaultOpenApi');
 
 OrderFundingModeEnum _$orderFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$orderFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$orderFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$orderFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<OrderFundingModeEnum> _$orderFundingModeEnumValues =
     BuiltSet<OrderFundingModeEnum>(const <OrderFundingModeEnum>[
   _$orderFundingModeEnum_unreservedTransferFrom,
-  _$orderFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderWalletActionBlockerEnum
@@ -40,9 +35,6 @@ const OrderWalletActionBlockerEnum
 const OrderWalletActionBlockerEnum
     _$orderWalletActionBlockerEnum_notApplicable =
     const OrderWalletActionBlockerEnum._('notApplicable');
-const OrderWalletActionBlockerEnum
-    _$orderWalletActionBlockerEnum_unknownDefaultOpenApi =
-    const OrderWalletActionBlockerEnum._('unknownDefaultOpenApi');
 
 OrderWalletActionBlockerEnum _$orderWalletActionBlockerEnumValueOf(
     String name) {
@@ -55,10 +47,8 @@ OrderWalletActionBlockerEnum _$orderWalletActionBlockerEnumValueOf(
       return _$orderWalletActionBlockerEnum_capabilityDisabled;
     case 'notApplicable':
       return _$orderWalletActionBlockerEnum_notApplicable;
-    case 'unknownDefaultOpenApi':
-      return _$orderWalletActionBlockerEnum_unknownDefaultOpenApi;
     default:
-      return _$orderWalletActionBlockerEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -69,7 +59,63 @@ final BuiltSet<OrderWalletActionBlockerEnum>
   _$orderWalletActionBlockerEnum_actionNotReady,
   _$orderWalletActionBlockerEnum_capabilityDisabled,
   _$orderWalletActionBlockerEnum_notApplicable,
-  _$orderWalletActionBlockerEnum_unknownDefaultOpenApi,
+]);
+
+const OrderChainIdEnum _$orderChainIdEnum_number56 =
+    const OrderChainIdEnum._('number56');
+const OrderChainIdEnum _$orderChainIdEnum_number97 =
+    const OrderChainIdEnum._('number97');
+const OrderChainIdEnum _$orderChainIdEnum_number31337 =
+    const OrderChainIdEnum._('number31337');
+
+OrderChainIdEnum _$orderChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number56':
+      return _$orderChainIdEnum_number56;
+    case 'number97':
+      return _$orderChainIdEnum_number97;
+    case 'number31337':
+      return _$orderChainIdEnum_number31337;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<OrderChainIdEnum> _$orderChainIdEnumValues =
+    BuiltSet<OrderChainIdEnum>(const <OrderChainIdEnum>[
+  _$orderChainIdEnum_number56,
+  _$orderChainIdEnum_number97,
+  _$orderChainIdEnum_number31337,
+]);
+
+const OrderCancellationReasonEnum _$orderCancellationReasonEnum_userCancelled =
+    const OrderCancellationReasonEnum._('userCancelled');
+const OrderCancellationReasonEnum
+    _$orderCancellationReasonEnum_insufficientBalance =
+    const OrderCancellationReasonEnum._('insufficientBalance');
+const OrderCancellationReasonEnum
+    _$orderCancellationReasonEnum_insufficientAllowance =
+    const OrderCancellationReasonEnum._('insufficientAllowance');
+
+OrderCancellationReasonEnum _$orderCancellationReasonEnumValueOf(String name) {
+  switch (name) {
+    case 'userCancelled':
+      return _$orderCancellationReasonEnum_userCancelled;
+    case 'insufficientBalance':
+      return _$orderCancellationReasonEnum_insufficientBalance;
+    case 'insufficientAllowance':
+      return _$orderCancellationReasonEnum_insufficientAllowance;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<OrderCancellationReasonEnum>
+    _$orderCancellationReasonEnumValues =
+    BuiltSet<OrderCancellationReasonEnum>(const <OrderCancellationReasonEnum>[
+  _$orderCancellationReasonEnum_userCancelled,
+  _$orderCancellationReasonEnum_insufficientBalance,
+  _$orderCancellationReasonEnum_insufficientAllowance,
 ]);
 
 Serializer<OrderFundingModeEnum> _$orderFundingModeEnumSerializer =
@@ -77,16 +123,19 @@ Serializer<OrderFundingModeEnum> _$orderFundingModeEnumSerializer =
 Serializer<OrderWalletActionBlockerEnum>
     _$orderWalletActionBlockerEnumSerializer =
     _$OrderWalletActionBlockerEnumSerializer();
+Serializer<OrderChainIdEnum> _$orderChainIdEnumSerializer =
+    _$OrderChainIdEnumSerializer();
+Serializer<OrderCancellationReasonEnum>
+    _$orderCancellationReasonEnumSerializer =
+    _$OrderCancellationReasonEnumSerializer();
 
 class _$OrderFundingModeEnumSerializer
     implements PrimitiveSerializer<OrderFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -113,14 +162,12 @@ class _$OrderWalletActionBlockerEnumSerializer
     'actionNotReady': 'action_not_ready',
     'capabilityDisabled': 'capability_disabled',
     'notApplicable': 'not_applicable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'provider_unavailable': 'providerUnavailable',
     'action_not_ready': 'actionNotReady',
     'capability_disabled': 'capabilityDisabled',
     'not_applicable': 'notApplicable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -138,6 +185,67 @@ class _$OrderWalletActionBlockerEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       OrderWalletActionBlockerEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$OrderChainIdEnumSerializer
+    implements PrimitiveSerializer<OrderChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number56': 56,
+    'number97': 97,
+    'number31337': 31337,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    56: 'number56',
+    97: 'number97',
+    31337: 'number31337',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[OrderChainIdEnum];
+  @override
+  final String wireName = 'OrderChainIdEnum';
+
+  @override
+  Object serialize(Serializers serializers, OrderChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  OrderChainIdEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      OrderChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$OrderCancellationReasonEnumSerializer
+    implements PrimitiveSerializer<OrderCancellationReasonEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'userCancelled': 'user_cancelled',
+    'insufficientBalance': 'insufficient_balance',
+    'insufficientAllowance': 'insufficient_allowance',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'user_cancelled': 'userCancelled',
+    'insufficient_balance': 'insufficientBalance',
+    'insufficient_allowance': 'insufficientAllowance',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[OrderCancellationReasonEnum];
+  @override
+  final String wireName = 'OrderCancellationReasonEnum';
+
+  @override
+  Object serialize(Serializers serializers, OrderCancellationReasonEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  OrderCancellationReasonEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      OrderCancellationReasonEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
@@ -168,6 +276,22 @@ class _$Order extends Order {
   final String? confirmedTransactionHash;
   @override
   final String? requiredFundingRaw;
+  @override
+  final String? previewId;
+  @override
+  final OrderChainIdEnum? chainId;
+  @override
+  final String? router;
+  @override
+  final String? placementTransactionHash;
+  @override
+  final String? transactionHash;
+  @override
+  final int? logIndex;
+  @override
+  final OrderCancellationReasonEnum? cancellationReason;
+  @override
+  final String? targetOrderId;
   @override
   final String? quantity;
   @override
@@ -250,6 +374,14 @@ class _$Order extends Order {
       this.submittedTransactionHash,
       this.confirmedTransactionHash,
       this.requiredFundingRaw,
+      this.previewId,
+      this.chainId,
+      this.router,
+      this.placementTransactionHash,
+      this.transactionHash,
+      this.logIndex,
+      this.cancellationReason,
+      this.targetOrderId,
       this.quantity,
       this.settlementAsset,
       this.productId,
@@ -307,6 +439,14 @@ class _$Order extends Order {
         submittedTransactionHash == other.submittedTransactionHash &&
         confirmedTransactionHash == other.confirmedTransactionHash &&
         requiredFundingRaw == other.requiredFundingRaw &&
+        previewId == other.previewId &&
+        chainId == other.chainId &&
+        router == other.router &&
+        placementTransactionHash == other.placementTransactionHash &&
+        transactionHash == other.transactionHash &&
+        logIndex == other.logIndex &&
+        cancellationReason == other.cancellationReason &&
+        targetOrderId == other.targetOrderId &&
         quantity == other.quantity &&
         settlementAsset == other.settlementAsset &&
         productId == other.productId &&
@@ -357,6 +497,14 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
     _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
     _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
+    _$hash = $jc(_$hash, previewId.hashCode);
+    _$hash = $jc(_$hash, chainId.hashCode);
+    _$hash = $jc(_$hash, router.hashCode);
+    _$hash = $jc(_$hash, placementTransactionHash.hashCode);
+    _$hash = $jc(_$hash, transactionHash.hashCode);
+    _$hash = $jc(_$hash, logIndex.hashCode);
+    _$hash = $jc(_$hash, cancellationReason.hashCode);
+    _$hash = $jc(_$hash, targetOrderId.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, settlementAsset.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
@@ -409,6 +557,14 @@ class _$Order extends Order {
           ..add('submittedTransactionHash', submittedTransactionHash)
           ..add('confirmedTransactionHash', confirmedTransactionHash)
           ..add('requiredFundingRaw', requiredFundingRaw)
+          ..add('previewId', previewId)
+          ..add('chainId', chainId)
+          ..add('router', router)
+          ..add('placementTransactionHash', placementTransactionHash)
+          ..add('transactionHash', transactionHash)
+          ..add('logIndex', logIndex)
+          ..add('cancellationReason', cancellationReason)
+          ..add('targetOrderId', targetOrderId)
           ..add('quantity', quantity)
           ..add('settlementAsset', settlementAsset)
           ..add('productId', productId)
@@ -513,6 +669,43 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
   String? get requiredFundingRaw => _$this._requiredFundingRaw;
   set requiredFundingRaw(String? requiredFundingRaw) =>
       _$this._requiredFundingRaw = requiredFundingRaw;
+
+  String? _previewId;
+  String? get previewId => _$this._previewId;
+  set previewId(String? previewId) => _$this._previewId = previewId;
+
+  OrderChainIdEnum? _chainId;
+  OrderChainIdEnum? get chainId => _$this._chainId;
+  set chainId(OrderChainIdEnum? chainId) => _$this._chainId = chainId;
+
+  String? _router;
+  String? get router => _$this._router;
+  set router(String? router) => _$this._router = router;
+
+  String? _placementTransactionHash;
+  String? get placementTransactionHash => _$this._placementTransactionHash;
+  set placementTransactionHash(String? placementTransactionHash) =>
+      _$this._placementTransactionHash = placementTransactionHash;
+
+  String? _transactionHash;
+  String? get transactionHash => _$this._transactionHash;
+  set transactionHash(String? transactionHash) =>
+      _$this._transactionHash = transactionHash;
+
+  int? _logIndex;
+  int? get logIndex => _$this._logIndex;
+  set logIndex(int? logIndex) => _$this._logIndex = logIndex;
+
+  OrderCancellationReasonEnum? _cancellationReason;
+  OrderCancellationReasonEnum? get cancellationReason =>
+      _$this._cancellationReason;
+  set cancellationReason(OrderCancellationReasonEnum? cancellationReason) =>
+      _$this._cancellationReason = cancellationReason;
+
+  String? _targetOrderId;
+  String? get targetOrderId => _$this._targetOrderId;
+  set targetOrderId(String? targetOrderId) =>
+      _$this._targetOrderId = targetOrderId;
 
   String? _quantity;
   String? get quantity => _$this._quantity;
@@ -676,6 +869,14 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _submittedTransactionHash = $v.submittedTransactionHash;
       _confirmedTransactionHash = $v.confirmedTransactionHash;
       _requiredFundingRaw = $v.requiredFundingRaw;
+      _previewId = $v.previewId;
+      _chainId = $v.chainId;
+      _router = $v.router;
+      _placementTransactionHash = $v.placementTransactionHash;
+      _transactionHash = $v.transactionHash;
+      _logIndex = $v.logIndex;
+      _cancellationReason = $v.cancellationReason;
+      _targetOrderId = $v.targetOrderId;
       _quantity = $v.quantity;
       _settlementAsset = $v.settlementAsset;
       _productId = $v.productId;
@@ -744,6 +945,14 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             submittedTransactionHash: submittedTransactionHash,
             confirmedTransactionHash: confirmedTransactionHash,
             requiredFundingRaw: requiredFundingRaw,
+            previewId: previewId,
+            chainId: chainId,
+            router: router,
+            placementTransactionHash: placementTransactionHash,
+            transactionHash: transactionHash,
+            logIndex: logIndex,
+            cancellationReason: cancellationReason,
+            targetOrderId: targetOrderId,
             quantity: quantity,
             settlementAsset: settlementAsset,
             productId: productId,

@@ -166,8 +166,6 @@ class LegacyPerpFundingRailRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const LegacyPerpFundingRailRailEnum perp = _$legacyPerpFundingRailRailEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingRailRailEnum unknownDefaultOpenApi = _$legacyPerpFundingRailRailEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpFundingRailRailEnum> get serializer => _$legacyPerpFundingRailRailEnumSerializer;
 
@@ -182,8 +180,6 @@ class LegacyPerpFundingRailNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const LegacyPerpFundingRailNetworkEnum arbitrum = _$legacyPerpFundingRailNetworkEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingRailNetworkEnum unknownDefaultOpenApi = _$legacyPerpFundingRailNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpFundingRailNetworkEnum> get serializer => _$legacyPerpFundingRailNetworkEnumSerializer;
 
@@ -198,8 +194,6 @@ class LegacyPerpFundingRailSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyPerpFundingRailSettlementAssetEnum USDC = _$legacyPerpFundingRailSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingRailSettlementAssetEnum unknownDefaultOpenApi = _$legacyPerpFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpFundingRailSettlementAssetEnum> get serializer => _$legacyPerpFundingRailSettlementAssetEnumSerializer;
 

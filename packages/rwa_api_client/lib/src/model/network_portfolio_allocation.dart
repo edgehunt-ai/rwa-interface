@@ -246,8 +246,6 @@ class NetworkPortfolioAllocationDimensionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'network')
   static const NetworkPortfolioAllocationDimensionEnum network = _$networkPortfolioAllocationDimensionEnum_network;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const NetworkPortfolioAllocationDimensionEnum unknownDefaultOpenApi = _$networkPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
 
   static Serializer<NetworkPortfolioAllocationDimensionEnum> get serializer => _$networkPortfolioAllocationDimensionEnumSerializer;
 

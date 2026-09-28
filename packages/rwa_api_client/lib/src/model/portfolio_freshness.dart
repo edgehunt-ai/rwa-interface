@@ -20,9 +20,6 @@ class PortfolioFreshness extends EnumClass {
   /// 数据新鲜度。`live` 来自当前读取，`cached` 来自 fresh PostgreSQL snapshot， `stale` 来自仍在最大 stale 窗口内的 last-good snapshot。 
   @BuiltValueEnumConst(wireName: r'stale')
   static const PortfolioFreshness stale = _$stale;
-  /// 数据新鲜度。`live` 来自当前读取，`cached` 来自 fresh PostgreSQL snapshot， `stale` 来自仍在最大 stale 窗口内的 last-good snapshot。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioFreshness unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioFreshness> get serializer => _$portfolioFreshnessSerializer;
 

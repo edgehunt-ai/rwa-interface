@@ -15,9 +15,6 @@ const Hip3TriggerSpecTriggerReferenceEnum
 const Hip3TriggerSpecTriggerReferenceEnum
     _$hip3TriggerSpecTriggerReferenceEnum_last =
     const Hip3TriggerSpecTriggerReferenceEnum._('last');
-const Hip3TriggerSpecTriggerReferenceEnum
-    _$hip3TriggerSpecTriggerReferenceEnum_unknownDefaultOpenApi =
-    const Hip3TriggerSpecTriggerReferenceEnum._('unknownDefaultOpenApi');
 
 Hip3TriggerSpecTriggerReferenceEnum
     _$hip3TriggerSpecTriggerReferenceEnumValueOf(String name) {
@@ -28,10 +25,8 @@ Hip3TriggerSpecTriggerReferenceEnum
       return _$hip3TriggerSpecTriggerReferenceEnum_oracle;
     case 'last':
       return _$hip3TriggerSpecTriggerReferenceEnum_last;
-    case 'unknownDefaultOpenApi':
-      return _$hip3TriggerSpecTriggerReferenceEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3TriggerSpecTriggerReferenceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -41,7 +36,6 @@ final BuiltSet<Hip3TriggerSpecTriggerReferenceEnum>
   _$hip3TriggerSpecTriggerReferenceEnum_mark,
   _$hip3TriggerSpecTriggerReferenceEnum_oracle,
   _$hip3TriggerSpecTriggerReferenceEnum_last,
-  _$hip3TriggerSpecTriggerReferenceEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3TriggerSpecExecutionTypeEnum
@@ -50,9 +44,6 @@ const Hip3TriggerSpecExecutionTypeEnum
 const Hip3TriggerSpecExecutionTypeEnum
     _$hip3TriggerSpecExecutionTypeEnum_limit =
     const Hip3TriggerSpecExecutionTypeEnum._('limit');
-const Hip3TriggerSpecExecutionTypeEnum
-    _$hip3TriggerSpecExecutionTypeEnum_unknownDefaultOpenApi =
-    const Hip3TriggerSpecExecutionTypeEnum._('unknownDefaultOpenApi');
 
 Hip3TriggerSpecExecutionTypeEnum _$hip3TriggerSpecExecutionTypeEnumValueOf(
     String name) {
@@ -61,10 +52,8 @@ Hip3TriggerSpecExecutionTypeEnum _$hip3TriggerSpecExecutionTypeEnumValueOf(
       return _$hip3TriggerSpecExecutionTypeEnum_market;
     case 'limit':
       return _$hip3TriggerSpecExecutionTypeEnum_limit;
-    case 'unknownDefaultOpenApi':
-      return _$hip3TriggerSpecExecutionTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3TriggerSpecExecutionTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -73,7 +62,6 @@ final BuiltSet<Hip3TriggerSpecExecutionTypeEnum>
         Hip3TriggerSpecExecutionTypeEnum>(const <Hip3TriggerSpecExecutionTypeEnum>[
   _$hip3TriggerSpecExecutionTypeEnum_market,
   _$hip3TriggerSpecExecutionTypeEnum_limit,
-  _$hip3TriggerSpecExecutionTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3TriggerSpecTriggerReferenceEnum>
@@ -89,13 +77,11 @@ class _$Hip3TriggerSpecTriggerReferenceEnumSerializer
     'mark': 'mark',
     'oracle': 'oracle',
     'last': 'last',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mark': 'mark',
     'oracle': 'oracle',
     'last': 'last',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -124,12 +110,10 @@ class _$Hip3TriggerSpecExecutionTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -212,8 +212,6 @@ class FundingSessionContinuationActionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'resume_bstocks_order')
   static const FundingSessionContinuationActionEnum resumeBstocksOrder = _$fundingSessionContinuationActionEnum_resumeBstocksOrder;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionContinuationActionEnum unknownDefaultOpenApi = _$fundingSessionContinuationActionEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionContinuationActionEnum> get serializer => _$fundingSessionContinuationActionEnumSerializer;
 
@@ -227,8 +225,6 @@ class FundingSessionContinuationStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'ready_to_requote')
   static const FundingSessionContinuationStatusEnum readyToRequote = _$fundingSessionContinuationStatusEnum_readyToRequote;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionContinuationStatusEnum unknownDefaultOpenApi = _$fundingSessionContinuationStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionContinuationStatusEnum> get serializer => _$fundingSessionContinuationStatusEnumSerializer;
 

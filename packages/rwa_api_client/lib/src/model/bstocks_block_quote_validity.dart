@@ -142,8 +142,6 @@ class BstocksBlockQuoteValidityKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'block_window')
   static const BstocksBlockQuoteValidityKindEnum blockWindow = _$bstocksBlockQuoteValidityKindEnum_blockWindow;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksBlockQuoteValidityKindEnum unknownDefaultOpenApi = _$bstocksBlockQuoteValidityKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksBlockQuoteValidityKindEnum> get serializer => _$bstocksBlockQuoteValidityKindEnumSerializer;
 

@@ -8,19 +8,14 @@ part of 'legacy_perp_funding_plan.dart';
 
 const LegacyPerpFundingPlanRailEnum _$legacyPerpFundingPlanRailEnum_perp =
     const LegacyPerpFundingPlanRailEnum._('perp');
-const LegacyPerpFundingPlanRailEnum
-    _$legacyPerpFundingPlanRailEnum_unknownDefaultOpenApi =
-    const LegacyPerpFundingPlanRailEnum._('unknownDefaultOpenApi');
 
 LegacyPerpFundingPlanRailEnum _$legacyPerpFundingPlanRailEnumValueOf(
     String name) {
   switch (name) {
     case 'perp':
       return _$legacyPerpFundingPlanRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpFundingPlanRailEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpFundingPlanRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,25 +23,19 @@ final BuiltSet<LegacyPerpFundingPlanRailEnum>
     _$legacyPerpFundingPlanRailEnumValues = BuiltSet<
         LegacyPerpFundingPlanRailEnum>(const <LegacyPerpFundingPlanRailEnum>[
   _$legacyPerpFundingPlanRailEnum_perp,
-  _$legacyPerpFundingPlanRailEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpFundingPlanNetworkEnum
     _$legacyPerpFundingPlanNetworkEnum_arbitrum =
     const LegacyPerpFundingPlanNetworkEnum._('arbitrum');
-const LegacyPerpFundingPlanNetworkEnum
-    _$legacyPerpFundingPlanNetworkEnum_unknownDefaultOpenApi =
-    const LegacyPerpFundingPlanNetworkEnum._('unknownDefaultOpenApi');
 
 LegacyPerpFundingPlanNetworkEnum _$legacyPerpFundingPlanNetworkEnumValueOf(
     String name) {
   switch (name) {
     case 'arbitrum':
       return _$legacyPerpFundingPlanNetworkEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpFundingPlanNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpFundingPlanNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,24 +43,18 @@ final BuiltSet<LegacyPerpFundingPlanNetworkEnum>
     _$legacyPerpFundingPlanNetworkEnumValues = BuiltSet<
         LegacyPerpFundingPlanNetworkEnum>(const <LegacyPerpFundingPlanNetworkEnum>[
   _$legacyPerpFundingPlanNetworkEnum_arbitrum,
-  _$legacyPerpFundingPlanNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpFundingPlanAssetEnum _$legacyPerpFundingPlanAssetEnum_USDC =
     const LegacyPerpFundingPlanAssetEnum._('USDC');
-const LegacyPerpFundingPlanAssetEnum
-    _$legacyPerpFundingPlanAssetEnum_unknownDefaultOpenApi =
-    const LegacyPerpFundingPlanAssetEnum._('unknownDefaultOpenApi');
 
 LegacyPerpFundingPlanAssetEnum _$legacyPerpFundingPlanAssetEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$legacyPerpFundingPlanAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpFundingPlanAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpFundingPlanAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -79,7 +62,6 @@ final BuiltSet<LegacyPerpFundingPlanAssetEnum>
     _$legacyPerpFundingPlanAssetEnumValues = BuiltSet<
         LegacyPerpFundingPlanAssetEnum>(const <LegacyPerpFundingPlanAssetEnum>[
   _$legacyPerpFundingPlanAssetEnum_USDC,
-  _$legacyPerpFundingPlanAssetEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpFundingPlanStatusEnum _$legacyPerpFundingPlanStatusEnum_ready =
@@ -90,9 +72,6 @@ const LegacyPerpFundingPlanStatusEnum
 const LegacyPerpFundingPlanStatusEnum
     _$legacyPerpFundingPlanStatusEnum_consumed =
     const LegacyPerpFundingPlanStatusEnum._('consumed');
-const LegacyPerpFundingPlanStatusEnum
-    _$legacyPerpFundingPlanStatusEnum_unknownDefaultOpenApi =
-    const LegacyPerpFundingPlanStatusEnum._('unknownDefaultOpenApi');
 
 LegacyPerpFundingPlanStatusEnum _$legacyPerpFundingPlanStatusEnumValueOf(
     String name) {
@@ -103,10 +82,8 @@ LegacyPerpFundingPlanStatusEnum _$legacyPerpFundingPlanStatusEnumValueOf(
       return _$legacyPerpFundingPlanStatusEnum_expired;
     case 'consumed':
       return _$legacyPerpFundingPlanStatusEnum_consumed;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpFundingPlanStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpFundingPlanStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -116,7 +93,6 @@ final BuiltSet<LegacyPerpFundingPlanStatusEnum>
   _$legacyPerpFundingPlanStatusEnum_ready,
   _$legacyPerpFundingPlanStatusEnum_expired,
   _$legacyPerpFundingPlanStatusEnum_consumed,
-  _$legacyPerpFundingPlanStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LegacyPerpFundingPlanRailEnum>
@@ -136,11 +112,9 @@ class _$LegacyPerpFundingPlanRailEnumSerializer
     implements PrimitiveSerializer<LegacyPerpFundingPlanRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -166,11 +140,9 @@ class _$LegacyPerpFundingPlanNetworkEnumSerializer
     implements PrimitiveSerializer<LegacyPerpFundingPlanNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -196,11 +168,9 @@ class _$LegacyPerpFundingPlanAssetEnumSerializer
     implements PrimitiveSerializer<LegacyPerpFundingPlanAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -228,13 +198,11 @@ class _$LegacyPerpFundingPlanStatusEnumSerializer
     'ready': 'ready',
     'expired': 'expired',
     'consumed': 'consumed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'ready': 'ready',
     'expired': 'expired',
     'consumed': 'consumed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

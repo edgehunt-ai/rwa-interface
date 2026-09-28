@@ -264,8 +264,6 @@ class Hip3FundingPaymentPageQuerySourceEnum extends EnumClass {
   static const Hip3FundingPaymentPageQuerySourceEnum live = _$hip3FundingPaymentPageQuerySourceEnum_live;
   @BuiltValueEnumConst(wireName: r'archive')
   static const Hip3FundingPaymentPageQuerySourceEnum archive = _$hip3FundingPaymentPageQuerySourceEnum_archive;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3FundingPaymentPageQuerySourceEnum unknownDefaultOpenApi = _$hip3FundingPaymentPageQuerySourceEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3FundingPaymentPageQuerySourceEnum> get serializer => _$hip3FundingPaymentPageQuerySourceEnumSerializer;
 
@@ -283,8 +281,6 @@ class Hip3FundingPaymentPageWarningsEnum extends EnumClass {
   static const Hip3FundingPaymentPageWarningsEnum fundingSettlementAssetUnavailable = _$hip3FundingPaymentPageWarningsEnum_fundingSettlementAssetUnavailable;
   @BuiltValueEnumConst(wireName: r'history_archive_gaps')
   static const Hip3FundingPaymentPageWarningsEnum historyArchiveGaps = _$hip3FundingPaymentPageWarningsEnum_historyArchiveGaps;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3FundingPaymentPageWarningsEnum unknownDefaultOpenApi = _$hip3FundingPaymentPageWarningsEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3FundingPaymentPageWarningsEnum> get serializer => _$hip3FundingPaymentPageWarningsEnumSerializer;
 

@@ -164,8 +164,6 @@ class TradeIntentExecutionPolicyOrderTypeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'ioc')
   static const TradeIntentExecutionPolicyOrderTypeEnum ioc = _$tradeIntentExecutionPolicyOrderTypeEnum_ioc;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentExecutionPolicyOrderTypeEnum unknownDefaultOpenApi = _$tradeIntentExecutionPolicyOrderTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<TradeIntentExecutionPolicyOrderTypeEnum> get serializer => _$tradeIntentExecutionPolicyOrderTypeEnumSerializer;
 

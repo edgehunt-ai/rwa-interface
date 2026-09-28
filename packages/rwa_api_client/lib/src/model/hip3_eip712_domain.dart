@@ -161,8 +161,6 @@ class Hip3Eip712DomainNameEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Exchange')
   static const Hip3Eip712DomainNameEnum exchange = _$hip3Eip712DomainNameEnum_exchange;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712DomainNameEnum unknownDefaultOpenApi = _$hip3Eip712DomainNameEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712DomainNameEnum> get serializer => _$hip3Eip712DomainNameEnumSerializer;
 
@@ -176,8 +174,6 @@ class Hip3Eip712DomainVersionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'1')
   static const Hip3Eip712DomainVersionEnum n1 = _$hip3Eip712DomainVersionEnum_n1;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712DomainVersionEnum unknownDefaultOpenApi = _$hip3Eip712DomainVersionEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712DomainVersionEnum> get serializer => _$hip3Eip712DomainVersionEnumSerializer;
 
@@ -191,8 +187,6 @@ class Hip3Eip712DomainChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 1337)
   static const Hip3Eip712DomainChainIdEnum number1337 = _$hip3Eip712DomainChainIdEnum_number1337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const Hip3Eip712DomainChainIdEnum unknownDefaultOpenApi = _$hip3Eip712DomainChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712DomainChainIdEnum> get serializer => _$hip3Eip712DomainChainIdEnumSerializer;
 
@@ -206,8 +200,6 @@ class Hip3Eip712DomainVerifyingContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x0000000000000000000000000000000000000000')
   static const Hip3Eip712DomainVerifyingContractEnum n0x0000000000000000000000000000000000000000 = _$hip3Eip712DomainVerifyingContractEnum_n0x0000000000000000000000000000000000000000;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712DomainVerifyingContractEnum unknownDefaultOpenApi = _$hip3Eip712DomainVerifyingContractEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712DomainVerifyingContractEnum> get serializer => _$hip3Eip712DomainVerifyingContractEnumSerializer;
 

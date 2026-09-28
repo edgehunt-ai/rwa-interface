@@ -23,8 +23,6 @@ class AccountDeletionBlocker extends EnumClass {
   static const AccountDeletionBlocker legalRetention = _$legalRetention;
   @BuiltValueEnumConst(wireName: r'identity_review')
   static const AccountDeletionBlocker identityReview = _$identityReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const AccountDeletionBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<AccountDeletionBlocker> get serializer => _$accountDeletionBlockerSerializer;
 

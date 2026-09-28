@@ -8,19 +8,14 @@ part of 'bstocks_depth_sampling.dart';
 
 const BstocksDepthSamplingGridEnum _$bstocksDepthSamplingGridEnum_n125 =
     const BstocksDepthSamplingGridEnum._('n125');
-const BstocksDepthSamplingGridEnum
-    _$bstocksDepthSamplingGridEnum_unknownDefaultOpenApi =
-    const BstocksDepthSamplingGridEnum._('unknownDefaultOpenApi');
 
 BstocksDepthSamplingGridEnum _$bstocksDepthSamplingGridEnumValueOf(
     String name) {
   switch (name) {
     case 'n125':
       return _$bstocksDepthSamplingGridEnum_n125;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksDepthSamplingGridEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksDepthSamplingGridEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,25 +23,19 @@ final BuiltSet<BstocksDepthSamplingGridEnum>
     _$bstocksDepthSamplingGridEnumValues =
     BuiltSet<BstocksDepthSamplingGridEnum>(const <BstocksDepthSamplingGridEnum>[
   _$bstocksDepthSamplingGridEnum_n125,
-  _$bstocksDepthSamplingGridEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksDepthSamplingAmountSemanticsEnum
     _$bstocksDepthSamplingAmountSemanticsEnum_nominalInput =
     const BstocksDepthSamplingAmountSemanticsEnum._('nominalInput');
-const BstocksDepthSamplingAmountSemanticsEnum
-    _$bstocksDepthSamplingAmountSemanticsEnum_unknownDefaultOpenApi =
-    const BstocksDepthSamplingAmountSemanticsEnum._('unknownDefaultOpenApi');
 
 BstocksDepthSamplingAmountSemanticsEnum
     _$bstocksDepthSamplingAmountSemanticsEnumValueOf(String name) {
   switch (name) {
     case 'nominalInput':
       return _$bstocksDepthSamplingAmountSemanticsEnum_nominalInput;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksDepthSamplingAmountSemanticsEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksDepthSamplingAmountSemanticsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,7 +43,6 @@ final BuiltSet<BstocksDepthSamplingAmountSemanticsEnum>
     _$bstocksDepthSamplingAmountSemanticsEnumValues = BuiltSet<
         BstocksDepthSamplingAmountSemanticsEnum>(const <BstocksDepthSamplingAmountSemanticsEnum>[
   _$bstocksDepthSamplingAmountSemanticsEnum_nominalInput,
-  _$bstocksDepthSamplingAmountSemanticsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksDepthSamplingGridEnum>
@@ -68,11 +56,9 @@ class _$BstocksDepthSamplingGridEnumSerializer
     implements PrimitiveSerializer<BstocksDepthSamplingGridEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n125': '1_2_5',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '1_2_5': 'n125',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -97,11 +83,9 @@ class _$BstocksDepthSamplingAmountSemanticsEnumSerializer
     implements PrimitiveSerializer<BstocksDepthSamplingAmountSemanticsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'nominalInput': 'nominal_input',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'nominal_input': 'nominalInput',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

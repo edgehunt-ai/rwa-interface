@@ -147,8 +147,6 @@ class OrderPreviewRequestKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const OrderPreviewRequestKindEnum perp = _$orderPreviewRequestKindEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewRequestKindEnum unknownDefaultOpenApi = _$orderPreviewRequestKindEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewRequestKindEnum> get serializer => _$orderPreviewRequestKindEnumSerializer;
 
@@ -164,8 +162,6 @@ class OrderPreviewRequestSideEnum extends EnumClass {
   static const OrderPreviewRequestSideEnum long = _$orderPreviewRequestSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
   static const OrderPreviewRequestSideEnum short = _$orderPreviewRequestSideEnum_short;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewRequestSideEnum unknownDefaultOpenApi = _$orderPreviewRequestSideEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewRequestSideEnum> get serializer => _$orderPreviewRequestSideEnumSerializer;
 

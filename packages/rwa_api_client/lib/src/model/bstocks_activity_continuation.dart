@@ -160,8 +160,6 @@ class BstocksActivityContinuationActionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'submit_bstocks_action')
   static const BstocksActivityContinuationActionEnum submitBstocksAction = _$bstocksActivityContinuationActionEnum_submitBstocksAction;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksActivityContinuationActionEnum unknownDefaultOpenApi = _$bstocksActivityContinuationActionEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksActivityContinuationActionEnum> get serializer => _$bstocksActivityContinuationActionEnumSerializer;
 
@@ -175,8 +173,6 @@ class BstocksActivityContinuationStepEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'wallet_signature')
   static const BstocksActivityContinuationStepEnum walletSignature = _$bstocksActivityContinuationStepEnum_walletSignature;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksActivityContinuationStepEnum unknownDefaultOpenApi = _$bstocksActivityContinuationStepEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksActivityContinuationStepEnum> get serializer => _$bstocksActivityContinuationStepEnumSerializer;
 

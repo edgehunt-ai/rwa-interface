@@ -10,6 +10,8 @@ import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
+import 'package:rwa_interface/domain/models/funding_session.dart';
+import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
@@ -23,6 +25,7 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
+import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import '../../../../helpers/test_app.dart';
@@ -43,6 +46,9 @@ void main() {
           overrides: [
             fundingRepositoryProvider.overrideWithValue(funding),
             walletsRepositoryProvider.overrideWithValue(wallets),
+            transferOptionsProvider.overrideWith(
+              (ref) async => _transferOptions('1000'),
+            ),
           ],
           child: buildTestApp(
             Builder(
@@ -63,27 +69,198 @@ void main() {
       await tester.tap(find.text('Open funding'));
       await tester.pumpAndSettle();
       expect(wallets.authorizations, 0);
-      await tester.tap(find.widgetWithText(FilledButton, 'In-App Transfer'));
+      await tester.tap(find.byKey(const Key('order-funding-spot-option')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
       await tester.pumpAndSettle();
       expect(funding.transfers, 1);
       expect(wallets.authorizations, 1);
       expect(funded, isNull);
       expect(
-        tester
-            .widget<FilledButton>(
-              find.widgetWithText(FilledButton, 'In-App Transfer'),
-            )
-            .onPressed,
-        isNull,
+        find.byKey(const Key('order-funding-transfer-pending')),
+        findsOneWidget,
       );
+      expect(find.text('Preparing trading funds…'), findsOneWidget);
+      expect(find.text('Close & View Later'), findsOneWidget);
+      expect(find.text('Retry'), findsNothing);
       funding.completed = true;
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Retry'));
+      await tester.pump(const Duration(seconds: 2));
       await tester.pumpAndSettle();
       expect(funded, isTrue);
       expect(funding.transfers, 1);
       expect(wallets.authorizations, 1);
     });
   }
+
+  testWidgets(
+    'order funding does not show pending before transfer submission',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            transferOptionsProvider.overrideWith(
+              (ref) async => _transferOptions('1000'),
+            ),
+          ],
+          child: buildTestApp(
+            OrderFundingSheet(
+              plan: _plannedFundingPlan,
+              kind: MarketProductKind.bstock,
+            ),
+            locale: const Locale('zh'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('准备资金'), findsOneWidget);
+      expect(
+        find.byKey(const Key('order-funding-transfer-pending')),
+        findsNothing,
+      );
+
+      await tester.tap(find.byKey(const Key('order-funding-spot-option')));
+      await tester.pump();
+
+      expect(find.text('转账'), findsOneWidget);
+      expect(
+        find.byKey(const Key('order-funding-transfer-pending')),
+        findsNothing,
+      );
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, '确认'))
+            .onPressed,
+        isNotNull,
+      );
+    },
+  );
+
+  testWidgets('order funding hides Spot when its available balance is short', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transferOptionsProvider.overrideWith(
+            (ref) async => _transferOptions('99.99'),
+          ),
+        ],
+        child: buildTestApp(
+          OrderFundingSheet(
+            plan: _readyFundingPlan,
+            kind: MarketProductKind.bstock,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('order-funding-deposit-option')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('order-funding-spot-option')), findsNothing);
+  });
+
+  testWidgets('order funding shows Spot while its balance is loading', (
+    tester,
+  ) async {
+    final options = Completer<TransferOptions>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transferOptionsProvider.overrideWith((ref) => options.future),
+        ],
+        child: buildTestApp(
+          OrderFundingSheet(
+            plan: _readyFundingPlan,
+            kind: MarketProductKind.bstock,
+          ),
+          locale: const Locale('zh'),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('order-funding-spot-option')), findsOneWidget);
+    expect(find.text('现货'), findsOneWidget);
+    expect(find.text('余额:'), findsOneWidget);
+    expect(
+      find.byKey(const Key('order-funding-spot-balance-loading')),
+      findsOneWidget,
+    );
+
+    options.complete(_transferOptions('0'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('order-funding-spot-option')), findsNothing);
+  });
+
+  testWidgets('order funding opens the shared Spot transfer review', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transferOptionsProvider.overrideWith(
+            (ref) async => _transferOptions('100'),
+          ),
+        ],
+        child: buildTestApp(
+          OrderFundingSheet(
+            plan: _readyFundingPlan,
+            kind: MarketProductKind.bstock,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('order-funding-spot-option')));
+    await tester.pump();
+
+    expect(find.text('Transfer from spot'), findsOneWidget);
+    expect(find.text('Available: 150'), findsOneWidget);
+    expect(find.text('150'), findsOneWidget);
+    expect(find.text(r'$100'), findsOneWidget);
+    expect(find.byIcon(Icons.check_box), findsNothing);
+    expect(find.text('Add token'), findsNothing);
+    expect(find.text('Slippage'), findsNothing);
+  });
+
+  testWidgets('order funding scrolls when more than four tokens are shown', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transferOptionsProvider.overrideWith(
+            (ref) async => _transferOptions('100'),
+          ),
+        ],
+        child: buildTestApp(
+          OrderFundingSheet(
+            plan: _fundingPlanWithLegCount(5),
+            kind: MarketProductKind.bstock,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('order-funding-spot-option')));
+    await tester.pump();
+
+    final tokenScroll = find.byKey(const Key('order-funding-token-scroll'));
+    expect(tokenScroll, findsOneWidget);
+    expect(tester.getSize(tokenScroll).height, 63 * 4);
+    expect(
+      find.descendant(of: tokenScroll, matching: find.byType(Scrollbar)),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.check_box), findsNothing);
+    expect(find.text('Add token'), findsNothing);
+  });
 
   testWidgets('bStocks order form follows tab sizing and continuous slider', (
     tester,
@@ -181,9 +358,72 @@ void main() {
     await _pumpUntilFound(tester, find.text('Order Type'));
 
     expect(tester.takeException(), isNull);
+    expect(
+      find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+      findsNothing,
+    );
     expect(find.text('Order Type'), findsOneWidget);
     expect(find.text('Back'), findsOneWidget);
     expect(find.text('0.02 USDC'), findsWidgets);
+  });
+
+  testWidgets('completed funding opens bStocks confirmation as step 3', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final funding = _PanelCompletedFundingRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(
+            _DelayedOrdersRepository(),
+          ),
+          fundingRepositoryProvider.overrideWithValue(funding),
+          walletsRepositoryProvider.overrideWithValue(
+            _FundingWalletsRepository(),
+          ),
+          transferOptionsProvider.overrideWith(
+            (ref) async => _transferOptions('100'),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const Key('order-funding-spot-option')),
+    );
+    tester
+        .widget<InkWell>(
+          find.descendant(
+            of: find.byKey(const Key('order-funding-spot-option')),
+            matching: find.byType(InkWell),
+          ),
+        )
+        .onTap!();
+    await tester.pump();
+    tester
+        .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+        .onPressed!();
+    await _pumpUntilFound(
+      tester,
+      find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+    );
+
+    expect(funding.sessions, 2);
+    expect(funding.planRequests, 1);
+    expect(funding.transfers, 1);
+    expect(
+      find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsOneWidget);
   });
 
   testWidgets('balance slider and order value stay synchronized', (
@@ -511,9 +751,12 @@ void main() {
               (ref) async => DecimalValue('100000', asset: 'USD', unit: 'fiat'),
             ),
             ordersRepositoryProvider.overrideWithValue(
-              _DelayedOrdersRepository(),
+              _DelayedOrdersRepository(executionReady: false),
             ),
             fundingRepositoryProvider.overrideWithValue(funding),
+            transferOptionsProvider.overrideWith(
+              (ref) async => _transferOptions('0'),
+            ),
           ],
           child: buildTestApp(const BstocksOrderPanel()),
         ),
@@ -521,10 +764,12 @@ void main() {
 
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
-      await _pumpUntilFound(tester, find.text('Add funds from:'));
+      await _pumpUntilFound(tester, find.text('Add 100 USDT from:'));
 
-      expect(funding.previewIds, ['preview-1']);
-      expect(find.text('Add funds from:'), findsOneWidget);
+      expect(funding.intents, hasLength(1));
+      expect(funding.intents.single.kind, MarketProductKind.bstock);
+      expect(funding.intents.single.symbol, 'NVDAB');
+      expect(find.text('Add 100 USDT from:'), findsOneWidget);
     },
   );
 
@@ -732,6 +977,9 @@ Future<void> _pumpUntilFound(
 }
 
 final class _DelayedOrdersRepository implements OrdersRepository {
+  _DelayedOrdersRepository({this.executionReady = true});
+
+  final bool executionReady;
   final _submission = Completer<ResourceResult<TradingOrder>>();
 
   void complete() => _submission.complete(
@@ -756,6 +1004,7 @@ final class _DelayedOrdersRepository implements OrdersRepository {
     previewId: 'preview-1',
     intent: intent,
     orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+    executionReady: executionReady,
   );
 
   @override
@@ -883,6 +1132,63 @@ final _readyFundingPlan = FundingPlan(
   ],
 );
 
+final _plannedFundingPlan = FundingPlan(
+  planId: 'planned-plan',
+  tradePreviewId: 'funded-preview',
+  shortfall: DecimalValue('100', asset: 'USDT', unit: 'token'),
+  status: FundingPlanState.ready,
+  sourceWalletId: 'wallet-1',
+  sourceAsset: 'USDC',
+  sourceMaximum: DecimalValue('150', asset: 'USDC', unit: 'token'),
+  legs: [
+    FundingLeg(
+      legId: 'planned-leg',
+      walletId: 'wallet-1',
+      asset: 'USDC',
+      maximumAmount: DecimalValue('150', asset: 'USDC', unit: 'token'),
+      outputAmount: DecimalValue('100', asset: 'USDT', unit: 'token'),
+      status: FundingLegState.planned,
+    ),
+  ],
+);
+
+FundingPlan _fundingPlanWithLegCount(int count) => FundingPlan(
+  planId: 'multi-leg-plan',
+  tradePreviewId: 'funded-preview',
+  shortfall: DecimalValue('100', asset: 'USDT', unit: 'token'),
+  status: FundingPlanState.ready,
+  sourceWalletId: 'wallet-1',
+  sourceAsset: 'USDC',
+  sourceMaximum: DecimalValue('150', asset: 'USDC', unit: 'token'),
+  legs: List.generate(
+    count,
+    (index) => FundingLeg(
+      legId: 'leg-$index',
+      walletId: 'wallet-$index',
+      asset: index.isEven ? 'USDC' : 'USDT',
+      maximumAmount: DecimalValue(
+        '${150 + index}',
+        asset: index.isEven ? 'USDC' : 'USDT',
+        unit: 'token',
+      ),
+      outputAmount: DecimalValue('${20 + index}', asset: 'USDT', unit: 'token'),
+      status: FundingLegState.actionReleased,
+    ),
+  ),
+);
+
+TransferOptions _transferOptions(String available) => TransferOptions(
+  account: UnifiedFundingAccountSummary(
+    totalUsd: DecimalValue(available, asset: 'USD'),
+    availableToFundUsd: DecimalValue(available, asset: 'USD'),
+    reservedUsd: DecimalValue('0', asset: 'USD'),
+    inTransitUsd: DecimalValue('0', asset: 'USD'),
+    dataStatus: 'complete',
+    calculatedAt: DateTime.utc(2026, 9, 28),
+  ),
+  catalog: null,
+);
+
 final _fundedPreview = OrderPreview(
   previewId: 'funded-preview',
   intent: OrderIntent(
@@ -943,18 +1249,91 @@ final class _CompletedFundingRepository implements FundingRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+final class _PanelCompletedFundingRepository implements FundingRepository {
+  var sessions = 0;
+  var planRequests = 0;
+  var transfers = 0;
+
+  @override
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  }) async {
+    sessions++;
+    return FundingSessionSummary(
+      sessionId: 'session-$sessions',
+      status: sessions > 1 ? 'funded' : 'ready_to_confirm',
+      version: 1,
+      canConfirmTransfer: sessions == 1,
+      expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    );
+  }
+
+  @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) async {
+    planRequests++;
+    return _readyFundingPlan;
+  }
+
+  @override
+  Future<FundingTransfer> createFundingTransfer({
+    required String planId,
+    required String legId,
+    required String authorizationId,
+    required String idempotencyKey,
+  }) async {
+    transfers++;
+    return FundingTransfer(
+      transferId: 'completed-transfer',
+      planId: planId,
+      amount: DecimalValue('100'),
+      status: FundingTransferState.completed,
+    );
+  }
+
+  @override
+  Future<FundingPlan> getFundingPlan(String id) async => FundingPlan(
+    planId: id,
+    tradePreviewId: 'preview-1',
+    shortfall: DecimalValue('0'),
+    status: FundingPlanState.alreadyFunded,
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 final class _FundingPlanRepository implements FundingRepository {
   _FundingPlanRepository(this.plan);
 
   final FundingPlan plan;
-  final previewIds = <String>[];
+  final intents = <OrderIntent>[];
 
   @override
-  Future<FundingPlan> createFundingPlan({
-    required String tradePreviewId,
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
     required String idempotencyKey,
   }) async {
-    previewIds.add(tradePreviewId);
+    intents.add(intent);
+    return FundingSessionSummary(
+      sessionId: 'bstocks-session',
+      status: 'ready_to_confirm',
+      version: 1,
+      canConfirmTransfer: true,
+      expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    );
+  }
+
+  @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) async {
     return plan;
   }
 
@@ -1009,8 +1388,33 @@ class _PendingFundingRepository implements FundingRepository {
     planId: id,
     tradePreviewId: 'preview-1',
     shortfall: DecimalValue(completed ? '0' : '100'),
-    status: completed ? FundingPlanState.alreadyFunded : FundingPlanState.ready,
+    status: completed
+        ? FundingPlanState.alreadyFunded
+        : FundingPlanState.executing,
+    legs: completed
+        ? const []
+        : [
+            FundingLeg(
+              legId: 'leg-1',
+              walletId: 'wallet-1',
+              asset: 'USDC',
+              maximumAmount: DecimalValue('100'),
+              outputAmount: DecimalValue('100'),
+              status: FundingLegState.actionReleased,
+              transferId: 'pending-transfer',
+            ),
+          ],
   );
+
+  @override
+  Future<FundingTransfer> getFundingTransfer(String id) async =>
+      FundingTransfer(
+        transferId: id,
+        planId: 'completed-plan',
+        amount: DecimalValue('100'),
+        status: FundingTransferState.filling,
+      );
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

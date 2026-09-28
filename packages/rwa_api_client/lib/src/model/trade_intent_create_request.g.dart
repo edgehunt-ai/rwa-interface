@@ -9,19 +9,14 @@ part of 'trade_intent_create_request.dart';
 const TradeIntentCreateRequestFundingModeEnum
     _$tradeIntentCreateRequestFundingModeEnum_autoMultiSource =
     const TradeIntentCreateRequestFundingModeEnum._('autoMultiSource');
-const TradeIntentCreateRequestFundingModeEnum
-    _$tradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi =
-    const TradeIntentCreateRequestFundingModeEnum._('unknownDefaultOpenApi');
 
 TradeIntentCreateRequestFundingModeEnum
     _$tradeIntentCreateRequestFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'autoMultiSource':
       return _$tradeIntentCreateRequestFundingModeEnum_autoMultiSource;
-    case 'unknownDefaultOpenApi':
-      return _$tradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$tradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<TradeIntentCreateRequestFundingModeEnum>
     _$tradeIntentCreateRequestFundingModeEnumValues = BuiltSet<
         TradeIntentCreateRequestFundingModeEnum>(const <TradeIntentCreateRequestFundingModeEnum>[
   _$tradeIntentCreateRequestFundingModeEnum_autoMultiSource,
-  _$tradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<TradeIntentCreateRequestFundingModeEnum>
@@ -40,11 +34,9 @@ class _$TradeIntentCreateRequestFundingModeEnumSerializer
     implements PrimitiveSerializer<TradeIntentCreateRequestFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'autoMultiSource': 'auto_multi_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_multi_source': 'autoMultiSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

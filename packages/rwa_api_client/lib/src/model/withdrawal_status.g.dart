@@ -15,8 +15,6 @@ const WithdrawalStatus _$failed = const WithdrawalStatus._('failed');
 const WithdrawalStatus _$ambiguous = const WithdrawalStatus._('ambiguous');
 const WithdrawalStatus _$manualReview =
     const WithdrawalStatus._('manualReview');
-const WithdrawalStatus _$unknownDefaultOpenApi =
-    const WithdrawalStatus._('unknownDefaultOpenApi');
 
 WithdrawalStatus _$valueOf(String name) {
   switch (name) {
@@ -34,10 +32,8 @@ WithdrawalStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -50,7 +46,6 @@ final BuiltSet<WithdrawalStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$WithdrawalStatusMeta {
@@ -62,7 +57,6 @@ class _$WithdrawalStatusMeta {
   WithdrawalStatus get failed => _$failed;
   WithdrawalStatus get ambiguous => _$ambiguous;
   WithdrawalStatus get manualReview => _$manualReview;
-  WithdrawalStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   WithdrawalStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<WithdrawalStatus> get values => _$values;
 }
@@ -85,7 +79,6 @@ class _$WithdrawalStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending_signature': 'pendingSignature',
@@ -95,7 +88,6 @@ class _$WithdrawalStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

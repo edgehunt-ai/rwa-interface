@@ -29,9 +29,6 @@ class SelfCustodialWithdrawalChainId extends EnumClass {
   /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
   @BuiltValueEnumConst(wireName: r'421614')
   static const SelfCustodialWithdrawalChainId n421614 = _$n421614;
-  /// 服务端冻结交易的十进制 EVM chain ID：`1`=Ethereum、`42161`=Arbitrum、 `8453`=Base、`56`=BSC；testnet 部署额外允许 `97`=BSC Testnet、 `421614`=Arbitrum Sepolia。响应不再重复一个可能与此字段冲突的 chain label； 未知值必须在生成客户端反序列化阶段 fail-closed。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const SelfCustodialWithdrawalChainId unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<SelfCustodialWithdrawalChainId> get serializer => _$selfCustodialWithdrawalChainIdSerializer;
 

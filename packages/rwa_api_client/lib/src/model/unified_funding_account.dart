@@ -312,8 +312,6 @@ class UnifiedFundingAccountValuationCurrencyEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USD')
   static const UnifiedFundingAccountValuationCurrencyEnum USD = _$unifiedFundingAccountValuationCurrencyEnum_USD;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UnifiedFundingAccountValuationCurrencyEnum unknownDefaultOpenApi = _$unifiedFundingAccountValuationCurrencyEnum_unknownDefaultOpenApi;
 
   static Serializer<UnifiedFundingAccountValuationCurrencyEnum> get serializer => _$unifiedFundingAccountValuationCurrencyEnumSerializer;
 

@@ -294,8 +294,6 @@ class Hip3RealtimeCandleEnvironmentEnum extends EnumClass {
   static const Hip3RealtimeCandleEnvironmentEnum mainnet = _$hip3RealtimeCandleEnvironmentEnum_mainnet;
   @BuiltValueEnumConst(wireName: r'testnet')
   static const Hip3RealtimeCandleEnvironmentEnum testnet = _$hip3RealtimeCandleEnvironmentEnum_testnet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimeCandleEnvironmentEnum unknownDefaultOpenApi = _$hip3RealtimeCandleEnvironmentEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimeCandleEnvironmentEnum> get serializer => _$hip3RealtimeCandleEnvironmentEnumSerializer;
 
@@ -319,8 +317,6 @@ class Hip3RealtimeCandleIntervalEnum extends EnumClass {
   static const Hip3RealtimeCandleIntervalEnum n4h = _$hip3RealtimeCandleIntervalEnum_n4h;
   @BuiltValueEnumConst(wireName: r'1d')
   static const Hip3RealtimeCandleIntervalEnum n1d = _$hip3RealtimeCandleIntervalEnum_n1d;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimeCandleIntervalEnum unknownDefaultOpenApi = _$hip3RealtimeCandleIntervalEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimeCandleIntervalEnum> get serializer => _$hip3RealtimeCandleIntervalEnumSerializer;
 

@@ -8,24 +8,19 @@ part of 'realtime_event.dart';
 
 const RealtimeEventEventEnum _$realtimeEventEventEnum_resyncRequired =
     const RealtimeEventEventEnum._('resyncRequired');
-const RealtimeEventEventEnum _$realtimeEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeEventEventEnum _$realtimeEventEventEnumValueOf(String name) {
   switch (name) {
     case 'resyncRequired':
       return _$realtimeEventEventEnum_resyncRequired;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<RealtimeEventEventEnum> _$realtimeEventEventEnumValues =
     BuiltSet<RealtimeEventEventEnum>(const <RealtimeEventEventEnum>[
   _$realtimeEventEventEnum_resyncRequired,
-  _$realtimeEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeEventEventEnum> _$realtimeEventEventEnumSerializer =
@@ -35,11 +30,9 @@ class _$RealtimeEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'resyncRequired': 'resync_required',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'resync_required': 'resyncRequired',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

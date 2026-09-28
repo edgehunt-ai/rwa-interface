@@ -20,9 +20,6 @@ class BstocksDepthStatus extends EnumClass {
   /// complete 仅表示完成请求的采样数，不表示发现全部容量；partial 不证明最大可成交数量。
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const BstocksDepthStatus unavailable = _$unavailable;
-  /// complete 仅表示完成请求的采样数，不表示发现全部容量；partial 不证明最大可成交数量。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksDepthStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<BstocksDepthStatus> get serializer => _$bstocksDepthStatusSerializer;
 

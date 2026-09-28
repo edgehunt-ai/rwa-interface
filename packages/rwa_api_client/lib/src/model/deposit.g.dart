@@ -8,94 +8,72 @@ part of 'deposit.dart';
 
 const DepositChainIdEnum _$depositChainIdEnum_number42161 =
     const DepositChainIdEnum._('number42161');
-const DepositChainIdEnum _$depositChainIdEnum_unknownDefaultOpenApi =
-    const DepositChainIdEnum._('unknownDefaultOpenApi');
 
 DepositChainIdEnum _$depositChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number42161':
       return _$depositChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$depositChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$depositChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositChainIdEnum> _$depositChainIdEnumValues =
     BuiltSet<DepositChainIdEnum>(const <DepositChainIdEnum>[
   _$depositChainIdEnum_number42161,
-  _$depositChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositTokenEnum _$depositTokenEnum_USDC =
     const DepositTokenEnum._('USDC');
-const DepositTokenEnum _$depositTokenEnum_unknownDefaultOpenApi =
-    const DepositTokenEnum._('unknownDefaultOpenApi');
 
 DepositTokenEnum _$depositTokenEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$depositTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$depositTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$depositTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositTokenEnum> _$depositTokenEnumValues =
     BuiltSet<DepositTokenEnum>(const <DepositTokenEnum>[
   _$depositTokenEnum_USDC,
-  _$depositTokenEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositTokenContractEnum
     _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831 =
     const DepositTokenContractEnum._(
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831');
-const DepositTokenContractEnum
-    _$depositTokenContractEnum_unknownDefaultOpenApi =
-    const DepositTokenContractEnum._('unknownDefaultOpenApi');
 
 DepositTokenContractEnum _$depositTokenContractEnumValueOf(String name) {
   switch (name) {
     case 'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
       return _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-    case 'unknownDefaultOpenApi':
-      return _$depositTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$depositTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositTokenContractEnum> _$depositTokenContractEnumValues =
     BuiltSet<DepositTokenContractEnum>(const <DepositTokenContractEnum>[
   _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831,
-  _$depositTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositTokenDecimalsEnum _$depositTokenDecimalsEnum_number6 =
     const DepositTokenDecimalsEnum._('number6');
-const DepositTokenDecimalsEnum
-    _$depositTokenDecimalsEnum_unknownDefaultOpenApi =
-    const DepositTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 DepositTokenDecimalsEnum _$depositTokenDecimalsEnumValueOf(String name) {
   switch (name) {
     case 'number6':
       return _$depositTokenDecimalsEnum_number6;
-    case 'unknownDefaultOpenApi':
-      return _$depositTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$depositTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositTokenDecimalsEnum> _$depositTokenDecimalsEnumValues =
     BuiltSet<DepositTokenDecimalsEnum>(const <DepositTokenDecimalsEnum>[
   _$depositTokenDecimalsEnum_number6,
-  _$depositTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<DepositChainIdEnum> _$depositChainIdEnumSerializer =
@@ -111,11 +89,9 @@ class _$DepositChainIdEnumSerializer
     implements PrimitiveSerializer<DepositChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -139,11 +115,9 @@ class _$DepositTokenEnumSerializer
     implements PrimitiveSerializer<DepositTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -168,12 +142,10 @@ class _$DepositTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -198,11 +170,9 @@ class _$DepositTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<DepositTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number6': 6,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     6: 'number6',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

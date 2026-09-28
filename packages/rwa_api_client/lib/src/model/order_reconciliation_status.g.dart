@@ -14,8 +14,6 @@ const OrderReconciliationStatus _$conflicting =
     const OrderReconciliationStatus._('conflicting');
 const OrderReconciliationStatus _$manualReview =
     const OrderReconciliationStatus._('manualReview');
-const OrderReconciliationStatus _$unknownDefaultOpenApi =
-    const OrderReconciliationStatus._('unknownDefaultOpenApi');
 
 OrderReconciliationStatus _$valueOf(String name) {
   switch (name) {
@@ -27,10 +25,8 @@ OrderReconciliationStatus _$valueOf(String name) {
       return _$conflicting;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -40,7 +36,6 @@ final BuiltSet<OrderReconciliationStatus> _$values =
   _$matched,
   _$conflicting,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$OrderReconciliationStatusMeta {
@@ -49,8 +44,6 @@ class _$OrderReconciliationStatusMeta {
   OrderReconciliationStatus get matched => _$matched;
   OrderReconciliationStatus get conflicting => _$conflicting;
   OrderReconciliationStatus get manualReview => _$manualReview;
-  OrderReconciliationStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   OrderReconciliationStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<OrderReconciliationStatus> get values => _$values;
 }
@@ -71,14 +64,12 @@ class _$OrderReconciliationStatusSerializer
     'matched': 'matched',
     'conflicting': 'conflicting',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending': 'pending',
     'matched': 'matched',
     'conflicting': 'conflicting',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

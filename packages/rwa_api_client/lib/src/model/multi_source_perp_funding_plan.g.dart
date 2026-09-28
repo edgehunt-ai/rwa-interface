@@ -9,19 +9,14 @@ part of 'multi_source_perp_funding_plan.dart';
 const MultiSourcePerpFundingPlanModeEnum
     _$multiSourcePerpFundingPlanModeEnum_autoMultiSource =
     const MultiSourcePerpFundingPlanModeEnum._('autoMultiSource');
-const MultiSourcePerpFundingPlanModeEnum
-    _$multiSourcePerpFundingPlanModeEnum_unknownDefaultOpenApi =
-    const MultiSourcePerpFundingPlanModeEnum._('unknownDefaultOpenApi');
 
 MultiSourcePerpFundingPlanModeEnum _$multiSourcePerpFundingPlanModeEnumValueOf(
     String name) {
   switch (name) {
     case 'autoMultiSource':
       return _$multiSourcePerpFundingPlanModeEnum_autoMultiSource;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourcePerpFundingPlanModeEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourcePerpFundingPlanModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<MultiSourcePerpFundingPlanModeEnum>
     _$multiSourcePerpFundingPlanModeEnumValues = BuiltSet<
         MultiSourcePerpFundingPlanModeEnum>(const <MultiSourcePerpFundingPlanModeEnum>[
   _$multiSourcePerpFundingPlanModeEnum_autoMultiSource,
-  _$multiSourcePerpFundingPlanModeEnum_unknownDefaultOpenApi,
 ]);
 
 const MultiSourcePerpFundingPlanRailEnum
     _$multiSourcePerpFundingPlanRailEnum_perp =
     const MultiSourcePerpFundingPlanRailEnum._('perp');
-const MultiSourcePerpFundingPlanRailEnum
-    _$multiSourcePerpFundingPlanRailEnum_unknownDefaultOpenApi =
-    const MultiSourcePerpFundingPlanRailEnum._('unknownDefaultOpenApi');
 
 MultiSourcePerpFundingPlanRailEnum _$multiSourcePerpFundingPlanRailEnumValueOf(
     String name) {
   switch (name) {
     case 'perp':
       return _$multiSourcePerpFundingPlanRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourcePerpFundingPlanRailEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourcePerpFundingPlanRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,25 +44,19 @@ final BuiltSet<MultiSourcePerpFundingPlanRailEnum>
     _$multiSourcePerpFundingPlanRailEnumValues = BuiltSet<
         MultiSourcePerpFundingPlanRailEnum>(const <MultiSourcePerpFundingPlanRailEnum>[
   _$multiSourcePerpFundingPlanRailEnum_perp,
-  _$multiSourcePerpFundingPlanRailEnum_unknownDefaultOpenApi,
 ]);
 
 const MultiSourcePerpFundingPlanNetworkEnum
     _$multiSourcePerpFundingPlanNetworkEnum_hyperliquid =
     const MultiSourcePerpFundingPlanNetworkEnum._('hyperliquid');
-const MultiSourcePerpFundingPlanNetworkEnum
-    _$multiSourcePerpFundingPlanNetworkEnum_unknownDefaultOpenApi =
-    const MultiSourcePerpFundingPlanNetworkEnum._('unknownDefaultOpenApi');
 
 MultiSourcePerpFundingPlanNetworkEnum
     _$multiSourcePerpFundingPlanNetworkEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquid':
       return _$multiSourcePerpFundingPlanNetworkEnum_hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourcePerpFundingPlanNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourcePerpFundingPlanNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -81,25 +64,19 @@ final BuiltSet<MultiSourcePerpFundingPlanNetworkEnum>
     _$multiSourcePerpFundingPlanNetworkEnumValues = BuiltSet<
         MultiSourcePerpFundingPlanNetworkEnum>(const <MultiSourcePerpFundingPlanNetworkEnum>[
   _$multiSourcePerpFundingPlanNetworkEnum_hyperliquid,
-  _$multiSourcePerpFundingPlanNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const MultiSourcePerpFundingPlanAssetEnum
     _$multiSourcePerpFundingPlanAssetEnum_USDC =
     const MultiSourcePerpFundingPlanAssetEnum._('USDC');
-const MultiSourcePerpFundingPlanAssetEnum
-    _$multiSourcePerpFundingPlanAssetEnum_unknownDefaultOpenApi =
-    const MultiSourcePerpFundingPlanAssetEnum._('unknownDefaultOpenApi');
 
 MultiSourcePerpFundingPlanAssetEnum
     _$multiSourcePerpFundingPlanAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$multiSourcePerpFundingPlanAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourcePerpFundingPlanAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourcePerpFundingPlanAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -107,7 +84,6 @@ final BuiltSet<MultiSourcePerpFundingPlanAssetEnum>
     _$multiSourcePerpFundingPlanAssetEnumValues = BuiltSet<
         MultiSourcePerpFundingPlanAssetEnum>(const <MultiSourcePerpFundingPlanAssetEnum>[
   _$multiSourcePerpFundingPlanAssetEnum_USDC,
-  _$multiSourcePerpFundingPlanAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<MultiSourcePerpFundingPlanModeEnum>
@@ -127,11 +103,9 @@ class _$MultiSourcePerpFundingPlanModeEnumSerializer
     implements PrimitiveSerializer<MultiSourcePerpFundingPlanModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'autoMultiSource': 'auto_multi_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_multi_source': 'autoMultiSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -157,11 +131,9 @@ class _$MultiSourcePerpFundingPlanRailEnumSerializer
     implements PrimitiveSerializer<MultiSourcePerpFundingPlanRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -187,11 +159,9 @@ class _$MultiSourcePerpFundingPlanNetworkEnumSerializer
     implements PrimitiveSerializer<MultiSourcePerpFundingPlanNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquid': 'Hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -219,11 +189,9 @@ class _$MultiSourcePerpFundingPlanAssetEnumSerializer
     implements PrimitiveSerializer<MultiSourcePerpFundingPlanAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

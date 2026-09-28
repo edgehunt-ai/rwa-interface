@@ -20,9 +20,6 @@ class AccountKind extends EnumClass {
   /// * `app` —— App 可用余额（聚合账户） * `bstocks` —— BSC Wallet，bStocks 交易账户 * `hip3` —— HIP-3 交易账户 
   @BuiltValueEnumConst(wireName: r'hip3')
   static const AccountKind hip3 = _$hip3;
-  /// * `app` —— App 可用余额（聚合账户） * `bstocks` —— BSC Wallet，bStocks 交易账户 * `hip3` —— HIP-3 交易账户 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const AccountKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<AccountKind> get serializer => _$accountKindSerializer;
 

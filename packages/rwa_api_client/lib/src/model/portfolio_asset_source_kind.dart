@@ -17,9 +17,6 @@ class PortfolioAssetSourceKind extends EnumClass {
   /// 资产余额事实来源；估值来源由 `pricing_source` 单独表达。
   @BuiltValueEnumConst(wireName: r'hyperliquid_info')
   static const PortfolioAssetSourceKind hyperliquidInfo = _$hyperliquidInfo;
-  /// 资产余额事实来源；估值来源由 `pricing_source` 单独表达。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioAssetSourceKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioAssetSourceKind> get serializer => _$portfolioAssetSourceKindSerializer;
 

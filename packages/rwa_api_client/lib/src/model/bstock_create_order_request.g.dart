@@ -9,19 +9,14 @@ part of 'bstock_create_order_request.dart';
 const BstockCreateOrderRequestKindEnum
     _$bstockCreateOrderRequestKindEnum_bstock =
     const BstockCreateOrderRequestKindEnum._('bstock');
-const BstockCreateOrderRequestKindEnum
-    _$bstockCreateOrderRequestKindEnum_unknownDefaultOpenApi =
-    const BstockCreateOrderRequestKindEnum._('unknownDefaultOpenApi');
 
 BstockCreateOrderRequestKindEnum _$bstockCreateOrderRequestKindEnumValueOf(
     String name) {
   switch (name) {
     case 'bstock':
       return _$bstockCreateOrderRequestKindEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$bstockCreateOrderRequestKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockCreateOrderRequestKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,16 +24,12 @@ final BuiltSet<BstockCreateOrderRequestKindEnum>
     _$bstockCreateOrderRequestKindEnumValues = BuiltSet<
         BstockCreateOrderRequestKindEnum>(const <BstockCreateOrderRequestKindEnum>[
   _$bstockCreateOrderRequestKindEnum_bstock,
-  _$bstockCreateOrderRequestKindEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockCreateOrderRequestSideEnum _$bstockCreateOrderRequestSideEnum_buy =
     const BstockCreateOrderRequestSideEnum._('buy');
 const BstockCreateOrderRequestSideEnum _$bstockCreateOrderRequestSideEnum_sell =
     const BstockCreateOrderRequestSideEnum._('sell');
-const BstockCreateOrderRequestSideEnum
-    _$bstockCreateOrderRequestSideEnum_unknownDefaultOpenApi =
-    const BstockCreateOrderRequestSideEnum._('unknownDefaultOpenApi');
 
 BstockCreateOrderRequestSideEnum _$bstockCreateOrderRequestSideEnumValueOf(
     String name) {
@@ -47,10 +38,8 @@ BstockCreateOrderRequestSideEnum _$bstockCreateOrderRequestSideEnumValueOf(
       return _$bstockCreateOrderRequestSideEnum_buy;
     case 'sell':
       return _$bstockCreateOrderRequestSideEnum_sell;
-    case 'unknownDefaultOpenApi':
-      return _$bstockCreateOrderRequestSideEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockCreateOrderRequestSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -59,7 +48,6 @@ final BuiltSet<BstockCreateOrderRequestSideEnum>
         BstockCreateOrderRequestSideEnum>(const <BstockCreateOrderRequestSideEnum>[
   _$bstockCreateOrderRequestSideEnum_buy,
   _$bstockCreateOrderRequestSideEnum_sell,
-  _$bstockCreateOrderRequestSideEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockCreateOrderRequestKindEnum>
@@ -73,11 +61,9 @@ class _$BstockCreateOrderRequestKindEnumSerializer
     implements PrimitiveSerializer<BstockCreateOrderRequestKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -104,12 +90,10 @@ class _$BstockCreateOrderRequestSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'buy': 'buy',
     'sell': 'sell',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'buy': 'buy',
     'sell': 'sell',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

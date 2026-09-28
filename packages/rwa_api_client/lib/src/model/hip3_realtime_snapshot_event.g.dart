@@ -9,19 +9,14 @@ part of 'hip3_realtime_snapshot_event.dart';
 const Hip3RealtimeSnapshotEventEventEnum
     _$hip3RealtimeSnapshotEventEventEnum_hip3Snapshot =
     const Hip3RealtimeSnapshotEventEventEnum._('hip3Snapshot');
-const Hip3RealtimeSnapshotEventEventEnum
-    _$hip3RealtimeSnapshotEventEventEnum_unknownDefaultOpenApi =
-    const Hip3RealtimeSnapshotEventEventEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimeSnapshotEventEventEnum _$hip3RealtimeSnapshotEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'hip3Snapshot':
       return _$hip3RealtimeSnapshotEventEventEnum_hip3Snapshot;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimeSnapshotEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimeSnapshotEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3RealtimeSnapshotEventEventEnum>
     _$hip3RealtimeSnapshotEventEventEnumValues = BuiltSet<
         Hip3RealtimeSnapshotEventEventEnum>(const <Hip3RealtimeSnapshotEventEventEnum>[
   _$hip3RealtimeSnapshotEventEventEnum_hip3Snapshot,
-  _$hip3RealtimeSnapshotEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3RealtimeSnapshotEventEventEnum>
@@ -40,11 +34,9 @@ class _$Hip3RealtimeSnapshotEventEventEnumSerializer
     implements PrimitiveSerializer<Hip3RealtimeSnapshotEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3Snapshot': 'hip3_snapshot',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3_snapshot': 'hip3Snapshot',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

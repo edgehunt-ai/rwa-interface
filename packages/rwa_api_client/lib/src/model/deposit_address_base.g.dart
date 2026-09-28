@@ -15,9 +15,6 @@ const DepositAddressBaseChainIdEnum _$depositAddressBaseChainIdEnum_number8453 =
 const DepositAddressBaseChainIdEnum
     _$depositAddressBaseChainIdEnum_number42161 =
     const DepositAddressBaseChainIdEnum._('number42161');
-const DepositAddressBaseChainIdEnum
-    _$depositAddressBaseChainIdEnum_unknownDefaultOpenApi =
-    const DepositAddressBaseChainIdEnum._('unknownDefaultOpenApi');
 
 DepositAddressBaseChainIdEnum _$depositAddressBaseChainIdEnumValueOf(
     String name) {
@@ -30,10 +27,8 @@ DepositAddressBaseChainIdEnum _$depositAddressBaseChainIdEnumValueOf(
       return _$depositAddressBaseChainIdEnum_number8453;
     case 'number42161':
       return _$depositAddressBaseChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$depositAddressBaseChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$depositAddressBaseChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -44,7 +39,6 @@ final BuiltSet<DepositAddressBaseChainIdEnum>
   _$depositAddressBaseChainIdEnum_number56,
   _$depositAddressBaseChainIdEnum_number8453,
   _$depositAddressBaseChainIdEnum_number42161,
-  _$depositAddressBaseChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<DepositAddressBaseChainIdEnum>
@@ -58,14 +52,12 @@ class _$DepositAddressBaseChainIdEnumSerializer
     'number56': 56,
     'number8453': 8453,
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
     56: 'number56',
     8453: 'number8453',
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

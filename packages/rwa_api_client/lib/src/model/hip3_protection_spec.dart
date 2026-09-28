@@ -193,8 +193,6 @@ class Hip3ProtectionSpecSizeModeEnum extends EnumClass {
   static const Hip3ProtectionSpecSizeModeEnum quantity = _$hip3ProtectionSpecSizeModeEnum_quantity;
   @BuiltValueEnumConst(wireName: r'percent')
   static const Hip3ProtectionSpecSizeModeEnum percent = _$hip3ProtectionSpecSizeModeEnum_percent;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ProtectionSpecSizeModeEnum unknownDefaultOpenApi = _$hip3ProtectionSpecSizeModeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ProtectionSpecSizeModeEnum> get serializer => _$hip3ProtectionSpecSizeModeEnumSerializer;
 

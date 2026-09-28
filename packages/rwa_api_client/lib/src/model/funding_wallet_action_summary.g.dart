@@ -12,9 +12,6 @@ const FundingWalletActionSummaryKindEnum
 const FundingWalletActionSummaryKindEnum
     _$fundingWalletActionSummaryKindEnum_originTransaction =
     const FundingWalletActionSummaryKindEnum._('originTransaction');
-const FundingWalletActionSummaryKindEnum
-    _$fundingWalletActionSummaryKindEnum_unknownDefaultOpenApi =
-    const FundingWalletActionSummaryKindEnum._('unknownDefaultOpenApi');
 
 FundingWalletActionSummaryKindEnum _$fundingWalletActionSummaryKindEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ FundingWalletActionSummaryKindEnum _$fundingWalletActionSummaryKindEnumValueOf(
       return _$fundingWalletActionSummaryKindEnum_erc20Approval;
     case 'originTransaction':
       return _$fundingWalletActionSummaryKindEnum_originTransaction;
-    case 'unknownDefaultOpenApi':
-      return _$fundingWalletActionSummaryKindEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingWalletActionSummaryKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<FundingWalletActionSummaryKindEnum>
         FundingWalletActionSummaryKindEnum>(const <FundingWalletActionSummaryKindEnum>[
   _$fundingWalletActionSummaryKindEnum_erc20Approval,
   _$fundingWalletActionSummaryKindEnum_originTransaction,
-  _$fundingWalletActionSummaryKindEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingWalletActionSummaryKindEnum>
@@ -47,12 +41,10 @@ class _$FundingWalletActionSummaryKindEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'erc20Approval': 'erc20_approval',
     'originTransaction': 'origin_transaction',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'erc20_approval': 'erc20Approval',
     'origin_transaction': 'originTransaction',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

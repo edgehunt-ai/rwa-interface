@@ -9,19 +9,14 @@ part of 'perp_order_preview.dart';
 const PerpOrderPreviewFundingModeEnum
     _$perpOrderPreviewFundingModeEnum_unreservedTransferFrom =
     const PerpOrderPreviewFundingModeEnum._('unreservedTransferFrom');
-const PerpOrderPreviewFundingModeEnum
-    _$perpOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewFundingModeEnum _$perpOrderPreviewFundingModeEnumValueOf(
     String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$perpOrderPreviewFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,46 +24,34 @@ final BuiltSet<PerpOrderPreviewFundingModeEnum>
     _$perpOrderPreviewFundingModeEnumValues = BuiltSet<
         PerpOrderPreviewFundingModeEnum>(const <PerpOrderPreviewFundingModeEnum>[
   _$perpOrderPreviewFundingModeEnum_unreservedTransferFrom,
-  _$perpOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewKindEnum _$perpOrderPreviewKindEnum_perp =
     const PerpOrderPreviewKindEnum._('perp');
-const PerpOrderPreviewKindEnum
-    _$perpOrderPreviewKindEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewKindEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewKindEnum _$perpOrderPreviewKindEnumValueOf(String name) {
   switch (name) {
     case 'perp':
       return _$perpOrderPreviewKindEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewKindEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<PerpOrderPreviewKindEnum> _$perpOrderPreviewKindEnumValues =
     BuiltSet<PerpOrderPreviewKindEnum>(const <PerpOrderPreviewKindEnum>[
   _$perpOrderPreviewKindEnum_perp,
-  _$perpOrderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewNetworkEnum _$perpOrderPreviewNetworkEnum_hyperliquid =
     const PerpOrderPreviewNetworkEnum._('hyperliquid');
-const PerpOrderPreviewNetworkEnum
-    _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewNetworkEnum _$perpOrderPreviewNetworkEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquid':
       return _$perpOrderPreviewNetworkEnum_hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -76,25 +59,19 @@ final BuiltSet<PerpOrderPreviewNetworkEnum>
     _$perpOrderPreviewNetworkEnumValues =
     BuiltSet<PerpOrderPreviewNetworkEnum>(const <PerpOrderPreviewNetworkEnum>[
   _$perpOrderPreviewNetworkEnum_hyperliquid,
-  _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewSettlementAssetEnum
     _$perpOrderPreviewSettlementAssetEnum_USDC =
     const PerpOrderPreviewSettlementAssetEnum._('USDC');
-const PerpOrderPreviewSettlementAssetEnum
-    _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewSettlementAssetEnum
     _$perpOrderPreviewSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$perpOrderPreviewSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -102,25 +79,19 @@ final BuiltSet<PerpOrderPreviewSettlementAssetEnum>
     _$perpOrderPreviewSettlementAssetEnumValues = BuiltSet<
         PerpOrderPreviewSettlementAssetEnum>(const <PerpOrderPreviewSettlementAssetEnum>[
   _$perpOrderPreviewSettlementAssetEnum_USDC,
-  _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewSettlementChainIdEnum
     _$perpOrderPreviewSettlementChainIdEnum_number1337 =
     const PerpOrderPreviewSettlementChainIdEnum._('number1337');
-const PerpOrderPreviewSettlementChainIdEnum
-    _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewSettlementChainIdEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewSettlementChainIdEnum
     _$perpOrderPreviewSettlementChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number1337':
       return _$perpOrderPreviewSettlementChainIdEnum_number1337;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -128,26 +99,20 @@ final BuiltSet<PerpOrderPreviewSettlementChainIdEnum>
     _$perpOrderPreviewSettlementChainIdEnumValues = BuiltSet<
         PerpOrderPreviewSettlementChainIdEnum>(const <PerpOrderPreviewSettlementChainIdEnum>[
   _$perpOrderPreviewSettlementChainIdEnum_number1337,
-  _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewSettlementAssetIdEnum
     _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS =
     const PerpOrderPreviewSettlementAssetIdEnum._(
         'hyperliquidColon1337SlashPerpsColonUSDCPERPS');
-const PerpOrderPreviewSettlementAssetIdEnum
-    _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewSettlementAssetIdEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewSettlementAssetIdEnum
     _$perpOrderPreviewSettlementAssetIdEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
       return _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -155,27 +120,20 @@ final BuiltSet<PerpOrderPreviewSettlementAssetIdEnum>
     _$perpOrderPreviewSettlementAssetIdEnumValues = BuiltSet<
         PerpOrderPreviewSettlementAssetIdEnum>(const <PerpOrderPreviewSettlementAssetIdEnum>[
   _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS,
-  _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewSettlementTokenContractEnum
     _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000 =
     const PerpOrderPreviewSettlementTokenContractEnum._(
         'n0x2100000000000000000000000000000000000000');
-const PerpOrderPreviewSettlementTokenContractEnum
-    _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewSettlementTokenContractEnum._(
-        'unknownDefaultOpenApi');
 
 PerpOrderPreviewSettlementTokenContractEnum
     _$perpOrderPreviewSettlementTokenContractEnumValueOf(String name) {
   switch (name) {
     case 'n0x2100000000000000000000000000000000000000':
       return _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -183,26 +141,19 @@ final BuiltSet<PerpOrderPreviewSettlementTokenContractEnum>
     _$perpOrderPreviewSettlementTokenContractEnumValues = BuiltSet<
         PerpOrderPreviewSettlementTokenContractEnum>(const <PerpOrderPreviewSettlementTokenContractEnum>[
   _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000,
-  _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewSettlementTokenDecimalsEnum
     _$perpOrderPreviewSettlementTokenDecimalsEnum_number8 =
     const PerpOrderPreviewSettlementTokenDecimalsEnum._('number8');
-const PerpOrderPreviewSettlementTokenDecimalsEnum
-    _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewSettlementTokenDecimalsEnum._(
-        'unknownDefaultOpenApi');
 
 PerpOrderPreviewSettlementTokenDecimalsEnum
     _$perpOrderPreviewSettlementTokenDecimalsEnumValueOf(String name) {
   switch (name) {
     case 'number8':
       return _$perpOrderPreviewSettlementTokenDecimalsEnum_number8;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -210,7 +161,6 @@ final BuiltSet<PerpOrderPreviewSettlementTokenDecimalsEnum>
     _$perpOrderPreviewSettlementTokenDecimalsEnumValues = BuiltSet<
         PerpOrderPreviewSettlementTokenDecimalsEnum>(const <PerpOrderPreviewSettlementTokenDecimalsEnum>[
   _$perpOrderPreviewSettlementTokenDecimalsEnum_number8,
-  _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpOrderPreviewFundingModeEnum>
@@ -241,11 +191,9 @@ class _$PerpOrderPreviewFundingModeEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -271,11 +219,9 @@ class _$PerpOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -300,11 +246,9 @@ class _$PerpOrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquid': 'Hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -329,11 +273,9 @@ class _$PerpOrderPreviewSettlementAssetEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -361,11 +303,9 @@ class _$PerpOrderPreviewSettlementChainIdEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewSettlementChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number1337': 1337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1337: 'number1337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -394,12 +334,10 @@ class _$PerpOrderPreviewSettlementAssetIdEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
         'hyperliquid:1337/perps:USDC-PERPS',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid:1337/perps:USDC-PERPS':
         'hyperliquidColon1337SlashPerpsColonUSDCPERPS',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -429,12 +367,10 @@ class _$PerpOrderPreviewSettlementTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x2100000000000000000000000000000000000000':
         '0x2100000000000000000000000000000000000000',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x2100000000000000000000000000000000000000':
         'n0x2100000000000000000000000000000000000000',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -463,11 +399,9 @@ class _$PerpOrderPreviewSettlementTokenDecimalsEnumSerializer
         PrimitiveSerializer<PerpOrderPreviewSettlementTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number8': 8,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     8: 'number8',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

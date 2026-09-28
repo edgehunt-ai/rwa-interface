@@ -401,8 +401,6 @@ class PerpCreateOrderRequestKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const PerpCreateOrderRequestKindEnum perp = _$perpCreateOrderRequestKindEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpCreateOrderRequestKindEnum unknownDefaultOpenApi = _$perpCreateOrderRequestKindEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpCreateOrderRequestKindEnum> get serializer => _$perpCreateOrderRequestKindEnumSerializer;
 
@@ -418,8 +416,6 @@ class PerpCreateOrderRequestSideEnum extends EnumClass {
   static const PerpCreateOrderRequestSideEnum long = _$perpCreateOrderRequestSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
   static const PerpCreateOrderRequestSideEnum short = _$perpCreateOrderRequestSideEnum_short;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpCreateOrderRequestSideEnum unknownDefaultOpenApi = _$perpCreateOrderRequestSideEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpCreateOrderRequestSideEnum> get serializer => _$perpCreateOrderRequestSideEnumSerializer;
 

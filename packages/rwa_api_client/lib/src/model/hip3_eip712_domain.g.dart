@@ -8,41 +8,30 @@ part of 'hip3_eip712_domain.dart';
 
 const Hip3Eip712DomainNameEnum _$hip3Eip712DomainNameEnum_exchange =
     const Hip3Eip712DomainNameEnum._('exchange');
-const Hip3Eip712DomainNameEnum
-    _$hip3Eip712DomainNameEnum_unknownDefaultOpenApi =
-    const Hip3Eip712DomainNameEnum._('unknownDefaultOpenApi');
 
 Hip3Eip712DomainNameEnum _$hip3Eip712DomainNameEnumValueOf(String name) {
   switch (name) {
     case 'exchange':
       return _$hip3Eip712DomainNameEnum_exchange;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712DomainNameEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712DomainNameEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<Hip3Eip712DomainNameEnum> _$hip3Eip712DomainNameEnumValues =
     BuiltSet<Hip3Eip712DomainNameEnum>(const <Hip3Eip712DomainNameEnum>[
   _$hip3Eip712DomainNameEnum_exchange,
-  _$hip3Eip712DomainNameEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3Eip712DomainVersionEnum _$hip3Eip712DomainVersionEnum_n1 =
     const Hip3Eip712DomainVersionEnum._('n1');
-const Hip3Eip712DomainVersionEnum
-    _$hip3Eip712DomainVersionEnum_unknownDefaultOpenApi =
-    const Hip3Eip712DomainVersionEnum._('unknownDefaultOpenApi');
 
 Hip3Eip712DomainVersionEnum _$hip3Eip712DomainVersionEnumValueOf(String name) {
   switch (name) {
     case 'n1':
       return _$hip3Eip712DomainVersionEnum_n1;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712DomainVersionEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712DomainVersionEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -50,23 +39,17 @@ final BuiltSet<Hip3Eip712DomainVersionEnum>
     _$hip3Eip712DomainVersionEnumValues =
     BuiltSet<Hip3Eip712DomainVersionEnum>(const <Hip3Eip712DomainVersionEnum>[
   _$hip3Eip712DomainVersionEnum_n1,
-  _$hip3Eip712DomainVersionEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3Eip712DomainChainIdEnum _$hip3Eip712DomainChainIdEnum_number1337 =
     const Hip3Eip712DomainChainIdEnum._('number1337');
-const Hip3Eip712DomainChainIdEnum
-    _$hip3Eip712DomainChainIdEnum_unknownDefaultOpenApi =
-    const Hip3Eip712DomainChainIdEnum._('unknownDefaultOpenApi');
 
 Hip3Eip712DomainChainIdEnum _$hip3Eip712DomainChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number1337':
       return _$hip3Eip712DomainChainIdEnum_number1337;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712DomainChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712DomainChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -74,26 +57,20 @@ final BuiltSet<Hip3Eip712DomainChainIdEnum>
     _$hip3Eip712DomainChainIdEnumValues =
     BuiltSet<Hip3Eip712DomainChainIdEnum>(const <Hip3Eip712DomainChainIdEnum>[
   _$hip3Eip712DomainChainIdEnum_number1337,
-  _$hip3Eip712DomainChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3Eip712DomainVerifyingContractEnum
     _$hip3Eip712DomainVerifyingContractEnum_n0x0000000000000000000000000000000000000000 =
     const Hip3Eip712DomainVerifyingContractEnum._(
         'n0x0000000000000000000000000000000000000000');
-const Hip3Eip712DomainVerifyingContractEnum
-    _$hip3Eip712DomainVerifyingContractEnum_unknownDefaultOpenApi =
-    const Hip3Eip712DomainVerifyingContractEnum._('unknownDefaultOpenApi');
 
 Hip3Eip712DomainVerifyingContractEnum
     _$hip3Eip712DomainVerifyingContractEnumValueOf(String name) {
   switch (name) {
     case 'n0x0000000000000000000000000000000000000000':
       return _$hip3Eip712DomainVerifyingContractEnum_n0x0000000000000000000000000000000000000000;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712DomainVerifyingContractEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712DomainVerifyingContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -101,7 +78,6 @@ final BuiltSet<Hip3Eip712DomainVerifyingContractEnum>
     _$hip3Eip712DomainVerifyingContractEnumValues = BuiltSet<
         Hip3Eip712DomainVerifyingContractEnum>(const <Hip3Eip712DomainVerifyingContractEnum>[
   _$hip3Eip712DomainVerifyingContractEnum_n0x0000000000000000000000000000000000000000,
-  _$hip3Eip712DomainVerifyingContractEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3Eip712DomainNameEnum> _$hip3Eip712DomainNameEnumSerializer =
@@ -120,11 +96,9 @@ class _$Hip3Eip712DomainNameEnumSerializer
     implements PrimitiveSerializer<Hip3Eip712DomainNameEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'exchange': 'Exchange',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Exchange': 'exchange',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -149,11 +123,9 @@ class _$Hip3Eip712DomainVersionEnumSerializer
     implements PrimitiveSerializer<Hip3Eip712DomainVersionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n1': '1',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '1': 'n1',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -178,11 +150,9 @@ class _$Hip3Eip712DomainChainIdEnumSerializer
     implements PrimitiveSerializer<Hip3Eip712DomainChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number1337': 1337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1337: 'number1337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -208,12 +178,10 @@ class _$Hip3Eip712DomainVerifyingContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0000000000000000000000000000000000000000':
         '0x0000000000000000000000000000000000000000',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0000000000000000000000000000000000000000':
         'n0x0000000000000000000000000000000000000000',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

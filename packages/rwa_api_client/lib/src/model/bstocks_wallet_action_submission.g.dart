@@ -15,9 +15,6 @@ const BstocksWalletActionSubmissionStatusEnum
 const BstocksWalletActionSubmissionStatusEnum
     _$bstocksWalletActionSubmissionStatusEnum_manualReview =
     const BstocksWalletActionSubmissionStatusEnum._('manualReview');
-const BstocksWalletActionSubmissionStatusEnum
-    _$bstocksWalletActionSubmissionStatusEnum_unknownDefaultOpenApi =
-    const BstocksWalletActionSubmissionStatusEnum._('unknownDefaultOpenApi');
 
 BstocksWalletActionSubmissionStatusEnum
     _$bstocksWalletActionSubmissionStatusEnumValueOf(String name) {
@@ -28,10 +25,8 @@ BstocksWalletActionSubmissionStatusEnum
       return _$bstocksWalletActionSubmissionStatusEnum_confirmed;
     case 'manualReview':
       return _$bstocksWalletActionSubmissionStatusEnum_manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksWalletActionSubmissionStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksWalletActionSubmissionStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -41,7 +36,6 @@ final BuiltSet<BstocksWalletActionSubmissionStatusEnum>
   _$bstocksWalletActionSubmissionStatusEnum_submitted,
   _$bstocksWalletActionSubmissionStatusEnum_confirmed,
   _$bstocksWalletActionSubmissionStatusEnum_manualReview,
-  _$bstocksWalletActionSubmissionStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksWalletActionSubmissionStatusEnum>
@@ -54,13 +48,11 @@ class _$BstocksWalletActionSubmissionStatusEnumSerializer
     'submitted': 'submitted',
     'confirmed': 'confirmed',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'submitted': 'submitted',
     'confirmed': 'confirmed',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

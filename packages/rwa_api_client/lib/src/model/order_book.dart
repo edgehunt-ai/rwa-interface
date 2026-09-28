@@ -577,8 +577,6 @@ class OrderBookSource_Enum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'propamm')
   static const OrderBookSource_Enum propamm = _$orderBookSourceEnum_propamm;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderBookSource_Enum unknownDefaultOpenApi = _$orderBookSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderBookSource_Enum> get serializer => _$orderBookSourceEnumSerializer;
 
@@ -592,8 +590,6 @@ class OrderBookBookTypeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'indicative_quote_depth')
   static const OrderBookBookTypeEnum indicativeQuoteDepth = _$orderBookBookTypeEnum_indicativeQuoteDepth;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderBookBookTypeEnum unknownDefaultOpenApi = _$orderBookBookTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderBookBookTypeEnum> get serializer => _$orderBookBookTypeEnumSerializer;
 
@@ -607,8 +603,6 @@ class OrderBookLevelSemanticsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'independent_size_quotes')
   static const OrderBookLevelSemanticsEnum independentSizeQuotes = _$orderBookLevelSemanticsEnum_independentSizeQuotes;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderBookLevelSemanticsEnum unknownDefaultOpenApi = _$orderBookLevelSemanticsEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderBookLevelSemanticsEnum> get serializer => _$orderBookLevelSemanticsEnumSerializer;
 
@@ -622,8 +616,6 @@ class OrderBookPriceKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'average_execution_price')
   static const OrderBookPriceKindEnum averageExecutionPrice = _$orderBookPriceKindEnum_averageExecutionPrice;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderBookPriceKindEnum unknownDefaultOpenApi = _$orderBookPriceKindEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderBookPriceKindEnum> get serializer => _$orderBookPriceKindEnumSerializer;
 
@@ -637,8 +629,6 @@ class OrderBookSortOrderEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'increasing_input_amount')
   static const OrderBookSortOrderEnum increasingInputAmount = _$orderBookSortOrderEnum_increasingInputAmount;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderBookSortOrderEnum unknownDefaultOpenApi = _$orderBookSortOrderEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderBookSortOrderEnum> get serializer => _$orderBookSortOrderEnumSerializer;
 
@@ -652,8 +642,6 @@ class OrderBookLiquidityAggregationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'none')
   static const OrderBookLiquidityAggregationEnum none = _$orderBookLiquidityAggregationEnum_none;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderBookLiquidityAggregationEnum unknownDefaultOpenApi = _$orderBookLiquidityAggregationEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderBookLiquidityAggregationEnum> get serializer => _$orderBookLiquidityAggregationEnumSerializer;
 
@@ -671,8 +659,6 @@ class OrderBookChainIdEnum extends EnumClass {
   static const OrderBookChainIdEnum number97 = _$orderBookChainIdEnum_number97;
   @BuiltValueEnumConst(wireNumber: 31337)
   static const OrderBookChainIdEnum number31337 = _$orderBookChainIdEnum_number31337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const OrderBookChainIdEnum unknownDefaultOpenApi = _$orderBookChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderBookChainIdEnum> get serializer => _$orderBookChainIdEnumSerializer;
 

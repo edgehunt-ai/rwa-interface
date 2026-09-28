@@ -38,9 +38,6 @@ class WalletActionExecutionStatus extends EnumClass {
   /// `submitting` is durably entered with compare-and-set before the synchronous Privy relay. A Privy timeout, 5xx response or process crash after that point is not a deterministic rejection: it transitions to `ambiguous` or `manual_review` and must never be automatically replayed. 
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const WalletActionExecutionStatus manualReview = _$manualReview;
-  /// `submitting` is durably entered with compare-and-set before the synchronous Privy relay. A Privy timeout, 5xx response or process crash after that point is not a deterministic rejection: it transitions to `ambiguous` or `manual_review` and must never be automatically replayed. 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionExecutionStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<WalletActionExecutionStatus> get serializer => _$walletActionExecutionStatusSerializer;
 

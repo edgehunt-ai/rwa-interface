@@ -10,9 +10,6 @@ const Hip3Eip712MessageSource_Enum _$hip3Eip712MessageSourceEnum_a =
     const Hip3Eip712MessageSource_Enum._('a');
 const Hip3Eip712MessageSource_Enum _$hip3Eip712MessageSourceEnum_b =
     const Hip3Eip712MessageSource_Enum._('b');
-const Hip3Eip712MessageSource_Enum
-    _$hip3Eip712MessageSourceEnum_unknownDefaultOpenApi =
-    const Hip3Eip712MessageSource_Enum._('unknownDefaultOpenApi');
 
 Hip3Eip712MessageSource_Enum _$hip3Eip712MessageSourceEnumValueOf(String name) {
   switch (name) {
@@ -20,10 +17,8 @@ Hip3Eip712MessageSource_Enum _$hip3Eip712MessageSourceEnumValueOf(String name) {
       return _$hip3Eip712MessageSourceEnum_a;
     case 'b':
       return _$hip3Eip712MessageSourceEnum_b;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712MessageSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712MessageSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +27,6 @@ final BuiltSet<Hip3Eip712MessageSource_Enum>
     BuiltSet<Hip3Eip712MessageSource_Enum>(const <Hip3Eip712MessageSource_Enum>[
   _$hip3Eip712MessageSourceEnum_a,
   _$hip3Eip712MessageSourceEnum_b,
-  _$hip3Eip712MessageSourceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3Eip712MessageSource_Enum>
@@ -44,12 +38,10 @@ class _$Hip3Eip712MessageSource_EnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'a': 'a',
     'b': 'b',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'a': 'a',
     'b': 'b',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

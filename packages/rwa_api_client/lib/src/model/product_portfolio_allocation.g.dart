@@ -9,19 +9,14 @@ part of 'product_portfolio_allocation.dart';
 const ProductPortfolioAllocationDimensionEnum
     _$productPortfolioAllocationDimensionEnum_product =
     const ProductPortfolioAllocationDimensionEnum._('product');
-const ProductPortfolioAllocationDimensionEnum
-    _$productPortfolioAllocationDimensionEnum_unknownDefaultOpenApi =
-    const ProductPortfolioAllocationDimensionEnum._('unknownDefaultOpenApi');
 
 ProductPortfolioAllocationDimensionEnum
     _$productPortfolioAllocationDimensionEnumValueOf(String name) {
   switch (name) {
     case 'product':
       return _$productPortfolioAllocationDimensionEnum_product;
-    case 'unknownDefaultOpenApi':
-      return _$productPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
     default:
-      return _$productPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<ProductPortfolioAllocationDimensionEnum>
     _$productPortfolioAllocationDimensionEnumValues = BuiltSet<
         ProductPortfolioAllocationDimensionEnum>(const <ProductPortfolioAllocationDimensionEnum>[
   _$productPortfolioAllocationDimensionEnum_product,
-  _$productPortfolioAllocationDimensionEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<ProductPortfolioAllocationDimensionEnum>
@@ -40,11 +34,9 @@ class _$ProductPortfolioAllocationDimensionEnumSerializer
     implements PrimitiveSerializer<ProductPortfolioAllocationDimensionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'product': 'product',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'product': 'product',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

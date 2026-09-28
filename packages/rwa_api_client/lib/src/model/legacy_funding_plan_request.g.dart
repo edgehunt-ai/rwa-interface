@@ -9,19 +9,14 @@ part of 'legacy_funding_plan_request.dart';
 const LegacyFundingPlanRequestAssetEnum
     _$legacyFundingPlanRequestAssetEnum_USDC =
     const LegacyFundingPlanRequestAssetEnum._('USDC');
-const LegacyFundingPlanRequestAssetEnum
-    _$legacyFundingPlanRequestAssetEnum_unknownDefaultOpenApi =
-    const LegacyFundingPlanRequestAssetEnum._('unknownDefaultOpenApi');
 
 LegacyFundingPlanRequestAssetEnum _$legacyFundingPlanRequestAssetEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$legacyFundingPlanRequestAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyFundingPlanRequestAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyFundingPlanRequestAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<LegacyFundingPlanRequestAssetEnum>
     _$legacyFundingPlanRequestAssetEnumValues = BuiltSet<
         LegacyFundingPlanRequestAssetEnum>(const <LegacyFundingPlanRequestAssetEnum>[
   _$legacyFundingPlanRequestAssetEnum_USDC,
-  _$legacyFundingPlanRequestAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LegacyFundingPlanRequestAssetEnum>
@@ -40,11 +34,9 @@ class _$LegacyFundingPlanRequestAssetEnumSerializer
     implements PrimitiveSerializer<LegacyFundingPlanRequestAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

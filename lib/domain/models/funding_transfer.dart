@@ -7,6 +7,8 @@ final class FundingPlan {
     required this.tradePreviewId,
     required this.shortfall,
     required this.status,
+    this.requiredTargetAmount,
+    this.targetAvailableAmount,
     this.sourceWalletId,
     this.sourceAsset,
     this.sourceMaximum,
@@ -17,6 +19,8 @@ final class FundingPlan {
   final String planId;
   final String tradePreviewId;
   final DecimalValue shortfall;
+  final DecimalValue? requiredTargetAmount;
+  final DecimalValue? targetAvailableAmount;
   final FundingPlanState status;
   final String? sourceWalletId;
   final String? sourceAsset;
@@ -26,6 +30,10 @@ final class FundingPlan {
 
   bool get isActionable =>
       status == FundingPlanState.ready && nextActionableLeg != null;
+
+  bool get isExecuting =>
+      status == FundingPlanState.executing ||
+      status == FundingPlanState.partiallyFunded;
 
   FundingLeg? get nextActionableLeg =>
       legs.where((leg) => leg.isActionable).firstOrNull;
@@ -39,6 +47,10 @@ final class FundingLeg {
     required this.maximumAmount,
     required this.outputAmount,
     required this.status,
+    this.etaSeconds,
+    this.bridgeFee,
+    this.networkFee,
+    this.feeAsset,
     this.transferId,
   });
 
@@ -48,9 +60,16 @@ final class FundingLeg {
   final DecimalValue maximumAmount;
   final DecimalValue outputAmount;
   final FundingLegState status;
+  final int? etaSeconds;
+  final DecimalValue? bridgeFee;
+  final DecimalValue? networkFee;
+  final String? feeAsset;
   final String? transferId;
 
-  bool get isActionable => status == FundingLegState.actionReleased;
+  bool get isActionable =>
+      transferId == null &&
+      (status == FundingLegState.planned ||
+          status == FundingLegState.actionReleased);
 }
 
 enum FundingLegState {
@@ -66,11 +85,15 @@ enum FundingLegState {
 
 enum FundingPlanState {
   ready,
+  executing,
+  partiallyFunded,
   alreadyFunded,
   blocked,
+  failed,
   expired,
   consumed,
   cancelled,
+  manualReview,
   unknown,
 }
 
@@ -80,6 +103,7 @@ final class FundingTransfer {
     required this.planId,
     required this.amount,
     required this.status,
+    this.nextActionId,
     this.failureReason,
   });
 
@@ -87,6 +111,7 @@ final class FundingTransfer {
   final String planId;
   final DecimalValue amount;
   final FundingTransferState status;
+  final String? nextActionId;
   final String? failureReason;
 }
 

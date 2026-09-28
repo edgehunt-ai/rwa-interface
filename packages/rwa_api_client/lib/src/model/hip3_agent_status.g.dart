@@ -16,8 +16,6 @@ const Hip3AgentStatus _$rotating = const Hip3AgentStatus._('rotating');
 const Hip3AgentStatus _$revoked = const Hip3AgentStatus._('revoked');
 const Hip3AgentStatus _$failed = const Hip3AgentStatus._('failed');
 const Hip3AgentStatus _$manualReview = const Hip3AgentStatus._('manualReview');
-const Hip3AgentStatus _$unknownDefaultOpenApi =
-    const Hip3AgentStatus._('unknownDefaultOpenApi');
 
 Hip3AgentStatus _$valueOf(String name) {
   switch (name) {
@@ -39,10 +37,8 @@ Hip3AgentStatus _$valueOf(String name) {
       return _$failed;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -57,7 +53,6 @@ final BuiltSet<Hip3AgentStatus> _$values =
   _$revoked,
   _$failed,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3AgentStatusMeta {
@@ -71,7 +66,6 @@ class _$Hip3AgentStatusMeta {
   Hip3AgentStatus get revoked => _$revoked;
   Hip3AgentStatus get failed => _$failed;
   Hip3AgentStatus get manualReview => _$manualReview;
-  Hip3AgentStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3AgentStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3AgentStatus> get values => _$values;
 }
@@ -96,7 +90,6 @@ class _$Hip3AgentStatusSerializer
     'revoked': 'revoked',
     'failed': 'failed',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_owner_approval': 'awaitingOwnerApproval',
@@ -108,7 +101,6 @@ class _$Hip3AgentStatusSerializer
     'revoked': 'revoked',
     'failed': 'failed',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

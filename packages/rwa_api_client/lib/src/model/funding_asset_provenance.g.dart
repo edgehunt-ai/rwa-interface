@@ -20,8 +20,6 @@ const FundingAssetProvenance _$hyperliquidPerps =
     const FundingAssetProvenance._('hyperliquidPerps');
 const FundingAssetProvenance _$testnetMock =
     const FundingAssetProvenance._('testnetMock');
-const FundingAssetProvenance _$unknownDefaultOpenApi =
-    const FundingAssetProvenance._('unknownDefaultOpenApi');
 
 FundingAssetProvenance _$valueOf(String name) {
   switch (name) {
@@ -39,10 +37,8 @@ FundingAssetProvenance _$valueOf(String name) {
       return _$hyperliquidPerps;
     case 'testnetMock':
       return _$testnetMock;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +51,6 @@ final BuiltSet<FundingAssetProvenance> _$values =
   _$binancePeg,
   _$hyperliquidPerps,
   _$testnetMock,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingAssetProvenanceMeta {
@@ -67,7 +62,6 @@ class _$FundingAssetProvenanceMeta {
   FundingAssetProvenance get binancePeg => _$binancePeg;
   FundingAssetProvenance get hyperliquidPerps => _$hyperliquidPerps;
   FundingAssetProvenance get testnetMock => _$testnetMock;
-  FundingAssetProvenance get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingAssetProvenance valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingAssetProvenance> get values => _$values;
 }
@@ -91,7 +85,6 @@ class _$FundingAssetProvenanceSerializer
     'binancePeg': 'binance_peg',
     'hyperliquidPerps': 'hyperliquid_perps',
     'testnetMock': 'testnet_mock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'circle_native': 'circleNative',
@@ -101,7 +94,6 @@ class _$FundingAssetProvenanceSerializer
     'binance_peg': 'binancePeg',
     'hyperliquid_perps': 'hyperliquidPerps',
     'testnet_mock': 'testnetMock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -23,9 +23,6 @@ class UserLanguage extends EnumClass {
   /// 服务端持久化并可由所有消费者完整表示的账户语言。它同时决定推送通知的语言： 推送由后端发起，拿不到请求头里的 `Accept-Language`，因此这个偏好必须存在服务端。 
   @BuiltValueEnumConst(wireName: r'ko')
   static const UserLanguage ko = _$ko;
-  /// 服务端持久化并可由所有消费者完整表示的账户语言。它同时决定推送通知的语言： 推送由后端发起，拿不到请求头里的 `Accept-Language`，因此这个偏好必须存在服务端。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserLanguage unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<UserLanguage> get serializer => _$userLanguageSerializer;
 

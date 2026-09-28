@@ -9,19 +9,14 @@ part of 'bstocks_portfolio_availability.dart';
 const BstocksPortfolioAvailabilityRailEnum
     _$bstocksPortfolioAvailabilityRailEnum_bstocks =
     const BstocksPortfolioAvailabilityRailEnum._('bstocks');
-const BstocksPortfolioAvailabilityRailEnum
-    _$bstocksPortfolioAvailabilityRailEnum_unknownDefaultOpenApi =
-    const BstocksPortfolioAvailabilityRailEnum._('unknownDefaultOpenApi');
 
 BstocksPortfolioAvailabilityRailEnum
     _$bstocksPortfolioAvailabilityRailEnumValueOf(String name) {
   switch (name) {
     case 'bstocks':
       return _$bstocksPortfolioAvailabilityRailEnum_bstocks;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPortfolioAvailabilityRailEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPortfolioAvailabilityRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<BstocksPortfolioAvailabilityRailEnum>
     _$bstocksPortfolioAvailabilityRailEnumValues = BuiltSet<
         BstocksPortfolioAvailabilityRailEnum>(const <BstocksPortfolioAvailabilityRailEnum>[
   _$bstocksPortfolioAvailabilityRailEnum_bstocks,
-  _$bstocksPortfolioAvailabilityRailEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksPortfolioAvailabilityAvailabilityStatusEnum
@@ -41,10 +35,6 @@ const BstocksPortfolioAvailabilityAvailabilityStatusEnum
 const BstocksPortfolioAvailabilityAvailabilityStatusEnum
     _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unavailable =
     const BstocksPortfolioAvailabilityAvailabilityStatusEnum._('unavailable');
-const BstocksPortfolioAvailabilityAvailabilityStatusEnum
-    _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unknownDefaultOpenApi =
-    const BstocksPortfolioAvailabilityAvailabilityStatusEnum._(
-        'unknownDefaultOpenApi');
 
 BstocksPortfolioAvailabilityAvailabilityStatusEnum
     _$bstocksPortfolioAvailabilityAvailabilityStatusEnumValueOf(String name) {
@@ -55,10 +45,8 @@ BstocksPortfolioAvailabilityAvailabilityStatusEnum
       return _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_partial;
     case 'unavailable':
       return _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -68,7 +56,6 @@ final BuiltSet<BstocksPortfolioAvailabilityAvailabilityStatusEnum>
   _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_complete,
   _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_partial,
   _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unavailable,
-  _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksPortfolioAvailabilityUnavailableReasonsEnum
@@ -87,10 +74,6 @@ const BstocksPortfolioAvailabilityUnavailableReasonsEnum
     _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance =
     const BstocksPortfolioAvailabilityUnavailableReasonsEnum._(
         'reservationExceedsBalance');
-const BstocksPortfolioAvailabilityUnavailableReasonsEnum
-    _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_unknownDefaultOpenApi =
-    const BstocksPortfolioAvailabilityUnavailableReasonsEnum._(
-        'unknownDefaultOpenApi');
 
 BstocksPortfolioAvailabilityUnavailableReasonsEnum
     _$bstocksPortfolioAvailabilityUnavailableReasonsEnumValueOf(String name) {
@@ -103,10 +86,8 @@ BstocksPortfolioAvailabilityUnavailableReasonsEnum
       return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_submittedGtcSell;
     case 'reservationExceedsBalance':
       return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -117,7 +98,6 @@ final BuiltSet<BstocksPortfolioAvailabilityUnavailableReasonsEnum>
   _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_confirmedGtcSell,
   _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_submittedGtcSell,
   _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance,
-  _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksPortfolioAvailabilityRailEnum>
@@ -134,11 +114,9 @@ class _$BstocksPortfolioAvailabilityRailEnumSerializer
     implements PrimitiveSerializer<BstocksPortfolioAvailabilityRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstocks': 'bstocks',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstocks': 'bstocks',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -170,13 +148,11 @@ class _$BstocksPortfolioAvailabilityAvailabilityStatusEnumSerializer
     'complete': 'complete',
     'partial': 'partial',
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'complete': 'complete',
     'partial': 'partial',
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -209,14 +185,12 @@ class _$BstocksPortfolioAvailabilityUnavailableReasonsEnumSerializer
     'confirmedGtcSell': 'confirmed_gtc_sell',
     'submittedGtcSell': 'submitted_gtc_sell',
     'reservationExceedsBalance': 'reservation_exceeds_balance',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'wallet_identity_unavailable': 'walletIdentityUnavailable',
     'confirmed_gtc_sell': 'confirmedGtcSell',
     'submitted_gtc_sell': 'submittedGtcSell',
     'reservation_exceeds_balance': 'reservationExceedsBalance',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

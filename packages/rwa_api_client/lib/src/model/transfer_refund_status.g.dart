@@ -18,8 +18,6 @@ const TransferRefundStatus _$ambiguous =
     const TransferRefundStatus._('ambiguous');
 const TransferRefundStatus _$manualReview =
     const TransferRefundStatus._('manualReview');
-const TransferRefundStatus _$unknownDefaultOpenApi =
-    const TransferRefundStatus._('unknownDefaultOpenApi');
 
 TransferRefundStatus _$valueOf(String name) {
   switch (name) {
@@ -37,10 +35,8 @@ TransferRefundStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -53,7 +49,6 @@ final BuiltSet<TransferRefundStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TransferRefundStatusMeta {
@@ -65,7 +60,6 @@ class _$TransferRefundStatusMeta {
   TransferRefundStatus get failed => _$failed;
   TransferRefundStatus get ambiguous => _$ambiguous;
   TransferRefundStatus get manualReview => _$manualReview;
-  TransferRefundStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   TransferRefundStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TransferRefundStatus> get values => _$values;
 }
@@ -89,7 +83,6 @@ class _$TransferRefundStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'not_applicable': 'notApplicable',
@@ -99,7 +92,6 @@ class _$TransferRefundStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

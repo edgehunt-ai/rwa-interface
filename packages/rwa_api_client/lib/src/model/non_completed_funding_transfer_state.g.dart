@@ -36,9 +36,6 @@ const NonCompletedFundingTransferStateStatusEnum
 const NonCompletedFundingTransferStateStatusEnum
     _$nonCompletedFundingTransferStateStatusEnum_manualReview =
     const NonCompletedFundingTransferStateStatusEnum._('manualReview');
-const NonCompletedFundingTransferStateStatusEnum
-    _$nonCompletedFundingTransferStateStatusEnum_unknownDefaultOpenApi =
-    const NonCompletedFundingTransferStateStatusEnum._('unknownDefaultOpenApi');
 
 NonCompletedFundingTransferStateStatusEnum
     _$nonCompletedFundingTransferStateStatusEnumValueOf(String name) {
@@ -63,10 +60,8 @@ NonCompletedFundingTransferStateStatusEnum
       return _$nonCompletedFundingTransferStateStatusEnum_ambiguous;
     case 'manualReview':
       return _$nonCompletedFundingTransferStateStatusEnum_manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$nonCompletedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$nonCompletedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -83,7 +78,6 @@ final BuiltSet<NonCompletedFundingTransferStateStatusEnum>
   _$nonCompletedFundingTransferStateStatusEnum_failed,
   _$nonCompletedFundingTransferStateStatusEnum_ambiguous,
   _$nonCompletedFundingTransferStateStatusEnum_manualReview,
-  _$nonCompletedFundingTransferStateStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<NonCompletedFundingTransferStateStatusEnum>
@@ -103,7 +97,6 @@ class _$NonCompletedFundingTransferStateStatusEnumSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_authorization': 'awaitingAuthorization',
@@ -116,7 +109,6 @@ class _$NonCompletedFundingTransferStateStatusEnumSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

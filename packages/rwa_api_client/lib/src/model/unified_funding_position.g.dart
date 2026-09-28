@@ -9,19 +9,14 @@ part of 'unified_funding_position.dart';
 const UnifiedFundingPositionCustodyEnum
     _$unifiedFundingPositionCustodyEnum_embeddedWallet =
     const UnifiedFundingPositionCustodyEnum._('embeddedWallet');
-const UnifiedFundingPositionCustodyEnum
-    _$unifiedFundingPositionCustodyEnum_unknownDefaultOpenApi =
-    const UnifiedFundingPositionCustodyEnum._('unknownDefaultOpenApi');
 
 UnifiedFundingPositionCustodyEnum _$unifiedFundingPositionCustodyEnumValueOf(
     String name) {
   switch (name) {
     case 'embeddedWallet':
       return _$unifiedFundingPositionCustodyEnum_embeddedWallet;
-    case 'unknownDefaultOpenApi':
-      return _$unifiedFundingPositionCustodyEnum_unknownDefaultOpenApi;
     default:
-      return _$unifiedFundingPositionCustodyEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<UnifiedFundingPositionCustodyEnum>
     _$unifiedFundingPositionCustodyEnumValues = BuiltSet<
         UnifiedFundingPositionCustodyEnum>(const <UnifiedFundingPositionCustodyEnum>[
   _$unifiedFundingPositionCustodyEnum_embeddedWallet,
-  _$unifiedFundingPositionCustodyEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<UnifiedFundingPositionCustodyEnum>
@@ -40,11 +34,9 @@ class _$UnifiedFundingPositionCustodyEnumSerializer
     implements PrimitiveSerializer<UnifiedFundingPositionCustodyEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'embeddedWallet': 'embedded_wallet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'embedded_wallet': 'embeddedWallet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

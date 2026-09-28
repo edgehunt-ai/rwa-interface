@@ -246,8 +246,6 @@ class ProductPortfolioAllocationDimensionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'product')
   static const ProductPortfolioAllocationDimensionEnum product = _$productPortfolioAllocationDimensionEnum_product;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductPortfolioAllocationDimensionEnum unknownDefaultOpenApi = _$productPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
 
   static Serializer<ProductPortfolioAllocationDimensionEnum> get serializer => _$productPortfolioAllocationDimensionEnumSerializer;
 

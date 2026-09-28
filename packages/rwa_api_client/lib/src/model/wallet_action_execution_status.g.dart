@@ -24,8 +24,6 @@ const WalletActionExecutionStatus _$ambiguous =
     const WalletActionExecutionStatus._('ambiguous');
 const WalletActionExecutionStatus _$manualReview =
     const WalletActionExecutionStatus._('manualReview');
-const WalletActionExecutionStatus _$unknownDefaultOpenApi =
-    const WalletActionExecutionStatus._('unknownDefaultOpenApi');
 
 WalletActionExecutionStatus _$valueOf(String name) {
   switch (name) {
@@ -47,10 +45,8 @@ WalletActionExecutionStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -65,7 +61,6 @@ final BuiltSet<WalletActionExecutionStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$WalletActionExecutionStatusMeta {
@@ -81,8 +76,6 @@ class _$WalletActionExecutionStatusMeta {
   WalletActionExecutionStatus get failed => _$failed;
   WalletActionExecutionStatus get ambiguous => _$ambiguous;
   WalletActionExecutionStatus get manualReview => _$manualReview;
-  WalletActionExecutionStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   WalletActionExecutionStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletActionExecutionStatus> get values => _$values;
 }
@@ -109,7 +102,6 @@ class _$WalletActionExecutionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_user_authorization': 'awaitingUserAuthorization',
@@ -121,7 +113,6 @@ class _$WalletActionExecutionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

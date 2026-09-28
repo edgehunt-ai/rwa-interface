@@ -388,8 +388,6 @@ class BstockFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockFundingPlanRailEnum bstock = _$bstockFundingPlanRailEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingPlanRailEnum unknownDefaultOpenApi = _$bstockFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingPlanRailEnum> get serializer => _$bstockFundingPlanRailEnumSerializer;
 
@@ -403,8 +401,6 @@ class BstockFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const BstockFundingPlanNetworkEnum BSC = _$bstockFundingPlanNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingPlanNetworkEnum unknownDefaultOpenApi = _$bstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingPlanNetworkEnum> get serializer => _$bstockFundingPlanNetworkEnumSerializer;
 
@@ -418,8 +414,6 @@ class BstockFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDT')
   static const BstockFundingPlanAssetEnum USDT = _$bstockFundingPlanAssetEnum_USDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingPlanAssetEnum unknownDefaultOpenApi = _$bstockFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingPlanAssetEnum> get serializer => _$bstockFundingPlanAssetEnumSerializer;
 

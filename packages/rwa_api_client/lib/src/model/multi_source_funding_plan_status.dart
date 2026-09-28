@@ -38,9 +38,6 @@ class MultiSourceFundingPlanStatus extends EnumClass {
   /// Aggregate execution status for a server-allocated multi-source funding plan.
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const MultiSourceFundingPlanStatus manualReview = _$manualReview;
-  /// Aggregate execution status for a server-allocated multi-source funding plan.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourceFundingPlanStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<MultiSourceFundingPlanStatus> get serializer => _$multiSourceFundingPlanStatusSerializer;
 

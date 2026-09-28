@@ -9,19 +9,14 @@ part of 'hip3_set_tp_sl_action_request.dart';
 const Hip3SetTpSlActionRequestOperationEnum
     _$hip3SetTpSlActionRequestOperationEnum_setTpsl =
     const Hip3SetTpSlActionRequestOperationEnum._('setTpsl');
-const Hip3SetTpSlActionRequestOperationEnum
-    _$hip3SetTpSlActionRequestOperationEnum_unknownDefaultOpenApi =
-    const Hip3SetTpSlActionRequestOperationEnum._('unknownDefaultOpenApi');
 
 Hip3SetTpSlActionRequestOperationEnum
     _$hip3SetTpSlActionRequestOperationEnumValueOf(String name) {
   switch (name) {
     case 'setTpsl':
       return _$hip3SetTpSlActionRequestOperationEnum_setTpsl;
-    case 'unknownDefaultOpenApi':
-      return _$hip3SetTpSlActionRequestOperationEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3SetTpSlActionRequestOperationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3SetTpSlActionRequestOperationEnum>
     _$hip3SetTpSlActionRequestOperationEnumValues = BuiltSet<
         Hip3SetTpSlActionRequestOperationEnum>(const <Hip3SetTpSlActionRequestOperationEnum>[
   _$hip3SetTpSlActionRequestOperationEnum_setTpsl,
-  _$hip3SetTpSlActionRequestOperationEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3SetTpSlActionRequestOperationEnum>
@@ -40,11 +34,9 @@ class _$Hip3SetTpSlActionRequestOperationEnumSerializer
     implements PrimitiveSerializer<Hip3SetTpSlActionRequestOperationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'setTpsl': 'set_tpsl',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'set_tpsl': 'setTpsl',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

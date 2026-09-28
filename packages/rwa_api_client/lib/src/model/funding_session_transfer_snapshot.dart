@@ -144,8 +144,6 @@ class FundingSessionTransferSnapshotKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'account_transfer')
   static const FundingSessionTransferSnapshotKindEnum accountTransfer = _$fundingSessionTransferSnapshotKindEnum_accountTransfer;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionTransferSnapshotKindEnum unknownDefaultOpenApi = _$fundingSessionTransferSnapshotKindEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionTransferSnapshotKindEnum> get serializer => _$fundingSessionTransferSnapshotKindEnumSerializer;
 
@@ -159,8 +157,6 @@ class FundingSessionTransferSnapshotDestinationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3_margin')
   static const FundingSessionTransferSnapshotDestinationEnum hip3Margin = _$fundingSessionTransferSnapshotDestinationEnum_hip3Margin;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionTransferSnapshotDestinationEnum unknownDefaultOpenApi = _$fundingSessionTransferSnapshotDestinationEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionTransferSnapshotDestinationEnum> get serializer => _$fundingSessionTransferSnapshotDestinationEnumSerializer;
 

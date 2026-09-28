@@ -196,8 +196,6 @@ class Hip3AccountAbstractionTargetModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unifiedAccount')
   static const Hip3AccountAbstractionTargetModeEnum unifiedAccount = _$hip3AccountAbstractionTargetModeEnum_unifiedAccount;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3AccountAbstractionTargetModeEnum unknownDefaultOpenApi = _$hip3AccountAbstractionTargetModeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3AccountAbstractionTargetModeEnum> get serializer => _$hip3AccountAbstractionTargetModeEnumSerializer;
 

@@ -9,8 +9,6 @@ part of 'bstocks_approval_mode.dart';
 const BstocksApprovalMode _$unlimited =
     const BstocksApprovalMode._('unlimited');
 const BstocksApprovalMode _$slippage = const BstocksApprovalMode._('slippage');
-const BstocksApprovalMode _$unknownDefaultOpenApi =
-    const BstocksApprovalMode._('unknownDefaultOpenApi');
 
 BstocksApprovalMode _$valueOf(String name) {
   switch (name) {
@@ -18,10 +16,8 @@ BstocksApprovalMode _$valueOf(String name) {
       return _$unlimited;
     case 'slippage':
       return _$slippage;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,14 +25,12 @@ final BuiltSet<BstocksApprovalMode> _$values =
     BuiltSet<BstocksApprovalMode>(const <BstocksApprovalMode>[
   _$unlimited,
   _$slippage,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$BstocksApprovalModeMeta {
   const _$BstocksApprovalModeMeta();
   BstocksApprovalMode get unlimited => _$unlimited;
   BstocksApprovalMode get slippage => _$slippage;
-  BstocksApprovalMode get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   BstocksApprovalMode valueOf(String name) => _$valueOf(name);
   BuiltSet<BstocksApprovalMode> get values => _$values;
 }
@@ -55,12 +49,10 @@ class _$BstocksApprovalModeSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'unlimited': 'unlimited',
     'slippage': 'slippage',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unlimited': 'unlimited',
     'slippage': 'slippage',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

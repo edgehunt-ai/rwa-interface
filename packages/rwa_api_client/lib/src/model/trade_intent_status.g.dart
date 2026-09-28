@@ -23,8 +23,6 @@ const TradeIntentStatus _$cancelled = const TradeIntentStatus._('cancelled');
 const TradeIntentStatus _$failed = const TradeIntentStatus._('failed');
 const TradeIntentStatus _$manualReview =
     const TradeIntentStatus._('manualReview');
-const TradeIntentStatus _$unknownDefaultOpenApi =
-    const TradeIntentStatus._('unknownDefaultOpenApi');
 
 TradeIntentStatus _$valueOf(String name) {
   switch (name) {
@@ -50,10 +48,8 @@ TradeIntentStatus _$valueOf(String name) {
       return _$failed;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -70,7 +66,6 @@ final BuiltSet<TradeIntentStatus> _$values =
   _$cancelled,
   _$failed,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TradeIntentStatusMeta {
@@ -86,7 +81,6 @@ class _$TradeIntentStatusMeta {
   TradeIntentStatus get cancelled => _$cancelled;
   TradeIntentStatus get failed => _$failed;
   TradeIntentStatus get manualReview => _$manualReview;
-  TradeIntentStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   TradeIntentStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TradeIntentStatus> get values => _$values;
 }
@@ -114,7 +108,6 @@ class _$TradeIntentStatusSerializer
     'cancelled': 'cancelled',
     'failed': 'failed',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_agent': 'awaitingAgent',
@@ -128,7 +121,6 @@ class _$TradeIntentStatusSerializer
     'cancelled': 'cancelled',
     'failed': 'failed',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

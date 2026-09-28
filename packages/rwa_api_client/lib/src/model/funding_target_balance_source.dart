@@ -15,8 +15,6 @@ class FundingTargetBalanceSource extends EnumClass {
   static const FundingTargetBalanceSource bscRpc = _$bscRpc;
   @BuiltValueEnumConst(wireName: r'hyperliquid_info')
   static const FundingTargetBalanceSource hyperliquidInfo = _$hyperliquidInfo;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingTargetBalanceSource unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingTargetBalanceSource> get serializer => _$fundingTargetBalanceSourceSerializer;
 

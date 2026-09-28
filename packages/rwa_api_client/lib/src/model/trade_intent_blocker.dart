@@ -37,8 +37,6 @@ class TradeIntentBlocker extends EnumClass {
   static const TradeIntentBlocker capabilityDisabled = _$capabilityDisabled;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TradeIntentBlocker manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<TradeIntentBlocker> get serializer => _$tradeIntentBlockerSerializer;
 

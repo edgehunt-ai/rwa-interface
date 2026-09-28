@@ -9,8 +9,6 @@ part of 'portfolio_freshness.dart';
 const PortfolioFreshness _$live = const PortfolioFreshness._('live');
 const PortfolioFreshness _$cached = const PortfolioFreshness._('cached');
 const PortfolioFreshness _$stale = const PortfolioFreshness._('stale');
-const PortfolioFreshness _$unknownDefaultOpenApi =
-    const PortfolioFreshness._('unknownDefaultOpenApi');
 
 PortfolioFreshness _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ PortfolioFreshness _$valueOf(String name) {
       return _$cached;
     case 'stale':
       return _$stale;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<PortfolioFreshness> _$values =
   _$live,
   _$cached,
   _$stale,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioFreshnessMeta {
@@ -40,7 +35,6 @@ class _$PortfolioFreshnessMeta {
   PortfolioFreshness get live => _$live;
   PortfolioFreshness get cached => _$cached;
   PortfolioFreshness get stale => _$stale;
-  PortfolioFreshness get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioFreshness valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioFreshness> get values => _$values;
 }
@@ -60,13 +54,11 @@ class _$PortfolioFreshnessSerializer
     'live': 'live',
     'cached': 'cached',
     'stale': 'stale',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'live': 'live',
     'cached': 'cached',
     'stale': 'stale',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -17,9 +17,6 @@ class BstocksApprovalMode extends EnumClass {
   /// bStocks 服务端授权策略，由 RWA_BSTOCKS_APPROVAL_MODE 配置（实现默认 unlimited），客户端不能请求或覆盖。 unlimited 授权 uint256.max；slippage 授权 ceil(required_funding_raw × (1 + slippage_percent/100))， 省略滑点视为0。两者均不扩大 frozen preview 的交易支出上限；旧响应缺失此字段时不能自行推断无限授权。 
   @BuiltValueEnumConst(wireName: r'slippage')
   static const BstocksApprovalMode slippage = _$slippage;
-  /// bStocks 服务端授权策略，由 RWA_BSTOCKS_APPROVAL_MODE 配置（实现默认 unlimited），客户端不能请求或覆盖。 unlimited 授权 uint256.max；slippage 授权 ceil(required_funding_raw × (1 + slippage_percent/100))， 省略滑点视为0。两者均不扩大 frozen preview 的交易支出上限；旧响应缺失此字段时不能自行推断无限授权。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksApprovalMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<BstocksApprovalMode> get serializer => _$bstocksApprovalModeSerializer;
 

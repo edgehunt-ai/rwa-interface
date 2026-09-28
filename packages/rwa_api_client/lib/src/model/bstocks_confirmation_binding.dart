@@ -194,8 +194,6 @@ class BstocksConfirmationBindingStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'frozen')
   static const BstocksConfirmationBindingStatusEnum frozen = _$bstocksConfirmationBindingStatusEnum_frozen;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksConfirmationBindingStatusEnum unknownDefaultOpenApi = _$bstocksConfirmationBindingStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksConfirmationBindingStatusEnum> get serializer => _$bstocksConfirmationBindingStatusEnumSerializer;
 
@@ -209,8 +207,6 @@ class BstocksConfirmationBindingDeadlineKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'server_preview_deadline')
   static const BstocksConfirmationBindingDeadlineKindEnum serverPreviewDeadline = _$bstocksConfirmationBindingDeadlineKindEnum_serverPreviewDeadline;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksConfirmationBindingDeadlineKindEnum unknownDefaultOpenApi = _$bstocksConfirmationBindingDeadlineKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksConfirmationBindingDeadlineKindEnum> get serializer => _$bstocksConfirmationBindingDeadlineKindEnumSerializer;
 

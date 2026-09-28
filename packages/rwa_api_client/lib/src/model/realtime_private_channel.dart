@@ -36,8 +36,8 @@ class RealtimePrivateChannel extends EnumClass {
   @BuiltValueEnumConst(wireName: r'activity')
   static const RealtimePrivateChannel activity = _$activity;
   /// 当前由账户隔离 PostgreSQL projection 支持的私有频道。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimePrivateChannel unknownDefaultOpenApi = _$unknownDefaultOpenApi;
+  @BuiltValueEnumConst(wireName: r'sessions')
+  static const RealtimePrivateChannel sessions = _$sessions;
 
   static Serializer<RealtimePrivateChannel> get serializer => _$realtimePrivateChannelSerializer;
 

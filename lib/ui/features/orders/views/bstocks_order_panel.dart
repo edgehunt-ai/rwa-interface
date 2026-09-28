@@ -16,7 +16,6 @@ import 'package:rwa_interface/domain/models/application_state.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
-import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
@@ -28,6 +27,7 @@ import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.da
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
 
 import 'order_funding_sheet.dart';
+import 'order_funding_confirmation_header.dart';
 import 'slippage_controls.dart';
 import 'tp_sl_editor_card.dart';
 
@@ -63,6 +63,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   TradingOrder? submittedOrder;
   String? error;
   bool reviewing = false;
+  bool _confirmationFromFunding = false;
   Timer? _quoteDebounce;
   Timer? _previewPollingTimer;
   var _quoteGeneration = 0;
@@ -358,22 +359,39 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     setState(() {
       error = null;
       reviewing = true;
+      _confirmationFromFunding = false;
     });
     try {
+      var completedFundingFlow = false;
+      if (intent.side == TradingSide.buy) {
+        while (true) {
+          final plan = await ref
+              .read(fundingTransferCommandsProvider)
+              .session(intent: intent);
+          if (!mounted) return;
+          if (plan.status == FundingPlanState.alreadyFunded) break;
+          final funded = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            isDismissible: false,
+            enableDrag: false,
+            builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
+          );
+          if (!mounted || funded != true) return;
+          completedFundingFlow = true;
+        }
+      }
+      if (completedFundingFlow) {
+        ref.invalidate(orderPreviewProvider(intent));
+      }
       final next =
-          cachedQuote?.intent.fingerprint == intent.fingerprint &&
+          !completedFundingFlow &&
+              cachedQuote?.intent.fingerprint == intent.fingerprint &&
               cachedQuote?.isExpired == false
           ? cachedQuote!
           : await ref.read(orderPreviewProvider(intent).future);
       if (!mounted) return;
-      if (!next.executionReady) {
-        setState(() {
-          quotePreview = next;
-          error = '预览费用和预估数量可用，但缺少下单所需的确认绑定，暂时不能提交订单。';
-        });
-        return;
-      }
-      await _prepareConfirmation(next);
+      _showConfirmation(next, fromFunding: completedFundingFlow);
     } on Object catch (error) {
       if (mounted) {
         setState(
@@ -390,60 +408,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     }
   }
 
-  Future<void> _prepareConfirmation(OrderPreview next) async {
-    if (next.intent.side == TradingSide.sell) {
-      if (mounted) {
-        _showConfirmation(next);
-      }
-      return;
-    }
-
-    try {
-      final accounts = await _readTradingAccountsForFundingCheck();
-      final sufficient = _hasSufficientSettlementBalance(next, accounts);
-      debugPrint(
-        'bStocks prepare: preview=${next.previewId} '
-        'asset=${next.settlementAsset} chain=${next.settlementChain} '
-        'orderValue=${next.orderValue.value}/${next.orderValue.asset}/${next.orderValue.unit} '
-        'fee=${next.fee?.value}/${next.fee?.asset}/${next.fee?.unit} '
-        'accounts=${accounts.length} sufficient=$sufficient',
-      );
-      if (sufficient) {
-        if (mounted) {
-          _showConfirmation(next);
-        }
-        return;
-      }
-      debugPrint(
-        'bStocks prepare: requesting funding plan '
-        'preview=${next.previewId}',
-      );
-      final plan = await ref
-          .read(fundingTransferCommandsProvider)
-          .plan(tradePreviewId: next.previewId);
-      if (!mounted) return;
-      if (plan.status == FundingPlanState.alreadyFunded) {
-        _showConfirmation(next);
-        return;
-      }
-      final funded = await showModalBottomSheet<bool>(
-        context: context,
-        isScrollControlled: true,
-        isDismissible: false,
-        enableDrag: false,
-        builder: (_) => OrderFundingSheet(plan: plan, kind: next.intent.kind),
-      );
-      if (!mounted || funded != true) return;
-      ref.invalidate(orderPreviewProvider(next.intent));
-      final refreshed = await ref.read(
-        orderPreviewProvider(next.intent).future,
-      );
-      if (mounted) await _prepareConfirmation(refreshed);
-    } on Object {
-      rethrow;
-    }
-  }
-
   String _errorMessage({required Object error, required String fallback}) {
     if (error is ApiFailure) {
       return apiFailureMessage(error, fallback: fallback);
@@ -452,13 +416,22 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     return message.isEmpty ? fallback : message;
   }
 
-  void _showConfirmation(OrderPreview next) {
+  void _showConfirmation(OrderPreview next, {required bool fromFunding}) {
+    if (!next.executionReady) {
+      setState(() {
+        quotePreview = next;
+        preview = null;
+        error = '预览费用和预估数量可用，但缺少下单所需的确认绑定，暂时不能提交订单。';
+      });
+      return;
+    }
     _previewPollingTimer?.cancel();
     _previewPollingGeneration++;
     _liveMarketPrice = next.marketPrice;
     setState(() {
       error = null;
       preview = next;
+      _confirmationFromFunding = fromFunding;
     });
     _startPreviewPolling(next);
   }
@@ -519,80 +492,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           0;
     } on ArgumentError {
       return left.value == right.value;
-    }
-  }
-
-  bool _hasSufficientSettlementBalance(
-    OrderPreview preview,
-    List<TradingAccount> accounts,
-  ) {
-    // bStocks settles through the BSC account. Match both the asset and chain
-    // so a same-symbol balance on another network cannot satisfy the check.
-    final asset = preview.settlementAsset ?? preview.orderValue.asset;
-    if (asset == null) {
-      debugPrint(
-        'bStocks funding check skipped: missing settlement asset '
-        'previewAsset=${preview.settlementAsset} '
-        'orderValueAsset=${preview.orderValue.asset} '
-        'settlementChain=${preview.settlementChain}',
-      );
-      return false;
-    }
-    try {
-      final fee = preview.fee;
-      // fee_asset belongs to network_fee. The fee field itself is included
-      // when it is denominated in the settlement asset.
-      final required =
-          fee == null ||
-              fee.asset?.toLowerCase() !=
-                  preview.orderValue.asset?.toLowerCase()
-          ? preview.orderValue
-          : preview.orderValue.plusMagnitude(fee);
-      final balances = accounts
-          .where(
-            (account) =>
-                account.kind == TradingAccountKind.bstocks &&
-                _sameChain(account.chain, preview.settlementChain),
-          )
-          .expand((account) => account.balances)
-          .where(
-            (balance) =>
-                balance.symbol.toLowerCase() == asset.toLowerCase() &&
-                _sameChain(balance.chain, preview.settlementChain),
-          )
-          .map((balance) => balance.balance);
-      final balance = balances.firstOrNull;
-      final sufficient =
-          balance != null && balance.compareMagnitudeTo(required) >= 0;
-      debugPrint(
-        'bStocks funding check: '
-        'asset=$asset required=${required.value} '
-        'matchedBalance=${balance?.value} sufficient=$sufficient '
-        'accounts=${accounts.map((account) => '${account.kind}:'
-            '${account.balances.map((item) => '${item.symbol}@${item.chain}=${item.balance.value}').join(',')}').join(';')}',
-      );
-      return sufficient;
-    } on ArgumentError {
-      // Different units cannot prove that the settlement balance is enough.
-      // Fall through to the server funding plan instead of failing locally.
-      return false;
-    }
-  }
-
-  bool _sameChain(String? left, String? right) {
-    if (right == null || right.isEmpty) return true;
-    if (left == null || left.isEmpty) return false;
-    return left.toLowerCase() == right.toLowerCase();
-  }
-
-  Future<List<TradingAccount>> _readTradingAccountsForFundingCheck() async {
-    try {
-      return await ref.read(tradingAccountsProvider.future);
-    } on Object catch (failure) {
-      debugPrint(
-        'bStocks prepare: trading account check unavailable: $failure',
-      );
-      return const [];
     }
   }
 
@@ -1148,10 +1047,16 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ),
         ),
         const SizedBox(height: 16),
-        Text(
-          '$action ${widget.symbol}',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        if (_confirmationFromFunding)
+          OrderFundingConfirmationHeader(
+            title: '$action ${widget.symbol}',
+            stepKey: const Key('bstocks-funding-confirmation-step-3'),
+          )
+        else
+          Text(
+            '$action ${widget.symbol}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
         const SizedBox(height: 12),
         Divider(color: colors.subtleSurface),
         const SizedBox(height: 16),

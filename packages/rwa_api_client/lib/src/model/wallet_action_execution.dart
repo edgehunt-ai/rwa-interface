@@ -575,9 +575,6 @@ class WalletActionExecutionChainIdEnum extends EnumClass {
   /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
   @BuiltValueEnumConst(wireNumber: 421614)
   static const WalletActionExecutionChainIdEnum number421614 = _$walletActionExecutionChainIdEnum_number421614;
-  /// 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const WalletActionExecutionChainIdEnum unknownDefaultOpenApi = _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<WalletActionExecutionChainIdEnum> get serializer => _$walletActionExecutionChainIdEnumSerializer;
 

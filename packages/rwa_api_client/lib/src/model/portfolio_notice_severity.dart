@@ -17,8 +17,6 @@ class PortfolioNoticeSeverity extends EnumClass {
   static const PortfolioNoticeSeverity warning = _$warning;
   @BuiltValueEnumConst(wireName: r'error')
   static const PortfolioNoticeSeverity error = _$error;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioNoticeSeverity unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioNoticeSeverity> get serializer => _$portfolioNoticeSeveritySerializer;
 

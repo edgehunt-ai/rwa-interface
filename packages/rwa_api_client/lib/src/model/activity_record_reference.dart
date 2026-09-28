@@ -138,8 +138,6 @@ class ActivityRecordReferenceTypeEnum extends EnumClass {
   static const ActivityRecordReferenceTypeEnum withdrawal = _$activityRecordReferenceTypeEnum_withdrawal;
   @BuiltValueEnumConst(wireName: r'funding_payment')
   static const ActivityRecordReferenceTypeEnum fundingPayment = _$activityRecordReferenceTypeEnum_fundingPayment;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ActivityRecordReferenceTypeEnum unknownDefaultOpenApi = _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<ActivityRecordReferenceTypeEnum> get serializer => _$activityRecordReferenceTypeEnumSerializer;
 

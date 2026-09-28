@@ -16,10 +16,6 @@ const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum
 const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum
     _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_false_ =
     const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum._('false_');
-const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum
-    _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_unknownDefaultOpenApi =
-    const PrivyClientConfigEmbeddedWalletCreateOnLoginEnum._(
-        'unknownDefaultOpenApi');
 
 PrivyClientConfigEmbeddedWalletCreateOnLoginEnum
     _$privyClientConfigEmbeddedWalletCreateOnLoginEnumValueOf(String name) {
@@ -30,10 +26,8 @@ PrivyClientConfigEmbeddedWalletCreateOnLoginEnum
       return _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_allUsers;
     case 'false_':
       return _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_false_;
-    case 'unknownDefaultOpenApi':
-      return _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_unknownDefaultOpenApi;
     default:
-      return _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -43,7 +37,6 @@ final BuiltSet<PrivyClientConfigEmbeddedWalletCreateOnLoginEnum>
   _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_usersWithoutWallets,
   _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_allUsers,
   _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_false_,
-  _$privyClientConfigEmbeddedWalletCreateOnLoginEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PrivyClientConfigEmbeddedWalletCreateOnLoginEnum>
@@ -57,13 +50,11 @@ class _$PrivyClientConfigEmbeddedWalletCreateOnLoginEnumSerializer
     'usersWithoutWallets': 'users-without-wallets',
     'allUsers': 'all-users',
     'false_': 'false',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'users-without-wallets': 'usersWithoutWallets',
     'all-users': 'allUsers',
     'false': 'false_',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

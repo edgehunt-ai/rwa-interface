@@ -127,8 +127,6 @@ class Hip3RealtimePriceItemEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3_price')
   static const Hip3RealtimePriceItemEventEnum hip3Price = _$hip3RealtimePriceItemEventEnum_hip3Price;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimePriceItemEventEnum unknownDefaultOpenApi = _$hip3RealtimePriceItemEventEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimePriceItemEventEnum> get serializer => _$hip3RealtimePriceItemEventEnumSerializer;
 

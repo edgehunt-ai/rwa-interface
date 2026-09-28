@@ -25,8 +25,6 @@ class GasSponsorshipDecision extends EnumClass {
   static const GasSponsorshipDecision providerRejected = _$providerRejected;
   @BuiltValueEnumConst(wireName: r'provider_ambiguous')
   static const GasSponsorshipDecision providerAmbiguous = _$providerAmbiguous;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const GasSponsorshipDecision unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<GasSponsorshipDecision> get serializer => _$gasSponsorshipDecisionSerializer;
 

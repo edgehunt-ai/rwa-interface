@@ -9,19 +9,14 @@ part of 'privy_authorization_body.dart';
 const PrivyAuthorizationBodyMethodEnum
     _$privyAuthorizationBodyMethodEnum_ethSendTransaction =
     const PrivyAuthorizationBodyMethodEnum._('ethSendTransaction');
-const PrivyAuthorizationBodyMethodEnum
-    _$privyAuthorizationBodyMethodEnum_unknownDefaultOpenApi =
-    const PrivyAuthorizationBodyMethodEnum._('unknownDefaultOpenApi');
 
 PrivyAuthorizationBodyMethodEnum _$privyAuthorizationBodyMethodEnumValueOf(
     String name) {
   switch (name) {
     case 'ethSendTransaction':
       return _$privyAuthorizationBodyMethodEnum_ethSendTransaction;
-    case 'unknownDefaultOpenApi':
-      return _$privyAuthorizationBodyMethodEnum_unknownDefaultOpenApi;
     default:
-      return _$privyAuthorizationBodyMethodEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<PrivyAuthorizationBodyMethodEnum>
     _$privyAuthorizationBodyMethodEnumValues = BuiltSet<
         PrivyAuthorizationBodyMethodEnum>(const <PrivyAuthorizationBodyMethodEnum>[
   _$privyAuthorizationBodyMethodEnum_ethSendTransaction,
-  _$privyAuthorizationBodyMethodEnum_unknownDefaultOpenApi,
 ]);
 
 const PrivyAuthorizationBodyCaip2Enum
@@ -50,9 +44,6 @@ const PrivyAuthorizationBodyCaip2Enum
 const PrivyAuthorizationBodyCaip2Enum
     _$privyAuthorizationBodyCaip2Enum_eip155Colon421614 =
     const PrivyAuthorizationBodyCaip2Enum._('eip155Colon421614');
-const PrivyAuthorizationBodyCaip2Enum
-    _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi =
-    const PrivyAuthorizationBodyCaip2Enum._('unknownDefaultOpenApi');
 
 PrivyAuthorizationBodyCaip2Enum _$privyAuthorizationBodyCaip2EnumValueOf(
     String name) {
@@ -69,10 +60,8 @@ PrivyAuthorizationBodyCaip2Enum _$privyAuthorizationBodyCaip2EnumValueOf(
       return _$privyAuthorizationBodyCaip2Enum_eip155Colon42161;
     case 'eip155Colon421614':
       return _$privyAuthorizationBodyCaip2Enum_eip155Colon421614;
-    case 'unknownDefaultOpenApi':
-      return _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi;
     default:
-      return _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -85,25 +74,19 @@ final BuiltSet<PrivyAuthorizationBodyCaip2Enum>
   _$privyAuthorizationBodyCaip2Enum_eip155Colon8453,
   _$privyAuthorizationBodyCaip2Enum_eip155Colon42161,
   _$privyAuthorizationBodyCaip2Enum_eip155Colon421614,
-  _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi,
 ]);
 
 const PrivyAuthorizationBodyChainTypeEnum
     _$privyAuthorizationBodyChainTypeEnum_ethereum =
     const PrivyAuthorizationBodyChainTypeEnum._('ethereum');
-const PrivyAuthorizationBodyChainTypeEnum
-    _$privyAuthorizationBodyChainTypeEnum_unknownDefaultOpenApi =
-    const PrivyAuthorizationBodyChainTypeEnum._('unknownDefaultOpenApi');
 
 PrivyAuthorizationBodyChainTypeEnum
     _$privyAuthorizationBodyChainTypeEnumValueOf(String name) {
   switch (name) {
     case 'ethereum':
       return _$privyAuthorizationBodyChainTypeEnum_ethereum;
-    case 'unknownDefaultOpenApi':
-      return _$privyAuthorizationBodyChainTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$privyAuthorizationBodyChainTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -111,7 +94,6 @@ final BuiltSet<PrivyAuthorizationBodyChainTypeEnum>
     _$privyAuthorizationBodyChainTypeEnumValues = BuiltSet<
         PrivyAuthorizationBodyChainTypeEnum>(const <PrivyAuthorizationBodyChainTypeEnum>[
   _$privyAuthorizationBodyChainTypeEnum_ethereum,
-  _$privyAuthorizationBodyChainTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PrivyAuthorizationBodyMethodEnum>
@@ -128,11 +110,9 @@ class _$PrivyAuthorizationBodyMethodEnumSerializer
     implements PrimitiveSerializer<PrivyAuthorizationBodyMethodEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'ethSendTransaction': 'eth_sendTransaction',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eth_sendTransaction': 'ethSendTransaction',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -163,7 +143,6 @@ class _$PrivyAuthorizationBodyCaip2EnumSerializer
     'eip155Colon8453': 'eip155:8453',
     'eip155Colon42161': 'eip155:42161',
     'eip155Colon421614': 'eip155:421614',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eip155:1': 'eip155Colon1',
@@ -172,7 +151,6 @@ class _$PrivyAuthorizationBodyCaip2EnumSerializer
     'eip155:8453': 'eip155Colon8453',
     'eip155:42161': 'eip155Colon42161',
     'eip155:421614': 'eip155Colon421614',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -198,11 +176,9 @@ class _$PrivyAuthorizationBodyChainTypeEnumSerializer
     implements PrimitiveSerializer<PrivyAuthorizationBodyChainTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'ethereum': 'ethereum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'ethereum': 'ethereum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

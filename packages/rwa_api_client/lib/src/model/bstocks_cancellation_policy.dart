@@ -127,8 +127,6 @@ class BstocksCancellationPolicyInsufficientBalanceEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'permanent')
   static const BstocksCancellationPolicyInsufficientBalanceEnum permanent = _$bstocksCancellationPolicyInsufficientBalanceEnum_permanent;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksCancellationPolicyInsufficientBalanceEnum unknownDefaultOpenApi = _$bstocksCancellationPolicyInsufficientBalanceEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksCancellationPolicyInsufficientBalanceEnum> get serializer => _$bstocksCancellationPolicyInsufficientBalanceEnumSerializer;
 
@@ -142,8 +140,6 @@ class BstocksCancellationPolicyInsufficientAllowanceEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'permanent')
   static const BstocksCancellationPolicyInsufficientAllowanceEnum permanent = _$bstocksCancellationPolicyInsufficientAllowanceEnum_permanent;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksCancellationPolicyInsufficientAllowanceEnum unknownDefaultOpenApi = _$bstocksCancellationPolicyInsufficientAllowanceEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksCancellationPolicyInsufficientAllowanceEnum> get serializer => _$bstocksCancellationPolicyInsufficientAllowanceEnumSerializer;
 

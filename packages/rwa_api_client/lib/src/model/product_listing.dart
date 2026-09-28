@@ -492,9 +492,6 @@ class ProductListingPriceKindEnum extends EnumClass {
   /// HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
   @BuiltValueEnumConst(wireName: r'reference')
   static const ProductListingPriceKindEnum reference = _$productListingPriceKindEnum_reference;
-  /// HIP3 price 为 mark，不是成交价、oracle 或美股参考价。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductListingPriceKindEnum unknownDefaultOpenApi = _$productListingPriceKindEnum_unknownDefaultOpenApi;
 
   static Serializer<ProductListingPriceKindEnum> get serializer => _$productListingPriceKindEnumSerializer;
 
@@ -512,9 +509,6 @@ class ProductListingDataStatusEnum extends EnumClass {
   /// 服务端按数据源有效期判断；客户端还应随时间推移显示报价年龄。
   @BuiltValueEnumConst(wireName: r'stale')
   static const ProductListingDataStatusEnum stale = _$productListingDataStatusEnum_stale;
-  /// 服务端按数据源有效期判断；客户端还应随时间推移显示报价年龄。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductListingDataStatusEnum unknownDefaultOpenApi = _$productListingDataStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<ProductListingDataStatusEnum> get serializer => _$productListingDataStatusEnumSerializer;
 
@@ -530,8 +524,6 @@ class ProductListingProductTypeEnum extends EnumClass {
   static const ProductListingProductTypeEnum spot = _$productListingProductTypeEnum_spot;
   @BuiltValueEnumConst(wireName: r'contract')
   static const ProductListingProductTypeEnum contract = _$productListingProductTypeEnum_contract;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductListingProductTypeEnum unknownDefaultOpenApi = _$productListingProductTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<ProductListingProductTypeEnum> get serializer => _$productListingProductTypeEnumSerializer;
 
@@ -555,9 +547,6 @@ class ProductListingExecutionStatusEnum extends EnumClass {
   /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
   @BuiltValueEnumConst(wireName: r'baseline_live_candidate')
   static const ProductListingExecutionStatusEnum baselineLiveCandidate = _$productListingExecutionStatusEnum_baselineLiveCandidate;
-  /// bStocks 执行资格状态。仅 bstock 产品返回；catalog_display 及 discovery_only 均不可下单。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductListingExecutionStatusEnum unknownDefaultOpenApi = _$productListingExecutionStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<ProductListingExecutionStatusEnum> get serializer => _$productListingExecutionStatusEnumSerializer;
 

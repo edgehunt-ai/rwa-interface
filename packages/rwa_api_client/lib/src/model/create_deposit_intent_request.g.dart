@@ -12,9 +12,6 @@ const CreateDepositIntentRequestChainEnum
 const CreateDepositIntentRequestChainEnum
     _$createDepositIntentRequestChainEnum_arbitrum =
     const CreateDepositIntentRequestChainEnum._('arbitrum');
-const CreateDepositIntentRequestChainEnum
-    _$createDepositIntentRequestChainEnum_unknownDefaultOpenApi =
-    const CreateDepositIntentRequestChainEnum._('unknownDefaultOpenApi');
 
 CreateDepositIntentRequestChainEnum
     _$createDepositIntentRequestChainEnumValueOf(String name) {
@@ -23,10 +20,8 @@ CreateDepositIntentRequestChainEnum
       return _$createDepositIntentRequestChainEnum_BSC;
     case 'arbitrum':
       return _$createDepositIntentRequestChainEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$createDepositIntentRequestChainEnum_unknownDefaultOpenApi;
     default:
-      return _$createDepositIntentRequestChainEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,25 +30,19 @@ final BuiltSet<CreateDepositIntentRequestChainEnum>
         CreateDepositIntentRequestChainEnum>(const <CreateDepositIntentRequestChainEnum>[
   _$createDepositIntentRequestChainEnum_BSC,
   _$createDepositIntentRequestChainEnum_arbitrum,
-  _$createDepositIntentRequestChainEnum_unknownDefaultOpenApi,
 ]);
 
 const CreateDepositIntentRequestTokenEnum
     _$createDepositIntentRequestTokenEnum_USDC =
     const CreateDepositIntentRequestTokenEnum._('USDC');
-const CreateDepositIntentRequestTokenEnum
-    _$createDepositIntentRequestTokenEnum_unknownDefaultOpenApi =
-    const CreateDepositIntentRequestTokenEnum._('unknownDefaultOpenApi');
 
 CreateDepositIntentRequestTokenEnum
     _$createDepositIntentRequestTokenEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$createDepositIntentRequestTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$createDepositIntentRequestTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$createDepositIntentRequestTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -61,7 +50,6 @@ final BuiltSet<CreateDepositIntentRequestTokenEnum>
     _$createDepositIntentRequestTokenEnumValues = BuiltSet<
         CreateDepositIntentRequestTokenEnum>(const <CreateDepositIntentRequestTokenEnum>[
   _$createDepositIntentRequestTokenEnum_USDC,
-  _$createDepositIntentRequestTokenEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<CreateDepositIntentRequestChainEnum>
@@ -76,12 +64,10 @@ class _$CreateDepositIntentRequestChainEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -109,11 +95,9 @@ class _$CreateDepositIntentRequestTokenEnumSerializer
     implements PrimitiveSerializer<CreateDepositIntentRequestTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

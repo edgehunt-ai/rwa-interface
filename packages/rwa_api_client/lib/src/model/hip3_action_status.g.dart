@@ -17,8 +17,6 @@ const Hip3ActionStatus _$expired = const Hip3ActionStatus._('expired');
 const Hip3ActionStatus _$ambiguous = const Hip3ActionStatus._('ambiguous');
 const Hip3ActionStatus _$manualReview =
     const Hip3ActionStatus._('manualReview');
-const Hip3ActionStatus _$unknownDefaultOpenApi =
-    const Hip3ActionStatus._('unknownDefaultOpenApi');
 
 Hip3ActionStatus _$valueOf(String name) {
   switch (name) {
@@ -40,10 +38,8 @@ Hip3ActionStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -58,7 +54,6 @@ final BuiltSet<Hip3ActionStatus> _$values =
   _$expired,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3ActionStatusMeta {
@@ -72,7 +67,6 @@ class _$Hip3ActionStatusMeta {
   Hip3ActionStatus get expired => _$expired;
   Hip3ActionStatus get ambiguous => _$ambiguous;
   Hip3ActionStatus get manualReview => _$manualReview;
-  Hip3ActionStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3ActionStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3ActionStatus> get values => _$values;
 }
@@ -97,7 +91,6 @@ class _$Hip3ActionStatusSerializer
     'expired': 'expired',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_signature': 'awaitingSignature',
@@ -109,7 +102,6 @@ class _$Hip3ActionStatusSerializer
     'expired': 'expired',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

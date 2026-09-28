@@ -79,8 +79,6 @@ class FundingGlobalCircuitScopeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'global')
   static const FundingGlobalCircuitScopeEnum global = _$fundingGlobalCircuitScopeEnum_global;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitScopeEnum unknownDefaultOpenApi = _$fundingGlobalCircuitScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingGlobalCircuitScopeEnum> get serializer => _$fundingGlobalCircuitScopeEnumSerializer;
 
@@ -94,8 +92,6 @@ class FundingGlobalCircuitStateEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'open')
   static const FundingGlobalCircuitStateEnum open = _$fundingGlobalCircuitStateEnum_open;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitStateEnum unknownDefaultOpenApi = _$fundingGlobalCircuitStateEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingGlobalCircuitStateEnum> get serializer => _$fundingGlobalCircuitStateEnumSerializer;
 

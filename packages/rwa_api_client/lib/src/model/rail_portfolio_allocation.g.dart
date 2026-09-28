@@ -9,19 +9,14 @@ part of 'rail_portfolio_allocation.dart';
 const RailPortfolioAllocationDimensionEnum
     _$railPortfolioAllocationDimensionEnum_rail =
     const RailPortfolioAllocationDimensionEnum._('rail');
-const RailPortfolioAllocationDimensionEnum
-    _$railPortfolioAllocationDimensionEnum_unknownDefaultOpenApi =
-    const RailPortfolioAllocationDimensionEnum._('unknownDefaultOpenApi');
 
 RailPortfolioAllocationDimensionEnum
     _$railPortfolioAllocationDimensionEnumValueOf(String name) {
   switch (name) {
     case 'rail':
       return _$railPortfolioAllocationDimensionEnum_rail;
-    case 'unknownDefaultOpenApi':
-      return _$railPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
     default:
-      return _$railPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<RailPortfolioAllocationDimensionEnum>
     _$railPortfolioAllocationDimensionEnumValues = BuiltSet<
         RailPortfolioAllocationDimensionEnum>(const <RailPortfolioAllocationDimensionEnum>[
   _$railPortfolioAllocationDimensionEnum_rail,
-  _$railPortfolioAllocationDimensionEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RailPortfolioAllocationDimensionEnum>
@@ -40,11 +34,9 @@ class _$RailPortfolioAllocationDimensionEnumSerializer
     implements PrimitiveSerializer<RailPortfolioAllocationDimensionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'rail': 'rail',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'rail': 'rail',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -154,8 +154,6 @@ class RealtimeBalanceEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'balance')
   static const RealtimeBalanceEventEventEnum balance = _$realtimeBalanceEventEventEnum_balance;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeBalanceEventEventEnum unknownDefaultOpenApi = _$realtimeBalanceEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeBalanceEventEventEnum> get serializer => _$realtimeBalanceEventEventEnumSerializer;
 

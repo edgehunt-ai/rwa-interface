@@ -128,8 +128,6 @@ class NonCompletedFundingTransferStateStatusEnum extends EnumClass {
   static const NonCompletedFundingTransferStateStatusEnum ambiguous = _$nonCompletedFundingTransferStateStatusEnum_ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const NonCompletedFundingTransferStateStatusEnum manualReview = _$nonCompletedFundingTransferStateStatusEnum_manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const NonCompletedFundingTransferStateStatusEnum unknownDefaultOpenApi = _$nonCompletedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<NonCompletedFundingTransferStateStatusEnum> get serializer => _$nonCompletedFundingTransferStateStatusEnumSerializer;
 

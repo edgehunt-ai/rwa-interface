@@ -154,8 +154,6 @@ class RealtimePriceEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'price')
   static const RealtimePriceEventEventEnum price = _$realtimePriceEventEventEnum_price;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimePriceEventEventEnum unknownDefaultOpenApi = _$realtimePriceEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimePriceEventEventEnum> get serializer => _$realtimePriceEventEventEnumSerializer;
 

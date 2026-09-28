@@ -20,8 +20,6 @@ const WalletActionProviderStatus _$failed =
     const WalletActionProviderStatus._('failed');
 const WalletActionProviderStatus _$unknown =
     const WalletActionProviderStatus._('unknown');
-const WalletActionProviderStatus _$unknownDefaultOpenApi =
-    const WalletActionProviderStatus._('unknownDefaultOpenApi');
 
 WalletActionProviderStatus _$valueOf(String name) {
   switch (name) {
@@ -39,10 +37,8 @@ WalletActionProviderStatus _$valueOf(String name) {
       return _$failed;
     case 'unknown':
       return _$unknown;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +51,6 @@ final BuiltSet<WalletActionProviderStatus> _$values =
   _$reverted,
   _$failed,
   _$unknown,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$WalletActionProviderStatusMeta {
@@ -67,8 +62,6 @@ class _$WalletActionProviderStatusMeta {
   WalletActionProviderStatus get reverted => _$reverted;
   WalletActionProviderStatus get failed => _$failed;
   WalletActionProviderStatus get unknown => _$unknown;
-  WalletActionProviderStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   WalletActionProviderStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletActionProviderStatus> get values => _$values;
 }
@@ -92,7 +85,6 @@ class _$WalletActionProviderStatusSerializer
     'reverted': 'reverted',
     'failed': 'failed',
     'unknown': 'unknown',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'not_submitted': 'notSubmitted',
@@ -102,7 +94,6 @@ class _$WalletActionProviderStatusSerializer
     'reverted': 'reverted',
     'failed': 'failed',
     'unknown': 'unknown',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

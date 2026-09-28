@@ -13,8 +13,6 @@ class FundingPlanMode extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_single_source')
   static const FundingPlanMode autoSingleSource = _$autoSingleSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingPlanMode> get serializer => _$fundingPlanModeSerializer;
 

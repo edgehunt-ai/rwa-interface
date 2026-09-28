@@ -15,8 +15,6 @@ const OrderStatus _$cancelled = const OrderStatus._('cancelled');
 const OrderStatus _$failed = const OrderStatus._('failed');
 const OrderStatus _$ambiguous = const OrderStatus._('ambiguous');
 const OrderStatus _$manualReview = const OrderStatus._('manualReview');
-const OrderStatus _$unknownDefaultOpenApi =
-    const OrderStatus._('unknownDefaultOpenApi');
 
 OrderStatus _$valueOf(String name) {
   switch (name) {
@@ -38,10 +36,8 @@ OrderStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,7 +52,6 @@ final BuiltSet<OrderStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$OrderStatusMeta {
@@ -70,7 +65,6 @@ class _$OrderStatusMeta {
   OrderStatus get failed => _$failed;
   OrderStatus get ambiguous => _$ambiguous;
   OrderStatus get manualReview => _$manualReview;
-  OrderStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   OrderStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<OrderStatus> get values => _$values;
 }
@@ -93,7 +87,6 @@ class _$OrderStatusSerializer implements PrimitiveSerializer<OrderStatus> {
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending_signature': 'pendingSignature',
@@ -105,7 +98,6 @@ class _$OrderStatusSerializer implements PrimitiveSerializer<OrderStatus> {
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

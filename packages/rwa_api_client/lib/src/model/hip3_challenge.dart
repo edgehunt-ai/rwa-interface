@@ -349,9 +349,6 @@ class Hip3ChallengeNetworkEnum extends EnumClass {
   /// Legacy master-wallet chain label retained for the v1 compatibility window.
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const Hip3ChallengeNetworkEnum arbitrum = _$hip3ChallengeNetworkEnum_arbitrum;
-  /// Legacy master-wallet chain label retained for the v1 compatibility window.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeNetworkEnum unknownDefaultOpenApi = _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ChallengeNetworkEnum> get serializer => _$hip3ChallengeNetworkEnumSerializer;
 
@@ -365,8 +362,6 @@ class Hip3ChallengeEnvironmentEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'mainnet')
   static const Hip3ChallengeEnvironmentEnum mainnet = _$hip3ChallengeEnvironmentEnum_mainnet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeEnvironmentEnum unknownDefaultOpenApi = _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ChallengeEnvironmentEnum> get serializer => _$hip3ChallengeEnvironmentEnumSerializer;
 
@@ -382,8 +377,6 @@ class Hip3ChallengePurposeEnum extends EnumClass {
   static const Hip3ChallengePurposeEnum register = _$hip3ChallengePurposeEnum_register;
   @BuiltValueEnumConst(wireName: r'rotate')
   static const Hip3ChallengePurposeEnum rotate = _$hip3ChallengePurposeEnum_rotate;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengePurposeEnum unknownDefaultOpenApi = _$hip3ChallengePurposeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ChallengePurposeEnum> get serializer => _$hip3ChallengePurposeEnumSerializer;
 
@@ -397,8 +390,6 @@ class Hip3ChallengeSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const Hip3ChallengeSettlementAssetEnum USDC = _$hip3ChallengeSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeSettlementAssetEnum unknownDefaultOpenApi = _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ChallengeSettlementAssetEnum> get serializer => _$hip3ChallengeSettlementAssetEnumSerializer;
 
@@ -431,9 +422,6 @@ class Hip3ChallengeStatusEnum extends EnumClass {
   /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const Hip3ChallengeStatusEnum manualReview = _$hip3ChallengeStatusEnum_manualReview;
-  /// `pending_signature` is a deprecated v1 compatibility value. Newly issued Mainnet challenges use `issued` and never transition back to the legacy value.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeStatusEnum unknownDefaultOpenApi = _$hip3ChallengeStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ChallengeStatusEnum> get serializer => _$hip3ChallengeStatusEnumSerializer;
 

@@ -258,9 +258,6 @@ class QuotePriceKindEnum extends EnumClass {
   /// HIP3 报价为 mark；oracle 在 stats 中独立标识，不冒充美股参考价。
   @BuiltValueEnumConst(wireName: r'reference')
   static const QuotePriceKindEnum reference = _$quotePriceKindEnum_reference;
-  /// HIP3 报价为 mark；oracle 在 stats 中独立标识，不冒充美股参考价。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const QuotePriceKindEnum unknownDefaultOpenApi = _$quotePriceKindEnum_unknownDefaultOpenApi;
 
   static Serializer<QuotePriceKindEnum> get serializer => _$quotePriceKindEnumSerializer;
 
@@ -278,9 +275,6 @@ class QuoteDataStatusEnum extends EnumClass {
   /// 服务端按行情源有效期判断；客户端按 updated_at 继续显示报价年龄。
   @BuiltValueEnumConst(wireName: r'stale')
   static const QuoteDataStatusEnum stale = _$quoteDataStatusEnum_stale;
-  /// 服务端按行情源有效期判断；客户端按 updated_at 继续显示报价年龄。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const QuoteDataStatusEnum unknownDefaultOpenApi = _$quoteDataStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<QuoteDataStatusEnum> get serializer => _$quoteDataStatusEnumSerializer;
 

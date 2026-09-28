@@ -12,9 +12,6 @@ const BstocksSupportedTokenExecutionStatusEnum
 const BstocksSupportedTokenExecutionStatusEnum
     _$bstocksSupportedTokenExecutionStatusEnum_admitted =
     const BstocksSupportedTokenExecutionStatusEnum._('admitted');
-const BstocksSupportedTokenExecutionStatusEnum
-    _$bstocksSupportedTokenExecutionStatusEnum_unknownDefaultOpenApi =
-    const BstocksSupportedTokenExecutionStatusEnum._('unknownDefaultOpenApi');
 
 BstocksSupportedTokenExecutionStatusEnum
     _$bstocksSupportedTokenExecutionStatusEnumValueOf(String name) {
@@ -23,10 +20,8 @@ BstocksSupportedTokenExecutionStatusEnum
       return _$bstocksSupportedTokenExecutionStatusEnum_discoveryOnly;
     case 'admitted':
       return _$bstocksSupportedTokenExecutionStatusEnum_admitted;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksSupportedTokenExecutionStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksSupportedTokenExecutionStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<BstocksSupportedTokenExecutionStatusEnum>
         BstocksSupportedTokenExecutionStatusEnum>(const <BstocksSupportedTokenExecutionStatusEnum>[
   _$bstocksSupportedTokenExecutionStatusEnum_discoveryOnly,
   _$bstocksSupportedTokenExecutionStatusEnum_admitted,
-  _$bstocksSupportedTokenExecutionStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksSupportedTokenExecutionStatusEnum>
@@ -47,12 +41,10 @@ class _$BstocksSupportedTokenExecutionStatusEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'discoveryOnly': 'discovery_only',
     'admitted': 'admitted',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'discovery_only': 'discoveryOnly',
     'admitted': 'admitted',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -21,9 +21,6 @@ class DepositMode extends EnumClass {
   /// Legacy input retained only for the side-effect-free POST compatibility adapter.
   @BuiltValueEnumConst(wireName: r'external_import')
   static const DepositMode externalImport = _$externalImport;
-  /// Legacy input retained only for the side-effect-free POST compatibility adapter.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<DepositMode> get serializer => _$depositModeSerializer;
 

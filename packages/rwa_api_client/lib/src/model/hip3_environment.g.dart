@@ -8,8 +8,6 @@ part of 'hip3_environment.dart';
 
 const Hip3Environment _$mainnet = const Hip3Environment._('mainnet');
 const Hip3Environment _$testnet = const Hip3Environment._('testnet');
-const Hip3Environment _$unknownDefaultOpenApi =
-    const Hip3Environment._('unknownDefaultOpenApi');
 
 Hip3Environment _$valueOf(String name) {
   switch (name) {
@@ -17,10 +15,8 @@ Hip3Environment _$valueOf(String name) {
       return _$mainnet;
     case 'testnet':
       return _$testnet;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,14 +24,12 @@ final BuiltSet<Hip3Environment> _$values =
     BuiltSet<Hip3Environment>(const <Hip3Environment>[
   _$mainnet,
   _$testnet,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3EnvironmentMeta {
   const _$Hip3EnvironmentMeta();
   Hip3Environment get mainnet => _$mainnet;
   Hip3Environment get testnet => _$testnet;
-  Hip3Environment get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3Environment valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3Environment> get values => _$values;
 }
@@ -53,12 +47,10 @@ class _$Hip3EnvironmentSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

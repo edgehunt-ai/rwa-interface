@@ -8,19 +8,14 @@ part of 'perp_order_preview_request.dart';
 
 const PerpOrderPreviewRequestKindEnum _$perpOrderPreviewRequestKindEnum_perp =
     const PerpOrderPreviewRequestKindEnum._('perp');
-const PerpOrderPreviewRequestKindEnum
-    _$perpOrderPreviewRequestKindEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewRequestKindEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewRequestKindEnum _$perpOrderPreviewRequestKindEnumValueOf(
     String name) {
   switch (name) {
     case 'perp':
       return _$perpOrderPreviewRequestKindEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewRequestKindEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewRequestKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,16 +23,12 @@ final BuiltSet<PerpOrderPreviewRequestKindEnum>
     _$perpOrderPreviewRequestKindEnumValues = BuiltSet<
         PerpOrderPreviewRequestKindEnum>(const <PerpOrderPreviewRequestKindEnum>[
   _$perpOrderPreviewRequestKindEnum_perp,
-  _$perpOrderPreviewRequestKindEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderPreviewRequestSideEnum _$perpOrderPreviewRequestSideEnum_long =
     const PerpOrderPreviewRequestSideEnum._('long');
 const PerpOrderPreviewRequestSideEnum _$perpOrderPreviewRequestSideEnum_short =
     const PerpOrderPreviewRequestSideEnum._('short');
-const PerpOrderPreviewRequestSideEnum
-    _$perpOrderPreviewRequestSideEnum_unknownDefaultOpenApi =
-    const PerpOrderPreviewRequestSideEnum._('unknownDefaultOpenApi');
 
 PerpOrderPreviewRequestSideEnum _$perpOrderPreviewRequestSideEnumValueOf(
     String name) {
@@ -46,10 +37,8 @@ PerpOrderPreviewRequestSideEnum _$perpOrderPreviewRequestSideEnumValueOf(
       return _$perpOrderPreviewRequestSideEnum_long;
     case 'short':
       return _$perpOrderPreviewRequestSideEnum_short;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderPreviewRequestSideEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderPreviewRequestSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -58,7 +47,6 @@ final BuiltSet<PerpOrderPreviewRequestSideEnum>
         PerpOrderPreviewRequestSideEnum>(const <PerpOrderPreviewRequestSideEnum>[
   _$perpOrderPreviewRequestSideEnum_long,
   _$perpOrderPreviewRequestSideEnum_short,
-  _$perpOrderPreviewRequestSideEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpOrderPreviewRequestKindEnum>
@@ -72,11 +60,9 @@ class _$PerpOrderPreviewRequestKindEnumSerializer
     implements PrimitiveSerializer<PerpOrderPreviewRequestKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -103,12 +89,10 @@ class _$PerpOrderPreviewRequestSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'long': 'long',
     'short': 'short',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'long': 'long',
     'short': 'short',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

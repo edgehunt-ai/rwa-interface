@@ -20,9 +20,6 @@ class PortfolioDataStatus extends EnumClass {
   /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。 
   @BuiltValueEnumConst(wireName: r'empty')
   static const PortfolioDataStatus empty = _$empty;
-  /// 聚合结果状态。`complete` 表示所有必要来源都有可用数据；`partial` 表示仍有真实 结果但部分来源或估值不可用；`empty` 表示用户没有已验证钱包或没有资产。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioDataStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioDataStatus> get serializer => _$portfolioDataStatusSerializer;
 

@@ -9,19 +9,14 @@ part of 'hip3_set_leverage_action_request.dart';
 const Hip3SetLeverageActionRequestOperationEnum
     _$hip3SetLeverageActionRequestOperationEnum_setLeverage =
     const Hip3SetLeverageActionRequestOperationEnum._('setLeverage');
-const Hip3SetLeverageActionRequestOperationEnum
-    _$hip3SetLeverageActionRequestOperationEnum_unknownDefaultOpenApi =
-    const Hip3SetLeverageActionRequestOperationEnum._('unknownDefaultOpenApi');
 
 Hip3SetLeverageActionRequestOperationEnum
     _$hip3SetLeverageActionRequestOperationEnumValueOf(String name) {
   switch (name) {
     case 'setLeverage':
       return _$hip3SetLeverageActionRequestOperationEnum_setLeverage;
-    case 'unknownDefaultOpenApi':
-      return _$hip3SetLeverageActionRequestOperationEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3SetLeverageActionRequestOperationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3SetLeverageActionRequestOperationEnum>
     _$hip3SetLeverageActionRequestOperationEnumValues = BuiltSet<
         Hip3SetLeverageActionRequestOperationEnum>(const <Hip3SetLeverageActionRequestOperationEnum>[
   _$hip3SetLeverageActionRequestOperationEnum_setLeverage,
-  _$hip3SetLeverageActionRequestOperationEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3SetLeverageActionRequestOperationEnum>
@@ -40,11 +34,9 @@ class _$Hip3SetLeverageActionRequestOperationEnumSerializer
     implements PrimitiveSerializer<Hip3SetLeverageActionRequestOperationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'setLeverage': 'set_leverage',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'set_leverage': 'setLeverage',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

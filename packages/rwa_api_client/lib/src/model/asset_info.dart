@@ -10,13 +10,13 @@ import 'package:built_value/serializer.dart';
 
 part 'asset_info.g.dart';
 
-/// 资产详情与权益
+/// 资产详情与权益。bStocks 披露由运营配置并精确绑定 product_id、chain_id、token contract 及有效期；configured 仅表示配置当前有效，不代表平台已独立核实发行人主张。 
 ///
 /// Properties:
 /// * [title] 
 /// * [badge] 
 /// * [description] 
-/// * [rows] - 权益明细。bStocks 典型项：发行方 / 资产支持 / 公司行动 / 股息再投资 / 股息形式 / 投票权 / 资产结果。HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
+/// * [rows] - 权益明细。当前 bStocks 披露项为 Issuer、Asset backing、Custody、Dividends、 Corporate actions、Voting rights；缺失、未生效或过期字段展示 unavailable，不能推断为无投票权。 Disclosure status 为 not_provided、not_yet_current、expired 或 configured；有配置记录时 还返回 Disclosure source、Disclosure as of、Disclosure expires 字符串行。不要依赖固定数组下标。 HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
 @BuiltValue()
 abstract class AssetInfo implements Built<AssetInfo, AssetInfoBuilder> {
   @BuiltValueField(wireName: r'title')
@@ -28,7 +28,7 @@ abstract class AssetInfo implements Built<AssetInfo, AssetInfoBuilder> {
   @BuiltValueField(wireName: r'description')
   String get description;
 
-  /// 权益明细。bStocks 典型项：发行方 / 资产支持 / 公司行动 / 股息再投资 / 股息形式 / 投票权 / 资产结果。HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
+  /// 权益明细。当前 bStocks 披露项为 Issuer、Asset backing、Custody、Dividends、 Corporate actions、Voting rights；缺失、未生效或过期字段展示 unavailable，不能推断为无投票权。 Disclosure status 为 not_provided、not_yet_current、expired 或 configured；有配置记录时 还返回 Disclosure source、Disclosure as of、Disclosure expires 字符串行。不要依赖固定数组下标。 HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
   @BuiltValueField(wireName: r'rows')
   BuiltList<KeyValue> get rows;
 

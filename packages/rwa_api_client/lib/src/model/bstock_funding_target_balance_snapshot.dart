@@ -209,8 +209,6 @@ class BstockFundingTargetBalanceSnapshotAccountEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstocks')
   static const BstockFundingTargetBalanceSnapshotAccountEnum bstocks = _$bstockFundingTargetBalanceSnapshotAccountEnum_bstocks;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetBalanceSnapshotAccountEnum unknownDefaultOpenApi = _$bstockFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetBalanceSnapshotAccountEnum> get serializer => _$bstockFundingTargetBalanceSnapshotAccountEnumSerializer;
 
@@ -224,8 +222,6 @@ class BstockFundingTargetBalanceSnapshotSource_Enum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bsc_rpc')
   static const BstockFundingTargetBalanceSnapshotSource_Enum bscRpc = _$bstockFundingTargetBalanceSnapshotSourceEnum_bscRpc;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetBalanceSnapshotSource_Enum unknownDefaultOpenApi = _$bstockFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetBalanceSnapshotSource_Enum> get serializer => _$bstockFundingTargetBalanceSnapshotSourceEnumSerializer;
 

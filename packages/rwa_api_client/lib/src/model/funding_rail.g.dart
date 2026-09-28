@@ -8,63 +8,48 @@ part of 'funding_rail.dart';
 
 const FundingRailRailEnum _$fundingRailRailEnum_perp =
     const FundingRailRailEnum._('perp');
-const FundingRailRailEnum _$fundingRailRailEnum_unknownDefaultOpenApi =
-    const FundingRailRailEnum._('unknownDefaultOpenApi');
 
 FundingRailRailEnum _$fundingRailRailEnumValueOf(String name) {
   switch (name) {
     case 'perp':
       return _$fundingRailRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailRailEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingRailRailEnum> _$fundingRailRailEnumValues =
     BuiltSet<FundingRailRailEnum>(const <FundingRailRailEnum>[
   _$fundingRailRailEnum_perp,
-  _$fundingRailRailEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingRailNetworkEnum _$fundingRailNetworkEnum_arbitrum =
     const FundingRailNetworkEnum._('arbitrum');
-const FundingRailNetworkEnum _$fundingRailNetworkEnum_unknownDefaultOpenApi =
-    const FundingRailNetworkEnum._('unknownDefaultOpenApi');
 
 FundingRailNetworkEnum _$fundingRailNetworkEnumValueOf(String name) {
   switch (name) {
     case 'arbitrum':
       return _$fundingRailNetworkEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingRailNetworkEnum> _$fundingRailNetworkEnumValues =
     BuiltSet<FundingRailNetworkEnum>(const <FundingRailNetworkEnum>[
   _$fundingRailNetworkEnum_arbitrum,
-  _$fundingRailNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingRailSettlementAssetEnum _$fundingRailSettlementAssetEnum_USDC =
     const FundingRailSettlementAssetEnum._('USDC');
-const FundingRailSettlementAssetEnum
-    _$fundingRailSettlementAssetEnum_unknownDefaultOpenApi =
-    const FundingRailSettlementAssetEnum._('unknownDefaultOpenApi');
 
 FundingRailSettlementAssetEnum _$fundingRailSettlementAssetEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$fundingRailSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -72,48 +57,37 @@ final BuiltSet<FundingRailSettlementAssetEnum>
     _$fundingRailSettlementAssetEnumValues = BuiltSet<
         FundingRailSettlementAssetEnum>(const <FundingRailSettlementAssetEnum>[
   _$fundingRailSettlementAssetEnum_USDC,
-  _$fundingRailSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingRailChainIdEnum _$fundingRailChainIdEnum_number97 =
     const FundingRailChainIdEnum._('number97');
-const FundingRailChainIdEnum _$fundingRailChainIdEnum_unknownDefaultOpenApi =
-    const FundingRailChainIdEnum._('unknownDefaultOpenApi');
 
 FundingRailChainIdEnum _$fundingRailChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number97':
       return _$fundingRailChainIdEnum_number97;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingRailChainIdEnum> _$fundingRailChainIdEnumValues =
     BuiltSet<FundingRailChainIdEnum>(const <FundingRailChainIdEnum>[
   _$fundingRailChainIdEnum_number97,
-  _$fundingRailChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingRailSettlementAssetIdEnum
     _$fundingRailSettlementAssetIdEnum_eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0 =
     const FundingRailSettlementAssetIdEnum._(
         'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0');
-const FundingRailSettlementAssetIdEnum
-    _$fundingRailSettlementAssetIdEnum_unknownDefaultOpenApi =
-    const FundingRailSettlementAssetIdEnum._('unknownDefaultOpenApi');
 
 FundingRailSettlementAssetIdEnum _$fundingRailSettlementAssetIdEnumValueOf(
     String name) {
   switch (name) {
     case 'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0':
       return _$fundingRailSettlementAssetIdEnum_eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailSettlementAssetIdEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailSettlementAssetIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -121,26 +95,20 @@ final BuiltSet<FundingRailSettlementAssetIdEnum>
     _$fundingRailSettlementAssetIdEnumValues = BuiltSet<
         FundingRailSettlementAssetIdEnum>(const <FundingRailSettlementAssetIdEnum>[
   _$fundingRailSettlementAssetIdEnum_eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0,
-  _$fundingRailSettlementAssetIdEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingRailTokenContractEnum
     _$fundingRailTokenContractEnum_n0xd7beebb53879df47b5cca32b3680e70c13f093a0 =
     const FundingRailTokenContractEnum._(
         'n0xd7beebb53879df47b5cca32b3680e70c13f093a0');
-const FundingRailTokenContractEnum
-    _$fundingRailTokenContractEnum_unknownDefaultOpenApi =
-    const FundingRailTokenContractEnum._('unknownDefaultOpenApi');
 
 FundingRailTokenContractEnum _$fundingRailTokenContractEnumValueOf(
     String name) {
   switch (name) {
     case 'n0xd7beebb53879df47b5cca32b3680e70c13f093a0':
       return _$fundingRailTokenContractEnum_n0xd7beebb53879df47b5cca32b3680e70c13f093a0;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -148,24 +116,18 @@ final BuiltSet<FundingRailTokenContractEnum>
     _$fundingRailTokenContractEnumValues =
     BuiltSet<FundingRailTokenContractEnum>(const <FundingRailTokenContractEnum>[
   _$fundingRailTokenContractEnum_n0xd7beebb53879df47b5cca32b3680e70c13f093a0,
-  _$fundingRailTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingRailTokenDecimalsEnum _$fundingRailTokenDecimalsEnum_number18 =
     const FundingRailTokenDecimalsEnum._('number18');
-const FundingRailTokenDecimalsEnum
-    _$fundingRailTokenDecimalsEnum_unknownDefaultOpenApi =
-    const FundingRailTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 FundingRailTokenDecimalsEnum _$fundingRailTokenDecimalsEnumValueOf(
     String name) {
   switch (name) {
     case 'number18':
       return _$fundingRailTokenDecimalsEnum_number18;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -173,7 +135,6 @@ final BuiltSet<FundingRailTokenDecimalsEnum>
     _$fundingRailTokenDecimalsEnumValues =
     BuiltSet<FundingRailTokenDecimalsEnum>(const <FundingRailTokenDecimalsEnum>[
   _$fundingRailTokenDecimalsEnum_number18,
-  _$fundingRailTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingRailRailEnum> _$fundingRailRailEnumSerializer =
@@ -199,11 +160,9 @@ class _$FundingRailRailEnumSerializer
     implements PrimitiveSerializer<FundingRailRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -227,11 +186,9 @@ class _$FundingRailNetworkEnumSerializer
     implements PrimitiveSerializer<FundingRailNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -255,11 +212,9 @@ class _$FundingRailSettlementAssetEnumSerializer
     implements PrimitiveSerializer<FundingRailSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -285,11 +240,9 @@ class _$FundingRailChainIdEnumSerializer
     implements PrimitiveSerializer<FundingRailChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number97': 97,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     97: 'number97',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -314,12 +267,10 @@ class _$FundingRailSettlementAssetIdEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0':
         'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0':
         'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -346,12 +297,10 @@ class _$FundingRailTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0xd7beebb53879df47b5cca32b3680e70c13f093a0':
         '0xd7beebb53879df47b5cca32b3680e70c13f093a0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0xd7beebb53879df47b5cca32b3680e70c13f093a0':
         'n0xd7beebb53879df47b5cca32b3680e70c13f093a0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -376,11 +325,9 @@ class _$FundingRailTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<FundingRailTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number18': 18,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     18: 'number18',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

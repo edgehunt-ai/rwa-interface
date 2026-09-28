@@ -15,8 +15,6 @@ class WalletActionExecutionProvider extends EnumClass {
   static const WalletActionExecutionProvider privy = _$privy;
   @BuiltValueEnumConst(wireName: r'user_wallet')
   static const WalletActionExecutionProvider userWallet = _$userWallet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionExecutionProvider unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<WalletActionExecutionProvider> get serializer => _$walletActionExecutionProviderSerializer;
 

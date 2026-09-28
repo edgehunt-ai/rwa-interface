@@ -9,8 +9,6 @@ part of 'portfolio_rail.dart';
 const PortfolioRail _$bstock = const PortfolioRail._('bstock');
 const PortfolioRail _$perp = const PortfolioRail._('perp');
 const PortfolioRail _$cash = const PortfolioRail._('cash');
-const PortfolioRail _$unknownDefaultOpenApi =
-    const PortfolioRail._('unknownDefaultOpenApi');
 
 PortfolioRail _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ PortfolioRail _$valueOf(String name) {
       return _$perp;
     case 'cash':
       return _$cash;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<PortfolioRail> _$values =
   _$bstock,
   _$perp,
   _$cash,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioRailMeta {
@@ -40,7 +35,6 @@ class _$PortfolioRailMeta {
   PortfolioRail get bstock => _$bstock;
   PortfolioRail get perp => _$perp;
   PortfolioRail get cash => _$cash;
-  PortfolioRail get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioRail valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioRail> get values => _$values;
 }
@@ -58,13 +52,11 @@ class _$PortfolioRailSerializer implements PrimitiveSerializer<PortfolioRail> {
     'bstock': 'bstock',
     'perp': 'perp',
     'cash': 'cash',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
     'perp': 'perp',
     'cash': 'cash',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

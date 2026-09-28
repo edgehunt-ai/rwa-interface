@@ -179,8 +179,6 @@ class BstocksPreviewRouteLegVenueEnum extends EnumClass {
   static const BstocksPreviewRouteLegVenueEnum propamm = _$bstocksPreviewRouteLegVenueEnum_propamm;
   @BuiltValueEnumConst(wireName: r'pancake_v3')
   static const BstocksPreviewRouteLegVenueEnum pancakeV3 = _$bstocksPreviewRouteLegVenueEnum_pancakeV3;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksPreviewRouteLegVenueEnum unknownDefaultOpenApi = _$bstocksPreviewRouteLegVenueEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksPreviewRouteLegVenueEnum> get serializer => _$bstocksPreviewRouteLegVenueEnumSerializer;
 

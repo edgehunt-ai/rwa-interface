@@ -25,8 +25,6 @@ class DepositRailBlocker extends EnumClass {
   static const DepositRailBlocker walletUnavailable = _$walletUnavailable;
   @BuiltValueEnumConst(wireName: r'activity_pipeline_unavailable')
   static const DepositRailBlocker activityPipelineUnavailable = _$activityPipelineUnavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositRailBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<DepositRailBlocker> get serializer => _$depositRailBlockerSerializer;
 

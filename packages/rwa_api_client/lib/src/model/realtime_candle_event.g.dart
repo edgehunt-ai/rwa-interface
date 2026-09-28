@@ -8,19 +8,14 @@ part of 'realtime_candle_event.dart';
 
 const RealtimeCandleEventEventEnum _$realtimeCandleEventEventEnum_candle =
     const RealtimeCandleEventEventEnum._('candle');
-const RealtimeCandleEventEventEnum
-    _$realtimeCandleEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeCandleEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeCandleEventEventEnum _$realtimeCandleEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'candle':
       return _$realtimeCandleEventEventEnum_candle;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeCandleEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeCandleEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<RealtimeCandleEventEventEnum>
     _$realtimeCandleEventEventEnumValues =
     BuiltSet<RealtimeCandleEventEventEnum>(const <RealtimeCandleEventEventEnum>[
   _$realtimeCandleEventEventEnum_candle,
-  _$realtimeCandleEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeCandleEventEventEnum>
@@ -39,11 +33,9 @@ class _$RealtimeCandleEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeCandleEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'candle': 'candle',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'candle': 'candle',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

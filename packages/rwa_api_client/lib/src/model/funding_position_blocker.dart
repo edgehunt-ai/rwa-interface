@@ -56,9 +56,6 @@ class FundingPositionBlocker extends EnumClass {
   /// Fail-closed reason that makes one exact source position ineligible for funding.
   @BuiltValueEnumConst(wireName: r'asset_not_allowed')
   static const FundingPositionBlocker assetNotAllowed = _$assetNotAllowed;
-  /// Fail-closed reason that makes one exact source position ineligible for funding.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPositionBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingPositionBlocker> get serializer => _$fundingPositionBlockerSerializer;
 

@@ -9,20 +9,14 @@ part of 'self_custodial_withdrawal_transaction.dart';
 const SelfCustodialWithdrawalTransactionValueEnum
     _$selfCustodialWithdrawalTransactionValueEnum_n0x0 =
     const SelfCustodialWithdrawalTransactionValueEnum._('n0x0');
-const SelfCustodialWithdrawalTransactionValueEnum
-    _$selfCustodialWithdrawalTransactionValueEnum_unknownDefaultOpenApi =
-    const SelfCustodialWithdrawalTransactionValueEnum._(
-        'unknownDefaultOpenApi');
 
 SelfCustodialWithdrawalTransactionValueEnum
     _$selfCustodialWithdrawalTransactionValueEnumValueOf(String name) {
   switch (name) {
     case 'n0x0':
       return _$selfCustodialWithdrawalTransactionValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$selfCustodialWithdrawalTransactionValueEnum_unknownDefaultOpenApi;
     default:
-      return _$selfCustodialWithdrawalTransactionValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<SelfCustodialWithdrawalTransactionValueEnum>
     _$selfCustodialWithdrawalTransactionValueEnumValues = BuiltSet<
         SelfCustodialWithdrawalTransactionValueEnum>(const <SelfCustodialWithdrawalTransactionValueEnum>[
   _$selfCustodialWithdrawalTransactionValueEnum_n0x0,
-  _$selfCustodialWithdrawalTransactionValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<SelfCustodialWithdrawalTransactionValueEnum>
@@ -42,11 +35,9 @@ class _$SelfCustodialWithdrawalTransactionValueEnumSerializer
         PrimitiveSerializer<SelfCustodialWithdrawalTransactionValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

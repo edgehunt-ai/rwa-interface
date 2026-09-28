@@ -9,19 +9,14 @@ part of 'funding_global_circuit_open.dart';
 const FundingGlobalCircuitOpenScopeEnum
     _$fundingGlobalCircuitOpenScopeEnum_global =
     const FundingGlobalCircuitOpenScopeEnum._('global');
-const FundingGlobalCircuitOpenScopeEnum
-    _$fundingGlobalCircuitOpenScopeEnum_unknownDefaultOpenApi =
-    const FundingGlobalCircuitOpenScopeEnum._('unknownDefaultOpenApi');
 
 FundingGlobalCircuitOpenScopeEnum _$fundingGlobalCircuitOpenScopeEnumValueOf(
     String name) {
   switch (name) {
     case 'global':
       return _$fundingGlobalCircuitOpenScopeEnum_global;
-    case 'unknownDefaultOpenApi':
-      return _$fundingGlobalCircuitOpenScopeEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingGlobalCircuitOpenScopeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<FundingGlobalCircuitOpenScopeEnum>
     _$fundingGlobalCircuitOpenScopeEnumValues = BuiltSet<
         FundingGlobalCircuitOpenScopeEnum>(const <FundingGlobalCircuitOpenScopeEnum>[
   _$fundingGlobalCircuitOpenScopeEnum_global,
-  _$fundingGlobalCircuitOpenScopeEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingGlobalCircuitOpenStateEnum
     _$fundingGlobalCircuitOpenStateEnum_open =
     const FundingGlobalCircuitOpenStateEnum._('open');
-const FundingGlobalCircuitOpenStateEnum
-    _$fundingGlobalCircuitOpenStateEnum_unknownDefaultOpenApi =
-    const FundingGlobalCircuitOpenStateEnum._('unknownDefaultOpenApi');
 
 FundingGlobalCircuitOpenStateEnum _$fundingGlobalCircuitOpenStateEnumValueOf(
     String name) {
   switch (name) {
     case 'open':
       return _$fundingGlobalCircuitOpenStateEnum_open;
-    case 'unknownDefaultOpenApi':
-      return _$fundingGlobalCircuitOpenStateEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingGlobalCircuitOpenStateEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +44,6 @@ final BuiltSet<FundingGlobalCircuitOpenStateEnum>
     _$fundingGlobalCircuitOpenStateEnumValues = BuiltSet<
         FundingGlobalCircuitOpenStateEnum>(const <FundingGlobalCircuitOpenStateEnum>[
   _$fundingGlobalCircuitOpenStateEnum_open,
-  _$fundingGlobalCircuitOpenStateEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingGlobalCircuitOpenScopeEnum>
@@ -69,11 +57,9 @@ class _$FundingGlobalCircuitOpenScopeEnumSerializer
     implements PrimitiveSerializer<FundingGlobalCircuitOpenScopeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'global': 'global',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'global': 'global',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -99,11 +85,9 @@ class _$FundingGlobalCircuitOpenStateEnumSerializer
     implements PrimitiveSerializer<FundingGlobalCircuitOpenStateEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'open': 'open',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'open': 'open',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

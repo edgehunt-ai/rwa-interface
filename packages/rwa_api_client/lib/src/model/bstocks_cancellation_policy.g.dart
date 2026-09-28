@@ -9,20 +9,14 @@ part of 'bstocks_cancellation_policy.dart';
 const BstocksCancellationPolicyInsufficientBalanceEnum
     _$bstocksCancellationPolicyInsufficientBalanceEnum_permanent =
     const BstocksCancellationPolicyInsufficientBalanceEnum._('permanent');
-const BstocksCancellationPolicyInsufficientBalanceEnum
-    _$bstocksCancellationPolicyInsufficientBalanceEnum_unknownDefaultOpenApi =
-    const BstocksCancellationPolicyInsufficientBalanceEnum._(
-        'unknownDefaultOpenApi');
 
 BstocksCancellationPolicyInsufficientBalanceEnum
     _$bstocksCancellationPolicyInsufficientBalanceEnumValueOf(String name) {
   switch (name) {
     case 'permanent':
       return _$bstocksCancellationPolicyInsufficientBalanceEnum_permanent;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksCancellationPolicyInsufficientBalanceEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksCancellationPolicyInsufficientBalanceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,26 +24,19 @@ final BuiltSet<BstocksCancellationPolicyInsufficientBalanceEnum>
     _$bstocksCancellationPolicyInsufficientBalanceEnumValues = BuiltSet<
         BstocksCancellationPolicyInsufficientBalanceEnum>(const <BstocksCancellationPolicyInsufficientBalanceEnum>[
   _$bstocksCancellationPolicyInsufficientBalanceEnum_permanent,
-  _$bstocksCancellationPolicyInsufficientBalanceEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksCancellationPolicyInsufficientAllowanceEnum
     _$bstocksCancellationPolicyInsufficientAllowanceEnum_permanent =
     const BstocksCancellationPolicyInsufficientAllowanceEnum._('permanent');
-const BstocksCancellationPolicyInsufficientAllowanceEnum
-    _$bstocksCancellationPolicyInsufficientAllowanceEnum_unknownDefaultOpenApi =
-    const BstocksCancellationPolicyInsufficientAllowanceEnum._(
-        'unknownDefaultOpenApi');
 
 BstocksCancellationPolicyInsufficientAllowanceEnum
     _$bstocksCancellationPolicyInsufficientAllowanceEnumValueOf(String name) {
   switch (name) {
     case 'permanent':
       return _$bstocksCancellationPolicyInsufficientAllowanceEnum_permanent;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksCancellationPolicyInsufficientAllowanceEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksCancellationPolicyInsufficientAllowanceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -57,7 +44,6 @@ final BuiltSet<BstocksCancellationPolicyInsufficientAllowanceEnum>
     _$bstocksCancellationPolicyInsufficientAllowanceEnumValues = BuiltSet<
         BstocksCancellationPolicyInsufficientAllowanceEnum>(const <BstocksCancellationPolicyInsufficientAllowanceEnum>[
   _$bstocksCancellationPolicyInsufficientAllowanceEnum_permanent,
-  _$bstocksCancellationPolicyInsufficientAllowanceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksCancellationPolicyInsufficientBalanceEnum>
@@ -72,11 +58,9 @@ class _$BstocksCancellationPolicyInsufficientBalanceEnumSerializer
         PrimitiveSerializer<BstocksCancellationPolicyInsufficientBalanceEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'permanent': 'permanent',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'permanent': 'permanent',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -106,11 +90,9 @@ class _$BstocksCancellationPolicyInsufficientAllowanceEnumSerializer
             BstocksCancellationPolicyInsufficientAllowanceEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'permanent': 'permanent',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'permanent': 'permanent',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

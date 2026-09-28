@@ -179,8 +179,6 @@ class BstocksFeeAssetChainIdEnum extends EnumClass {
   static const BstocksFeeAssetChainIdEnum number97 = _$bstocksFeeAssetChainIdEnum_number97;
   @BuiltValueEnumConst(wireNumber: 31337)
   static const BstocksFeeAssetChainIdEnum number31337 = _$bstocksFeeAssetChainIdEnum_number31337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstocksFeeAssetChainIdEnum unknownDefaultOpenApi = _$bstocksFeeAssetChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksFeeAssetChainIdEnum> get serializer => _$bstocksFeeAssetChainIdEnumSerializer;
 

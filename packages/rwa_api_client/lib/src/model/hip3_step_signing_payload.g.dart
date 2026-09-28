@@ -9,19 +9,14 @@ part of 'hip3_step_signing_payload.dart';
 const Hip3StepSigningPayloadSigningMethodEnum
     _$hip3StepSigningPayloadSigningMethodEnum_ethSignTypedDataV4 =
     const Hip3StepSigningPayloadSigningMethodEnum._('ethSignTypedDataV4');
-const Hip3StepSigningPayloadSigningMethodEnum
-    _$hip3StepSigningPayloadSigningMethodEnum_unknownDefaultOpenApi =
-    const Hip3StepSigningPayloadSigningMethodEnum._('unknownDefaultOpenApi');
 
 Hip3StepSigningPayloadSigningMethodEnum
     _$hip3StepSigningPayloadSigningMethodEnumValueOf(String name) {
   switch (name) {
     case 'ethSignTypedDataV4':
       return _$hip3StepSigningPayloadSigningMethodEnum_ethSignTypedDataV4;
-    case 'unknownDefaultOpenApi':
-      return _$hip3StepSigningPayloadSigningMethodEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3StepSigningPayloadSigningMethodEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<Hip3StepSigningPayloadSigningMethodEnum>
     _$hip3StepSigningPayloadSigningMethodEnumValues = BuiltSet<
         Hip3StepSigningPayloadSigningMethodEnum>(const <Hip3StepSigningPayloadSigningMethodEnum>[
   _$hip3StepSigningPayloadSigningMethodEnum_ethSignTypedDataV4,
-  _$hip3StepSigningPayloadSigningMethodEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3StepSigningPayloadSignatureFormatEnum
     _$hip3StepSigningPayloadSignatureFormatEnum_rSV =
     const Hip3StepSigningPayloadSignatureFormatEnum._('rSV');
-const Hip3StepSigningPayloadSignatureFormatEnum
-    _$hip3StepSigningPayloadSignatureFormatEnum_unknownDefaultOpenApi =
-    const Hip3StepSigningPayloadSignatureFormatEnum._('unknownDefaultOpenApi');
 
 Hip3StepSigningPayloadSignatureFormatEnum
     _$hip3StepSigningPayloadSignatureFormatEnumValueOf(String name) {
   switch (name) {
     case 'rSV':
       return _$hip3StepSigningPayloadSignatureFormatEnum_rSV;
-    case 'unknownDefaultOpenApi':
-      return _$hip3StepSigningPayloadSignatureFormatEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3StepSigningPayloadSignatureFormatEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +44,6 @@ final BuiltSet<Hip3StepSigningPayloadSignatureFormatEnum>
     _$hip3StepSigningPayloadSignatureFormatEnumValues = BuiltSet<
         Hip3StepSigningPayloadSignatureFormatEnum>(const <Hip3StepSigningPayloadSignatureFormatEnum>[
   _$hip3StepSigningPayloadSignatureFormatEnum_rSV,
-  _$hip3StepSigningPayloadSignatureFormatEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3StepSigningPayloadSigningMethodEnum>
@@ -69,11 +57,9 @@ class _$Hip3StepSigningPayloadSigningMethodEnumSerializer
     implements PrimitiveSerializer<Hip3StepSigningPayloadSigningMethodEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'ethSignTypedDataV4': 'eth_signTypedData_v4',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eth_signTypedData_v4': 'ethSignTypedDataV4',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,11 +87,9 @@ class _$Hip3StepSigningPayloadSignatureFormatEnumSerializer
     implements PrimitiveSerializer<Hip3StepSigningPayloadSignatureFormatEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'rSV': 'r_s_v',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'r_s_v': 'rSV',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

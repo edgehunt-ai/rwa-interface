@@ -126,8 +126,6 @@ class NotificationQueuedResponseStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'queued')
   static const NotificationQueuedResponseStatusEnum queued = _$notificationQueuedResponseStatusEnum_queued;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const NotificationQueuedResponseStatusEnum unknownDefaultOpenApi = _$notificationQueuedResponseStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<NotificationQueuedResponseStatusEnum> get serializer => _$notificationQueuedResponseStatusEnumSerializer;
 

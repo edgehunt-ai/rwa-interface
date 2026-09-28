@@ -20,9 +20,6 @@ class ServiceEnvironment extends EnumClass {
   /// 服务端部署环境。`testnet` 与 `mainnet` 隔离结算资产、链 ID、 产品目录和执行资格；`development` 表示未显式声明环境的本地或 预发运行时，所有真实资产能力在该状态下保持关闭。 
   @BuiltValueEnumConst(wireName: r'mainnet')
   static const ServiceEnvironment mainnet = _$mainnet;
-  /// 服务端部署环境。`testnet` 与 `mainnet` 隔离结算资产、链 ID、 产品目录和执行资格；`development` 表示未显式声明环境的本地或 预发运行时，所有真实资产能力在该状态下保持关闭。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ServiceEnvironment unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<ServiceEnvironment> get serializer => _$serviceEnvironmentSerializer;
 

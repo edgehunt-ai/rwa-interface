@@ -25,8 +25,6 @@ class SelfCustodialWithdrawalStatus extends EnumClass {
   static const SelfCustodialWithdrawalStatus noncanonical = _$noncanonical;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const SelfCustodialWithdrawalStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const SelfCustodialWithdrawalStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<SelfCustodialWithdrawalStatus> get serializer => _$selfCustodialWithdrawalStatusSerializer;
 

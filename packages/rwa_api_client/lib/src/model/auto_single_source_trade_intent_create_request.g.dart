@@ -10,10 +10,6 @@ const AutoSingleSourceTradeIntentCreateRequestFundingModeEnum
     _$autoSingleSourceTradeIntentCreateRequestFundingModeEnum_autoSingleSource =
     const AutoSingleSourceTradeIntentCreateRequestFundingModeEnum._(
         'autoSingleSource');
-const AutoSingleSourceTradeIntentCreateRequestFundingModeEnum
-    _$autoSingleSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi =
-    const AutoSingleSourceTradeIntentCreateRequestFundingModeEnum._(
-        'unknownDefaultOpenApi');
 
 AutoSingleSourceTradeIntentCreateRequestFundingModeEnum
     _$autoSingleSourceTradeIntentCreateRequestFundingModeEnumValueOf(
@@ -21,10 +17,8 @@ AutoSingleSourceTradeIntentCreateRequestFundingModeEnum
   switch (name) {
     case 'autoSingleSource':
       return _$autoSingleSourceTradeIntentCreateRequestFundingModeEnum_autoSingleSource;
-    case 'unknownDefaultOpenApi':
-      return _$autoSingleSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$autoSingleSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +26,6 @@ final BuiltSet<AutoSingleSourceTradeIntentCreateRequestFundingModeEnum>
     _$autoSingleSourceTradeIntentCreateRequestFundingModeEnumValues = BuiltSet<
         AutoSingleSourceTradeIntentCreateRequestFundingModeEnum>(const <AutoSingleSourceTradeIntentCreateRequestFundingModeEnum>[
   _$autoSingleSourceTradeIntentCreateRequestFundingModeEnum_autoSingleSource,
-  _$autoSingleSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<AutoSingleSourceTradeIntentCreateRequestFundingModeEnum>
@@ -45,11 +38,9 @@ class _$AutoSingleSourceTradeIntentCreateRequestFundingModeEnumSerializer
             AutoSingleSourceTradeIntentCreateRequestFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'autoSingleSource': 'auto_single_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_single_source': 'autoSingleSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -38,8 +38,6 @@ const FundingPlanBlocker _$routeDisabled =
     const FundingPlanBlocker._('routeDisabled');
 const FundingPlanBlocker _$manualReviewRequired =
     const FundingPlanBlocker._('manualReviewRequired');
-const FundingPlanBlocker _$unknownDefaultOpenApi =
-    const FundingPlanBlocker._('unknownDefaultOpenApi');
 
 FundingPlanBlocker _$valueOf(String name) {
   switch (name) {
@@ -75,10 +73,8 @@ FundingPlanBlocker _$valueOf(String name) {
       return _$routeDisabled;
     case 'manualReviewRequired':
       return _$manualReviewRequired;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -100,7 +96,6 @@ final BuiltSet<FundingPlanBlocker> _$values =
   _$quoteExpired,
   _$routeDisabled,
   _$manualReviewRequired,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingPlanBlockerMeta {
@@ -122,7 +117,6 @@ class _$FundingPlanBlockerMeta {
   FundingPlanBlocker get quoteExpired => _$quoteExpired;
   FundingPlanBlocker get routeDisabled => _$routeDisabled;
   FundingPlanBlocker get manualReviewRequired => _$manualReviewRequired;
-  FundingPlanBlocker get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingPlanBlocker valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingPlanBlocker> get values => _$values;
 }
@@ -155,7 +149,6 @@ class _$FundingPlanBlockerSerializer
     'quoteExpired': 'quote_expired',
     'routeDisabled': 'route_disabled',
     'manualReviewRequired': 'manual_review_required',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'target_balance_unavailable': 'targetBalanceUnavailable',
@@ -174,7 +167,6 @@ class _$FundingPlanBlockerSerializer
     'quote_expired': 'quoteExpired',
     'route_disabled': 'routeDisabled',
     'manual_review_required': 'manualReviewRequired',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -23,8 +23,6 @@ class UnifiedFundingBlocker extends EnumClass {
   static const UnifiedFundingBlocker reservationUnavailable = _$reservationUnavailable;
   @BuiltValueEnumConst(wireName: r'transfer_state_unavailable')
   static const UnifiedFundingBlocker transferStateUnavailable = _$transferStateUnavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UnifiedFundingBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<UnifiedFundingBlocker> get serializer => _$unifiedFundingBlockerSerializer;
 

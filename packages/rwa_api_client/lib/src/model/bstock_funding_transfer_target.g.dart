@@ -9,19 +9,14 @@ part of 'bstock_funding_transfer_target.dart';
 const BstockFundingTransferTargetRailEnum
     _$bstockFundingTransferTargetRailEnum_bstock =
     const BstockFundingTransferTargetRailEnum._('bstock');
-const BstockFundingTransferTargetRailEnum
-    _$bstockFundingTransferTargetRailEnum_unknownDefaultOpenApi =
-    const BstockFundingTransferTargetRailEnum._('unknownDefaultOpenApi');
 
 BstockFundingTransferTargetRailEnum
     _$bstockFundingTransferTargetRailEnumValueOf(String name) {
   switch (name) {
     case 'bstock':
       return _$bstockFundingTransferTargetRailEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTransferTargetRailEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTransferTargetRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<BstockFundingTransferTargetRailEnum>
     _$bstockFundingTransferTargetRailEnumValues = BuiltSet<
         BstockFundingTransferTargetRailEnum>(const <BstockFundingTransferTargetRailEnum>[
   _$bstockFundingTransferTargetRailEnum_bstock,
-  _$bstockFundingTransferTargetRailEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockFundingTransferTargetRailEnum>
@@ -40,11 +34,9 @@ class _$BstockFundingTransferTargetRailEnumSerializer
     implements PrimitiveSerializer<BstockFundingTransferTargetRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

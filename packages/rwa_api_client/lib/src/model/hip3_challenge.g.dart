@@ -8,42 +8,31 @@ part of 'hip3_challenge.dart';
 
 const Hip3ChallengeNetworkEnum _$hip3ChallengeNetworkEnum_arbitrum =
     const Hip3ChallengeNetworkEnum._('arbitrum');
-const Hip3ChallengeNetworkEnum
-    _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi =
-    const Hip3ChallengeNetworkEnum._('unknownDefaultOpenApi');
 
 Hip3ChallengeNetworkEnum _$hip3ChallengeNetworkEnumValueOf(String name) {
   switch (name) {
     case 'arbitrum':
       return _$hip3ChallengeNetworkEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<Hip3ChallengeNetworkEnum> _$hip3ChallengeNetworkEnumValues =
     BuiltSet<Hip3ChallengeNetworkEnum>(const <Hip3ChallengeNetworkEnum>[
   _$hip3ChallengeNetworkEnum_arbitrum,
-  _$hip3ChallengeNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ChallengeEnvironmentEnum _$hip3ChallengeEnvironmentEnum_mainnet =
     const Hip3ChallengeEnvironmentEnum._('mainnet');
-const Hip3ChallengeEnvironmentEnum
-    _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi =
-    const Hip3ChallengeEnvironmentEnum._('unknownDefaultOpenApi');
 
 Hip3ChallengeEnvironmentEnum _$hip3ChallengeEnvironmentEnumValueOf(
     String name) {
   switch (name) {
     case 'mainnet':
       return _$hip3ChallengeEnvironmentEnum_mainnet;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -51,16 +40,12 @@ final BuiltSet<Hip3ChallengeEnvironmentEnum>
     _$hip3ChallengeEnvironmentEnumValues =
     BuiltSet<Hip3ChallengeEnvironmentEnum>(const <Hip3ChallengeEnvironmentEnum>[
   _$hip3ChallengeEnvironmentEnum_mainnet,
-  _$hip3ChallengeEnvironmentEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ChallengePurposeEnum _$hip3ChallengePurposeEnum_register =
     const Hip3ChallengePurposeEnum._('register');
 const Hip3ChallengePurposeEnum _$hip3ChallengePurposeEnum_rotate =
     const Hip3ChallengePurposeEnum._('rotate');
-const Hip3ChallengePurposeEnum
-    _$hip3ChallengePurposeEnum_unknownDefaultOpenApi =
-    const Hip3ChallengePurposeEnum._('unknownDefaultOpenApi');
 
 Hip3ChallengePurposeEnum _$hip3ChallengePurposeEnumValueOf(String name) {
   switch (name) {
@@ -68,10 +53,8 @@ Hip3ChallengePurposeEnum _$hip3ChallengePurposeEnumValueOf(String name) {
       return _$hip3ChallengePurposeEnum_register;
     case 'rotate':
       return _$hip3ChallengePurposeEnum_rotate;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ChallengePurposeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ChallengePurposeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -79,24 +62,18 @@ final BuiltSet<Hip3ChallengePurposeEnum> _$hip3ChallengePurposeEnumValues =
     BuiltSet<Hip3ChallengePurposeEnum>(const <Hip3ChallengePurposeEnum>[
   _$hip3ChallengePurposeEnum_register,
   _$hip3ChallengePurposeEnum_rotate,
-  _$hip3ChallengePurposeEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ChallengeSettlementAssetEnum _$hip3ChallengeSettlementAssetEnum_USDC =
     const Hip3ChallengeSettlementAssetEnum._('USDC');
-const Hip3ChallengeSettlementAssetEnum
-    _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi =
-    const Hip3ChallengeSettlementAssetEnum._('unknownDefaultOpenApi');
 
 Hip3ChallengeSettlementAssetEnum _$hip3ChallengeSettlementAssetEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$hip3ChallengeSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -104,7 +81,6 @@ final BuiltSet<Hip3ChallengeSettlementAssetEnum>
     _$hip3ChallengeSettlementAssetEnumValues = BuiltSet<
         Hip3ChallengeSettlementAssetEnum>(const <Hip3ChallengeSettlementAssetEnum>[
   _$hip3ChallengeSettlementAssetEnum_USDC,
-  _$hip3ChallengeSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_issued =
@@ -121,8 +97,6 @@ const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_failed =
     const Hip3ChallengeStatusEnum._('failed');
 const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_manualReview =
     const Hip3ChallengeStatusEnum._('manualReview');
-const Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnum_unknownDefaultOpenApi =
-    const Hip3ChallengeStatusEnum._('unknownDefaultOpenApi');
 
 Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnumValueOf(String name) {
   switch (name) {
@@ -140,10 +114,8 @@ Hip3ChallengeStatusEnum _$hip3ChallengeStatusEnumValueOf(String name) {
       return _$hip3ChallengeStatusEnum_failed;
     case 'manualReview':
       return _$hip3ChallengeStatusEnum_manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ChallengeStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ChallengeStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -156,7 +128,6 @@ final BuiltSet<Hip3ChallengeStatusEnum> _$hip3ChallengeStatusEnumValues =
   _$hip3ChallengeStatusEnum_expired,
   _$hip3ChallengeStatusEnum_failed,
   _$hip3ChallengeStatusEnum_manualReview,
-  _$hip3ChallengeStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ChallengeNetworkEnum> _$hip3ChallengeNetworkEnumSerializer =
@@ -176,11 +147,9 @@ class _$Hip3ChallengeNetworkEnumSerializer
     implements PrimitiveSerializer<Hip3ChallengeNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -205,11 +174,9 @@ class _$Hip3ChallengeEnvironmentEnumSerializer
     implements PrimitiveSerializer<Hip3ChallengeEnvironmentEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'mainnet': 'mainnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mainnet': 'mainnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -235,12 +202,10 @@ class _$Hip3ChallengePurposeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'register': 'register',
     'rotate': 'rotate',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'register': 'register',
     'rotate': 'rotate',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -265,11 +230,9 @@ class _$Hip3ChallengeSettlementAssetEnumSerializer
     implements PrimitiveSerializer<Hip3ChallengeSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -301,7 +264,6 @@ class _$Hip3ChallengeStatusEnumSerializer
     'expired': 'expired',
     'failed': 'failed',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'issued': 'issued',
@@ -311,7 +273,6 @@ class _$Hip3ChallengeStatusEnumSerializer
     'expired': 'expired',
     'failed': 'failed',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

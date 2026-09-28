@@ -128,9 +128,39 @@ class _$OrderPreviewSerializer implements PrimitiveSerializer<OrderPreview> {
   }) {
     final result = OrderPreviewBuilder();
     Object? oneOfDataSrc;
-    final targetType = const FullType(OneOf, [FullType(BstockOrderPreview), FullType(PerpOrderPreview), FullType(LegacyBstockOrderPreview), FullType(LegacyPerpOrderPreview), FullType(BstockTestnetOrderPreview), FullType(BstockLocalnetOrderPreview), FullType(BstockLimitOrderPreview), ]);
     oneOfDataSrc = serialized;
-    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
+    final entries = (oneOfDataSrc as Iterable<Object?>).toList();
+    if (entries.length.isOdd) throw UnsupportedError('Malformed OrderPreview');
+    final fields = <String, Object?>{};
+    for (var i = 0; i < entries.length; i += 2) {
+      final key = entries[i];
+      if (key is! String || fields.containsKey(key)) throw UnsupportedError('Malformed OrderPreview key');
+      fields[key] = entries[i + 1];
+    }
+    final types = [BstockOrderPreview, PerpOrderPreview, LegacyBstockOrderPreview, LegacyPerpOrderPreview,
+      BstockTestnetOrderPreview, BstockLocalnetOrderPreview, BstockLimitOrderPreview];
+    if (fields.containsKey('settlement_asset')) {
+      if (fields['kind'] == 'bstock' &&
+          ['TUSDT', 'LUSDT'].contains(fields['settlement_asset']) && fields['type'] != 'market') {
+        throw UnsupportedError('Test/local settled preview must be market');
+      }
+      final settled = serializers.deserialize(serialized, specifiedType: const FullType(OneOf,
+        [FullType(BstockOrderPreview), FullType(PerpOrderPreview), FullType(LegacyBstockOrderPreview),
+         FullType(LegacyPerpOrderPreview), FullType(BstockTestnetOrderPreview), FullType(BstockLocalnetOrderPreview)])) as OneOf;
+      result.oneOf = OneOfDynamic(typeIndex: types.indexOf(settled.valueType), types: types, value: settled.value);
+    } else {
+      const required = ['kind', 'network', 'type', 'bstocks', 'time_in_force', 'limit_price', 'funding_mode',
+        'funds_reserved', 'required_funding_raw', 'funding_token', 'order_router', 'route', 'approval_required'];
+      if (required.any((key) => !fields.containsKey(key) || fields[key] == null) ||
+          fields['kind'] != 'bstock' || fields['network'] != 'BSC' || fields['type'] != 'limit' ||
+          !['gtc', 'ioc'].contains(fields['time_in_force']) || fields['funding_mode'] != 'unreserved_transfer_from' ||
+          fields['funds_reserved'] != false || fields['approval_required'] is! bool) {
+        throw UnsupportedError('Unsupported OrderPreview without settlement identity');
+      }
+      final limit = serializers.deserialize(serialized, specifiedType: const FullType(BstockLimitOrderPreview));
+      if (limit == null) throw UnsupportedError('Null limit preview');
+      result.oneOf = OneOfDynamic(typeIndex: 6, types: types, value: limit);
+    }
     return result.build();
   }
 }
@@ -139,8 +169,6 @@ class OrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const OrderPreviewKindEnum bstock = _$orderPreviewKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewKindEnum unknownDefaultOpenApi = _$orderPreviewKindEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewKindEnum> get serializer => _$orderPreviewKindEnumSerializer;
 
@@ -154,8 +182,6 @@ class OrderPreviewNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const OrderPreviewNetworkEnum BSC = _$orderPreviewNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewNetworkEnum unknownDefaultOpenApi = _$orderPreviewNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewNetworkEnum> get serializer => _$orderPreviewNetworkEnumSerializer;
 
@@ -169,8 +195,6 @@ class OrderPreviewSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'LUSDT')
   static const OrderPreviewSettlementAssetEnum LUSDT = _$orderPreviewSettlementAssetEnum_LUSDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$orderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewSettlementAssetEnum> get serializer => _$orderPreviewSettlementAssetEnumSerializer;
 
@@ -186,8 +210,6 @@ class OrderPreviewSettlementChainIdEnum extends EnumClass {
   static const OrderPreviewSettlementChainIdEnum number56 = _$orderPreviewSettlementChainIdEnum_number56;
   @BuiltValueEnumConst(wireNumber: 31337)
   static const OrderPreviewSettlementChainIdEnum number31337 = _$orderPreviewSettlementChainIdEnum_number31337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const OrderPreviewSettlementChainIdEnum unknownDefaultOpenApi = _$orderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewSettlementChainIdEnum> get serializer => _$orderPreviewSettlementChainIdEnumSerializer;
 
@@ -201,8 +223,6 @@ class OrderPreviewFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const OrderPreviewFundingModeEnum unreservedTransferFrom = _$orderPreviewFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewFundingModeEnum unknownDefaultOpenApi = _$orderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewFundingModeEnum> get serializer => _$orderPreviewFundingModeEnumSerializer;
 

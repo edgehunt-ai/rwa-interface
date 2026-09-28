@@ -246,8 +246,6 @@ class RailPortfolioAllocationDimensionEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'rail')
   static const RailPortfolioAllocationDimensionEnum rail = _$railPortfolioAllocationDimensionEnum_rail;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RailPortfolioAllocationDimensionEnum unknownDefaultOpenApi = _$railPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
 
   static Serializer<RailPortfolioAllocationDimensionEnum> get serializer => _$railPortfolioAllocationDimensionEnumSerializer;
 

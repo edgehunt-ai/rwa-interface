@@ -11,8 +11,6 @@ const ActivityStatus _$success = const ActivityStatus._('success');
 const ActivityStatus _$failed = const ActivityStatus._('failed');
 const ActivityStatus _$cancelled = const ActivityStatus._('cancelled');
 const ActivityStatus _$manualReview = const ActivityStatus._('manualReview');
-const ActivityStatus _$unknownDefaultOpenApi =
-    const ActivityStatus._('unknownDefaultOpenApi');
 
 ActivityStatus _$valueOf(String name) {
   switch (name) {
@@ -26,10 +24,8 @@ ActivityStatus _$valueOf(String name) {
       return _$cancelled;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -40,7 +36,6 @@ final BuiltSet<ActivityStatus> _$values =
   _$failed,
   _$cancelled,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ActivityStatusMeta {
@@ -50,7 +45,6 @@ class _$ActivityStatusMeta {
   ActivityStatus get failed => _$failed;
   ActivityStatus get cancelled => _$cancelled;
   ActivityStatus get manualReview => _$manualReview;
-  ActivityStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ActivityStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<ActivityStatus> get values => _$values;
 }
@@ -71,7 +65,6 @@ class _$ActivityStatusSerializer
     'failed': 'failed',
     'cancelled': 'cancelled',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending': 'pending',
@@ -79,7 +72,6 @@ class _$ActivityStatusSerializer
     'failed': 'failed',
     'cancelled': 'cancelled',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

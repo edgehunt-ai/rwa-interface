@@ -18,8 +18,6 @@ const TransferSourceExecutionStatus _$ambiguous =
     const TransferSourceExecutionStatus._('ambiguous');
 const TransferSourceExecutionStatus _$manualReview =
     const TransferSourceExecutionStatus._('manualReview');
-const TransferSourceExecutionStatus _$unknownDefaultOpenApi =
-    const TransferSourceExecutionStatus._('unknownDefaultOpenApi');
 
 TransferSourceExecutionStatus _$valueOf(String name) {
   switch (name) {
@@ -35,10 +33,8 @@ TransferSourceExecutionStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -50,7 +46,6 @@ final BuiltSet<TransferSourceExecutionStatus> _$values = BuiltSet<
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TransferSourceExecutionStatusMeta {
@@ -61,8 +56,6 @@ class _$TransferSourceExecutionStatusMeta {
   TransferSourceExecutionStatus get failed => _$failed;
   TransferSourceExecutionStatus get ambiguous => _$ambiguous;
   TransferSourceExecutionStatus get manualReview => _$manualReview;
-  TransferSourceExecutionStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   TransferSourceExecutionStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TransferSourceExecutionStatus> get values => _$values;
 }
@@ -86,7 +79,6 @@ class _$TransferSourceExecutionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_wallet': 'awaitingWallet',
@@ -95,7 +87,6 @@ class _$TransferSourceExecutionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

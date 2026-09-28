@@ -1,4 +1,3 @@
-import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
@@ -21,9 +20,6 @@ class Hip3TimeInForce extends EnumClass {
   /// gtc 持续挂单；ioc 立即成交剩余取消；alo 仅做 maker。market 只允许 ioc；limit 缺省 gtc，不得静默转换为 ioc。
   @BuiltValueEnumConst(wireName: r'alo')
   static const Hip3TimeInForce alo = _$alo;
-  /// gtc 持续挂单；ioc 立即成交剩余取消；alo 仅做 maker。market 只允许 ioc；limit 缺省 gtc，不得静默转换为 ioc。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3TimeInForce unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3TimeInForce> get serializer => _$hip3TimeInForceSerializer;
 

@@ -229,8 +229,6 @@ class Hip3ActionStepKindEnum extends EnumClass {
   static const Hip3ActionStepKindEnum cancelStopLoss = _$hip3ActionStepKindEnum_cancelStopLoss;
   @BuiltValueEnumConst(wireName: r'set_leverage')
   static const Hip3ActionStepKindEnum setLeverage = _$hip3ActionStepKindEnum_setLeverage;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ActionStepKindEnum unknownDefaultOpenApi = _$hip3ActionStepKindEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ActionStepKindEnum> get serializer => _$hip3ActionStepKindEnumSerializer;
 
@@ -262,8 +260,6 @@ class Hip3ActionStepStatusEnum extends EnumClass {
   static const Hip3ActionStepStatusEnum ambiguous = _$hip3ActionStepStatusEnum_ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const Hip3ActionStepStatusEnum manualReview = _$hip3ActionStepStatusEnum_manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ActionStepStatusEnum unknownDefaultOpenApi = _$hip3ActionStepStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ActionStepStatusEnum> get serializer => _$hip3ActionStepStatusEnumSerializer;
 

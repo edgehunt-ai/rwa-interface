@@ -9,19 +9,14 @@ part of 'realtime_resource_changed_event.dart';
 const RealtimeResourceChangedEventEventEnum
     _$realtimeResourceChangedEventEventEnum_resourceChanged =
     const RealtimeResourceChangedEventEventEnum._('resourceChanged');
-const RealtimeResourceChangedEventEventEnum
-    _$realtimeResourceChangedEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeResourceChangedEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeResourceChangedEventEventEnum
     _$realtimeResourceChangedEventEventEnumValueOf(String name) {
   switch (name) {
     case 'resourceChanged':
       return _$realtimeResourceChangedEventEventEnum_resourceChanged;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeResourceChangedEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeResourceChangedEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<RealtimeResourceChangedEventEventEnum>
     _$realtimeResourceChangedEventEventEnumValues = BuiltSet<
         RealtimeResourceChangedEventEventEnum>(const <RealtimeResourceChangedEventEventEnum>[
   _$realtimeResourceChangedEventEventEnum_resourceChanged,
-  _$realtimeResourceChangedEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeResourceChangedEventEventEnum>
@@ -40,11 +34,9 @@ class _$RealtimeResourceChangedEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeResourceChangedEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'resourceChanged': 'resource_changed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'resource_changed': 'resourceChanged',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

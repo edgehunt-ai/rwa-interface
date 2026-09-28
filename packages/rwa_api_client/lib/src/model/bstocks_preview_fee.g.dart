@@ -12,9 +12,6 @@ const BstocksPreviewFeeStatusEnum _$bstocksPreviewFeeStatusEnum_unavailable =
     const BstocksPreviewFeeStatusEnum._('unavailable');
 const BstocksPreviewFeeStatusEnum _$bstocksPreviewFeeStatusEnum_notEstimated =
     const BstocksPreviewFeeStatusEnum._('notEstimated');
-const BstocksPreviewFeeStatusEnum
-    _$bstocksPreviewFeeStatusEnum_unknownDefaultOpenApi =
-    const BstocksPreviewFeeStatusEnum._('unknownDefaultOpenApi');
 
 BstocksPreviewFeeStatusEnum _$bstocksPreviewFeeStatusEnumValueOf(String name) {
   switch (name) {
@@ -24,10 +21,8 @@ BstocksPreviewFeeStatusEnum _$bstocksPreviewFeeStatusEnumValueOf(String name) {
       return _$bstocksPreviewFeeStatusEnum_unavailable;
     case 'notEstimated':
       return _$bstocksPreviewFeeStatusEnum_notEstimated;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPreviewFeeStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPreviewFeeStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -37,7 +32,6 @@ final BuiltSet<BstocksPreviewFeeStatusEnum>
   _$bstocksPreviewFeeStatusEnum_quoted,
   _$bstocksPreviewFeeStatusEnum_unavailable,
   _$bstocksPreviewFeeStatusEnum_notEstimated,
-  _$bstocksPreviewFeeStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksPreviewFeeStatusEnum>
@@ -50,13 +44,11 @@ class _$BstocksPreviewFeeStatusEnumSerializer
     'quoted': 'quoted',
     'unavailable': 'unavailable',
     'notEstimated': 'not_estimated',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'quoted': 'quoted',
     'unavailable': 'unavailable',
     'not_estimated': 'notEstimated',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

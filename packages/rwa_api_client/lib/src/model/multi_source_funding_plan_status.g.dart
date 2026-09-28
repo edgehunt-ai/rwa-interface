@@ -24,8 +24,6 @@ const MultiSourceFundingPlanStatus _$cancelled =
     const MultiSourceFundingPlanStatus._('cancelled');
 const MultiSourceFundingPlanStatus _$manualReview =
     const MultiSourceFundingPlanStatus._('manualReview');
-const MultiSourceFundingPlanStatus _$unknownDefaultOpenApi =
-    const MultiSourceFundingPlanStatus._('unknownDefaultOpenApi');
 
 MultiSourceFundingPlanStatus _$valueOf(String name) {
   switch (name) {
@@ -47,10 +45,8 @@ MultiSourceFundingPlanStatus _$valueOf(String name) {
       return _$cancelled;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -65,7 +61,6 @@ final BuiltSet<MultiSourceFundingPlanStatus> _$values =
   _$expired,
   _$cancelled,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$MultiSourceFundingPlanStatusMeta {
@@ -79,8 +74,6 @@ class _$MultiSourceFundingPlanStatusMeta {
   MultiSourceFundingPlanStatus get expired => _$expired;
   MultiSourceFundingPlanStatus get cancelled => _$cancelled;
   MultiSourceFundingPlanStatus get manualReview => _$manualReview;
-  MultiSourceFundingPlanStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   MultiSourceFundingPlanStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<MultiSourceFundingPlanStatus> get values => _$values;
 }
@@ -107,7 +100,6 @@ class _$MultiSourceFundingPlanStatusSerializer
     'expired': 'expired',
     'cancelled': 'cancelled',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'ready': 'ready',
@@ -119,7 +111,6 @@ class _$MultiSourceFundingPlanStatusSerializer
     'expired': 'expired',
     'cancelled': 'cancelled',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

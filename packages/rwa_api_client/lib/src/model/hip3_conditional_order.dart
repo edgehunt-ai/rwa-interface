@@ -322,8 +322,6 @@ class Hip3ConditionalOrderRoleEnum extends EnumClass {
   static const Hip3ConditionalOrderRoleEnum takeProfit = _$hip3ConditionalOrderRoleEnum_takeProfit;
   @BuiltValueEnumConst(wireName: r'stop_loss')
   static const Hip3ConditionalOrderRoleEnum stopLoss = _$hip3ConditionalOrderRoleEnum_stopLoss;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ConditionalOrderRoleEnum unknownDefaultOpenApi = _$hip3ConditionalOrderRoleEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ConditionalOrderRoleEnum> get serializer => _$hip3ConditionalOrderRoleEnumSerializer;
 
@@ -341,8 +339,6 @@ class Hip3ConditionalOrderTriggerReferenceEnum extends EnumClass {
   static const Hip3ConditionalOrderTriggerReferenceEnum oracle = _$hip3ConditionalOrderTriggerReferenceEnum_oracle;
   @BuiltValueEnumConst(wireName: r'last')
   static const Hip3ConditionalOrderTriggerReferenceEnum last = _$hip3ConditionalOrderTriggerReferenceEnum_last;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ConditionalOrderTriggerReferenceEnum unknownDefaultOpenApi = _$hip3ConditionalOrderTriggerReferenceEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ConditionalOrderTriggerReferenceEnum> get serializer => _$hip3ConditionalOrderTriggerReferenceEnumSerializer;
 
@@ -358,8 +354,6 @@ class Hip3ConditionalOrderExecutionTypeEnum extends EnumClass {
   static const Hip3ConditionalOrderExecutionTypeEnum market = _$hip3ConditionalOrderExecutionTypeEnum_market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const Hip3ConditionalOrderExecutionTypeEnum limit = _$hip3ConditionalOrderExecutionTypeEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ConditionalOrderExecutionTypeEnum unknownDefaultOpenApi = _$hip3ConditionalOrderExecutionTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ConditionalOrderExecutionTypeEnum> get serializer => _$hip3ConditionalOrderExecutionTypeEnumSerializer;
 
@@ -379,8 +373,6 @@ class Hip3ConditionalOrderTriggerStatusEnum extends EnumClass {
   static const Hip3ConditionalOrderTriggerStatusEnum cancelled = _$hip3ConditionalOrderTriggerStatusEnum_cancelled;
   @BuiltValueEnumConst(wireName: r'expired')
   static const Hip3ConditionalOrderTriggerStatusEnum expired = _$hip3ConditionalOrderTriggerStatusEnum_expired;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ConditionalOrderTriggerStatusEnum unknownDefaultOpenApi = _$hip3ConditionalOrderTriggerStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ConditionalOrderTriggerStatusEnum> get serializer => _$hip3ConditionalOrderTriggerStatusEnumSerializer;
 
@@ -410,9 +402,6 @@ class Hip3ConditionalOrderActivationStatusEnum extends EnumClass {
   /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
   @BuiltValueEnumConst(wireName: r'unknown')
   static const Hip3ConditionalOrderActivationStatusEnum unknown = _$hip3ConditionalOrderActivationStatusEnum_unknown;
-  /// pending_submission 尚未提交；waiting_for_parent 已提交但父单未完全成交； pending_confirmation 等待场所确认；active 已观察到有效非终态子单；inactive 已终止； unknown 状态存在冲突，不能承诺保护有效。旧服务未返回此字段时同样不得推断已激活。 因保证金不足取消部分成交父单时需等待子单激活证据，不能直接标记 inactive 或 active。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ConditionalOrderActivationStatusEnum unknownDefaultOpenApi = _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ConditionalOrderActivationStatusEnum> get serializer => _$hip3ConditionalOrderActivationStatusEnumSerializer;
 
@@ -427,9 +416,6 @@ class Hip3ConditionalOrderWarningCodeEnum extends EnumClass {
   /// 父单主动撤销已导致本单保护取消；如父单已有部分成交，检查剩余持仓保护。此提示不表示账户其他持仓保护已被取消，不承诺自动补保护。
   @BuiltValueEnumConst(wireName: r'parent_cancelled_check_remaining_position_protection')
   static const Hip3ConditionalOrderWarningCodeEnum parentCancelledCheckRemainingPositionProtection = _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection;
-  /// 父单主动撤销已导致本单保护取消；如父单已有部分成交，检查剩余持仓保护。此提示不表示账户其他持仓保护已被取消，不承诺自动补保护。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ConditionalOrderWarningCodeEnum unknownDefaultOpenApi = _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ConditionalOrderWarningCodeEnum> get serializer => _$hip3ConditionalOrderWarningCodeEnumSerializer;
 
@@ -447,8 +433,6 @@ class Hip3ConditionalOrderSizeModeEnum extends EnumClass {
   static const Hip3ConditionalOrderSizeModeEnum quantity = _$hip3ConditionalOrderSizeModeEnum_quantity;
   @BuiltValueEnumConst(wireName: r'percent')
   static const Hip3ConditionalOrderSizeModeEnum percent = _$hip3ConditionalOrderSizeModeEnum_percent;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ConditionalOrderSizeModeEnum unknownDefaultOpenApi = _$hip3ConditionalOrderSizeModeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ConditionalOrderSizeModeEnum> get serializer => _$hip3ConditionalOrderSizeModeEnumSerializer;
 

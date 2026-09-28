@@ -11,8 +11,6 @@ const ChartRange _$n1h = const ChartRange._('n1h');
 const ChartRange _$n4h = const ChartRange._('n4h');
 const ChartRange _$n24h = const ChartRange._('n24h');
 const ChartRange _$n1w = const ChartRange._('n1w');
-const ChartRange _$unknownDefaultOpenApi =
-    const ChartRange._('unknownDefaultOpenApi');
 
 ChartRange _$valueOf(String name) {
   switch (name) {
@@ -26,10 +24,8 @@ ChartRange _$valueOf(String name) {
       return _$n24h;
     case 'n1w':
       return _$n1w;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -39,7 +35,6 @@ final BuiltSet<ChartRange> _$values = BuiltSet<ChartRange>(const <ChartRange>[
   _$n4h,
   _$n24h,
   _$n1w,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ChartRangeMeta {
@@ -49,7 +44,6 @@ class _$ChartRangeMeta {
   ChartRange get n4h => _$n4h;
   ChartRange get n24h => _$n24h;
   ChartRange get n1w => _$n1w;
-  ChartRange get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ChartRange valueOf(String name) => _$valueOf(name);
   BuiltSet<ChartRange> get values => _$values;
 }
@@ -68,7 +62,6 @@ class _$ChartRangeSerializer implements PrimitiveSerializer<ChartRange> {
     'n4h': '4h',
     'n24h': '24h',
     'n1w': '1w',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '15m': 'n15m',
@@ -76,7 +69,6 @@ class _$ChartRangeSerializer implements PrimitiveSerializer<ChartRange> {
     '4h': 'n4h',
     '24h': 'n24h',
     '1w': 'n1w',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

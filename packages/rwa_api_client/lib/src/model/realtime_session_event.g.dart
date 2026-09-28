@@ -8,19 +8,14 @@ part of 'realtime_session_event.dart';
 
 const RealtimeSessionEventEventEnum _$realtimeSessionEventEventEnum_session =
     const RealtimeSessionEventEventEnum._('session');
-const RealtimeSessionEventEventEnum
-    _$realtimeSessionEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeSessionEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeSessionEventEventEnum _$realtimeSessionEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'session':
       return _$realtimeSessionEventEventEnum_session;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeSessionEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeSessionEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<RealtimeSessionEventEventEnum>
     _$realtimeSessionEventEventEnumValues = BuiltSet<
         RealtimeSessionEventEventEnum>(const <RealtimeSessionEventEventEnum>[
   _$realtimeSessionEventEventEnum_session,
-  _$realtimeSessionEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeSessionEventEventEnum>
@@ -39,11 +33,9 @@ class _$RealtimeSessionEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeSessionEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'session': 'session',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'session': 'session',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

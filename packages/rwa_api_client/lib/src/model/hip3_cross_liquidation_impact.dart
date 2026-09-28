@@ -182,8 +182,6 @@ class Hip3CrossLiquidationImpactSideEnum extends EnumClass {
   static const Hip3CrossLiquidationImpactSideEnum long = _$hip3CrossLiquidationImpactSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
   static const Hip3CrossLiquidationImpactSideEnum short = _$hip3CrossLiquidationImpactSideEnum_short;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3CrossLiquidationImpactSideEnum unknownDefaultOpenApi = _$hip3CrossLiquidationImpactSideEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3CrossLiquidationImpactSideEnum> get serializer => _$hip3CrossLiquidationImpactSideEnumSerializer;
 
@@ -201,8 +199,6 @@ class Hip3CrossLiquidationImpactUnavailableReasonEnum extends EnumClass {
   static const Hip3CrossLiquidationImpactUnavailableReasonEnum liquidationCalculationUnavailable = _$hip3CrossLiquidationImpactUnavailableReasonEnum_liquidationCalculationUnavailable;
   @BuiltValueEnumConst(wireName: r'liquidation_price_out_of_range')
   static const Hip3CrossLiquidationImpactUnavailableReasonEnum liquidationPriceOutOfRange = _$hip3CrossLiquidationImpactUnavailableReasonEnum_liquidationPriceOutOfRange;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3CrossLiquidationImpactUnavailableReasonEnum unknownDefaultOpenApi = _$hip3CrossLiquidationImpactUnavailableReasonEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3CrossLiquidationImpactUnavailableReasonEnum> get serializer => _$hip3CrossLiquidationImpactUnavailableReasonEnumSerializer;
 

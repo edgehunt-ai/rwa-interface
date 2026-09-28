@@ -23,8 +23,6 @@ class Hip3WithdrawalStatus extends EnumClass {
   static const Hip3WithdrawalStatus failed = _$failed;
   @BuiltValueEnumConst(wireName: r'expired')
   static const Hip3WithdrawalStatus expired = _$expired;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3WithdrawalStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3WithdrawalStatus> get serializer => _$hip3WithdrawalStatusSerializer;
 

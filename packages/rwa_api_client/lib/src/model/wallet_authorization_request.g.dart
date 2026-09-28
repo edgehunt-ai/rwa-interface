@@ -18,9 +18,6 @@ const WalletAuthorizationRequestPurposeEnum
 const WalletAuthorizationRequestPurposeEnum
     _$walletAuthorizationRequestPurposeEnum_claim =
     const WalletAuthorizationRequestPurposeEnum._('claim');
-const WalletAuthorizationRequestPurposeEnum
-    _$walletAuthorizationRequestPurposeEnum_unknownDefaultOpenApi =
-    const WalletAuthorizationRequestPurposeEnum._('unknownDefaultOpenApi');
 
 WalletAuthorizationRequestPurposeEnum
     _$walletAuthorizationRequestPurposeEnumValueOf(String name) {
@@ -33,10 +30,8 @@ WalletAuthorizationRequestPurposeEnum
       return _$walletAuthorizationRequestPurposeEnum_withdrawal;
     case 'claim':
       return _$walletAuthorizationRequestPurposeEnum_claim;
-    case 'unknownDefaultOpenApi':
-      return _$walletAuthorizationRequestPurposeEnum_unknownDefaultOpenApi;
     default:
-      return _$walletAuthorizationRequestPurposeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -47,7 +42,6 @@ final BuiltSet<WalletAuthorizationRequestPurposeEnum>
   _$walletAuthorizationRequestPurposeEnum_transfer,
   _$walletAuthorizationRequestPurposeEnum_withdrawal,
   _$walletAuthorizationRequestPurposeEnum_claim,
-  _$walletAuthorizationRequestPurposeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<WalletAuthorizationRequestPurposeEnum>
@@ -61,14 +55,12 @@ class _$WalletAuthorizationRequestPurposeEnumSerializer
     'transfer': 'transfer',
     'withdrawal': 'withdrawal',
     'claim': 'claim',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
     'transfer': 'transfer',
     'withdrawal': 'withdrawal',
     'claim': 'claim',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

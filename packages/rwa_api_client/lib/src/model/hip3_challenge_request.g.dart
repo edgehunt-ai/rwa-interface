@@ -11,9 +11,6 @@ const Hip3ChallengeRequestPurposeEnum
     const Hip3ChallengeRequestPurposeEnum._('register');
 const Hip3ChallengeRequestPurposeEnum _$hip3ChallengeRequestPurposeEnum_rotate =
     const Hip3ChallengeRequestPurposeEnum._('rotate');
-const Hip3ChallengeRequestPurposeEnum
-    _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi =
-    const Hip3ChallengeRequestPurposeEnum._('unknownDefaultOpenApi');
 
 Hip3ChallengeRequestPurposeEnum _$hip3ChallengeRequestPurposeEnumValueOf(
     String name) {
@@ -22,10 +19,8 @@ Hip3ChallengeRequestPurposeEnum _$hip3ChallengeRequestPurposeEnumValueOf(
       return _$hip3ChallengeRequestPurposeEnum_register;
     case 'rotate':
       return _$hip3ChallengeRequestPurposeEnum_rotate;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -34,7 +29,6 @@ final BuiltSet<Hip3ChallengeRequestPurposeEnum>
         Hip3ChallengeRequestPurposeEnum>(const <Hip3ChallengeRequestPurposeEnum>[
   _$hip3ChallengeRequestPurposeEnum_register,
   _$hip3ChallengeRequestPurposeEnum_rotate,
-  _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ChallengeRequestPurposeEnum>
@@ -46,12 +40,10 @@ class _$Hip3ChallengeRequestPurposeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'register': 'register',
     'rotate': 'rotate',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'register': 'register',
     'rotate': 'rotate',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

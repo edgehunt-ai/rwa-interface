@@ -193,8 +193,6 @@ class Hip3FundingHistoryCoverageSource_Enum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid_userFunding')
   static const Hip3FundingHistoryCoverageSource_Enum hyperliquidUserFunding = _$hip3FundingHistoryCoverageSourceEnum_hyperliquidUserFunding;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3FundingHistoryCoverageSource_Enum unknownDefaultOpenApi = _$hip3FundingHistoryCoverageSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3FundingHistoryCoverageSource_Enum> get serializer => _$hip3FundingHistoryCoverageSourceEnumSerializer;
 
@@ -218,8 +216,6 @@ class Hip3FundingHistoryCoverageStatusEnum extends EnumClass {
   static const Hip3FundingHistoryCoverageStatusEnum archiveComplete = _$hip3FundingHistoryCoverageStatusEnum_archiveComplete;
   @BuiltValueEnumConst(wireName: r'archive_partial')
   static const Hip3FundingHistoryCoverageStatusEnum archivePartial = _$hip3FundingHistoryCoverageStatusEnum_archivePartial;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3FundingHistoryCoverageStatusEnum unknownDefaultOpenApi = _$hip3FundingHistoryCoverageStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3FundingHistoryCoverageStatusEnum> get serializer => _$hip3FundingHistoryCoverageStatusEnumSerializer;
 

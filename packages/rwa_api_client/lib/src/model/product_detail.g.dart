@@ -11,9 +11,6 @@ const ProductDetailTradingHoursEnum _$productDetailTradingHoursEnum_n24x7 =
 const ProductDetailTradingHoursEnum
     _$productDetailTradingHoursEnum_usMarketHours =
     const ProductDetailTradingHoursEnum._('usMarketHours');
-const ProductDetailTradingHoursEnum
-    _$productDetailTradingHoursEnum_unknownDefaultOpenApi =
-    const ProductDetailTradingHoursEnum._('unknownDefaultOpenApi');
 
 ProductDetailTradingHoursEnum _$productDetailTradingHoursEnumValueOf(
     String name) {
@@ -22,10 +19,8 @@ ProductDetailTradingHoursEnum _$productDetailTradingHoursEnumValueOf(
       return _$productDetailTradingHoursEnum_n24x7;
     case 'usMarketHours':
       return _$productDetailTradingHoursEnum_usMarketHours;
-    case 'unknownDefaultOpenApi':
-      return _$productDetailTradingHoursEnum_unknownDefaultOpenApi;
     default:
-      return _$productDetailTradingHoursEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -34,7 +29,6 @@ final BuiltSet<ProductDetailTradingHoursEnum>
         ProductDetailTradingHoursEnum>(const <ProductDetailTradingHoursEnum>[
   _$productDetailTradingHoursEnum_n24x7,
   _$productDetailTradingHoursEnum_usMarketHours,
-  _$productDetailTradingHoursEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<ProductDetailTradingHoursEnum>
@@ -46,12 +40,10 @@ class _$ProductDetailTradingHoursEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n24x7': '24x7',
     'usMarketHours': 'us_market_hours',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '24x7': 'n24x7',
     'us_market_hours': 'usMarketHours',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

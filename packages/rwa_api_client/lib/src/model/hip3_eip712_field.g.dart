@@ -10,8 +10,6 @@ const Hip3Eip712FieldNameEnum _$hip3Eip712FieldNameEnum_source_ =
     const Hip3Eip712FieldNameEnum._('source_');
 const Hip3Eip712FieldNameEnum _$hip3Eip712FieldNameEnum_connectionId =
     const Hip3Eip712FieldNameEnum._('connectionId');
-const Hip3Eip712FieldNameEnum _$hip3Eip712FieldNameEnum_unknownDefaultOpenApi =
-    const Hip3Eip712FieldNameEnum._('unknownDefaultOpenApi');
 
 Hip3Eip712FieldNameEnum _$hip3Eip712FieldNameEnumValueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ Hip3Eip712FieldNameEnum _$hip3Eip712FieldNameEnumValueOf(String name) {
       return _$hip3Eip712FieldNameEnum_source_;
     case 'connectionId':
       return _$hip3Eip712FieldNameEnum_connectionId;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712FieldNameEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712FieldNameEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,15 +26,12 @@ final BuiltSet<Hip3Eip712FieldNameEnum> _$hip3Eip712FieldNameEnumValues =
     BuiltSet<Hip3Eip712FieldNameEnum>(const <Hip3Eip712FieldNameEnum>[
   _$hip3Eip712FieldNameEnum_source_,
   _$hip3Eip712FieldNameEnum_connectionId,
-  _$hip3Eip712FieldNameEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3Eip712FieldTypeEnum _$hip3Eip712FieldTypeEnum_string =
     const Hip3Eip712FieldTypeEnum._('string');
 const Hip3Eip712FieldTypeEnum _$hip3Eip712FieldTypeEnum_bytes32 =
     const Hip3Eip712FieldTypeEnum._('bytes32');
-const Hip3Eip712FieldTypeEnum _$hip3Eip712FieldTypeEnum_unknownDefaultOpenApi =
-    const Hip3Eip712FieldTypeEnum._('unknownDefaultOpenApi');
 
 Hip3Eip712FieldTypeEnum _$hip3Eip712FieldTypeEnumValueOf(String name) {
   switch (name) {
@@ -46,10 +39,8 @@ Hip3Eip712FieldTypeEnum _$hip3Eip712FieldTypeEnumValueOf(String name) {
       return _$hip3Eip712FieldTypeEnum_string;
     case 'bytes32':
       return _$hip3Eip712FieldTypeEnum_bytes32;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712FieldTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712FieldTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -57,7 +48,6 @@ final BuiltSet<Hip3Eip712FieldTypeEnum> _$hip3Eip712FieldTypeEnumValues =
     BuiltSet<Hip3Eip712FieldTypeEnum>(const <Hip3Eip712FieldTypeEnum>[
   _$hip3Eip712FieldTypeEnum_string,
   _$hip3Eip712FieldTypeEnum_bytes32,
-  _$hip3Eip712FieldTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3Eip712FieldNameEnum> _$hip3Eip712FieldNameEnumSerializer =
@@ -70,12 +60,10 @@ class _$Hip3Eip712FieldNameEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'source_': 'source',
     'connectionId': 'connectionId',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'source': 'source_',
     'connectionId': 'connectionId',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,12 +89,10 @@ class _$Hip3Eip712FieldTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'string': 'string',
     'bytes32': 'bytes32',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'string': 'string',
     'bytes32': 'bytes32',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

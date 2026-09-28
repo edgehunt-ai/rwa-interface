@@ -10,9 +10,6 @@ const Hip3ConditionalOrderRoleEnum _$hip3ConditionalOrderRoleEnum_takeProfit =
     const Hip3ConditionalOrderRoleEnum._('takeProfit');
 const Hip3ConditionalOrderRoleEnum _$hip3ConditionalOrderRoleEnum_stopLoss =
     const Hip3ConditionalOrderRoleEnum._('stopLoss');
-const Hip3ConditionalOrderRoleEnum
-    _$hip3ConditionalOrderRoleEnum_unknownDefaultOpenApi =
-    const Hip3ConditionalOrderRoleEnum._('unknownDefaultOpenApi');
 
 Hip3ConditionalOrderRoleEnum _$hip3ConditionalOrderRoleEnumValueOf(
     String name) {
@@ -21,10 +18,8 @@ Hip3ConditionalOrderRoleEnum _$hip3ConditionalOrderRoleEnumValueOf(
       return _$hip3ConditionalOrderRoleEnum_takeProfit;
     case 'stopLoss':
       return _$hip3ConditionalOrderRoleEnum_stopLoss;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ConditionalOrderRoleEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ConditionalOrderRoleEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -33,7 +28,6 @@ final BuiltSet<Hip3ConditionalOrderRoleEnum>
     BuiltSet<Hip3ConditionalOrderRoleEnum>(const <Hip3ConditionalOrderRoleEnum>[
   _$hip3ConditionalOrderRoleEnum_takeProfit,
   _$hip3ConditionalOrderRoleEnum_stopLoss,
-  _$hip3ConditionalOrderRoleEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ConditionalOrderTriggerReferenceEnum
@@ -45,9 +39,6 @@ const Hip3ConditionalOrderTriggerReferenceEnum
 const Hip3ConditionalOrderTriggerReferenceEnum
     _$hip3ConditionalOrderTriggerReferenceEnum_last =
     const Hip3ConditionalOrderTriggerReferenceEnum._('last');
-const Hip3ConditionalOrderTriggerReferenceEnum
-    _$hip3ConditionalOrderTriggerReferenceEnum_unknownDefaultOpenApi =
-    const Hip3ConditionalOrderTriggerReferenceEnum._('unknownDefaultOpenApi');
 
 Hip3ConditionalOrderTriggerReferenceEnum
     _$hip3ConditionalOrderTriggerReferenceEnumValueOf(String name) {
@@ -58,10 +49,8 @@ Hip3ConditionalOrderTriggerReferenceEnum
       return _$hip3ConditionalOrderTriggerReferenceEnum_oracle;
     case 'last':
       return _$hip3ConditionalOrderTriggerReferenceEnum_last;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ConditionalOrderTriggerReferenceEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ConditionalOrderTriggerReferenceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -71,7 +60,6 @@ final BuiltSet<Hip3ConditionalOrderTriggerReferenceEnum>
   _$hip3ConditionalOrderTriggerReferenceEnum_mark,
   _$hip3ConditionalOrderTriggerReferenceEnum_oracle,
   _$hip3ConditionalOrderTriggerReferenceEnum_last,
-  _$hip3ConditionalOrderTriggerReferenceEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ConditionalOrderExecutionTypeEnum
@@ -80,9 +68,6 @@ const Hip3ConditionalOrderExecutionTypeEnum
 const Hip3ConditionalOrderExecutionTypeEnum
     _$hip3ConditionalOrderExecutionTypeEnum_limit =
     const Hip3ConditionalOrderExecutionTypeEnum._('limit');
-const Hip3ConditionalOrderExecutionTypeEnum
-    _$hip3ConditionalOrderExecutionTypeEnum_unknownDefaultOpenApi =
-    const Hip3ConditionalOrderExecutionTypeEnum._('unknownDefaultOpenApi');
 
 Hip3ConditionalOrderExecutionTypeEnum
     _$hip3ConditionalOrderExecutionTypeEnumValueOf(String name) {
@@ -91,10 +76,8 @@ Hip3ConditionalOrderExecutionTypeEnum
       return _$hip3ConditionalOrderExecutionTypeEnum_market;
     case 'limit':
       return _$hip3ConditionalOrderExecutionTypeEnum_limit;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ConditionalOrderExecutionTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ConditionalOrderExecutionTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -103,7 +86,6 @@ final BuiltSet<Hip3ConditionalOrderExecutionTypeEnum>
         Hip3ConditionalOrderExecutionTypeEnum>(const <Hip3ConditionalOrderExecutionTypeEnum>[
   _$hip3ConditionalOrderExecutionTypeEnum_market,
   _$hip3ConditionalOrderExecutionTypeEnum_limit,
-  _$hip3ConditionalOrderExecutionTypeEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ConditionalOrderTriggerStatusEnum
@@ -118,9 +100,6 @@ const Hip3ConditionalOrderTriggerStatusEnum
 const Hip3ConditionalOrderTriggerStatusEnum
     _$hip3ConditionalOrderTriggerStatusEnum_expired =
     const Hip3ConditionalOrderTriggerStatusEnum._('expired');
-const Hip3ConditionalOrderTriggerStatusEnum
-    _$hip3ConditionalOrderTriggerStatusEnum_unknownDefaultOpenApi =
-    const Hip3ConditionalOrderTriggerStatusEnum._('unknownDefaultOpenApi');
 
 Hip3ConditionalOrderTriggerStatusEnum
     _$hip3ConditionalOrderTriggerStatusEnumValueOf(String name) {
@@ -133,10 +112,8 @@ Hip3ConditionalOrderTriggerStatusEnum
       return _$hip3ConditionalOrderTriggerStatusEnum_cancelled;
     case 'expired':
       return _$hip3ConditionalOrderTriggerStatusEnum_expired;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ConditionalOrderTriggerStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ConditionalOrderTriggerStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -147,7 +124,6 @@ final BuiltSet<Hip3ConditionalOrderTriggerStatusEnum>
   _$hip3ConditionalOrderTriggerStatusEnum_triggered,
   _$hip3ConditionalOrderTriggerStatusEnum_cancelled,
   _$hip3ConditionalOrderTriggerStatusEnum_expired,
-  _$hip3ConditionalOrderTriggerStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ConditionalOrderActivationStatusEnum
@@ -168,9 +144,6 @@ const Hip3ConditionalOrderActivationStatusEnum
 const Hip3ConditionalOrderActivationStatusEnum
     _$hip3ConditionalOrderActivationStatusEnum_unknown =
     const Hip3ConditionalOrderActivationStatusEnum._('unknown');
-const Hip3ConditionalOrderActivationStatusEnum
-    _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi =
-    const Hip3ConditionalOrderActivationStatusEnum._('unknownDefaultOpenApi');
 
 Hip3ConditionalOrderActivationStatusEnum
     _$hip3ConditionalOrderActivationStatusEnumValueOf(String name) {
@@ -187,10 +160,8 @@ Hip3ConditionalOrderActivationStatusEnum
       return _$hip3ConditionalOrderActivationStatusEnum_inactive;
     case 'unknown':
       return _$hip3ConditionalOrderActivationStatusEnum_unknown;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -203,26 +174,20 @@ final BuiltSet<Hip3ConditionalOrderActivationStatusEnum>
   _$hip3ConditionalOrderActivationStatusEnum_active,
   _$hip3ConditionalOrderActivationStatusEnum_inactive,
   _$hip3ConditionalOrderActivationStatusEnum_unknown,
-  _$hip3ConditionalOrderActivationStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ConditionalOrderWarningCodeEnum
     _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection =
     const Hip3ConditionalOrderWarningCodeEnum._(
         'parentCancelledCheckRemainingPositionProtection');
-const Hip3ConditionalOrderWarningCodeEnum
-    _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi =
-    const Hip3ConditionalOrderWarningCodeEnum._('unknownDefaultOpenApi');
 
 Hip3ConditionalOrderWarningCodeEnum
     _$hip3ConditionalOrderWarningCodeEnumValueOf(String name) {
   switch (name) {
     case 'parentCancelledCheckRemainingPositionProtection':
       return _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -230,7 +195,6 @@ final BuiltSet<Hip3ConditionalOrderWarningCodeEnum>
     _$hip3ConditionalOrderWarningCodeEnumValues = BuiltSet<
         Hip3ConditionalOrderWarningCodeEnum>(const <Hip3ConditionalOrderWarningCodeEnum>[
   _$hip3ConditionalOrderWarningCodeEnum_parentCancelledCheckRemainingPositionProtection,
-  _$hip3ConditionalOrderWarningCodeEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ConditionalOrderSizeModeEnum
@@ -242,9 +206,6 @@ const Hip3ConditionalOrderSizeModeEnum
 const Hip3ConditionalOrderSizeModeEnum
     _$hip3ConditionalOrderSizeModeEnum_percent =
     const Hip3ConditionalOrderSizeModeEnum._('percent');
-const Hip3ConditionalOrderSizeModeEnum
-    _$hip3ConditionalOrderSizeModeEnum_unknownDefaultOpenApi =
-    const Hip3ConditionalOrderSizeModeEnum._('unknownDefaultOpenApi');
 
 Hip3ConditionalOrderSizeModeEnum _$hip3ConditionalOrderSizeModeEnumValueOf(
     String name) {
@@ -255,10 +216,8 @@ Hip3ConditionalOrderSizeModeEnum _$hip3ConditionalOrderSizeModeEnumValueOf(
       return _$hip3ConditionalOrderSizeModeEnum_quantity;
     case 'percent':
       return _$hip3ConditionalOrderSizeModeEnum_percent;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ConditionalOrderSizeModeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ConditionalOrderSizeModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -268,7 +227,6 @@ final BuiltSet<Hip3ConditionalOrderSizeModeEnum>
   _$hip3ConditionalOrderSizeModeEnum_entirePosition,
   _$hip3ConditionalOrderSizeModeEnum_quantity,
   _$hip3ConditionalOrderSizeModeEnum_percent,
-  _$hip3ConditionalOrderSizeModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ConditionalOrderRoleEnum>
@@ -298,12 +256,10 @@ class _$Hip3ConditionalOrderRoleEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'takeProfit': 'take_profit',
     'stopLoss': 'stop_loss',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'take_profit': 'takeProfit',
     'stop_loss': 'stopLoss',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -330,13 +286,11 @@ class _$Hip3ConditionalOrderTriggerReferenceEnumSerializer
     'mark': 'mark',
     'oracle': 'oracle',
     'last': 'last',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mark': 'mark',
     'oracle': 'oracle',
     'last': 'last',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -365,12 +319,10 @@ class _$Hip3ConditionalOrderExecutionTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -401,14 +353,12 @@ class _$Hip3ConditionalOrderTriggerStatusEnumSerializer
     'triggered': 'triggered',
     'cancelled': 'cancelled',
     'expired': 'expired',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'untriggered': 'untriggered',
     'triggered': 'triggered',
     'cancelled': 'cancelled',
     'expired': 'expired',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -441,7 +391,6 @@ class _$Hip3ConditionalOrderActivationStatusEnumSerializer
     'active': 'active',
     'inactive': 'inactive',
     'unknown': 'unknown',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending_submission': 'pendingSubmission',
@@ -450,7 +399,6 @@ class _$Hip3ConditionalOrderActivationStatusEnumSerializer
     'active': 'active',
     'inactive': 'inactive',
     'unknown': 'unknown',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -479,12 +427,10 @@ class _$Hip3ConditionalOrderWarningCodeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'parentCancelledCheckRemainingPositionProtection':
         'parent_cancelled_check_remaining_position_protection',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'parent_cancelled_check_remaining_position_protection':
         'parentCancelledCheckRemainingPositionProtection',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -514,13 +460,11 @@ class _$Hip3ConditionalOrderSizeModeEnumSerializer
     'entirePosition': 'entire_position',
     'quantity': 'quantity',
     'percent': 'percent',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'entire_position': 'entirePosition',
     'quantity': 'quantity',
     'percent': 'percent',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

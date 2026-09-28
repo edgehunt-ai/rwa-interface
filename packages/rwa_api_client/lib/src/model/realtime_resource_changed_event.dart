@@ -154,8 +154,6 @@ class RealtimeResourceChangedEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'resource_changed')
   static const RealtimeResourceChangedEventEventEnum resourceChanged = _$realtimeResourceChangedEventEventEnum_resourceChanged;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeResourceChangedEventEventEnum unknownDefaultOpenApi = _$realtimeResourceChangedEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeResourceChangedEventEventEnum> get serializer => _$realtimeResourceChangedEventEventEnumSerializer;
 

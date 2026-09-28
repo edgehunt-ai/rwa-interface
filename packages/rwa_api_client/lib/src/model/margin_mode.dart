@@ -15,8 +15,6 @@ class MarginMode extends EnumClass {
   static const MarginMode isolated = _$isolated;
   @BuiltValueEnumConst(wireName: r'cross')
   static const MarginMode cross = _$cross;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MarginMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<MarginMode> get serializer => _$marginModeSerializer;
 

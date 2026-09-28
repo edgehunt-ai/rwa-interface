@@ -17,8 +17,6 @@ const TradeIntentNextAction _$waitFunding =
 const TradeIntentNextAction _$waitOrder =
     const TradeIntentNextAction._('waitOrder');
 const TradeIntentNextAction _$none = const TradeIntentNextAction._('none');
-const TradeIntentNextAction _$unknownDefaultOpenApi =
-    const TradeIntentNextAction._('unknownDefaultOpenApi');
 
 TradeIntentNextAction _$valueOf(String name) {
   switch (name) {
@@ -34,10 +32,8 @@ TradeIntentNextAction _$valueOf(String name) {
       return _$waitOrder;
     case 'none':
       return _$none;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -49,7 +45,6 @@ final BuiltSet<TradeIntentNextAction> _$values =
   _$waitFunding,
   _$waitOrder,
   _$none,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TradeIntentNextActionMeta {
@@ -60,7 +55,6 @@ class _$TradeIntentNextActionMeta {
   TradeIntentNextAction get waitFunding => _$waitFunding;
   TradeIntentNextAction get waitOrder => _$waitOrder;
   TradeIntentNextAction get none => _$none;
-  TradeIntentNextAction get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   TradeIntentNextAction valueOf(String name) => _$valueOf(name);
   BuiltSet<TradeIntentNextAction> get values => _$values;
 }
@@ -83,7 +77,6 @@ class _$TradeIntentNextActionSerializer
     'waitFunding': 'wait_funding',
     'waitOrder': 'wait_order',
     'none': 'none',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'approve_agent': 'approveAgent',
@@ -92,7 +85,6 @@ class _$TradeIntentNextActionSerializer
     'wait_funding': 'waitFunding',
     'wait_order': 'waitOrder',
     'none': 'none',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

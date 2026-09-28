@@ -24,9 +24,6 @@ const WalletActionExecutionChainIdEnum
 const WalletActionExecutionChainIdEnum
     _$walletActionExecutionChainIdEnum_number421614 =
     const WalletActionExecutionChainIdEnum._('number421614');
-const WalletActionExecutionChainIdEnum
-    _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi =
-    const WalletActionExecutionChainIdEnum._('unknownDefaultOpenApi');
 
 WalletActionExecutionChainIdEnum _$walletActionExecutionChainIdEnumValueOf(
     String name) {
@@ -43,10 +40,8 @@ WalletActionExecutionChainIdEnum _$walletActionExecutionChainIdEnumValueOf(
       return _$walletActionExecutionChainIdEnum_number42161;
     case 'number421614':
       return _$walletActionExecutionChainIdEnum_number421614;
-    case 'unknownDefaultOpenApi':
-      return _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -59,7 +54,6 @@ final BuiltSet<WalletActionExecutionChainIdEnum>
   _$walletActionExecutionChainIdEnum_number8453,
   _$walletActionExecutionChainIdEnum_number42161,
   _$walletActionExecutionChainIdEnum_number421614,
-  _$walletActionExecutionChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<WalletActionExecutionChainIdEnum>
@@ -75,7 +69,6 @@ class _$WalletActionExecutionChainIdEnumSerializer
     'number8453': 8453,
     'number42161': 42161,
     'number421614': 421614,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
@@ -84,7 +77,6 @@ class _$WalletActionExecutionChainIdEnumSerializer
     8453: 'number8453',
     42161: 'number42161',
     421614: 'number421614',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

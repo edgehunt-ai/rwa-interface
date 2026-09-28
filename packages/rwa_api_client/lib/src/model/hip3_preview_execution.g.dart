@@ -10,9 +10,6 @@ const Hip3PreviewExecutionTypeEnum _$hip3PreviewExecutionTypeEnum_market =
     const Hip3PreviewExecutionTypeEnum._('market');
 const Hip3PreviewExecutionTypeEnum _$hip3PreviewExecutionTypeEnum_limit =
     const Hip3PreviewExecutionTypeEnum._('limit');
-const Hip3PreviewExecutionTypeEnum
-    _$hip3PreviewExecutionTypeEnum_unknownDefaultOpenApi =
-    const Hip3PreviewExecutionTypeEnum._('unknownDefaultOpenApi');
 
 Hip3PreviewExecutionTypeEnum _$hip3PreviewExecutionTypeEnumValueOf(
     String name) {
@@ -21,10 +18,8 @@ Hip3PreviewExecutionTypeEnum _$hip3PreviewExecutionTypeEnumValueOf(
       return _$hip3PreviewExecutionTypeEnum_market;
     case 'limit':
       return _$hip3PreviewExecutionTypeEnum_limit;
-    case 'unknownDefaultOpenApi':
-      return _$hip3PreviewExecutionTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3PreviewExecutionTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -33,7 +28,6 @@ final BuiltSet<Hip3PreviewExecutionTypeEnum>
     BuiltSet<Hip3PreviewExecutionTypeEnum>(const <Hip3PreviewExecutionTypeEnum>[
   _$hip3PreviewExecutionTypeEnum_market,
   _$hip3PreviewExecutionTypeEnum_limit,
-  _$hip3PreviewExecutionTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3PreviewExecutionTypeEnum>
@@ -45,12 +39,10 @@ class _$Hip3PreviewExecutionTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

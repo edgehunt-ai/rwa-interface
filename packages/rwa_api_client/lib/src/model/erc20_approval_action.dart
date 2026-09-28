@@ -344,8 +344,6 @@ class Erc20ApprovalActionKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'erc20_approval')
   static const Erc20ApprovalActionKindEnum erc20Approval = _$erc20ApprovalActionKindEnum_erc20Approval;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Erc20ApprovalActionKindEnum unknownDefaultOpenApi = _$erc20ApprovalActionKindEnum_unknownDefaultOpenApi;
 
   static Serializer<Erc20ApprovalActionKindEnum> get serializer => _$erc20ApprovalActionKindEnumSerializer;
 
@@ -365,8 +363,6 @@ class Erc20ApprovalActionChainIdEnum extends EnumClass {
   static const Erc20ApprovalActionChainIdEnum number8453 = _$erc20ApprovalActionChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
   static const Erc20ApprovalActionChainIdEnum number42161 = _$erc20ApprovalActionChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const Erc20ApprovalActionChainIdEnum unknownDefaultOpenApi = _$erc20ApprovalActionChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<Erc20ApprovalActionChainIdEnum> get serializer => _$erc20ApprovalActionChainIdEnumSerializer;
 
@@ -381,9 +377,6 @@ class Erc20ApprovalActionValueEnum extends EnumClass {
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'0x0')
   static const Erc20ApprovalActionValueEnum n0x0 = _$erc20ApprovalActionValueEnum_n0x0;
-  /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Erc20ApprovalActionValueEnum unknownDefaultOpenApi = _$erc20ApprovalActionValueEnum_unknownDefaultOpenApi;
 
   static Serializer<Erc20ApprovalActionValueEnum> get serializer => _$erc20ApprovalActionValueEnumSerializer;
 

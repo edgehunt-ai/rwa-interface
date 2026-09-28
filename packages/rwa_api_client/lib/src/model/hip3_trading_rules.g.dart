@@ -10,9 +10,6 @@ const Hip3TradingRulesOrderTypesEnum _$hip3TradingRulesOrderTypesEnum_market =
     const Hip3TradingRulesOrderTypesEnum._('market');
 const Hip3TradingRulesOrderTypesEnum _$hip3TradingRulesOrderTypesEnum_limit =
     const Hip3TradingRulesOrderTypesEnum._('limit');
-const Hip3TradingRulesOrderTypesEnum
-    _$hip3TradingRulesOrderTypesEnum_unknownDefaultOpenApi =
-    const Hip3TradingRulesOrderTypesEnum._('unknownDefaultOpenApi');
 
 Hip3TradingRulesOrderTypesEnum _$hip3TradingRulesOrderTypesEnumValueOf(
     String name) {
@@ -21,10 +18,8 @@ Hip3TradingRulesOrderTypesEnum _$hip3TradingRulesOrderTypesEnumValueOf(
       return _$hip3TradingRulesOrderTypesEnum_market;
     case 'limit':
       return _$hip3TradingRulesOrderTypesEnum_limit;
-    case 'unknownDefaultOpenApi':
-      return _$hip3TradingRulesOrderTypesEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3TradingRulesOrderTypesEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -33,7 +28,6 @@ final BuiltSet<Hip3TradingRulesOrderTypesEnum>
         Hip3TradingRulesOrderTypesEnum>(const <Hip3TradingRulesOrderTypesEnum>[
   _$hip3TradingRulesOrderTypesEnum_market,
   _$hip3TradingRulesOrderTypesEnum_limit,
-  _$hip3TradingRulesOrderTypesEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3TradingRulesTriggerReferencesEnum
@@ -45,9 +39,6 @@ const Hip3TradingRulesTriggerReferencesEnum
 const Hip3TradingRulesTriggerReferencesEnum
     _$hip3TradingRulesTriggerReferencesEnum_last =
     const Hip3TradingRulesTriggerReferencesEnum._('last');
-const Hip3TradingRulesTriggerReferencesEnum
-    _$hip3TradingRulesTriggerReferencesEnum_unknownDefaultOpenApi =
-    const Hip3TradingRulesTriggerReferencesEnum._('unknownDefaultOpenApi');
 
 Hip3TradingRulesTriggerReferencesEnum
     _$hip3TradingRulesTriggerReferencesEnumValueOf(String name) {
@@ -58,10 +49,8 @@ Hip3TradingRulesTriggerReferencesEnum
       return _$hip3TradingRulesTriggerReferencesEnum_oracle;
     case 'last':
       return _$hip3TradingRulesTriggerReferencesEnum_last;
-    case 'unknownDefaultOpenApi':
-      return _$hip3TradingRulesTriggerReferencesEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3TradingRulesTriggerReferencesEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -71,7 +60,6 @@ final BuiltSet<Hip3TradingRulesTriggerReferencesEnum>
   _$hip3TradingRulesTriggerReferencesEnum_mark,
   _$hip3TradingRulesTriggerReferencesEnum_oracle,
   _$hip3TradingRulesTriggerReferencesEnum_last,
-  _$hip3TradingRulesTriggerReferencesEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3TradingRulesOrderTypesEnum>
@@ -86,12 +74,10 @@ class _$Hip3TradingRulesOrderTypesEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -119,13 +105,11 @@ class _$Hip3TradingRulesTriggerReferencesEnumSerializer
     'mark': 'mark',
     'oracle': 'oracle',
     'last': 'last',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mark': 'mark',
     'oracle': 'oracle',
     'last': 'last',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

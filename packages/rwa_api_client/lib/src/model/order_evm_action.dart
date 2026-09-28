@@ -295,8 +295,6 @@ class OrderEvmActionKindEnum extends EnumClass {
   static const OrderEvmActionKindEnum erc20Approval = _$orderEvmActionKindEnum_erc20Approval;
   @BuiltValueEnumConst(wireName: r'spot_swap')
   static const OrderEvmActionKindEnum spotSwap = _$orderEvmActionKindEnum_spotSwap;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderEvmActionKindEnum unknownDefaultOpenApi = _$orderEvmActionKindEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderEvmActionKindEnum> get serializer => _$orderEvmActionKindEnumSerializer;
 
@@ -317,9 +315,6 @@ class OrderEvmActionChainIdEnum extends EnumClass {
   /// BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
   @BuiltValueEnumConst(wireNumber: 31337)
   static const OrderEvmActionChainIdEnum number31337 = _$orderEvmActionChainIdEnum_number31337;
-  /// BSC mainnet 56, BSC testnet 97, or isolated Anvil 31337. Clients must sign on exactly this chain; testnet does not inherit mainnet token addresses.
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const OrderEvmActionChainIdEnum unknownDefaultOpenApi = _$orderEvmActionChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderEvmActionChainIdEnum> get serializer => _$orderEvmActionChainIdEnumSerializer;
 
@@ -334,9 +329,6 @@ class OrderEvmActionValueEnum extends EnumClass {
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'0x0')
   static const OrderEvmActionValueEnum n0x0 = _$orderEvmActionValueEnum_n0x0;
-  /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderEvmActionValueEnum unknownDefaultOpenApi = _$orderEvmActionValueEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderEvmActionValueEnum> get serializer => _$orderEvmActionValueEnumSerializer;
 

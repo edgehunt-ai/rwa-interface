@@ -9,19 +9,14 @@ part of 'hip3_realtime_price_item.dart';
 const Hip3RealtimePriceItemEventEnum
     _$hip3RealtimePriceItemEventEnum_hip3Price =
     const Hip3RealtimePriceItemEventEnum._('hip3Price');
-const Hip3RealtimePriceItemEventEnum
-    _$hip3RealtimePriceItemEventEnum_unknownDefaultOpenApi =
-    const Hip3RealtimePriceItemEventEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimePriceItemEventEnum _$hip3RealtimePriceItemEventEnumValueOf(
     String name) {
   switch (name) {
     case 'hip3Price':
       return _$hip3RealtimePriceItemEventEnum_hip3Price;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimePriceItemEventEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimePriceItemEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3RealtimePriceItemEventEnum>
     _$hip3RealtimePriceItemEventEnumValues = BuiltSet<
         Hip3RealtimePriceItemEventEnum>(const <Hip3RealtimePriceItemEventEnum>[
   _$hip3RealtimePriceItemEventEnum_hip3Price,
-  _$hip3RealtimePriceItemEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3RealtimePriceItemEventEnum>
@@ -40,11 +34,9 @@ class _$Hip3RealtimePriceItemEventEnumSerializer
     implements PrimitiveSerializer<Hip3RealtimePriceItemEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3Price': 'hip3_price',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3_price': 'hip3Price',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -16,8 +16,6 @@ const TransferTargetCreditStatus _$ambiguous =
     const TransferTargetCreditStatus._('ambiguous');
 const TransferTargetCreditStatus _$manualReview =
     const TransferTargetCreditStatus._('manualReview');
-const TransferTargetCreditStatus _$unknownDefaultOpenApi =
-    const TransferTargetCreditStatus._('unknownDefaultOpenApi');
 
 TransferTargetCreditStatus _$valueOf(String name) {
   switch (name) {
@@ -31,10 +29,8 @@ TransferTargetCreditStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -45,7 +41,6 @@ final BuiltSet<TransferTargetCreditStatus> _$values =
   _$unavailable,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TransferTargetCreditStatusMeta {
@@ -55,8 +50,6 @@ class _$TransferTargetCreditStatusMeta {
   TransferTargetCreditStatus get unavailable => _$unavailable;
   TransferTargetCreditStatus get ambiguous => _$ambiguous;
   TransferTargetCreditStatus get manualReview => _$manualReview;
-  TransferTargetCreditStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   TransferTargetCreditStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TransferTargetCreditStatus> get values => _$values;
 }
@@ -78,7 +71,6 @@ class _$TransferTargetCreditStatusSerializer
     'unavailable': 'unavailable',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending': 'pending',
@@ -86,7 +78,6 @@ class _$TransferTargetCreditStatusSerializer
     'unavailable': 'unavailable',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

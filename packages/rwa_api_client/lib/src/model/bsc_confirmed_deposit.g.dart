@@ -8,19 +8,14 @@ part of 'bsc_confirmed_deposit.dart';
 
 const BscConfirmedDepositChainEnum _$bscConfirmedDepositChainEnum_BSC =
     const BscConfirmedDepositChainEnum._('BSC');
-const BscConfirmedDepositChainEnum
-    _$bscConfirmedDepositChainEnum_unknownDefaultOpenApi =
-    const BscConfirmedDepositChainEnum._('unknownDefaultOpenApi');
 
 BscConfirmedDepositChainEnum _$bscConfirmedDepositChainEnumValueOf(
     String name) {
   switch (name) {
     case 'BSC':
       return _$bscConfirmedDepositChainEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$bscConfirmedDepositChainEnum_unknownDefaultOpenApi;
     default:
-      return _$bscConfirmedDepositChainEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,24 +23,18 @@ final BuiltSet<BscConfirmedDepositChainEnum>
     _$bscConfirmedDepositChainEnumValues =
     BuiltSet<BscConfirmedDepositChainEnum>(const <BscConfirmedDepositChainEnum>[
   _$bscConfirmedDepositChainEnum_BSC,
-  _$bscConfirmedDepositChainEnum_unknownDefaultOpenApi,
 ]);
 
 const BscConfirmedDepositChainIdEnum _$bscConfirmedDepositChainIdEnum_number56 =
     const BscConfirmedDepositChainIdEnum._('number56');
-const BscConfirmedDepositChainIdEnum
-    _$bscConfirmedDepositChainIdEnum_unknownDefaultOpenApi =
-    const BscConfirmedDepositChainIdEnum._('unknownDefaultOpenApi');
 
 BscConfirmedDepositChainIdEnum _$bscConfirmedDepositChainIdEnumValueOf(
     String name) {
   switch (name) {
     case 'number56':
       return _$bscConfirmedDepositChainIdEnum_number56;
-    case 'unknownDefaultOpenApi':
-      return _$bscConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$bscConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -53,24 +42,18 @@ final BuiltSet<BscConfirmedDepositChainIdEnum>
     _$bscConfirmedDepositChainIdEnumValues = BuiltSet<
         BscConfirmedDepositChainIdEnum>(const <BscConfirmedDepositChainIdEnum>[
   _$bscConfirmedDepositChainIdEnum_number56,
-  _$bscConfirmedDepositChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const BscConfirmedDepositTokenEnum _$bscConfirmedDepositTokenEnum_USDC =
     const BscConfirmedDepositTokenEnum._('USDC');
-const BscConfirmedDepositTokenEnum
-    _$bscConfirmedDepositTokenEnum_unknownDefaultOpenApi =
-    const BscConfirmedDepositTokenEnum._('unknownDefaultOpenApi');
 
 BscConfirmedDepositTokenEnum _$bscConfirmedDepositTokenEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$bscConfirmedDepositTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$bscConfirmedDepositTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$bscConfirmedDepositTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -78,26 +61,20 @@ final BuiltSet<BscConfirmedDepositTokenEnum>
     _$bscConfirmedDepositTokenEnumValues =
     BuiltSet<BscConfirmedDepositTokenEnum>(const <BscConfirmedDepositTokenEnum>[
   _$bscConfirmedDepositTokenEnum_USDC,
-  _$bscConfirmedDepositTokenEnum_unknownDefaultOpenApi,
 ]);
 
 const BscConfirmedDepositTokenContractEnum
     _$bscConfirmedDepositTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d =
     const BscConfirmedDepositTokenContractEnum._(
         'n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d');
-const BscConfirmedDepositTokenContractEnum
-    _$bscConfirmedDepositTokenContractEnum_unknownDefaultOpenApi =
-    const BscConfirmedDepositTokenContractEnum._('unknownDefaultOpenApi');
 
 BscConfirmedDepositTokenContractEnum
     _$bscConfirmedDepositTokenContractEnumValueOf(String name) {
   switch (name) {
     case 'n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d':
       return _$bscConfirmedDepositTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
-    case 'unknownDefaultOpenApi':
-      return _$bscConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$bscConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -105,25 +82,19 @@ final BuiltSet<BscConfirmedDepositTokenContractEnum>
     _$bscConfirmedDepositTokenContractEnumValues = BuiltSet<
         BscConfirmedDepositTokenContractEnum>(const <BscConfirmedDepositTokenContractEnum>[
   _$bscConfirmedDepositTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d,
-  _$bscConfirmedDepositTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const BscConfirmedDepositTokenDecimalsEnum
     _$bscConfirmedDepositTokenDecimalsEnum_number18 =
     const BscConfirmedDepositTokenDecimalsEnum._('number18');
-const BscConfirmedDepositTokenDecimalsEnum
-    _$bscConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi =
-    const BscConfirmedDepositTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 BscConfirmedDepositTokenDecimalsEnum
     _$bscConfirmedDepositTokenDecimalsEnumValueOf(String name) {
   switch (name) {
     case 'number18':
       return _$bscConfirmedDepositTokenDecimalsEnum_number18;
-    case 'unknownDefaultOpenApi':
-      return _$bscConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$bscConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -131,7 +102,6 @@ final BuiltSet<BscConfirmedDepositTokenDecimalsEnum>
     _$bscConfirmedDepositTokenDecimalsEnumValues = BuiltSet<
         BscConfirmedDepositTokenDecimalsEnum>(const <BscConfirmedDepositTokenDecimalsEnum>[
   _$bscConfirmedDepositTokenDecimalsEnum_number18,
-  _$bscConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BscConfirmedDepositChainEnum>
@@ -154,11 +124,9 @@ class _$BscConfirmedDepositChainEnumSerializer
     implements PrimitiveSerializer<BscConfirmedDepositChainEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -183,11 +151,9 @@ class _$BscConfirmedDepositChainIdEnumSerializer
     implements PrimitiveSerializer<BscConfirmedDepositChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number56': 56,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -213,11 +179,9 @@ class _$BscConfirmedDepositTokenEnumSerializer
     implements PrimitiveSerializer<BscConfirmedDepositTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -243,12 +207,10 @@ class _$BscConfirmedDepositTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d':
         '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d':
         'n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -276,11 +238,9 @@ class _$BscConfirmedDepositTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<BscConfirmedDepositTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number18': 18,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     18: 'number18',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

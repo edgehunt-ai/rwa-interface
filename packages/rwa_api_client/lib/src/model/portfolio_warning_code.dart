@@ -27,8 +27,6 @@ class PortfolioWarningCode extends EnumClass {
   static const PortfolioWarningCode internalLedgerStale = _$internalLedgerStale;
   @BuiltValueEnumConst(wireName: r'internal_ledger_unreconciled')
   static const PortfolioWarningCode internalLedgerUnreconciled = _$internalLedgerUnreconciled;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioWarningCode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioWarningCode> get serializer => _$portfolioWarningCodeSerializer;
 

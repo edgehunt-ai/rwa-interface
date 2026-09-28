@@ -12,8 +12,6 @@ const WalletActionResourceType _$order =
     const WalletActionResourceType._('order');
 const WalletActionResourceType _$selfCustodialWithdrawal =
     const WalletActionResourceType._('selfCustodialWithdrawal');
-const WalletActionResourceType _$unknownDefaultOpenApi =
-    const WalletActionResourceType._('unknownDefaultOpenApi');
 
 WalletActionResourceType _$valueOf(String name) {
   switch (name) {
@@ -23,10 +21,8 @@ WalletActionResourceType _$valueOf(String name) {
       return _$order;
     case 'selfCustodialWithdrawal':
       return _$selfCustodialWithdrawal;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +31,6 @@ final BuiltSet<WalletActionResourceType> _$values =
   _$transfer,
   _$order,
   _$selfCustodialWithdrawal,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$WalletActionResourceTypeMeta {
@@ -44,7 +39,6 @@ class _$WalletActionResourceTypeMeta {
   WalletActionResourceType get order => _$order;
   WalletActionResourceType get selfCustodialWithdrawal =>
       _$selfCustodialWithdrawal;
-  WalletActionResourceType get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   WalletActionResourceType valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletActionResourceType> get values => _$values;
 }
@@ -64,13 +58,11 @@ class _$WalletActionResourceTypeSerializer
     'transfer': 'transfer',
     'order': 'order',
     'selfCustodialWithdrawal': 'self_custodial_withdrawal',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'transfer': 'transfer',
     'order': 'order',
     'self_custodial_withdrawal': 'selfCustodialWithdrawal',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

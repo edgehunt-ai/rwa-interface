@@ -12,9 +12,6 @@ const Hip3PublicMarketEnvironmentEnum
 const Hip3PublicMarketEnvironmentEnum
     _$hip3PublicMarketEnvironmentEnum_testnet =
     const Hip3PublicMarketEnvironmentEnum._('testnet');
-const Hip3PublicMarketEnvironmentEnum
-    _$hip3PublicMarketEnvironmentEnum_unknownDefaultOpenApi =
-    const Hip3PublicMarketEnvironmentEnum._('unknownDefaultOpenApi');
 
 Hip3PublicMarketEnvironmentEnum _$hip3PublicMarketEnvironmentEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ Hip3PublicMarketEnvironmentEnum _$hip3PublicMarketEnvironmentEnumValueOf(
       return _$hip3PublicMarketEnvironmentEnum_mainnet;
     case 'testnet':
       return _$hip3PublicMarketEnvironmentEnum_testnet;
-    case 'unknownDefaultOpenApi':
-      return _$hip3PublicMarketEnvironmentEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3PublicMarketEnvironmentEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<Hip3PublicMarketEnvironmentEnum>
         Hip3PublicMarketEnvironmentEnum>(const <Hip3PublicMarketEnvironmentEnum>[
   _$hip3PublicMarketEnvironmentEnum_mainnet,
   _$hip3PublicMarketEnvironmentEnum_testnet,
-  _$hip3PublicMarketEnvironmentEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3PublicMarketEnvironmentEnum>
@@ -47,12 +41,10 @@ class _$Hip3PublicMarketEnvironmentEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

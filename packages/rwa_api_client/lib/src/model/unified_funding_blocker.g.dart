@@ -18,8 +18,6 @@ const UnifiedFundingBlocker _$reservationUnavailable =
     const UnifiedFundingBlocker._('reservationUnavailable');
 const UnifiedFundingBlocker _$transferStateUnavailable =
     const UnifiedFundingBlocker._('transferStateUnavailable');
-const UnifiedFundingBlocker _$unknownDefaultOpenApi =
-    const UnifiedFundingBlocker._('unknownDefaultOpenApi');
 
 UnifiedFundingBlocker _$valueOf(String name) {
   switch (name) {
@@ -35,10 +33,8 @@ UnifiedFundingBlocker _$valueOf(String name) {
       return _$reservationUnavailable;
     case 'transferStateUnavailable':
       return _$transferStateUnavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -50,7 +46,6 @@ final BuiltSet<UnifiedFundingBlocker> _$values =
   _$priceUnavailable,
   _$reservationUnavailable,
   _$transferStateUnavailable,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$UnifiedFundingBlockerMeta {
@@ -62,7 +57,6 @@ class _$UnifiedFundingBlockerMeta {
   UnifiedFundingBlocker get reservationUnavailable => _$reservationUnavailable;
   UnifiedFundingBlocker get transferStateUnavailable =>
       _$transferStateUnavailable;
-  UnifiedFundingBlocker get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   UnifiedFundingBlocker valueOf(String name) => _$valueOf(name);
   BuiltSet<UnifiedFundingBlocker> get values => _$values;
 }
@@ -85,7 +79,6 @@ class _$UnifiedFundingBlockerSerializer
     'priceUnavailable': 'price_unavailable',
     'reservationUnavailable': 'reservation_unavailable',
     'transferStateUnavailable': 'transfer_state_unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'wallet_unavailable': 'walletUnavailable',
@@ -94,7 +87,6 @@ class _$UnifiedFundingBlockerSerializer
     'price_unavailable': 'priceUnavailable',
     'reservation_unavailable': 'reservationUnavailable',
     'transfer_state_unavailable': 'transferStateUnavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

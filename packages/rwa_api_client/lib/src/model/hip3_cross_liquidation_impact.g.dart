@@ -12,9 +12,6 @@ const Hip3CrossLiquidationImpactSideEnum
 const Hip3CrossLiquidationImpactSideEnum
     _$hip3CrossLiquidationImpactSideEnum_short =
     const Hip3CrossLiquidationImpactSideEnum._('short');
-const Hip3CrossLiquidationImpactSideEnum
-    _$hip3CrossLiquidationImpactSideEnum_unknownDefaultOpenApi =
-    const Hip3CrossLiquidationImpactSideEnum._('unknownDefaultOpenApi');
 
 Hip3CrossLiquidationImpactSideEnum _$hip3CrossLiquidationImpactSideEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ Hip3CrossLiquidationImpactSideEnum _$hip3CrossLiquidationImpactSideEnumValueOf(
       return _$hip3CrossLiquidationImpactSideEnum_long;
     case 'short':
       return _$hip3CrossLiquidationImpactSideEnum_short;
-    case 'unknownDefaultOpenApi':
-      return _$hip3CrossLiquidationImpactSideEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3CrossLiquidationImpactSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<Hip3CrossLiquidationImpactSideEnum>
         Hip3CrossLiquidationImpactSideEnum>(const <Hip3CrossLiquidationImpactSideEnum>[
   _$hip3CrossLiquidationImpactSideEnum_long,
   _$hip3CrossLiquidationImpactSideEnum_short,
-  _$hip3CrossLiquidationImpactSideEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3CrossLiquidationImpactUnavailableReasonEnum
@@ -50,10 +44,6 @@ const Hip3CrossLiquidationImpactUnavailableReasonEnum
     _$hip3CrossLiquidationImpactUnavailableReasonEnum_liquidationPriceOutOfRange =
     const Hip3CrossLiquidationImpactUnavailableReasonEnum._(
         'liquidationPriceOutOfRange');
-const Hip3CrossLiquidationImpactUnavailableReasonEnum
-    _$hip3CrossLiquidationImpactUnavailableReasonEnum_unknownDefaultOpenApi =
-    const Hip3CrossLiquidationImpactUnavailableReasonEnum._(
-        'unknownDefaultOpenApi');
 
 Hip3CrossLiquidationImpactUnavailableReasonEnum
     _$hip3CrossLiquidationImpactUnavailableReasonEnumValueOf(String name) {
@@ -64,10 +54,8 @@ Hip3CrossLiquidationImpactUnavailableReasonEnum
       return _$hip3CrossLiquidationImpactUnavailableReasonEnum_liquidationCalculationUnavailable;
     case 'liquidationPriceOutOfRange':
       return _$hip3CrossLiquidationImpactUnavailableReasonEnum_liquidationPriceOutOfRange;
-    case 'unknownDefaultOpenApi':
-      return _$hip3CrossLiquidationImpactUnavailableReasonEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3CrossLiquidationImpactUnavailableReasonEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -77,7 +65,6 @@ final BuiltSet<Hip3CrossLiquidationImpactUnavailableReasonEnum>
   _$hip3CrossLiquidationImpactUnavailableReasonEnum_currentLiquidationPriceUnavailable,
   _$hip3CrossLiquidationImpactUnavailableReasonEnum_liquidationCalculationUnavailable,
   _$hip3CrossLiquidationImpactUnavailableReasonEnum_liquidationPriceOutOfRange,
-  _$hip3CrossLiquidationImpactUnavailableReasonEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3CrossLiquidationImpactSideEnum>
@@ -92,12 +79,10 @@ class _$Hip3CrossLiquidationImpactSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'long': 'long',
     'short': 'short',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'long': 'long',
     'short': 'short',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -127,14 +112,12 @@ class _$Hip3CrossLiquidationImpactUnavailableReasonEnumSerializer
         'current_liquidation_price_unavailable',
     'liquidationCalculationUnavailable': 'liquidation_calculation_unavailable',
     'liquidationPriceOutOfRange': 'liquidation_price_out_of_range',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'current_liquidation_price_unavailable':
         'currentLiquidationPriceUnavailable',
     'liquidation_calculation_unavailable': 'liquidationCalculationUnavailable',
     'liquidation_price_out_of_range': 'liquidationPriceOutOfRange',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

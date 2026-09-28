@@ -21,8 +21,6 @@ class PortfolioSourceKind extends EnumClass {
   static const PortfolioSourceKind fixedPeg = _$fixedPeg;
   @BuiltValueEnumConst(wireName: r'internal_ledger')
   static const PortfolioSourceKind internalLedger = _$internalLedger;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioSourceKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioSourceKind> get serializer => _$portfolioSourceKindSerializer;
 

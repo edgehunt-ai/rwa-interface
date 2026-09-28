@@ -8,19 +8,14 @@ part of 'frozen_evm_transaction.dart';
 
 const FrozenEvmTransactionValueEnum _$frozenEvmTransactionValueEnum_n0x0 =
     const FrozenEvmTransactionValueEnum._('n0x0');
-const FrozenEvmTransactionValueEnum
-    _$frozenEvmTransactionValueEnum_unknownDefaultOpenApi =
-    const FrozenEvmTransactionValueEnum._('unknownDefaultOpenApi');
 
 FrozenEvmTransactionValueEnum _$frozenEvmTransactionValueEnumValueOf(
     String name) {
   switch (name) {
     case 'n0x0':
       return _$frozenEvmTransactionValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$frozenEvmTransactionValueEnum_unknownDefaultOpenApi;
     default:
-      return _$frozenEvmTransactionValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<FrozenEvmTransactionValueEnum>
     _$frozenEvmTransactionValueEnumValues = BuiltSet<
         FrozenEvmTransactionValueEnum>(const <FrozenEvmTransactionValueEnum>[
   _$frozenEvmTransactionValueEnum_n0x0,
-  _$frozenEvmTransactionValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FrozenEvmTransactionValueEnum>
@@ -39,11 +33,9 @@ class _$FrozenEvmTransactionValueEnumSerializer
     implements PrimitiveSerializer<FrozenEvmTransactionValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

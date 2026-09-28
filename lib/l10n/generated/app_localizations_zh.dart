@@ -1877,6 +1877,118 @@ class AppLocalizationsZh extends AppLocalizations {
   String get externalDepositDetail => '从其他平台或钱包向 BSC 充值 USDT';
 
   @override
+  String get prepareFunds => '准备资金';
+
+  @override
+  String insufficientAssetInSpotAccount(Object asset) {
+    return '现货账户中的 $asset 余额不足：';
+  }
+
+  @override
+  String addFundingAmountFrom(Object amount, Object asset) {
+    return '从以下来源补充 $amount $asset：';
+  }
+
+  @override
+  String get spot => '现货';
+
+  @override
+  String get fundsNeeded => '所需资金';
+
+  @override
+  String depositAssetOnNetwork(Object asset, Object network) {
+    return '从其他平台或钱包向 $network 充值 $asset';
+  }
+
+  @override
+  String get transferFromSpot => '从现货账户转账';
+
+  @override
+  String get transferWaitingArrival => '转账已提交，正在等待资金到账。';
+
+  @override
+  String get addToken => '添加代币';
+
+  @override
+  String availableAmount(Object amount) {
+    return '可用：$amount';
+  }
+
+  @override
+  String get estimateTime => '预计时间';
+
+  @override
+  String get bridgeFee => '跨链费用';
+
+  @override
+  String get sendAccount => '转出账户';
+
+  @override
+  String get receiveAccount => '接收账户';
+
+  @override
+  String get sendAmount => '转出数量';
+
+  @override
+  String get receiveAmount => '接收数量';
+
+  @override
+  String get signAndTransfer => '签名并转账';
+
+  @override
+  String get transferInProgress => '转账处理中…';
+
+  @override
+  String get transferCompleted => '转账成功';
+
+  @override
+  String get totalFee => '总费用';
+
+  @override
+  String get transferEnterPositiveAmount => '请输入大于零的数量。';
+
+  @override
+  String get transferWaitForQuote => '请等待最新询价结果后再转账。';
+
+  @override
+  String get transferQuoteNotReady => '当前报价尚不能确认，请调整转出数量后重试。';
+
+  @override
+  String get transferQuoteChanged => '报价已变化且无法确认，请调整转出数量后重试。';
+
+  @override
+  String get transferRequiresManualReview => '此次转账需要人工审核。';
+
+  @override
+  String get transferFailed => '转账失败。';
+
+  @override
+  String get transferQuoteExpired => '转账报价已过期，请重新询价。';
+
+  @override
+  String get transferCancelled => '转账已取消。';
+
+  @override
+  String get transferBlocked => '此次转账当前被阻止。';
+
+  @override
+  String get transferOptionsLoadFailed => '无法加载转账选项。';
+
+  @override
+  String get loadingTransferDetails => '正在加载转账详情';
+
+  @override
+  String get noEligibleFundingAssets => '没有可用的资金资产';
+
+  @override
+  String get oneMinute => '1 分钟';
+
+  @override
+  String minutesRange(Object minutes) {
+    return '1–$minutes 分钟';
+  }
+
+  @override
   String get positionsUnavailable => '仓位不可用';
 
   @override

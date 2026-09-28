@@ -26,9 +26,6 @@ class MarketProductGroup extends EnumClass {
   /// 市场产品列表分组。`favorites` 仅表示当前登录用户的自选产品，其他值为全市场排行。 当前 hot 对 bStocks/Perps 使用观测到的24h成交额热度，不是平台浏览量或运营推荐； 在当前筛选集合内排序，成交额相同按 symbol/kind 稳定排序，缺失/非法成交额不参与排名。 
   @BuiltValueEnumConst(wireName: r'favorites')
   static const MarketProductGroup favorites = _$favorites;
-  /// 市场产品列表分组。`favorites` 仅表示当前登录用户的自选产品，其他值为全市场排行。 当前 hot 对 bStocks/Perps 使用观测到的24h成交额热度，不是平台浏览量或运营推荐； 在当前筛选集合内排序，成交额相同按 symbol/kind 稳定排序，缺失/非法成交额不参与排名。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MarketProductGroup unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<MarketProductGroup> get serializer => _$marketProductGroupSerializer;
 

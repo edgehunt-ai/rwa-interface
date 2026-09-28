@@ -9,19 +9,14 @@ part of 'bstock_limit_order_preview.dart';
 const BstockLimitOrderPreviewFundingModeEnum
     _$bstockLimitOrderPreviewFundingModeEnum_unreservedTransferFrom =
     const BstockLimitOrderPreviewFundingModeEnum._('unreservedTransferFrom');
-const BstockLimitOrderPreviewFundingModeEnum
-    _$bstockLimitOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
-    const BstockLimitOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
 
 BstockLimitOrderPreviewFundingModeEnum
     _$bstockLimitOrderPreviewFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$bstockLimitOrderPreviewFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLimitOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLimitOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,24 +24,18 @@ final BuiltSet<BstockLimitOrderPreviewFundingModeEnum>
     _$bstockLimitOrderPreviewFundingModeEnumValues = BuiltSet<
         BstockLimitOrderPreviewFundingModeEnum>(const <BstockLimitOrderPreviewFundingModeEnum>[
   _$bstockLimitOrderPreviewFundingModeEnum_unreservedTransferFrom,
-  _$bstockLimitOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLimitOrderPreviewTypeEnum _$bstockLimitOrderPreviewTypeEnum_limit =
     const BstockLimitOrderPreviewTypeEnum._('limit');
-const BstockLimitOrderPreviewTypeEnum
-    _$bstockLimitOrderPreviewTypeEnum_unknownDefaultOpenApi =
-    const BstockLimitOrderPreviewTypeEnum._('unknownDefaultOpenApi');
 
 BstockLimitOrderPreviewTypeEnum _$bstockLimitOrderPreviewTypeEnumValueOf(
     String name) {
   switch (name) {
     case 'limit':
       return _$bstockLimitOrderPreviewTypeEnum_limit;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLimitOrderPreviewTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLimitOrderPreviewTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,24 +43,18 @@ final BuiltSet<BstockLimitOrderPreviewTypeEnum>
     _$bstockLimitOrderPreviewTypeEnumValues = BuiltSet<
         BstockLimitOrderPreviewTypeEnum>(const <BstockLimitOrderPreviewTypeEnum>[
   _$bstockLimitOrderPreviewTypeEnum_limit,
-  _$bstockLimitOrderPreviewTypeEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLimitOrderPreviewKindEnum _$bstockLimitOrderPreviewKindEnum_bstock =
     const BstockLimitOrderPreviewKindEnum._('bstock');
-const BstockLimitOrderPreviewKindEnum
-    _$bstockLimitOrderPreviewKindEnum_unknownDefaultOpenApi =
-    const BstockLimitOrderPreviewKindEnum._('unknownDefaultOpenApi');
 
 BstockLimitOrderPreviewKindEnum _$bstockLimitOrderPreviewKindEnumValueOf(
     String name) {
   switch (name) {
     case 'bstock':
       return _$bstockLimitOrderPreviewKindEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLimitOrderPreviewKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLimitOrderPreviewKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -79,25 +62,19 @@ final BuiltSet<BstockLimitOrderPreviewKindEnum>
     _$bstockLimitOrderPreviewKindEnumValues = BuiltSet<
         BstockLimitOrderPreviewKindEnum>(const <BstockLimitOrderPreviewKindEnum>[
   _$bstockLimitOrderPreviewKindEnum_bstock,
-  _$bstockLimitOrderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockLimitOrderPreviewNetworkEnum
     _$bstockLimitOrderPreviewNetworkEnum_BSC =
     const BstockLimitOrderPreviewNetworkEnum._('BSC');
-const BstockLimitOrderPreviewNetworkEnum
-    _$bstockLimitOrderPreviewNetworkEnum_unknownDefaultOpenApi =
-    const BstockLimitOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 BstockLimitOrderPreviewNetworkEnum _$bstockLimitOrderPreviewNetworkEnumValueOf(
     String name) {
   switch (name) {
     case 'BSC':
       return _$bstockLimitOrderPreviewNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$bstockLimitOrderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockLimitOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -105,7 +82,6 @@ final BuiltSet<BstockLimitOrderPreviewNetworkEnum>
     _$bstockLimitOrderPreviewNetworkEnumValues = BuiltSet<
         BstockLimitOrderPreviewNetworkEnum>(const <BstockLimitOrderPreviewNetworkEnum>[
   _$bstockLimitOrderPreviewNetworkEnum_BSC,
-  _$bstockLimitOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockLimitOrderPreviewFundingModeEnum>
@@ -125,11 +101,9 @@ class _$BstockLimitOrderPreviewFundingModeEnumSerializer
     implements PrimitiveSerializer<BstockLimitOrderPreviewFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -157,11 +131,9 @@ class _$BstockLimitOrderPreviewTypeEnumSerializer
     implements PrimitiveSerializer<BstockLimitOrderPreviewTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -187,11 +159,9 @@ class _$BstockLimitOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<BstockLimitOrderPreviewKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -217,11 +187,9 @@ class _$BstockLimitOrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<BstockLimitOrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -9,19 +9,14 @@ part of 'hip3_realtime_balance_item.dart';
 const Hip3RealtimeBalanceItemEventEnum
     _$hip3RealtimeBalanceItemEventEnum_hip3Balance =
     const Hip3RealtimeBalanceItemEventEnum._('hip3Balance');
-const Hip3RealtimeBalanceItemEventEnum
-    _$hip3RealtimeBalanceItemEventEnum_unknownDefaultOpenApi =
-    const Hip3RealtimeBalanceItemEventEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimeBalanceItemEventEnum _$hip3RealtimeBalanceItemEventEnumValueOf(
     String name) {
   switch (name) {
     case 'hip3Balance':
       return _$hip3RealtimeBalanceItemEventEnum_hip3Balance;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimeBalanceItemEventEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimeBalanceItemEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3RealtimeBalanceItemEventEnum>
     _$hip3RealtimeBalanceItemEventEnumValues = BuiltSet<
         Hip3RealtimeBalanceItemEventEnum>(const <Hip3RealtimeBalanceItemEventEnum>[
   _$hip3RealtimeBalanceItemEventEnum_hip3Balance,
-  _$hip3RealtimeBalanceItemEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3RealtimeBalanceItemEventEnum>
@@ -40,11 +34,9 @@ class _$Hip3RealtimeBalanceItemEventEnumSerializer
     implements PrimitiveSerializer<Hip3RealtimeBalanceItemEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3Balance': 'hip3_balance',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3_balance': 'hip3Balance',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

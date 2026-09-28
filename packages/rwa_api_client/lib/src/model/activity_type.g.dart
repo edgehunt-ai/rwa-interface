@@ -20,8 +20,6 @@ const ActivityType _$funding = const ActivityType._('funding');
 const ActivityType _$approval = const ActivityType._('approval');
 const ActivityType _$orderSign = const ActivityType._('orderSign');
 const ActivityType _$bridgeSign = const ActivityType._('bridgeSign');
-const ActivityType _$unknownDefaultOpenApi =
-    const ActivityType._('unknownDefaultOpenApi');
 
 ActivityType _$valueOf(String name) {
   switch (name) {
@@ -53,10 +51,8 @@ ActivityType _$valueOf(String name) {
       return _$orderSign;
     case 'bridgeSign':
       return _$bridgeSign;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -76,7 +72,6 @@ final BuiltSet<ActivityType> _$values =
   _$approval,
   _$orderSign,
   _$bridgeSign,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ActivityTypeMeta {
@@ -95,7 +90,6 @@ class _$ActivityTypeMeta {
   ActivityType get approval => _$approval;
   ActivityType get orderSign => _$orderSign;
   ActivityType get bridgeSign => _$bridgeSign;
-  ActivityType get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ActivityType valueOf(String name) => _$valueOf(name);
   BuiltSet<ActivityType> get values => _$values;
 }
@@ -123,7 +117,6 @@ class _$ActivityTypeSerializer implements PrimitiveSerializer<ActivityType> {
     'approval': 'approval',
     'orderSign': 'orderSign',
     'bridgeSign': 'bridgeSign',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
@@ -140,7 +133,6 @@ class _$ActivityTypeSerializer implements PrimitiveSerializer<ActivityType> {
     'approval': 'approval',
     'orderSign': 'orderSign',
     'bridgeSign': 'bridgeSign',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

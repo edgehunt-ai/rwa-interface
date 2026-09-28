@@ -9,19 +9,14 @@ part of 'hip3_realtime_balance.dart';
 const Hip3RealtimeBalanceScopeEnum
     _$hip3RealtimeBalanceScopeEnum_hyperliquidWallet =
     const Hip3RealtimeBalanceScopeEnum._('hyperliquidWallet');
-const Hip3RealtimeBalanceScopeEnum
-    _$hip3RealtimeBalanceScopeEnum_unknownDefaultOpenApi =
-    const Hip3RealtimeBalanceScopeEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimeBalanceScopeEnum _$hip3RealtimeBalanceScopeEnumValueOf(
     String name) {
   switch (name) {
     case 'hyperliquidWallet':
       return _$hip3RealtimeBalanceScopeEnum_hyperliquidWallet;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimeBalanceScopeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimeBalanceScopeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3RealtimeBalanceScopeEnum>
     _$hip3RealtimeBalanceScopeEnumValues =
     BuiltSet<Hip3RealtimeBalanceScopeEnum>(const <Hip3RealtimeBalanceScopeEnum>[
   _$hip3RealtimeBalanceScopeEnum_hyperliquidWallet,
-  _$hip3RealtimeBalanceScopeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3RealtimeBalanceScopeEnum>
@@ -40,11 +34,9 @@ class _$Hip3RealtimeBalanceScopeEnumSerializer
     implements PrimitiveSerializer<Hip3RealtimeBalanceScopeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidWallet': 'hyperliquid_wallet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid_wallet': 'hyperliquidWallet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

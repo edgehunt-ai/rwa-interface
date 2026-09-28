@@ -8,19 +8,14 @@ part of 'arbitrum_deposit_rail.dart';
 
 const ArbitrumDepositRailChainEnum _$arbitrumDepositRailChainEnum_arbitrum =
     const ArbitrumDepositRailChainEnum._('arbitrum');
-const ArbitrumDepositRailChainEnum
-    _$arbitrumDepositRailChainEnum_unknownDefaultOpenApi =
-    const ArbitrumDepositRailChainEnum._('unknownDefaultOpenApi');
 
 ArbitrumDepositRailChainEnum _$arbitrumDepositRailChainEnumValueOf(
     String name) {
   switch (name) {
     case 'arbitrum':
       return _$arbitrumDepositRailChainEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumDepositRailChainEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumDepositRailChainEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,25 +23,19 @@ final BuiltSet<ArbitrumDepositRailChainEnum>
     _$arbitrumDepositRailChainEnumValues =
     BuiltSet<ArbitrumDepositRailChainEnum>(const <ArbitrumDepositRailChainEnum>[
   _$arbitrumDepositRailChainEnum_arbitrum,
-  _$arbitrumDepositRailChainEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumDepositRailChainIdEnum
     _$arbitrumDepositRailChainIdEnum_number42161 =
     const ArbitrumDepositRailChainIdEnum._('number42161');
-const ArbitrumDepositRailChainIdEnum
-    _$arbitrumDepositRailChainIdEnum_unknownDefaultOpenApi =
-    const ArbitrumDepositRailChainIdEnum._('unknownDefaultOpenApi');
 
 ArbitrumDepositRailChainIdEnum _$arbitrumDepositRailChainIdEnumValueOf(
     String name) {
   switch (name) {
     case 'number42161':
       return _$arbitrumDepositRailChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumDepositRailChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumDepositRailChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,24 +43,18 @@ final BuiltSet<ArbitrumDepositRailChainIdEnum>
     _$arbitrumDepositRailChainIdEnumValues = BuiltSet<
         ArbitrumDepositRailChainIdEnum>(const <ArbitrumDepositRailChainIdEnum>[
   _$arbitrumDepositRailChainIdEnum_number42161,
-  _$arbitrumDepositRailChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumDepositRailTokenEnum _$arbitrumDepositRailTokenEnum_USDC =
     const ArbitrumDepositRailTokenEnum._('USDC');
-const ArbitrumDepositRailTokenEnum
-    _$arbitrumDepositRailTokenEnum_unknownDefaultOpenApi =
-    const ArbitrumDepositRailTokenEnum._('unknownDefaultOpenApi');
 
 ArbitrumDepositRailTokenEnum _$arbitrumDepositRailTokenEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$arbitrumDepositRailTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumDepositRailTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumDepositRailTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -79,26 +62,20 @@ final BuiltSet<ArbitrumDepositRailTokenEnum>
     _$arbitrumDepositRailTokenEnumValues =
     BuiltSet<ArbitrumDepositRailTokenEnum>(const <ArbitrumDepositRailTokenEnum>[
   _$arbitrumDepositRailTokenEnum_USDC,
-  _$arbitrumDepositRailTokenEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumDepositRailTokenContractEnum
     _$arbitrumDepositRailTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831 =
     const ArbitrumDepositRailTokenContractEnum._(
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831');
-const ArbitrumDepositRailTokenContractEnum
-    _$arbitrumDepositRailTokenContractEnum_unknownDefaultOpenApi =
-    const ArbitrumDepositRailTokenContractEnum._('unknownDefaultOpenApi');
 
 ArbitrumDepositRailTokenContractEnum
     _$arbitrumDepositRailTokenContractEnumValueOf(String name) {
   switch (name) {
     case 'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
       return _$arbitrumDepositRailTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumDepositRailTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumDepositRailTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -106,25 +83,19 @@ final BuiltSet<ArbitrumDepositRailTokenContractEnum>
     _$arbitrumDepositRailTokenContractEnumValues = BuiltSet<
         ArbitrumDepositRailTokenContractEnum>(const <ArbitrumDepositRailTokenContractEnum>[
   _$arbitrumDepositRailTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831,
-  _$arbitrumDepositRailTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumDepositRailTokenDecimalsEnum
     _$arbitrumDepositRailTokenDecimalsEnum_number6 =
     const ArbitrumDepositRailTokenDecimalsEnum._('number6');
-const ArbitrumDepositRailTokenDecimalsEnum
-    _$arbitrumDepositRailTokenDecimalsEnum_unknownDefaultOpenApi =
-    const ArbitrumDepositRailTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 ArbitrumDepositRailTokenDecimalsEnum
     _$arbitrumDepositRailTokenDecimalsEnumValueOf(String name) {
   switch (name) {
     case 'number6':
       return _$arbitrumDepositRailTokenDecimalsEnum_number6;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumDepositRailTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumDepositRailTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -132,26 +103,19 @@ final BuiltSet<ArbitrumDepositRailTokenDecimalsEnum>
     _$arbitrumDepositRailTokenDecimalsEnumValues = BuiltSet<
         ArbitrumDepositRailTokenDecimalsEnum>(const <ArbitrumDepositRailTokenDecimalsEnum>[
   _$arbitrumDepositRailTokenDecimalsEnum_number6,
-  _$arbitrumDepositRailTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumDepositRailConfirmationsRequiredEnum
     _$arbitrumDepositRailConfirmationsRequiredEnum_number20 =
     const ArbitrumDepositRailConfirmationsRequiredEnum._('number20');
-const ArbitrumDepositRailConfirmationsRequiredEnum
-    _$arbitrumDepositRailConfirmationsRequiredEnum_unknownDefaultOpenApi =
-    const ArbitrumDepositRailConfirmationsRequiredEnum._(
-        'unknownDefaultOpenApi');
 
 ArbitrumDepositRailConfirmationsRequiredEnum
     _$arbitrumDepositRailConfirmationsRequiredEnumValueOf(String name) {
   switch (name) {
     case 'number20':
       return _$arbitrumDepositRailConfirmationsRequiredEnum_number20;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumDepositRailConfirmationsRequiredEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumDepositRailConfirmationsRequiredEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -159,7 +123,6 @@ final BuiltSet<ArbitrumDepositRailConfirmationsRequiredEnum>
     _$arbitrumDepositRailConfirmationsRequiredEnumValues = BuiltSet<
         ArbitrumDepositRailConfirmationsRequiredEnum>(const <ArbitrumDepositRailConfirmationsRequiredEnum>[
   _$arbitrumDepositRailConfirmationsRequiredEnum_number20,
-  _$arbitrumDepositRailConfirmationsRequiredEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<ArbitrumDepositRailChainEnum>
@@ -185,11 +148,9 @@ class _$ArbitrumDepositRailChainEnumSerializer
     implements PrimitiveSerializer<ArbitrumDepositRailChainEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -214,11 +175,9 @@ class _$ArbitrumDepositRailChainIdEnumSerializer
     implements PrimitiveSerializer<ArbitrumDepositRailChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -244,11 +203,9 @@ class _$ArbitrumDepositRailTokenEnumSerializer
     implements PrimitiveSerializer<ArbitrumDepositRailTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -274,12 +231,10 @@ class _$ArbitrumDepositRailTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -307,11 +262,9 @@ class _$ArbitrumDepositRailTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<ArbitrumDepositRailTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number6': 6,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     6: 'number6',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -340,11 +293,9 @@ class _$ArbitrumDepositRailConfirmationsRequiredEnumSerializer
         PrimitiveSerializer<ArbitrumDepositRailConfirmationsRequiredEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number20': 20,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     20: 'number20',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

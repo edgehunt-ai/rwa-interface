@@ -27,8 +27,6 @@ class TransferProviderStatus extends EnumClass {
   static const TransferProviderStatus unknown = _$unknown;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferProviderStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TransferProviderStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<TransferProviderStatus> get serializer => _$transferProviderStatusSerializer;
 

@@ -194,8 +194,6 @@ class FundingWalletActionSummaryKindEnum extends EnumClass {
   static const FundingWalletActionSummaryKindEnum erc20Approval = _$fundingWalletActionSummaryKindEnum_erc20Approval;
   @BuiltValueEnumConst(wireName: r'origin_transaction')
   static const FundingWalletActionSummaryKindEnum originTransaction = _$fundingWalletActionSummaryKindEnum_originTransaction;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingWalletActionSummaryKindEnum unknownDefaultOpenApi = _$fundingWalletActionSummaryKindEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingWalletActionSummaryKindEnum> get serializer => _$fundingWalletActionSummaryKindEnumSerializer;
 

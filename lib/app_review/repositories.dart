@@ -911,6 +911,33 @@ final class AppReviewFundingRepository implements FundingRepository {
   );
 
   @override
+  Future<FundingSessionSummary> createTransferFundingSession({
+    required String destination,
+    required String amount,
+    required String idempotencyKey,
+  }) async => FundingSessionSummary(
+    sessionId: 'review-transfer-session-${amount.hashCode}',
+    status: 'readyToConfirm',
+    version: 1,
+    canConfirmTransfer: true,
+    expiresAt: _now.add(const Duration(hours: 24)),
+  );
+
+  @override
+  Future<FundingSessionSummary> updateFundingSessionSelection({
+    required String fundingSessionId,
+    required int version,
+    required Map<String, String> allocations,
+    required String idempotencyKey,
+  }) async => FundingSessionSummary(
+    sessionId: fundingSessionId,
+    status: 'readyToConfirm',
+    version: version + 1,
+    canConfirmTransfer: true,
+    expiresAt: _now.add(const Duration(hours: 24)),
+  );
+
+  @override
   Future<FundingCatalogSummary> getFundingCatalog() async =>
       FundingCatalogSummary(
         catalogVersion: 'review',

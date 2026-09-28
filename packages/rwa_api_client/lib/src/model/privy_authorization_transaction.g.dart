@@ -9,19 +9,14 @@ part of 'privy_authorization_transaction.dart';
 const PrivyAuthorizationTransactionValueEnum
     _$privyAuthorizationTransactionValueEnum_n0x0 =
     const PrivyAuthorizationTransactionValueEnum._('n0x0');
-const PrivyAuthorizationTransactionValueEnum
-    _$privyAuthorizationTransactionValueEnum_unknownDefaultOpenApi =
-    const PrivyAuthorizationTransactionValueEnum._('unknownDefaultOpenApi');
 
 PrivyAuthorizationTransactionValueEnum
     _$privyAuthorizationTransactionValueEnumValueOf(String name) {
   switch (name) {
     case 'n0x0':
       return _$privyAuthorizationTransactionValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$privyAuthorizationTransactionValueEnum_unknownDefaultOpenApi;
     default:
-      return _$privyAuthorizationTransactionValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<PrivyAuthorizationTransactionValueEnum>
     _$privyAuthorizationTransactionValueEnumValues = BuiltSet<
         PrivyAuthorizationTransactionValueEnum>(const <PrivyAuthorizationTransactionValueEnum>[
   _$privyAuthorizationTransactionValueEnum_n0x0,
-  _$privyAuthorizationTransactionValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PrivyAuthorizationTransactionValueEnum>
@@ -40,11 +34,9 @@ class _$PrivyAuthorizationTransactionValueEnumSerializer
     implements PrimitiveSerializer<PrivyAuthorizationTransactionValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

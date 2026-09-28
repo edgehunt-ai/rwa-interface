@@ -9,20 +9,14 @@ part of 'funding_session_transfer_intent.dart';
 const FundingSessionTransferIntentDestinationEnum
     _$fundingSessionTransferIntentDestinationEnum_hip3Margin =
     const FundingSessionTransferIntentDestinationEnum._('hip3Margin');
-const FundingSessionTransferIntentDestinationEnum
-    _$fundingSessionTransferIntentDestinationEnum_unknownDefaultOpenApi =
-    const FundingSessionTransferIntentDestinationEnum._(
-        'unknownDefaultOpenApi');
 
 FundingSessionTransferIntentDestinationEnum
     _$fundingSessionTransferIntentDestinationEnumValueOf(String name) {
   switch (name) {
     case 'hip3Margin':
       return _$fundingSessionTransferIntentDestinationEnum_hip3Margin;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSessionTransferIntentDestinationEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingSessionTransferIntentDestinationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<FundingSessionTransferIntentDestinationEnum>
     _$fundingSessionTransferIntentDestinationEnumValues = BuiltSet<
         FundingSessionTransferIntentDestinationEnum>(const <FundingSessionTransferIntentDestinationEnum>[
   _$fundingSessionTransferIntentDestinationEnum_hip3Margin,
-  _$fundingSessionTransferIntentDestinationEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingSessionTransferIntentDestinationEnum>
@@ -42,11 +35,9 @@ class _$FundingSessionTransferIntentDestinationEnumSerializer
         PrimitiveSerializer<FundingSessionTransferIntentDestinationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3Margin': 'hip3_margin',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3_margin': 'hip3Margin',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

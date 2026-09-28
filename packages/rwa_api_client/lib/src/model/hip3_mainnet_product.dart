@@ -21,8 +21,6 @@ class Hip3MainnetProduct extends EnumClass {
   static const Hip3MainnetProduct xyzColonNVDA = _$xyzColonNVDA;
   @BuiltValueEnumConst(wireName: r'xyz:TSLA')
   static const Hip3MainnetProduct xyzColonTSLA = _$xyzColonTSLA;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3MainnetProduct unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3MainnetProduct> get serializer => _$hip3MainnetProductSerializer;
 

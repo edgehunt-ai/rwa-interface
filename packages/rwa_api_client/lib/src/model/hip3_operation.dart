@@ -23,8 +23,6 @@ class Hip3Operation extends EnumClass {
   static const Hip3Operation clearTpsl = _$clearTpsl;
   @BuiltValueEnumConst(wireName: r'set_leverage')
   static const Hip3Operation setLeverage = _$setLeverage;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Operation unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3Operation> get serializer => _$hip3OperationSerializer;
 

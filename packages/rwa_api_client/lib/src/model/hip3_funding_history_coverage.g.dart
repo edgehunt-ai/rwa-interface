@@ -9,19 +9,14 @@ part of 'hip3_funding_history_coverage.dart';
 const Hip3FundingHistoryCoverageSource_Enum
     _$hip3FundingHistoryCoverageSourceEnum_hyperliquidUserFunding =
     const Hip3FundingHistoryCoverageSource_Enum._('hyperliquidUserFunding');
-const Hip3FundingHistoryCoverageSource_Enum
-    _$hip3FundingHistoryCoverageSourceEnum_unknownDefaultOpenApi =
-    const Hip3FundingHistoryCoverageSource_Enum._('unknownDefaultOpenApi');
 
 Hip3FundingHistoryCoverageSource_Enum
     _$hip3FundingHistoryCoverageSourceEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquidUserFunding':
       return _$hip3FundingHistoryCoverageSourceEnum_hyperliquidUserFunding;
-    case 'unknownDefaultOpenApi':
-      return _$hip3FundingHistoryCoverageSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3FundingHistoryCoverageSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3FundingHistoryCoverageSource_Enum>
     _$hip3FundingHistoryCoverageSourceEnumValues = BuiltSet<
         Hip3FundingHistoryCoverageSource_Enum>(const <Hip3FundingHistoryCoverageSource_Enum>[
   _$hip3FundingHistoryCoverageSourceEnum_hyperliquidUserFunding,
-  _$hip3FundingHistoryCoverageSourceEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3FundingHistoryCoverageStatusEnum
@@ -50,9 +44,6 @@ const Hip3FundingHistoryCoverageStatusEnum
 const Hip3FundingHistoryCoverageStatusEnum
     _$hip3FundingHistoryCoverageStatusEnum_archivePartial =
     const Hip3FundingHistoryCoverageStatusEnum._('archivePartial');
-const Hip3FundingHistoryCoverageStatusEnum
-    _$hip3FundingHistoryCoverageStatusEnum_unknownDefaultOpenApi =
-    const Hip3FundingHistoryCoverageStatusEnum._('unknownDefaultOpenApi');
 
 Hip3FundingHistoryCoverageStatusEnum
     _$hip3FundingHistoryCoverageStatusEnumValueOf(String name) {
@@ -69,10 +60,8 @@ Hip3FundingHistoryCoverageStatusEnum
       return _$hip3FundingHistoryCoverageStatusEnum_archiveComplete;
     case 'archivePartial':
       return _$hip3FundingHistoryCoverageStatusEnum_archivePartial;
-    case 'unknownDefaultOpenApi':
-      return _$hip3FundingHistoryCoverageStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3FundingHistoryCoverageStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -85,7 +74,6 @@ final BuiltSet<Hip3FundingHistoryCoverageStatusEnum>
   _$hip3FundingHistoryCoverageStatusEnum_upstreamUnavailable,
   _$hip3FundingHistoryCoverageStatusEnum_archiveComplete,
   _$hip3FundingHistoryCoverageStatusEnum_archivePartial,
-  _$hip3FundingHistoryCoverageStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3FundingHistoryCoverageSource_Enum>
@@ -99,11 +87,9 @@ class _$Hip3FundingHistoryCoverageSource_EnumSerializer
     implements PrimitiveSerializer<Hip3FundingHistoryCoverageSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidUserFunding': 'hyperliquid_userFunding',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid_userFunding': 'hyperliquidUserFunding',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -136,7 +122,6 @@ class _$Hip3FundingHistoryCoverageStatusEnumSerializer
     'upstreamUnavailable': 'upstream_unavailable',
     'archiveComplete': 'archive_complete',
     'archivePartial': 'archive_partial',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'source_exhausted': 'sourceExhausted',
@@ -145,7 +130,6 @@ class _$Hip3FundingHistoryCoverageStatusEnumSerializer
     'upstream_unavailable': 'upstreamUnavailable',
     'archive_complete': 'archiveComplete',
     'archive_partial': 'archivePartial',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

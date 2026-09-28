@@ -10,9 +10,6 @@ const FundingRailCircuitScopeEnum _$fundingRailCircuitScopeEnum_hip3 =
     const FundingRailCircuitScopeEnum._('hip3');
 const FundingRailCircuitScopeEnum _$fundingRailCircuitScopeEnum_bstocks =
     const FundingRailCircuitScopeEnum._('bstocks');
-const FundingRailCircuitScopeEnum
-    _$fundingRailCircuitScopeEnum_unknownDefaultOpenApi =
-    const FundingRailCircuitScopeEnum._('unknownDefaultOpenApi');
 
 FundingRailCircuitScopeEnum _$fundingRailCircuitScopeEnumValueOf(String name) {
   switch (name) {
@@ -20,10 +17,8 @@ FundingRailCircuitScopeEnum _$fundingRailCircuitScopeEnumValueOf(String name) {
       return _$fundingRailCircuitScopeEnum_hip3;
     case 'bstocks':
       return _$fundingRailCircuitScopeEnum_bstocks;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailCircuitScopeEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailCircuitScopeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,23 +27,17 @@ final BuiltSet<FundingRailCircuitScopeEnum>
     BuiltSet<FundingRailCircuitScopeEnum>(const <FundingRailCircuitScopeEnum>[
   _$fundingRailCircuitScopeEnum_hip3,
   _$fundingRailCircuitScopeEnum_bstocks,
-  _$fundingRailCircuitScopeEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingRailCircuitStateEnum _$fundingRailCircuitStateEnum_open =
     const FundingRailCircuitStateEnum._('open');
-const FundingRailCircuitStateEnum
-    _$fundingRailCircuitStateEnum_unknownDefaultOpenApi =
-    const FundingRailCircuitStateEnum._('unknownDefaultOpenApi');
 
 FundingRailCircuitStateEnum _$fundingRailCircuitStateEnumValueOf(String name) {
   switch (name) {
     case 'open':
       return _$fundingRailCircuitStateEnum_open;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRailCircuitStateEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRailCircuitStateEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,7 +45,6 @@ final BuiltSet<FundingRailCircuitStateEnum>
     _$fundingRailCircuitStateEnumValues =
     BuiltSet<FundingRailCircuitStateEnum>(const <FundingRailCircuitStateEnum>[
   _$fundingRailCircuitStateEnum_open,
-  _$fundingRailCircuitStateEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingRailCircuitScopeEnum>
@@ -71,12 +59,10 @@ class _$FundingRailCircuitScopeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3': 'hip3',
     'bstocks': 'bstocks',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3': 'hip3',
     'bstocks': 'bstocks',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,11 +87,9 @@ class _$FundingRailCircuitStateEnumSerializer
     implements PrimitiveSerializer<FundingRailCircuitStateEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'open': 'open',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'open': 'open',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

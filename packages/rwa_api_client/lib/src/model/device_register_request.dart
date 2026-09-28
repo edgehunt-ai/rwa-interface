@@ -188,9 +188,6 @@ class DeviceRegisterRequestPushProviderEnum extends EnumClass {
   /// 不传时服务端可按平台兼容推断。Firebase-only 环境只接受 `fcm`； 收到 `apns` 时返回 503 `push_provider_unconfigured`，且不保存令牌。 
   @BuiltValueEnumConst(wireName: r'fcm')
   static const DeviceRegisterRequestPushProviderEnum fcm = _$deviceRegisterRequestPushProviderEnum_fcm;
-  /// 不传时服务端可按平台兼容推断。Firebase-only 环境只接受 `fcm`； 收到 `apns` 时返回 503 `push_provider_unconfigured`，且不保存令牌。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DeviceRegisterRequestPushProviderEnum unknownDefaultOpenApi = _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi;
 
   static Serializer<DeviceRegisterRequestPushProviderEnum> get serializer => _$deviceRegisterRequestPushProviderEnumSerializer;
 

@@ -10,19 +10,14 @@ const Hip3LiquidationHistoryCoverageSource_Enum
     _$hip3LiquidationHistoryCoverageSourceEnum_hyperliquidUserNonFundingLedgerUpdates =
     const Hip3LiquidationHistoryCoverageSource_Enum._(
         'hyperliquidUserNonFundingLedgerUpdates');
-const Hip3LiquidationHistoryCoverageSource_Enum
-    _$hip3LiquidationHistoryCoverageSourceEnum_unknownDefaultOpenApi =
-    const Hip3LiquidationHistoryCoverageSource_Enum._('unknownDefaultOpenApi');
 
 Hip3LiquidationHistoryCoverageSource_Enum
     _$hip3LiquidationHistoryCoverageSourceEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquidUserNonFundingLedgerUpdates':
       return _$hip3LiquidationHistoryCoverageSourceEnum_hyperliquidUserNonFundingLedgerUpdates;
-    case 'unknownDefaultOpenApi':
-      return _$hip3LiquidationHistoryCoverageSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3LiquidationHistoryCoverageSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +25,6 @@ final BuiltSet<Hip3LiquidationHistoryCoverageSource_Enum>
     _$hip3LiquidationHistoryCoverageSourceEnumValues = BuiltSet<
         Hip3LiquidationHistoryCoverageSource_Enum>(const <Hip3LiquidationHistoryCoverageSource_Enum>[
   _$hip3LiquidationHistoryCoverageSourceEnum_hyperliquidUserNonFundingLedgerUpdates,
-  _$hip3LiquidationHistoryCoverageSourceEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3LiquidationHistoryCoverageStatusEnum
@@ -51,9 +45,6 @@ const Hip3LiquidationHistoryCoverageStatusEnum
 const Hip3LiquidationHistoryCoverageStatusEnum
     _$hip3LiquidationHistoryCoverageStatusEnum_archivePartial =
     const Hip3LiquidationHistoryCoverageStatusEnum._('archivePartial');
-const Hip3LiquidationHistoryCoverageStatusEnum
-    _$hip3LiquidationHistoryCoverageStatusEnum_unknownDefaultOpenApi =
-    const Hip3LiquidationHistoryCoverageStatusEnum._('unknownDefaultOpenApi');
 
 Hip3LiquidationHistoryCoverageStatusEnum
     _$hip3LiquidationHistoryCoverageStatusEnumValueOf(String name) {
@@ -70,10 +61,8 @@ Hip3LiquidationHistoryCoverageStatusEnum
       return _$hip3LiquidationHistoryCoverageStatusEnum_archiveComplete;
     case 'archivePartial':
       return _$hip3LiquidationHistoryCoverageStatusEnum_archivePartial;
-    case 'unknownDefaultOpenApi':
-      return _$hip3LiquidationHistoryCoverageStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3LiquidationHistoryCoverageStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -86,7 +75,6 @@ final BuiltSet<Hip3LiquidationHistoryCoverageStatusEnum>
   _$hip3LiquidationHistoryCoverageStatusEnum_upstreamUnavailable,
   _$hip3LiquidationHistoryCoverageStatusEnum_archiveComplete,
   _$hip3LiquidationHistoryCoverageStatusEnum_archivePartial,
-  _$hip3LiquidationHistoryCoverageStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3LiquidationHistoryCoverageSource_Enum>
@@ -101,12 +89,10 @@ class _$Hip3LiquidationHistoryCoverageSource_EnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidUserNonFundingLedgerUpdates':
         'hyperliquid_userNonFundingLedgerUpdates',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid_userNonFundingLedgerUpdates':
         'hyperliquidUserNonFundingLedgerUpdates',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -139,7 +125,6 @@ class _$Hip3LiquidationHistoryCoverageStatusEnumSerializer
     'upstreamUnavailable': 'upstream_unavailable',
     'archiveComplete': 'archive_complete',
     'archivePartial': 'archive_partial',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'source_exhausted': 'sourceExhausted',
@@ -148,7 +133,6 @@ class _$Hip3LiquidationHistoryCoverageStatusEnumSerializer
     'upstream_unavailable': 'upstreamUnavailable',
     'archive_complete': 'archiveComplete',
     'archive_partial': 'archivePartial',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

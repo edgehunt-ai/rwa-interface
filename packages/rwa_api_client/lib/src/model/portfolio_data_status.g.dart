@@ -9,8 +9,6 @@ part of 'portfolio_data_status.dart';
 const PortfolioDataStatus _$complete = const PortfolioDataStatus._('complete');
 const PortfolioDataStatus _$partial = const PortfolioDataStatus._('partial');
 const PortfolioDataStatus _$empty = const PortfolioDataStatus._('empty');
-const PortfolioDataStatus _$unknownDefaultOpenApi =
-    const PortfolioDataStatus._('unknownDefaultOpenApi');
 
 PortfolioDataStatus _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ PortfolioDataStatus _$valueOf(String name) {
       return _$partial;
     case 'empty':
       return _$empty;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<PortfolioDataStatus> _$values =
   _$complete,
   _$partial,
   _$empty,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioDataStatusMeta {
@@ -40,7 +35,6 @@ class _$PortfolioDataStatusMeta {
   PortfolioDataStatus get complete => _$complete;
   PortfolioDataStatus get partial => _$partial;
   PortfolioDataStatus get empty => _$empty;
-  PortfolioDataStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioDataStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioDataStatus> get values => _$values;
 }
@@ -60,13 +54,11 @@ class _$PortfolioDataStatusSerializer
     'complete': 'complete',
     'partial': 'partial',
     'empty': 'empty',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'complete': 'complete',
     'partial': 'partial',
     'empty': 'empty',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

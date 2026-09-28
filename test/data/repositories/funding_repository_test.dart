@@ -41,6 +41,27 @@ void main() {
   });
 
   test(
+    'standalone transfer session only sends destination and amount',
+    () async {
+      final service = _CaptureFunding();
+      final repository = FundingRepositoryImpl(service);
+
+      await expectLater(
+        repository.createTransferFundingSession(
+          destination: 'hip3_margin',
+          amount: '160.25',
+          idempotencyKey: 'session-key',
+        ),
+        throwsStateError,
+      );
+
+      expect(service.session, {
+        'transfer': {'destination': 'hip3_margin', 'amount': '160.25'},
+      });
+    },
+  );
+
+  test(
     'generated request type update preserves multi-source funding wire',
     () async {
       final service = _CaptureFunding();
@@ -119,6 +140,22 @@ void main() {
     expect(result.resource.instructions.address, '0xrecipient');
     expect(result.capability, isNull);
   });
+
+  test(
+    'user-selected perp session plan maps its session ID and legs',
+    () async {
+      final plan = await FundingRepositoryImpl(_SessionPlanFunding())
+          .getFundingPlan('plan-1');
+
+      expect(plan.planId, 'plan-1');
+      expect(plan.tradePreviewId, 'session-1');
+      expect(plan.status.name, 'ready');
+      expect(plan.legs, hasLength(1));
+      expect(plan.legs.single.walletId, 'wallet-1');
+      expect(plan.legs.single.asset, 'USDC');
+      expect(plan.legs.single.outputAmount.value, '5');
+    },
+  );
 
   test(
     'self-custodial withdrawal serializes the exact create request',
@@ -243,6 +280,118 @@ final class _Funding implements FundingService {
       ),
     );
   }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _SessionPlanFunding implements FundingService {
+  @override
+  Future<api.FundingPlan> getPlan(String id) async => api.standardSerializers
+      .deserializeWith(api.FundingPlan.serializer, <String, Object?>{
+        'plan_id': id,
+        'trade_preview_id': null,
+        'funding_session_id': 'session-1',
+        'selection_version': 1,
+        'mode': 'user_selected_multi_source',
+        'required_target_amount': '5',
+        'target_snapshot': {
+          'account': 'hip3',
+          'account_ref': '0x09920a496942e7aa8c9adabf97cdf035524248c1',
+          'asset': {
+            'asset_id': 'hyperliquid:1337/perps:USDC-PERPS',
+            'namespace': 'hyperliquid',
+            'network': 'Hyperliquid',
+            'chain_id': 1337,
+            'token': 'USDC-PERPS',
+            'token_contract': '0x2100000000000000000000000000000000000000',
+            'token_decimals': 8,
+            'provenance': 'hyperliquid_perps',
+          },
+          'available_amount': '0',
+          'source': 'hyperliquid_info',
+          'observed_at': '2026-09-28T08:27:18.098Z',
+          'valid_until': '2026-09-28T08:28:18.098Z',
+        },
+        'shortfall': '5',
+        'status': 'ready',
+        'blocker': null,
+        'wallet_actions': <Object?>[],
+        'multi_source': {
+          'allocated_output_amount': '5',
+          'allocation_policy_version': 'decimal-bisection-v1',
+          'excluded_source_position_ids': <Object?>[],
+          'max_legs': 3,
+          'legs': [
+            {
+              'leg_id': 'leg-1',
+              'ordinal': 1,
+              'output_amount': '5',
+              'source_position_snapshot': {
+                'position_id': 'position-1',
+                'wallet_id': 'wallet-1',
+                'wallet_address': '0x09920a496942e7aa8c9adabf97cdf035524248c1',
+                'asset': {
+                  'asset_id': 'eip155:42161/erc20:0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+                  'namespace': 'eip155',
+                  'network': 'Arbitrum',
+                  'chain_id': 42161,
+                  'token': 'USDC',
+                  'token_contract':
+                      '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+                  'token_decimals': 6,
+                  'provenance': 'circle_native',
+                },
+                'available_amount': '5',
+                'reserved_amount': '5',
+                'gas_asset': 'ETH',
+                'gas_balance': '0',
+                'observed_at': '2026-09-28T08:27:18.143Z',
+                'valid_until': '2026-09-28T08:28:18.143Z',
+              },
+              'route': {
+                'quote_id': 'quote-1',
+                'provider': 'hyperliquid_bridge2',
+                'input_amount': '5',
+                'output_amount': '5',
+                'minimum_received': '5',
+                'maximum_input_amount': '5',
+                'fees': {
+                  'network_fee': '0',
+                  'provider_fee': '0',
+                  'bridge_fee': '0',
+                  'swap_fee': '0',
+                  'total_fee': '0',
+                  'fee_asset': 'USD',
+                  'total_cost_usd': '0',
+                },
+                'eta_seconds': 60,
+                'quoted_at': '2026-09-28T08:27:18.143Z',
+                'expires_at': '2026-09-28T08:28:18.143Z',
+                'quote_hash': 'a' * 64,
+                'refund': {
+                  'address': '0x09920a496942e7aa8c9adabf97cdf035524248c1',
+                  'address_role': 'source_wallet',
+                  'may_deduct_gas': false,
+                  'timing_note': 'No provider refund path',
+                },
+              },
+              'status': 'planned',
+              'transfer_id': null,
+              'wallet_actions': <Object?>[],
+            },
+          ],
+        },
+        'circuit_snapshot': {
+          'global': {'scope': 'global', 'state': 'closed', 'generation': 1},
+          'rail': {'scope': 'hip3', 'state': 'closed', 'generation': 1},
+        },
+        'created_at': '2026-09-28T08:27:18.331Z',
+        'expires_at': '2026-09-28T08:28:18.143Z',
+        'rail': 'perp',
+        'network': 'Hyperliquid',
+        'asset': 'USDC',
+      })!;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

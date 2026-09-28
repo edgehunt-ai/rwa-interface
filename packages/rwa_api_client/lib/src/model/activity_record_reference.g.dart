@@ -25,9 +25,6 @@ const ActivityRecordReferenceTypeEnum
 const ActivityRecordReferenceTypeEnum
     _$activityRecordReferenceTypeEnum_fundingPayment =
     const ActivityRecordReferenceTypeEnum._('fundingPayment');
-const ActivityRecordReferenceTypeEnum
-    _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi =
-    const ActivityRecordReferenceTypeEnum._('unknownDefaultOpenApi');
 
 ActivityRecordReferenceTypeEnum _$activityRecordReferenceTypeEnumValueOf(
     String name) {
@@ -46,10 +43,8 @@ ActivityRecordReferenceTypeEnum _$activityRecordReferenceTypeEnumValueOf(
       return _$activityRecordReferenceTypeEnum_withdrawal;
     case 'fundingPayment':
       return _$activityRecordReferenceTypeEnum_fundingPayment;
-    case 'unknownDefaultOpenApi':
-      return _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -63,7 +58,6 @@ final BuiltSet<ActivityRecordReferenceTypeEnum>
   _$activityRecordReferenceTypeEnum_deposit,
   _$activityRecordReferenceTypeEnum_withdrawal,
   _$activityRecordReferenceTypeEnum_fundingPayment,
-  _$activityRecordReferenceTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<ActivityRecordReferenceTypeEnum>
@@ -80,7 +74,6 @@ class _$ActivityRecordReferenceTypeEnumSerializer
     'deposit': 'deposit',
     'withdrawal': 'withdrawal',
     'fundingPayment': 'funding_payment',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
@@ -90,7 +83,6 @@ class _$ActivityRecordReferenceTypeEnumSerializer
     'deposit': 'deposit',
     'withdrawal': 'withdrawal',
     'funding_payment': 'fundingPayment',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

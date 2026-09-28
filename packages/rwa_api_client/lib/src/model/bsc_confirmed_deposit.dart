@@ -355,8 +355,6 @@ class BscConfirmedDepositChainEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const BscConfirmedDepositChainEnum BSC = _$bscConfirmedDepositChainEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscConfirmedDepositChainEnum unknownDefaultOpenApi = _$bscConfirmedDepositChainEnum_unknownDefaultOpenApi;
 
   static Serializer<BscConfirmedDepositChainEnum> get serializer => _$bscConfirmedDepositChainEnumSerializer;
 
@@ -370,8 +368,6 @@ class BscConfirmedDepositChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 56)
   static const BscConfirmedDepositChainIdEnum number56 = _$bscConfirmedDepositChainIdEnum_number56;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscConfirmedDepositChainIdEnum unknownDefaultOpenApi = _$bscConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BscConfirmedDepositChainIdEnum> get serializer => _$bscConfirmedDepositChainIdEnumSerializer;
 
@@ -385,8 +381,6 @@ class BscConfirmedDepositTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const BscConfirmedDepositTokenEnum USDC = _$bscConfirmedDepositTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscConfirmedDepositTokenEnum unknownDefaultOpenApi = _$bscConfirmedDepositTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<BscConfirmedDepositTokenEnum> get serializer => _$bscConfirmedDepositTokenEnumSerializer;
 
@@ -400,8 +394,6 @@ class BscConfirmedDepositTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d')
   static const BscConfirmedDepositTokenContractEnum n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d = _$bscConfirmedDepositTokenContractEnum_n0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BscConfirmedDepositTokenContractEnum unknownDefaultOpenApi = _$bscConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<BscConfirmedDepositTokenContractEnum> get serializer => _$bscConfirmedDepositTokenContractEnumSerializer;
 
@@ -415,8 +407,6 @@ class BscConfirmedDepositTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 18)
   static const BscConfirmedDepositTokenDecimalsEnum number18 = _$bscConfirmedDepositTokenDecimalsEnum_number18;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BscConfirmedDepositTokenDecimalsEnum unknownDefaultOpenApi = _$bscConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<BscConfirmedDepositTokenDecimalsEnum> get serializer => _$bscConfirmedDepositTokenDecimalsEnumSerializer;
 

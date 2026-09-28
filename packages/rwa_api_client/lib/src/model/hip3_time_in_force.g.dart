@@ -9,8 +9,6 @@ part of 'hip3_time_in_force.dart';
 const Hip3TimeInForce _$gtc = const Hip3TimeInForce._('gtc');
 const Hip3TimeInForce _$ioc = const Hip3TimeInForce._('ioc');
 const Hip3TimeInForce _$alo = const Hip3TimeInForce._('alo');
-const Hip3TimeInForce _$unknownDefaultOpenApi =
-    const Hip3TimeInForce._('unknownDefaultOpenApi');
 
 Hip3TimeInForce _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ Hip3TimeInForce _$valueOf(String name) {
       return _$ioc;
     case 'alo':
       return _$alo;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<Hip3TimeInForce> _$values =
   _$gtc,
   _$ioc,
   _$alo,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3TimeInForceMeta {
@@ -40,7 +35,6 @@ class _$Hip3TimeInForceMeta {
   Hip3TimeInForce get gtc => _$gtc;
   Hip3TimeInForce get ioc => _$ioc;
   Hip3TimeInForce get alo => _$alo;
-  Hip3TimeInForce get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3TimeInForce valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3TimeInForce> get values => _$values;
 }
@@ -59,13 +53,11 @@ class _$Hip3TimeInForceSerializer
     'gtc': 'gtc',
     'ioc': 'ioc',
     'alo': 'alo',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'gtc': 'gtc',
     'ioc': 'ioc',
     'alo': 'alo',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

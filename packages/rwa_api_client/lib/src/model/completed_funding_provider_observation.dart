@@ -144,8 +144,6 @@ class CompletedFundingProviderObservationStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'succeeded')
   static const CompletedFundingProviderObservationStatusEnum succeeded = _$completedFundingProviderObservationStatusEnum_succeeded;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingProviderObservationStatusEnum unknownDefaultOpenApi = _$completedFundingProviderObservationStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<CompletedFundingProviderObservationStatusEnum> get serializer => _$completedFundingProviderObservationStatusEnumSerializer;
 

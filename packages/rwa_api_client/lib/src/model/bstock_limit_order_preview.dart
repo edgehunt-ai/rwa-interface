@@ -1,5 +1,3 @@
-import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
-import 'package:rwa_api_client/src/model/order_type.dart';
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
@@ -16,6 +14,8 @@ import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_preview_common.dart';
+import 'package:rwa_api_client/src/model/order_type.dart';
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -812,8 +812,6 @@ class BstockLimitOrderPreviewFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const BstockLimitOrderPreviewFundingModeEnum unreservedTransferFrom = _$bstockLimitOrderPreviewFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockLimitOrderPreviewFundingModeEnum unknownDefaultOpenApi = _$bstockLimitOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockLimitOrderPreviewFundingModeEnum> get serializer => _$bstockLimitOrderPreviewFundingModeEnumSerializer;
 
@@ -827,8 +825,6 @@ class BstockLimitOrderPreviewTypeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'limit')
   static const BstockLimitOrderPreviewTypeEnum limit = _$bstockLimitOrderPreviewTypeEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockLimitOrderPreviewTypeEnum unknownDefaultOpenApi = _$bstockLimitOrderPreviewTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockLimitOrderPreviewTypeEnum> get serializer => _$bstockLimitOrderPreviewTypeEnumSerializer;
 
@@ -842,8 +838,6 @@ class BstockLimitOrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockLimitOrderPreviewKindEnum bstock = _$bstockLimitOrderPreviewKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockLimitOrderPreviewKindEnum unknownDefaultOpenApi = _$bstockLimitOrderPreviewKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockLimitOrderPreviewKindEnum> get serializer => _$bstockLimitOrderPreviewKindEnumSerializer;
 
@@ -857,8 +851,6 @@ class BstockLimitOrderPreviewNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const BstockLimitOrderPreviewNetworkEnum BSC = _$bstockLimitOrderPreviewNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockLimitOrderPreviewNetworkEnum unknownDefaultOpenApi = _$bstockLimitOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockLimitOrderPreviewNetworkEnum> get serializer => _$bstockLimitOrderPreviewNetworkEnumSerializer;
 

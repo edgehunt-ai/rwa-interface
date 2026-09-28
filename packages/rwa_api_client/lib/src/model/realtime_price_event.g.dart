@@ -8,18 +8,13 @@ part of 'realtime_price_event.dart';
 
 const RealtimePriceEventEventEnum _$realtimePriceEventEventEnum_price =
     const RealtimePriceEventEventEnum._('price');
-const RealtimePriceEventEventEnum
-    _$realtimePriceEventEventEnum_unknownDefaultOpenApi =
-    const RealtimePriceEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimePriceEventEventEnum _$realtimePriceEventEventEnumValueOf(String name) {
   switch (name) {
     case 'price':
       return _$realtimePriceEventEventEnum_price;
-    case 'unknownDefaultOpenApi':
-      return _$realtimePriceEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimePriceEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -27,7 +22,6 @@ final BuiltSet<RealtimePriceEventEventEnum>
     _$realtimePriceEventEventEnumValues =
     BuiltSet<RealtimePriceEventEventEnum>(const <RealtimePriceEventEventEnum>[
   _$realtimePriceEventEventEnum_price,
-  _$realtimePriceEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimePriceEventEventEnum>
@@ -38,11 +32,9 @@ class _$RealtimePriceEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimePriceEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'price': 'price',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'price': 'price',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

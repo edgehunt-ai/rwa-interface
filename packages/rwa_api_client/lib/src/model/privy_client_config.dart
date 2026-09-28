@@ -216,8 +216,6 @@ class PrivyClientConfigLoginMethodsEnum extends EnumClass {
   static const PrivyClientConfigLoginMethodsEnum wallet = _$privyClientConfigLoginMethodsEnum_wallet;
   @BuiltValueEnumConst(wireName: r'passkey')
   static const PrivyClientConfigLoginMethodsEnum passkey = _$privyClientConfigLoginMethodsEnum_passkey;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyClientConfigLoginMethodsEnum unknownDefaultOpenApi = _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi;
 
   static Serializer<PrivyClientConfigLoginMethodsEnum> get serializer => _$privyClientConfigLoginMethodsEnumSerializer;
 

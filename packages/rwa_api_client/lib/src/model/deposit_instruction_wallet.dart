@@ -142,8 +142,6 @@ class DepositInstructionWalletCustodyEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'embedded_wallet')
   static const DepositInstructionWalletCustodyEnum embeddedWallet = _$depositInstructionWalletCustodyEnum_embeddedWallet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositInstructionWalletCustodyEnum unknownDefaultOpenApi = _$depositInstructionWalletCustodyEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositInstructionWalletCustodyEnum> get serializer => _$depositInstructionWalletCustodyEnumSerializer;
 

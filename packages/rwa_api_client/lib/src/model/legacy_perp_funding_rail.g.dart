@@ -8,19 +8,14 @@ part of 'legacy_perp_funding_rail.dart';
 
 const LegacyPerpFundingRailRailEnum _$legacyPerpFundingRailRailEnum_perp =
     const LegacyPerpFundingRailRailEnum._('perp');
-const LegacyPerpFundingRailRailEnum
-    _$legacyPerpFundingRailRailEnum_unknownDefaultOpenApi =
-    const LegacyPerpFundingRailRailEnum._('unknownDefaultOpenApi');
 
 LegacyPerpFundingRailRailEnum _$legacyPerpFundingRailRailEnumValueOf(
     String name) {
   switch (name) {
     case 'perp':
       return _$legacyPerpFundingRailRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpFundingRailRailEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpFundingRailRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,25 +23,19 @@ final BuiltSet<LegacyPerpFundingRailRailEnum>
     _$legacyPerpFundingRailRailEnumValues = BuiltSet<
         LegacyPerpFundingRailRailEnum>(const <LegacyPerpFundingRailRailEnum>[
   _$legacyPerpFundingRailRailEnum_perp,
-  _$legacyPerpFundingRailRailEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpFundingRailNetworkEnum
     _$legacyPerpFundingRailNetworkEnum_arbitrum =
     const LegacyPerpFundingRailNetworkEnum._('arbitrum');
-const LegacyPerpFundingRailNetworkEnum
-    _$legacyPerpFundingRailNetworkEnum_unknownDefaultOpenApi =
-    const LegacyPerpFundingRailNetworkEnum._('unknownDefaultOpenApi');
 
 LegacyPerpFundingRailNetworkEnum _$legacyPerpFundingRailNetworkEnumValueOf(
     String name) {
   switch (name) {
     case 'arbitrum':
       return _$legacyPerpFundingRailNetworkEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpFundingRailNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpFundingRailNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,25 +43,19 @@ final BuiltSet<LegacyPerpFundingRailNetworkEnum>
     _$legacyPerpFundingRailNetworkEnumValues = BuiltSet<
         LegacyPerpFundingRailNetworkEnum>(const <LegacyPerpFundingRailNetworkEnum>[
   _$legacyPerpFundingRailNetworkEnum_arbitrum,
-  _$legacyPerpFundingRailNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpFundingRailSettlementAssetEnum
     _$legacyPerpFundingRailSettlementAssetEnum_USDC =
     const LegacyPerpFundingRailSettlementAssetEnum._('USDC');
-const LegacyPerpFundingRailSettlementAssetEnum
-    _$legacyPerpFundingRailSettlementAssetEnum_unknownDefaultOpenApi =
-    const LegacyPerpFundingRailSettlementAssetEnum._('unknownDefaultOpenApi');
 
 LegacyPerpFundingRailSettlementAssetEnum
     _$legacyPerpFundingRailSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$legacyPerpFundingRailSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -80,7 +63,6 @@ final BuiltSet<LegacyPerpFundingRailSettlementAssetEnum>
     _$legacyPerpFundingRailSettlementAssetEnumValues = BuiltSet<
         LegacyPerpFundingRailSettlementAssetEnum>(const <LegacyPerpFundingRailSettlementAssetEnum>[
   _$legacyPerpFundingRailSettlementAssetEnum_USDC,
-  _$legacyPerpFundingRailSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LegacyPerpFundingRailRailEnum>
@@ -97,11 +79,9 @@ class _$LegacyPerpFundingRailRailEnumSerializer
     implements PrimitiveSerializer<LegacyPerpFundingRailRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -127,11 +107,9 @@ class _$LegacyPerpFundingRailNetworkEnumSerializer
     implements PrimitiveSerializer<LegacyPerpFundingRailNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -157,11 +135,9 @@ class _$LegacyPerpFundingRailSettlementAssetEnumSerializer
     implements PrimitiveSerializer<LegacyPerpFundingRailSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

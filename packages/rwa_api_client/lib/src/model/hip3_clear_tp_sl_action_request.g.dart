@@ -9,19 +9,14 @@ part of 'hip3_clear_tp_sl_action_request.dart';
 const Hip3ClearTpSlActionRequestOperationEnum
     _$hip3ClearTpSlActionRequestOperationEnum_clearTpsl =
     const Hip3ClearTpSlActionRequestOperationEnum._('clearTpsl');
-const Hip3ClearTpSlActionRequestOperationEnum
-    _$hip3ClearTpSlActionRequestOperationEnum_unknownDefaultOpenApi =
-    const Hip3ClearTpSlActionRequestOperationEnum._('unknownDefaultOpenApi');
 
 Hip3ClearTpSlActionRequestOperationEnum
     _$hip3ClearTpSlActionRequestOperationEnumValueOf(String name) {
   switch (name) {
     case 'clearTpsl':
       return _$hip3ClearTpSlActionRequestOperationEnum_clearTpsl;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ClearTpSlActionRequestOperationEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ClearTpSlActionRequestOperationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3ClearTpSlActionRequestOperationEnum>
     _$hip3ClearTpSlActionRequestOperationEnumValues = BuiltSet<
         Hip3ClearTpSlActionRequestOperationEnum>(const <Hip3ClearTpSlActionRequestOperationEnum>[
   _$hip3ClearTpSlActionRequestOperationEnum_clearTpsl,
-  _$hip3ClearTpSlActionRequestOperationEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ClearTpSlActionRequestScopeEnum
@@ -41,9 +35,6 @@ const Hip3ClearTpSlActionRequestScopeEnum
 const Hip3ClearTpSlActionRequestScopeEnum
     _$hip3ClearTpSlActionRequestScopeEnum_both =
     const Hip3ClearTpSlActionRequestScopeEnum._('both');
-const Hip3ClearTpSlActionRequestScopeEnum
-    _$hip3ClearTpSlActionRequestScopeEnum_unknownDefaultOpenApi =
-    const Hip3ClearTpSlActionRequestScopeEnum._('unknownDefaultOpenApi');
 
 Hip3ClearTpSlActionRequestScopeEnum
     _$hip3ClearTpSlActionRequestScopeEnumValueOf(String name) {
@@ -54,10 +45,8 @@ Hip3ClearTpSlActionRequestScopeEnum
       return _$hip3ClearTpSlActionRequestScopeEnum_stopLoss;
     case 'both':
       return _$hip3ClearTpSlActionRequestScopeEnum_both;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ClearTpSlActionRequestScopeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ClearTpSlActionRequestScopeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -67,7 +56,6 @@ final BuiltSet<Hip3ClearTpSlActionRequestScopeEnum>
   _$hip3ClearTpSlActionRequestScopeEnum_takeProfit,
   _$hip3ClearTpSlActionRequestScopeEnum_stopLoss,
   _$hip3ClearTpSlActionRequestScopeEnum_both,
-  _$hip3ClearTpSlActionRequestScopeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ClearTpSlActionRequestOperationEnum>
@@ -81,11 +69,9 @@ class _$Hip3ClearTpSlActionRequestOperationEnumSerializer
     implements PrimitiveSerializer<Hip3ClearTpSlActionRequestOperationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'clearTpsl': 'clear_tpsl',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'clear_tpsl': 'clearTpsl',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -115,13 +101,11 @@ class _$Hip3ClearTpSlActionRequestScopeEnumSerializer
     'takeProfit': 'take_profit',
     'stopLoss': 'stop_loss',
     'both': 'both',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'take_profit': 'takeProfit',
     'stop_loss': 'stopLoss',
     'both': 'both',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

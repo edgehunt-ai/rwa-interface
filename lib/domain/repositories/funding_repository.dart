@@ -18,6 +18,17 @@ abstract interface class FundingRepository {
     required OrderIntent intent,
     required String idempotencyKey,
   });
+  Future<FundingSessionSummary> createTransferFundingSession({
+    required String destination,
+    required String amount,
+    required String idempotencyKey,
+  });
+  Future<FundingSessionSummary> updateFundingSessionSelection({
+    required String fundingSessionId,
+    required int version,
+    required Map<String, String> allocations,
+    required String idempotencyKey,
+  });
   Future<FundingCatalogSummary> getFundingCatalog();
   Future<FundingPlan> createFundingPlan({
     required String tradePreviewId,

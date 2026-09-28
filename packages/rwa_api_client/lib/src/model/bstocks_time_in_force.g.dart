@@ -8,8 +8,6 @@ part of 'bstocks_time_in_force.dart';
 
 const BstocksTimeInForce _$gtc = const BstocksTimeInForce._('gtc');
 const BstocksTimeInForce _$ioc = const BstocksTimeInForce._('ioc');
-const BstocksTimeInForce _$unknownDefaultOpenApi =
-    const BstocksTimeInForce._('unknownDefaultOpenApi');
 
 BstocksTimeInForce _$valueOf(String name) {
   switch (name) {
@@ -17,10 +15,8 @@ BstocksTimeInForce _$valueOf(String name) {
       return _$gtc;
     case 'ioc':
       return _$ioc;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,14 +24,12 @@ final BuiltSet<BstocksTimeInForce> _$values =
     BuiltSet<BstocksTimeInForce>(const <BstocksTimeInForce>[
   _$gtc,
   _$ioc,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$BstocksTimeInForceMeta {
   const _$BstocksTimeInForceMeta();
   BstocksTimeInForce get gtc => _$gtc;
   BstocksTimeInForce get ioc => _$ioc;
-  BstocksTimeInForce get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   BstocksTimeInForce valueOf(String name) => _$valueOf(name);
   BuiltSet<BstocksTimeInForce> get values => _$values;
 }
@@ -54,12 +48,10 @@ class _$BstocksTimeInForceSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'gtc': 'gtc',
     'ioc': 'ioc',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'gtc': 'gtc',
     'ioc': 'ioc',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

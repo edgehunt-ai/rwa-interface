@@ -10,19 +10,14 @@ const BstockFundingTargetAssetAssetIdEnum
     _$bstockFundingTargetAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 =
     const BstockFundingTargetAssetAssetIdEnum._(
         'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955');
-const BstockFundingTargetAssetAssetIdEnum
-    _$bstockFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetAssetIdEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetAssetIdEnum
     _$bstockFundingTargetAssetAssetIdEnumValueOf(String name) {
   switch (name) {
     case 'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
       return _$bstockFundingTargetAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,25 +25,19 @@ final BuiltSet<BstockFundingTargetAssetAssetIdEnum>
     _$bstockFundingTargetAssetAssetIdEnumValues = BuiltSet<
         BstockFundingTargetAssetAssetIdEnum>(const <BstockFundingTargetAssetAssetIdEnum>[
   _$bstockFundingTargetAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955,
-  _$bstockFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetAssetNamespaceEnum
     _$bstockFundingTargetAssetNamespaceEnum_eip155 =
     const BstockFundingTargetAssetNamespaceEnum._('eip155');
-const BstockFundingTargetAssetNamespaceEnum
-    _$bstockFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetNamespaceEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetNamespaceEnum
     _$bstockFundingTargetAssetNamespaceEnumValueOf(String name) {
   switch (name) {
     case 'eip155':
       return _$bstockFundingTargetAssetNamespaceEnum_eip155;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,25 +45,19 @@ final BuiltSet<BstockFundingTargetAssetNamespaceEnum>
     _$bstockFundingTargetAssetNamespaceEnumValues = BuiltSet<
         BstockFundingTargetAssetNamespaceEnum>(const <BstockFundingTargetAssetNamespaceEnum>[
   _$bstockFundingTargetAssetNamespaceEnum_eip155,
-  _$bstockFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetAssetNetworkEnum
     _$bstockFundingTargetAssetNetworkEnum_BSC =
     const BstockFundingTargetAssetNetworkEnum._('BSC');
-const BstockFundingTargetAssetNetworkEnum
-    _$bstockFundingTargetAssetNetworkEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetNetworkEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetNetworkEnum
     _$bstockFundingTargetAssetNetworkEnumValueOf(String name) {
   switch (name) {
     case 'BSC':
       return _$bstockFundingTargetAssetNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -82,25 +65,19 @@ final BuiltSet<BstockFundingTargetAssetNetworkEnum>
     _$bstockFundingTargetAssetNetworkEnumValues = BuiltSet<
         BstockFundingTargetAssetNetworkEnum>(const <BstockFundingTargetAssetNetworkEnum>[
   _$bstockFundingTargetAssetNetworkEnum_BSC,
-  _$bstockFundingTargetAssetNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetAssetChainIdEnum
     _$bstockFundingTargetAssetChainIdEnum_number56 =
     const BstockFundingTargetAssetChainIdEnum._('number56');
-const BstockFundingTargetAssetChainIdEnum
-    _$bstockFundingTargetAssetChainIdEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetChainIdEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetChainIdEnum
     _$bstockFundingTargetAssetChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number56':
       return _$bstockFundingTargetAssetChainIdEnum_number56;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -108,25 +85,19 @@ final BuiltSet<BstockFundingTargetAssetChainIdEnum>
     _$bstockFundingTargetAssetChainIdEnumValues = BuiltSet<
         BstockFundingTargetAssetChainIdEnum>(const <BstockFundingTargetAssetChainIdEnum>[
   _$bstockFundingTargetAssetChainIdEnum_number56,
-  _$bstockFundingTargetAssetChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetAssetTokenEnum
     _$bstockFundingTargetAssetTokenEnum_USDT =
     const BstockFundingTargetAssetTokenEnum._('USDT');
-const BstockFundingTargetAssetTokenEnum
-    _$bstockFundingTargetAssetTokenEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetTokenEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetTokenEnum _$bstockFundingTargetAssetTokenEnumValueOf(
     String name) {
   switch (name) {
     case 'USDT':
       return _$bstockFundingTargetAssetTokenEnum_USDT;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -134,26 +105,20 @@ final BuiltSet<BstockFundingTargetAssetTokenEnum>
     _$bstockFundingTargetAssetTokenEnumValues = BuiltSet<
         BstockFundingTargetAssetTokenEnum>(const <BstockFundingTargetAssetTokenEnum>[
   _$bstockFundingTargetAssetTokenEnum_USDT,
-  _$bstockFundingTargetAssetTokenEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetAssetTokenContractEnum
     _$bstockFundingTargetAssetTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955 =
     const BstockFundingTargetAssetTokenContractEnum._(
         'n0x55d398326f99059ff775485246999027b3197955');
-const BstockFundingTargetAssetTokenContractEnum
-    _$bstockFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetTokenContractEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetTokenContractEnum
     _$bstockFundingTargetAssetTokenContractEnumValueOf(String name) {
   switch (name) {
     case 'n0x55d398326f99059ff775485246999027b3197955':
       return _$bstockFundingTargetAssetTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -161,25 +126,19 @@ final BuiltSet<BstockFundingTargetAssetTokenContractEnum>
     _$bstockFundingTargetAssetTokenContractEnumValues = BuiltSet<
         BstockFundingTargetAssetTokenContractEnum>(const <BstockFundingTargetAssetTokenContractEnum>[
   _$bstockFundingTargetAssetTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955,
-  _$bstockFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetAssetTokenDecimalsEnum
     _$bstockFundingTargetAssetTokenDecimalsEnum_number18 =
     const BstockFundingTargetAssetTokenDecimalsEnum._('number18');
-const BstockFundingTargetAssetTokenDecimalsEnum
-    _$bstockFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetTokenDecimalsEnum
     _$bstockFundingTargetAssetTokenDecimalsEnumValueOf(String name) {
   switch (name) {
     case 'number18':
       return _$bstockFundingTargetAssetTokenDecimalsEnum_number18;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -187,25 +146,19 @@ final BuiltSet<BstockFundingTargetAssetTokenDecimalsEnum>
     _$bstockFundingTargetAssetTokenDecimalsEnumValues = BuiltSet<
         BstockFundingTargetAssetTokenDecimalsEnum>(const <BstockFundingTargetAssetTokenDecimalsEnum>[
   _$bstockFundingTargetAssetTokenDecimalsEnum_number18,
-  _$bstockFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingTargetAssetProvenanceEnum
     _$bstockFundingTargetAssetProvenanceEnum_binancePeg =
     const BstockFundingTargetAssetProvenanceEnum._('binancePeg');
-const BstockFundingTargetAssetProvenanceEnum
-    _$bstockFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetAssetProvenanceEnum._('unknownDefaultOpenApi');
 
 BstockFundingTargetAssetProvenanceEnum
     _$bstockFundingTargetAssetProvenanceEnumValueOf(String name) {
   switch (name) {
     case 'binancePeg':
       return _$bstockFundingTargetAssetProvenanceEnum_binancePeg;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -213,7 +166,6 @@ final BuiltSet<BstockFundingTargetAssetProvenanceEnum>
     _$bstockFundingTargetAssetProvenanceEnumValues = BuiltSet<
         BstockFundingTargetAssetProvenanceEnum>(const <BstockFundingTargetAssetProvenanceEnum>[
   _$bstockFundingTargetAssetProvenanceEnum_binancePeg,
-  _$bstockFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockFundingTargetAssetAssetIdEnum>
@@ -246,12 +198,10 @@ class _$BstockFundingTargetAssetAssetIdEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955':
         'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955':
         'eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -279,11 +229,9 @@ class _$BstockFundingTargetAssetNamespaceEnumSerializer
     implements PrimitiveSerializer<BstockFundingTargetAssetNamespaceEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'eip155': 'eip155',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eip155': 'eip155',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -311,11 +259,9 @@ class _$BstockFundingTargetAssetNetworkEnumSerializer
     implements PrimitiveSerializer<BstockFundingTargetAssetNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -343,11 +289,9 @@ class _$BstockFundingTargetAssetChainIdEnumSerializer
     implements PrimitiveSerializer<BstockFundingTargetAssetChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number56': 56,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -375,11 +319,9 @@ class _$BstockFundingTargetAssetTokenEnumSerializer
     implements PrimitiveSerializer<BstockFundingTargetAssetTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDT': 'USDT',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDT': 'USDT',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -406,12 +348,10 @@ class _$BstockFundingTargetAssetTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x55d398326f99059ff775485246999027b3197955':
         '0x55d398326f99059ff775485246999027b3197955',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x55d398326f99059ff775485246999027b3197955':
         'n0x55d398326f99059ff775485246999027b3197955',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -439,11 +379,9 @@ class _$BstockFundingTargetAssetTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<BstockFundingTargetAssetTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number18': 18,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     18: 'number18',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -471,11 +409,9 @@ class _$BstockFundingTargetAssetProvenanceEnumSerializer
     implements PrimitiveSerializer<BstockFundingTargetAssetProvenanceEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'binancePeg': 'binance_peg',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'binance_peg': 'binancePeg',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

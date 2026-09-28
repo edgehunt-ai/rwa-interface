@@ -9,19 +9,14 @@ part of 'trade_intent_execution_policy.dart';
 const TradeIntentExecutionPolicyOrderTypeEnum
     _$tradeIntentExecutionPolicyOrderTypeEnum_ioc =
     const TradeIntentExecutionPolicyOrderTypeEnum._('ioc');
-const TradeIntentExecutionPolicyOrderTypeEnum
-    _$tradeIntentExecutionPolicyOrderTypeEnum_unknownDefaultOpenApi =
-    const TradeIntentExecutionPolicyOrderTypeEnum._('unknownDefaultOpenApi');
 
 TradeIntentExecutionPolicyOrderTypeEnum
     _$tradeIntentExecutionPolicyOrderTypeEnumValueOf(String name) {
   switch (name) {
     case 'ioc':
       return _$tradeIntentExecutionPolicyOrderTypeEnum_ioc;
-    case 'unknownDefaultOpenApi':
-      return _$tradeIntentExecutionPolicyOrderTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$tradeIntentExecutionPolicyOrderTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<TradeIntentExecutionPolicyOrderTypeEnum>
     _$tradeIntentExecutionPolicyOrderTypeEnumValues = BuiltSet<
         TradeIntentExecutionPolicyOrderTypeEnum>(const <TradeIntentExecutionPolicyOrderTypeEnum>[
   _$tradeIntentExecutionPolicyOrderTypeEnum_ioc,
-  _$tradeIntentExecutionPolicyOrderTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<TradeIntentExecutionPolicyOrderTypeEnum>
@@ -40,11 +34,9 @@ class _$TradeIntentExecutionPolicyOrderTypeEnumSerializer
     implements PrimitiveSerializer<TradeIntentExecutionPolicyOrderTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'ioc': 'ioc',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'ioc': 'ioc',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

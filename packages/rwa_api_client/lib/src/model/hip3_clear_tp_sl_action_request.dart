@@ -159,8 +159,6 @@ class Hip3ClearTpSlActionRequestOperationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'clear_tpsl')
   static const Hip3ClearTpSlActionRequestOperationEnum clearTpsl = _$hip3ClearTpSlActionRequestOperationEnum_clearTpsl;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ClearTpSlActionRequestOperationEnum unknownDefaultOpenApi = _$hip3ClearTpSlActionRequestOperationEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ClearTpSlActionRequestOperationEnum> get serializer => _$hip3ClearTpSlActionRequestOperationEnumSerializer;
 
@@ -178,8 +176,6 @@ class Hip3ClearTpSlActionRequestScopeEnum extends EnumClass {
   static const Hip3ClearTpSlActionRequestScopeEnum stopLoss = _$hip3ClearTpSlActionRequestScopeEnum_stopLoss;
   @BuiltValueEnumConst(wireName: r'both')
   static const Hip3ClearTpSlActionRequestScopeEnum both = _$hip3ClearTpSlActionRequestScopeEnum_both;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ClearTpSlActionRequestScopeEnum unknownDefaultOpenApi = _$hip3ClearTpSlActionRequestScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ClearTpSlActionRequestScopeEnum> get serializer => _$hip3ClearTpSlActionRequestScopeEnumSerializer;
 

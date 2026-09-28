@@ -151,8 +151,6 @@ class KeyValueToneEnum extends EnumClass {
   static const KeyValueToneEnum negative = _$keyValueToneEnum_negative;
   @BuiltValueEnumConst(wireName: r'muted')
   static const KeyValueToneEnum muted = _$keyValueToneEnum_muted;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const KeyValueToneEnum unknownDefaultOpenApi = _$keyValueToneEnum_unknownDefaultOpenApi;
 
   static Serializer<KeyValueToneEnum> get serializer => _$keyValueToneEnumSerializer;
 

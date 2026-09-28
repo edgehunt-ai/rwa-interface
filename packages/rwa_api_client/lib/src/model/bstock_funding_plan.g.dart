@@ -8,42 +8,31 @@ part of 'bstock_funding_plan.dart';
 
 const BstockFundingPlanRailEnum _$bstockFundingPlanRailEnum_bstock =
     const BstockFundingPlanRailEnum._('bstock');
-const BstockFundingPlanRailEnum
-    _$bstockFundingPlanRailEnum_unknownDefaultOpenApi =
-    const BstockFundingPlanRailEnum._('unknownDefaultOpenApi');
 
 BstockFundingPlanRailEnum _$bstockFundingPlanRailEnumValueOf(String name) {
   switch (name) {
     case 'bstock':
       return _$bstockFundingPlanRailEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingPlanRailEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingPlanRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<BstockFundingPlanRailEnum> _$bstockFundingPlanRailEnumValues =
     BuiltSet<BstockFundingPlanRailEnum>(const <BstockFundingPlanRailEnum>[
   _$bstockFundingPlanRailEnum_bstock,
-  _$bstockFundingPlanRailEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingPlanNetworkEnum _$bstockFundingPlanNetworkEnum_BSC =
     const BstockFundingPlanNetworkEnum._('BSC');
-const BstockFundingPlanNetworkEnum
-    _$bstockFundingPlanNetworkEnum_unknownDefaultOpenApi =
-    const BstockFundingPlanNetworkEnum._('unknownDefaultOpenApi');
 
 BstockFundingPlanNetworkEnum _$bstockFundingPlanNetworkEnumValueOf(
     String name) {
   switch (name) {
     case 'BSC':
       return _$bstockFundingPlanNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -51,30 +40,23 @@ final BuiltSet<BstockFundingPlanNetworkEnum>
     _$bstockFundingPlanNetworkEnumValues =
     BuiltSet<BstockFundingPlanNetworkEnum>(const <BstockFundingPlanNetworkEnum>[
   _$bstockFundingPlanNetworkEnum_BSC,
-  _$bstockFundingPlanNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockFundingPlanAssetEnum _$bstockFundingPlanAssetEnum_USDT =
     const BstockFundingPlanAssetEnum._('USDT');
-const BstockFundingPlanAssetEnum
-    _$bstockFundingPlanAssetEnum_unknownDefaultOpenApi =
-    const BstockFundingPlanAssetEnum._('unknownDefaultOpenApi');
 
 BstockFundingPlanAssetEnum _$bstockFundingPlanAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDT':
       return _$bstockFundingPlanAssetEnum_USDT;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingPlanAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingPlanAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<BstockFundingPlanAssetEnum> _$bstockFundingPlanAssetEnumValues =
     BuiltSet<BstockFundingPlanAssetEnum>(const <BstockFundingPlanAssetEnum>[
   _$bstockFundingPlanAssetEnum_USDT,
-  _$bstockFundingPlanAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockFundingPlanRailEnum> _$bstockFundingPlanRailEnumSerializer =
@@ -89,11 +71,9 @@ class _$BstockFundingPlanRailEnumSerializer
     implements PrimitiveSerializer<BstockFundingPlanRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -118,11 +98,9 @@ class _$BstockFundingPlanNetworkEnumSerializer
     implements PrimitiveSerializer<BstockFundingPlanNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -147,11 +125,9 @@ class _$BstockFundingPlanAssetEnumSerializer
     implements PrimitiveSerializer<BstockFundingPlanAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDT': 'USDT',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDT': 'USDT',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

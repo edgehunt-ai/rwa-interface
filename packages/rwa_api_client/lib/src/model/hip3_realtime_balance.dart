@@ -178,8 +178,6 @@ class Hip3RealtimeBalanceScopeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid_wallet')
   static const Hip3RealtimeBalanceScopeEnum hyperliquidWallet = _$hip3RealtimeBalanceScopeEnum_hyperliquidWallet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimeBalanceScopeEnum unknownDefaultOpenApi = _$hip3RealtimeBalanceScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimeBalanceScopeEnum> get serializer => _$hip3RealtimeBalanceScopeEnumSerializer;
 

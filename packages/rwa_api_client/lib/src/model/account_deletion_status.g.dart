@@ -17,8 +17,6 @@ const AccountDeletionStatus _$anonymized =
 const AccountDeletionStatus _$manualReview =
     const AccountDeletionStatus._('manualReview');
 const AccountDeletionStatus _$failed = const AccountDeletionStatus._('failed');
-const AccountDeletionStatus _$unknownDefaultOpenApi =
-    const AccountDeletionStatus._('unknownDefaultOpenApi');
 
 AccountDeletionStatus _$valueOf(String name) {
   switch (name) {
@@ -34,10 +32,8 @@ AccountDeletionStatus _$valueOf(String name) {
       return _$manualReview;
     case 'failed':
       return _$failed;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -49,7 +45,6 @@ final BuiltSet<AccountDeletionStatus> _$values =
   _$anonymized,
   _$manualReview,
   _$failed,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$AccountDeletionStatusMeta {
@@ -60,7 +55,6 @@ class _$AccountDeletionStatusMeta {
   AccountDeletionStatus get anonymized => _$anonymized;
   AccountDeletionStatus get manualReview => _$manualReview;
   AccountDeletionStatus get failed => _$failed;
-  AccountDeletionStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   AccountDeletionStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<AccountDeletionStatus> get values => _$values;
 }
@@ -83,7 +77,6 @@ class _$AccountDeletionStatusSerializer
     'anonymized': 'anonymized',
     'manualReview': 'manual_review',
     'failed': 'failed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'requested': 'requested',
@@ -92,7 +85,6 @@ class _$AccountDeletionStatusSerializer
     'anonymized': 'anonymized',
     'manual_review': 'manualReview',
     'failed': 'failed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -8,8 +8,6 @@ part of 'order_type.dart';
 
 const OrderType _$market = const OrderType._('market');
 const OrderType _$limit = const OrderType._('limit');
-const OrderType _$unknownDefaultOpenApi =
-    const OrderType._('unknownDefaultOpenApi');
 
 OrderType _$valueOf(String name) {
   switch (name) {
@@ -17,24 +15,20 @@ OrderType _$valueOf(String name) {
       return _$market;
     case 'limit':
       return _$limit;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<OrderType> _$values = BuiltSet<OrderType>(const <OrderType>[
   _$market,
   _$limit,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$OrderTypeMeta {
   const _$OrderTypeMeta();
   OrderType get market => _$market;
   OrderType get limit => _$limit;
-  OrderType get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   OrderType valueOf(String name) => _$valueOf(name);
   BuiltSet<OrderType> get values => _$values;
 }
@@ -50,12 +44,10 @@ class _$OrderTypeSerializer implements PrimitiveSerializer<OrderType> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

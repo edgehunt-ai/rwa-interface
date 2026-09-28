@@ -229,8 +229,6 @@ class FundingAssetIdentityNamespaceEnum extends EnumClass {
   static const FundingAssetIdentityNamespaceEnum eip155 = _$fundingAssetIdentityNamespaceEnum_eip155;
   @BuiltValueEnumConst(wireName: r'hyperliquid')
   static const FundingAssetIdentityNamespaceEnum hyperliquid = _$fundingAssetIdentityNamespaceEnum_hyperliquid;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingAssetIdentityNamespaceEnum unknownDefaultOpenApi = _$fundingAssetIdentityNamespaceEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingAssetIdentityNamespaceEnum> get serializer => _$fundingAssetIdentityNamespaceEnumSerializer;
 
@@ -252,8 +250,6 @@ class FundingAssetIdentityChainIdEnum extends EnumClass {
   static const FundingAssetIdentityChainIdEnum number8453 = _$fundingAssetIdentityChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
   static const FundingAssetIdentityChainIdEnum number42161 = _$fundingAssetIdentityChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const FundingAssetIdentityChainIdEnum unknownDefaultOpenApi = _$fundingAssetIdentityChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingAssetIdentityChainIdEnum> get serializer => _$fundingAssetIdentityChainIdEnumSerializer;
 

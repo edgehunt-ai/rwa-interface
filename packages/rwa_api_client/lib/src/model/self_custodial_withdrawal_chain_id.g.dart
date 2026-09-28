@@ -18,8 +18,6 @@ const SelfCustodialWithdrawalChainId _$n97 =
     const SelfCustodialWithdrawalChainId._('n97');
 const SelfCustodialWithdrawalChainId _$n421614 =
     const SelfCustodialWithdrawalChainId._('n421614');
-const SelfCustodialWithdrawalChainId _$unknownDefaultOpenApi =
-    const SelfCustodialWithdrawalChainId._('unknownDefaultOpenApi');
 
 SelfCustodialWithdrawalChainId _$valueOf(String name) {
   switch (name) {
@@ -35,10 +33,8 @@ SelfCustodialWithdrawalChainId _$valueOf(String name) {
       return _$n97;
     case 'n421614':
       return _$n421614;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -50,7 +46,6 @@ final BuiltSet<SelfCustodialWithdrawalChainId> _$values = BuiltSet<
   _$n56,
   _$n97,
   _$n421614,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$SelfCustodialWithdrawalChainIdMeta {
@@ -61,8 +56,6 @@ class _$SelfCustodialWithdrawalChainIdMeta {
   SelfCustodialWithdrawalChainId get n56 => _$n56;
   SelfCustodialWithdrawalChainId get n97 => _$n97;
   SelfCustodialWithdrawalChainId get n421614 => _$n421614;
-  SelfCustodialWithdrawalChainId get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   SelfCustodialWithdrawalChainId valueOf(String name) => _$valueOf(name);
   BuiltSet<SelfCustodialWithdrawalChainId> get values => _$values;
 }
@@ -86,7 +79,6 @@ class _$SelfCustodialWithdrawalChainIdSerializer
     'n56': '56',
     'n97': '97',
     'n421614': '421614',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '1': 'n1',
@@ -95,7 +87,6 @@ class _$SelfCustodialWithdrawalChainIdSerializer
     '56': 'n56',
     '97': 'n97',
     '421614': 'n421614',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

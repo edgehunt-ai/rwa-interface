@@ -12,9 +12,6 @@ const Hip3RealtimePriceEnvironmentEnum
 const Hip3RealtimePriceEnvironmentEnum
     _$hip3RealtimePriceEnvironmentEnum_testnet =
     const Hip3RealtimePriceEnvironmentEnum._('testnet');
-const Hip3RealtimePriceEnvironmentEnum
-    _$hip3RealtimePriceEnvironmentEnum_unknownDefaultOpenApi =
-    const Hip3RealtimePriceEnvironmentEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimePriceEnvironmentEnum _$hip3RealtimePriceEnvironmentEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ Hip3RealtimePriceEnvironmentEnum _$hip3RealtimePriceEnvironmentEnumValueOf(
       return _$hip3RealtimePriceEnvironmentEnum_mainnet;
     case 'testnet':
       return _$hip3RealtimePriceEnvironmentEnum_testnet;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimePriceEnvironmentEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimePriceEnvironmentEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,25 +30,19 @@ final BuiltSet<Hip3RealtimePriceEnvironmentEnum>
         Hip3RealtimePriceEnvironmentEnum>(const <Hip3RealtimePriceEnvironmentEnum>[
   _$hip3RealtimePriceEnvironmentEnum_mainnet,
   _$hip3RealtimePriceEnvironmentEnum_testnet,
-  _$hip3RealtimePriceEnvironmentEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3RealtimePricePriceLabelEnum
     _$hip3RealtimePricePriceLabelEnum_markPrice =
     const Hip3RealtimePricePriceLabelEnum._('markPrice');
-const Hip3RealtimePricePriceLabelEnum
-    _$hip3RealtimePricePriceLabelEnum_unknownDefaultOpenApi =
-    const Hip3RealtimePricePriceLabelEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimePricePriceLabelEnum _$hip3RealtimePricePriceLabelEnumValueOf(
     String name) {
   switch (name) {
     case 'markPrice':
       return _$hip3RealtimePricePriceLabelEnum_markPrice;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimePricePriceLabelEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimePricePriceLabelEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -61,7 +50,6 @@ final BuiltSet<Hip3RealtimePricePriceLabelEnum>
     _$hip3RealtimePricePriceLabelEnumValues = BuiltSet<
         Hip3RealtimePricePriceLabelEnum>(const <Hip3RealtimePricePriceLabelEnum>[
   _$hip3RealtimePricePriceLabelEnum_markPrice,
-  _$hip3RealtimePricePriceLabelEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3RealtimePriceEnvironmentEnum>
@@ -76,12 +64,10 @@ class _$Hip3RealtimePriceEnvironmentEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -107,11 +93,9 @@ class _$Hip3RealtimePricePriceLabelEnumSerializer
     implements PrimitiveSerializer<Hip3RealtimePricePriceLabelEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'markPrice': 'Mark price',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Mark price': 'markPrice',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

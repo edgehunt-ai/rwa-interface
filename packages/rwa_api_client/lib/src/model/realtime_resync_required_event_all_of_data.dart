@@ -112,8 +112,6 @@ class RealtimeResyncRequiredEventAllOfDataReasonEnum extends EnumClass {
   static const RealtimeResyncRequiredEventAllOfDataReasonEnum initialSnapshotRequired = _$realtimeResyncRequiredEventAllOfDataReasonEnum_initialSnapshotRequired;
   @BuiltValueEnumConst(wireName: r'event_retention_expired')
   static const RealtimeResyncRequiredEventAllOfDataReasonEnum eventRetentionExpired = _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeResyncRequiredEventAllOfDataReasonEnum unknownDefaultOpenApi = _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeResyncRequiredEventAllOfDataReasonEnum> get serializer => _$realtimeResyncRequiredEventAllOfDataReasonEnumSerializer;
 

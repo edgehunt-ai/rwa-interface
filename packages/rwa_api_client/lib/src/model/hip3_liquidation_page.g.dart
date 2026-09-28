@@ -12,9 +12,6 @@ const Hip3LiquidationPageQuerySourceEnum
 const Hip3LiquidationPageQuerySourceEnum
     _$hip3LiquidationPageQuerySourceEnum_archive =
     const Hip3LiquidationPageQuerySourceEnum._('archive');
-const Hip3LiquidationPageQuerySourceEnum
-    _$hip3LiquidationPageQuerySourceEnum_unknownDefaultOpenApi =
-    const Hip3LiquidationPageQuerySourceEnum._('unknownDefaultOpenApi');
 
 Hip3LiquidationPageQuerySourceEnum _$hip3LiquidationPageQuerySourceEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ Hip3LiquidationPageQuerySourceEnum _$hip3LiquidationPageQuerySourceEnumValueOf(
       return _$hip3LiquidationPageQuerySourceEnum_live;
     case 'archive':
       return _$hip3LiquidationPageQuerySourceEnum_archive;
-    case 'unknownDefaultOpenApi':
-      return _$hip3LiquidationPageQuerySourceEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3LiquidationPageQuerySourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<Hip3LiquidationPageQuerySourceEnum>
         Hip3LiquidationPageQuerySourceEnum>(const <Hip3LiquidationPageQuerySourceEnum>[
   _$hip3LiquidationPageQuerySourceEnum_live,
   _$hip3LiquidationPageQuerySourceEnum_archive,
-  _$hip3LiquidationPageQuerySourceEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3LiquidationPageWarningsEnum
@@ -45,9 +39,6 @@ const Hip3LiquidationPageWarningsEnum
 const Hip3LiquidationPageWarningsEnum
     _$hip3LiquidationPageWarningsEnum_historyArchiveGaps =
     const Hip3LiquidationPageWarningsEnum._('historyArchiveGaps');
-const Hip3LiquidationPageWarningsEnum
-    _$hip3LiquidationPageWarningsEnum_unknownDefaultOpenApi =
-    const Hip3LiquidationPageWarningsEnum._('unknownDefaultOpenApi');
 
 Hip3LiquidationPageWarningsEnum _$hip3LiquidationPageWarningsEnumValueOf(
     String name) {
@@ -56,10 +47,8 @@ Hip3LiquidationPageWarningsEnum _$hip3LiquidationPageWarningsEnumValueOf(
       return _$hip3LiquidationPageWarningsEnum_providerHistoryRetentionNotGuaranteed;
     case 'historyArchiveGaps':
       return _$hip3LiquidationPageWarningsEnum_historyArchiveGaps;
-    case 'unknownDefaultOpenApi':
-      return _$hip3LiquidationPageWarningsEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3LiquidationPageWarningsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -68,7 +57,6 @@ final BuiltSet<Hip3LiquidationPageWarningsEnum>
         Hip3LiquidationPageWarningsEnum>(const <Hip3LiquidationPageWarningsEnum>[
   _$hip3LiquidationPageWarningsEnum_providerHistoryRetentionNotGuaranteed,
   _$hip3LiquidationPageWarningsEnum_historyArchiveGaps,
-  _$hip3LiquidationPageWarningsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3LiquidationPageQuerySourceEnum>
@@ -83,12 +71,10 @@ class _$Hip3LiquidationPageQuerySourceEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'live': 'live',
     'archive': 'archive',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'live': 'live',
     'archive': 'archive',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -116,13 +102,11 @@ class _$Hip3LiquidationPageWarningsEnumSerializer
     'providerHistoryRetentionNotGuaranteed':
         'provider_history_retention_not_guaranteed',
     'historyArchiveGaps': 'history_archive_gaps',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'provider_history_retention_not_guaranteed':
         'providerHistoryRetentionNotGuaranteed',
     'history_archive_gaps': 'historyArchiveGaps',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

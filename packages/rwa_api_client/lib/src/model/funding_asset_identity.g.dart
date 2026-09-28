@@ -12,9 +12,6 @@ const FundingAssetIdentityNamespaceEnum
 const FundingAssetIdentityNamespaceEnum
     _$fundingAssetIdentityNamespaceEnum_hyperliquid =
     const FundingAssetIdentityNamespaceEnum._('hyperliquid');
-const FundingAssetIdentityNamespaceEnum
-    _$fundingAssetIdentityNamespaceEnum_unknownDefaultOpenApi =
-    const FundingAssetIdentityNamespaceEnum._('unknownDefaultOpenApi');
 
 FundingAssetIdentityNamespaceEnum _$fundingAssetIdentityNamespaceEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ FundingAssetIdentityNamespaceEnum _$fundingAssetIdentityNamespaceEnumValueOf(
       return _$fundingAssetIdentityNamespaceEnum_eip155;
     case 'hyperliquid':
       return _$fundingAssetIdentityNamespaceEnum_hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$fundingAssetIdentityNamespaceEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingAssetIdentityNamespaceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<FundingAssetIdentityNamespaceEnum>
         FundingAssetIdentityNamespaceEnum>(const <FundingAssetIdentityNamespaceEnum>[
   _$fundingAssetIdentityNamespaceEnum_eip155,
   _$fundingAssetIdentityNamespaceEnum_hyperliquid,
-  _$fundingAssetIdentityNamespaceEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingAssetIdentityChainIdEnum
@@ -53,9 +47,6 @@ const FundingAssetIdentityChainIdEnum
 const FundingAssetIdentityChainIdEnum
     _$fundingAssetIdentityChainIdEnum_number42161 =
     const FundingAssetIdentityChainIdEnum._('number42161');
-const FundingAssetIdentityChainIdEnum
-    _$fundingAssetIdentityChainIdEnum_unknownDefaultOpenApi =
-    const FundingAssetIdentityChainIdEnum._('unknownDefaultOpenApi');
 
 FundingAssetIdentityChainIdEnum _$fundingAssetIdentityChainIdEnumValueOf(
     String name) {
@@ -70,10 +61,8 @@ FundingAssetIdentityChainIdEnum _$fundingAssetIdentityChainIdEnumValueOf(
       return _$fundingAssetIdentityChainIdEnum_number8453;
     case 'number42161':
       return _$fundingAssetIdentityChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$fundingAssetIdentityChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingAssetIdentityChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -85,7 +74,6 @@ final BuiltSet<FundingAssetIdentityChainIdEnum>
   _$fundingAssetIdentityChainIdEnum_number1337,
   _$fundingAssetIdentityChainIdEnum_number8453,
   _$fundingAssetIdentityChainIdEnum_number42161,
-  _$fundingAssetIdentityChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingAssetIdentityNamespaceEnum>
@@ -100,12 +88,10 @@ class _$FundingAssetIdentityNamespaceEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'eip155': 'eip155',
     'hyperliquid': 'hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eip155': 'eip155',
     'hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -135,7 +121,6 @@ class _$FundingAssetIdentityChainIdEnumSerializer
     'number1337': 1337,
     'number8453': 8453,
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
@@ -143,7 +128,6 @@ class _$FundingAssetIdentityChainIdEnumSerializer
     1337: 'number1337',
     8453: 'number8453',
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

@@ -23,8 +23,6 @@ class TransferActionSubmissionStatus extends EnumClass {
   static const TransferActionSubmissionStatus ambiguous = _$ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferActionSubmissionStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TransferActionSubmissionStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<TransferActionSubmissionStatus> get serializer => _$transferActionSubmissionStatusSerializer;
 

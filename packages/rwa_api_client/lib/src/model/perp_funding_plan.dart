@@ -388,8 +388,6 @@ class PerpFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const PerpFundingPlanRailEnum perp = _$perpFundingPlanRailEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingPlanRailEnum unknownDefaultOpenApi = _$perpFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingPlanRailEnum> get serializer => _$perpFundingPlanRailEnumSerializer;
 
@@ -403,8 +401,6 @@ class PerpFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
   static const PerpFundingPlanNetworkEnum hyperliquid = _$perpFundingPlanNetworkEnum_hyperliquid;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingPlanNetworkEnum unknownDefaultOpenApi = _$perpFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingPlanNetworkEnum> get serializer => _$perpFundingPlanNetworkEnumSerializer;
 
@@ -418,8 +414,6 @@ class PerpFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const PerpFundingPlanAssetEnum USDC = _$perpFundingPlanAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingPlanAssetEnum unknownDefaultOpenApi = _$perpFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingPlanAssetEnum> get serializer => _$perpFundingPlanAssetEnumSerializer;
 

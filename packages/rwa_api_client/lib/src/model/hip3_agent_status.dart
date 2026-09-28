@@ -29,8 +29,6 @@ class Hip3AgentStatus extends EnumClass {
   static const Hip3AgentStatus failed = _$failed;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const Hip3AgentStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3AgentStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3AgentStatus> get serializer => _$hip3AgentStatusSerializer;
 

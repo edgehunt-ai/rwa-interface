@@ -22,8 +22,8 @@ const RealtimePrivateChannel _$balances =
     const RealtimePrivateChannel._('balances');
 const RealtimePrivateChannel _$activity =
     const RealtimePrivateChannel._('activity');
-const RealtimePrivateChannel _$unknownDefaultOpenApi =
-    const RealtimePrivateChannel._('unknownDefaultOpenApi');
+const RealtimePrivateChannel _$sessions =
+    const RealtimePrivateChannel._('sessions');
 
 RealtimePrivateChannel _$valueOf(String name) {
   switch (name) {
@@ -43,10 +43,10 @@ RealtimePrivateChannel _$valueOf(String name) {
       return _$balances;
     case 'activity':
       return _$activity;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
+    case 'sessions':
+      return _$sessions;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -60,7 +60,7 @@ final BuiltSet<RealtimePrivateChannel> _$values =
   _$withdrawals,
   _$balances,
   _$activity,
-  _$unknownDefaultOpenApi,
+  _$sessions,
 ]);
 
 class _$RealtimePrivateChannelMeta {
@@ -73,7 +73,7 @@ class _$RealtimePrivateChannelMeta {
   RealtimePrivateChannel get withdrawals => _$withdrawals;
   RealtimePrivateChannel get balances => _$balances;
   RealtimePrivateChannel get activity => _$activity;
-  RealtimePrivateChannel get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
+  RealtimePrivateChannel get sessions => _$sessions;
   RealtimePrivateChannel valueOf(String name) => _$valueOf(name);
   BuiltSet<RealtimePrivateChannel> get values => _$values;
 }
@@ -98,7 +98,7 @@ class _$RealtimePrivateChannelSerializer
     'withdrawals': 'withdrawals',
     'balances': 'balances',
     'activity': 'activity',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
+    'sessions': 'sessions',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'orders': 'orders',
@@ -109,7 +109,7 @@ class _$RealtimePrivateChannelSerializer
     'withdrawals': 'withdrawals',
     'balances': 'balances',
     'activity': 'activity',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
+    'sessions': 'sessions',
   };
 
   @override

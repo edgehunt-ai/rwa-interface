@@ -469,7 +469,7 @@ class FundingApi {
   }
 
   /// 创建自托管提现审计意图
-  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call，不支持原生币转账。  用户自付路径可签名并广播冻结交易，再调用 submission 上报哈希。若选择代付，先通过 &#x60;POST /v1/self-custodial-withdrawals/{withdrawal_id}/executions&#x60; 创建受运行时门禁控制的 app_sponsored execution，并签署其准确的 privy_authorization_payload。已经绑定execution的意图 不得同时走直接上报路径；execution中的user-paid回退仍要求广播前明确拒绝及显式门禁。 创建/直接上报接口不替用户approve、sign或broadcast，不接收任意calldata。  bStocks支持当前manifest和support catalog共同准入的BSC 56/97基础token，asset_id可来自 PortfolioAsset.bstocks.withdrawal_asset_id。先检查真实RPC余额、已知GTC占用及已提交提现； 必须有Gas估算配置。此预检查不锁币，链上余额并发变化仍可能导致交易失败。 bStocks必须有精确Transfer事件证据并达到冻结的required_confirmations才确认；无事件的 MockERC20进入manual_review，不沿用TUSDT的无事件例外。幂等重放保留原交易及期限，不重复创建。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
+  /// 冻结当前用户选择的 Privy wallet、资产、网络、金额和目标地址，创建仅用于审计与 后续链上对账的 intent。响应同时返回服务端生成并冻结的精确 EVM transaction； 客户端不能覆盖或自定义 &#x60;chain_id/from/to/data/value&#x60;。仅允许 &#x60;value&#x3D;0x0&#x60; 的 allowlisted ERC-20 contract call，不支持原生币转账。  用户自付路径可签名并广播冻结交易，再调用 submission 上报哈希。若选择代付，先通过 &#x60;POST /v1/self-custodial-withdrawals/{withdrawal_id}/executions&#x60; 创建受运行时门禁控制的 app_sponsored execution，并签署其准确的 privy_authorization_payload。已经绑定execution的意图 不得同时走直接上报路径；execution中的user-paid回退仍要求广播前明确拒绝及显式门禁。 创建/直接上报接口不替用户approve、sign或broadcast，不接收任意calldata。  bStocks支持当前manifest和support catalog共同准入的BSC 56/97基础token，asset_id可来自 PortfolioAsset.bstocks.withdrawal_asset_id。先检查真实RPC余额、已知GTC占用及已提交提现； 必须有Gas估算配置。此预检查不锁币，链上余额并发变化仍可能导致交易失败。 bStocks必须有精确Transfer事件证据并达到冻结的required_confirmations才确认；无事件的 token进入manual_review，不沿用TUSDT的无事件例外。当前源码的MockERC20会发Transfer； 实际确认仍以部署的token和规范链证据为准。幂等重放保留原交易及期限，不重复创建。  创建 intent 本身不证明交易已广播，不得创建 Activity 或扣减余额。服务端无法 校验钱包所有权、allowlist、资产精度或风险门禁时返回 503 fail-closed。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -2396,7 +2396,7 @@ class FundingApi {
   }
 
   /// 提交 HIP-3 提现签名
-  /// 提交 owner 对冻结 typed data 的 EIP-712 签名。服务端先校验 &#x60;payload_hash&#x60; 与冻结 action 一致、恢复地址等于 owner，再把 &#x60;withdraw3&#x60; 提交到 Hyperliquid &#x60;/exchange&#x60;；venue 接受后 状态进入 &#x60;submitted&#x60; 并由 worker 观测到账。签名窗口过期或状态不为 &#x60;awaiting_signature&#x60; 时返回 409。 
+  /// 提交 owner 对冻结 typed data 的 EIP-712 签名。服务端先校验 &#x60;payload_hash&#x60; 与冻结 action 一致、恢复地址等于 owner，再把 &#x60;withdraw3&#x60; 提交到 Hyperliquid &#x60;/exchange&#x60;；venue 接受后 状态进入 &#x60;submitted&#x60; 并由 worker 观测到账。签名窗口过期或状态不为 &#x60;awaiting_signature&#x60; 时返回 409。venue 明确拒绝已签名 action 时同样返回 409：官方桥 出金额度受限时返回 &#x60;venue_withdrawal_allowance_exceeded&#x60; （user_action&#x3D;&#x60;reduce_amount_or_retry_later&#x60;，降低金额或等待额度窗口恢复后可重新发起）， 其他 venue 拒绝返回 &#x60;venue_rejected&#x60;（user_action&#x3D;&#x60;create_new_intent&#x60;）。 
   ///
   /// Parameters:
   /// * [withdrawalId] 

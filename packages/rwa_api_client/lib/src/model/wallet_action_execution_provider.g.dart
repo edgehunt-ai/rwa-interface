@@ -10,8 +10,6 @@ const WalletActionExecutionProvider _$privy =
     const WalletActionExecutionProvider._('privy');
 const WalletActionExecutionProvider _$userWallet =
     const WalletActionExecutionProvider._('userWallet');
-const WalletActionExecutionProvider _$unknownDefaultOpenApi =
-    const WalletActionExecutionProvider._('unknownDefaultOpenApi');
 
 WalletActionExecutionProvider _$valueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ WalletActionExecutionProvider _$valueOf(String name) {
       return _$privy;
     case 'userWallet':
       return _$userWallet;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,15 +26,12 @@ final BuiltSet<WalletActionExecutionProvider> _$values = BuiltSet<
     WalletActionExecutionProvider>(const <WalletActionExecutionProvider>[
   _$privy,
   _$userWallet,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$WalletActionExecutionProviderMeta {
   const _$WalletActionExecutionProviderMeta();
   WalletActionExecutionProvider get privy => _$privy;
   WalletActionExecutionProvider get userWallet => _$userWallet;
-  WalletActionExecutionProvider get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   WalletActionExecutionProvider valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletActionExecutionProvider> get values => _$values;
 }
@@ -58,12 +51,10 @@ class _$WalletActionExecutionProviderSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'privy': 'privy',
     'userWallet': 'user_wallet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'privy': 'privy',
     'user_wallet': 'userWallet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

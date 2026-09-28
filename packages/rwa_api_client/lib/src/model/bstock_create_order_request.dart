@@ -302,8 +302,6 @@ class BstockCreateOrderRequestKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockCreateOrderRequestKindEnum bstock = _$bstockCreateOrderRequestKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockCreateOrderRequestKindEnum unknownDefaultOpenApi = _$bstockCreateOrderRequestKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockCreateOrderRequestKindEnum> get serializer => _$bstockCreateOrderRequestKindEnumSerializer;
 
@@ -319,8 +317,6 @@ class BstockCreateOrderRequestSideEnum extends EnumClass {
   static const BstockCreateOrderRequestSideEnum buy = _$bstockCreateOrderRequestSideEnum_buy;
   @BuiltValueEnumConst(wireName: r'sell')
   static const BstockCreateOrderRequestSideEnum sell = _$bstockCreateOrderRequestSideEnum_sell;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockCreateOrderRequestSideEnum unknownDefaultOpenApi = _$bstockCreateOrderRequestSideEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockCreateOrderRequestSideEnum> get serializer => _$bstockCreateOrderRequestSideEnumSerializer;
 

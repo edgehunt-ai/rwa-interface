@@ -228,8 +228,6 @@ class Hip3PublicMarketEnvironmentEnum extends EnumClass {
   static const Hip3PublicMarketEnvironmentEnum mainnet = _$hip3PublicMarketEnvironmentEnum_mainnet;
   @BuiltValueEnumConst(wireName: r'testnet')
   static const Hip3PublicMarketEnvironmentEnum testnet = _$hip3PublicMarketEnvironmentEnum_testnet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3PublicMarketEnvironmentEnum unknownDefaultOpenApi = _$hip3PublicMarketEnvironmentEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3PublicMarketEnvironmentEnum> get serializer => _$hip3PublicMarketEnvironmentEnumSerializer;
 

@@ -10,8 +10,6 @@ const ServiceEnvironment _$development =
     const ServiceEnvironment._('development');
 const ServiceEnvironment _$testnet = const ServiceEnvironment._('testnet');
 const ServiceEnvironment _$mainnet = const ServiceEnvironment._('mainnet');
-const ServiceEnvironment _$unknownDefaultOpenApi =
-    const ServiceEnvironment._('unknownDefaultOpenApi');
 
 ServiceEnvironment _$valueOf(String name) {
   switch (name) {
@@ -21,10 +19,8 @@ ServiceEnvironment _$valueOf(String name) {
       return _$testnet;
     case 'mainnet':
       return _$mainnet;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -33,7 +29,6 @@ final BuiltSet<ServiceEnvironment> _$values =
   _$development,
   _$testnet,
   _$mainnet,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ServiceEnvironmentMeta {
@@ -41,7 +36,6 @@ class _$ServiceEnvironmentMeta {
   ServiceEnvironment get development => _$development;
   ServiceEnvironment get testnet => _$testnet;
   ServiceEnvironment get mainnet => _$mainnet;
-  ServiceEnvironment get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ServiceEnvironment valueOf(String name) => _$valueOf(name);
   BuiltSet<ServiceEnvironment> get values => _$values;
 }
@@ -61,13 +55,11 @@ class _$ServiceEnvironmentSerializer
     'development': 'development',
     'testnet': 'testnet',
     'mainnet': 'mainnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'development': 'development',
     'testnet': 'testnet',
     'mainnet': 'mainnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -252,8 +252,6 @@ class CreateWithdrawalRequestAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const CreateWithdrawalRequestAssetEnum USDC = _$createWithdrawalRequestAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CreateWithdrawalRequestAssetEnum unknownDefaultOpenApi = _$createWithdrawalRequestAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<CreateWithdrawalRequestAssetEnum> get serializer => _$createWithdrawalRequestAssetEnumSerializer;
 

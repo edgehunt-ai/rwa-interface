@@ -131,9 +131,6 @@ class Hip3Eip712MessageSource_Enum extends EnumClass {
   /// Mainnet 为 a，Testnet 为 b。
   @BuiltValueEnumConst(wireName: r'b')
   static const Hip3Eip712MessageSource_Enum b = _$hip3Eip712MessageSourceEnum_b;
-  /// Mainnet 为 a，Testnet 为 b。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712MessageSource_Enum unknownDefaultOpenApi = _$hip3Eip712MessageSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712MessageSource_Enum> get serializer => _$hip3Eip712MessageSourceEnumSerializer;
 

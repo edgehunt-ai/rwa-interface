@@ -50,8 +50,6 @@ const FundingSourceAssetId
     _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0 =
     const FundingSourceAssetId._(
         'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0');
-const FundingSourceAssetId _$unknownDefaultOpenApi =
-    const FundingSourceAssetId._('unknownDefaultOpenApi');
 
 FundingSourceAssetId _$valueOf(String name) {
   switch (name) {
@@ -77,10 +75,8 @@ FundingSourceAssetId _$valueOf(String name) {
       return _$eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5;
     case 'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0':
       return _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -97,7 +93,6 @@ final BuiltSet<FundingSourceAssetId> _$values =
   _$eip155Colon421614SlashErc20Colon0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d,
   _$eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5,
   _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingSourceAssetIdMeta {
@@ -135,7 +130,6 @@ class _$FundingSourceAssetIdMeta {
   FundingSourceAssetId
       get eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0 =>
           _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0;
-  FundingSourceAssetId get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingSourceAssetId valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingSourceAssetId> get values => _$values;
 }
@@ -174,7 +168,6 @@ class _$FundingSourceAssetIdSerializer
         'eip155:421614/erc20:0x1baabb04529d43a73232b713c0fe471f7c7334d5',
     'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0':
         'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48':
@@ -199,7 +192,6 @@ class _$FundingSourceAssetIdSerializer
         'eip155Colon421614SlashErc20Colon0x1baabb04529d43a73232b713c0fe471f7c7334d5',
     'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0':
         'eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

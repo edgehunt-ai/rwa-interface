@@ -166,8 +166,6 @@ class LegacyBstockFundingRailRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const LegacyBstockFundingRailRailEnum bstock = _$legacyBstockFundingRailRailEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingRailRailEnum unknownDefaultOpenApi = _$legacyBstockFundingRailRailEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockFundingRailRailEnum> get serializer => _$legacyBstockFundingRailRailEnumSerializer;
 
@@ -182,8 +180,6 @@ class LegacyBstockFundingRailNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const LegacyBstockFundingRailNetworkEnum BSC = _$legacyBstockFundingRailNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingRailNetworkEnum unknownDefaultOpenApi = _$legacyBstockFundingRailNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockFundingRailNetworkEnum> get serializer => _$legacyBstockFundingRailNetworkEnumSerializer;
 
@@ -198,8 +194,6 @@ class LegacyBstockFundingRailSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyBstockFundingRailSettlementAssetEnum USDC = _$legacyBstockFundingRailSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingRailSettlementAssetEnum unknownDefaultOpenApi = _$legacyBstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockFundingRailSettlementAssetEnum> get serializer => _$legacyBstockFundingRailSettlementAssetEnumSerializer;
 

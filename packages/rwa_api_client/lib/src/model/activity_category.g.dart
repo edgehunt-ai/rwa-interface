@@ -9,8 +9,6 @@ part of 'activity_category.dart';
 const ActivityCategory _$orders = const ActivityCategory._('orders');
 const ActivityCategory _$cash = const ActivityCategory._('cash');
 const ActivityCategory _$funding = const ActivityCategory._('funding');
-const ActivityCategory _$unknownDefaultOpenApi =
-    const ActivityCategory._('unknownDefaultOpenApi');
 
 ActivityCategory _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ ActivityCategory _$valueOf(String name) {
       return _$cash;
     case 'funding':
       return _$funding;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<ActivityCategory> _$values =
   _$orders,
   _$cash,
   _$funding,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ActivityCategoryMeta {
@@ -40,7 +35,6 @@ class _$ActivityCategoryMeta {
   ActivityCategory get orders => _$orders;
   ActivityCategory get cash => _$cash;
   ActivityCategory get funding => _$funding;
-  ActivityCategory get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ActivityCategory valueOf(String name) => _$valueOf(name);
   BuiltSet<ActivityCategory> get values => _$values;
 }
@@ -59,13 +53,11 @@ class _$ActivityCategorySerializer
     'orders': 'orders',
     'cash': 'cash',
     'funding': 'funding',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'orders': 'orders',
     'cash': 'cash',
     'funding': 'funding',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

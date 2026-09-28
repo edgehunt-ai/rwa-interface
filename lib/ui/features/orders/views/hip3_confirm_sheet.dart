@@ -19,15 +19,21 @@ import '../../../../domain/models/decimal_value.dart';
 import '../providers/order_providers.dart';
 import 'hip3_order_messages.dart';
 import 'slippage_controls.dart';
+import 'order_funding_confirmation_header.dart';
 
 /// Confirmation step for a HIP-3 order, shown as its own modal sheet.
 ///
 /// Dismissing the sheet returns to the order form, which is why the design has
 /// no back control: the frozen quote is reviewed here and nowhere else.
 class Hip3ConfirmSheet extends ConsumerStatefulWidget {
-  const Hip3ConfirmSheet({super.key, required this.preview});
+  const Hip3ConfirmSheet({
+    super.key,
+    required this.preview,
+    this.showFundingStep = false,
+  });
 
   final OrderPreview preview;
+  final bool showFundingStep;
 
   @override
   ConsumerState<Hip3ConfirmSheet> createState() => _Hip3ConfirmSheetState();
@@ -249,16 +255,22 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                '$direction ${_preview.intent.symbol}',
-                style: TextStyle(
-                  fontSize: 20,
-                  height: 26 / 20,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.2,
-                  color: colors.primaryText,
+              if (widget.showFundingStep)
+                OrderFundingConfirmationHeader(
+                  title: '$direction ${_preview.intent.symbol}',
+                  stepKey: const Key('hip3-funding-confirmation-step-3'),
+                )
+              else
+                Text(
+                  '$direction ${_preview.intent.symbol}',
+                  style: TextStyle(
+                    fontSize: 20,
+                    height: 26 / 20,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                    color: colors.primaryText,
+                  ),
                 ),
-              ),
               const SizedBox(height: 16),
               Container(height: 1, color: colors.subtleSurface),
               const SizedBox(height: 16),

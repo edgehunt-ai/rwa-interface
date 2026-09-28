@@ -8,24 +8,19 @@ part of 'legacy_deposit.dart';
 
 const LegacyDepositTokenEnum _$legacyDepositTokenEnum_USDC =
     const LegacyDepositTokenEnum._('USDC');
-const LegacyDepositTokenEnum _$legacyDepositTokenEnum_unknownDefaultOpenApi =
-    const LegacyDepositTokenEnum._('unknownDefaultOpenApi');
 
 LegacyDepositTokenEnum _$legacyDepositTokenEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$legacyDepositTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyDepositTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyDepositTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<LegacyDepositTokenEnum> _$legacyDepositTokenEnumValues =
     BuiltSet<LegacyDepositTokenEnum>(const <LegacyDepositTokenEnum>[
   _$legacyDepositTokenEnum_USDC,
-  _$legacyDepositTokenEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LegacyDepositTokenEnum> _$legacyDepositTokenEnumSerializer =
@@ -35,11 +30,9 @@ class _$LegacyDepositTokenEnumSerializer
     implements PrimitiveSerializer<LegacyDepositTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -43,8 +43,6 @@ class FundingPlanBlocker extends EnumClass {
   static const FundingPlanBlocker routeDisabled = _$routeDisabled;
   @BuiltValueEnumConst(wireName: r'manual_review_required')
   static const FundingPlanBlocker manualReviewRequired = _$manualReviewRequired;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingPlanBlocker> get serializer => _$fundingPlanBlockerSerializer;
 

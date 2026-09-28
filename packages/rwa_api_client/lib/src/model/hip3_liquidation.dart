@@ -231,9 +231,6 @@ class Hip3LiquidationAccountValueScopeEnum extends EnumClass {
   /// 对应来源Cross账户价值或Isolated逐仓账户价值，不是所选HIP3产品的损益，不猜测结算资产。
   @BuiltValueEnumConst(wireName: r'isolated_account')
   static const Hip3LiquidationAccountValueScopeEnum isolatedAccount = _$hip3LiquidationAccountValueScopeEnum_isolatedAccount;
-  /// 对应来源Cross账户价值或Isolated逐仓账户价值，不是所选HIP3产品的损益，不猜测结算资产。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3LiquidationAccountValueScopeEnum unknownDefaultOpenApi = _$hip3LiquidationAccountValueScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3LiquidationAccountValueScopeEnum> get serializer => _$hip3LiquidationAccountValueScopeEnumSerializer;
 
@@ -249,8 +246,6 @@ class Hip3LiquidationMarginModeEnum extends EnumClass {
   static const Hip3LiquidationMarginModeEnum cross = _$hip3LiquidationMarginModeEnum_cross;
   @BuiltValueEnumConst(wireName: r'isolated')
   static const Hip3LiquidationMarginModeEnum isolated = _$hip3LiquidationMarginModeEnum_isolated;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3LiquidationMarginModeEnum unknownDefaultOpenApi = _$hip3LiquidationMarginModeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3LiquidationMarginModeEnum> get serializer => _$hip3LiquidationMarginModeEnumSerializer;
 

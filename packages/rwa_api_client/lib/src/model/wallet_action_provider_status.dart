@@ -25,8 +25,6 @@ class WalletActionProviderStatus extends EnumClass {
   static const WalletActionProviderStatus failed = _$failed;
   @BuiltValueEnumConst(wireName: r'unknown')
   static const WalletActionProviderStatus unknown = _$unknown;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const WalletActionProviderStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<WalletActionProviderStatus> get serializer => _$walletActionProviderStatusSerializer;
 

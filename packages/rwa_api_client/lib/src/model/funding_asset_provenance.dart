@@ -32,9 +32,6 @@ class FundingAssetProvenance extends EnumClass {
   /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
   @BuiltValueEnumConst(wireName: r'testnet_mock')
   static const FundingAssetProvenance testnetMock = _$testnetMock;
-  /// `testnet_mock` 标记仅在测试环境发行的资产（如 BSC 测试网 TUSDT）， 永远不会出现在 mainnet catalog 中。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingAssetProvenance unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingAssetProvenance> get serializer => _$fundingAssetProvenanceSerializer;
 

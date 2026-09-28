@@ -56,7 +56,12 @@ import 'package:rwa_api_client/src/model/bstock_order_assets.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstock_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/bstock_order_wallet_action_state.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_plan.dart';
 import 'package:rwa_api_client/src/model/bstock_testnet_funding_rail.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_target_asset.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_target_balance_snapshot.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_target_credit_observation.dart';
+import 'package:rwa_api_client/src/model/bstock_testnet_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/bstock_testnet_order_preview.dart';
 import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
 import 'package:rwa_api_client/src/model/bstocks_activity_continuation.dart';
@@ -122,7 +127,6 @@ import 'package:rwa_api_client/src/model/device_register_request.dart';
 import 'package:rwa_api_client/src/model/disclosures.dart';
 import 'package:rwa_api_client/src/model/disclosures_always_on.dart';
 import 'package:rwa_api_client/src/model/disclosures_sessions_inner.dart';
-import 'package:rwa_api_client/src/model/eligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/erc20_approval_action.dart';
 import 'package:rwa_api_client/src/model/frozen_evm_transaction.dart';
 import 'package:rwa_api_client/src/model/funding_asset_identity.dart';
@@ -265,7 +269,6 @@ import 'package:rwa_api_client/src/model/holding_group.dart';
 import 'package:rwa_api_client/src/model/holding_stock.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_signature.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_usdc_collateral.dart';
-import 'package:rwa_api_client/src/model/ineligible_funding_position_eligibility.dart';
 import 'package:rwa_api_client/src/model/key_value.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_plan.dart';
 import 'package:rwa_api_client/src/model/legacy_bstock_funding_rail.dart';
@@ -287,6 +290,7 @@ import 'package:rwa_api_client/src/model/market_product_group.dart';
 import 'package:rwa_api_client/src/model/market_session_info.dart';
 import 'package:rwa_api_client/src/model/market_stats.dart';
 import 'package:rwa_api_client/src/model/multi_source_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/multi_source_bstock_testnet_funding_plan.dart';
 import 'package:rwa_api_client/src/model/multi_source_funding_leg.dart';
 import 'package:rwa_api_client/src/model/multi_source_funding_leg_status.dart';
 import 'package:rwa_api_client/src/model/multi_source_funding_plan_details.dart';
@@ -447,6 +451,7 @@ import 'package:rwa_api_client/src/model/user.dart';
 import 'package:rwa_api_client/src/model/user_language.dart';
 import 'package:rwa_api_client/src/model/user_paid_wallet_action_execution_submission_request.dart';
 import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_funding_plan.dart';
+import 'package:rwa_api_client/src/model/user_selected_multi_source_bstock_testnet_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_selected_multi_source_perp_funding_plan.dart';
 import 'package:rwa_api_client/src/model/user_settings.dart';
 import 'package:rwa_api_client/src/model/user_settings_update.dart';
@@ -516,7 +521,12 @@ part 'serializers.g.dart';
   BstockOrderPreview,
   BstockOrderPreviewRequest,
   BstockOrderWalletActionState,
+  BstockTestnetFundingPlan,
   BstockTestnetFundingRail,
+  BstockTestnetFundingTargetAsset,
+  BstockTestnetFundingTargetBalanceSnapshot,
+  BstockTestnetFundingTargetCreditObservation,
+  BstockTestnetFundingTransferTarget,
   BstockTestnetOrderPreview,
   BstocksActionStatus,
   BstocksActivityContinuation,
@@ -582,7 +592,6 @@ part 'serializers.g.dart';
   Disclosures,
   DisclosuresAlwaysOn,
   DisclosuresSessionsInner,
-  EligibleFundingPositionEligibility,
   Erc20ApprovalAction,
   FrozenEvmTransaction,
   FundingAssetIdentity,
@@ -725,7 +734,6 @@ part 'serializers.g.dart';
   HoldingStock,
   HyperliquidSignature,
   HyperliquidUsdcCollateral,
-  IneligibleFundingPositionEligibility,
   KeyValue,
   LegacyBstockFundingPlan,
   LegacyBstockFundingRail,
@@ -747,6 +755,7 @@ part 'serializers.g.dart';
   MarketSessionInfo,
   MarketStats,
   MultiSourceBstockFundingPlan,
+  MultiSourceBstockTestnetFundingPlan,
   MultiSourceFundingLeg,
   MultiSourceFundingLegStatus,
   MultiSourceFundingPlanDetails,
@@ -907,6 +916,7 @@ part 'serializers.g.dart';
   UserLanguage,
   UserPaidWalletActionExecutionSubmissionRequest,
   UserSelectedMultiSourceBstockFundingPlan,
+  UserSelectedMultiSourceBstockTestnetFundingPlan,
   UserSelectedMultiSourcePerpFundingPlan,
   UserSettings,
   UserSettingsUpdate,
@@ -1015,10 +1025,6 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(KeyValue)]),
         () => ListBuilder<KeyValue>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(FundingPositionBlocker)]),
-        () => ListBuilder<FundingPositionBlocker>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(PortfolioAsset)]),

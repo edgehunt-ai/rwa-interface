@@ -254,8 +254,6 @@ class BstocksPortfolioAvailabilityRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstocks')
   static const BstocksPortfolioAvailabilityRailEnum bstocks = _$bstocksPortfolioAvailabilityRailEnum_bstocks;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksPortfolioAvailabilityRailEnum unknownDefaultOpenApi = _$bstocksPortfolioAvailabilityRailEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksPortfolioAvailabilityRailEnum> get serializer => _$bstocksPortfolioAvailabilityRailEnumSerializer;
 
@@ -273,8 +271,6 @@ class BstocksPortfolioAvailabilityAvailabilityStatusEnum extends EnumClass {
   static const BstocksPortfolioAvailabilityAvailabilityStatusEnum partial = _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_partial;
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const BstocksPortfolioAvailabilityAvailabilityStatusEnum unavailable = _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksPortfolioAvailabilityAvailabilityStatusEnum unknownDefaultOpenApi = _$bstocksPortfolioAvailabilityAvailabilityStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksPortfolioAvailabilityAvailabilityStatusEnum> get serializer => _$bstocksPortfolioAvailabilityAvailabilityStatusEnumSerializer;
 
@@ -294,8 +290,6 @@ class BstocksPortfolioAvailabilityUnavailableReasonsEnum extends EnumClass {
   static const BstocksPortfolioAvailabilityUnavailableReasonsEnum submittedGtcSell = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_submittedGtcSell;
   @BuiltValueEnumConst(wireName: r'reservation_exceeds_balance')
   static const BstocksPortfolioAvailabilityUnavailableReasonsEnum reservationExceedsBalance = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_reservationExceedsBalance;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksPortfolioAvailabilityUnavailableReasonsEnum unknownDefaultOpenApi = _$bstocksPortfolioAvailabilityUnavailableReasonsEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksPortfolioAvailabilityUnavailableReasonsEnum> get serializer => _$bstocksPortfolioAvailabilityUnavailableReasonsEnumSerializer;
 

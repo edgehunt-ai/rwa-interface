@@ -7,29 +7,29 @@ part of 'funding_position_eligibility.dart';
 // **************************************************************************
 
 const FundingPositionEligibilityStatusEnum
+    _$fundingPositionEligibilityStatusEnum_eligible =
+    const FundingPositionEligibilityStatusEnum._('eligible');
+const FundingPositionEligibilityStatusEnum
     _$fundingPositionEligibilityStatusEnum_ineligible =
     const FundingPositionEligibilityStatusEnum._('ineligible');
-const FundingPositionEligibilityStatusEnum
-    _$fundingPositionEligibilityStatusEnum_unknownDefaultOpenApi =
-    const FundingPositionEligibilityStatusEnum._('unknownDefaultOpenApi');
 
 FundingPositionEligibilityStatusEnum
     _$fundingPositionEligibilityStatusEnumValueOf(String name) {
   switch (name) {
+    case 'eligible':
+      return _$fundingPositionEligibilityStatusEnum_eligible;
     case 'ineligible':
       return _$fundingPositionEligibilityStatusEnum_ineligible;
-    case 'unknownDefaultOpenApi':
-      return _$fundingPositionEligibilityStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingPositionEligibilityStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingPositionEligibilityStatusEnum>
     _$fundingPositionEligibilityStatusEnumValues = BuiltSet<
         FundingPositionEligibilityStatusEnum>(const <FundingPositionEligibilityStatusEnum>[
+  _$fundingPositionEligibilityStatusEnum_eligible,
   _$fundingPositionEligibilityStatusEnum_ineligible,
-  _$fundingPositionEligibilityStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingPositionEligibilityStatusEnum>
@@ -39,12 +39,12 @@ Serializer<FundingPositionEligibilityStatusEnum>
 class _$FundingPositionEligibilityStatusEnumSerializer
     implements PrimitiveSerializer<FundingPositionEligibilityStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
+    'eligible': 'eligible',
     'ineligible': 'ineligible',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
+    'eligible': 'eligible',
     'ineligible': 'ineligible',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -70,13 +70,16 @@ class _$FundingPositionEligibilityStatusEnumSerializer
 
 class _$FundingPositionEligibility extends FundingPositionEligibility {
   @override
-  final OneOf oneOf;
+  final FundingPositionEligibilityStatusEnum status;
+  @override
+  final BuiltSet<FundingPositionBlocker> blockers;
 
   factory _$FundingPositionEligibility(
           [void Function(FundingPositionEligibilityBuilder)? updates]) =>
       (FundingPositionEligibilityBuilder()..update(updates))._build();
 
-  _$FundingPositionEligibility._({required this.oneOf}) : super._();
+  _$FundingPositionEligibility._({required this.status, required this.blockers})
+      : super._();
   @override
   FundingPositionEligibility rebuild(
           void Function(FundingPositionEligibilityBuilder) updates) =>
@@ -89,13 +92,16 @@ class _$FundingPositionEligibility extends FundingPositionEligibility {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is FundingPositionEligibility && oneOf == other.oneOf;
+    return other is FundingPositionEligibility &&
+        status == other.status &&
+        blockers == other.blockers;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, oneOf.hashCode);
+    _$hash = $jc(_$hash, status.hashCode);
+    _$hash = $jc(_$hash, blockers.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -103,7 +109,8 @@ class _$FundingPositionEligibility extends FundingPositionEligibility {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'FundingPositionEligibility')
-          ..add('oneOf', oneOf))
+          ..add('status', status)
+          ..add('blockers', blockers))
         .toString();
   }
 }
@@ -113,9 +120,16 @@ class FundingPositionEligibilityBuilder
         Builder<FundingPositionEligibility, FundingPositionEligibilityBuilder> {
   _$FundingPositionEligibility? _$v;
 
-  OneOf? _oneOf;
-  OneOf? get oneOf => _$this._oneOf;
-  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
+  FundingPositionEligibilityStatusEnum? _status;
+  FundingPositionEligibilityStatusEnum? get status => _$this._status;
+  set status(FundingPositionEligibilityStatusEnum? status) =>
+      _$this._status = status;
+
+  SetBuilder<FundingPositionBlocker>? _blockers;
+  SetBuilder<FundingPositionBlocker> get blockers =>
+      _$this._blockers ??= SetBuilder<FundingPositionBlocker>();
+  set blockers(SetBuilder<FundingPositionBlocker>? blockers) =>
+      _$this._blockers = blockers;
 
   FundingPositionEligibilityBuilder() {
     FundingPositionEligibility._defaults(this);
@@ -124,7 +138,8 @@ class FundingPositionEligibilityBuilder
   FundingPositionEligibilityBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _oneOf = $v.oneOf;
+      _status = $v.status;
+      _blockers = $v.blockers.toBuilder();
       _$v = null;
     }
     return this;
@@ -144,11 +159,25 @@ class FundingPositionEligibilityBuilder
   FundingPositionEligibility build() => _build();
 
   _$FundingPositionEligibility _build() {
-    final _$result = _$v ??
-        _$FundingPositionEligibility._(
-          oneOf: BuiltValueNullFieldError.checkNotNull(
-              oneOf, r'FundingPositionEligibility', 'oneOf'),
-        );
+    _$FundingPositionEligibility _$result;
+    try {
+      _$result = _$v ??
+          _$FundingPositionEligibility._(
+            status: BuiltValueNullFieldError.checkNotNull(
+                status, r'FundingPositionEligibility', 'status'),
+            blockers: blockers.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'blockers';
+        blockers.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'FundingPositionEligibility', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

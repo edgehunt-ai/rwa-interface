@@ -11,7 +11,7 @@ import 'package:built_value/serializer.dart';
 
 part 'realtime_resource_changed.g.dart';
 
-/// `channel` 与 `resource_type` 必须一一对应：`orders/order`、`positions/position`、 `transfers/transfer`、`claims/claim`、`deposits/deposit`、`withdrawals/withdrawal`、 `balances/balance`、`activity/activity`。任何不一致组合均为服务端 contract violation， 客户端不得据此刷新其他账户 slice 或执行写操作。 
+/// `channel` 与 `resource_type` 必须一一对应：`orders/order`、`positions/position`、 `transfers/transfer`、`claims/claim`、`deposits/deposit`、`withdrawals/withdrawal`、 `balances/balance`、`activity/activity`、`sessions/session`。任何不一致组合均为服务端 contract violation， 客户端不得据此刷新其他账户 slice 或执行写操作。 
 ///
 /// Properties:
 /// * [channel] 
@@ -23,11 +23,11 @@ part 'realtime_resource_changed.g.dart';
 abstract class RealtimeResourceChanged implements Built<RealtimeResourceChanged, RealtimeResourceChangedBuilder> {
   @BuiltValueField(wireName: r'channel')
   RealtimePrivateChannel get channel;
-  // enum channelEnum {  orders,  positions,  transfers,  claims,  deposits,  withdrawals,  balances,  activity,  };
+  // enum channelEnum {  orders,  positions,  transfers,  claims,  deposits,  withdrawals,  balances,  activity,  sessions,  };
 
   @BuiltValueField(wireName: r'resource_type')
   RealtimeResourceType get resourceType;
-  // enum resourceTypeEnum {  order,  position,  transfer,  claim,  deposit,  withdrawal,  balance,  activity,  };
+  // enum resourceTypeEnum {  order,  position,  transfer,  claim,  deposit,  withdrawal,  balance,  activity,  session,  };
 
   /// 对应公共 REST resource 的稳定 ID；不包含内部 provider 或 outbox identity。
   @BuiltValueField(wireName: r'resource_id')

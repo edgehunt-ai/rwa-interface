@@ -144,9 +144,6 @@ class FrozenEvmTransactionValueEnum extends EnumClass {
   /// Exact canonical EVM zero quantity; native-value transfers are not supported in v1.
   @BuiltValueEnumConst(wireName: r'0x0')
   static const FrozenEvmTransactionValueEnum n0x0 = _$frozenEvmTransactionValueEnum_n0x0;
-  /// Exact canonical EVM zero quantity; native-value transfers are not supported in v1.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FrozenEvmTransactionValueEnum unknownDefaultOpenApi = _$frozenEvmTransactionValueEnum_unknownDefaultOpenApi;
 
   static Serializer<FrozenEvmTransactionValueEnum> get serializer => _$frozenEvmTransactionValueEnumSerializer;
 

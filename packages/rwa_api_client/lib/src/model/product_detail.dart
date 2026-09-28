@@ -366,9 +366,6 @@ class ProductDetailTradingHoursEnum extends EnumClass {
   /// 交易时间说明
   @BuiltValueEnumConst(wireName: r'us_market_hours')
   static const ProductDetailTradingHoursEnum usMarketHours = _$productDetailTradingHoursEnum_usMarketHours;
-  /// 交易时间说明
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductDetailTradingHoursEnum unknownDefaultOpenApi = _$productDetailTradingHoursEnum_unknownDefaultOpenApi;
 
   static Serializer<ProductDetailTradingHoursEnum> get serializer => _$productDetailTradingHoursEnumSerializer;
 

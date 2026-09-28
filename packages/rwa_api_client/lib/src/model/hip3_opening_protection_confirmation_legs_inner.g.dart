@@ -12,10 +12,6 @@ const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
 const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
     _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_stopLoss =
     const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum._('stopLoss');
-const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
-    _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_unknownDefaultOpenApi =
-    const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum._(
-        'unknownDefaultOpenApi');
 
 Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
     _$hip3OpeningProtectionConfirmationLegsInnerRoleEnumValueOf(String name) {
@@ -24,10 +20,8 @@ Hip3OpeningProtectionConfirmationLegsInnerRoleEnum
       return _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_takeProfit;
     case 'stopLoss':
       return _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_stopLoss;
-    case 'unknownDefaultOpenApi':
-      return _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -36,7 +30,6 @@ final BuiltSet<Hip3OpeningProtectionConfirmationLegsInnerRoleEnum>
         Hip3OpeningProtectionConfirmationLegsInnerRoleEnum>(const <Hip3OpeningProtectionConfirmationLegsInnerRoleEnum>[
   _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_takeProfit,
   _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_stopLoss,
-  _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
@@ -47,10 +40,6 @@ const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
     _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_limit =
     const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum._(
         'limit');
-const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
-    _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_unknownDefaultOpenApi =
-    const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum._(
-        'unknownDefaultOpenApi');
 
 Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
     _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnumValueOf(
@@ -60,10 +49,8 @@ Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum
       return _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_market;
     case 'limit':
       return _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_limit;
-    case 'unknownDefaultOpenApi':
-      return _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -73,7 +60,6 @@ final BuiltSet<Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum>
         Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum>(const <Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum>[
   _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_market,
   _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_limit,
-  _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3OpeningProtectionConfirmationLegsInnerRoleEnum>
@@ -90,12 +76,10 @@ class _$Hip3OpeningProtectionConfirmationLegsInnerRoleEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'takeProfit': 'take_profit',
     'stopLoss': 'stop_loss',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'take_profit': 'takeProfit',
     'stop_loss': 'stopLoss',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -126,12 +110,10 @@ class _$Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
     'limit': 'limit',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
     'limit': 'limit',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

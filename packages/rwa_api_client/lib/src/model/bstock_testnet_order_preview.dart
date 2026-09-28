@@ -1,4 +1,3 @@
-import 'package:rwa_api_client/src/model/order_type.dart';
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
@@ -15,6 +14,7 @@ import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
 import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/order_preview_common.dart';
+import 'package:rwa_api_client/src/model/order_type.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -893,8 +893,6 @@ class BstockTestnetOrderPreviewFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const BstockTestnetOrderPreviewFundingModeEnum unreservedTransferFrom = _$bstockTestnetOrderPreviewFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockTestnetOrderPreviewFundingModeEnum unknownDefaultOpenApi = _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockTestnetOrderPreviewFundingModeEnum> get serializer => _$bstockTestnetOrderPreviewFundingModeEnumSerializer;
 
@@ -908,8 +906,6 @@ class BstockTestnetOrderPreviewTypeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'market')
   static const BstockTestnetOrderPreviewTypeEnum market = _$bstockTestnetOrderPreviewTypeEnum_market;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockTestnetOrderPreviewTypeEnum unknownDefaultOpenApi = _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockTestnetOrderPreviewTypeEnum> get serializer => _$bstockTestnetOrderPreviewTypeEnumSerializer;
 
@@ -923,8 +919,6 @@ class BstockTestnetOrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockTestnetOrderPreviewKindEnum bstock = _$bstockTestnetOrderPreviewKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockTestnetOrderPreviewKindEnum unknownDefaultOpenApi = _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockTestnetOrderPreviewKindEnum> get serializer => _$bstockTestnetOrderPreviewKindEnumSerializer;
 
@@ -938,8 +932,6 @@ class BstockTestnetOrderPreviewNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const BstockTestnetOrderPreviewNetworkEnum BSC = _$bstockTestnetOrderPreviewNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockTestnetOrderPreviewNetworkEnum unknownDefaultOpenApi = _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockTestnetOrderPreviewNetworkEnum> get serializer => _$bstockTestnetOrderPreviewNetworkEnumSerializer;
 
@@ -953,8 +945,6 @@ class BstockTestnetOrderPreviewSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'TUSDT')
   static const BstockTestnetOrderPreviewSettlementAssetEnum TUSDT = _$bstockTestnetOrderPreviewSettlementAssetEnum_TUSDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockTestnetOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockTestnetOrderPreviewSettlementAssetEnum> get serializer => _$bstockTestnetOrderPreviewSettlementAssetEnumSerializer;
 
@@ -968,8 +958,6 @@ class BstockTestnetOrderPreviewSettlementChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 97)
   static const BstockTestnetOrderPreviewSettlementChainIdEnum number97 = _$bstockTestnetOrderPreviewSettlementChainIdEnum_number97;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockTestnetOrderPreviewSettlementChainIdEnum unknownDefaultOpenApi = _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockTestnetOrderPreviewSettlementChainIdEnum> get serializer => _$bstockTestnetOrderPreviewSettlementChainIdEnumSerializer;
 

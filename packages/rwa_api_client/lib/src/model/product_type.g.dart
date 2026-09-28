@@ -9,8 +9,6 @@ part of 'product_type.dart';
 const ProductType _$all = const ProductType._('all');
 const ProductType _$spot = const ProductType._('spot');
 const ProductType _$contract = const ProductType._('contract');
-const ProductType _$unknownDefaultOpenApi =
-    const ProductType._('unknownDefaultOpenApi');
 
 ProductType _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ ProductType _$valueOf(String name) {
       return _$spot;
     case 'contract':
       return _$contract;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<ProductType> _$values =
   _$all,
   _$spot,
   _$contract,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ProductTypeMeta {
@@ -40,7 +35,6 @@ class _$ProductTypeMeta {
   ProductType get all => _$all;
   ProductType get spot => _$spot;
   ProductType get contract => _$contract;
-  ProductType get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ProductType valueOf(String name) => _$valueOf(name);
   BuiltSet<ProductType> get values => _$values;
 }
@@ -57,13 +51,11 @@ class _$ProductTypeSerializer implements PrimitiveSerializer<ProductType> {
     'all': 'all',
     'spot': 'spot',
     'contract': 'contract',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'all': 'all',
     'spot': 'spot',
     'contract': 'contract',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -330,8 +330,6 @@ class UnifiedFundingPositionCustodyEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'embedded_wallet')
   static const UnifiedFundingPositionCustodyEnum embeddedWallet = _$unifiedFundingPositionCustodyEnum_embeddedWallet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UnifiedFundingPositionCustodyEnum unknownDefaultOpenApi = _$unifiedFundingPositionCustodyEnum_unknownDefaultOpenApi;
 
   static Serializer<UnifiedFundingPositionCustodyEnum> get serializer => _$unifiedFundingPositionCustodyEnumSerializer;
 

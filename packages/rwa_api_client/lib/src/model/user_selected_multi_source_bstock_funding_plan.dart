@@ -398,8 +398,6 @@ class UserSelectedMultiSourceBstockFundingPlanModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'user_selected_multi_source')
   static const UserSelectedMultiSourceBstockFundingPlanModeEnum userSelectedMultiSource = _$userSelectedMultiSourceBstockFundingPlanModeEnum_userSelectedMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourceBstockFundingPlanModeEnum unknownDefaultOpenApi = _$userSelectedMultiSourceBstockFundingPlanModeEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourceBstockFundingPlanModeEnum> get serializer => _$userSelectedMultiSourceBstockFundingPlanModeEnumSerializer;
 
@@ -413,8 +411,6 @@ class UserSelectedMultiSourceBstockFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const UserSelectedMultiSourceBstockFundingPlanRailEnum bstock = _$userSelectedMultiSourceBstockFundingPlanRailEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourceBstockFundingPlanRailEnum unknownDefaultOpenApi = _$userSelectedMultiSourceBstockFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourceBstockFundingPlanRailEnum> get serializer => _$userSelectedMultiSourceBstockFundingPlanRailEnumSerializer;
 
@@ -428,8 +424,6 @@ class UserSelectedMultiSourceBstockFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const UserSelectedMultiSourceBstockFundingPlanNetworkEnum BSC = _$userSelectedMultiSourceBstockFundingPlanNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourceBstockFundingPlanNetworkEnum unknownDefaultOpenApi = _$userSelectedMultiSourceBstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourceBstockFundingPlanNetworkEnum> get serializer => _$userSelectedMultiSourceBstockFundingPlanNetworkEnumSerializer;
 
@@ -443,8 +437,6 @@ class UserSelectedMultiSourceBstockFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDT')
   static const UserSelectedMultiSourceBstockFundingPlanAssetEnum USDT = _$userSelectedMultiSourceBstockFundingPlanAssetEnum_USDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UserSelectedMultiSourceBstockFundingPlanAssetEnum unknownDefaultOpenApi = _$userSelectedMultiSourceBstockFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<UserSelectedMultiSourceBstockFundingPlanAssetEnum> get serializer => _$userSelectedMultiSourceBstockFundingPlanAssetEnumSerializer;
 

@@ -9,19 +9,14 @@ part of 'funding_session_transfer_snapshot.dart';
 const FundingSessionTransferSnapshotKindEnum
     _$fundingSessionTransferSnapshotKindEnum_accountTransfer =
     const FundingSessionTransferSnapshotKindEnum._('accountTransfer');
-const FundingSessionTransferSnapshotKindEnum
-    _$fundingSessionTransferSnapshotKindEnum_unknownDefaultOpenApi =
-    const FundingSessionTransferSnapshotKindEnum._('unknownDefaultOpenApi');
 
 FundingSessionTransferSnapshotKindEnum
     _$fundingSessionTransferSnapshotKindEnumValueOf(String name) {
   switch (name) {
     case 'accountTransfer':
       return _$fundingSessionTransferSnapshotKindEnum_accountTransfer;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSessionTransferSnapshotKindEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingSessionTransferSnapshotKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,26 +24,19 @@ final BuiltSet<FundingSessionTransferSnapshotKindEnum>
     _$fundingSessionTransferSnapshotKindEnumValues = BuiltSet<
         FundingSessionTransferSnapshotKindEnum>(const <FundingSessionTransferSnapshotKindEnum>[
   _$fundingSessionTransferSnapshotKindEnum_accountTransfer,
-  _$fundingSessionTransferSnapshotKindEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingSessionTransferSnapshotDestinationEnum
     _$fundingSessionTransferSnapshotDestinationEnum_hip3Margin =
     const FundingSessionTransferSnapshotDestinationEnum._('hip3Margin');
-const FundingSessionTransferSnapshotDestinationEnum
-    _$fundingSessionTransferSnapshotDestinationEnum_unknownDefaultOpenApi =
-    const FundingSessionTransferSnapshotDestinationEnum._(
-        'unknownDefaultOpenApi');
 
 FundingSessionTransferSnapshotDestinationEnum
     _$fundingSessionTransferSnapshotDestinationEnumValueOf(String name) {
   switch (name) {
     case 'hip3Margin':
       return _$fundingSessionTransferSnapshotDestinationEnum_hip3Margin;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSessionTransferSnapshotDestinationEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingSessionTransferSnapshotDestinationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,7 +44,6 @@ final BuiltSet<FundingSessionTransferSnapshotDestinationEnum>
     _$fundingSessionTransferSnapshotDestinationEnumValues = BuiltSet<
         FundingSessionTransferSnapshotDestinationEnum>(const <FundingSessionTransferSnapshotDestinationEnum>[
   _$fundingSessionTransferSnapshotDestinationEnum_hip3Margin,
-  _$fundingSessionTransferSnapshotDestinationEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingSessionTransferSnapshotKindEnum>
@@ -70,11 +57,9 @@ class _$FundingSessionTransferSnapshotKindEnumSerializer
     implements PrimitiveSerializer<FundingSessionTransferSnapshotKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'accountTransfer': 'account_transfer',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'account_transfer': 'accountTransfer',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -103,11 +88,9 @@ class _$FundingSessionTransferSnapshotDestinationEnumSerializer
         PrimitiveSerializer<FundingSessionTransferSnapshotDestinationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3Margin': 'hip3_margin',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3_margin': 'hip3Margin',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

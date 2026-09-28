@@ -127,8 +127,6 @@ class UnavailableDepositRailAvailabilityStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const UnavailableDepositRailAvailabilityStatusEnum unavailable = _$unavailableDepositRailAvailabilityStatusEnum_unavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UnavailableDepositRailAvailabilityStatusEnum unknownDefaultOpenApi = _$unavailableDepositRailAvailabilityStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<UnavailableDepositRailAvailabilityStatusEnum> get serializer => _$unavailableDepositRailAvailabilityStatusEnumSerializer;
 

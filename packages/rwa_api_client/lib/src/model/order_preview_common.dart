@@ -968,8 +968,6 @@ class OrderPreviewCommonFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const OrderPreviewCommonFundingModeEnum unreservedTransferFrom = _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderPreviewCommonFundingModeEnum unknownDefaultOpenApi = _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderPreviewCommonFundingModeEnum> get serializer => _$orderPreviewCommonFundingModeEnumSerializer;
 

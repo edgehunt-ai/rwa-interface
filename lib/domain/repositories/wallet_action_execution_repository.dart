@@ -11,6 +11,13 @@ abstract interface class WalletActionExecutionRepository {
     required String idempotencyKey,
   });
 
+  Future<WalletActionExecution> createTransferWalletActionExecution({
+    required String transferId,
+    required String actionId,
+    required GasPaymentMode mode,
+    required String idempotencyKey,
+  });
+
   Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
     required String withdrawalId,
     required GasPaymentMode mode,

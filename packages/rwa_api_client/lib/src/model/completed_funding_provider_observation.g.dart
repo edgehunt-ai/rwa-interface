@@ -9,20 +9,14 @@ part of 'completed_funding_provider_observation.dart';
 const CompletedFundingProviderObservationStatusEnum
     _$completedFundingProviderObservationStatusEnum_succeeded =
     const CompletedFundingProviderObservationStatusEnum._('succeeded');
-const CompletedFundingProviderObservationStatusEnum
-    _$completedFundingProviderObservationStatusEnum_unknownDefaultOpenApi =
-    const CompletedFundingProviderObservationStatusEnum._(
-        'unknownDefaultOpenApi');
 
 CompletedFundingProviderObservationStatusEnum
     _$completedFundingProviderObservationStatusEnumValueOf(String name) {
   switch (name) {
     case 'succeeded':
       return _$completedFundingProviderObservationStatusEnum_succeeded;
-    case 'unknownDefaultOpenApi':
-      return _$completedFundingProviderObservationStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$completedFundingProviderObservationStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<CompletedFundingProviderObservationStatusEnum>
     _$completedFundingProviderObservationStatusEnumValues = BuiltSet<
         CompletedFundingProviderObservationStatusEnum>(const <CompletedFundingProviderObservationStatusEnum>[
   _$completedFundingProviderObservationStatusEnum_succeeded,
-  _$completedFundingProviderObservationStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<CompletedFundingProviderObservationStatusEnum>
@@ -42,11 +35,9 @@ class _$CompletedFundingProviderObservationStatusEnumSerializer
         PrimitiveSerializer<CompletedFundingProviderObservationStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'succeeded': 'succeeded',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'succeeded': 'succeeded',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

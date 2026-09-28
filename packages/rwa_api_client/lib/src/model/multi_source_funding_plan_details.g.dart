@@ -9,19 +9,14 @@ part of 'multi_source_funding_plan_details.dart';
 const MultiSourceFundingPlanDetailsMaxLegsEnum
     _$multiSourceFundingPlanDetailsMaxLegsEnum_number3 =
     const MultiSourceFundingPlanDetailsMaxLegsEnum._('number3');
-const MultiSourceFundingPlanDetailsMaxLegsEnum
-    _$multiSourceFundingPlanDetailsMaxLegsEnum_unknownDefaultOpenApi =
-    const MultiSourceFundingPlanDetailsMaxLegsEnum._('unknownDefaultOpenApi');
 
 MultiSourceFundingPlanDetailsMaxLegsEnum
     _$multiSourceFundingPlanDetailsMaxLegsEnumValueOf(String name) {
   switch (name) {
     case 'number3':
       return _$multiSourceFundingPlanDetailsMaxLegsEnum_number3;
-    case 'unknownDefaultOpenApi':
-      return _$multiSourceFundingPlanDetailsMaxLegsEnum_unknownDefaultOpenApi;
     default:
-      return _$multiSourceFundingPlanDetailsMaxLegsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<MultiSourceFundingPlanDetailsMaxLegsEnum>
     _$multiSourceFundingPlanDetailsMaxLegsEnumValues = BuiltSet<
         MultiSourceFundingPlanDetailsMaxLegsEnum>(const <MultiSourceFundingPlanDetailsMaxLegsEnum>[
   _$multiSourceFundingPlanDetailsMaxLegsEnum_number3,
-  _$multiSourceFundingPlanDetailsMaxLegsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<MultiSourceFundingPlanDetailsMaxLegsEnum>
@@ -40,11 +34,9 @@ class _$MultiSourceFundingPlanDetailsMaxLegsEnumSerializer
     implements PrimitiveSerializer<MultiSourceFundingPlanDetailsMaxLegsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number3': 3,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     3: 'number3',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

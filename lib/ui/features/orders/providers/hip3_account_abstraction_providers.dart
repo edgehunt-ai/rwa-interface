@@ -64,6 +64,10 @@ final class Hip3AccountAbstractionCommands {
     } on Object {
       // The switch result remains authoritative even if cache persistence fails.
     }
+    // The status provider may still hold the pre-conversion default-mode
+    // result. Drop it so the next order entry observes the successful switch
+    // from the cache (or reconciles with the API if cache persistence failed).
+    _ref.invalidate(hip3AccountAbstractionProvider);
     return result;
   }
 }

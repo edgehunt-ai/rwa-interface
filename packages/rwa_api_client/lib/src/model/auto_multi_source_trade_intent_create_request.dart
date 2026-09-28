@@ -162,8 +162,6 @@ class AutoMultiSourceTradeIntentCreateRequestFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_multi_source')
   static const AutoMultiSourceTradeIntentCreateRequestFundingModeEnum autoMultiSource = _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_autoMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const AutoMultiSourceTradeIntentCreateRequestFundingModeEnum unknownDefaultOpenApi = _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<AutoMultiSourceTradeIntentCreateRequestFundingModeEnum> get serializer => _$autoMultiSourceTradeIntentCreateRequestFundingModeEnumSerializer;
 

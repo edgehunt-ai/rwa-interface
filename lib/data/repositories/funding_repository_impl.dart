@@ -95,19 +95,28 @@ final class FundingRepositoryImpl implements FundingRepository {
       ),
       dataStatus: value.dataStatus.name,
       calculatedAt: value.calculatedAt.toUtc(),
+      positions: value.positions
+          .map(
+            (position) => FundingSourcePosition(
+              positionId: position.positionId,
+              token: position.asset.token,
+              network: position.asset.network,
+              availableAmount: DecimalValue(
+                position.availableAmount,
+                asset: position.asset.token,
+                unit: 'token',
+              ),
+              eligible: position.eligibility.status.name == 'eligible',
+            ),
+          )
+          .toList(growable: false),
     );
   }
 
   @override
   Future<FundingSessionSummary> getFundingSession(String id) async {
     final value = await _service.getFundingSession(id);
-    return FundingSessionSummary(
-      sessionId: value.fundingSessionId,
-      status: value.status.name,
-      version: value.version,
-      canConfirmTransfer: value.canConfirmTransfer,
-      expiresAt: value.expiresAt.toUtc(),
-    );
+    return _session(value);
   }
 
   @override
@@ -127,22 +136,120 @@ final class FundingRepositoryImpl implements FundingRepository {
       ),
       idempotencyKey: idempotencyKey,
     );
-    return FundingSessionSummary(
-      sessionId: value.fundingSessionId,
-      status: value.status.name,
-      version: value.version,
-      canConfirmTransfer: value.canConfirmTransfer,
-      expiresAt: value.expiresAt.toUtc(),
-    );
+    return _session(value);
   }
+
+  @override
+  Future<FundingSessionSummary> createTransferFundingSession({
+    required String destination,
+    required String amount,
+    required String idempotencyKey,
+  }) async {
+    if (destination != 'hip3_margin') {
+      throw ArgumentError.value(destination, 'destination');
+    }
+    final value = await _service.createFundingSession(
+      api.FundingSessionCreateRequest(
+        (request) => request.oneOf = OneOfDynamic(
+          typeIndex: 1,
+          types: const [
+            api.FundingSessionTradeCreateRequest,
+            api.FundingSessionTransferCreateRequest,
+          ],
+          value: api.FundingSessionTransferCreateRequest(
+            (session) => session.transfer.replace(
+              api.FundingSessionTransferIntent(
+                (transfer) => transfer
+                  ..destination =
+                      api.FundingSessionTransferIntentDestinationEnum.hip3Margin
+                  ..amount = amount,
+              ),
+            ),
+          ),
+        ),
+      ),
+      idempotencyKey: idempotencyKey,
+    );
+    return _session(value);
+  }
+
+  @override
+  Future<FundingSessionSummary> updateFundingSessionSelection({
+    required String fundingSessionId,
+    required int version,
+    required Map<String, String> allocations,
+    required String idempotencyKey,
+  }) async {
+    final value = await _service.updateFundingSessionSelection(
+      fundingSessionId,
+      api.FundingSessionSelectionRequest(
+        (request) => request
+          ..version = version
+          ..allocations.addAll(
+            allocations.entries.map(
+              (entry) => api.FundingSessionSourceAllocationInput(
+                (allocation) => allocation
+                  ..sourcePositionId = entry.key
+                  ..inputAmount = entry.value,
+              ),
+            ),
+          ),
+      ),
+      idempotencyKey: idempotencyKey,
+    );
+    return _session(value);
+  }
+
+  FundingSessionSummary _session(api.FundingSession value) =>
+      FundingSessionSummary(
+        sessionId: value.fundingSessionId,
+        status: value.status.name,
+        version: value.version,
+        canConfirmTransfer: value.canConfirmTransfer,
+        expiresAt: value.expiresAt.toUtc(),
+        selectedTargetAmount: value.selectedTargetAmount,
+        minimumReceived: value.minimumReceived,
+        fees: FundingSessionFees(
+          asset: value.estimatedFees.feeAsset,
+          bridgeFee: value.estimatedFees.bridgeFee,
+          networkFee: value.estimatedFees.networkFee,
+          totalFee: value.estimatedFees.totalFee,
+        ),
+        etaSeconds: value.etaSeconds,
+        targetToken: value.targetSnapshot.asset.token,
+        targetNetwork: value.targetSnapshot.asset.network.name,
+        allocations: {
+          for (final allocation in value.allocations)
+            allocation.sourcePositionId: allocation.inputAmount,
+        },
+      );
 
   @override
   Future<FundingCatalogSummary> getFundingCatalog() async {
     final value = await _service.getFundingCatalog();
+    FundingTransferTarget? transferTarget;
+    for (final rail in value.rails) {
+      final variant = rail.oneOf.value;
+      if (variant is api.PerpFundingRail) {
+        transferTarget = FundingTransferTarget(
+          token: variant.settlementAsset.name,
+          network: variant.network.name,
+        );
+        break;
+      }
+      if (variant is api.LegacyPerpFundingRail) {
+        transferTarget = FundingTransferTarget(
+          token: variant.settlementAsset.name,
+          network: variant.network.name,
+        );
+        break;
+      }
+    }
     return FundingCatalogSummary(
       catalogVersion: value.catalogVersion,
       depositRailCount: value.depositRails.length,
       updatedAt: value.updatedAt.toUtc(),
+      transferTarget: transferTarget,
     );
   }
 
@@ -522,7 +629,11 @@ final class FundingRepositoryImpl implements FundingRepository {
     final value = wire.oneOf.value;
     if (value
         case api.MultiSourceBstockFundingPlan() ||
-            api.MultiSourcePerpFundingPlan()) {
+            api.MultiSourceBstockTestnetFundingPlan() ||
+            api.MultiSourcePerpFundingPlan() ||
+            api.UserSelectedMultiSourceBstockFundingPlan() ||
+            api.UserSelectedMultiSourceBstockTestnetFundingPlan() ||
+            api.UserSelectedMultiSourcePerpFundingPlan()) {
       final plan = value as dynamic;
       final legs = (plan.multiSource as api.MultiSourceFundingPlanDetails).legs
           .map((leg) {
@@ -543,20 +654,35 @@ final class FundingRepositoryImpl implements FundingRepository {
                 'manualReview' => FundingLegState.manualReview,
                 _ => FundingLegState.unknown,
               },
+              etaSeconds: leg.route.etaSeconds,
+              bridgeFee: _money(leg.route.fees.bridgeFee),
+              networkFee: _money(leg.route.fees.networkFee),
+              feeAsset: leg.route.fees.feeAsset,
               transferId: leg.transferId,
             );
           })
           .toList(growable: false);
       return FundingPlan(
         planId: plan.planId as String,
-        tradePreviewId: plan.tradePreviewId as String,
+        tradePreviewId:
+            (plan.tradePreviewId as String?) ??
+            (plan.fundingSessionId as String?) ??
+            (throw StateError('Funding plan has no preview or session ID')),
         shortfall: _money(plan.shortfall as String)!,
+        requiredTargetAmount: _money(plan.requiredTargetAmount as String),
+        targetAvailableAmount: _money(
+          (plan.targetSnapshot as dynamic).availableAmount as String,
+        ),
         status: switch (plan.status.name as String) {
           'ready' => FundingPlanState.ready,
+          'executing' => FundingPlanState.executing,
+          'partiallyFunded' => FundingPlanState.partiallyFunded,
           'funded' => FundingPlanState.alreadyFunded,
           'blocked' => FundingPlanState.blocked,
+          'failed' => FundingPlanState.failed,
           'expired' => FundingPlanState.expired,
           'cancelled' => FundingPlanState.cancelled,
+          'manualReview' => FundingPlanState.manualReview,
           _ => FundingPlanState.unknown,
         },
         blocker: (plan.blocker as api.FundingPlanBlocker?)?.name,
@@ -588,6 +714,11 @@ final class FundingRepositoryImpl implements FundingRepository {
         'ambiguous' => FundingTransferState.ambiguous,
         'manualReview' => FundingTransferState.manualReview,
         _ => FundingTransferState.unknown,
+      },
+      nextActionId: switch (value.nextAction?.value) {
+        final Map<Object?, Object?> action =>
+          (action['action_id'] ?? action['actionId']) as String?,
+        _ => null,
       },
       failureReason: value.failureReason,
     );

@@ -26,9 +26,6 @@ class ChartRange extends EnumClass {
   /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
   @BuiltValueEnumConst(wireName: r'1w')
   static const ChartRange n1w = _$n1w;
-  /// 设计稿按钮 1h/4h/1d/1w 对应接口值 1h/4h/24h/1w；15m 仅为向后兼容保留。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ChartRange unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<ChartRange> get serializer => _$chartRangeSerializer;
 

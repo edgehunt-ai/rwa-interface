@@ -9,19 +9,14 @@ part of 'unified_funding_account.dart';
 const UnifiedFundingAccountValuationCurrencyEnum
     _$unifiedFundingAccountValuationCurrencyEnum_USD =
     const UnifiedFundingAccountValuationCurrencyEnum._('USD');
-const UnifiedFundingAccountValuationCurrencyEnum
-    _$unifiedFundingAccountValuationCurrencyEnum_unknownDefaultOpenApi =
-    const UnifiedFundingAccountValuationCurrencyEnum._('unknownDefaultOpenApi');
 
 UnifiedFundingAccountValuationCurrencyEnum
     _$unifiedFundingAccountValuationCurrencyEnumValueOf(String name) {
   switch (name) {
     case 'USD':
       return _$unifiedFundingAccountValuationCurrencyEnum_USD;
-    case 'unknownDefaultOpenApi':
-      return _$unifiedFundingAccountValuationCurrencyEnum_unknownDefaultOpenApi;
     default:
-      return _$unifiedFundingAccountValuationCurrencyEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<UnifiedFundingAccountValuationCurrencyEnum>
     _$unifiedFundingAccountValuationCurrencyEnumValues = BuiltSet<
         UnifiedFundingAccountValuationCurrencyEnum>(const <UnifiedFundingAccountValuationCurrencyEnum>[
   _$unifiedFundingAccountValuationCurrencyEnum_USD,
-  _$unifiedFundingAccountValuationCurrencyEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<UnifiedFundingAccountValuationCurrencyEnum>
@@ -40,11 +34,9 @@ class _$UnifiedFundingAccountValuationCurrencyEnumSerializer
     implements PrimitiveSerializer<UnifiedFundingAccountValuationCurrencyEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USD': 'USD',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USD': 'USD',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

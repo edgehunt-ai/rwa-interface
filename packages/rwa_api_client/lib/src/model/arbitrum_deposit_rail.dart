@@ -199,8 +199,6 @@ class ArbitrumDepositRailChainEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const ArbitrumDepositRailChainEnum arbitrum = _$arbitrumDepositRailChainEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumDepositRailChainEnum unknownDefaultOpenApi = _$arbitrumDepositRailChainEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumDepositRailChainEnum> get serializer => _$arbitrumDepositRailChainEnumSerializer;
 
@@ -214,8 +212,6 @@ class ArbitrumDepositRailChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 42161)
   static const ArbitrumDepositRailChainIdEnum number42161 = _$arbitrumDepositRailChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const ArbitrumDepositRailChainIdEnum unknownDefaultOpenApi = _$arbitrumDepositRailChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumDepositRailChainIdEnum> get serializer => _$arbitrumDepositRailChainIdEnumSerializer;
 
@@ -229,8 +225,6 @@ class ArbitrumDepositRailTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const ArbitrumDepositRailTokenEnum USDC = _$arbitrumDepositRailTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumDepositRailTokenEnum unknownDefaultOpenApi = _$arbitrumDepositRailTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumDepositRailTokenEnum> get serializer => _$arbitrumDepositRailTokenEnumSerializer;
 
@@ -244,8 +238,6 @@ class ArbitrumDepositRailTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0xaf88d065e77c8cc2239327c5edb3a432268e5831')
   static const ArbitrumDepositRailTokenContractEnum n0xaf88d065e77c8cc2239327c5edb3a432268e5831 = _$arbitrumDepositRailTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumDepositRailTokenContractEnum unknownDefaultOpenApi = _$arbitrumDepositRailTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumDepositRailTokenContractEnum> get serializer => _$arbitrumDepositRailTokenContractEnumSerializer;
 
@@ -259,8 +251,6 @@ class ArbitrumDepositRailTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 6)
   static const ArbitrumDepositRailTokenDecimalsEnum number6 = _$arbitrumDepositRailTokenDecimalsEnum_number6;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const ArbitrumDepositRailTokenDecimalsEnum unknownDefaultOpenApi = _$arbitrumDepositRailTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumDepositRailTokenDecimalsEnum> get serializer => _$arbitrumDepositRailTokenDecimalsEnumSerializer;
 
@@ -274,8 +264,6 @@ class ArbitrumDepositRailConfirmationsRequiredEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 20)
   static const ArbitrumDepositRailConfirmationsRequiredEnum number20 = _$arbitrumDepositRailConfirmationsRequiredEnum_number20;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const ArbitrumDepositRailConfirmationsRequiredEnum unknownDefaultOpenApi = _$arbitrumDepositRailConfirmationsRequiredEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumDepositRailConfirmationsRequiredEnum> get serializer => _$arbitrumDepositRailConfirmationsRequiredEnumSerializer;
 

@@ -33,8 +33,6 @@ class TradeIntentStatus extends EnumClass {
   static const TradeIntentStatus failed = _$failed;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TradeIntentStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<TradeIntentStatus> get serializer => _$tradeIntentStatusSerializer;
 

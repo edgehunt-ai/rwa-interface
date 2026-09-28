@@ -10,20 +10,14 @@ const BstockOrderWalletActionStateFundingModeEnum
     _$bstockOrderWalletActionStateFundingModeEnum_unreservedTransferFrom =
     const BstockOrderWalletActionStateFundingModeEnum._(
         'unreservedTransferFrom');
-const BstockOrderWalletActionStateFundingModeEnum
-    _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi =
-    const BstockOrderWalletActionStateFundingModeEnum._(
-        'unknownDefaultOpenApi');
 
 BstockOrderWalletActionStateFundingModeEnum
     _$bstockOrderWalletActionStateFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$bstockOrderWalletActionStateFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -31,25 +25,19 @@ final BuiltSet<BstockOrderWalletActionStateFundingModeEnum>
     _$bstockOrderWalletActionStateFundingModeEnumValues = BuiltSet<
         BstockOrderWalletActionStateFundingModeEnum>(const <BstockOrderWalletActionStateFundingModeEnum>[
   _$bstockOrderWalletActionStateFundingModeEnum_unreservedTransferFrom,
-  _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockOrderWalletActionStateKindEnum
     _$bstockOrderWalletActionStateKindEnum_bstock =
     const BstockOrderWalletActionStateKindEnum._('bstock');
-const BstockOrderWalletActionStateKindEnum
-    _$bstockOrderWalletActionStateKindEnum_unknownDefaultOpenApi =
-    const BstockOrderWalletActionStateKindEnum._('unknownDefaultOpenApi');
 
 BstockOrderWalletActionStateKindEnum
     _$bstockOrderWalletActionStateKindEnumValueOf(String name) {
   switch (name) {
     case 'bstock':
       return _$bstockOrderWalletActionStateKindEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$bstockOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -57,7 +45,6 @@ final BuiltSet<BstockOrderWalletActionStateKindEnum>
     _$bstockOrderWalletActionStateKindEnumValues = BuiltSet<
         BstockOrderWalletActionStateKindEnum>(const <BstockOrderWalletActionStateKindEnum>[
   _$bstockOrderWalletActionStateKindEnum_bstock,
-  _$bstockOrderWalletActionStateKindEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockOrderWalletActionStateWalletActionBlockerEnum
@@ -72,10 +59,6 @@ const BstockOrderWalletActionStateWalletActionBlockerEnum
     _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled =
     const BstockOrderWalletActionStateWalletActionBlockerEnum._(
         'capabilityDisabled');
-const BstockOrderWalletActionStateWalletActionBlockerEnum
-    _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi =
-    const BstockOrderWalletActionStateWalletActionBlockerEnum._(
-        'unknownDefaultOpenApi');
 
 BstockOrderWalletActionStateWalletActionBlockerEnum
     _$bstockOrderWalletActionStateWalletActionBlockerEnumValueOf(String name) {
@@ -86,10 +69,8 @@ BstockOrderWalletActionStateWalletActionBlockerEnum
       return _$bstockOrderWalletActionStateWalletActionBlockerEnum_actionNotReady;
     case 'capabilityDisabled':
       return _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled;
-    case 'unknownDefaultOpenApi':
-      return _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -99,7 +80,72 @@ final BuiltSet<BstockOrderWalletActionStateWalletActionBlockerEnum>
   _$bstockOrderWalletActionStateWalletActionBlockerEnum_providerUnavailable,
   _$bstockOrderWalletActionStateWalletActionBlockerEnum_actionNotReady,
   _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled,
-  _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi,
+]);
+
+const BstockOrderWalletActionStateChainIdEnum
+    _$bstockOrderWalletActionStateChainIdEnum_number56 =
+    const BstockOrderWalletActionStateChainIdEnum._('number56');
+const BstockOrderWalletActionStateChainIdEnum
+    _$bstockOrderWalletActionStateChainIdEnum_number97 =
+    const BstockOrderWalletActionStateChainIdEnum._('number97');
+const BstockOrderWalletActionStateChainIdEnum
+    _$bstockOrderWalletActionStateChainIdEnum_number31337 =
+    const BstockOrderWalletActionStateChainIdEnum._('number31337');
+
+BstockOrderWalletActionStateChainIdEnum
+    _$bstockOrderWalletActionStateChainIdEnumValueOf(String name) {
+  switch (name) {
+    case 'number56':
+      return _$bstockOrderWalletActionStateChainIdEnum_number56;
+    case 'number97':
+      return _$bstockOrderWalletActionStateChainIdEnum_number97;
+    case 'number31337':
+      return _$bstockOrderWalletActionStateChainIdEnum_number31337;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<BstockOrderWalletActionStateChainIdEnum>
+    _$bstockOrderWalletActionStateChainIdEnumValues = BuiltSet<
+        BstockOrderWalletActionStateChainIdEnum>(const <BstockOrderWalletActionStateChainIdEnum>[
+  _$bstockOrderWalletActionStateChainIdEnum_number56,
+  _$bstockOrderWalletActionStateChainIdEnum_number97,
+  _$bstockOrderWalletActionStateChainIdEnum_number31337,
+]);
+
+const BstockOrderWalletActionStateCancellationReasonEnum
+    _$bstockOrderWalletActionStateCancellationReasonEnum_userCancelled =
+    const BstockOrderWalletActionStateCancellationReasonEnum._('userCancelled');
+const BstockOrderWalletActionStateCancellationReasonEnum
+    _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientBalance =
+    const BstockOrderWalletActionStateCancellationReasonEnum._(
+        'insufficientBalance');
+const BstockOrderWalletActionStateCancellationReasonEnum
+    _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance =
+    const BstockOrderWalletActionStateCancellationReasonEnum._(
+        'insufficientAllowance');
+
+BstockOrderWalletActionStateCancellationReasonEnum
+    _$bstockOrderWalletActionStateCancellationReasonEnumValueOf(String name) {
+  switch (name) {
+    case 'userCancelled':
+      return _$bstockOrderWalletActionStateCancellationReasonEnum_userCancelled;
+    case 'insufficientBalance':
+      return _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientBalance;
+    case 'insufficientAllowance':
+      return _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<BstockOrderWalletActionStateCancellationReasonEnum>
+    _$bstockOrderWalletActionStateCancellationReasonEnumValues = BuiltSet<
+        BstockOrderWalletActionStateCancellationReasonEnum>(const <BstockOrderWalletActionStateCancellationReasonEnum>[
+  _$bstockOrderWalletActionStateCancellationReasonEnum_userCancelled,
+  _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientBalance,
+  _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance,
 ]);
 
 Serializer<BstockOrderWalletActionStateFundingModeEnum>
@@ -111,17 +157,21 @@ Serializer<BstockOrderWalletActionStateKindEnum>
 Serializer<BstockOrderWalletActionStateWalletActionBlockerEnum>
     _$bstockOrderWalletActionStateWalletActionBlockerEnumSerializer =
     _$BstockOrderWalletActionStateWalletActionBlockerEnumSerializer();
+Serializer<BstockOrderWalletActionStateChainIdEnum>
+    _$bstockOrderWalletActionStateChainIdEnumSerializer =
+    _$BstockOrderWalletActionStateChainIdEnumSerializer();
+Serializer<BstockOrderWalletActionStateCancellationReasonEnum>
+    _$bstockOrderWalletActionStateCancellationReasonEnumSerializer =
+    _$BstockOrderWalletActionStateCancellationReasonEnumSerializer();
 
 class _$BstockOrderWalletActionStateFundingModeEnumSerializer
     implements
         PrimitiveSerializer<BstockOrderWalletActionStateFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -149,11 +199,9 @@ class _$BstockOrderWalletActionStateKindEnumSerializer
     implements PrimitiveSerializer<BstockOrderWalletActionStateKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -185,13 +233,11 @@ class _$BstockOrderWalletActionStateWalletActionBlockerEnumSerializer
     'providerUnavailable': 'provider_unavailable',
     'actionNotReady': 'action_not_ready',
     'capabilityDisabled': 'capability_disabled',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'provider_unavailable': 'providerUnavailable',
     'action_not_ready': 'actionNotReady',
     'capability_disabled': 'capabilityDisabled',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -212,6 +258,76 @@ class _$BstockOrderWalletActionStateWalletActionBlockerEnumSerializer
           Serializers serializers, Object serialized,
           {FullType specifiedType = FullType.unspecified}) =>
       BstockOrderWalletActionStateWalletActionBlockerEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockOrderWalletActionStateChainIdEnumSerializer
+    implements PrimitiveSerializer<BstockOrderWalletActionStateChainIdEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'number56': 56,
+    'number97': 97,
+    'number31337': 31337,
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    56: 'number56',
+    97: 'number97',
+    31337: 'number31337',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockOrderWalletActionStateChainIdEnum
+  ];
+  @override
+  final String wireName = 'BstockOrderWalletActionStateChainIdEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockOrderWalletActionStateChainIdEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockOrderWalletActionStateChainIdEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockOrderWalletActionStateChainIdEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$BstockOrderWalletActionStateCancellationReasonEnumSerializer
+    implements
+        PrimitiveSerializer<
+            BstockOrderWalletActionStateCancellationReasonEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'userCancelled': 'user_cancelled',
+    'insufficientBalance': 'insufficient_balance',
+    'insufficientAllowance': 'insufficient_allowance',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'user_cancelled': 'userCancelled',
+    'insufficient_balance': 'insufficientBalance',
+    'insufficient_allowance': 'insufficientAllowance',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[
+    BstockOrderWalletActionStateCancellationReasonEnum
+  ];
+  @override
+  final String wireName = 'BstockOrderWalletActionStateCancellationReasonEnum';
+
+  @override
+  Object serialize(Serializers serializers,
+          BstockOrderWalletActionStateCancellationReasonEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  BstockOrderWalletActionStateCancellationReasonEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      BstockOrderWalletActionStateCancellationReasonEnum.valueOf(
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
@@ -243,6 +359,22 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   final String? confirmedTransactionHash;
   @override
   final String? requiredFundingRaw;
+  @override
+  final String? previewId;
+  @override
+  final BstockOrderWalletActionStateChainIdEnum? chainId;
+  @override
+  final String? router;
+  @override
+  final String? placementTransactionHash;
+  @override
+  final String? transactionHash;
+  @override
+  final int? logIndex;
+  @override
+  final BstockOrderWalletActionStateCancellationReasonEnum? cancellationReason;
+  @override
+  final String? targetOrderId;
 
   factory _$BstockOrderWalletActionState(
           [void Function(BstockOrderWalletActionStateBuilder)? updates]) =>
@@ -261,7 +393,15 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
       this.actionStatus,
       this.submittedTransactionHash,
       this.confirmedTransactionHash,
-      this.requiredFundingRaw})
+      this.requiredFundingRaw,
+      this.previewId,
+      this.chainId,
+      this.router,
+      this.placementTransactionHash,
+      this.transactionHash,
+      this.logIndex,
+      this.cancellationReason,
+      this.targetOrderId})
       : super._();
   @override
   BstockOrderWalletActionState rebuild(
@@ -288,7 +428,15 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
         actionStatus == other.actionStatus &&
         submittedTransactionHash == other.submittedTransactionHash &&
         confirmedTransactionHash == other.confirmedTransactionHash &&
-        requiredFundingRaw == other.requiredFundingRaw;
+        requiredFundingRaw == other.requiredFundingRaw &&
+        previewId == other.previewId &&
+        chainId == other.chainId &&
+        router == other.router &&
+        placementTransactionHash == other.placementTransactionHash &&
+        transactionHash == other.transactionHash &&
+        logIndex == other.logIndex &&
+        cancellationReason == other.cancellationReason &&
+        targetOrderId == other.targetOrderId;
   }
 
   @override
@@ -307,6 +455,14 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
     _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
     _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
     _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
+    _$hash = $jc(_$hash, previewId.hashCode);
+    _$hash = $jc(_$hash, chainId.hashCode);
+    _$hash = $jc(_$hash, router.hashCode);
+    _$hash = $jc(_$hash, placementTransactionHash.hashCode);
+    _$hash = $jc(_$hash, transactionHash.hashCode);
+    _$hash = $jc(_$hash, logIndex.hashCode);
+    _$hash = $jc(_$hash, cancellationReason.hashCode);
+    _$hash = $jc(_$hash, targetOrderId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -326,7 +482,15 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
           ..add('actionStatus', actionStatus)
           ..add('submittedTransactionHash', submittedTransactionHash)
           ..add('confirmedTransactionHash', confirmedTransactionHash)
-          ..add('requiredFundingRaw', requiredFundingRaw))
+          ..add('requiredFundingRaw', requiredFundingRaw)
+          ..add('previewId', previewId)
+          ..add('chainId', chainId)
+          ..add('router', router)
+          ..add('placementTransactionHash', placementTransactionHash)
+          ..add('transactionHash', transactionHash)
+          ..add('logIndex', logIndex)
+          ..add('cancellationReason', cancellationReason)
+          ..add('targetOrderId', targetOrderId))
         .toString();
   }
 }
@@ -408,6 +572,46 @@ class BstockOrderWalletActionStateBuilder
   set requiredFundingRaw(String? requiredFundingRaw) =>
       _$this._requiredFundingRaw = requiredFundingRaw;
 
+  String? _previewId;
+  String? get previewId => _$this._previewId;
+  set previewId(String? previewId) => _$this._previewId = previewId;
+
+  BstockOrderWalletActionStateChainIdEnum? _chainId;
+  BstockOrderWalletActionStateChainIdEnum? get chainId => _$this._chainId;
+  set chainId(BstockOrderWalletActionStateChainIdEnum? chainId) =>
+      _$this._chainId = chainId;
+
+  String? _router;
+  String? get router => _$this._router;
+  set router(String? router) => _$this._router = router;
+
+  String? _placementTransactionHash;
+  String? get placementTransactionHash => _$this._placementTransactionHash;
+  set placementTransactionHash(String? placementTransactionHash) =>
+      _$this._placementTransactionHash = placementTransactionHash;
+
+  String? _transactionHash;
+  String? get transactionHash => _$this._transactionHash;
+  set transactionHash(String? transactionHash) =>
+      _$this._transactionHash = transactionHash;
+
+  int? _logIndex;
+  int? get logIndex => _$this._logIndex;
+  set logIndex(int? logIndex) => _$this._logIndex = logIndex;
+
+  BstockOrderWalletActionStateCancellationReasonEnum? _cancellationReason;
+  BstockOrderWalletActionStateCancellationReasonEnum? get cancellationReason =>
+      _$this._cancellationReason;
+  set cancellationReason(
+          BstockOrderWalletActionStateCancellationReasonEnum?
+              cancellationReason) =>
+      _$this._cancellationReason = cancellationReason;
+
+  String? _targetOrderId;
+  String? get targetOrderId => _$this._targetOrderId;
+  set targetOrderId(String? targetOrderId) =>
+      _$this._targetOrderId = targetOrderId;
+
   BstockOrderWalletActionStateBuilder() {
     BstockOrderWalletActionState._defaults(this);
   }
@@ -428,6 +632,14 @@ class BstockOrderWalletActionStateBuilder
       _submittedTransactionHash = $v.submittedTransactionHash;
       _confirmedTransactionHash = $v.confirmedTransactionHash;
       _requiredFundingRaw = $v.requiredFundingRaw;
+      _previewId = $v.previewId;
+      _chainId = $v.chainId;
+      _router = $v.router;
+      _placementTransactionHash = $v.placementTransactionHash;
+      _transactionHash = $v.transactionHash;
+      _logIndex = $v.logIndex;
+      _cancellationReason = $v.cancellationReason;
+      _targetOrderId = $v.targetOrderId;
       _$v = null;
     }
     return this;
@@ -465,6 +677,14 @@ class BstockOrderWalletActionStateBuilder
             submittedTransactionHash: submittedTransactionHash,
             confirmedTransactionHash: confirmedTransactionHash,
             requiredFundingRaw: requiredFundingRaw,
+            previewId: previewId,
+            chainId: chainId,
+            router: router,
+            placementTransactionHash: placementTransactionHash,
+            transactionHash: transactionHash,
+            logIndex: logIndex,
+            cancellationReason: cancellationReason,
+            targetOrderId: targetOrderId,
           );
     } catch (_) {
       late String _$failedField;

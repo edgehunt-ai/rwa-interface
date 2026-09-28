@@ -33,8 +33,6 @@ class MultiSourceFundingLegStatus extends EnumClass {
   static const MultiSourceFundingLegStatus ambiguous = _$ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const MultiSourceFundingLegStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourceFundingLegStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<MultiSourceFundingLegStatus> get serializer => _$multiSourceFundingLegStatusSerializer;
 

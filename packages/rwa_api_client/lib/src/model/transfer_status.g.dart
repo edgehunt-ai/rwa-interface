@@ -21,8 +21,6 @@ const TransferStatus _$refunded = const TransferStatus._('refunded');
 const TransferStatus _$failed = const TransferStatus._('failed');
 const TransferStatus _$ambiguous = const TransferStatus._('ambiguous');
 const TransferStatus _$manualReview = const TransferStatus._('manualReview');
-const TransferStatus _$unknownDefaultOpenApi =
-    const TransferStatus._('unknownDefaultOpenApi');
 
 TransferStatus _$valueOf(String name) {
   switch (name) {
@@ -48,10 +46,8 @@ TransferStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -68,7 +64,6 @@ final BuiltSet<TransferStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TransferStatusMeta {
@@ -84,7 +79,6 @@ class _$TransferStatusMeta {
   TransferStatus get failed => _$failed;
   TransferStatus get ambiguous => _$ambiguous;
   TransferStatus get manualReview => _$manualReview;
-  TransferStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   TransferStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TransferStatus> get values => _$values;
 }
@@ -111,7 +105,6 @@ class _$TransferStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_authorization': 'awaitingAuthorization',
@@ -125,7 +118,6 @@ class _$TransferStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

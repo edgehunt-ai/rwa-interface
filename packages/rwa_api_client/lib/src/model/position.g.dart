@@ -10,8 +10,6 @@ const PositionSideEnum _$positionSideEnum_long =
     const PositionSideEnum._('long');
 const PositionSideEnum _$positionSideEnum_short =
     const PositionSideEnum._('short');
-const PositionSideEnum _$positionSideEnum_unknownDefaultOpenApi =
-    const PositionSideEnum._('unknownDefaultOpenApi');
 
 PositionSideEnum _$positionSideEnumValueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ PositionSideEnum _$positionSideEnumValueOf(String name) {
       return _$positionSideEnum_long;
     case 'short':
       return _$positionSideEnum_short;
-    case 'unknownDefaultOpenApi':
-      return _$positionSideEnum_unknownDefaultOpenApi;
     default:
-      return _$positionSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +26,6 @@ final BuiltSet<PositionSideEnum> _$positionSideEnumValues =
     BuiltSet<PositionSideEnum>(const <PositionSideEnum>[
   _$positionSideEnum_long,
   _$positionSideEnum_short,
-  _$positionSideEnum_unknownDefaultOpenApi,
 ]);
 
 const PositionChainIdEnum _$positionChainIdEnum_number56 =
@@ -39,8 +34,6 @@ const PositionChainIdEnum _$positionChainIdEnum_number97 =
     const PositionChainIdEnum._('number97');
 const PositionChainIdEnum _$positionChainIdEnum_number31337 =
     const PositionChainIdEnum._('number31337');
-const PositionChainIdEnum _$positionChainIdEnum_unknownDefaultOpenApi =
-    const PositionChainIdEnum._('unknownDefaultOpenApi');
 
 PositionChainIdEnum _$positionChainIdEnumValueOf(String name) {
   switch (name) {
@@ -50,10 +43,8 @@ PositionChainIdEnum _$positionChainIdEnumValueOf(String name) {
       return _$positionChainIdEnum_number97;
     case 'number31337':
       return _$positionChainIdEnum_number31337;
-    case 'unknownDefaultOpenApi':
-      return _$positionChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$positionChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -62,15 +53,12 @@ final BuiltSet<PositionChainIdEnum> _$positionChainIdEnumValues =
   _$positionChainIdEnum_number56,
   _$positionChainIdEnum_number97,
   _$positionChainIdEnum_number31337,
-  _$positionChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const PositionPnlStatusEnum _$positionPnlStatusEnum_known =
     const PositionPnlStatusEnum._('known');
 const PositionPnlStatusEnum _$positionPnlStatusEnum_unknownCost =
     const PositionPnlStatusEnum._('unknownCost');
-const PositionPnlStatusEnum _$positionPnlStatusEnum_unknownDefaultOpenApi =
-    const PositionPnlStatusEnum._('unknownDefaultOpenApi');
 
 PositionPnlStatusEnum _$positionPnlStatusEnumValueOf(String name) {
   switch (name) {
@@ -78,10 +66,8 @@ PositionPnlStatusEnum _$positionPnlStatusEnumValueOf(String name) {
       return _$positionPnlStatusEnum_known;
     case 'unknownCost':
       return _$positionPnlStatusEnum_unknownCost;
-    case 'unknownDefaultOpenApi':
-      return _$positionPnlStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$positionPnlStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -89,23 +75,17 @@ final BuiltSet<PositionPnlStatusEnum> _$positionPnlStatusEnumValues =
     BuiltSet<PositionPnlStatusEnum>(const <PositionPnlStatusEnum>[
   _$positionPnlStatusEnum_known,
   _$positionPnlStatusEnum_unknownCost,
-  _$positionPnlStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const PositionValuationStatusEnum _$positionValuationStatusEnum_referenceOnly =
     const PositionValuationStatusEnum._('referenceOnly');
-const PositionValuationStatusEnum
-    _$positionValuationStatusEnum_unknownDefaultOpenApi =
-    const PositionValuationStatusEnum._('unknownDefaultOpenApi');
 
 PositionValuationStatusEnum _$positionValuationStatusEnumValueOf(String name) {
   switch (name) {
     case 'referenceOnly':
       return _$positionValuationStatusEnum_referenceOnly;
-    case 'unknownDefaultOpenApi':
-      return _$positionValuationStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$positionValuationStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -113,7 +93,6 @@ final BuiltSet<PositionValuationStatusEnum>
     _$positionValuationStatusEnumValues =
     BuiltSet<PositionValuationStatusEnum>(const <PositionValuationStatusEnum>[
   _$positionValuationStatusEnum_referenceOnly,
-  _$positionValuationStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PositionSideEnum> _$positionSideEnumSerializer =
@@ -131,12 +110,10 @@ class _$PositionSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'long': 'long',
     'short': 'short',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'long': 'long',
     'short': 'short',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -162,13 +139,11 @@ class _$PositionChainIdEnumSerializer
     'number56': 56,
     'number97': 97,
     'number31337': 31337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
     97: 'number97',
     31337: 'number31337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -193,12 +168,10 @@ class _$PositionPnlStatusEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'known': 'known',
     'unknownCost': 'unknown_cost',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'known': 'known',
     'unknown_cost': 'unknownCost',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -222,11 +195,9 @@ class _$PositionValuationStatusEnumSerializer
     implements PrimitiveSerializer<PositionValuationStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'referenceOnly': 'reference_only',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'reference_only': 'referenceOnly',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -9,19 +9,14 @@ part of 'hip3_action_create_request.dart';
 const Hip3ActionCreateRequestOperationEnum
     _$hip3ActionCreateRequestOperationEnum_setLeverage =
     const Hip3ActionCreateRequestOperationEnum._('setLeverage');
-const Hip3ActionCreateRequestOperationEnum
-    _$hip3ActionCreateRequestOperationEnum_unknownDefaultOpenApi =
-    const Hip3ActionCreateRequestOperationEnum._('unknownDefaultOpenApi');
 
 Hip3ActionCreateRequestOperationEnum
     _$hip3ActionCreateRequestOperationEnumValueOf(String name) {
   switch (name) {
     case 'setLeverage':
       return _$hip3ActionCreateRequestOperationEnum_setLeverage;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ActionCreateRequestOperationEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ActionCreateRequestOperationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3ActionCreateRequestOperationEnum>
     _$hip3ActionCreateRequestOperationEnumValues = BuiltSet<
         Hip3ActionCreateRequestOperationEnum>(const <Hip3ActionCreateRequestOperationEnum>[
   _$hip3ActionCreateRequestOperationEnum_setLeverage,
-  _$hip3ActionCreateRequestOperationEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ActionCreateRequestScopeEnum
@@ -40,9 +34,6 @@ const Hip3ActionCreateRequestScopeEnum
     const Hip3ActionCreateRequestScopeEnum._('stopLoss');
 const Hip3ActionCreateRequestScopeEnum _$hip3ActionCreateRequestScopeEnum_both =
     const Hip3ActionCreateRequestScopeEnum._('both');
-const Hip3ActionCreateRequestScopeEnum
-    _$hip3ActionCreateRequestScopeEnum_unknownDefaultOpenApi =
-    const Hip3ActionCreateRequestScopeEnum._('unknownDefaultOpenApi');
 
 Hip3ActionCreateRequestScopeEnum _$hip3ActionCreateRequestScopeEnumValueOf(
     String name) {
@@ -53,10 +44,8 @@ Hip3ActionCreateRequestScopeEnum _$hip3ActionCreateRequestScopeEnumValueOf(
       return _$hip3ActionCreateRequestScopeEnum_stopLoss;
     case 'both':
       return _$hip3ActionCreateRequestScopeEnum_both;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ActionCreateRequestScopeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ActionCreateRequestScopeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -66,7 +55,6 @@ final BuiltSet<Hip3ActionCreateRequestScopeEnum>
   _$hip3ActionCreateRequestScopeEnum_takeProfit,
   _$hip3ActionCreateRequestScopeEnum_stopLoss,
   _$hip3ActionCreateRequestScopeEnum_both,
-  _$hip3ActionCreateRequestScopeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ActionCreateRequestOperationEnum>
@@ -80,11 +68,9 @@ class _$Hip3ActionCreateRequestOperationEnumSerializer
     implements PrimitiveSerializer<Hip3ActionCreateRequestOperationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'setLeverage': 'set_leverage',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'set_leverage': 'setLeverage',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -114,13 +100,11 @@ class _$Hip3ActionCreateRequestScopeEnumSerializer
     'takeProfit': 'take_profit',
     'stopLoss': 'stop_loss',
     'both': 'both',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'take_profit': 'takeProfit',
     'stop_loss': 'stopLoss',
     'both': 'both',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -241,8 +241,6 @@ class BstocksDepthSamplingGridEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'1_2_5')
   static const BstocksDepthSamplingGridEnum n125 = _$bstocksDepthSamplingGridEnum_n125;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksDepthSamplingGridEnum unknownDefaultOpenApi = _$bstocksDepthSamplingGridEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksDepthSamplingGridEnum> get serializer => _$bstocksDepthSamplingGridEnumSerializer;
 
@@ -256,8 +254,6 @@ class BstocksDepthSamplingAmountSemanticsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'nominal_input')
   static const BstocksDepthSamplingAmountSemanticsEnum nominalInput = _$bstocksDepthSamplingAmountSemanticsEnum_nominalInput;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksDepthSamplingAmountSemanticsEnum unknownDefaultOpenApi = _$bstocksDepthSamplingAmountSemanticsEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksDepthSamplingAmountSemanticsEnum> get serializer => _$bstocksDepthSamplingAmountSemanticsEnumSerializer;
 

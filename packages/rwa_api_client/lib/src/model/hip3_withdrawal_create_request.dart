@@ -138,9 +138,6 @@ class Hip3WithdrawalCreateRequestRailEnum extends EnumClass {
   /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 
   @BuiltValueEnumConst(wireName: r'float')
   static const Hip3WithdrawalCreateRequestRailEnum float = _$hip3WithdrawalCreateRequestRailEnum_float;
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3WithdrawalCreateRequestRailEnum unknownDefaultOpenApi = _$hip3WithdrawalCreateRequestRailEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3WithdrawalCreateRequestRailEnum> get serializer => _$hip3WithdrawalCreateRequestRailEnumSerializer;
 

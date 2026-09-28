@@ -9,19 +9,14 @@ part of 'perp_funding_transfer_target.dart';
 const PerpFundingTransferTargetRailEnum
     _$perpFundingTransferTargetRailEnum_perp =
     const PerpFundingTransferTargetRailEnum._('perp');
-const PerpFundingTransferTargetRailEnum
-    _$perpFundingTransferTargetRailEnum_unknownDefaultOpenApi =
-    const PerpFundingTransferTargetRailEnum._('unknownDefaultOpenApi');
 
 PerpFundingTransferTargetRailEnum _$perpFundingTransferTargetRailEnumValueOf(
     String name) {
   switch (name) {
     case 'perp':
       return _$perpFundingTransferTargetRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTransferTargetRailEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTransferTargetRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<PerpFundingTransferTargetRailEnum>
     _$perpFundingTransferTargetRailEnumValues = BuiltSet<
         PerpFundingTransferTargetRailEnum>(const <PerpFundingTransferTargetRailEnum>[
   _$perpFundingTransferTargetRailEnum_perp,
-  _$perpFundingTransferTargetRailEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpFundingTransferTargetRailEnum>
@@ -40,11 +34,9 @@ class _$PerpFundingTransferTargetRailEnumSerializer
     implements PrimitiveSerializer<PerpFundingTransferTargetRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

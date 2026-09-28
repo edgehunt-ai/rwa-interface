@@ -3626,6 +3626,210 @@ abstract class AppLocalizations {
   /// **'Deposit USDT on BSC from another platform or wallet'**
   String get externalDepositDetail;
 
+  /// No description provided for @prepareFunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare Funds'**
+  String get prepareFunds;
+
+  /// No description provided for @insufficientAssetInSpotAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient {asset} in your spot account:'**
+  String insufficientAssetInSpotAccount(Object asset);
+
+  /// No description provided for @addFundingAmountFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {amount} {asset} from:'**
+  String addFundingAmountFrom(Object amount, Object asset);
+
+  /// No description provided for @spot.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot'**
+  String get spot;
+
+  /// No description provided for @fundsNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Funds needed'**
+  String get fundsNeeded;
+
+  /// No description provided for @depositAssetOnNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit {asset} on {network} from another platform or wallet'**
+  String depositAssetOnNetwork(Object asset, Object network);
+
+  /// No description provided for @transferFromSpot.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer from spot'**
+  String get transferFromSpot;
+
+  /// No description provided for @transferWaitingArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer submitted. Waiting for funds to arrive.'**
+  String get transferWaitingArrival;
+
+  /// No description provided for @addToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Add token'**
+  String get addToken;
+
+  /// No description provided for @availableAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Available: {amount}'**
+  String availableAmount(Object amount);
+
+  /// No description provided for @estimateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate time'**
+  String get estimateTime;
+
+  /// No description provided for @bridgeFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Bridge Fee'**
+  String get bridgeFee;
+
+  /// No description provided for @sendAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Send account'**
+  String get sendAccount;
+
+  /// No description provided for @receiveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive account'**
+  String get receiveAccount;
+
+  /// No description provided for @sendAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Send amount'**
+  String get sendAmount;
+
+  /// No description provided for @receiveAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive amount'**
+  String get receiveAmount;
+
+  /// No description provided for @signAndTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign & Transfer'**
+  String get signAndTransfer;
+
+  /// No description provided for @transferInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer in progress…'**
+  String get transferInProgress;
+
+  /// No description provided for @transferCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer completed successfully'**
+  String get transferCompleted;
+
+  /// No description provided for @totalFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Fee'**
+  String get totalFee;
+
+  /// No description provided for @transferEnterPositiveAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount greater than zero.'**
+  String get transferEnterPositiveAmount;
+
+  /// No description provided for @transferWaitForQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait for the latest quote before transferring.'**
+  String get transferWaitForQuote;
+
+  /// No description provided for @transferQuoteNotReady.
+  ///
+  /// In en, this message translates to:
+  /// **'This quote is not ready to confirm. Adjust the send amount and try again.'**
+  String get transferQuoteNotReady;
+
+  /// No description provided for @transferQuoteChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The quote changed and is no longer ready to confirm. Adjust the send amount and try again.'**
+  String get transferQuoteChanged;
+
+  /// No description provided for @transferRequiresManualReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer requires manual review.'**
+  String get transferRequiresManualReview;
+
+  /// No description provided for @transferFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer failed.'**
+  String get transferFailed;
+
+  /// No description provided for @transferQuoteExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer quote expired. Request a new quote.'**
+  String get transferQuoteExpired;
+
+  /// No description provided for @transferCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer was cancelled.'**
+  String get transferCancelled;
+
+  /// No description provided for @transferBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer is currently blocked.'**
+  String get transferBlocked;
+
+  /// No description provided for @transferOptionsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load transfer options.'**
+  String get transferOptionsLoadFailed;
+
+  /// No description provided for @loadingTransferDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading transfer details'**
+  String get loadingTransferDetails;
+
+  /// No description provided for @noEligibleFundingAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'No eligible funding assets'**
+  String get noEligibleFundingAssets;
+
+  /// No description provided for @oneMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'1min'**
+  String get oneMinute;
+
+  /// No description provided for @minutesRange.
+  ///
+  /// In en, this message translates to:
+  /// **'1–{minutes}mins'**
+  String minutesRange(Object minutes);
+
   /// No description provided for @positionsUnavailable.
   ///
   /// In en, this message translates to:

@@ -10,20 +10,14 @@ const Hip3AccountAbstractionExecuteRequestTargetModeEnum
     _$hip3AccountAbstractionExecuteRequestTargetModeEnum_unifiedAccount =
     const Hip3AccountAbstractionExecuteRequestTargetModeEnum._(
         'unifiedAccount');
-const Hip3AccountAbstractionExecuteRequestTargetModeEnum
-    _$hip3AccountAbstractionExecuteRequestTargetModeEnum_unknownDefaultOpenApi =
-    const Hip3AccountAbstractionExecuteRequestTargetModeEnum._(
-        'unknownDefaultOpenApi');
 
 Hip3AccountAbstractionExecuteRequestTargetModeEnum
     _$hip3AccountAbstractionExecuteRequestTargetModeEnumValueOf(String name) {
   switch (name) {
     case 'unifiedAccount':
       return _$hip3AccountAbstractionExecuteRequestTargetModeEnum_unifiedAccount;
-    case 'unknownDefaultOpenApi':
-      return _$hip3AccountAbstractionExecuteRequestTargetModeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3AccountAbstractionExecuteRequestTargetModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -31,7 +25,6 @@ final BuiltSet<Hip3AccountAbstractionExecuteRequestTargetModeEnum>
     _$hip3AccountAbstractionExecuteRequestTargetModeEnumValues = BuiltSet<
         Hip3AccountAbstractionExecuteRequestTargetModeEnum>(const <Hip3AccountAbstractionExecuteRequestTargetModeEnum>[
   _$hip3AccountAbstractionExecuteRequestTargetModeEnum_unifiedAccount,
-  _$hip3AccountAbstractionExecuteRequestTargetModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3AccountAbstractionExecuteRequestTargetModeEnum>
@@ -44,11 +37,9 @@ class _$Hip3AccountAbstractionExecuteRequestTargetModeEnumSerializer
             Hip3AccountAbstractionExecuteRequestTargetModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unifiedAccount': 'unifiedAccount',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unifiedAccount': 'unifiedAccount',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

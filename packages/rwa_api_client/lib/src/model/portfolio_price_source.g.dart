@@ -11,8 +11,6 @@ const PortfolioPriceSource _$fixedPeg =
 const PortfolioPriceSource _$dodoex = const PortfolioPriceSource._('dodoex');
 const PortfolioPriceSource _$unavailable =
     const PortfolioPriceSource._('unavailable');
-const PortfolioPriceSource _$unknownDefaultOpenApi =
-    const PortfolioPriceSource._('unknownDefaultOpenApi');
 
 PortfolioPriceSource _$valueOf(String name) {
   switch (name) {
@@ -22,10 +20,8 @@ PortfolioPriceSource _$valueOf(String name) {
       return _$dodoex;
     case 'unavailable':
       return _$unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -34,7 +30,6 @@ final BuiltSet<PortfolioPriceSource> _$values =
   _$fixedPeg,
   _$dodoex,
   _$unavailable,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioPriceSourceMeta {
@@ -42,7 +37,6 @@ class _$PortfolioPriceSourceMeta {
   PortfolioPriceSource get fixedPeg => _$fixedPeg;
   PortfolioPriceSource get dodoex => _$dodoex;
   PortfolioPriceSource get unavailable => _$unavailable;
-  PortfolioPriceSource get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioPriceSource valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioPriceSource> get values => _$values;
 }
@@ -62,13 +56,11 @@ class _$PortfolioPriceSourceSerializer
     'fixedPeg': 'fixed_peg',
     'dodoex': 'dodoex',
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'fixed_peg': 'fixedPeg',
     'dodoex': 'dodoex',
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

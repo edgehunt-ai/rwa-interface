@@ -20,8 +20,6 @@ const SelfCustodialWithdrawalStatus _$noncanonical =
     const SelfCustodialWithdrawalStatus._('noncanonical');
 const SelfCustodialWithdrawalStatus _$manualReview =
     const SelfCustodialWithdrawalStatus._('manualReview');
-const SelfCustodialWithdrawalStatus _$unknownDefaultOpenApi =
-    const SelfCustodialWithdrawalStatus._('unknownDefaultOpenApi');
 
 SelfCustodialWithdrawalStatus _$valueOf(String name) {
   switch (name) {
@@ -39,10 +37,8 @@ SelfCustodialWithdrawalStatus _$valueOf(String name) {
       return _$noncanonical;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +51,6 @@ final BuiltSet<SelfCustodialWithdrawalStatus> _$values = BuiltSet<
   _$failed,
   _$noncanonical,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$SelfCustodialWithdrawalStatusMeta {
@@ -67,8 +62,6 @@ class _$SelfCustodialWithdrawalStatusMeta {
   SelfCustodialWithdrawalStatus get failed => _$failed;
   SelfCustodialWithdrawalStatus get noncanonical => _$noncanonical;
   SelfCustodialWithdrawalStatus get manualReview => _$manualReview;
-  SelfCustodialWithdrawalStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   SelfCustodialWithdrawalStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<SelfCustodialWithdrawalStatus> get values => _$values;
 }
@@ -93,7 +86,6 @@ class _$SelfCustodialWithdrawalStatusSerializer
     'failed': 'failed',
     'noncanonical': 'noncanonical',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_submission': 'awaitingSubmission',
@@ -103,7 +95,6 @@ class _$SelfCustodialWithdrawalStatusSerializer
     'failed': 'failed',
     'noncanonical': 'noncanonical',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -179,8 +179,6 @@ class BstocksPreviewRouteKindEnum extends EnumClass {
   static const BstocksPreviewRouteKindEnum single = _$bstocksPreviewRouteKindEnum_single;
   @BuiltValueEnumConst(wireName: r'split')
   static const BstocksPreviewRouteKindEnum split = _$bstocksPreviewRouteKindEnum_split;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksPreviewRouteKindEnum unknownDefaultOpenApi = _$bstocksPreviewRouteKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksPreviewRouteKindEnum> get serializer => _$bstocksPreviewRouteKindEnumSerializer;
 

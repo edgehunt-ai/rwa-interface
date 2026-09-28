@@ -12,8 +12,6 @@ const RealtimeResourceChange _$updated =
     const RealtimeResourceChange._('updated');
 const RealtimeResourceChange _$removed =
     const RealtimeResourceChange._('removed');
-const RealtimeResourceChange _$unknownDefaultOpenApi =
-    const RealtimeResourceChange._('unknownDefaultOpenApi');
 
 RealtimeResourceChange _$valueOf(String name) {
   switch (name) {
@@ -23,10 +21,8 @@ RealtimeResourceChange _$valueOf(String name) {
       return _$updated;
     case 'removed':
       return _$removed;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +31,6 @@ final BuiltSet<RealtimeResourceChange> _$values =
   _$created,
   _$updated,
   _$removed,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$RealtimeResourceChangeMeta {
@@ -43,7 +38,6 @@ class _$RealtimeResourceChangeMeta {
   RealtimeResourceChange get created => _$created;
   RealtimeResourceChange get updated => _$updated;
   RealtimeResourceChange get removed => _$removed;
-  RealtimeResourceChange get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   RealtimeResourceChange valueOf(String name) => _$valueOf(name);
   BuiltSet<RealtimeResourceChange> get values => _$values;
 }
@@ -63,13 +57,11 @@ class _$RealtimeResourceChangeSerializer
     'created': 'created',
     'updated': 'updated',
     'removed': 'removed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'created': 'created',
     'updated': 'updated',
     'removed': 'removed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

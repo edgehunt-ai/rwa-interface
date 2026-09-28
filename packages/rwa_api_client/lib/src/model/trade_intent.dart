@@ -408,8 +408,6 @@ class TradeIntentFundingModeEnum extends EnumClass {
   static const TradeIntentFundingModeEnum autoMultiSource = _$tradeIntentFundingModeEnum_autoMultiSource;
   @BuiltValueEnumConst(wireName: r'funding_session')
   static const TradeIntentFundingModeEnum fundingSession = _$tradeIntentFundingModeEnum_fundingSession;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TradeIntentFundingModeEnum unknownDefaultOpenApi = _$tradeIntentFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<TradeIntentFundingModeEnum> get serializer => _$tradeIntentFundingModeEnumSerializer;
 

@@ -7,30 +7,24 @@ part of 'deposit_status.dart';
 // **************************************************************************
 
 const DepositStatus _$confirmed = const DepositStatus._('confirmed');
-const DepositStatus _$unknownDefaultOpenApi =
-    const DepositStatus._('unknownDefaultOpenApi');
 
 DepositStatus _$valueOf(String name) {
   switch (name) {
     case 'confirmed':
       return _$confirmed;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositStatus> _$values =
     BuiltSet<DepositStatus>(const <DepositStatus>[
   _$confirmed,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$DepositStatusMeta {
   const _$DepositStatusMeta();
   DepositStatus get confirmed => _$confirmed;
-  DepositStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   DepositStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<DepositStatus> get values => _$values;
 }
@@ -46,11 +40,9 @@ Serializer<DepositStatus> _$depositStatusSerializer =
 class _$DepositStatusSerializer implements PrimitiveSerializer<DepositStatus> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'confirmed': 'confirmed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'confirmed': 'confirmed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

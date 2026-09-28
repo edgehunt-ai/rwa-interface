@@ -154,8 +154,6 @@ class RealtimeDepositEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'deposit')
   static const RealtimeDepositEventEventEnum deposit = _$realtimeDepositEventEventEnum_deposit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeDepositEventEventEnum unknownDefaultOpenApi = _$realtimeDepositEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeDepositEventEventEnum> get serializer => _$realtimeDepositEventEventEnumSerializer;
 

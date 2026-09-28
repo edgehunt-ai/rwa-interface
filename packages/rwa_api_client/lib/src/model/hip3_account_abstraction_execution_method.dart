@@ -15,8 +15,6 @@ class Hip3AccountAbstractionExecutionMethod extends EnumClass {
   static const Hip3AccountAbstractionExecutionMethod agent = _$agent;
   @BuiltValueEnumConst(wireName: r'user')
   static const Hip3AccountAbstractionExecutionMethod user = _$user;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3AccountAbstractionExecutionMethod unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3AccountAbstractionExecutionMethod> get serializer => _$hip3AccountAbstractionExecutionMethodSerializer;
 

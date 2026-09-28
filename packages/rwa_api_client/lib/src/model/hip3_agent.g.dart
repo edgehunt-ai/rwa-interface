@@ -8,25 +8,19 @@ part of 'hip3_agent.dart';
 
 const Hip3AgentEnvironmentEnum _$hip3AgentEnvironmentEnum_mainnet =
     const Hip3AgentEnvironmentEnum._('mainnet');
-const Hip3AgentEnvironmentEnum
-    _$hip3AgentEnvironmentEnum_unknownDefaultOpenApi =
-    const Hip3AgentEnvironmentEnum._('unknownDefaultOpenApi');
 
 Hip3AgentEnvironmentEnum _$hip3AgentEnvironmentEnumValueOf(String name) {
   switch (name) {
     case 'mainnet':
       return _$hip3AgentEnvironmentEnum_mainnet;
-    case 'unknownDefaultOpenApi':
-      return _$hip3AgentEnvironmentEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3AgentEnvironmentEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<Hip3AgentEnvironmentEnum> _$hip3AgentEnvironmentEnumValues =
     BuiltSet<Hip3AgentEnvironmentEnum>(const <Hip3AgentEnvironmentEnum>[
   _$hip3AgentEnvironmentEnum_mainnet,
-  _$hip3AgentEnvironmentEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3AgentEnvironmentEnum> _$hip3AgentEnvironmentEnumSerializer =
@@ -36,11 +30,9 @@ class _$Hip3AgentEnvironmentEnumSerializer
     implements PrimitiveSerializer<Hip3AgentEnvironmentEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'mainnet': 'mainnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mainnet': 'mainnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

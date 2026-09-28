@@ -15,8 +15,6 @@ const Hip3WithdrawalStatus _$completed =
     const Hip3WithdrawalStatus._('completed');
 const Hip3WithdrawalStatus _$failed = const Hip3WithdrawalStatus._('failed');
 const Hip3WithdrawalStatus _$expired = const Hip3WithdrawalStatus._('expired');
-const Hip3WithdrawalStatus _$unknownDefaultOpenApi =
-    const Hip3WithdrawalStatus._('unknownDefaultOpenApi');
 
 Hip3WithdrawalStatus _$valueOf(String name) {
   switch (name) {
@@ -32,10 +30,8 @@ Hip3WithdrawalStatus _$valueOf(String name) {
       return _$failed;
     case 'expired':
       return _$expired;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -47,7 +43,6 @@ final BuiltSet<Hip3WithdrawalStatus> _$values =
   _$completed,
   _$failed,
   _$expired,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$Hip3WithdrawalStatusMeta {
@@ -58,7 +53,6 @@ class _$Hip3WithdrawalStatusMeta {
   Hip3WithdrawalStatus get completed => _$completed;
   Hip3WithdrawalStatus get failed => _$failed;
   Hip3WithdrawalStatus get expired => _$expired;
-  Hip3WithdrawalStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Hip3WithdrawalStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3WithdrawalStatus> get values => _$values;
 }
@@ -81,7 +75,6 @@ class _$Hip3WithdrawalStatusSerializer
     'completed': 'completed',
     'failed': 'failed',
     'expired': 'expired',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_signature': 'awaitingSignature',
@@ -90,7 +83,6 @@ class _$Hip3WithdrawalStatusSerializer
     'completed': 'completed',
     'failed': 'failed',
     'expired': 'expired',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

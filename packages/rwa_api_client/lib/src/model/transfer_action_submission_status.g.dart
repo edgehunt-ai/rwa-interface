@@ -18,8 +18,6 @@ const TransferActionSubmissionStatus _$ambiguous =
     const TransferActionSubmissionStatus._('ambiguous');
 const TransferActionSubmissionStatus _$manualReview =
     const TransferActionSubmissionStatus._('manualReview');
-const TransferActionSubmissionStatus _$unknownDefaultOpenApi =
-    const TransferActionSubmissionStatus._('unknownDefaultOpenApi');
 
 TransferActionSubmissionStatus _$valueOf(String name) {
   switch (name) {
@@ -35,10 +33,8 @@ TransferActionSubmissionStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -50,7 +46,6 @@ final BuiltSet<TransferActionSubmissionStatus> _$values = BuiltSet<
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TransferActionSubmissionStatusMeta {
@@ -61,8 +56,6 @@ class _$TransferActionSubmissionStatusMeta {
   TransferActionSubmissionStatus get failed => _$failed;
   TransferActionSubmissionStatus get ambiguous => _$ambiguous;
   TransferActionSubmissionStatus get manualReview => _$manualReview;
-  TransferActionSubmissionStatus get unknownDefaultOpenApi =>
-      _$unknownDefaultOpenApi;
   TransferActionSubmissionStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TransferActionSubmissionStatus> get values => _$values;
 }
@@ -86,7 +79,6 @@ class _$TransferActionSubmissionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'reported': 'reported',
@@ -95,7 +87,6 @@ class _$TransferActionSubmissionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

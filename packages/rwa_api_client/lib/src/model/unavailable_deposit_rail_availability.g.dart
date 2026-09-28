@@ -9,20 +9,14 @@ part of 'unavailable_deposit_rail_availability.dart';
 const UnavailableDepositRailAvailabilityStatusEnum
     _$unavailableDepositRailAvailabilityStatusEnum_unavailable =
     const UnavailableDepositRailAvailabilityStatusEnum._('unavailable');
-const UnavailableDepositRailAvailabilityStatusEnum
-    _$unavailableDepositRailAvailabilityStatusEnum_unknownDefaultOpenApi =
-    const UnavailableDepositRailAvailabilityStatusEnum._(
-        'unknownDefaultOpenApi');
 
 UnavailableDepositRailAvailabilityStatusEnum
     _$unavailableDepositRailAvailabilityStatusEnumValueOf(String name) {
   switch (name) {
     case 'unavailable':
       return _$unavailableDepositRailAvailabilityStatusEnum_unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unavailableDepositRailAvailabilityStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$unavailableDepositRailAvailabilityStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<UnavailableDepositRailAvailabilityStatusEnum>
     _$unavailableDepositRailAvailabilityStatusEnumValues = BuiltSet<
         UnavailableDepositRailAvailabilityStatusEnum>(const <UnavailableDepositRailAvailabilityStatusEnum>[
   _$unavailableDepositRailAvailabilityStatusEnum_unavailable,
-  _$unavailableDepositRailAvailabilityStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<UnavailableDepositRailAvailabilityStatusEnum>
@@ -42,11 +35,9 @@ class _$UnavailableDepositRailAvailabilityStatusEnumSerializer
         PrimitiveSerializer<UnavailableDepositRailAvailabilityStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

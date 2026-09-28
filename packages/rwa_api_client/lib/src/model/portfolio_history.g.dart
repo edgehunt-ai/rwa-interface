@@ -14,9 +14,6 @@ const PortfolioHistoryRangeEnum _$portfolioHistoryRangeEnum_n1m =
     const PortfolioHistoryRangeEnum._('n1m');
 const PortfolioHistoryRangeEnum _$portfolioHistoryRangeEnum_n1y =
     const PortfolioHistoryRangeEnum._('n1y');
-const PortfolioHistoryRangeEnum
-    _$portfolioHistoryRangeEnum_unknownDefaultOpenApi =
-    const PortfolioHistoryRangeEnum._('unknownDefaultOpenApi');
 
 PortfolioHistoryRangeEnum _$portfolioHistoryRangeEnumValueOf(String name) {
   switch (name) {
@@ -28,10 +25,8 @@ PortfolioHistoryRangeEnum _$portfolioHistoryRangeEnumValueOf(String name) {
       return _$portfolioHistoryRangeEnum_n1m;
     case 'n1y':
       return _$portfolioHistoryRangeEnum_n1y;
-    case 'unknownDefaultOpenApi':
-      return _$portfolioHistoryRangeEnum_unknownDefaultOpenApi;
     default:
-      return _$portfolioHistoryRangeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -41,7 +36,6 @@ final BuiltSet<PortfolioHistoryRangeEnum> _$portfolioHistoryRangeEnumValues =
   _$portfolioHistoryRangeEnum_n1w,
   _$portfolioHistoryRangeEnum_n1m,
   _$portfolioHistoryRangeEnum_n1y,
-  _$portfolioHistoryRangeEnum_unknownDefaultOpenApi,
 ]);
 
 const PortfolioHistoryIntervalEnum _$portfolioHistoryIntervalEnum_n5m =
@@ -52,9 +46,6 @@ const PortfolioHistoryIntervalEnum _$portfolioHistoryIntervalEnum_n1d =
     const PortfolioHistoryIntervalEnum._('n1d');
 const PortfolioHistoryIntervalEnum _$portfolioHistoryIntervalEnum_n1w =
     const PortfolioHistoryIntervalEnum._('n1w');
-const PortfolioHistoryIntervalEnum
-    _$portfolioHistoryIntervalEnum_unknownDefaultOpenApi =
-    const PortfolioHistoryIntervalEnum._('unknownDefaultOpenApi');
 
 PortfolioHistoryIntervalEnum _$portfolioHistoryIntervalEnumValueOf(
     String name) {
@@ -67,10 +58,8 @@ PortfolioHistoryIntervalEnum _$portfolioHistoryIntervalEnumValueOf(
       return _$portfolioHistoryIntervalEnum_n1d;
     case 'n1w':
       return _$portfolioHistoryIntervalEnum_n1w;
-    case 'unknownDefaultOpenApi':
-      return _$portfolioHistoryIntervalEnum_unknownDefaultOpenApi;
     default:
-      return _$portfolioHistoryIntervalEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -81,7 +70,6 @@ final BuiltSet<PortfolioHistoryIntervalEnum>
   _$portfolioHistoryIntervalEnum_n1h,
   _$portfolioHistoryIntervalEnum_n1d,
   _$portfolioHistoryIntervalEnum_n1w,
-  _$portfolioHistoryIntervalEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PortfolioHistoryRangeEnum> _$portfolioHistoryRangeEnumSerializer =
@@ -97,14 +85,12 @@ class _$PortfolioHistoryRangeEnumSerializer
     'n1w': '1w',
     'n1m': '1m',
     'n1y': '1y',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '1d': 'n1d',
     '1w': 'n1w',
     '1m': 'n1m',
     '1y': 'n1y',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -132,14 +118,12 @@ class _$PortfolioHistoryIntervalEnumSerializer
     'n1h': '1h',
     'n1d': '1d',
     'n1w': '1w',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '5m': 'n5m',
     '1h': 'n1h',
     '1d': 'n1d',
     '1w': 'n1w',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

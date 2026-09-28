@@ -18,8 +18,7 @@ const RealtimeResourceType _$withdrawal =
 const RealtimeResourceType _$balance = const RealtimeResourceType._('balance');
 const RealtimeResourceType _$activity =
     const RealtimeResourceType._('activity');
-const RealtimeResourceType _$unknownDefaultOpenApi =
-    const RealtimeResourceType._('unknownDefaultOpenApi');
+const RealtimeResourceType _$session = const RealtimeResourceType._('session');
 
 RealtimeResourceType _$valueOf(String name) {
   switch (name) {
@@ -39,10 +38,10 @@ RealtimeResourceType _$valueOf(String name) {
       return _$balance;
     case 'activity':
       return _$activity;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
+    case 'session':
+      return _$session;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,7 +55,7 @@ final BuiltSet<RealtimeResourceType> _$values =
   _$withdrawal,
   _$balance,
   _$activity,
-  _$unknownDefaultOpenApi,
+  _$session,
 ]);
 
 class _$RealtimeResourceTypeMeta {
@@ -69,7 +68,7 @@ class _$RealtimeResourceTypeMeta {
   RealtimeResourceType get withdrawal => _$withdrawal;
   RealtimeResourceType get balance => _$balance;
   RealtimeResourceType get activity => _$activity;
-  RealtimeResourceType get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
+  RealtimeResourceType get session => _$session;
   RealtimeResourceType valueOf(String name) => _$valueOf(name);
   BuiltSet<RealtimeResourceType> get values => _$values;
 }
@@ -94,7 +93,7 @@ class _$RealtimeResourceTypeSerializer
     'withdrawal': 'withdrawal',
     'balance': 'balance',
     'activity': 'activity',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
+    'session': 'session',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
@@ -105,7 +104,7 @@ class _$RealtimeResourceTypeSerializer
     'withdrawal': 'withdrawal',
     'balance': 'balance',
     'activity': 'activity',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
+    'session': 'session',
   };
 
   @override

@@ -327,8 +327,6 @@ class OriginTransactionActionKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'origin_transaction')
   static const OriginTransactionActionKindEnum originTransaction = _$originTransactionActionKindEnum_originTransaction;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OriginTransactionActionKindEnum unknownDefaultOpenApi = _$originTransactionActionKindEnum_unknownDefaultOpenApi;
 
   static Serializer<OriginTransactionActionKindEnum> get serializer => _$originTransactionActionKindEnumSerializer;
 
@@ -348,8 +346,6 @@ class OriginTransactionActionChainIdEnum extends EnumClass {
   static const OriginTransactionActionChainIdEnum number8453 = _$originTransactionActionChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
   static const OriginTransactionActionChainIdEnum number42161 = _$originTransactionActionChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const OriginTransactionActionChainIdEnum unknownDefaultOpenApi = _$originTransactionActionChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<OriginTransactionActionChainIdEnum> get serializer => _$originTransactionActionChainIdEnumSerializer;
 
@@ -364,9 +360,6 @@ class OriginTransactionActionValueEnum extends EnumClass {
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'0x0')
   static const OriginTransactionActionValueEnum n0x0 = _$originTransactionActionValueEnum_n0x0;
-  /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OriginTransactionActionValueEnum unknownDefaultOpenApi = _$originTransactionActionValueEnum_unknownDefaultOpenApi;
 
   static Serializer<OriginTransactionActionValueEnum> get serializer => _$originTransactionActionValueEnumSerializer;
 

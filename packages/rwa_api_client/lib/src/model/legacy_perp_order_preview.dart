@@ -830,8 +830,6 @@ class LegacyPerpOrderPreviewFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const LegacyPerpOrderPreviewFundingModeEnum unreservedTransferFrom = _$legacyPerpOrderPreviewFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpOrderPreviewFundingModeEnum unknownDefaultOpenApi = _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpOrderPreviewFundingModeEnum> get serializer => _$legacyPerpOrderPreviewFundingModeEnumSerializer;
 
@@ -846,8 +844,6 @@ class LegacyPerpOrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const LegacyPerpOrderPreviewKindEnum perp = _$legacyPerpOrderPreviewKindEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpOrderPreviewKindEnum unknownDefaultOpenApi = _$legacyPerpOrderPreviewKindEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpOrderPreviewKindEnum> get serializer => _$legacyPerpOrderPreviewKindEnumSerializer;
 
@@ -862,8 +858,6 @@ class LegacyPerpOrderPreviewNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const LegacyPerpOrderPreviewNetworkEnum arbitrum = _$legacyPerpOrderPreviewNetworkEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpOrderPreviewNetworkEnum unknownDefaultOpenApi = _$legacyPerpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpOrderPreviewNetworkEnum> get serializer => _$legacyPerpOrderPreviewNetworkEnumSerializer;
 
@@ -878,8 +872,6 @@ class LegacyPerpOrderPreviewSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyPerpOrderPreviewSettlementAssetEnum USDC = _$legacyPerpOrderPreviewSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpOrderPreviewSettlementAssetEnum> get serializer => _$legacyPerpOrderPreviewSettlementAssetEnumSerializer;
 

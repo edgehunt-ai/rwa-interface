@@ -291,8 +291,6 @@ class Hip3RealtimePriceEnvironmentEnum extends EnumClass {
   static const Hip3RealtimePriceEnvironmentEnum mainnet = _$hip3RealtimePriceEnvironmentEnum_mainnet;
   @BuiltValueEnumConst(wireName: r'testnet')
   static const Hip3RealtimePriceEnvironmentEnum testnet = _$hip3RealtimePriceEnvironmentEnum_testnet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimePriceEnvironmentEnum unknownDefaultOpenApi = _$hip3RealtimePriceEnvironmentEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimePriceEnvironmentEnum> get serializer => _$hip3RealtimePriceEnvironmentEnumSerializer;
 
@@ -306,8 +304,6 @@ class Hip3RealtimePricePriceLabelEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Mark price')
   static const Hip3RealtimePricePriceLabelEnum markPrice = _$hip3RealtimePricePriceLabelEnum_markPrice;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimePricePriceLabelEnum unknownDefaultOpenApi = _$hip3RealtimePricePriceLabelEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimePricePriceLabelEnum> get serializer => _$hip3RealtimePricePriceLabelEnumSerializer;
 

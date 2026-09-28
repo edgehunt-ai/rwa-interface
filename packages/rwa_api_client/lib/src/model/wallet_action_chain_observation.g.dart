@@ -9,19 +9,14 @@ part of 'wallet_action_chain_observation.dart';
 const WalletActionChainObservationValueEnum
     _$walletActionChainObservationValueEnum_n0x0 =
     const WalletActionChainObservationValueEnum._('n0x0');
-const WalletActionChainObservationValueEnum
-    _$walletActionChainObservationValueEnum_unknownDefaultOpenApi =
-    const WalletActionChainObservationValueEnum._('unknownDefaultOpenApi');
 
 WalletActionChainObservationValueEnum
     _$walletActionChainObservationValueEnumValueOf(String name) {
   switch (name) {
     case 'n0x0':
       return _$walletActionChainObservationValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$walletActionChainObservationValueEnum_unknownDefaultOpenApi;
     default:
-      return _$walletActionChainObservationValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<WalletActionChainObservationValueEnum>
     _$walletActionChainObservationValueEnumValues = BuiltSet<
         WalletActionChainObservationValueEnum>(const <WalletActionChainObservationValueEnum>[
   _$walletActionChainObservationValueEnum_n0x0,
-  _$walletActionChainObservationValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<WalletActionChainObservationValueEnum>
@@ -40,11 +34,9 @@ class _$WalletActionChainObservationValueEnumSerializer
     implements PrimitiveSerializer<WalletActionChainObservationValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

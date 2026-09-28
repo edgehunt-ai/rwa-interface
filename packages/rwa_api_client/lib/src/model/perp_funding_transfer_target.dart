@@ -147,8 +147,6 @@ class PerpFundingTransferTargetRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const PerpFundingTransferTargetRailEnum perp = _$perpFundingTransferTargetRailEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTransferTargetRailEnum unknownDefaultOpenApi = _$perpFundingTransferTargetRailEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTransferTargetRailEnum> get serializer => _$perpFundingTransferTargetRailEnumSerializer;
 

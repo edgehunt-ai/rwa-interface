@@ -12,9 +12,6 @@ const BstocksReferenceQuotationStatusEnum
 const BstocksReferenceQuotationStatusEnum
     _$bstocksReferenceQuotationStatusEnum_unavailable =
     const BstocksReferenceQuotationStatusEnum._('unavailable');
-const BstocksReferenceQuotationStatusEnum
-    _$bstocksReferenceQuotationStatusEnum_unknownDefaultOpenApi =
-    const BstocksReferenceQuotationStatusEnum._('unknownDefaultOpenApi');
 
 BstocksReferenceQuotationStatusEnum
     _$bstocksReferenceQuotationStatusEnumValueOf(String name) {
@@ -23,10 +20,8 @@ BstocksReferenceQuotationStatusEnum
       return _$bstocksReferenceQuotationStatusEnum_fresh;
     case 'unavailable':
       return _$bstocksReferenceQuotationStatusEnum_unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksReferenceQuotationStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksReferenceQuotationStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,25 +30,19 @@ final BuiltSet<BstocksReferenceQuotationStatusEnum>
         BstocksReferenceQuotationStatusEnum>(const <BstocksReferenceQuotationStatusEnum>[
   _$bstocksReferenceQuotationStatusEnum_fresh,
   _$bstocksReferenceQuotationStatusEnum_unavailable,
-  _$bstocksReferenceQuotationStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksReferenceQuotationPriceKindEnum
     _$bstocksReferenceQuotationPriceKindEnum_cexTopOfBook =
     const BstocksReferenceQuotationPriceKindEnum._('cexTopOfBook');
-const BstocksReferenceQuotationPriceKindEnum
-    _$bstocksReferenceQuotationPriceKindEnum_unknownDefaultOpenApi =
-    const BstocksReferenceQuotationPriceKindEnum._('unknownDefaultOpenApi');
 
 BstocksReferenceQuotationPriceKindEnum
     _$bstocksReferenceQuotationPriceKindEnumValueOf(String name) {
   switch (name) {
     case 'cexTopOfBook':
       return _$bstocksReferenceQuotationPriceKindEnum_cexTopOfBook;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksReferenceQuotationPriceKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksReferenceQuotationPriceKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -61,25 +50,19 @@ final BuiltSet<BstocksReferenceQuotationPriceKindEnum>
     _$bstocksReferenceQuotationPriceKindEnumValues = BuiltSet<
         BstocksReferenceQuotationPriceKindEnum>(const <BstocksReferenceQuotationPriceKindEnum>[
   _$bstocksReferenceQuotationPriceKindEnum_cexTopOfBook,
-  _$bstocksReferenceQuotationPriceKindEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksReferenceQuotationSource_Enum
     _$bstocksReferenceQuotationSourceEnum_binance =
     const BstocksReferenceQuotationSource_Enum._('binance');
-const BstocksReferenceQuotationSource_Enum
-    _$bstocksReferenceQuotationSourceEnum_unknownDefaultOpenApi =
-    const BstocksReferenceQuotationSource_Enum._('unknownDefaultOpenApi');
 
 BstocksReferenceQuotationSource_Enum
     _$bstocksReferenceQuotationSourceEnumValueOf(String name) {
   switch (name) {
     case 'binance':
       return _$bstocksReferenceQuotationSourceEnum_binance;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksReferenceQuotationSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksReferenceQuotationSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -87,7 +70,6 @@ final BuiltSet<BstocksReferenceQuotationSource_Enum>
     _$bstocksReferenceQuotationSourceEnumValues = BuiltSet<
         BstocksReferenceQuotationSource_Enum>(const <BstocksReferenceQuotationSource_Enum>[
   _$bstocksReferenceQuotationSourceEnum_binance,
-  _$bstocksReferenceQuotationSourceEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksReferenceQuotationChainIdEnum
@@ -99,9 +81,6 @@ const BstocksReferenceQuotationChainIdEnum
 const BstocksReferenceQuotationChainIdEnum
     _$bstocksReferenceQuotationChainIdEnum_number31337 =
     const BstocksReferenceQuotationChainIdEnum._('number31337');
-const BstocksReferenceQuotationChainIdEnum
-    _$bstocksReferenceQuotationChainIdEnum_unknownDefaultOpenApi =
-    const BstocksReferenceQuotationChainIdEnum._('unknownDefaultOpenApi');
 
 BstocksReferenceQuotationChainIdEnum
     _$bstocksReferenceQuotationChainIdEnumValueOf(String name) {
@@ -112,10 +91,8 @@ BstocksReferenceQuotationChainIdEnum
       return _$bstocksReferenceQuotationChainIdEnum_number97;
     case 'number31337':
       return _$bstocksReferenceQuotationChainIdEnum_number31337;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksReferenceQuotationChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksReferenceQuotationChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -125,7 +102,6 @@ final BuiltSet<BstocksReferenceQuotationChainIdEnum>
   _$bstocksReferenceQuotationChainIdEnum_number56,
   _$bstocksReferenceQuotationChainIdEnum_number97,
   _$bstocksReferenceQuotationChainIdEnum_number31337,
-  _$bstocksReferenceQuotationChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksReferenceQuotationStatusEnum>
@@ -146,12 +122,10 @@ class _$BstocksReferenceQuotationStatusEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'fresh': 'fresh',
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'fresh': 'fresh',
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -179,11 +153,9 @@ class _$BstocksReferenceQuotationPriceKindEnumSerializer
     implements PrimitiveSerializer<BstocksReferenceQuotationPriceKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'cexTopOfBook': 'cex_top_of_book',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'cex_top_of_book': 'cexTopOfBook',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -211,11 +183,9 @@ class _$BstocksReferenceQuotationSource_EnumSerializer
     implements PrimitiveSerializer<BstocksReferenceQuotationSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'binance': 'binance',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'binance': 'binance',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -245,13 +215,11 @@ class _$BstocksReferenceQuotationChainIdEnumSerializer
     'number56': 56,
     'number97': 97,
     'number31337': 31337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
     97: 'number97',
     31337: 'number31337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

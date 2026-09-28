@@ -264,8 +264,6 @@ class LegacyBstockFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const LegacyBstockFundingPlanRailEnum bstock = _$legacyBstockFundingPlanRailEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanRailEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockFundingPlanRailEnum> get serializer => _$legacyBstockFundingPlanRailEnumSerializer;
 
@@ -280,8 +278,6 @@ class LegacyBstockFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const LegacyBstockFundingPlanNetworkEnum BSC = _$legacyBstockFundingPlanNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanNetworkEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockFundingPlanNetworkEnum> get serializer => _$legacyBstockFundingPlanNetworkEnumSerializer;
 
@@ -296,8 +292,6 @@ class LegacyBstockFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyBstockFundingPlanAssetEnum USDC = _$legacyBstockFundingPlanAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanAssetEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockFundingPlanAssetEnum> get serializer => _$legacyBstockFundingPlanAssetEnumSerializer;
 
@@ -316,8 +310,6 @@ class LegacyBstockFundingPlanStatusEnum extends EnumClass {
   static const LegacyBstockFundingPlanStatusEnum expired = _$legacyBstockFundingPlanStatusEnum_expired;
   @BuiltValueEnumConst(wireName: r'consumed')
   static const LegacyBstockFundingPlanStatusEnum consumed = _$legacyBstockFundingPlanStatusEnum_consumed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyBstockFundingPlanStatusEnum unknownDefaultOpenApi = _$legacyBstockFundingPlanStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyBstockFundingPlanStatusEnum> get serializer => _$legacyBstockFundingPlanStatusEnumSerializer;
 

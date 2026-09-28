@@ -10,8 +10,6 @@ const OrderSide _$buy = const OrderSide._('buy');
 const OrderSide _$sell = const OrderSide._('sell');
 const OrderSide _$long = const OrderSide._('long');
 const OrderSide _$short = const OrderSide._('short');
-const OrderSide _$unknownDefaultOpenApi =
-    const OrderSide._('unknownDefaultOpenApi');
 
 OrderSide _$valueOf(String name) {
   switch (name) {
@@ -23,10 +21,8 @@ OrderSide _$valueOf(String name) {
       return _$long;
     case 'short':
       return _$short;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +31,6 @@ final BuiltSet<OrderSide> _$values = BuiltSet<OrderSide>(const <OrderSide>[
   _$sell,
   _$long,
   _$short,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$OrderSideMeta {
@@ -44,7 +39,6 @@ class _$OrderSideMeta {
   OrderSide get sell => _$sell;
   OrderSide get long => _$long;
   OrderSide get short => _$short;
-  OrderSide get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   OrderSide valueOf(String name) => _$valueOf(name);
   BuiltSet<OrderSide> get values => _$values;
 }
@@ -62,14 +56,12 @@ class _$OrderSideSerializer implements PrimitiveSerializer<OrderSide> {
     'sell': 'sell',
     'long': 'long',
     'short': 'short',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'buy': 'buy',
     'sell': 'sell',
     'long': 'long',
     'short': 'short',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

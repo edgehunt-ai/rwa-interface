@@ -10,8 +10,6 @@ const OrderEvmActionKindEnum _$orderEvmActionKindEnum_erc20Approval =
     const OrderEvmActionKindEnum._('erc20Approval');
 const OrderEvmActionKindEnum _$orderEvmActionKindEnum_spotSwap =
     const OrderEvmActionKindEnum._('spotSwap');
-const OrderEvmActionKindEnum _$orderEvmActionKindEnum_unknownDefaultOpenApi =
-    const OrderEvmActionKindEnum._('unknownDefaultOpenApi');
 
 OrderEvmActionKindEnum _$orderEvmActionKindEnumValueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ OrderEvmActionKindEnum _$orderEvmActionKindEnumValueOf(String name) {
       return _$orderEvmActionKindEnum_erc20Approval;
     case 'spotSwap':
       return _$orderEvmActionKindEnum_spotSwap;
-    case 'unknownDefaultOpenApi':
-      return _$orderEvmActionKindEnum_unknownDefaultOpenApi;
     default:
-      return _$orderEvmActionKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +26,6 @@ final BuiltSet<OrderEvmActionKindEnum> _$orderEvmActionKindEnumValues =
     BuiltSet<OrderEvmActionKindEnum>(const <OrderEvmActionKindEnum>[
   _$orderEvmActionKindEnum_erc20Approval,
   _$orderEvmActionKindEnum_spotSwap,
-  _$orderEvmActionKindEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderEvmActionChainIdEnum _$orderEvmActionChainIdEnum_number56 =
@@ -39,9 +34,6 @@ const OrderEvmActionChainIdEnum _$orderEvmActionChainIdEnum_number97 =
     const OrderEvmActionChainIdEnum._('number97');
 const OrderEvmActionChainIdEnum _$orderEvmActionChainIdEnum_number31337 =
     const OrderEvmActionChainIdEnum._('number31337');
-const OrderEvmActionChainIdEnum
-    _$orderEvmActionChainIdEnum_unknownDefaultOpenApi =
-    const OrderEvmActionChainIdEnum._('unknownDefaultOpenApi');
 
 OrderEvmActionChainIdEnum _$orderEvmActionChainIdEnumValueOf(String name) {
   switch (name) {
@@ -51,10 +43,8 @@ OrderEvmActionChainIdEnum _$orderEvmActionChainIdEnumValueOf(String name) {
       return _$orderEvmActionChainIdEnum_number97;
     case 'number31337':
       return _$orderEvmActionChainIdEnum_number31337;
-    case 'unknownDefaultOpenApi':
-      return _$orderEvmActionChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$orderEvmActionChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -63,29 +53,23 @@ final BuiltSet<OrderEvmActionChainIdEnum> _$orderEvmActionChainIdEnumValues =
   _$orderEvmActionChainIdEnum_number56,
   _$orderEvmActionChainIdEnum_number97,
   _$orderEvmActionChainIdEnum_number31337,
-  _$orderEvmActionChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderEvmActionValueEnum _$orderEvmActionValueEnum_n0x0 =
     const OrderEvmActionValueEnum._('n0x0');
-const OrderEvmActionValueEnum _$orderEvmActionValueEnum_unknownDefaultOpenApi =
-    const OrderEvmActionValueEnum._('unknownDefaultOpenApi');
 
 OrderEvmActionValueEnum _$orderEvmActionValueEnumValueOf(String name) {
   switch (name) {
     case 'n0x0':
       return _$orderEvmActionValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$orderEvmActionValueEnum_unknownDefaultOpenApi;
     default:
-      return _$orderEvmActionValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<OrderEvmActionValueEnum> _$orderEvmActionValueEnumValues =
     BuiltSet<OrderEvmActionValueEnum>(const <OrderEvmActionValueEnum>[
   _$orderEvmActionValueEnum_n0x0,
-  _$orderEvmActionValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<OrderEvmActionKindEnum> _$orderEvmActionKindEnumSerializer =
@@ -100,12 +84,10 @@ class _$OrderEvmActionKindEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'erc20Approval': 'erc20_approval',
     'spotSwap': 'spot_swap',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'erc20_approval': 'erc20Approval',
     'spot_swap': 'spotSwap',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -131,13 +113,11 @@ class _$OrderEvmActionChainIdEnumSerializer
     'number56': 56,
     'number97': 97,
     'number31337': 31337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
     97: 'number97',
     31337: 'number31337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -162,11 +142,9 @@ class _$OrderEvmActionValueEnumSerializer
     implements PrimitiveSerializer<OrderEvmActionValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

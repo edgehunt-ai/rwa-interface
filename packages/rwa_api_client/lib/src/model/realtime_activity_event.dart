@@ -154,8 +154,6 @@ class RealtimeActivityEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'activity')
   static const RealtimeActivityEventEventEnum activity = _$realtimeActivityEventEventEnum_activity;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeActivityEventEventEnum unknownDefaultOpenApi = _$realtimeActivityEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeActivityEventEventEnum> get serializer => _$realtimeActivityEventEventEnumSerializer;
 

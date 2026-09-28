@@ -214,9 +214,6 @@ class SelfCustodialWithdrawalTransactionValueEnum extends EnumClass {
   /// Canonical zero native value; native-asset transfer is not supported.
   @BuiltValueEnumConst(wireName: r'0x0')
   static const SelfCustodialWithdrawalTransactionValueEnum n0x0 = _$selfCustodialWithdrawalTransactionValueEnum_n0x0;
-  /// Canonical zero native value; native-asset transfer is not supported.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const SelfCustodialWithdrawalTransactionValueEnum unknownDefaultOpenApi = _$selfCustodialWithdrawalTransactionValueEnum_unknownDefaultOpenApi;
 
   static Serializer<SelfCustodialWithdrawalTransactionValueEnum> get serializer => _$selfCustodialWithdrawalTransactionValueEnumSerializer;
 

@@ -12,9 +12,6 @@ const SystemEnvironmentHip3EnvironmentEnum
 const SystemEnvironmentHip3EnvironmentEnum
     _$systemEnvironmentHip3EnvironmentEnum_mainnet =
     const SystemEnvironmentHip3EnvironmentEnum._('mainnet');
-const SystemEnvironmentHip3EnvironmentEnum
-    _$systemEnvironmentHip3EnvironmentEnum_unknownDefaultOpenApi =
-    const SystemEnvironmentHip3EnvironmentEnum._('unknownDefaultOpenApi');
 
 SystemEnvironmentHip3EnvironmentEnum
     _$systemEnvironmentHip3EnvironmentEnumValueOf(String name) {
@@ -23,10 +20,8 @@ SystemEnvironmentHip3EnvironmentEnum
       return _$systemEnvironmentHip3EnvironmentEnum_testnet;
     case 'mainnet':
       return _$systemEnvironmentHip3EnvironmentEnum_mainnet;
-    case 'unknownDefaultOpenApi':
-      return _$systemEnvironmentHip3EnvironmentEnum_unknownDefaultOpenApi;
     default:
-      return _$systemEnvironmentHip3EnvironmentEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<SystemEnvironmentHip3EnvironmentEnum>
         SystemEnvironmentHip3EnvironmentEnum>(const <SystemEnvironmentHip3EnvironmentEnum>[
   _$systemEnvironmentHip3EnvironmentEnum_testnet,
   _$systemEnvironmentHip3EnvironmentEnum_mainnet,
-  _$systemEnvironmentHip3EnvironmentEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<SystemEnvironmentHip3EnvironmentEnum>
@@ -47,12 +41,10 @@ class _$SystemEnvironmentHip3EnvironmentEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'testnet': 'testnet',
     'mainnet': 'mainnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'testnet': 'testnet',
     'mainnet': 'mainnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -9,20 +9,14 @@ part of 'locked_executable_action_transfer_state.dart';
 const LockedExecutableActionTransferStateStatusEnum
     _$lockedExecutableActionTransferStateStatusEnum_awaitingWallet =
     const LockedExecutableActionTransferStateStatusEnum._('awaitingWallet');
-const LockedExecutableActionTransferStateStatusEnum
-    _$lockedExecutableActionTransferStateStatusEnum_unknownDefaultOpenApi =
-    const LockedExecutableActionTransferStateStatusEnum._(
-        'unknownDefaultOpenApi');
 
 LockedExecutableActionTransferStateStatusEnum
     _$lockedExecutableActionTransferStateStatusEnumValueOf(String name) {
   switch (name) {
     case 'awaitingWallet':
       return _$lockedExecutableActionTransferStateStatusEnum_awaitingWallet;
-    case 'unknownDefaultOpenApi':
-      return _$lockedExecutableActionTransferStateStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$lockedExecutableActionTransferStateStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<LockedExecutableActionTransferStateStatusEnum>
     _$lockedExecutableActionTransferStateStatusEnumValues = BuiltSet<
         LockedExecutableActionTransferStateStatusEnum>(const <LockedExecutableActionTransferStateStatusEnum>[
   _$lockedExecutableActionTransferStateStatusEnum_awaitingWallet,
-  _$lockedExecutableActionTransferStateStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LockedExecutableActionTransferStateStatusEnum>
@@ -42,11 +35,9 @@ class _$LockedExecutableActionTransferStateStatusEnumSerializer
         PrimitiveSerializer<LockedExecutableActionTransferStateStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'awaitingWallet': 'awaiting_wallet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_wallet': 'awaitingWallet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

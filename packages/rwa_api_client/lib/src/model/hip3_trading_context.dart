@@ -14,7 +14,7 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_trading_context.g.dart';
 
-/// 服务端从当前账户绑定及运行环境推导 context_id。无可靠账户余额返回 503。 supported_operations 只描述 client-signed 路径，不因 Agent 路径可用而开启。 available_margin_usdc 是扣除本地未结预留后的可交易保证金，与 withdrawable_usdc 分开； 均非账户总权益。market_order_minimums 供下单前展示币种、方向对应的最小市价单金额及 当前杠杆下最低保证金；最大可开量仍受方向、价格与杠杆影响，在订单 preview 中返回。 
+/// 服务端从当前账户绑定及运行环境推导 context_id。无可靠账户余额返回 503。 supported_operations 只描述 client-signed 路径，不因 Agent 路径可用而开启。 available_margin_usdc 是扣除本地未结预留后的可交易保证金，与 withdrawable_usdc 分开； 均非账户总权益。market_order_minimums 供下单前展示币种、方向对应的最小市价单金额及 当前杠杆下最低保证金；最大可开量仍受方向、价格与杠杆影响，在订单 preview 中返回。 taker_fee_rate 为当前账户的 taker 费率（0–1），客户端可按 available_margin_usdc / (price × (1/leverage + taker_fee_rate)) 估算最大可开量， 使拉满下单预留手续费，与 preview 的 maximum_quantity 口径一致。 
 ///
 /// Properties:
 /// * [contextId] 
@@ -29,6 +29,7 @@ part 'hip3_trading_context.g.dart';
 /// * [currentMarginMode] 
 /// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
 /// * [withdrawableUsdc] - 十进制字符串，避免浮点误差
+/// * [takerFeeRate] - 十进制字符串，避免浮点误差
 /// * [supportedOperations] 
 /// * [blocker] 
 /// * [observedAt] 
@@ -77,6 +78,10 @@ abstract class Hip3TradingContext implements Built<Hip3TradingContext, Hip3Tradi
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'withdrawable_usdc')
   String get withdrawableUsdc;
+
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'taker_fee_rate')
+  String? get takerFeeRate;
 
   @BuiltValueField(wireName: r'supported_operations')
   BuiltList<Hip3Operation> get supportedOperations;
@@ -173,6 +178,13 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
       object.withdrawableUsdc,
       specifiedType: const FullType(String),
     );
+    if (object.takerFeeRate != null) {
+      yield r'taker_fee_rate';
+      yield serializers.serialize(
+        object.takerFeeRate,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'supported_operations';
     yield serializers.serialize(
       object.supportedOperations,
@@ -303,6 +315,14 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
           ) as String;
           result.withdrawableUsdc = valueDes;
           break;
+        case r'taker_fee_rate':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.takerFeeRate = valueDes;
+          break;
         case r'supported_operations':
           final valueDes = serializers.deserialize(
             value,
@@ -365,8 +385,6 @@ class Hip3TradingContextSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const Hip3TradingContextSettlementAssetEnum USDC = _$hip3TradingContextSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3TradingContextSettlementAssetEnum unknownDefaultOpenApi = _$hip3TradingContextSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3TradingContextSettlementAssetEnum> get serializer => _$hip3TradingContextSettlementAssetEnumSerializer;
 

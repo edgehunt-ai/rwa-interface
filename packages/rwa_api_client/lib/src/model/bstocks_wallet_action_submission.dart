@@ -178,8 +178,6 @@ class BstocksWalletActionSubmissionStatusEnum extends EnumClass {
   static const BstocksWalletActionSubmissionStatusEnum confirmed = _$bstocksWalletActionSubmissionStatusEnum_confirmed;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const BstocksWalletActionSubmissionStatusEnum manualReview = _$bstocksWalletActionSubmissionStatusEnum_manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksWalletActionSubmissionStatusEnum unknownDefaultOpenApi = _$bstocksWalletActionSubmissionStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksWalletActionSubmissionStatusEnum> get serializer => _$bstocksWalletActionSubmissionStatusEnumSerializer;
 

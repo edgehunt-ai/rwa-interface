@@ -14,8 +14,6 @@ const KeyValueToneEnum _$keyValueToneEnum_negative =
     const KeyValueToneEnum._('negative');
 const KeyValueToneEnum _$keyValueToneEnum_muted =
     const KeyValueToneEnum._('muted');
-const KeyValueToneEnum _$keyValueToneEnum_unknownDefaultOpenApi =
-    const KeyValueToneEnum._('unknownDefaultOpenApi');
 
 KeyValueToneEnum _$keyValueToneEnumValueOf(String name) {
   switch (name) {
@@ -27,10 +25,8 @@ KeyValueToneEnum _$keyValueToneEnumValueOf(String name) {
       return _$keyValueToneEnum_negative;
     case 'muted':
       return _$keyValueToneEnum_muted;
-    case 'unknownDefaultOpenApi':
-      return _$keyValueToneEnum_unknownDefaultOpenApi;
     default:
-      return _$keyValueToneEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -40,7 +36,6 @@ final BuiltSet<KeyValueToneEnum> _$keyValueToneEnumValues =
   _$keyValueToneEnum_positive,
   _$keyValueToneEnum_negative,
   _$keyValueToneEnum_muted,
-  _$keyValueToneEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<KeyValueToneEnum> _$keyValueToneEnumSerializer =
@@ -53,14 +48,12 @@ class _$KeyValueToneEnumSerializer
     'positive': 'positive',
     'negative': 'negative',
     'muted': 'muted',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'default': 'default_',
     'positive': 'positive',
     'negative': 'negative',
     'muted': 'muted',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

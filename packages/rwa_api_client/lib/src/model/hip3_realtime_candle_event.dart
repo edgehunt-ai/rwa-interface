@@ -154,8 +154,6 @@ class Hip3RealtimeCandleEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3_candle')
   static const Hip3RealtimeCandleEventEventEnum hip3Candle = _$hip3RealtimeCandleEventEventEnum_hip3Candle;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3RealtimeCandleEventEventEnum unknownDefaultOpenApi = _$hip3RealtimeCandleEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3RealtimeCandleEventEventEnum> get serializer => _$hip3RealtimeCandleEventEventEnumSerializer;
 

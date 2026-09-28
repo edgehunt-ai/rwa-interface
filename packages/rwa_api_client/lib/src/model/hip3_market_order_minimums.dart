@@ -195,8 +195,6 @@ class Hip3MarketOrderMinimumsAmountAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const Hip3MarketOrderMinimumsAmountAssetEnum USDC = _$hip3MarketOrderMinimumsAmountAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3MarketOrderMinimumsAmountAssetEnum unknownDefaultOpenApi = _$hip3MarketOrderMinimumsAmountAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3MarketOrderMinimumsAmountAssetEnum> get serializer => _$hip3MarketOrderMinimumsAmountAssetEnumSerializer;
 

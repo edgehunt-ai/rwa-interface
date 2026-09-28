@@ -12,8 +12,6 @@ const QuotePriceKindEnum _$quotePriceKindEnum_lastTrade =
     const QuotePriceKindEnum._('lastTrade');
 const QuotePriceKindEnum _$quotePriceKindEnum_reference =
     const QuotePriceKindEnum._('reference');
-const QuotePriceKindEnum _$quotePriceKindEnum_unknownDefaultOpenApi =
-    const QuotePriceKindEnum._('unknownDefaultOpenApi');
 
 QuotePriceKindEnum _$quotePriceKindEnumValueOf(String name) {
   switch (name) {
@@ -23,10 +21,8 @@ QuotePriceKindEnum _$quotePriceKindEnumValueOf(String name) {
       return _$quotePriceKindEnum_lastTrade;
     case 'reference':
       return _$quotePriceKindEnum_reference;
-    case 'unknownDefaultOpenApi':
-      return _$quotePriceKindEnum_unknownDefaultOpenApi;
     default:
-      return _$quotePriceKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,15 +31,12 @@ final BuiltSet<QuotePriceKindEnum> _$quotePriceKindEnumValues =
   _$quotePriceKindEnum_mark,
   _$quotePriceKindEnum_lastTrade,
   _$quotePriceKindEnum_reference,
-  _$quotePriceKindEnum_unknownDefaultOpenApi,
 ]);
 
 const QuoteDataStatusEnum _$quoteDataStatusEnum_fresh =
     const QuoteDataStatusEnum._('fresh');
 const QuoteDataStatusEnum _$quoteDataStatusEnum_stale =
     const QuoteDataStatusEnum._('stale');
-const QuoteDataStatusEnum _$quoteDataStatusEnum_unknownDefaultOpenApi =
-    const QuoteDataStatusEnum._('unknownDefaultOpenApi');
 
 QuoteDataStatusEnum _$quoteDataStatusEnumValueOf(String name) {
   switch (name) {
@@ -51,10 +44,8 @@ QuoteDataStatusEnum _$quoteDataStatusEnumValueOf(String name) {
       return _$quoteDataStatusEnum_fresh;
     case 'stale':
       return _$quoteDataStatusEnum_stale;
-    case 'unknownDefaultOpenApi':
-      return _$quoteDataStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$quoteDataStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -62,7 +53,6 @@ final BuiltSet<QuoteDataStatusEnum> _$quoteDataStatusEnumValues =
     BuiltSet<QuoteDataStatusEnum>(const <QuoteDataStatusEnum>[
   _$quoteDataStatusEnum_fresh,
   _$quoteDataStatusEnum_stale,
-  _$quoteDataStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<QuotePriceKindEnum> _$quotePriceKindEnumSerializer =
@@ -76,13 +66,11 @@ class _$QuotePriceKindEnumSerializer
     'mark': 'mark',
     'lastTrade': 'last_trade',
     'reference': 'reference',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mark': 'mark',
     'last_trade': 'lastTrade',
     'reference': 'reference',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -107,12 +95,10 @@ class _$QuoteDataStatusEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'fresh': 'fresh',
     'stale': 'stale',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'fresh': 'fresh',
     'stale': 'stale',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

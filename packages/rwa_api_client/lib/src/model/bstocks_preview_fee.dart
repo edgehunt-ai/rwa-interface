@@ -184,8 +184,6 @@ class BstocksPreviewFeeStatusEnum extends EnumClass {
   static const BstocksPreviewFeeStatusEnum unavailable = _$bstocksPreviewFeeStatusEnum_unavailable;
   @BuiltValueEnumConst(wireName: r'not_estimated')
   static const BstocksPreviewFeeStatusEnum notEstimated = _$bstocksPreviewFeeStatusEnum_notEstimated;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksPreviewFeeStatusEnum unknownDefaultOpenApi = _$bstocksPreviewFeeStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksPreviewFeeStatusEnum> get serializer => _$bstocksPreviewFeeStatusEnumSerializer;
 

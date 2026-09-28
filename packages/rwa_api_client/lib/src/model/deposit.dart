@@ -158,8 +158,6 @@ class DepositChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 42161)
   static const DepositChainIdEnum number42161 = _$depositChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const DepositChainIdEnum unknownDefaultOpenApi = _$depositChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositChainIdEnum> get serializer => _$depositChainIdEnumSerializer;
 
@@ -173,8 +171,6 @@ class DepositTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const DepositTokenEnum USDC = _$depositTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositTokenEnum unknownDefaultOpenApi = _$depositTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositTokenEnum> get serializer => _$depositTokenEnumSerializer;
 
@@ -188,8 +184,6 @@ class DepositTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0xaf88d065e77c8cc2239327c5edb3a432268e5831')
   static const DepositTokenContractEnum n0xaf88d065e77c8cc2239327c5edb3a432268e5831 = _$depositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositTokenContractEnum unknownDefaultOpenApi = _$depositTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositTokenContractEnum> get serializer => _$depositTokenContractEnumSerializer;
 
@@ -203,8 +197,6 @@ class DepositTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 6)
   static const DepositTokenDecimalsEnum number6 = _$depositTokenDecimalsEnum_number6;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const DepositTokenDecimalsEnum unknownDefaultOpenApi = _$depositTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositTokenDecimalsEnum> get serializer => _$depositTokenDecimalsEnumSerializer;
 

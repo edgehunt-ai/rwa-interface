@@ -23,9 +23,6 @@ class OrderSide extends EnumClass {
   /// 现货用 `buy` / `sell`；合约用 `long` / `short`
   @BuiltValueEnumConst(wireName: r'short')
   static const OrderSide short = _$short;
-  /// 现货用 `buy` / `sell`；合约用 `long` / `short`
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderSide unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<OrderSide> get serializer => _$orderSideSerializer;
 

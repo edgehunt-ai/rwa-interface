@@ -1,4 +1,3 @@
-import 'package:rwa_api_client/src/model/order_type.dart';
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
@@ -16,8 +15,6 @@ class OrderType extends EnumClass {
   static const OrderType market = _$market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const OrderType limit = _$limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderType unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<OrderType> get serializer => _$orderTypeSerializer;
 

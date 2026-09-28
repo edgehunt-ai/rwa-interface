@@ -25,8 +25,6 @@ class FundingSessionStatus extends EnumClass {
   static const FundingSessionStatus cancelled = _$cancelled;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const FundingSessionStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingSessionStatus> get serializer => _$fundingSessionStatusSerializer;
 

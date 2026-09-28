@@ -10,8 +10,6 @@ const WalletStatus _$active = const WalletStatus._('active');
 const WalletStatus _$verificationRequired =
     const WalletStatus._('verificationRequired');
 const WalletStatus _$disabled = const WalletStatus._('disabled');
-const WalletStatus _$unknownDefaultOpenApi =
-    const WalletStatus._('unknownDefaultOpenApi');
 
 WalletStatus _$valueOf(String name) {
   switch (name) {
@@ -21,10 +19,8 @@ WalletStatus _$valueOf(String name) {
       return _$verificationRequired;
     case 'disabled':
       return _$disabled;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -33,7 +29,6 @@ final BuiltSet<WalletStatus> _$values =
   _$active,
   _$verificationRequired,
   _$disabled,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$WalletStatusMeta {
@@ -41,7 +36,6 @@ class _$WalletStatusMeta {
   WalletStatus get active => _$active;
   WalletStatus get verificationRequired => _$verificationRequired;
   WalletStatus get disabled => _$disabled;
-  WalletStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   WalletStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletStatus> get values => _$values;
 }
@@ -58,13 +52,11 @@ class _$WalletStatusSerializer implements PrimitiveSerializer<WalletStatus> {
     'active': 'active',
     'verificationRequired': 'verification_required',
     'disabled': 'disabled',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'active': 'active',
     'verification_required': 'verificationRequired',
     'disabled': 'disabled',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

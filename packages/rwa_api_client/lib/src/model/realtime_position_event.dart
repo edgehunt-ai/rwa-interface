@@ -154,8 +154,6 @@ class RealtimePositionEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'position')
   static const RealtimePositionEventEventEnum position = _$realtimePositionEventEventEnum_position;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimePositionEventEventEnum unknownDefaultOpenApi = _$realtimePositionEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimePositionEventEventEnum> get serializer => _$realtimePositionEventEventEnumSerializer;
 

@@ -194,8 +194,6 @@ class PrivyAuthorizationBodyMethodEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'eth_sendTransaction')
   static const PrivyAuthorizationBodyMethodEnum ethSendTransaction = _$privyAuthorizationBodyMethodEnum_ethSendTransaction;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationBodyMethodEnum unknownDefaultOpenApi = _$privyAuthorizationBodyMethodEnum_unknownDefaultOpenApi;
 
   static Serializer<PrivyAuthorizationBodyMethodEnum> get serializer => _$privyAuthorizationBodyMethodEnumSerializer;
 
@@ -219,8 +217,6 @@ class PrivyAuthorizationBodyCaip2Enum extends EnumClass {
   static const PrivyAuthorizationBodyCaip2Enum eip155Colon42161 = _$privyAuthorizationBodyCaip2Enum_eip155Colon42161;
   @BuiltValueEnumConst(wireName: r'eip155:421614')
   static const PrivyAuthorizationBodyCaip2Enum eip155Colon421614 = _$privyAuthorizationBodyCaip2Enum_eip155Colon421614;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationBodyCaip2Enum unknownDefaultOpenApi = _$privyAuthorizationBodyCaip2Enum_unknownDefaultOpenApi;
 
   static Serializer<PrivyAuthorizationBodyCaip2Enum> get serializer => _$privyAuthorizationBodyCaip2EnumSerializer;
 
@@ -234,8 +230,6 @@ class PrivyAuthorizationBodyChainTypeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'ethereum')
   static const PrivyAuthorizationBodyChainTypeEnum ethereum = _$privyAuthorizationBodyChainTypeEnum_ethereum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PrivyAuthorizationBodyChainTypeEnum unknownDefaultOpenApi = _$privyAuthorizationBodyChainTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<PrivyAuthorizationBodyChainTypeEnum> get serializer => _$privyAuthorizationBodyChainTypeEnumSerializer;
 

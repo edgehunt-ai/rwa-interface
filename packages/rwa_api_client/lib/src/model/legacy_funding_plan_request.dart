@@ -147,8 +147,6 @@ class LegacyFundingPlanRequestAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyFundingPlanRequestAssetEnum USDC = _$legacyFundingPlanRequestAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyFundingPlanRequestAssetEnum unknownDefaultOpenApi = _$legacyFundingPlanRequestAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyFundingPlanRequestAssetEnum> get serializer => _$legacyFundingPlanRequestAssetEnumSerializer;
 

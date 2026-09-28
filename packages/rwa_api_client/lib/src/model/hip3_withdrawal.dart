@@ -484,9 +484,6 @@ class Hip3WithdrawalHyperliquidChainEnum extends EnumClass {
   /// 仅在创建响应中返回。
   @BuiltValueEnumConst(wireName: r'Mainnet')
   static const Hip3WithdrawalHyperliquidChainEnum mainnet = _$hip3WithdrawalHyperliquidChainEnum_mainnet;
-  /// 仅在创建响应中返回。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3WithdrawalHyperliquidChainEnum unknownDefaultOpenApi = _$hip3WithdrawalHyperliquidChainEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3WithdrawalHyperliquidChainEnum> get serializer => _$hip3WithdrawalHyperliquidChainEnumSerializer;
 

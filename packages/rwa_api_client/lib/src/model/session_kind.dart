@@ -29,9 +29,6 @@ class SessionKind extends EnumClass {
   /// 美股交易时段：盘前 / 开盘 / 盘后 / 隔夜 / 周末休市 / 节假日休市
   @BuiltValueEnumConst(wireName: r'holiday')
   static const SessionKind holiday = _$holiday;
-  /// 美股交易时段：盘前 / 开盘 / 盘后 / 隔夜 / 周末休市 / 节假日休市
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const SessionKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<SessionKind> get serializer => _$sessionKindSerializer;
 

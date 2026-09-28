@@ -12,9 +12,6 @@ const DeviceRegisterRequestPushProviderEnum
 const DeviceRegisterRequestPushProviderEnum
     _$deviceRegisterRequestPushProviderEnum_fcm =
     const DeviceRegisterRequestPushProviderEnum._('fcm');
-const DeviceRegisterRequestPushProviderEnum
-    _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi =
-    const DeviceRegisterRequestPushProviderEnum._('unknownDefaultOpenApi');
 
 DeviceRegisterRequestPushProviderEnum
     _$deviceRegisterRequestPushProviderEnumValueOf(String name) {
@@ -23,10 +20,8 @@ DeviceRegisterRequestPushProviderEnum
       return _$deviceRegisterRequestPushProviderEnum_apns;
     case 'fcm':
       return _$deviceRegisterRequestPushProviderEnum_fcm;
-    case 'unknownDefaultOpenApi':
-      return _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi;
     default:
-      return _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<DeviceRegisterRequestPushProviderEnum>
         DeviceRegisterRequestPushProviderEnum>(const <DeviceRegisterRequestPushProviderEnum>[
   _$deviceRegisterRequestPushProviderEnum_apns,
   _$deviceRegisterRequestPushProviderEnum_fcm,
-  _$deviceRegisterRequestPushProviderEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<DeviceRegisterRequestPushProviderEnum>
@@ -47,12 +41,10 @@ class _$DeviceRegisterRequestPushProviderEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'apns': 'apns',
     'fcm': 'fcm',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'apns': 'apns',
     'fcm': 'fcm',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

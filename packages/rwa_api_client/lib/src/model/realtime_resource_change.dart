@@ -17,8 +17,6 @@ class RealtimeResourceChange extends EnumClass {
   static const RealtimeResourceChange updated = _$updated;
   @BuiltValueEnumConst(wireName: r'removed')
   static const RealtimeResourceChange removed = _$removed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeResourceChange unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<RealtimeResourceChange> get serializer => _$realtimeResourceChangeSerializer;
 

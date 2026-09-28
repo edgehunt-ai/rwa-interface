@@ -26,9 +26,6 @@ class PortfolioAssetNetwork extends EnumClass {
   /// Portfolio 资产及其来源允许返回的四条 EVM 网络与 Hyperliquid venue。
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
   static const PortfolioAssetNetwork hyperliquid = _$hyperliquid;
-  /// Portfolio 资产及其来源允许返回的四条 EVM 网络与 Hyperliquid venue。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioAssetNetwork unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioAssetNetwork> get serializer => _$portfolioAssetNetworkSerializer;
 

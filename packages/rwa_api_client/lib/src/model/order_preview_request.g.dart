@@ -8,18 +8,13 @@ part of 'order_preview_request.dart';
 
 const OrderPreviewRequestKindEnum _$orderPreviewRequestKindEnum_perp =
     const OrderPreviewRequestKindEnum._('perp');
-const OrderPreviewRequestKindEnum
-    _$orderPreviewRequestKindEnum_unknownDefaultOpenApi =
-    const OrderPreviewRequestKindEnum._('unknownDefaultOpenApi');
 
 OrderPreviewRequestKindEnum _$orderPreviewRequestKindEnumValueOf(String name) {
   switch (name) {
     case 'perp':
       return _$orderPreviewRequestKindEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$orderPreviewRequestKindEnum_unknownDefaultOpenApi;
     default:
-      return _$orderPreviewRequestKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -27,16 +22,12 @@ final BuiltSet<OrderPreviewRequestKindEnum>
     _$orderPreviewRequestKindEnumValues =
     BuiltSet<OrderPreviewRequestKindEnum>(const <OrderPreviewRequestKindEnum>[
   _$orderPreviewRequestKindEnum_perp,
-  _$orderPreviewRequestKindEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderPreviewRequestSideEnum _$orderPreviewRequestSideEnum_long =
     const OrderPreviewRequestSideEnum._('long');
 const OrderPreviewRequestSideEnum _$orderPreviewRequestSideEnum_short =
     const OrderPreviewRequestSideEnum._('short');
-const OrderPreviewRequestSideEnum
-    _$orderPreviewRequestSideEnum_unknownDefaultOpenApi =
-    const OrderPreviewRequestSideEnum._('unknownDefaultOpenApi');
 
 OrderPreviewRequestSideEnum _$orderPreviewRequestSideEnumValueOf(String name) {
   switch (name) {
@@ -44,10 +35,8 @@ OrderPreviewRequestSideEnum _$orderPreviewRequestSideEnumValueOf(String name) {
       return _$orderPreviewRequestSideEnum_long;
     case 'short':
       return _$orderPreviewRequestSideEnum_short;
-    case 'unknownDefaultOpenApi':
-      return _$orderPreviewRequestSideEnum_unknownDefaultOpenApi;
     default:
-      return _$orderPreviewRequestSideEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,7 +45,6 @@ final BuiltSet<OrderPreviewRequestSideEnum>
     BuiltSet<OrderPreviewRequestSideEnum>(const <OrderPreviewRequestSideEnum>[
   _$orderPreviewRequestSideEnum_long,
   _$orderPreviewRequestSideEnum_short,
-  _$orderPreviewRequestSideEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<OrderPreviewRequestKindEnum>
@@ -70,11 +58,9 @@ class _$OrderPreviewRequestKindEnumSerializer
     implements PrimitiveSerializer<OrderPreviewRequestKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -100,12 +86,10 @@ class _$OrderPreviewRequestSideEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'long': 'long',
     'short': 'short',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'long': 'long',
     'short': 'short',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

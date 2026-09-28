@@ -22,8 +22,6 @@ const Hip3ActionStepKindEnum _$hip3ActionStepKindEnum_cancelStopLoss =
     const Hip3ActionStepKindEnum._('cancelStopLoss');
 const Hip3ActionStepKindEnum _$hip3ActionStepKindEnum_setLeverage =
     const Hip3ActionStepKindEnum._('setLeverage');
-const Hip3ActionStepKindEnum _$hip3ActionStepKindEnum_unknownDefaultOpenApi =
-    const Hip3ActionStepKindEnum._('unknownDefaultOpenApi');
 
 Hip3ActionStepKindEnum _$hip3ActionStepKindEnumValueOf(String name) {
   switch (name) {
@@ -43,10 +41,8 @@ Hip3ActionStepKindEnum _$hip3ActionStepKindEnumValueOf(String name) {
       return _$hip3ActionStepKindEnum_cancelStopLoss;
     case 'setLeverage':
       return _$hip3ActionStepKindEnum_setLeverage;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ActionStepKindEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ActionStepKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -60,7 +56,6 @@ final BuiltSet<Hip3ActionStepKindEnum> _$hip3ActionStepKindEnumValues =
   _$hip3ActionStepKindEnum_cancelTakeProfit,
   _$hip3ActionStepKindEnum_cancelStopLoss,
   _$hip3ActionStepKindEnum_setLeverage,
-  _$hip3ActionStepKindEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3ActionStepStatusEnum _$hip3ActionStepStatusEnum_waiting =
@@ -83,9 +78,6 @@ const Hip3ActionStepStatusEnum _$hip3ActionStepStatusEnum_ambiguous =
     const Hip3ActionStepStatusEnum._('ambiguous');
 const Hip3ActionStepStatusEnum _$hip3ActionStepStatusEnum_manualReview =
     const Hip3ActionStepStatusEnum._('manualReview');
-const Hip3ActionStepStatusEnum
-    _$hip3ActionStepStatusEnum_unknownDefaultOpenApi =
-    const Hip3ActionStepStatusEnum._('unknownDefaultOpenApi');
 
 Hip3ActionStepStatusEnum _$hip3ActionStepStatusEnumValueOf(String name) {
   switch (name) {
@@ -109,10 +101,8 @@ Hip3ActionStepStatusEnum _$hip3ActionStepStatusEnumValueOf(String name) {
       return _$hip3ActionStepStatusEnum_ambiguous;
     case 'manualReview':
       return _$hip3ActionStepStatusEnum_manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ActionStepStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ActionStepStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -128,7 +118,6 @@ final BuiltSet<Hip3ActionStepStatusEnum> _$hip3ActionStepStatusEnumValues =
   _$hip3ActionStepStatusEnum_expired,
   _$hip3ActionStepStatusEnum_ambiguous,
   _$hip3ActionStepStatusEnum_manualReview,
-  _$hip3ActionStepStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ActionStepKindEnum> _$hip3ActionStepKindEnumSerializer =
@@ -147,7 +136,6 @@ class _$Hip3ActionStepKindEnumSerializer
     'cancelTakeProfit': 'cancel_take_profit',
     'cancelStopLoss': 'cancel_stop_loss',
     'setLeverage': 'set_leverage',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'place_order': 'placeOrder',
@@ -158,7 +146,6 @@ class _$Hip3ActionStepKindEnumSerializer
     'cancel_take_profit': 'cancelTakeProfit',
     'cancel_stop_loss': 'cancelStopLoss',
     'set_leverage': 'setLeverage',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -191,7 +178,6 @@ class _$Hip3ActionStepStatusEnumSerializer
     'expired': 'expired',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'waiting': 'waiting',
@@ -204,7 +190,6 @@ class _$Hip3ActionStepStatusEnumSerializer
     'expired': 'expired',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

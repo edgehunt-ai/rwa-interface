@@ -154,8 +154,6 @@ class RealtimeCandleEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'candle')
   static const RealtimeCandleEventEventEnum candle = _$realtimeCandleEventEventEnum_candle;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeCandleEventEventEnum unknownDefaultOpenApi = _$realtimeCandleEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeCandleEventEventEnum> get serializer => _$realtimeCandleEventEventEnumSerializer;
 

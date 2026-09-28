@@ -896,8 +896,6 @@ class PerpOrderPreviewFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const PerpOrderPreviewFundingModeEnum unreservedTransferFrom = _$perpOrderPreviewFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewFundingModeEnum unknownDefaultOpenApi = _$perpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewFundingModeEnum> get serializer => _$perpOrderPreviewFundingModeEnumSerializer;
 
@@ -911,8 +909,6 @@ class PerpOrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const PerpOrderPreviewKindEnum perp = _$perpOrderPreviewKindEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewKindEnum unknownDefaultOpenApi = _$perpOrderPreviewKindEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewKindEnum> get serializer => _$perpOrderPreviewKindEnumSerializer;
 
@@ -926,8 +922,6 @@ class PerpOrderPreviewNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
   static const PerpOrderPreviewNetworkEnum hyperliquid = _$perpOrderPreviewNetworkEnum_hyperliquid;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewNetworkEnum unknownDefaultOpenApi = _$perpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewNetworkEnum> get serializer => _$perpOrderPreviewNetworkEnumSerializer;
 
@@ -941,8 +935,6 @@ class PerpOrderPreviewSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const PerpOrderPreviewSettlementAssetEnum USDC = _$perpOrderPreviewSettlementAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewSettlementAssetEnum> get serializer => _$perpOrderPreviewSettlementAssetEnumSerializer;
 
@@ -956,8 +948,6 @@ class PerpOrderPreviewSettlementChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 1337)
   static const PerpOrderPreviewSettlementChainIdEnum number1337 = _$perpOrderPreviewSettlementChainIdEnum_number1337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PerpOrderPreviewSettlementChainIdEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewSettlementChainIdEnum> get serializer => _$perpOrderPreviewSettlementChainIdEnumSerializer;
 
@@ -971,8 +961,6 @@ class PerpOrderPreviewSettlementAssetIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid:1337/perps:USDC-PERPS')
   static const PerpOrderPreviewSettlementAssetIdEnum hyperliquidColon1337SlashPerpsColonUSDCPERPS = _$perpOrderPreviewSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewSettlementAssetIdEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewSettlementAssetIdEnum> get serializer => _$perpOrderPreviewSettlementAssetIdEnumSerializer;
 
@@ -986,8 +974,6 @@ class PerpOrderPreviewSettlementTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x2100000000000000000000000000000000000000')
   static const PerpOrderPreviewSettlementTokenContractEnum n0x2100000000000000000000000000000000000000 = _$perpOrderPreviewSettlementTokenContractEnum_n0x2100000000000000000000000000000000000000;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderPreviewSettlementTokenContractEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewSettlementTokenContractEnum> get serializer => _$perpOrderPreviewSettlementTokenContractEnumSerializer;
 
@@ -1001,8 +987,6 @@ class PerpOrderPreviewSettlementTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 8)
   static const PerpOrderPreviewSettlementTokenDecimalsEnum number8 = _$perpOrderPreviewSettlementTokenDecimalsEnum_number8;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PerpOrderPreviewSettlementTokenDecimalsEnum unknownDefaultOpenApi = _$perpOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderPreviewSettlementTokenDecimalsEnum> get serializer => _$perpOrderPreviewSettlementTokenDecimalsEnumSerializer;
 

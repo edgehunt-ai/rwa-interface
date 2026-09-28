@@ -15,8 +15,6 @@ class Hip3Environment extends EnumClass {
   static const Hip3Environment mainnet = _$mainnet;
   @BuiltValueEnumConst(wireName: r'testnet')
   static const Hip3Environment testnet = _$testnet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Environment unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3Environment> get serializer => _$hip3EnvironmentSerializer;
 

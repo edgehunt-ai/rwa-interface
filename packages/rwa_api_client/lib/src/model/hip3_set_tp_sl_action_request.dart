@@ -159,8 +159,6 @@ class Hip3SetTpSlActionRequestOperationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'set_tpsl')
   static const Hip3SetTpSlActionRequestOperationEnum setTpsl = _$hip3SetTpSlActionRequestOperationEnum_setTpsl;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3SetTpSlActionRequestOperationEnum unknownDefaultOpenApi = _$hip3SetTpSlActionRequestOperationEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3SetTpSlActionRequestOperationEnum> get serializer => _$hip3SetTpSlActionRequestOperationEnumSerializer;
 

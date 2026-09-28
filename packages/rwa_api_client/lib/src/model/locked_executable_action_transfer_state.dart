@@ -159,8 +159,6 @@ class LockedExecutableActionTransferStateStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'awaiting_wallet')
   static const LockedExecutableActionTransferStateStatusEnum awaitingWallet = _$lockedExecutableActionTransferStateStatusEnum_awaitingWallet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LockedExecutableActionTransferStateStatusEnum unknownDefaultOpenApi = _$lockedExecutableActionTransferStateStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<LockedExecutableActionTransferStateStatusEnum> get serializer => _$lockedExecutableActionTransferStateStatusEnumSerializer;
 

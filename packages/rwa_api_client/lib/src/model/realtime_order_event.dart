@@ -154,8 +154,6 @@ class RealtimeOrderEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'order')
   static const RealtimeOrderEventEventEnum order = _$realtimeOrderEventEventEnum_order;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeOrderEventEventEnum unknownDefaultOpenApi = _$realtimeOrderEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeOrderEventEventEnum> get serializer => _$realtimeOrderEventEventEnumSerializer;
 

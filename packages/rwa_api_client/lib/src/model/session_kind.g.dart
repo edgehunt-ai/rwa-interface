@@ -12,8 +12,6 @@ const SessionKind _$after = const SessionKind._('after');
 const SessionKind _$overnight = const SessionKind._('overnight');
 const SessionKind _$weekend = const SessionKind._('weekend');
 const SessionKind _$holiday = const SessionKind._('holiday');
-const SessionKind _$unknownDefaultOpenApi =
-    const SessionKind._('unknownDefaultOpenApi');
 
 SessionKind _$valueOf(String name) {
   switch (name) {
@@ -29,10 +27,8 @@ SessionKind _$valueOf(String name) {
       return _$weekend;
     case 'holiday':
       return _$holiday;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -44,7 +40,6 @@ final BuiltSet<SessionKind> _$values =
   _$overnight,
   _$weekend,
   _$holiday,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$SessionKindMeta {
@@ -55,7 +50,6 @@ class _$SessionKindMeta {
   SessionKind get overnight => _$overnight;
   SessionKind get weekend => _$weekend;
   SessionKind get holiday => _$holiday;
-  SessionKind get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   SessionKind valueOf(String name) => _$valueOf(name);
   BuiltSet<SessionKind> get values => _$values;
 }
@@ -75,7 +69,6 @@ class _$SessionKindSerializer implements PrimitiveSerializer<SessionKind> {
     'overnight': 'overnight',
     'weekend': 'weekend',
     'holiday': 'holiday',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'premarket': 'premarket',
@@ -84,7 +77,6 @@ class _$SessionKindSerializer implements PrimitiveSerializer<SessionKind> {
     'overnight': 'overnight',
     'weekend': 'weekend',
     'holiday': 'holiday',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

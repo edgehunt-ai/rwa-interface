@@ -210,8 +210,6 @@ class BstockFundingTargetCreditObservationSource_Enum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bsc_rpc')
   static const BstockFundingTargetCreditObservationSource_Enum bscRpc = _$bstockFundingTargetCreditObservationSourceEnum_bscRpc;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetCreditObservationSource_Enum unknownDefaultOpenApi = _$bstockFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetCreditObservationSource_Enum> get serializer => _$bstockFundingTargetCreditObservationSourceEnumSerializer;
 

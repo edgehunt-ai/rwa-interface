@@ -8,8 +8,6 @@ part of 'product_kind.dart';
 
 const ProductKind _$bstock = const ProductKind._('bstock');
 const ProductKind _$perp = const ProductKind._('perp');
-const ProductKind _$unknownDefaultOpenApi =
-    const ProductKind._('unknownDefaultOpenApi');
 
 ProductKind _$valueOf(String name) {
   switch (name) {
@@ -17,10 +15,8 @@ ProductKind _$valueOf(String name) {
       return _$bstock;
     case 'perp':
       return _$perp;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,14 +24,12 @@ final BuiltSet<ProductKind> _$values =
     BuiltSet<ProductKind>(const <ProductKind>[
   _$bstock,
   _$perp,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ProductKindMeta {
   const _$ProductKindMeta();
   ProductKind get bstock => _$bstock;
   ProductKind get perp => _$perp;
-  ProductKind get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   ProductKind valueOf(String name) => _$valueOf(name);
   BuiltSet<ProductKind> get values => _$values;
 }
@@ -51,12 +45,10 @@ class _$ProductKindSerializer implements PrimitiveSerializer<ProductKind> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

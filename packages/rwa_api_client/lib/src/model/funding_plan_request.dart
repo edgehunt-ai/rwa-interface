@@ -87,8 +87,6 @@ class FundingPlanRequestModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_multi_source')
   static const FundingPlanRequestModeEnum autoMultiSource = _$fundingPlanRequestModeEnum_autoMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanRequestModeEnum unknownDefaultOpenApi = _$fundingPlanRequestModeEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingPlanRequestModeEnum> get serializer => _$fundingPlanRequestModeEnumSerializer;
 
@@ -102,8 +100,6 @@ class FundingPlanRequestAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const FundingPlanRequestAssetEnum USDC = _$fundingPlanRequestAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingPlanRequestAssetEnum unknownDefaultOpenApi = _$fundingPlanRequestAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingPlanRequestAssetEnum> get serializer => _$fundingPlanRequestAssetEnumSerializer;
 

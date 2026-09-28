@@ -18,8 +18,6 @@ const LegacyTransferStatus _$ambiguous =
     const LegacyTransferStatus._('ambiguous');
 const LegacyTransferStatus _$manualReview =
     const LegacyTransferStatus._('manualReview');
-const LegacyTransferStatus _$unknownDefaultOpenApi =
-    const LegacyTransferStatus._('unknownDefaultOpenApi');
 
 LegacyTransferStatus _$valueOf(String name) {
   switch (name) {
@@ -37,10 +35,8 @@ LegacyTransferStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -53,7 +49,6 @@ final BuiltSet<LegacyTransferStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$LegacyTransferStatusMeta {
@@ -65,7 +60,6 @@ class _$LegacyTransferStatusMeta {
   LegacyTransferStatus get failed => _$failed;
   LegacyTransferStatus get ambiguous => _$ambiguous;
   LegacyTransferStatus get manualReview => _$manualReview;
-  LegacyTransferStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   LegacyTransferStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<LegacyTransferStatus> get values => _$values;
 }
@@ -89,7 +83,6 @@ class _$LegacyTransferStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending': 'pending',
@@ -99,7 +92,6 @@ class _$LegacyTransferStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -14,8 +14,6 @@ const PortfolioSourceKind _$dodoexPrice =
 const PortfolioSourceKind _$fixedPeg = const PortfolioSourceKind._('fixedPeg');
 const PortfolioSourceKind _$internalLedger =
     const PortfolioSourceKind._('internalLedger');
-const PortfolioSourceKind _$unknownDefaultOpenApi =
-    const PortfolioSourceKind._('unknownDefaultOpenApi');
 
 PortfolioSourceKind _$valueOf(String name) {
   switch (name) {
@@ -29,10 +27,8 @@ PortfolioSourceKind _$valueOf(String name) {
       return _$fixedPeg;
     case 'internalLedger':
       return _$internalLedger;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -43,7 +39,6 @@ final BuiltSet<PortfolioSourceKind> _$values =
   _$dodoexPrice,
   _$fixedPeg,
   _$internalLedger,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioSourceKindMeta {
@@ -53,7 +48,6 @@ class _$PortfolioSourceKindMeta {
   PortfolioSourceKind get dodoexPrice => _$dodoexPrice;
   PortfolioSourceKind get fixedPeg => _$fixedPeg;
   PortfolioSourceKind get internalLedger => _$internalLedger;
-  PortfolioSourceKind get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioSourceKind valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioSourceKind> get values => _$values;
 }
@@ -75,7 +69,6 @@ class _$PortfolioSourceKindSerializer
     'dodoexPrice': 'dodoex_price',
     'fixedPeg': 'fixed_peg',
     'internalLedger': 'internal_ledger',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'evm_rpc': 'evmRpc',
@@ -83,7 +76,6 @@ class _$PortfolioSourceKindSerializer
     'dodoex_price': 'dodoexPrice',
     'fixed_peg': 'fixedPeg',
     'internal_ledger': 'internalLedger',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

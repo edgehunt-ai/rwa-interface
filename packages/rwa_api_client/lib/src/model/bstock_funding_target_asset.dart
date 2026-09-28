@@ -229,8 +229,6 @@ class BstockFundingTargetAssetAssetIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955')
   static const BstockFundingTargetAssetAssetIdEnum eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 = _$bstockFundingTargetAssetAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetAssetIdEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetAssetIdEnum> get serializer => _$bstockFundingTargetAssetAssetIdEnumSerializer;
 
@@ -244,8 +242,6 @@ class BstockFundingTargetAssetNamespaceEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'eip155')
   static const BstockFundingTargetAssetNamespaceEnum eip155 = _$bstockFundingTargetAssetNamespaceEnum_eip155;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetNamespaceEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetNamespaceEnum> get serializer => _$bstockFundingTargetAssetNamespaceEnumSerializer;
 
@@ -259,8 +255,6 @@ class BstockFundingTargetAssetNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const BstockFundingTargetAssetNetworkEnum BSC = _$bstockFundingTargetAssetNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetNetworkEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetNetworkEnum> get serializer => _$bstockFundingTargetAssetNetworkEnumSerializer;
 
@@ -274,8 +268,6 @@ class BstockFundingTargetAssetChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 56)
   static const BstockFundingTargetAssetChainIdEnum number56 = _$bstockFundingTargetAssetChainIdEnum_number56;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockFundingTargetAssetChainIdEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetChainIdEnum> get serializer => _$bstockFundingTargetAssetChainIdEnumSerializer;
 
@@ -289,8 +281,6 @@ class BstockFundingTargetAssetTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDT')
   static const BstockFundingTargetAssetTokenEnum USDT = _$bstockFundingTargetAssetTokenEnum_USDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetTokenEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetTokenEnum> get serializer => _$bstockFundingTargetAssetTokenEnumSerializer;
 
@@ -304,8 +294,6 @@ class BstockFundingTargetAssetTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x55d398326f99059ff775485246999027b3197955')
   static const BstockFundingTargetAssetTokenContractEnum n0x55d398326f99059ff775485246999027b3197955 = _$bstockFundingTargetAssetTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetTokenContractEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetTokenContractEnum> get serializer => _$bstockFundingTargetAssetTokenContractEnumSerializer;
 
@@ -319,8 +307,6 @@ class BstockFundingTargetAssetTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 18)
   static const BstockFundingTargetAssetTokenDecimalsEnum number18 = _$bstockFundingTargetAssetTokenDecimalsEnum_number18;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockFundingTargetAssetTokenDecimalsEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetTokenDecimalsEnum> get serializer => _$bstockFundingTargetAssetTokenDecimalsEnumSerializer;
 
@@ -334,8 +320,6 @@ class BstockFundingTargetAssetProvenanceEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'binance_peg')
   static const BstockFundingTargetAssetProvenanceEnum binancePeg = _$bstockFundingTargetAssetProvenanceEnum_binancePeg;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTargetAssetProvenanceEnum unknownDefaultOpenApi = _$bstockFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTargetAssetProvenanceEnum> get serializer => _$bstockFundingTargetAssetProvenanceEnumSerializer;
 

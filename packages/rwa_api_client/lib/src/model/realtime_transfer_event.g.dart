@@ -8,19 +8,14 @@ part of 'realtime_transfer_event.dart';
 
 const RealtimeTransferEventEventEnum _$realtimeTransferEventEventEnum_transfer =
     const RealtimeTransferEventEventEnum._('transfer');
-const RealtimeTransferEventEventEnum
-    _$realtimeTransferEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeTransferEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeTransferEventEventEnum _$realtimeTransferEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'transfer':
       return _$realtimeTransferEventEventEnum_transfer;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeTransferEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeTransferEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<RealtimeTransferEventEventEnum>
     _$realtimeTransferEventEventEnumValues = BuiltSet<
         RealtimeTransferEventEventEnum>(const <RealtimeTransferEventEventEnum>[
   _$realtimeTransferEventEventEnum_transfer,
-  _$realtimeTransferEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeTransferEventEventEnum>
@@ -39,11 +33,9 @@ class _$RealtimeTransferEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeTransferEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'transfer': 'transfer',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'transfer': 'transfer',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

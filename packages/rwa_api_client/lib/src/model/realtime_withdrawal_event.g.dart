@@ -9,19 +9,14 @@ part of 'realtime_withdrawal_event.dart';
 const RealtimeWithdrawalEventEventEnum
     _$realtimeWithdrawalEventEventEnum_withdrawal =
     const RealtimeWithdrawalEventEventEnum._('withdrawal');
-const RealtimeWithdrawalEventEventEnum
-    _$realtimeWithdrawalEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeWithdrawalEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeWithdrawalEventEventEnum _$realtimeWithdrawalEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'withdrawal':
       return _$realtimeWithdrawalEventEventEnum_withdrawal;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeWithdrawalEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeWithdrawalEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<RealtimeWithdrawalEventEventEnum>
     _$realtimeWithdrawalEventEventEnumValues = BuiltSet<
         RealtimeWithdrawalEventEventEnum>(const <RealtimeWithdrawalEventEventEnum>[
   _$realtimeWithdrawalEventEventEnum_withdrawal,
-  _$realtimeWithdrawalEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeWithdrawalEventEventEnum>
@@ -40,11 +34,9 @@ class _$RealtimeWithdrawalEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeWithdrawalEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'withdrawal': 'withdrawal',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'withdrawal': 'withdrawal',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

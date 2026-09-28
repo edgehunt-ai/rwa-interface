@@ -22,8 +22,6 @@ const TransferProviderStatus _$unknown =
     const TransferProviderStatus._('unknown');
 const TransferProviderStatus _$manualReview =
     const TransferProviderStatus._('manualReview');
-const TransferProviderStatus _$unknownDefaultOpenApi =
-    const TransferProviderStatus._('unknownDefaultOpenApi');
 
 TransferProviderStatus _$valueOf(String name) {
   switch (name) {
@@ -43,10 +41,8 @@ TransferProviderStatus _$valueOf(String name) {
       return _$unknown;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -60,7 +56,6 @@ final BuiltSet<TransferProviderStatus> _$values =
   _$refunded,
   _$unknown,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TransferProviderStatusMeta {
@@ -73,7 +68,6 @@ class _$TransferProviderStatusMeta {
   TransferProviderStatus get refunded => _$refunded;
   TransferProviderStatus get unknown => _$unknown;
   TransferProviderStatus get manualReview => _$manualReview;
-  TransferProviderStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   TransferProviderStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TransferProviderStatus> get values => _$values;
 }
@@ -98,7 +92,6 @@ class _$TransferProviderStatusSerializer
     'refunded': 'refunded',
     'unknown': 'unknown',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending': 'pending',
@@ -109,7 +102,6 @@ class _$TransferProviderStatusSerializer
     'refunded': 'refunded',
     'unknown': 'unknown',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

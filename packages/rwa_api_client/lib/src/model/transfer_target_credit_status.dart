@@ -21,8 +21,6 @@ class TransferTargetCreditStatus extends EnumClass {
   static const TransferTargetCreditStatus ambiguous = _$ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferTargetCreditStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TransferTargetCreditStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<TransferTargetCreditStatus> get serializer => _$transferTargetCreditStatusSerializer;
 

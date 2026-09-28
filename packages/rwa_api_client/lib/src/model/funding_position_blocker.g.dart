@@ -36,8 +36,6 @@ const FundingPositionBlocker _$actionDisabled =
     const FundingPositionBlocker._('actionDisabled');
 const FundingPositionBlocker _$assetNotAllowed =
     const FundingPositionBlocker._('assetNotAllowed');
-const FundingPositionBlocker _$unknownDefaultOpenApi =
-    const FundingPositionBlocker._('unknownDefaultOpenApi');
 
 FundingPositionBlocker _$valueOf(String name) {
   switch (name) {
@@ -71,10 +69,8 @@ FundingPositionBlocker _$valueOf(String name) {
       return _$actionDisabled;
     case 'assetNotAllowed':
       return _$assetNotAllowed;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -95,7 +91,6 @@ final BuiltSet<FundingPositionBlocker> _$values =
   _$circuitOpen,
   _$actionDisabled,
   _$assetNotAllowed,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingPositionBlockerMeta {
@@ -116,7 +111,6 @@ class _$FundingPositionBlockerMeta {
   FundingPositionBlocker get circuitOpen => _$circuitOpen;
   FundingPositionBlocker get actionDisabled => _$actionDisabled;
   FundingPositionBlocker get assetNotAllowed => _$assetNotAllowed;
-  FundingPositionBlocker get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingPositionBlocker valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingPositionBlocker> get values => _$values;
 }
@@ -148,7 +142,6 @@ class _$FundingPositionBlockerSerializer
     'circuitOpen': 'circuit_open',
     'actionDisabled': 'action_disabled',
     'assetNotAllowed': 'asset_not_allowed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'wallet_unavailable': 'walletUnavailable',
@@ -166,7 +159,6 @@ class _$FundingPositionBlockerSerializer
     'circuit_open': 'circuitOpen',
     'action_disabled': 'actionDisabled',
     'asset_not_allowed': 'assetNotAllowed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -29,6 +29,14 @@ part 'bstock_order_wallet_action_state.g.dart';
 /// * [submittedTransactionHash] 
 /// * [confirmedTransactionHash] 
 /// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
+/// * [previewId] - 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
+/// * [chainId] 
+/// * [router] 
+/// * [placementTransactionHash] - canonical GTC 的挂单交易；不是本次撤单或成交交易。
+/// * [transactionHash] - canonical IOC 执行交易；与 log_index 一起定位事件。
+/// * [logIndex] 
+/// * [cancellationReason] 
+/// * [targetOrderId] - 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
 @BuiltValue()
 abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletActionState, BstockOrderWalletActionStateBuilder> {
   /// 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
@@ -78,6 +86,36 @@ abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletAc
   /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
   @BuiltValueField(wireName: r'required_funding_raw')
   String? get requiredFundingRaw;
+
+  /// 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
+  @BuiltValueField(wireName: r'preview_id')
+  String? get previewId;
+
+  @BuiltValueField(wireName: r'chain_id')
+  BstockOrderWalletActionStateChainIdEnum? get chainId;
+  // enum chainIdEnum {  56,  97,  31337,  };
+
+  @BuiltValueField(wireName: r'router')
+  String? get router;
+
+  /// canonical GTC 的挂单交易；不是本次撤单或成交交易。
+  @BuiltValueField(wireName: r'placement_transaction_hash')
+  String? get placementTransactionHash;
+
+  /// canonical IOC 执行交易；与 log_index 一起定位事件。
+  @BuiltValueField(wireName: r'transaction_hash')
+  String? get transactionHash;
+
+  @BuiltValueField(wireName: r'log_index')
+  int? get logIndex;
+
+  @BuiltValueField(wireName: r'cancellation_reason')
+  BstockOrderWalletActionStateCancellationReasonEnum? get cancellationReason;
+  // enum cancellationReasonEnum {  user_cancelled,  insufficient_balance,  insufficient_allowance,  };
+
+  /// 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
+  @BuiltValueField(wireName: r'target_order_id')
+  String? get targetOrderId;
 
   BstockOrderWalletActionState._();
 
@@ -184,6 +222,62 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       yield r'required_funding_raw';
       yield serializers.serialize(
         object.requiredFundingRaw,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.previewId != null) {
+      yield r'preview_id';
+      yield serializers.serialize(
+        object.previewId,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.chainId != null) {
+      yield r'chain_id';
+      yield serializers.serialize(
+        object.chainId,
+        specifiedType: const FullType(BstockOrderWalletActionStateChainIdEnum),
+      );
+    }
+    if (object.router != null) {
+      yield r'router';
+      yield serializers.serialize(
+        object.router,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.placementTransactionHash != null) {
+      yield r'placement_transaction_hash';
+      yield serializers.serialize(
+        object.placementTransactionHash,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.transactionHash != null) {
+      yield r'transaction_hash';
+      yield serializers.serialize(
+        object.transactionHash,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.logIndex != null) {
+      yield r'log_index';
+      yield serializers.serialize(
+        object.logIndex,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.cancellationReason != null) {
+      yield r'cancellation_reason';
+      yield serializers.serialize(
+        object.cancellationReason,
+        specifiedType: const FullType.nullable(BstockOrderWalletActionStateCancellationReasonEnum),
+      );
+    }
+    if (object.targetOrderId != null) {
+      yield r'target_order_id';
+      yield serializers.serialize(
+        object.targetOrderId,
         specifiedType: const FullType(String),
       );
     }
@@ -313,6 +407,70 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
           if (valueDes == null) continue;
           result.requiredFundingRaw = valueDes;
           break;
+        case r'preview_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.previewId = valueDes;
+          break;
+        case r'chain_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstockOrderWalletActionStateChainIdEnum),
+          ) as BstockOrderWalletActionStateChainIdEnum?;
+          if (valueDes == null) continue;
+          result.chainId = valueDes;
+          break;
+        case r'router':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.router = valueDes;
+          break;
+        case r'placement_transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.placementTransactionHash = valueDes;
+          break;
+        case r'transaction_hash':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.transactionHash = valueDes;
+          break;
+        case r'log_index':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.logIndex = valueDes;
+          break;
+        case r'cancellation_reason':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BstockOrderWalletActionStateCancellationReasonEnum),
+          ) as BstockOrderWalletActionStateCancellationReasonEnum?;
+          if (valueDes == null) continue;
+          result.cancellationReason = valueDes;
+          break;
+        case r'target_order_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.targetOrderId = valueDes;
+          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -346,8 +504,6 @@ class BstockOrderWalletActionStateFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const BstockOrderWalletActionStateFundingModeEnum unreservedTransferFrom = _$bstockOrderWalletActionStateFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderWalletActionStateFundingModeEnum unknownDefaultOpenApi = _$bstockOrderWalletActionStateFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderWalletActionStateFundingModeEnum> get serializer => _$bstockOrderWalletActionStateFundingModeEnumSerializer;
 
@@ -361,8 +517,6 @@ class BstockOrderWalletActionStateKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockOrderWalletActionStateKindEnum bstock = _$bstockOrderWalletActionStateKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderWalletActionStateKindEnum unknownDefaultOpenApi = _$bstockOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderWalletActionStateKindEnum> get serializer => _$bstockOrderWalletActionStateKindEnumSerializer;
 
@@ -383,9 +537,6 @@ class BstockOrderWalletActionStateWalletActionBlockerEnum extends EnumClass {
   /// Must be null when `next_action` is present; enforced by server validation.
   @BuiltValueEnumConst(wireName: r'capability_disabled')
   static const BstockOrderWalletActionStateWalletActionBlockerEnum capabilityDisabled = _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled;
-  /// Must be null when `next_action` is present; enforced by server validation.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderWalletActionStateWalletActionBlockerEnum unknownDefaultOpenApi = _$bstockOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderWalletActionStateWalletActionBlockerEnum> get serializer => _$bstockOrderWalletActionStateWalletActionBlockerEnumSerializer;
 
@@ -393,5 +544,39 @@ class BstockOrderWalletActionStateWalletActionBlockerEnum extends EnumClass {
 
   static BuiltSet<BstockOrderWalletActionStateWalletActionBlockerEnum> get values => _$bstockOrderWalletActionStateWalletActionBlockerEnumValues;
   static BstockOrderWalletActionStateWalletActionBlockerEnum valueOf(String name) => _$bstockOrderWalletActionStateWalletActionBlockerEnumValueOf(name);
+}
+
+class BstockOrderWalletActionStateChainIdEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireNumber: 56)
+  static const BstockOrderWalletActionStateChainIdEnum number56 = _$bstockOrderWalletActionStateChainIdEnum_number56;
+  @BuiltValueEnumConst(wireNumber: 97)
+  static const BstockOrderWalletActionStateChainIdEnum number97 = _$bstockOrderWalletActionStateChainIdEnum_number97;
+  @BuiltValueEnumConst(wireNumber: 31337)
+  static const BstockOrderWalletActionStateChainIdEnum number31337 = _$bstockOrderWalletActionStateChainIdEnum_number31337;
+
+  static Serializer<BstockOrderWalletActionStateChainIdEnum> get serializer => _$bstockOrderWalletActionStateChainIdEnumSerializer;
+
+  const BstockOrderWalletActionStateChainIdEnum._(String name): super(name);
+
+  static BuiltSet<BstockOrderWalletActionStateChainIdEnum> get values => _$bstockOrderWalletActionStateChainIdEnumValues;
+  static BstockOrderWalletActionStateChainIdEnum valueOf(String name) => _$bstockOrderWalletActionStateChainIdEnumValueOf(name);
+}
+
+class BstockOrderWalletActionStateCancellationReasonEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'user_cancelled')
+  static const BstockOrderWalletActionStateCancellationReasonEnum userCancelled = _$bstockOrderWalletActionStateCancellationReasonEnum_userCancelled;
+  @BuiltValueEnumConst(wireName: r'insufficient_balance')
+  static const BstockOrderWalletActionStateCancellationReasonEnum insufficientBalance = _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientBalance;
+  @BuiltValueEnumConst(wireName: r'insufficient_allowance')
+  static const BstockOrderWalletActionStateCancellationReasonEnum insufficientAllowance = _$bstockOrderWalletActionStateCancellationReasonEnum_insufficientAllowance;
+
+  static Serializer<BstockOrderWalletActionStateCancellationReasonEnum> get serializer => _$bstockOrderWalletActionStateCancellationReasonEnumSerializer;
+
+  const BstockOrderWalletActionStateCancellationReasonEnum._(String name): super(name);
+
+  static BuiltSet<BstockOrderWalletActionStateCancellationReasonEnum> get values => _$bstockOrderWalletActionStateCancellationReasonEnumValues;
+  static BstockOrderWalletActionStateCancellationReasonEnum valueOf(String name) => _$bstockOrderWalletActionStateCancellationReasonEnumValueOf(name);
 }
 

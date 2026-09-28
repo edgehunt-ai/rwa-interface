@@ -441,8 +441,6 @@ class Hip3PreviewExecutionTypeEnum extends EnumClass {
   static const Hip3PreviewExecutionTypeEnum market = _$hip3PreviewExecutionTypeEnum_market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const Hip3PreviewExecutionTypeEnum limit = _$hip3PreviewExecutionTypeEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3PreviewExecutionTypeEnum unknownDefaultOpenApi = _$hip3PreviewExecutionTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3PreviewExecutionTypeEnum> get serializer => _$hip3PreviewExecutionTypeEnumSerializer;
 

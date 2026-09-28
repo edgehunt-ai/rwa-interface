@@ -9,19 +9,14 @@ part of 'legacy_perp_order_preview.dart';
 const LegacyPerpOrderPreviewFundingModeEnum
     _$legacyPerpOrderPreviewFundingModeEnum_unreservedTransferFrom =
     const LegacyPerpOrderPreviewFundingModeEnum._('unreservedTransferFrom');
-const LegacyPerpOrderPreviewFundingModeEnum
-    _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
-    const LegacyPerpOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
 
 LegacyPerpOrderPreviewFundingModeEnum
     _$legacyPerpOrderPreviewFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$legacyPerpOrderPreviewFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,24 +24,18 @@ final BuiltSet<LegacyPerpOrderPreviewFundingModeEnum>
     _$legacyPerpOrderPreviewFundingModeEnumValues = BuiltSet<
         LegacyPerpOrderPreviewFundingModeEnum>(const <LegacyPerpOrderPreviewFundingModeEnum>[
   _$legacyPerpOrderPreviewFundingModeEnum_unreservedTransferFrom,
-  _$legacyPerpOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpOrderPreviewKindEnum _$legacyPerpOrderPreviewKindEnum_perp =
     const LegacyPerpOrderPreviewKindEnum._('perp');
-const LegacyPerpOrderPreviewKindEnum
-    _$legacyPerpOrderPreviewKindEnum_unknownDefaultOpenApi =
-    const LegacyPerpOrderPreviewKindEnum._('unknownDefaultOpenApi');
 
 LegacyPerpOrderPreviewKindEnum _$legacyPerpOrderPreviewKindEnumValueOf(
     String name) {
   switch (name) {
     case 'perp':
       return _$legacyPerpOrderPreviewKindEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpOrderPreviewKindEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpOrderPreviewKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,25 +43,19 @@ final BuiltSet<LegacyPerpOrderPreviewKindEnum>
     _$legacyPerpOrderPreviewKindEnumValues = BuiltSet<
         LegacyPerpOrderPreviewKindEnum>(const <LegacyPerpOrderPreviewKindEnum>[
   _$legacyPerpOrderPreviewKindEnum_perp,
-  _$legacyPerpOrderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpOrderPreviewNetworkEnum
     _$legacyPerpOrderPreviewNetworkEnum_arbitrum =
     const LegacyPerpOrderPreviewNetworkEnum._('arbitrum');
-const LegacyPerpOrderPreviewNetworkEnum
-    _$legacyPerpOrderPreviewNetworkEnum_unknownDefaultOpenApi =
-    const LegacyPerpOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 LegacyPerpOrderPreviewNetworkEnum _$legacyPerpOrderPreviewNetworkEnumValueOf(
     String name) {
   switch (name) {
     case 'arbitrum':
       return _$legacyPerpOrderPreviewNetworkEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -80,25 +63,19 @@ final BuiltSet<LegacyPerpOrderPreviewNetworkEnum>
     _$legacyPerpOrderPreviewNetworkEnumValues = BuiltSet<
         LegacyPerpOrderPreviewNetworkEnum>(const <LegacyPerpOrderPreviewNetworkEnum>[
   _$legacyPerpOrderPreviewNetworkEnum_arbitrum,
-  _$legacyPerpOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyPerpOrderPreviewSettlementAssetEnum
     _$legacyPerpOrderPreviewSettlementAssetEnum_USDC =
     const LegacyPerpOrderPreviewSettlementAssetEnum._('USDC');
-const LegacyPerpOrderPreviewSettlementAssetEnum
-    _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const LegacyPerpOrderPreviewSettlementAssetEnum._('unknownDefaultOpenApi');
 
 LegacyPerpOrderPreviewSettlementAssetEnum
     _$legacyPerpOrderPreviewSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$legacyPerpOrderPreviewSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -106,7 +83,6 @@ final BuiltSet<LegacyPerpOrderPreviewSettlementAssetEnum>
     _$legacyPerpOrderPreviewSettlementAssetEnumValues = BuiltSet<
         LegacyPerpOrderPreviewSettlementAssetEnum>(const <LegacyPerpOrderPreviewSettlementAssetEnum>[
   _$legacyPerpOrderPreviewSettlementAssetEnum_USDC,
-  _$legacyPerpOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LegacyPerpOrderPreviewFundingModeEnum>
@@ -126,11 +102,9 @@ class _$LegacyPerpOrderPreviewFundingModeEnumSerializer
     implements PrimitiveSerializer<LegacyPerpOrderPreviewFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -158,11 +132,9 @@ class _$LegacyPerpOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<LegacyPerpOrderPreviewKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -188,11 +160,9 @@ class _$LegacyPerpOrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<LegacyPerpOrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -218,11 +188,9 @@ class _$LegacyPerpOrderPreviewSettlementAssetEnumSerializer
     implements PrimitiveSerializer<LegacyPerpOrderPreviewSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

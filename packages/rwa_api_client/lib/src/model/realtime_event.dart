@@ -387,8 +387,6 @@ class RealtimeEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'resync_required')
   static const RealtimeEventEventEnum resyncRequired = _$realtimeEventEventEnum_resyncRequired;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeEventEventEnum unknownDefaultOpenApi = _$realtimeEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeEventEventEnum> get serializer => _$realtimeEventEventEnumSerializer;
 

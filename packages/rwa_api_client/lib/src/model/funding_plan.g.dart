@@ -8,128 +8,74 @@ part of 'funding_plan.dart';
 
 const FundingPlanModeEnum _$fundingPlanModeEnum_userSelectedMultiSource =
     const FundingPlanModeEnum._('userSelectedMultiSource');
-const FundingPlanModeEnum _$fundingPlanModeEnum_unknownDefaultOpenApi =
-    const FundingPlanModeEnum._('unknownDefaultOpenApi');
 
 FundingPlanModeEnum _$fundingPlanModeEnumValueOf(String name) {
   switch (name) {
     case 'userSelectedMultiSource':
       return _$fundingPlanModeEnum_userSelectedMultiSource;
-    case 'unknownDefaultOpenApi':
-      return _$fundingPlanModeEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingPlanModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingPlanModeEnum> _$fundingPlanModeEnumValues =
     BuiltSet<FundingPlanModeEnum>(const <FundingPlanModeEnum>[
   _$fundingPlanModeEnum_userSelectedMultiSource,
-  _$fundingPlanModeEnum_unknownDefaultOpenApi,
 ]);
 
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_ready =
-    const FundingPlanStatusEnum._('ready');
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_expired =
-    const FundingPlanStatusEnum._('expired');
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_consumed =
-    const FundingPlanStatusEnum._('consumed');
-const FundingPlanStatusEnum _$fundingPlanStatusEnum_unknownDefaultOpenApi =
-    const FundingPlanStatusEnum._('unknownDefaultOpenApi');
-
-FundingPlanStatusEnum _$fundingPlanStatusEnumValueOf(String name) {
-  switch (name) {
-    case 'ready':
-      return _$fundingPlanStatusEnum_ready;
-    case 'expired':
-      return _$fundingPlanStatusEnum_expired;
-    case 'consumed':
-      return _$fundingPlanStatusEnum_consumed;
-    case 'unknownDefaultOpenApi':
-      return _$fundingPlanStatusEnum_unknownDefaultOpenApi;
-    default:
-      return _$fundingPlanStatusEnum_unknownDefaultOpenApi;
-  }
-}
-
-final BuiltSet<FundingPlanStatusEnum> _$fundingPlanStatusEnumValues =
-    BuiltSet<FundingPlanStatusEnum>(const <FundingPlanStatusEnum>[
-  _$fundingPlanStatusEnum_ready,
-  _$fundingPlanStatusEnum_expired,
-  _$fundingPlanStatusEnum_consumed,
-  _$fundingPlanStatusEnum_unknownDefaultOpenApi,
-]);
-
-const FundingPlanRailEnum _$fundingPlanRailEnum_perp =
-    const FundingPlanRailEnum._('perp');
-const FundingPlanRailEnum _$fundingPlanRailEnum_unknownDefaultOpenApi =
-    const FundingPlanRailEnum._('unknownDefaultOpenApi');
+const FundingPlanRailEnum _$fundingPlanRailEnum_bstock =
+    const FundingPlanRailEnum._('bstock');
 
 FundingPlanRailEnum _$fundingPlanRailEnumValueOf(String name) {
   switch (name) {
-    case 'perp':
-      return _$fundingPlanRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$fundingPlanRailEnum_unknownDefaultOpenApi;
+    case 'bstock':
+      return _$fundingPlanRailEnum_bstock;
     default:
-      return _$fundingPlanRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingPlanRailEnum> _$fundingPlanRailEnumValues =
     BuiltSet<FundingPlanRailEnum>(const <FundingPlanRailEnum>[
-  _$fundingPlanRailEnum_perp,
-  _$fundingPlanRailEnum_unknownDefaultOpenApi,
+  _$fundingPlanRailEnum_bstock,
 ]);
 
-const FundingPlanNetworkEnum _$fundingPlanNetworkEnum_arbitrum =
-    const FundingPlanNetworkEnum._('arbitrum');
-const FundingPlanNetworkEnum _$fundingPlanNetworkEnum_unknownDefaultOpenApi =
-    const FundingPlanNetworkEnum._('unknownDefaultOpenApi');
+const FundingPlanNetworkEnum _$fundingPlanNetworkEnum_BSC =
+    const FundingPlanNetworkEnum._('BSC');
 
 FundingPlanNetworkEnum _$fundingPlanNetworkEnumValueOf(String name) {
   switch (name) {
-    case 'arbitrum':
-      return _$fundingPlanNetworkEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$fundingPlanNetworkEnum_unknownDefaultOpenApi;
+    case 'BSC':
+      return _$fundingPlanNetworkEnum_BSC;
     default:
-      return _$fundingPlanNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingPlanNetworkEnum> _$fundingPlanNetworkEnumValues =
     BuiltSet<FundingPlanNetworkEnum>(const <FundingPlanNetworkEnum>[
-  _$fundingPlanNetworkEnum_arbitrum,
-  _$fundingPlanNetworkEnum_unknownDefaultOpenApi,
+  _$fundingPlanNetworkEnum_BSC,
 ]);
 
-const FundingPlanAssetEnum _$fundingPlanAssetEnum_USDC =
-    const FundingPlanAssetEnum._('USDC');
-const FundingPlanAssetEnum _$fundingPlanAssetEnum_unknownDefaultOpenApi =
-    const FundingPlanAssetEnum._('unknownDefaultOpenApi');
+const FundingPlanAssetEnum _$fundingPlanAssetEnum_TUSDT =
+    const FundingPlanAssetEnum._('TUSDT');
 
 FundingPlanAssetEnum _$fundingPlanAssetEnumValueOf(String name) {
   switch (name) {
-    case 'USDC':
-      return _$fundingPlanAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$fundingPlanAssetEnum_unknownDefaultOpenApi;
+    case 'TUSDT':
+      return _$fundingPlanAssetEnum_TUSDT;
     default:
-      return _$fundingPlanAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<FundingPlanAssetEnum> _$fundingPlanAssetEnumValues =
     BuiltSet<FundingPlanAssetEnum>(const <FundingPlanAssetEnum>[
-  _$fundingPlanAssetEnum_USDC,
-  _$fundingPlanAssetEnum_unknownDefaultOpenApi,
+  _$fundingPlanAssetEnum_TUSDT,
 ]);
 
 Serializer<FundingPlanModeEnum> _$fundingPlanModeEnumSerializer =
     _$FundingPlanModeEnumSerializer();
-Serializer<FundingPlanStatusEnum> _$fundingPlanStatusEnumSerializer =
-    _$FundingPlanStatusEnumSerializer();
 Serializer<FundingPlanRailEnum> _$fundingPlanRailEnumSerializer =
     _$FundingPlanRailEnumSerializer();
 Serializer<FundingPlanNetworkEnum> _$fundingPlanNetworkEnumSerializer =
@@ -141,11 +87,9 @@ class _$FundingPlanModeEnumSerializer
     implements PrimitiveSerializer<FundingPlanModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'userSelectedMultiSource': 'user_selected_multi_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'user_selected_multi_source': 'userSelectedMultiSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -165,47 +109,13 @@ class _$FundingPlanModeEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$FundingPlanStatusEnumSerializer
-    implements PrimitiveSerializer<FundingPlanStatusEnum> {
-  static const Map<String, Object> _toWire = const <String, Object>{
-    'ready': 'ready',
-    'expired': 'expired',
-    'consumed': 'consumed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
-  };
-  static const Map<Object, String> _fromWire = const <Object, String>{
-    'ready': 'ready',
-    'expired': 'expired',
-    'consumed': 'consumed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
-  };
-
-  @override
-  final Iterable<Type> types = const <Type>[FundingPlanStatusEnum];
-  @override
-  final String wireName = 'FundingPlanStatusEnum';
-
-  @override
-  Object serialize(Serializers serializers, FundingPlanStatusEnum object,
-          {FullType specifiedType = FullType.unspecified}) =>
-      _toWire[object.name] ?? object.name;
-
-  @override
-  FundingPlanStatusEnum deserialize(Serializers serializers, Object serialized,
-          {FullType specifiedType = FullType.unspecified}) =>
-      FundingPlanStatusEnum.valueOf(
-          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
-}
-
 class _$FundingPlanRailEnumSerializer
     implements PrimitiveSerializer<FundingPlanRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
+    'bstock': 'bstock',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
+    'bstock': 'bstock',
   };
 
   @override
@@ -228,12 +138,10 @@ class _$FundingPlanRailEnumSerializer
 class _$FundingPlanNetworkEnumSerializer
     implements PrimitiveSerializer<FundingPlanNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
+    'BSC': 'BSC',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
+    'BSC': 'BSC',
   };
 
   @override
@@ -256,12 +164,10 @@ class _$FundingPlanNetworkEnumSerializer
 class _$FundingPlanAssetEnumSerializer
     implements PrimitiveSerializer<FundingPlanAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
+    'TUSDT': 'TUSDT',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
+    'TUSDT': 'TUSDT',
   };
 
   @override

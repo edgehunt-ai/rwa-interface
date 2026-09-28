@@ -12,9 +12,6 @@ const TradeIntentFundingModeEnum _$tradeIntentFundingModeEnum_autoMultiSource =
     const TradeIntentFundingModeEnum._('autoMultiSource');
 const TradeIntentFundingModeEnum _$tradeIntentFundingModeEnum_fundingSession =
     const TradeIntentFundingModeEnum._('fundingSession');
-const TradeIntentFundingModeEnum
-    _$tradeIntentFundingModeEnum_unknownDefaultOpenApi =
-    const TradeIntentFundingModeEnum._('unknownDefaultOpenApi');
 
 TradeIntentFundingModeEnum _$tradeIntentFundingModeEnumValueOf(String name) {
   switch (name) {
@@ -24,10 +21,8 @@ TradeIntentFundingModeEnum _$tradeIntentFundingModeEnumValueOf(String name) {
       return _$tradeIntentFundingModeEnum_autoMultiSource;
     case 'fundingSession':
       return _$tradeIntentFundingModeEnum_fundingSession;
-    case 'unknownDefaultOpenApi':
-      return _$tradeIntentFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$tradeIntentFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -36,7 +31,6 @@ final BuiltSet<TradeIntentFundingModeEnum> _$tradeIntentFundingModeEnumValues =
   _$tradeIntentFundingModeEnum_autoSingleSource,
   _$tradeIntentFundingModeEnum_autoMultiSource,
   _$tradeIntentFundingModeEnum_fundingSession,
-  _$tradeIntentFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<TradeIntentFundingModeEnum> _$tradeIntentFundingModeEnumSerializer =
@@ -48,13 +42,11 @@ class _$TradeIntentFundingModeEnumSerializer
     'autoSingleSource': 'auto_single_source',
     'autoMultiSource': 'auto_multi_source',
     'fundingSession': 'funding_session',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_single_source': 'autoSingleSource',
     'auto_multi_source': 'autoMultiSource',
     'funding_session': 'fundingSession',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

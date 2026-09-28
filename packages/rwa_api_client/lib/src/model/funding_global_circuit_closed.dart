@@ -143,8 +143,6 @@ class FundingGlobalCircuitClosedScopeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'global')
   static const FundingGlobalCircuitClosedScopeEnum global = _$fundingGlobalCircuitClosedScopeEnum_global;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitClosedScopeEnum unknownDefaultOpenApi = _$fundingGlobalCircuitClosedScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingGlobalCircuitClosedScopeEnum> get serializer => _$fundingGlobalCircuitClosedScopeEnumSerializer;
 
@@ -158,8 +156,6 @@ class FundingGlobalCircuitClosedStateEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'closed')
   static const FundingGlobalCircuitClosedStateEnum closed = _$fundingGlobalCircuitClosedStateEnum_closed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingGlobalCircuitClosedStateEnum unknownDefaultOpenApi = _$fundingGlobalCircuitClosedStateEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingGlobalCircuitClosedStateEnum> get serializer => _$fundingGlobalCircuitClosedStateEnumSerializer;
 

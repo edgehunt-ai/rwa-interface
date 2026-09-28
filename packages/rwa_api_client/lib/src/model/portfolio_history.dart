@@ -237,8 +237,6 @@ class PortfolioHistoryRangeEnum extends EnumClass {
   static const PortfolioHistoryRangeEnum n1m = _$portfolioHistoryRangeEnum_n1m;
   @BuiltValueEnumConst(wireName: r'1y')
   static const PortfolioHistoryRangeEnum n1y = _$portfolioHistoryRangeEnum_n1y;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioHistoryRangeEnum unknownDefaultOpenApi = _$portfolioHistoryRangeEnum_unknownDefaultOpenApi;
 
   static Serializer<PortfolioHistoryRangeEnum> get serializer => _$portfolioHistoryRangeEnumSerializer;
 
@@ -258,8 +256,6 @@ class PortfolioHistoryIntervalEnum extends EnumClass {
   static const PortfolioHistoryIntervalEnum n1d = _$portfolioHistoryIntervalEnum_n1d;
   @BuiltValueEnumConst(wireName: r'1w')
   static const PortfolioHistoryIntervalEnum n1w = _$portfolioHistoryIntervalEnum_n1w;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioHistoryIntervalEnum unknownDefaultOpenApi = _$portfolioHistoryIntervalEnum_unknownDefaultOpenApi;
 
   static Serializer<PortfolioHistoryIntervalEnum> get serializer => _$portfolioHistoryIntervalEnumSerializer;
 

@@ -20,8 +20,6 @@ const GasSponsorshipDecision _$providerRejected =
     const GasSponsorshipDecision._('providerRejected');
 const GasSponsorshipDecision _$providerAmbiguous =
     const GasSponsorshipDecision._('providerAmbiguous');
-const GasSponsorshipDecision _$unknownDefaultOpenApi =
-    const GasSponsorshipDecision._('unknownDefaultOpenApi');
 
 GasSponsorshipDecision _$valueOf(String name) {
   switch (name) {
@@ -39,10 +37,8 @@ GasSponsorshipDecision _$valueOf(String name) {
       return _$providerRejected;
     case 'providerAmbiguous':
       return _$providerAmbiguous;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +51,6 @@ final BuiltSet<GasSponsorshipDecision> _$values =
   _$circuitOpen,
   _$providerRejected,
   _$providerAmbiguous,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$GasSponsorshipDecisionMeta {
@@ -68,7 +63,6 @@ class _$GasSponsorshipDecisionMeta {
   GasSponsorshipDecision get circuitOpen => _$circuitOpen;
   GasSponsorshipDecision get providerRejected => _$providerRejected;
   GasSponsorshipDecision get providerAmbiguous => _$providerAmbiguous;
-  GasSponsorshipDecision get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   GasSponsorshipDecision valueOf(String name) => _$valueOf(name);
   BuiltSet<GasSponsorshipDecision> get values => _$values;
 }
@@ -92,7 +86,6 @@ class _$GasSponsorshipDecisionSerializer
     'circuitOpen': 'circuit_open',
     'providerRejected': 'provider_rejected',
     'providerAmbiguous': 'provider_ambiguous',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'eligible': 'eligible',
@@ -102,7 +95,6 @@ class _$GasSponsorshipDecisionSerializer
     'circuit_open': 'circuitOpen',
     'provider_rejected': 'providerRejected',
     'provider_ambiguous': 'providerAmbiguous',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

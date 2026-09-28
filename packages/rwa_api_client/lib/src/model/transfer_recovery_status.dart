@@ -21,8 +21,6 @@ class TransferRecoveryStatus extends EnumClass {
   static const TransferRecoveryStatus ambiguous = _$ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const TransferRecoveryStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const TransferRecoveryStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<TransferRecoveryStatus> get serializer => _$transferRecoveryStatusSerializer;
 

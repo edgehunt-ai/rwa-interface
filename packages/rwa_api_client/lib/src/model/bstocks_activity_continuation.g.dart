@@ -9,19 +9,14 @@ part of 'bstocks_activity_continuation.dart';
 const BstocksActivityContinuationActionEnum
     _$bstocksActivityContinuationActionEnum_submitBstocksAction =
     const BstocksActivityContinuationActionEnum._('submitBstocksAction');
-const BstocksActivityContinuationActionEnum
-    _$bstocksActivityContinuationActionEnum_unknownDefaultOpenApi =
-    const BstocksActivityContinuationActionEnum._('unknownDefaultOpenApi');
 
 BstocksActivityContinuationActionEnum
     _$bstocksActivityContinuationActionEnumValueOf(String name) {
   switch (name) {
     case 'submitBstocksAction':
       return _$bstocksActivityContinuationActionEnum_submitBstocksAction;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksActivityContinuationActionEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksActivityContinuationActionEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<BstocksActivityContinuationActionEnum>
     _$bstocksActivityContinuationActionEnumValues = BuiltSet<
         BstocksActivityContinuationActionEnum>(const <BstocksActivityContinuationActionEnum>[
   _$bstocksActivityContinuationActionEnum_submitBstocksAction,
-  _$bstocksActivityContinuationActionEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksActivityContinuationStepEnum
     _$bstocksActivityContinuationStepEnum_walletSignature =
     const BstocksActivityContinuationStepEnum._('walletSignature');
-const BstocksActivityContinuationStepEnum
-    _$bstocksActivityContinuationStepEnum_unknownDefaultOpenApi =
-    const BstocksActivityContinuationStepEnum._('unknownDefaultOpenApi');
 
 BstocksActivityContinuationStepEnum
     _$bstocksActivityContinuationStepEnumValueOf(String name) {
   switch (name) {
     case 'walletSignature':
       return _$bstocksActivityContinuationStepEnum_walletSignature;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksActivityContinuationStepEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksActivityContinuationStepEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +44,6 @@ final BuiltSet<BstocksActivityContinuationStepEnum>
     _$bstocksActivityContinuationStepEnumValues = BuiltSet<
         BstocksActivityContinuationStepEnum>(const <BstocksActivityContinuationStepEnum>[
   _$bstocksActivityContinuationStepEnum_walletSignature,
-  _$bstocksActivityContinuationStepEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksActivityContinuationActionEnum>
@@ -69,11 +57,9 @@ class _$BstocksActivityContinuationActionEnumSerializer
     implements PrimitiveSerializer<BstocksActivityContinuationActionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'submitBstocksAction': 'submit_bstocks_action',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'submit_bstocks_action': 'submitBstocksAction',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,11 +87,9 @@ class _$BstocksActivityContinuationStepEnumSerializer
     implements PrimitiveSerializer<BstocksActivityContinuationStepEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'walletSignature': 'wallet_signature',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'wallet_signature': 'walletSignature',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

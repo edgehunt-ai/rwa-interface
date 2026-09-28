@@ -99,7 +99,7 @@ npm run api:update
 npm run api:update:branch -- feat/mainnet-cross-chain-acceptance
 ```
 
-生成流程会运行格式化、静态分析和测试。OpenAPI Generator 配置位于 `openapitools.json`，生成版本记录在
+生成流程会运行格式化、静态分析和测试。OpenAPI Generator 配置和生成后处理由 contract 子仓库统一维护，生成版本记录在
 `packages/rwa_api_client/.openapi-generator/VERSION`。
 
 ## 认证与平台支持

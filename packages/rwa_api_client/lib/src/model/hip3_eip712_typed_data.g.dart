@@ -9,19 +9,14 @@ part of 'hip3_eip712_typed_data.dart';
 const Hip3Eip712TypedDataPrimaryTypeEnum
     _$hip3Eip712TypedDataPrimaryTypeEnum_agent =
     const Hip3Eip712TypedDataPrimaryTypeEnum._('agent');
-const Hip3Eip712TypedDataPrimaryTypeEnum
-    _$hip3Eip712TypedDataPrimaryTypeEnum_unknownDefaultOpenApi =
-    const Hip3Eip712TypedDataPrimaryTypeEnum._('unknownDefaultOpenApi');
 
 Hip3Eip712TypedDataPrimaryTypeEnum _$hip3Eip712TypedDataPrimaryTypeEnumValueOf(
     String name) {
   switch (name) {
     case 'agent':
       return _$hip3Eip712TypedDataPrimaryTypeEnum_agent;
-    case 'unknownDefaultOpenApi':
-      return _$hip3Eip712TypedDataPrimaryTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3Eip712TypedDataPrimaryTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3Eip712TypedDataPrimaryTypeEnum>
     _$hip3Eip712TypedDataPrimaryTypeEnumValues = BuiltSet<
         Hip3Eip712TypedDataPrimaryTypeEnum>(const <Hip3Eip712TypedDataPrimaryTypeEnum>[
   _$hip3Eip712TypedDataPrimaryTypeEnum_agent,
-  _$hip3Eip712TypedDataPrimaryTypeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3Eip712TypedDataPrimaryTypeEnum>
@@ -40,11 +34,9 @@ class _$Hip3Eip712TypedDataPrimaryTypeEnumSerializer
     implements PrimitiveSerializer<Hip3Eip712TypedDataPrimaryTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'agent': 'Agent',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Agent': 'agent',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -9,19 +9,14 @@ part of 'hip3_market_order_minimums.dart';
 const Hip3MarketOrderMinimumsAmountAssetEnum
     _$hip3MarketOrderMinimumsAmountAssetEnum_USDC =
     const Hip3MarketOrderMinimumsAmountAssetEnum._('USDC');
-const Hip3MarketOrderMinimumsAmountAssetEnum
-    _$hip3MarketOrderMinimumsAmountAssetEnum_unknownDefaultOpenApi =
-    const Hip3MarketOrderMinimumsAmountAssetEnum._('unknownDefaultOpenApi');
 
 Hip3MarketOrderMinimumsAmountAssetEnum
     _$hip3MarketOrderMinimumsAmountAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$hip3MarketOrderMinimumsAmountAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$hip3MarketOrderMinimumsAmountAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3MarketOrderMinimumsAmountAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3MarketOrderMinimumsAmountAssetEnum>
     _$hip3MarketOrderMinimumsAmountAssetEnumValues = BuiltSet<
         Hip3MarketOrderMinimumsAmountAssetEnum>(const <Hip3MarketOrderMinimumsAmountAssetEnum>[
   _$hip3MarketOrderMinimumsAmountAssetEnum_USDC,
-  _$hip3MarketOrderMinimumsAmountAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3MarketOrderMinimumsAmountAssetEnum>
@@ -40,11 +34,9 @@ class _$Hip3MarketOrderMinimumsAmountAssetEnumSerializer
     implements PrimitiveSerializer<Hip3MarketOrderMinimumsAmountAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -204,8 +204,6 @@ class RealtimeCandleUpdateIntervalEnum extends EnumClass {
   static const RealtimeCandleUpdateIntervalEnum n4h = _$realtimeCandleUpdateIntervalEnum_n4h;
   @BuiltValueEnumConst(wireName: r'1d')
   static const RealtimeCandleUpdateIntervalEnum n1d = _$realtimeCandleUpdateIntervalEnum_n1d;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeCandleUpdateIntervalEnum unknownDefaultOpenApi = _$realtimeCandleUpdateIntervalEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeCandleUpdateIntervalEnum> get serializer => _$realtimeCandleUpdateIntervalEnumSerializer;
 

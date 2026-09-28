@@ -38,9 +38,6 @@ class OrderStatus extends EnumClass {
   /// 订单包含可恢复的 ambiguous 和需人工介入的 manual_review 状态；客户端通过订单 GET 与 SSE 跟踪后续变化。
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const OrderStatus manualReview = _$manualReview;
-  /// 订单包含可恢复的 ambiguous 和需人工介入的 manual_review 状态；客户端通过订单 GET 与 SSE 跟踪后续变化。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<OrderStatus> get serializer => _$orderStatusSerializer;
 

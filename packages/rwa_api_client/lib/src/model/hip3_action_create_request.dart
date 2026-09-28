@@ -199,8 +199,6 @@ class Hip3ActionCreateRequestOperationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'set_leverage')
   static const Hip3ActionCreateRequestOperationEnum setLeverage = _$hip3ActionCreateRequestOperationEnum_setLeverage;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ActionCreateRequestOperationEnum unknownDefaultOpenApi = _$hip3ActionCreateRequestOperationEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ActionCreateRequestOperationEnum> get serializer => _$hip3ActionCreateRequestOperationEnumSerializer;
 
@@ -218,8 +216,6 @@ class Hip3ActionCreateRequestScopeEnum extends EnumClass {
   static const Hip3ActionCreateRequestScopeEnum stopLoss = _$hip3ActionCreateRequestScopeEnum_stopLoss;
   @BuiltValueEnumConst(wireName: r'both')
   static const Hip3ActionCreateRequestScopeEnum both = _$hip3ActionCreateRequestScopeEnum_both;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ActionCreateRequestScopeEnum unknownDefaultOpenApi = _$hip3ActionCreateRequestScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ActionCreateRequestScopeEnum> get serializer => _$hip3ActionCreateRequestScopeEnumSerializer;
 

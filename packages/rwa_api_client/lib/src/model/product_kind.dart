@@ -17,9 +17,6 @@ class ProductKind extends EnumClass {
   /// 产品类型： * `bstock` —— BSC bStocks Token（现货） * `perp` —— HIP-3 Perpetual（永续合约） 
   @BuiltValueEnumConst(wireName: r'perp')
   static const ProductKind perp = _$perp;
-  /// 产品类型： * `bstock` —— BSC bStocks Token（现货） * `perp` —— HIP-3 Perpetual（永续合约） 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductKind unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<ProductKind> get serializer => _$productKindSerializer;
 

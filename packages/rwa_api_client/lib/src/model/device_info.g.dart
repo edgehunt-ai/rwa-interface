@@ -10,9 +10,6 @@ const DeviceInfoPushProviderEnum _$deviceInfoPushProviderEnum_apns =
     const DeviceInfoPushProviderEnum._('apns');
 const DeviceInfoPushProviderEnum _$deviceInfoPushProviderEnum_fcm =
     const DeviceInfoPushProviderEnum._('fcm');
-const DeviceInfoPushProviderEnum
-    _$deviceInfoPushProviderEnum_unknownDefaultOpenApi =
-    const DeviceInfoPushProviderEnum._('unknownDefaultOpenApi');
 
 DeviceInfoPushProviderEnum _$deviceInfoPushProviderEnumValueOf(String name) {
   switch (name) {
@@ -20,10 +17,8 @@ DeviceInfoPushProviderEnum _$deviceInfoPushProviderEnumValueOf(String name) {
       return _$deviceInfoPushProviderEnum_apns;
     case 'fcm':
       return _$deviceInfoPushProviderEnum_fcm;
-    case 'unknownDefaultOpenApi':
-      return _$deviceInfoPushProviderEnum_unknownDefaultOpenApi;
     default:
-      return _$deviceInfoPushProviderEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -31,7 +26,6 @@ final BuiltSet<DeviceInfoPushProviderEnum> _$deviceInfoPushProviderEnumValues =
     BuiltSet<DeviceInfoPushProviderEnum>(const <DeviceInfoPushProviderEnum>[
   _$deviceInfoPushProviderEnum_apns,
   _$deviceInfoPushProviderEnum_fcm,
-  _$deviceInfoPushProviderEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<DeviceInfoPushProviderEnum> _$deviceInfoPushProviderEnumSerializer =
@@ -42,12 +36,10 @@ class _$DeviceInfoPushProviderEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'apns': 'apns',
     'fcm': 'fcm',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'apns': 'apns',
     'fcm': 'fcm',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

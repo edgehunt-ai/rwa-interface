@@ -13,7 +13,6 @@ const Chain _$ethereum = const Chain._('ethereum');
 const Chain _$hyperliquid = const Chain._('hyperliquid');
 const Chain _$polygon = const Chain._('polygon');
 const Chain _$solana = const Chain._('solana');
-const Chain _$unknownDefaultOpenApi = const Chain._('unknownDefaultOpenApi');
 
 Chain _$valueOf(String name) {
   switch (name) {
@@ -31,10 +30,8 @@ Chain _$valueOf(String name) {
       return _$polygon;
     case 'solana':
       return _$solana;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -46,7 +43,6 @@ final BuiltSet<Chain> _$values = BuiltSet<Chain>(const <Chain>[
   _$hyperliquid,
   _$polygon,
   _$solana,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$ChainMeta {
@@ -58,7 +54,6 @@ class _$ChainMeta {
   Chain get hyperliquid => _$hyperliquid;
   Chain get polygon => _$polygon;
   Chain get solana => _$solana;
-  Chain get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   Chain valueOf(String name) => _$valueOf(name);
   BuiltSet<Chain> get values => _$values;
 }
@@ -79,7 +74,6 @@ class _$ChainSerializer implements PrimitiveSerializer<Chain> {
     'hyperliquid': 'Hyperliquid',
     'polygon': 'Polygon',
     'solana': 'Solana',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
@@ -89,7 +83,6 @@ class _$ChainSerializer implements PrimitiveSerializer<Chain> {
     'Hyperliquid': 'hyperliquid',
     'Polygon': 'polygon',
     'Solana': 'solana',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

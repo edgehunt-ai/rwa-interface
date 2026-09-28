@@ -8,63 +8,48 @@ part of 'order_book.dart';
 
 const OrderBookSource_Enum _$orderBookSourceEnum_propamm =
     const OrderBookSource_Enum._('propamm');
-const OrderBookSource_Enum _$orderBookSourceEnum_unknownDefaultOpenApi =
-    const OrderBookSource_Enum._('unknownDefaultOpenApi');
 
 OrderBookSource_Enum _$orderBookSourceEnumValueOf(String name) {
   switch (name) {
     case 'propamm':
       return _$orderBookSourceEnum_propamm;
-    case 'unknownDefaultOpenApi':
-      return _$orderBookSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$orderBookSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<OrderBookSource_Enum> _$orderBookSourceEnumValues =
     BuiltSet<OrderBookSource_Enum>(const <OrderBookSource_Enum>[
   _$orderBookSourceEnum_propamm,
-  _$orderBookSourceEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderBookBookTypeEnum _$orderBookBookTypeEnum_indicativeQuoteDepth =
     const OrderBookBookTypeEnum._('indicativeQuoteDepth');
-const OrderBookBookTypeEnum _$orderBookBookTypeEnum_unknownDefaultOpenApi =
-    const OrderBookBookTypeEnum._('unknownDefaultOpenApi');
 
 OrderBookBookTypeEnum _$orderBookBookTypeEnumValueOf(String name) {
   switch (name) {
     case 'indicativeQuoteDepth':
       return _$orderBookBookTypeEnum_indicativeQuoteDepth;
-    case 'unknownDefaultOpenApi':
-      return _$orderBookBookTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$orderBookBookTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<OrderBookBookTypeEnum> _$orderBookBookTypeEnumValues =
     BuiltSet<OrderBookBookTypeEnum>(const <OrderBookBookTypeEnum>[
   _$orderBookBookTypeEnum_indicativeQuoteDepth,
-  _$orderBookBookTypeEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderBookLevelSemanticsEnum
     _$orderBookLevelSemanticsEnum_independentSizeQuotes =
     const OrderBookLevelSemanticsEnum._('independentSizeQuotes');
-const OrderBookLevelSemanticsEnum
-    _$orderBookLevelSemanticsEnum_unknownDefaultOpenApi =
-    const OrderBookLevelSemanticsEnum._('unknownDefaultOpenApi');
 
 OrderBookLevelSemanticsEnum _$orderBookLevelSemanticsEnumValueOf(String name) {
   switch (name) {
     case 'independentSizeQuotes':
       return _$orderBookLevelSemanticsEnum_independentSizeQuotes;
-    case 'unknownDefaultOpenApi':
-      return _$orderBookLevelSemanticsEnum_unknownDefaultOpenApi;
     default:
-      return _$orderBookLevelSemanticsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -72,69 +57,53 @@ final BuiltSet<OrderBookLevelSemanticsEnum>
     _$orderBookLevelSemanticsEnumValues =
     BuiltSet<OrderBookLevelSemanticsEnum>(const <OrderBookLevelSemanticsEnum>[
   _$orderBookLevelSemanticsEnum_independentSizeQuotes,
-  _$orderBookLevelSemanticsEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderBookPriceKindEnum _$orderBookPriceKindEnum_averageExecutionPrice =
     const OrderBookPriceKindEnum._('averageExecutionPrice');
-const OrderBookPriceKindEnum _$orderBookPriceKindEnum_unknownDefaultOpenApi =
-    const OrderBookPriceKindEnum._('unknownDefaultOpenApi');
 
 OrderBookPriceKindEnum _$orderBookPriceKindEnumValueOf(String name) {
   switch (name) {
     case 'averageExecutionPrice':
       return _$orderBookPriceKindEnum_averageExecutionPrice;
-    case 'unknownDefaultOpenApi':
-      return _$orderBookPriceKindEnum_unknownDefaultOpenApi;
     default:
-      return _$orderBookPriceKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<OrderBookPriceKindEnum> _$orderBookPriceKindEnumValues =
     BuiltSet<OrderBookPriceKindEnum>(const <OrderBookPriceKindEnum>[
   _$orderBookPriceKindEnum_averageExecutionPrice,
-  _$orderBookPriceKindEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderBookSortOrderEnum _$orderBookSortOrderEnum_increasingInputAmount =
     const OrderBookSortOrderEnum._('increasingInputAmount');
-const OrderBookSortOrderEnum _$orderBookSortOrderEnum_unknownDefaultOpenApi =
-    const OrderBookSortOrderEnum._('unknownDefaultOpenApi');
 
 OrderBookSortOrderEnum _$orderBookSortOrderEnumValueOf(String name) {
   switch (name) {
     case 'increasingInputAmount':
       return _$orderBookSortOrderEnum_increasingInputAmount;
-    case 'unknownDefaultOpenApi':
-      return _$orderBookSortOrderEnum_unknownDefaultOpenApi;
     default:
-      return _$orderBookSortOrderEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<OrderBookSortOrderEnum> _$orderBookSortOrderEnumValues =
     BuiltSet<OrderBookSortOrderEnum>(const <OrderBookSortOrderEnum>[
   _$orderBookSortOrderEnum_increasingInputAmount,
-  _$orderBookSortOrderEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderBookLiquidityAggregationEnum
     _$orderBookLiquidityAggregationEnum_none =
     const OrderBookLiquidityAggregationEnum._('none');
-const OrderBookLiquidityAggregationEnum
-    _$orderBookLiquidityAggregationEnum_unknownDefaultOpenApi =
-    const OrderBookLiquidityAggregationEnum._('unknownDefaultOpenApi');
 
 OrderBookLiquidityAggregationEnum _$orderBookLiquidityAggregationEnumValueOf(
     String name) {
   switch (name) {
     case 'none':
       return _$orderBookLiquidityAggregationEnum_none;
-    case 'unknownDefaultOpenApi':
-      return _$orderBookLiquidityAggregationEnum_unknownDefaultOpenApi;
     default:
-      return _$orderBookLiquidityAggregationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -142,7 +111,6 @@ final BuiltSet<OrderBookLiquidityAggregationEnum>
     _$orderBookLiquidityAggregationEnumValues = BuiltSet<
         OrderBookLiquidityAggregationEnum>(const <OrderBookLiquidityAggregationEnum>[
   _$orderBookLiquidityAggregationEnum_none,
-  _$orderBookLiquidityAggregationEnum_unknownDefaultOpenApi,
 ]);
 
 const OrderBookChainIdEnum _$orderBookChainIdEnum_number56 =
@@ -151,8 +119,6 @@ const OrderBookChainIdEnum _$orderBookChainIdEnum_number97 =
     const OrderBookChainIdEnum._('number97');
 const OrderBookChainIdEnum _$orderBookChainIdEnum_number31337 =
     const OrderBookChainIdEnum._('number31337');
-const OrderBookChainIdEnum _$orderBookChainIdEnum_unknownDefaultOpenApi =
-    const OrderBookChainIdEnum._('unknownDefaultOpenApi');
 
 OrderBookChainIdEnum _$orderBookChainIdEnumValueOf(String name) {
   switch (name) {
@@ -162,10 +128,8 @@ OrderBookChainIdEnum _$orderBookChainIdEnumValueOf(String name) {
       return _$orderBookChainIdEnum_number97;
     case 'number31337':
       return _$orderBookChainIdEnum_number31337;
-    case 'unknownDefaultOpenApi':
-      return _$orderBookChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$orderBookChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -174,7 +138,6 @@ final BuiltSet<OrderBookChainIdEnum> _$orderBookChainIdEnumValues =
   _$orderBookChainIdEnum_number56,
   _$orderBookChainIdEnum_number97,
   _$orderBookChainIdEnum_number31337,
-  _$orderBookChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<OrderBookSource_Enum> _$orderBookSourceEnumSerializer =
@@ -198,11 +161,9 @@ class _$OrderBookSource_EnumSerializer
     implements PrimitiveSerializer<OrderBookSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'propamm': 'propamm',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'propamm': 'propamm',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -226,11 +187,9 @@ class _$OrderBookBookTypeEnumSerializer
     implements PrimitiveSerializer<OrderBookBookTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'indicativeQuoteDepth': 'indicative_quote_depth',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'indicative_quote_depth': 'indicativeQuoteDepth',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -254,11 +213,9 @@ class _$OrderBookLevelSemanticsEnumSerializer
     implements PrimitiveSerializer<OrderBookLevelSemanticsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'independentSizeQuotes': 'independent_size_quotes',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'independent_size_quotes': 'independentSizeQuotes',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -283,11 +240,9 @@ class _$OrderBookPriceKindEnumSerializer
     implements PrimitiveSerializer<OrderBookPriceKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'averageExecutionPrice': 'average_execution_price',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'average_execution_price': 'averageExecutionPrice',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -311,11 +266,9 @@ class _$OrderBookSortOrderEnumSerializer
     implements PrimitiveSerializer<OrderBookSortOrderEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'increasingInputAmount': 'increasing_input_amount',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'increasing_input_amount': 'increasingInputAmount',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -339,11 +292,9 @@ class _$OrderBookLiquidityAggregationEnumSerializer
     implements PrimitiveSerializer<OrderBookLiquidityAggregationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'none': 'none',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none': 'none',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -371,13 +322,11 @@ class _$OrderBookChainIdEnumSerializer
     'number56': 56,
     'number97': 97,
     'number31337': 31337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
     97: 'number97',
     31337: 'number31337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

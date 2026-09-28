@@ -44,9 +44,6 @@ class FundingSourceAssetId extends EnumClass {
   /// Exact canonical identity of one supported source asset. The last three entries exist only on testnet deployments and never appear in a mainnet catalog or quote. 
   @BuiltValueEnumConst(wireName: r'eip155:97/erc20:0xd7beebb53879df47b5cca32b3680e70c13f093a0')
   static const FundingSourceAssetId eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0 = _$eip155Colon97SlashErc20Colon0xd7beebb53879df47b5cca32b3680e70c13f093a0;
-  /// Exact canonical identity of one supported source asset. The last three entries exist only on testnet deployments and never appear in a mainnet catalog or quote. 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSourceAssetId unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingSourceAssetId> get serializer => _$fundingSourceAssetIdSerializer;
 

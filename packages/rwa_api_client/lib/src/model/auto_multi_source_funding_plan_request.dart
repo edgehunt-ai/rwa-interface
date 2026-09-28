@@ -149,8 +149,6 @@ class AutoMultiSourceFundingPlanRequestModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_multi_source')
   static const AutoMultiSourceFundingPlanRequestModeEnum autoMultiSource = _$autoMultiSourceFundingPlanRequestModeEnum_autoMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const AutoMultiSourceFundingPlanRequestModeEnum unknownDefaultOpenApi = _$autoMultiSourceFundingPlanRequestModeEnum_unknownDefaultOpenApi;
 
   static Serializer<AutoMultiSourceFundingPlanRequestModeEnum> get serializer => _$autoMultiSourceFundingPlanRequestModeEnumSerializer;
 

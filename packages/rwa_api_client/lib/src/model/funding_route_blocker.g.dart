@@ -20,8 +20,6 @@ const FundingRouteBlocker _$routePaused =
     const FundingRouteBlocker._('routePaused');
 const FundingRouteBlocker _$capabilityStale =
     const FundingRouteBlocker._('capabilityStale');
-const FundingRouteBlocker _$unknownDefaultOpenApi =
-    const FundingRouteBlocker._('unknownDefaultOpenApi');
 
 FundingRouteBlocker _$valueOf(String name) {
   switch (name) {
@@ -39,10 +37,8 @@ FundingRouteBlocker _$valueOf(String name) {
       return _$routePaused;
     case 'capabilityStale':
       return _$capabilityStale;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +51,6 @@ final BuiltSet<FundingRouteBlocker> _$values =
   _$liquidityInsufficient,
   _$routePaused,
   _$capabilityStale,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingRouteBlockerMeta {
@@ -67,7 +62,6 @@ class _$FundingRouteBlockerMeta {
   FundingRouteBlocker get liquidityInsufficient => _$liquidityInsufficient;
   FundingRouteBlocker get routePaused => _$routePaused;
   FundingRouteBlocker get capabilityStale => _$capabilityStale;
-  FundingRouteBlocker get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingRouteBlocker valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingRouteBlocker> get values => _$values;
 }
@@ -91,7 +85,6 @@ class _$FundingRouteBlockerSerializer
     'liquidityInsufficient': 'liquidity_insufficient',
     'routePaused': 'route_paused',
     'capabilityStale': 'capability_stale',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'provider_unavailable': 'providerUnavailable',
@@ -101,7 +94,6 @@ class _$FundingRouteBlockerSerializer
     'liquidity_insufficient': 'liquidityInsufficient',
     'route_paused': 'routePaused',
     'capability_stale': 'capabilityStale',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -8,87 +8,67 @@ part of 'deposit_rail.dart';
 
 const DepositRailChainEnum _$depositRailChainEnum_arbitrum =
     const DepositRailChainEnum._('arbitrum');
-const DepositRailChainEnum _$depositRailChainEnum_unknownDefaultOpenApi =
-    const DepositRailChainEnum._('unknownDefaultOpenApi');
 
 DepositRailChainEnum _$depositRailChainEnumValueOf(String name) {
   switch (name) {
     case 'arbitrum':
       return _$depositRailChainEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$depositRailChainEnum_unknownDefaultOpenApi;
     default:
-      return _$depositRailChainEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositRailChainEnum> _$depositRailChainEnumValues =
     BuiltSet<DepositRailChainEnum>(const <DepositRailChainEnum>[
   _$depositRailChainEnum_arbitrum,
-  _$depositRailChainEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositRailChainIdEnum _$depositRailChainIdEnum_number42161 =
     const DepositRailChainIdEnum._('number42161');
-const DepositRailChainIdEnum _$depositRailChainIdEnum_unknownDefaultOpenApi =
-    const DepositRailChainIdEnum._('unknownDefaultOpenApi');
 
 DepositRailChainIdEnum _$depositRailChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number42161':
       return _$depositRailChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$depositRailChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$depositRailChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositRailChainIdEnum> _$depositRailChainIdEnumValues =
     BuiltSet<DepositRailChainIdEnum>(const <DepositRailChainIdEnum>[
   _$depositRailChainIdEnum_number42161,
-  _$depositRailChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositRailTokenEnum _$depositRailTokenEnum_USDC =
     const DepositRailTokenEnum._('USDC');
-const DepositRailTokenEnum _$depositRailTokenEnum_unknownDefaultOpenApi =
-    const DepositRailTokenEnum._('unknownDefaultOpenApi');
 
 DepositRailTokenEnum _$depositRailTokenEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$depositRailTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$depositRailTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$depositRailTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositRailTokenEnum> _$depositRailTokenEnumValues =
     BuiltSet<DepositRailTokenEnum>(const <DepositRailTokenEnum>[
   _$depositRailTokenEnum_USDC,
-  _$depositRailTokenEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositRailTokenContractEnum
     _$depositRailTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831 =
     const DepositRailTokenContractEnum._(
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831');
-const DepositRailTokenContractEnum
-    _$depositRailTokenContractEnum_unknownDefaultOpenApi =
-    const DepositRailTokenContractEnum._('unknownDefaultOpenApi');
 
 DepositRailTokenContractEnum _$depositRailTokenContractEnumValueOf(
     String name) {
   switch (name) {
     case 'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
       return _$depositRailTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-    case 'unknownDefaultOpenApi':
-      return _$depositRailTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$depositRailTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -96,24 +76,18 @@ final BuiltSet<DepositRailTokenContractEnum>
     _$depositRailTokenContractEnumValues =
     BuiltSet<DepositRailTokenContractEnum>(const <DepositRailTokenContractEnum>[
   _$depositRailTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831,
-  _$depositRailTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositRailTokenDecimalsEnum _$depositRailTokenDecimalsEnum_number6 =
     const DepositRailTokenDecimalsEnum._('number6');
-const DepositRailTokenDecimalsEnum
-    _$depositRailTokenDecimalsEnum_unknownDefaultOpenApi =
-    const DepositRailTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 DepositRailTokenDecimalsEnum _$depositRailTokenDecimalsEnumValueOf(
     String name) {
   switch (name) {
     case 'number6':
       return _$depositRailTokenDecimalsEnum_number6;
-    case 'unknownDefaultOpenApi':
-      return _$depositRailTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$depositRailTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -121,25 +95,19 @@ final BuiltSet<DepositRailTokenDecimalsEnum>
     _$depositRailTokenDecimalsEnumValues =
     BuiltSet<DepositRailTokenDecimalsEnum>(const <DepositRailTokenDecimalsEnum>[
   _$depositRailTokenDecimalsEnum_number6,
-  _$depositRailTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 const DepositRailConfirmationsRequiredEnum
     _$depositRailConfirmationsRequiredEnum_number20 =
     const DepositRailConfirmationsRequiredEnum._('number20');
-const DepositRailConfirmationsRequiredEnum
-    _$depositRailConfirmationsRequiredEnum_unknownDefaultOpenApi =
-    const DepositRailConfirmationsRequiredEnum._('unknownDefaultOpenApi');
 
 DepositRailConfirmationsRequiredEnum
     _$depositRailConfirmationsRequiredEnumValueOf(String name) {
   switch (name) {
     case 'number20':
       return _$depositRailConfirmationsRequiredEnum_number20;
-    case 'unknownDefaultOpenApi':
-      return _$depositRailConfirmationsRequiredEnum_unknownDefaultOpenApi;
     default:
-      return _$depositRailConfirmationsRequiredEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -147,7 +115,6 @@ final BuiltSet<DepositRailConfirmationsRequiredEnum>
     _$depositRailConfirmationsRequiredEnumValues = BuiltSet<
         DepositRailConfirmationsRequiredEnum>(const <DepositRailConfirmationsRequiredEnum>[
   _$depositRailConfirmationsRequiredEnum_number20,
-  _$depositRailConfirmationsRequiredEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<DepositRailChainEnum> _$depositRailChainEnumSerializer =
@@ -170,11 +137,9 @@ class _$DepositRailChainEnumSerializer
     implements PrimitiveSerializer<DepositRailChainEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -198,11 +163,9 @@ class _$DepositRailChainIdEnumSerializer
     implements PrimitiveSerializer<DepositRailChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -226,11 +189,9 @@ class _$DepositRailTokenEnumSerializer
     implements PrimitiveSerializer<DepositRailTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -255,12 +216,10 @@ class _$DepositRailTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -285,11 +244,9 @@ class _$DepositRailTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<DepositRailTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number6': 6,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     6: 'number6',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -314,11 +271,9 @@ class _$DepositRailConfirmationsRequiredEnumSerializer
     implements PrimitiveSerializer<DepositRailConfirmationsRequiredEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number20': 20,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     20: 'number20',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

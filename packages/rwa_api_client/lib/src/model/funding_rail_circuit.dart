@@ -81,8 +81,6 @@ class FundingRailCircuitScopeEnum extends EnumClass {
   static const FundingRailCircuitScopeEnum hip3 = _$fundingRailCircuitScopeEnum_hip3;
   @BuiltValueEnumConst(wireName: r'bstocks')
   static const FundingRailCircuitScopeEnum bstocks = _$fundingRailCircuitScopeEnum_bstocks;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRailCircuitScopeEnum unknownDefaultOpenApi = _$fundingRailCircuitScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingRailCircuitScopeEnum> get serializer => _$fundingRailCircuitScopeEnumSerializer;
 
@@ -96,8 +94,6 @@ class FundingRailCircuitStateEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'open')
   static const FundingRailCircuitStateEnum open = _$fundingRailCircuitStateEnum_open;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRailCircuitStateEnum unknownDefaultOpenApi = _$fundingRailCircuitStateEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingRailCircuitStateEnum> get serializer => _$fundingRailCircuitStateEnumSerializer;
 

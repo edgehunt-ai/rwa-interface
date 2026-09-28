@@ -8,18 +8,13 @@ part of 'erc20_approval_action.dart';
 
 const Erc20ApprovalActionKindEnum _$erc20ApprovalActionKindEnum_erc20Approval =
     const Erc20ApprovalActionKindEnum._('erc20Approval');
-const Erc20ApprovalActionKindEnum
-    _$erc20ApprovalActionKindEnum_unknownDefaultOpenApi =
-    const Erc20ApprovalActionKindEnum._('unknownDefaultOpenApi');
 
 Erc20ApprovalActionKindEnum _$erc20ApprovalActionKindEnumValueOf(String name) {
   switch (name) {
     case 'erc20Approval':
       return _$erc20ApprovalActionKindEnum_erc20Approval;
-    case 'unknownDefaultOpenApi':
-      return _$erc20ApprovalActionKindEnum_unknownDefaultOpenApi;
     default:
-      return _$erc20ApprovalActionKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -27,7 +22,6 @@ final BuiltSet<Erc20ApprovalActionKindEnum>
     _$erc20ApprovalActionKindEnumValues =
     BuiltSet<Erc20ApprovalActionKindEnum>(const <Erc20ApprovalActionKindEnum>[
   _$erc20ApprovalActionKindEnum_erc20Approval,
-  _$erc20ApprovalActionKindEnum_unknownDefaultOpenApi,
 ]);
 
 const Erc20ApprovalActionChainIdEnum _$erc20ApprovalActionChainIdEnum_number1 =
@@ -40,9 +34,6 @@ const Erc20ApprovalActionChainIdEnum
 const Erc20ApprovalActionChainIdEnum
     _$erc20ApprovalActionChainIdEnum_number42161 =
     const Erc20ApprovalActionChainIdEnum._('number42161');
-const Erc20ApprovalActionChainIdEnum
-    _$erc20ApprovalActionChainIdEnum_unknownDefaultOpenApi =
-    const Erc20ApprovalActionChainIdEnum._('unknownDefaultOpenApi');
 
 Erc20ApprovalActionChainIdEnum _$erc20ApprovalActionChainIdEnumValueOf(
     String name) {
@@ -55,10 +46,8 @@ Erc20ApprovalActionChainIdEnum _$erc20ApprovalActionChainIdEnumValueOf(
       return _$erc20ApprovalActionChainIdEnum_number8453;
     case 'number42161':
       return _$erc20ApprovalActionChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$erc20ApprovalActionChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$erc20ApprovalActionChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -69,24 +58,18 @@ final BuiltSet<Erc20ApprovalActionChainIdEnum>
   _$erc20ApprovalActionChainIdEnum_number56,
   _$erc20ApprovalActionChainIdEnum_number8453,
   _$erc20ApprovalActionChainIdEnum_number42161,
-  _$erc20ApprovalActionChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const Erc20ApprovalActionValueEnum _$erc20ApprovalActionValueEnum_n0x0 =
     const Erc20ApprovalActionValueEnum._('n0x0');
-const Erc20ApprovalActionValueEnum
-    _$erc20ApprovalActionValueEnum_unknownDefaultOpenApi =
-    const Erc20ApprovalActionValueEnum._('unknownDefaultOpenApi');
 
 Erc20ApprovalActionValueEnum _$erc20ApprovalActionValueEnumValueOf(
     String name) {
   switch (name) {
     case 'n0x0':
       return _$erc20ApprovalActionValueEnum_n0x0;
-    case 'unknownDefaultOpenApi':
-      return _$erc20ApprovalActionValueEnum_unknownDefaultOpenApi;
     default:
-      return _$erc20ApprovalActionValueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -94,7 +77,6 @@ final BuiltSet<Erc20ApprovalActionValueEnum>
     _$erc20ApprovalActionValueEnumValues =
     BuiltSet<Erc20ApprovalActionValueEnum>(const <Erc20ApprovalActionValueEnum>[
   _$erc20ApprovalActionValueEnum_n0x0,
-  _$erc20ApprovalActionValueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Erc20ApprovalActionKindEnum>
@@ -111,11 +93,9 @@ class _$Erc20ApprovalActionKindEnumSerializer
     implements PrimitiveSerializer<Erc20ApprovalActionKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'erc20Approval': 'erc20_approval',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'erc20_approval': 'erc20Approval',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -143,14 +123,12 @@ class _$Erc20ApprovalActionChainIdEnumSerializer
     'number56': 56,
     'number8453': 8453,
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1: 'number1',
     56: 'number56',
     8453: 'number8453',
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -176,11 +154,9 @@ class _$Erc20ApprovalActionValueEnumSerializer
     implements PrimitiveSerializer<Erc20ApprovalActionValueEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x0': '0x0',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x0': 'n0x0',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

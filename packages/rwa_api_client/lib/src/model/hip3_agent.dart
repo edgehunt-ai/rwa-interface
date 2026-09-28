@@ -241,8 +241,6 @@ class Hip3AgentEnvironmentEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'mainnet')
   static const Hip3AgentEnvironmentEnum mainnet = _$hip3AgentEnvironmentEnum_mainnet;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3AgentEnvironmentEnum unknownDefaultOpenApi = _$hip3AgentEnvironmentEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3AgentEnvironmentEnum> get serializer => _$hip3AgentEnvironmentEnumSerializer;
 

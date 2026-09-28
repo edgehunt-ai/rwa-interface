@@ -15,8 +15,6 @@ const BstocksActionStatus _$confirmed =
 const BstocksActionStatus _$failed = const BstocksActionStatus._('failed');
 const BstocksActionStatus _$manualReview =
     const BstocksActionStatus._('manualReview');
-const BstocksActionStatus _$unknownDefaultOpenApi =
-    const BstocksActionStatus._('unknownDefaultOpenApi');
 
 BstocksActionStatus _$valueOf(String name) {
   switch (name) {
@@ -30,10 +28,8 @@ BstocksActionStatus _$valueOf(String name) {
       return _$failed;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -44,7 +40,6 @@ final BuiltSet<BstocksActionStatus> _$values =
   _$confirmed,
   _$failed,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$BstocksActionStatusMeta {
@@ -54,7 +49,6 @@ class _$BstocksActionStatusMeta {
   BstocksActionStatus get confirmed => _$confirmed;
   BstocksActionStatus get failed => _$failed;
   BstocksActionStatus get manualReview => _$manualReview;
-  BstocksActionStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   BstocksActionStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<BstocksActionStatus> get values => _$values;
 }
@@ -76,7 +70,6 @@ class _$BstocksActionStatusSerializer
     'confirmed': 'confirmed',
     'failed': 'failed',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_signature': 'awaitingSignature',
@@ -84,7 +77,6 @@ class _$BstocksActionStatusSerializer
     'confirmed': 'confirmed',
     'failed': 'failed',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

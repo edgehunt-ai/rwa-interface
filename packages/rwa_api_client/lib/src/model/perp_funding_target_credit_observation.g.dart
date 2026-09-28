@@ -9,20 +9,14 @@ part of 'perp_funding_target_credit_observation.dart';
 const PerpFundingTargetCreditObservationSource_Enum
     _$perpFundingTargetCreditObservationSourceEnum_hyperliquidInfo =
     const PerpFundingTargetCreditObservationSource_Enum._('hyperliquidInfo');
-const PerpFundingTargetCreditObservationSource_Enum
-    _$perpFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetCreditObservationSource_Enum._(
-        'unknownDefaultOpenApi');
 
 PerpFundingTargetCreditObservationSource_Enum
     _$perpFundingTargetCreditObservationSourceEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquidInfo':
       return _$perpFundingTargetCreditObservationSourceEnum_hyperliquidInfo;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<PerpFundingTargetCreditObservationSource_Enum>
     _$perpFundingTargetCreditObservationSourceEnumValues = BuiltSet<
         PerpFundingTargetCreditObservationSource_Enum>(const <PerpFundingTargetCreditObservationSource_Enum>[
   _$perpFundingTargetCreditObservationSourceEnum_hyperliquidInfo,
-  _$perpFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpFundingTargetCreditObservationSource_Enum>
@@ -42,11 +35,9 @@ class _$PerpFundingTargetCreditObservationSource_EnumSerializer
         PrimitiveSerializer<PerpFundingTargetCreditObservationSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidInfo': 'hyperliquid_info',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid_info': 'hyperliquidInfo',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

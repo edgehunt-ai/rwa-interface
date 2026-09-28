@@ -283,8 +283,6 @@ class BstocksReferenceQuotationStatusEnum extends EnumClass {
   static const BstocksReferenceQuotationStatusEnum fresh = _$bstocksReferenceQuotationStatusEnum_fresh;
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const BstocksReferenceQuotationStatusEnum unavailable = _$bstocksReferenceQuotationStatusEnum_unavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksReferenceQuotationStatusEnum unknownDefaultOpenApi = _$bstocksReferenceQuotationStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksReferenceQuotationStatusEnum> get serializer => _$bstocksReferenceQuotationStatusEnumSerializer;
 
@@ -298,8 +296,6 @@ class BstocksReferenceQuotationPriceKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'cex_top_of_book')
   static const BstocksReferenceQuotationPriceKindEnum cexTopOfBook = _$bstocksReferenceQuotationPriceKindEnum_cexTopOfBook;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksReferenceQuotationPriceKindEnum unknownDefaultOpenApi = _$bstocksReferenceQuotationPriceKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksReferenceQuotationPriceKindEnum> get serializer => _$bstocksReferenceQuotationPriceKindEnumSerializer;
 
@@ -313,8 +309,6 @@ class BstocksReferenceQuotationSource_Enum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'binance')
   static const BstocksReferenceQuotationSource_Enum binance = _$bstocksReferenceQuotationSourceEnum_binance;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksReferenceQuotationSource_Enum unknownDefaultOpenApi = _$bstocksReferenceQuotationSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksReferenceQuotationSource_Enum> get serializer => _$bstocksReferenceQuotationSourceEnumSerializer;
 
@@ -332,8 +326,6 @@ class BstocksReferenceQuotationChainIdEnum extends EnumClass {
   static const BstocksReferenceQuotationChainIdEnum number97 = _$bstocksReferenceQuotationChainIdEnum_number97;
   @BuiltValueEnumConst(wireNumber: 31337)
   static const BstocksReferenceQuotationChainIdEnum number31337 = _$bstocksReferenceQuotationChainIdEnum_number31337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstocksReferenceQuotationChainIdEnum unknownDefaultOpenApi = _$bstocksReferenceQuotationChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksReferenceQuotationChainIdEnum> get serializer => _$bstocksReferenceQuotationChainIdEnumSerializer;
 

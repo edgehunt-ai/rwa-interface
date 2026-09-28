@@ -9,20 +9,14 @@ part of 'bstock_funding_target_credit_observation.dart';
 const BstockFundingTargetCreditObservationSource_Enum
     _$bstockFundingTargetCreditObservationSourceEnum_bscRpc =
     const BstockFundingTargetCreditObservationSource_Enum._('bscRpc');
-const BstockFundingTargetCreditObservationSource_Enum
-    _$bstockFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi =
-    const BstockFundingTargetCreditObservationSource_Enum._(
-        'unknownDefaultOpenApi');
 
 BstockFundingTargetCreditObservationSource_Enum
     _$bstockFundingTargetCreditObservationSourceEnumValueOf(String name) {
   switch (name) {
     case 'bscRpc':
       return _$bstockFundingTargetCreditObservationSourceEnum_bscRpc;
-    case 'unknownDefaultOpenApi':
-      return _$bstockFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<BstockFundingTargetCreditObservationSource_Enum>
     _$bstockFundingTargetCreditObservationSourceEnumValues = BuiltSet<
         BstockFundingTargetCreditObservationSource_Enum>(const <BstockFundingTargetCreditObservationSource_Enum>[
   _$bstockFundingTargetCreditObservationSourceEnum_bscRpc,
-  _$bstockFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockFundingTargetCreditObservationSource_Enum>
@@ -42,11 +35,9 @@ class _$BstockFundingTargetCreditObservationSource_EnumSerializer
         PrimitiveSerializer<BstockFundingTargetCreditObservationSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bscRpc': 'bsc_rpc',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bsc_rpc': 'bscRpc',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

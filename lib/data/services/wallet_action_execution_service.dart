@@ -8,6 +8,13 @@ abstract interface class WalletActionExecutionService {
     required String idempotencyKey,
   });
 
+  Future<api.WalletActionExecution> createTransferExecution(
+    String transferId,
+    String actionId,
+    api.WalletActionExecutionCreateRequest request, {
+    required String idempotencyKey,
+  });
+
   Future<api.WalletActionExecution> createSelfCustodialWithdrawalExecution(
     String withdrawalId,
     api.WalletActionExecutionCreateRequest request, {

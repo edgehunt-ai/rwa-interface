@@ -9,19 +9,14 @@ part of 'order_preview_common.dart';
 const OrderPreviewCommonFundingModeEnum
     _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom =
     const OrderPreviewCommonFundingModeEnum._('unreservedTransferFrom');
-const OrderPreviewCommonFundingModeEnum
-    _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi =
-    const OrderPreviewCommonFundingModeEnum._('unknownDefaultOpenApi');
 
 OrderPreviewCommonFundingModeEnum _$orderPreviewCommonFundingModeEnumValueOf(
     String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<OrderPreviewCommonFundingModeEnum>
     _$orderPreviewCommonFundingModeEnumValues = BuiltSet<
         OrderPreviewCommonFundingModeEnum>(const <OrderPreviewCommonFundingModeEnum>[
   _$orderPreviewCommonFundingModeEnum_unreservedTransferFrom,
-  _$orderPreviewCommonFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<OrderPreviewCommonFundingModeEnum>
@@ -40,11 +34,9 @@ class _$OrderPreviewCommonFundingModeEnumSerializer
     implements PrimitiveSerializer<OrderPreviewCommonFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

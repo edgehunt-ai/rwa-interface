@@ -10,9 +10,6 @@ const HyperliquidSignatureVEnum _$hyperliquidSignatureVEnum_number27 =
     const HyperliquidSignatureVEnum._('number27');
 const HyperliquidSignatureVEnum _$hyperliquidSignatureVEnum_number28 =
     const HyperliquidSignatureVEnum._('number28');
-const HyperliquidSignatureVEnum
-    _$hyperliquidSignatureVEnum_unknownDefaultOpenApi =
-    const HyperliquidSignatureVEnum._('unknownDefaultOpenApi');
 
 HyperliquidSignatureVEnum _$hyperliquidSignatureVEnumValueOf(String name) {
   switch (name) {
@@ -20,10 +17,8 @@ HyperliquidSignatureVEnum _$hyperliquidSignatureVEnumValueOf(String name) {
       return _$hyperliquidSignatureVEnum_number27;
     case 'number28':
       return _$hyperliquidSignatureVEnum_number28;
-    case 'unknownDefaultOpenApi':
-      return _$hyperliquidSignatureVEnum_unknownDefaultOpenApi;
     default:
-      return _$hyperliquidSignatureVEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -31,7 +26,6 @@ final BuiltSet<HyperliquidSignatureVEnum> _$hyperliquidSignatureVEnumValues =
     BuiltSet<HyperliquidSignatureVEnum>(const <HyperliquidSignatureVEnum>[
   _$hyperliquidSignatureVEnum_number27,
   _$hyperliquidSignatureVEnum_number28,
-  _$hyperliquidSignatureVEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<HyperliquidSignatureVEnum> _$hyperliquidSignatureVEnumSerializer =
@@ -42,12 +36,10 @@ class _$HyperliquidSignatureVEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'number27': 27,
     'number28': 28,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     27: 'number27',
     28: 'number28',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

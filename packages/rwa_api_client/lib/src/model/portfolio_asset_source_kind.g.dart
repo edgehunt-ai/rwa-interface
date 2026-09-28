@@ -10,8 +10,6 @@ const PortfolioAssetSourceKind _$evmRpc =
     const PortfolioAssetSourceKind._('evmRpc');
 const PortfolioAssetSourceKind _$hyperliquidInfo =
     const PortfolioAssetSourceKind._('hyperliquidInfo');
-const PortfolioAssetSourceKind _$unknownDefaultOpenApi =
-    const PortfolioAssetSourceKind._('unknownDefaultOpenApi');
 
 PortfolioAssetSourceKind _$valueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ PortfolioAssetSourceKind _$valueOf(String name) {
       return _$evmRpc;
     case 'hyperliquidInfo':
       return _$hyperliquidInfo;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,14 +26,12 @@ final BuiltSet<PortfolioAssetSourceKind> _$values =
     BuiltSet<PortfolioAssetSourceKind>(const <PortfolioAssetSourceKind>[
   _$evmRpc,
   _$hyperliquidInfo,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioAssetSourceKindMeta {
   const _$PortfolioAssetSourceKindMeta();
   PortfolioAssetSourceKind get evmRpc => _$evmRpc;
   PortfolioAssetSourceKind get hyperliquidInfo => _$hyperliquidInfo;
-  PortfolioAssetSourceKind get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioAssetSourceKind valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioAssetSourceKind> get values => _$values;
 }
@@ -56,12 +50,10 @@ class _$PortfolioAssetSourceKindSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'evmRpc': 'evm_rpc',
     'hyperliquidInfo': 'hyperliquid_info',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'evm_rpc': 'evmRpc',
     'hyperliquid_info': 'hyperliquidInfo',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

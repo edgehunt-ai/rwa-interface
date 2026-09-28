@@ -20,8 +20,6 @@ const DepositRailBlocker _$walletUnavailable =
     const DepositRailBlocker._('walletUnavailable');
 const DepositRailBlocker _$activityPipelineUnavailable =
     const DepositRailBlocker._('activityPipelineUnavailable');
-const DepositRailBlocker _$unknownDefaultOpenApi =
-    const DepositRailBlocker._('unknownDefaultOpenApi');
 
 DepositRailBlocker _$valueOf(String name) {
   switch (name) {
@@ -39,10 +37,8 @@ DepositRailBlocker _$valueOf(String name) {
       return _$walletUnavailable;
     case 'activityPipelineUnavailable':
       return _$activityPipelineUnavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +51,6 @@ final BuiltSet<DepositRailBlocker> _$values =
   _$tokenMetadataMismatch,
   _$walletUnavailable,
   _$activityPipelineUnavailable,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$DepositRailBlockerMeta {
@@ -68,7 +63,6 @@ class _$DepositRailBlockerMeta {
   DepositRailBlocker get walletUnavailable => _$walletUnavailable;
   DepositRailBlocker get activityPipelineUnavailable =>
       _$activityPipelineUnavailable;
-  DepositRailBlocker get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   DepositRailBlocker valueOf(String name) => _$valueOf(name);
   BuiltSet<DepositRailBlocker> get values => _$values;
 }
@@ -92,7 +86,6 @@ class _$DepositRailBlockerSerializer
     'tokenMetadataMismatch': 'token_metadata_mismatch',
     'walletUnavailable': 'wallet_unavailable',
     'activityPipelineUnavailable': 'activity_pipeline_unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'observer_disabled': 'observerDisabled',
@@ -102,7 +95,6 @@ class _$DepositRailBlockerSerializer
     'token_metadata_mismatch': 'tokenMetadataMismatch',
     'wallet_unavailable': 'walletUnavailable',
     'activity_pipeline_unavailable': 'activityPipelineUnavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

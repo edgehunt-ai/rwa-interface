@@ -11,8 +11,6 @@ const PortfolioNoticeSeverity _$warning =
     const PortfolioNoticeSeverity._('warning');
 const PortfolioNoticeSeverity _$error =
     const PortfolioNoticeSeverity._('error');
-const PortfolioNoticeSeverity _$unknownDefaultOpenApi =
-    const PortfolioNoticeSeverity._('unknownDefaultOpenApi');
 
 PortfolioNoticeSeverity _$valueOf(String name) {
   switch (name) {
@@ -22,10 +20,8 @@ PortfolioNoticeSeverity _$valueOf(String name) {
       return _$warning;
     case 'error':
       return _$error;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -34,7 +30,6 @@ final BuiltSet<PortfolioNoticeSeverity> _$values =
   _$info,
   _$warning,
   _$error,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioNoticeSeverityMeta {
@@ -42,7 +37,6 @@ class _$PortfolioNoticeSeverityMeta {
   PortfolioNoticeSeverity get info => _$info;
   PortfolioNoticeSeverity get warning => _$warning;
   PortfolioNoticeSeverity get error => _$error;
-  PortfolioNoticeSeverity get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioNoticeSeverity valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioNoticeSeverity> get values => _$values;
 }
@@ -62,13 +56,11 @@ class _$PortfolioNoticeSeveritySerializer
     'info': 'info',
     'warning': 'warning',
     'error': 'error',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'info': 'info',
     'warning': 'warning',
     'error': 'error',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

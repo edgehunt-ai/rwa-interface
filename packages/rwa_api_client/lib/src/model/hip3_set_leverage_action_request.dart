@@ -161,8 +161,6 @@ class Hip3SetLeverageActionRequestOperationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'set_leverage')
   static const Hip3SetLeverageActionRequestOperationEnum setLeverage = _$hip3SetLeverageActionRequestOperationEnum_setLeverage;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3SetLeverageActionRequestOperationEnum unknownDefaultOpenApi = _$hip3SetLeverageActionRequestOperationEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3SetLeverageActionRequestOperationEnum> get serializer => _$hip3SetLeverageActionRequestOperationEnumSerializer;
 

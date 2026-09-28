@@ -12,9 +12,6 @@ const BstocksPreviewRouteLegVenueEnum
 const BstocksPreviewRouteLegVenueEnum
     _$bstocksPreviewRouteLegVenueEnum_pancakeV3 =
     const BstocksPreviewRouteLegVenueEnum._('pancakeV3');
-const BstocksPreviewRouteLegVenueEnum
-    _$bstocksPreviewRouteLegVenueEnum_unknownDefaultOpenApi =
-    const BstocksPreviewRouteLegVenueEnum._('unknownDefaultOpenApi');
 
 BstocksPreviewRouteLegVenueEnum _$bstocksPreviewRouteLegVenueEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ BstocksPreviewRouteLegVenueEnum _$bstocksPreviewRouteLegVenueEnumValueOf(
       return _$bstocksPreviewRouteLegVenueEnum_propamm;
     case 'pancakeV3':
       return _$bstocksPreviewRouteLegVenueEnum_pancakeV3;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPreviewRouteLegVenueEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPreviewRouteLegVenueEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<BstocksPreviewRouteLegVenueEnum>
         BstocksPreviewRouteLegVenueEnum>(const <BstocksPreviewRouteLegVenueEnum>[
   _$bstocksPreviewRouteLegVenueEnum_propamm,
   _$bstocksPreviewRouteLegVenueEnum_pancakeV3,
-  _$bstocksPreviewRouteLegVenueEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksPreviewRouteLegVenueEnum>
@@ -47,12 +41,10 @@ class _$BstocksPreviewRouteLegVenueEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'propamm': 'propamm',
     'pancakeV3': 'pancake_v3',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'propamm': 'propamm',
     'pancake_v3': 'pancakeV3',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

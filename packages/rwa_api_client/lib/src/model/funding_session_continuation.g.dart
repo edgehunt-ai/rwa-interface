@@ -9,19 +9,14 @@ part of 'funding_session_continuation.dart';
 const FundingSessionContinuationActionEnum
     _$fundingSessionContinuationActionEnum_resumeBstocksOrder =
     const FundingSessionContinuationActionEnum._('resumeBstocksOrder');
-const FundingSessionContinuationActionEnum
-    _$fundingSessionContinuationActionEnum_unknownDefaultOpenApi =
-    const FundingSessionContinuationActionEnum._('unknownDefaultOpenApi');
 
 FundingSessionContinuationActionEnum
     _$fundingSessionContinuationActionEnumValueOf(String name) {
   switch (name) {
     case 'resumeBstocksOrder':
       return _$fundingSessionContinuationActionEnum_resumeBstocksOrder;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSessionContinuationActionEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingSessionContinuationActionEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<FundingSessionContinuationActionEnum>
     _$fundingSessionContinuationActionEnumValues = BuiltSet<
         FundingSessionContinuationActionEnum>(const <FundingSessionContinuationActionEnum>[
   _$fundingSessionContinuationActionEnum_resumeBstocksOrder,
-  _$fundingSessionContinuationActionEnum_unknownDefaultOpenApi,
 ]);
 
 const FundingSessionContinuationStatusEnum
     _$fundingSessionContinuationStatusEnum_readyToRequote =
     const FundingSessionContinuationStatusEnum._('readyToRequote');
-const FundingSessionContinuationStatusEnum
-    _$fundingSessionContinuationStatusEnum_unknownDefaultOpenApi =
-    const FundingSessionContinuationStatusEnum._('unknownDefaultOpenApi');
 
 FundingSessionContinuationStatusEnum
     _$fundingSessionContinuationStatusEnumValueOf(String name) {
   switch (name) {
     case 'readyToRequote':
       return _$fundingSessionContinuationStatusEnum_readyToRequote;
-    case 'unknownDefaultOpenApi':
-      return _$fundingSessionContinuationStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingSessionContinuationStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +44,6 @@ final BuiltSet<FundingSessionContinuationStatusEnum>
     _$fundingSessionContinuationStatusEnumValues = BuiltSet<
         FundingSessionContinuationStatusEnum>(const <FundingSessionContinuationStatusEnum>[
   _$fundingSessionContinuationStatusEnum_readyToRequote,
-  _$fundingSessionContinuationStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingSessionContinuationActionEnum>
@@ -69,11 +57,9 @@ class _$FundingSessionContinuationActionEnumSerializer
     implements PrimitiveSerializer<FundingSessionContinuationActionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'resumeBstocksOrder': 'resume_bstocks_order',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'resume_bstocks_order': 'resumeBstocksOrder',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,11 +87,9 @@ class _$FundingSessionContinuationStatusEnumSerializer
     implements PrimitiveSerializer<FundingSessionContinuationStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'readyToRequote': 'ready_to_requote',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'ready_to_requote': 'readyToRequote',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

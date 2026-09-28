@@ -15,9 +15,6 @@ const WalletAuthorizationPurposeEnum
     const WalletAuthorizationPurposeEnum._('withdrawal');
 const WalletAuthorizationPurposeEnum _$walletAuthorizationPurposeEnum_claim =
     const WalletAuthorizationPurposeEnum._('claim');
-const WalletAuthorizationPurposeEnum
-    _$walletAuthorizationPurposeEnum_unknownDefaultOpenApi =
-    const WalletAuthorizationPurposeEnum._('unknownDefaultOpenApi');
 
 WalletAuthorizationPurposeEnum _$walletAuthorizationPurposeEnumValueOf(
     String name) {
@@ -30,10 +27,8 @@ WalletAuthorizationPurposeEnum _$walletAuthorizationPurposeEnumValueOf(
       return _$walletAuthorizationPurposeEnum_withdrawal;
     case 'claim':
       return _$walletAuthorizationPurposeEnum_claim;
-    case 'unknownDefaultOpenApi':
-      return _$walletAuthorizationPurposeEnum_unknownDefaultOpenApi;
     default:
-      return _$walletAuthorizationPurposeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -44,7 +39,6 @@ final BuiltSet<WalletAuthorizationPurposeEnum>
   _$walletAuthorizationPurposeEnum_transfer,
   _$walletAuthorizationPurposeEnum_withdrawal,
   _$walletAuthorizationPurposeEnum_claim,
-  _$walletAuthorizationPurposeEnum_unknownDefaultOpenApi,
 ]);
 
 const WalletAuthorizationStatusEnum _$walletAuthorizationStatusEnum_pending =
@@ -57,9 +51,6 @@ const WalletAuthorizationStatusEnum _$walletAuthorizationStatusEnum_expired =
     const WalletAuthorizationStatusEnum._('expired');
 const WalletAuthorizationStatusEnum _$walletAuthorizationStatusEnum_failed =
     const WalletAuthorizationStatusEnum._('failed');
-const WalletAuthorizationStatusEnum
-    _$walletAuthorizationStatusEnum_unknownDefaultOpenApi =
-    const WalletAuthorizationStatusEnum._('unknownDefaultOpenApi');
 
 WalletAuthorizationStatusEnum _$walletAuthorizationStatusEnumValueOf(
     String name) {
@@ -74,10 +65,8 @@ WalletAuthorizationStatusEnum _$walletAuthorizationStatusEnumValueOf(
       return _$walletAuthorizationStatusEnum_expired;
     case 'failed':
       return _$walletAuthorizationStatusEnum_failed;
-    case 'unknownDefaultOpenApi':
-      return _$walletAuthorizationStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$walletAuthorizationStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -89,7 +78,6 @@ final BuiltSet<WalletAuthorizationStatusEnum>
   _$walletAuthorizationStatusEnum_consumed,
   _$walletAuthorizationStatusEnum_expired,
   _$walletAuthorizationStatusEnum_failed,
-  _$walletAuthorizationStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<WalletAuthorizationPurposeEnum>
@@ -106,14 +94,12 @@ class _$WalletAuthorizationPurposeEnumSerializer
     'transfer': 'transfer',
     'withdrawal': 'withdrawal',
     'claim': 'claim',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'order': 'order',
     'transfer': 'transfer',
     'withdrawal': 'withdrawal',
     'claim': 'claim',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -143,7 +129,6 @@ class _$WalletAuthorizationStatusEnumSerializer
     'consumed': 'consumed',
     'expired': 'expired',
     'failed': 'failed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'pending': 'pending',
@@ -151,7 +136,6 @@ class _$WalletAuthorizationStatusEnumSerializer
     'consumed': 'consumed',
     'expired': 'expired',
     'failed': 'failed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

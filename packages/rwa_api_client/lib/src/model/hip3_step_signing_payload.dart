@@ -224,8 +224,6 @@ class Hip3StepSigningPayloadSigningMethodEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'eth_signTypedData_v4')
   static const Hip3StepSigningPayloadSigningMethodEnum ethSignTypedDataV4 = _$hip3StepSigningPayloadSigningMethodEnum_ethSignTypedDataV4;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3StepSigningPayloadSigningMethodEnum unknownDefaultOpenApi = _$hip3StepSigningPayloadSigningMethodEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3StepSigningPayloadSigningMethodEnum> get serializer => _$hip3StepSigningPayloadSigningMethodEnumSerializer;
 
@@ -239,8 +237,6 @@ class Hip3StepSigningPayloadSignatureFormatEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'r_s_v')
   static const Hip3StepSigningPayloadSignatureFormatEnum rSV = _$hip3StepSigningPayloadSignatureFormatEnum_rSV;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3StepSigningPayloadSignatureFormatEnum unknownDefaultOpenApi = _$hip3StepSigningPayloadSignatureFormatEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3StepSigningPayloadSignatureFormatEnum> get serializer => _$hip3StepSigningPayloadSignatureFormatEnumSerializer;
 

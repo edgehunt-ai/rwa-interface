@@ -64,7 +64,12 @@ lib/src/model/bstock_order_assets.dart
 lib/src/model/bstock_order_preview.dart
 lib/src/model/bstock_order_preview_request.dart
 lib/src/model/bstock_order_wallet_action_state.dart
+lib/src/model/bstock_testnet_funding_plan.dart
 lib/src/model/bstock_testnet_funding_rail.dart
+lib/src/model/bstock_testnet_funding_target_asset.dart
+lib/src/model/bstock_testnet_funding_target_balance_snapshot.dart
+lib/src/model/bstock_testnet_funding_target_credit_observation.dart
+lib/src/model/bstock_testnet_funding_transfer_target.dart
 lib/src/model/bstock_testnet_order_preview.dart
 lib/src/model/bstocks_action_status.dart
 lib/src/model/bstocks_activity_continuation.dart
@@ -131,7 +136,6 @@ lib/src/model/device_register_request.dart
 lib/src/model/disclosures.dart
 lib/src/model/disclosures_always_on.dart
 lib/src/model/disclosures_sessions_inner.dart
-lib/src/model/eligible_funding_position_eligibility.dart
 lib/src/model/erc20_approval_action.dart
 lib/src/model/frozen_evm_transaction.dart
 lib/src/model/funding_asset_identity.dart
@@ -274,7 +278,6 @@ lib/src/model/holding_group.dart
 lib/src/model/holding_stock.dart
 lib/src/model/hyperliquid_signature.dart
 lib/src/model/hyperliquid_usdc_collateral.dart
-lib/src/model/ineligible_funding_position_eligibility.dart
 lib/src/model/key_value.dart
 lib/src/model/legacy_bstock_funding_plan.dart
 lib/src/model/legacy_bstock_funding_rail.dart
@@ -296,6 +299,7 @@ lib/src/model/market_product_group.dart
 lib/src/model/market_session_info.dart
 lib/src/model/market_stats.dart
 lib/src/model/multi_source_bstock_funding_plan.dart
+lib/src/model/multi_source_bstock_testnet_funding_plan.dart
 lib/src/model/multi_source_funding_leg.dart
 lib/src/model/multi_source_funding_leg_status.dart
 lib/src/model/multi_source_funding_plan_details.dart
@@ -456,6 +460,7 @@ lib/src/model/user.dart
 lib/src/model/user_language.dart
 lib/src/model/user_paid_wallet_action_execution_submission_request.dart
 lib/src/model/user_selected_multi_source_bstock_funding_plan.dart
+lib/src/model/user_selected_multi_source_bstock_testnet_funding_plan.dart
 lib/src/model/user_selected_multi_source_perp_funding_plan.dart
 lib/src/model/user_settings.dart
 lib/src/model/user_settings_update.dart

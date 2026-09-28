@@ -12,9 +12,6 @@ const Hip3WithdrawalHyperliquidChainEnum
 const Hip3WithdrawalHyperliquidChainEnum
     _$hip3WithdrawalHyperliquidChainEnum_mainnet =
     const Hip3WithdrawalHyperliquidChainEnum._('mainnet');
-const Hip3WithdrawalHyperliquidChainEnum
-    _$hip3WithdrawalHyperliquidChainEnum_unknownDefaultOpenApi =
-    const Hip3WithdrawalHyperliquidChainEnum._('unknownDefaultOpenApi');
 
 Hip3WithdrawalHyperliquidChainEnum _$hip3WithdrawalHyperliquidChainEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ Hip3WithdrawalHyperliquidChainEnum _$hip3WithdrawalHyperliquidChainEnumValueOf(
       return _$hip3WithdrawalHyperliquidChainEnum_testnet;
     case 'mainnet':
       return _$hip3WithdrawalHyperliquidChainEnum_mainnet;
-    case 'unknownDefaultOpenApi':
-      return _$hip3WithdrawalHyperliquidChainEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3WithdrawalHyperliquidChainEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<Hip3WithdrawalHyperliquidChainEnum>
         Hip3WithdrawalHyperliquidChainEnum>(const <Hip3WithdrawalHyperliquidChainEnum>[
   _$hip3WithdrawalHyperliquidChainEnum_testnet,
   _$hip3WithdrawalHyperliquidChainEnum_mainnet,
-  _$hip3WithdrawalHyperliquidChainEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3WithdrawalHyperliquidChainEnum>
@@ -47,12 +41,10 @@ class _$Hip3WithdrawalHyperliquidChainEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'testnet': 'Testnet',
     'mainnet': 'Mainnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Testnet': 'testnet',
     'Mainnet': 'mainnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

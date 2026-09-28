@@ -30,13 +30,11 @@ import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
-import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_position_settings_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
-import 'package:rwa_interface/ui/features/orders/views/hip3_unified_account_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
 import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
@@ -422,49 +420,6 @@ class _OrderPanelEntrySheetState extends ConsumerState<_OrderPanelEntrySheet> {
     if (!await requireAuthentication(context, ref) || !mounted) {
       if (mounted) Navigator.of(context).pop();
       return;
-    }
-
-    if (widget.productKind == MarketProductKind.perp) {
-      try {
-        final status = await ref.read(hip3AccountAbstractionProvider.future);
-        if (!mounted) return;
-        if (!status.isUnifiedAccount) {
-          if (!status.switchAvailable) {
-            AppToast.showFailure(
-              context,
-              'Unified Account is unavailable for this account.',
-            );
-            Navigator.of(context).pop();
-            return;
-          }
-          final converted = await showModalBottomSheet<bool>(
-            context: context,
-            isScrollControlled: true,
-            isDismissible: false,
-            enableDrag: false,
-            backgroundColor: Colors.transparent,
-            barrierColor: const Color(0xB3000000),
-            builder: (_) => Hip3UnifiedAccountSheet(
-              onConfirm: () => ref
-                  .read(hip3AccountAbstractionCommandProvider)
-                  .convertToUnifiedAccount(),
-            ),
-          );
-          if (!mounted) return;
-          if (converted != true) {
-            Navigator.of(context).pop();
-            return;
-          }
-        }
-      } on Object {
-        if (!mounted) return;
-        AppToast.showFailure(
-          context,
-          'Unable to verify Unified Account. Try again.',
-        );
-        Navigator.of(context).pop();
-        return;
-      }
     }
 
     if (mounted) setState(() => _ready = true);

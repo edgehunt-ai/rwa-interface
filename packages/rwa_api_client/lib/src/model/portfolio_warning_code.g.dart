@@ -22,8 +22,6 @@ const PortfolioWarningCode _$internalLedgerStale =
     const PortfolioWarningCode._('internalLedgerStale');
 const PortfolioWarningCode _$internalLedgerUnreconciled =
     const PortfolioWarningCode._('internalLedgerUnreconciled');
-const PortfolioWarningCode _$unknownDefaultOpenApi =
-    const PortfolioWarningCode._('unknownDefaultOpenApi');
 
 PortfolioWarningCode _$valueOf(String name) {
   switch (name) {
@@ -43,10 +41,8 @@ PortfolioWarningCode _$valueOf(String name) {
       return _$internalLedgerStale;
     case 'internalLedgerUnreconciled':
       return _$internalLedgerUnreconciled;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -60,7 +56,6 @@ final BuiltSet<PortfolioWarningCode> _$values =
   _$walletSetChanged,
   _$internalLedgerStale,
   _$internalLedgerUnreconciled,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioWarningCodeMeta {
@@ -74,7 +69,6 @@ class _$PortfolioWarningCodeMeta {
   PortfolioWarningCode get internalLedgerStale => _$internalLedgerStale;
   PortfolioWarningCode get internalLedgerUnreconciled =>
       _$internalLedgerUnreconciled;
-  PortfolioWarningCode get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioWarningCode valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioWarningCode> get values => _$values;
 }
@@ -99,7 +93,6 @@ class _$PortfolioWarningCodeSerializer
     'walletSetChanged': 'wallet_set_changed',
     'internalLedgerStale': 'internal_ledger_stale',
     'internalLedgerUnreconciled': 'internal_ledger_unreconciled',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'evm_rpc_unavailable': 'evmRpcUnavailable',
@@ -110,7 +103,6 @@ class _$PortfolioWarningCodeSerializer
     'wallet_set_changed': 'walletSetChanged',
     'internal_ledger_stale': 'internalLedgerStale',
     'internal_ledger_unreconciled': 'internalLedgerUnreconciled',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

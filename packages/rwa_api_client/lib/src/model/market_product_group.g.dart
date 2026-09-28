@@ -11,8 +11,6 @@ const MarketProductGroup _$gainers = const MarketProductGroup._('gainers');
 const MarketProductGroup _$losers = const MarketProductGroup._('losers');
 const MarketProductGroup _$volume = const MarketProductGroup._('volume');
 const MarketProductGroup _$favorites = const MarketProductGroup._('favorites');
-const MarketProductGroup _$unknownDefaultOpenApi =
-    const MarketProductGroup._('unknownDefaultOpenApi');
 
 MarketProductGroup _$valueOf(String name) {
   switch (name) {
@@ -26,10 +24,8 @@ MarketProductGroup _$valueOf(String name) {
       return _$volume;
     case 'favorites':
       return _$favorites;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -40,7 +36,6 @@ final BuiltSet<MarketProductGroup> _$values =
   _$losers,
   _$volume,
   _$favorites,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$MarketProductGroupMeta {
@@ -50,7 +45,6 @@ class _$MarketProductGroupMeta {
   MarketProductGroup get losers => _$losers;
   MarketProductGroup get volume => _$volume;
   MarketProductGroup get favorites => _$favorites;
-  MarketProductGroup get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   MarketProductGroup valueOf(String name) => _$valueOf(name);
   BuiltSet<MarketProductGroup> get values => _$values;
 }
@@ -72,7 +66,6 @@ class _$MarketProductGroupSerializer
     'losers': 'losers',
     'volume': 'volume',
     'favorites': 'favorites',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hot': 'hot',
@@ -80,7 +73,6 @@ class _$MarketProductGroupSerializer
     'losers': 'losers',
     'volume': 'volume',
     'favorites': 'favorites',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -154,8 +154,6 @@ class RealtimeWithdrawalEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'withdrawal')
   static const RealtimeWithdrawalEventEventEnum withdrawal = _$realtimeWithdrawalEventEventEnum_withdrawal;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeWithdrawalEventEventEnum unknownDefaultOpenApi = _$realtimeWithdrawalEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeWithdrawalEventEventEnum> get serializer => _$realtimeWithdrawalEventEventEnumSerializer;
 

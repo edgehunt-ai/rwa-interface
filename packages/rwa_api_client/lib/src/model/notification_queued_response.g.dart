@@ -9,19 +9,14 @@ part of 'notification_queued_response.dart';
 const NotificationQueuedResponseStatusEnum
     _$notificationQueuedResponseStatusEnum_queued =
     const NotificationQueuedResponseStatusEnum._('queued');
-const NotificationQueuedResponseStatusEnum
-    _$notificationQueuedResponseStatusEnum_unknownDefaultOpenApi =
-    const NotificationQueuedResponseStatusEnum._('unknownDefaultOpenApi');
 
 NotificationQueuedResponseStatusEnum
     _$notificationQueuedResponseStatusEnumValueOf(String name) {
   switch (name) {
     case 'queued':
       return _$notificationQueuedResponseStatusEnum_queued;
-    case 'unknownDefaultOpenApi':
-      return _$notificationQueuedResponseStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$notificationQueuedResponseStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<NotificationQueuedResponseStatusEnum>
     _$notificationQueuedResponseStatusEnumValues = BuiltSet<
         NotificationQueuedResponseStatusEnum>(const <NotificationQueuedResponseStatusEnum>[
   _$notificationQueuedResponseStatusEnum_queued,
-  _$notificationQueuedResponseStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<NotificationQueuedResponseStatusEnum>
@@ -40,11 +34,9 @@ class _$NotificationQueuedResponseStatusEnumSerializer
     implements PrimitiveSerializer<NotificationQueuedResponseStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'queued': 'queued',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'queued': 'queued',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -12,9 +12,6 @@ const Hip3FundingPaymentPageQuerySourceEnum
 const Hip3FundingPaymentPageQuerySourceEnum
     _$hip3FundingPaymentPageQuerySourceEnum_archive =
     const Hip3FundingPaymentPageQuerySourceEnum._('archive');
-const Hip3FundingPaymentPageQuerySourceEnum
-    _$hip3FundingPaymentPageQuerySourceEnum_unknownDefaultOpenApi =
-    const Hip3FundingPaymentPageQuerySourceEnum._('unknownDefaultOpenApi');
 
 Hip3FundingPaymentPageQuerySourceEnum
     _$hip3FundingPaymentPageQuerySourceEnumValueOf(String name) {
@@ -23,10 +20,8 @@ Hip3FundingPaymentPageQuerySourceEnum
       return _$hip3FundingPaymentPageQuerySourceEnum_live;
     case 'archive':
       return _$hip3FundingPaymentPageQuerySourceEnum_archive;
-    case 'unknownDefaultOpenApi':
-      return _$hip3FundingPaymentPageQuerySourceEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3FundingPaymentPageQuerySourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<Hip3FundingPaymentPageQuerySourceEnum>
         Hip3FundingPaymentPageQuerySourceEnum>(const <Hip3FundingPaymentPageQuerySourceEnum>[
   _$hip3FundingPaymentPageQuerySourceEnum_live,
   _$hip3FundingPaymentPageQuerySourceEnum_archive,
-  _$hip3FundingPaymentPageQuerySourceEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3FundingPaymentPageWarningsEnum
@@ -49,9 +43,6 @@ const Hip3FundingPaymentPageWarningsEnum
 const Hip3FundingPaymentPageWarningsEnum
     _$hip3FundingPaymentPageWarningsEnum_historyArchiveGaps =
     const Hip3FundingPaymentPageWarningsEnum._('historyArchiveGaps');
-const Hip3FundingPaymentPageWarningsEnum
-    _$hip3FundingPaymentPageWarningsEnum_unknownDefaultOpenApi =
-    const Hip3FundingPaymentPageWarningsEnum._('unknownDefaultOpenApi');
 
 Hip3FundingPaymentPageWarningsEnum _$hip3FundingPaymentPageWarningsEnumValueOf(
     String name) {
@@ -62,10 +53,8 @@ Hip3FundingPaymentPageWarningsEnum _$hip3FundingPaymentPageWarningsEnumValueOf(
       return _$hip3FundingPaymentPageWarningsEnum_fundingSettlementAssetUnavailable;
     case 'historyArchiveGaps':
       return _$hip3FundingPaymentPageWarningsEnum_historyArchiveGaps;
-    case 'unknownDefaultOpenApi':
-      return _$hip3FundingPaymentPageWarningsEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3FundingPaymentPageWarningsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -75,7 +64,6 @@ final BuiltSet<Hip3FundingPaymentPageWarningsEnum>
   _$hip3FundingPaymentPageWarningsEnum_providerHistoryRetentionNotGuaranteed,
   _$hip3FundingPaymentPageWarningsEnum_fundingSettlementAssetUnavailable,
   _$hip3FundingPaymentPageWarningsEnum_historyArchiveGaps,
-  _$hip3FundingPaymentPageWarningsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3FundingPaymentPageQuerySourceEnum>
@@ -90,12 +78,10 @@ class _$Hip3FundingPaymentPageQuerySourceEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'live': 'live',
     'archive': 'archive',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'live': 'live',
     'archive': 'archive',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -126,14 +112,12 @@ class _$Hip3FundingPaymentPageWarningsEnumSerializer
         'provider_history_retention_not_guaranteed',
     'fundingSettlementAssetUnavailable': 'funding_settlement_asset_unavailable',
     'historyArchiveGaps': 'history_archive_gaps',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'provider_history_retention_not_guaranteed':
         'providerHistoryRetentionNotGuaranteed',
     'funding_settlement_asset_unavailable': 'fundingSettlementAssetUnavailable',
     'history_archive_gaps': 'historyArchiveGaps',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -154,8 +154,6 @@ class RealtimeTransferEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'transfer')
   static const RealtimeTransferEventEventEnum transfer = _$realtimeTransferEventEventEnum_transfer;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeTransferEventEventEnum unknownDefaultOpenApi = _$realtimeTransferEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeTransferEventEventEnum> get serializer => _$realtimeTransferEventEventEnumSerializer;
 

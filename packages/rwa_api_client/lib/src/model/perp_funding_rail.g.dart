@@ -8,65 +8,49 @@ part of 'perp_funding_rail.dart';
 
 const PerpFundingRailRailEnum _$perpFundingRailRailEnum_perp =
     const PerpFundingRailRailEnum._('perp');
-const PerpFundingRailRailEnum _$perpFundingRailRailEnum_unknownDefaultOpenApi =
-    const PerpFundingRailRailEnum._('unknownDefaultOpenApi');
 
 PerpFundingRailRailEnum _$perpFundingRailRailEnumValueOf(String name) {
   switch (name) {
     case 'perp':
       return _$perpFundingRailRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingRailRailEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingRailRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<PerpFundingRailRailEnum> _$perpFundingRailRailEnumValues =
     BuiltSet<PerpFundingRailRailEnum>(const <PerpFundingRailRailEnum>[
   _$perpFundingRailRailEnum_perp,
-  _$perpFundingRailRailEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingRailNetworkEnum _$perpFundingRailNetworkEnum_hyperliquid =
     const PerpFundingRailNetworkEnum._('hyperliquid');
-const PerpFundingRailNetworkEnum
-    _$perpFundingRailNetworkEnum_unknownDefaultOpenApi =
-    const PerpFundingRailNetworkEnum._('unknownDefaultOpenApi');
 
 PerpFundingRailNetworkEnum _$perpFundingRailNetworkEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquid':
       return _$perpFundingRailNetworkEnum_hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingRailNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingRailNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<PerpFundingRailNetworkEnum> _$perpFundingRailNetworkEnumValues =
     BuiltSet<PerpFundingRailNetworkEnum>(const <PerpFundingRailNetworkEnum>[
   _$perpFundingRailNetworkEnum_hyperliquid,
-  _$perpFundingRailNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingRailSettlementAssetEnum
     _$perpFundingRailSettlementAssetEnum_USDC =
     const PerpFundingRailSettlementAssetEnum._('USDC');
-const PerpFundingRailSettlementAssetEnum
-    _$perpFundingRailSettlementAssetEnum_unknownDefaultOpenApi =
-    const PerpFundingRailSettlementAssetEnum._('unknownDefaultOpenApi');
 
 PerpFundingRailSettlementAssetEnum _$perpFundingRailSettlementAssetEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$perpFundingRailSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -74,49 +58,37 @@ final BuiltSet<PerpFundingRailSettlementAssetEnum>
     _$perpFundingRailSettlementAssetEnumValues = BuiltSet<
         PerpFundingRailSettlementAssetEnum>(const <PerpFundingRailSettlementAssetEnum>[
   _$perpFundingRailSettlementAssetEnum_USDC,
-  _$perpFundingRailSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingRailChainIdEnum _$perpFundingRailChainIdEnum_number1337 =
     const PerpFundingRailChainIdEnum._('number1337');
-const PerpFundingRailChainIdEnum
-    _$perpFundingRailChainIdEnum_unknownDefaultOpenApi =
-    const PerpFundingRailChainIdEnum._('unknownDefaultOpenApi');
 
 PerpFundingRailChainIdEnum _$perpFundingRailChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number1337':
       return _$perpFundingRailChainIdEnum_number1337;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingRailChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingRailChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<PerpFundingRailChainIdEnum> _$perpFundingRailChainIdEnumValues =
     BuiltSet<PerpFundingRailChainIdEnum>(const <PerpFundingRailChainIdEnum>[
   _$perpFundingRailChainIdEnum_number1337,
-  _$perpFundingRailChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingRailSettlementAssetIdEnum
     _$perpFundingRailSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS =
     const PerpFundingRailSettlementAssetIdEnum._(
         'hyperliquidColon1337SlashPerpsColonUSDCPERPS');
-const PerpFundingRailSettlementAssetIdEnum
-    _$perpFundingRailSettlementAssetIdEnum_unknownDefaultOpenApi =
-    const PerpFundingRailSettlementAssetIdEnum._('unknownDefaultOpenApi');
 
 PerpFundingRailSettlementAssetIdEnum
     _$perpFundingRailSettlementAssetIdEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
       return _$perpFundingRailSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingRailSettlementAssetIdEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingRailSettlementAssetIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -124,26 +96,20 @@ final BuiltSet<PerpFundingRailSettlementAssetIdEnum>
     _$perpFundingRailSettlementAssetIdEnumValues = BuiltSet<
         PerpFundingRailSettlementAssetIdEnum>(const <PerpFundingRailSettlementAssetIdEnum>[
   _$perpFundingRailSettlementAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS,
-  _$perpFundingRailSettlementAssetIdEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingRailTokenContractEnum
     _$perpFundingRailTokenContractEnum_n0x2100000000000000000000000000000000000000 =
     const PerpFundingRailTokenContractEnum._(
         'n0x2100000000000000000000000000000000000000');
-const PerpFundingRailTokenContractEnum
-    _$perpFundingRailTokenContractEnum_unknownDefaultOpenApi =
-    const PerpFundingRailTokenContractEnum._('unknownDefaultOpenApi');
 
 PerpFundingRailTokenContractEnum _$perpFundingRailTokenContractEnumValueOf(
     String name) {
   switch (name) {
     case 'n0x2100000000000000000000000000000000000000':
       return _$perpFundingRailTokenContractEnum_n0x2100000000000000000000000000000000000000;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingRailTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingRailTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -151,25 +117,19 @@ final BuiltSet<PerpFundingRailTokenContractEnum>
     _$perpFundingRailTokenContractEnumValues = BuiltSet<
         PerpFundingRailTokenContractEnum>(const <PerpFundingRailTokenContractEnum>[
   _$perpFundingRailTokenContractEnum_n0x2100000000000000000000000000000000000000,
-  _$perpFundingRailTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingRailTokenDecimalsEnum
     _$perpFundingRailTokenDecimalsEnum_number8 =
     const PerpFundingRailTokenDecimalsEnum._('number8');
-const PerpFundingRailTokenDecimalsEnum
-    _$perpFundingRailTokenDecimalsEnum_unknownDefaultOpenApi =
-    const PerpFundingRailTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 PerpFundingRailTokenDecimalsEnum _$perpFundingRailTokenDecimalsEnumValueOf(
     String name) {
   switch (name) {
     case 'number8':
       return _$perpFundingRailTokenDecimalsEnum_number8;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingRailTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingRailTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -177,7 +137,6 @@ final BuiltSet<PerpFundingRailTokenDecimalsEnum>
     _$perpFundingRailTokenDecimalsEnumValues = BuiltSet<
         PerpFundingRailTokenDecimalsEnum>(const <PerpFundingRailTokenDecimalsEnum>[
   _$perpFundingRailTokenDecimalsEnum_number8,
-  _$perpFundingRailTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpFundingRailRailEnum> _$perpFundingRailRailEnumSerializer =
@@ -203,11 +162,9 @@ class _$PerpFundingRailRailEnumSerializer
     implements PrimitiveSerializer<PerpFundingRailRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -232,11 +189,9 @@ class _$PerpFundingRailNetworkEnumSerializer
     implements PrimitiveSerializer<PerpFundingRailNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquid': 'Hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -261,11 +216,9 @@ class _$PerpFundingRailSettlementAssetEnumSerializer
     implements PrimitiveSerializer<PerpFundingRailSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -291,11 +244,9 @@ class _$PerpFundingRailChainIdEnumSerializer
     implements PrimitiveSerializer<PerpFundingRailChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number1337': 1337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1337: 'number1337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -321,12 +272,10 @@ class _$PerpFundingRailSettlementAssetIdEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
         'hyperliquid:1337/perps:USDC-PERPS',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid:1337/perps:USDC-PERPS':
         'hyperliquidColon1337SlashPerpsColonUSDCPERPS',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -355,12 +304,10 @@ class _$PerpFundingRailTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x2100000000000000000000000000000000000000':
         '0x2100000000000000000000000000000000000000',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x2100000000000000000000000000000000000000':
         'n0x2100000000000000000000000000000000000000',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -386,11 +333,9 @@ class _$PerpFundingRailTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<PerpFundingRailTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number8': 8,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     8: 'number8',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

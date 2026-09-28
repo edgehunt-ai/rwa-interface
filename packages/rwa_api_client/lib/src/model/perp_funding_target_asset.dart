@@ -229,8 +229,6 @@ class PerpFundingTargetAssetAssetIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid:1337/perps:USDC-PERPS')
   static const PerpFundingTargetAssetAssetIdEnum hyperliquidColon1337SlashPerpsColonUSDCPERPS = _$perpFundingTargetAssetAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetAssetAssetIdEnum unknownDefaultOpenApi = _$perpFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetAssetIdEnum> get serializer => _$perpFundingTargetAssetAssetIdEnumSerializer;
 
@@ -244,8 +242,6 @@ class PerpFundingTargetAssetNamespaceEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid')
   static const PerpFundingTargetAssetNamespaceEnum hyperliquid = _$perpFundingTargetAssetNamespaceEnum_hyperliquid;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetAssetNamespaceEnum unknownDefaultOpenApi = _$perpFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetNamespaceEnum> get serializer => _$perpFundingTargetAssetNamespaceEnumSerializer;
 
@@ -259,8 +255,6 @@ class PerpFundingTargetAssetNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
   static const PerpFundingTargetAssetNetworkEnum hyperliquid = _$perpFundingTargetAssetNetworkEnum_hyperliquid;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetAssetNetworkEnum unknownDefaultOpenApi = _$perpFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetNetworkEnum> get serializer => _$perpFundingTargetAssetNetworkEnumSerializer;
 
@@ -274,8 +268,6 @@ class PerpFundingTargetAssetChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 1337)
   static const PerpFundingTargetAssetChainIdEnum number1337 = _$perpFundingTargetAssetChainIdEnum_number1337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PerpFundingTargetAssetChainIdEnum unknownDefaultOpenApi = _$perpFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetChainIdEnum> get serializer => _$perpFundingTargetAssetChainIdEnumSerializer;
 
@@ -289,8 +281,6 @@ class PerpFundingTargetAssetTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC-PERPS')
   static const PerpFundingTargetAssetTokenEnum USDC_PERPS = _$perpFundingTargetAssetTokenEnum_USDC_PERPS;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetAssetTokenEnum unknownDefaultOpenApi = _$perpFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetTokenEnum> get serializer => _$perpFundingTargetAssetTokenEnumSerializer;
 
@@ -304,8 +294,6 @@ class PerpFundingTargetAssetTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x2100000000000000000000000000000000000000')
   static const PerpFundingTargetAssetTokenContractEnum n0x2100000000000000000000000000000000000000 = _$perpFundingTargetAssetTokenContractEnum_n0x2100000000000000000000000000000000000000;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetAssetTokenContractEnum unknownDefaultOpenApi = _$perpFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetTokenContractEnum> get serializer => _$perpFundingTargetAssetTokenContractEnumSerializer;
 
@@ -319,8 +307,6 @@ class PerpFundingTargetAssetTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 8)
   static const PerpFundingTargetAssetTokenDecimalsEnum number8 = _$perpFundingTargetAssetTokenDecimalsEnum_number8;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PerpFundingTargetAssetTokenDecimalsEnum unknownDefaultOpenApi = _$perpFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetTokenDecimalsEnum> get serializer => _$perpFundingTargetAssetTokenDecimalsEnumSerializer;
 
@@ -334,8 +320,6 @@ class PerpFundingTargetAssetProvenanceEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid_perps')
   static const PerpFundingTargetAssetProvenanceEnum hyperliquidPerps = _$perpFundingTargetAssetProvenanceEnum_hyperliquidPerps;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetAssetProvenanceEnum unknownDefaultOpenApi = _$perpFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetAssetProvenanceEnum> get serializer => _$perpFundingTargetAssetProvenanceEnumSerializer;
 

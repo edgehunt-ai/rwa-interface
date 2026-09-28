@@ -9,19 +9,14 @@ part of 'funding_refund_policy.dart';
 const FundingRefundPolicyAddressRoleEnum
     _$fundingRefundPolicyAddressRoleEnum_sourceWallet =
     const FundingRefundPolicyAddressRoleEnum._('sourceWallet');
-const FundingRefundPolicyAddressRoleEnum
-    _$fundingRefundPolicyAddressRoleEnum_unknownDefaultOpenApi =
-    const FundingRefundPolicyAddressRoleEnum._('unknownDefaultOpenApi');
 
 FundingRefundPolicyAddressRoleEnum _$fundingRefundPolicyAddressRoleEnumValueOf(
     String name) {
   switch (name) {
     case 'sourceWallet':
       return _$fundingRefundPolicyAddressRoleEnum_sourceWallet;
-    case 'unknownDefaultOpenApi':
-      return _$fundingRefundPolicyAddressRoleEnum_unknownDefaultOpenApi;
     default:
-      return _$fundingRefundPolicyAddressRoleEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<FundingRefundPolicyAddressRoleEnum>
     _$fundingRefundPolicyAddressRoleEnumValues = BuiltSet<
         FundingRefundPolicyAddressRoleEnum>(const <FundingRefundPolicyAddressRoleEnum>[
   _$fundingRefundPolicyAddressRoleEnum_sourceWallet,
-  _$fundingRefundPolicyAddressRoleEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<FundingRefundPolicyAddressRoleEnum>
@@ -40,11 +34,9 @@ class _$FundingRefundPolicyAddressRoleEnumSerializer
     implements PrimitiveSerializer<FundingRefundPolicyAddressRoleEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'sourceWallet': 'source_wallet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'source_wallet': 'sourceWallet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

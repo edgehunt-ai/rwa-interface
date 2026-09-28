@@ -9,19 +9,14 @@ part of 'bstocks_confirmation_binding.dart';
 const BstocksConfirmationBindingStatusEnum
     _$bstocksConfirmationBindingStatusEnum_frozen =
     const BstocksConfirmationBindingStatusEnum._('frozen');
-const BstocksConfirmationBindingStatusEnum
-    _$bstocksConfirmationBindingStatusEnum_unknownDefaultOpenApi =
-    const BstocksConfirmationBindingStatusEnum._('unknownDefaultOpenApi');
 
 BstocksConfirmationBindingStatusEnum
     _$bstocksConfirmationBindingStatusEnumValueOf(String name) {
   switch (name) {
     case 'frozen':
       return _$bstocksConfirmationBindingStatusEnum_frozen;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksConfirmationBindingStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksConfirmationBindingStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<BstocksConfirmationBindingStatusEnum>
     _$bstocksConfirmationBindingStatusEnumValues = BuiltSet<
         BstocksConfirmationBindingStatusEnum>(const <BstocksConfirmationBindingStatusEnum>[
   _$bstocksConfirmationBindingStatusEnum_frozen,
-  _$bstocksConfirmationBindingStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const BstocksConfirmationBindingDeadlineKindEnum
     _$bstocksConfirmationBindingDeadlineKindEnum_serverPreviewDeadline =
     const BstocksConfirmationBindingDeadlineKindEnum._('serverPreviewDeadline');
-const BstocksConfirmationBindingDeadlineKindEnum
-    _$bstocksConfirmationBindingDeadlineKindEnum_unknownDefaultOpenApi =
-    const BstocksConfirmationBindingDeadlineKindEnum._('unknownDefaultOpenApi');
 
 BstocksConfirmationBindingDeadlineKindEnum
     _$bstocksConfirmationBindingDeadlineKindEnumValueOf(String name) {
   switch (name) {
     case 'serverPreviewDeadline':
       return _$bstocksConfirmationBindingDeadlineKindEnum_serverPreviewDeadline;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksConfirmationBindingDeadlineKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksConfirmationBindingDeadlineKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,7 +44,6 @@ final BuiltSet<BstocksConfirmationBindingDeadlineKindEnum>
     _$bstocksConfirmationBindingDeadlineKindEnumValues = BuiltSet<
         BstocksConfirmationBindingDeadlineKindEnum>(const <BstocksConfirmationBindingDeadlineKindEnum>[
   _$bstocksConfirmationBindingDeadlineKindEnum_serverPreviewDeadline,
-  _$bstocksConfirmationBindingDeadlineKindEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksConfirmationBindingStatusEnum>
@@ -69,11 +57,9 @@ class _$BstocksConfirmationBindingStatusEnumSerializer
     implements PrimitiveSerializer<BstocksConfirmationBindingStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'frozen': 'frozen',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'frozen': 'frozen',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,11 +87,9 @@ class _$BstocksConfirmationBindingDeadlineKindEnumSerializer
     implements PrimitiveSerializer<BstocksConfirmationBindingDeadlineKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'serverPreviewDeadline': 'server_preview_deadline',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'server_preview_deadline': 'serverPreviewDeadline',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

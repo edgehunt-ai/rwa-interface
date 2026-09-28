@@ -126,8 +126,6 @@ class Hip3CancelOrderActionRequestOperationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'cancel_order')
   static const Hip3CancelOrderActionRequestOperationEnum cancelOrder = _$hip3CancelOrderActionRequestOperationEnum_cancelOrder;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3CancelOrderActionRequestOperationEnum unknownDefaultOpenApi = _$hip3CancelOrderActionRequestOperationEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3CancelOrderActionRequestOperationEnum> get serializer => _$hip3CancelOrderActionRequestOperationEnumSerializer;
 

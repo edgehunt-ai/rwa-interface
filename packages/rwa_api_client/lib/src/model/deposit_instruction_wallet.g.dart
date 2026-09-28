@@ -9,19 +9,14 @@ part of 'deposit_instruction_wallet.dart';
 const DepositInstructionWalletCustodyEnum
     _$depositInstructionWalletCustodyEnum_embeddedWallet =
     const DepositInstructionWalletCustodyEnum._('embeddedWallet');
-const DepositInstructionWalletCustodyEnum
-    _$depositInstructionWalletCustodyEnum_unknownDefaultOpenApi =
-    const DepositInstructionWalletCustodyEnum._('unknownDefaultOpenApi');
 
 DepositInstructionWalletCustodyEnum
     _$depositInstructionWalletCustodyEnumValueOf(String name) {
   switch (name) {
     case 'embeddedWallet':
       return _$depositInstructionWalletCustodyEnum_embeddedWallet;
-    case 'unknownDefaultOpenApi':
-      return _$depositInstructionWalletCustodyEnum_unknownDefaultOpenApi;
     default:
-      return _$depositInstructionWalletCustodyEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<DepositInstructionWalletCustodyEnum>
     _$depositInstructionWalletCustodyEnumValues = BuiltSet<
         DepositInstructionWalletCustodyEnum>(const <DepositInstructionWalletCustodyEnum>[
   _$depositInstructionWalletCustodyEnum_embeddedWallet,
-  _$depositInstructionWalletCustodyEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<DepositInstructionWalletCustodyEnum>
@@ -40,11 +34,9 @@ class _$DepositInstructionWalletCustodyEnumSerializer
     implements PrimitiveSerializer<DepositInstructionWalletCustodyEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'embeddedWallet': 'embedded_wallet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'embedded_wallet': 'embeddedWallet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

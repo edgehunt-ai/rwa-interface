@@ -27,9 +27,6 @@ const PrivyClientConfigLoginMethodsEnum
 const PrivyClientConfigLoginMethodsEnum
     _$privyClientConfigLoginMethodsEnum_passkey =
     const PrivyClientConfigLoginMethodsEnum._('passkey');
-const PrivyClientConfigLoginMethodsEnum
-    _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi =
-    const PrivyClientConfigLoginMethodsEnum._('unknownDefaultOpenApi');
 
 PrivyClientConfigLoginMethodsEnum _$privyClientConfigLoginMethodsEnumValueOf(
     String name) {
@@ -48,10 +45,8 @@ PrivyClientConfigLoginMethodsEnum _$privyClientConfigLoginMethodsEnumValueOf(
       return _$privyClientConfigLoginMethodsEnum_wallet;
     case 'passkey':
       return _$privyClientConfigLoginMethodsEnum_passkey;
-    case 'unknownDefaultOpenApi':
-      return _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi;
     default:
-      return _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -65,7 +60,6 @@ final BuiltSet<PrivyClientConfigLoginMethodsEnum>
   _$privyClientConfigLoginMethodsEnum_telegram,
   _$privyClientConfigLoginMethodsEnum_wallet,
   _$privyClientConfigLoginMethodsEnum_passkey,
-  _$privyClientConfigLoginMethodsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PrivyClientConfigLoginMethodsEnum>
@@ -82,7 +76,6 @@ class _$PrivyClientConfigLoginMethodsEnumSerializer
     'telegram': 'telegram',
     'wallet': 'wallet',
     'passkey': 'passkey',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'email': 'email',
@@ -92,7 +85,6 @@ class _$PrivyClientConfigLoginMethodsEnumSerializer
     'telegram': 'telegram',
     'wallet': 'wallet',
     'passkey': 'passkey',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

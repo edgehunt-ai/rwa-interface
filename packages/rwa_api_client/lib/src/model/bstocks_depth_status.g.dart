@@ -10,8 +10,6 @@ const BstocksDepthStatus _$complete = const BstocksDepthStatus._('complete');
 const BstocksDepthStatus _$partial = const BstocksDepthStatus._('partial');
 const BstocksDepthStatus _$unavailable =
     const BstocksDepthStatus._('unavailable');
-const BstocksDepthStatus _$unknownDefaultOpenApi =
-    const BstocksDepthStatus._('unknownDefaultOpenApi');
 
 BstocksDepthStatus _$valueOf(String name) {
   switch (name) {
@@ -21,10 +19,8 @@ BstocksDepthStatus _$valueOf(String name) {
       return _$partial;
     case 'unavailable':
       return _$unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -33,7 +29,6 @@ final BuiltSet<BstocksDepthStatus> _$values =
   _$complete,
   _$partial,
   _$unavailable,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$BstocksDepthStatusMeta {
@@ -41,7 +36,6 @@ class _$BstocksDepthStatusMeta {
   BstocksDepthStatus get complete => _$complete;
   BstocksDepthStatus get partial => _$partial;
   BstocksDepthStatus get unavailable => _$unavailable;
-  BstocksDepthStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   BstocksDepthStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<BstocksDepthStatus> get values => _$values;
 }
@@ -61,13 +55,11 @@ class _$BstocksDepthStatusSerializer
     'complete': 'complete',
     'partial': 'partial',
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'complete': 'complete',
     'partial': 'partial',
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

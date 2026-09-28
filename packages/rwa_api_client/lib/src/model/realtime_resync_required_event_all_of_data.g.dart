@@ -14,10 +14,6 @@ const RealtimeResyncRequiredEventAllOfDataReasonEnum
     _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired =
     const RealtimeResyncRequiredEventAllOfDataReasonEnum._(
         'eventRetentionExpired');
-const RealtimeResyncRequiredEventAllOfDataReasonEnum
-    _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi =
-    const RealtimeResyncRequiredEventAllOfDataReasonEnum._(
-        'unknownDefaultOpenApi');
 
 RealtimeResyncRequiredEventAllOfDataReasonEnum
     _$realtimeResyncRequiredEventAllOfDataReasonEnumValueOf(String name) {
@@ -26,10 +22,8 @@ RealtimeResyncRequiredEventAllOfDataReasonEnum
       return _$realtimeResyncRequiredEventAllOfDataReasonEnum_initialSnapshotRequired;
     case 'eventRetentionExpired':
       return _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -38,7 +32,6 @@ final BuiltSet<RealtimeResyncRequiredEventAllOfDataReasonEnum>
         RealtimeResyncRequiredEventAllOfDataReasonEnum>(const <RealtimeResyncRequiredEventAllOfDataReasonEnum>[
   _$realtimeResyncRequiredEventAllOfDataReasonEnum_initialSnapshotRequired,
   _$realtimeResyncRequiredEventAllOfDataReasonEnum_eventRetentionExpired,
-  _$realtimeResyncRequiredEventAllOfDataReasonEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeResyncRequiredEventAllOfDataReasonEnum>
@@ -51,12 +44,10 @@ class _$RealtimeResyncRequiredEventAllOfDataReasonEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'initialSnapshotRequired': 'initial_snapshot_required',
     'eventRetentionExpired': 'event_retention_expired',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'initial_snapshot_required': 'initialSnapshotRequired',
     'event_retention_expired': 'eventRetentionExpired',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

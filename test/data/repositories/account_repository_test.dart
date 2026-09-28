@@ -33,6 +33,21 @@ void main() {
     expect(deletion.state, AccountDeletionState.blocked);
     expect(deletion.blockers, [AccountDeletionBlocker.openOrders]);
   });
+
+  test(
+    'rejects an unsupported local language before sending a request',
+    () async {
+      final service = _AccountService();
+      final repository = AccountRepositoryImpl(service);
+
+      await expectLater(
+        repository.updateSettings(const UserPreferencesPatch(language: 'fr')),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      expect(service.patch, isNull);
+    },
+  );
 }
 
 final class _AccountService implements AccountService {

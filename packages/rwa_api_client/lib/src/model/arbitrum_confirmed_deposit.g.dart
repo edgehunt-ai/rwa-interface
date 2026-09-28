@@ -9,19 +9,14 @@ part of 'arbitrum_confirmed_deposit.dart';
 const ArbitrumConfirmedDepositChainEnum
     _$arbitrumConfirmedDepositChainEnum_arbitrum =
     const ArbitrumConfirmedDepositChainEnum._('arbitrum');
-const ArbitrumConfirmedDepositChainEnum
-    _$arbitrumConfirmedDepositChainEnum_unknownDefaultOpenApi =
-    const ArbitrumConfirmedDepositChainEnum._('unknownDefaultOpenApi');
 
 ArbitrumConfirmedDepositChainEnum _$arbitrumConfirmedDepositChainEnumValueOf(
     String name) {
   switch (name) {
     case 'arbitrum':
       return _$arbitrumConfirmedDepositChainEnum_arbitrum;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumConfirmedDepositChainEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumConfirmedDepositChainEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<ArbitrumConfirmedDepositChainEnum>
     _$arbitrumConfirmedDepositChainEnumValues = BuiltSet<
         ArbitrumConfirmedDepositChainEnum>(const <ArbitrumConfirmedDepositChainEnum>[
   _$arbitrumConfirmedDepositChainEnum_arbitrum,
-  _$arbitrumConfirmedDepositChainEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumConfirmedDepositChainIdEnum
     _$arbitrumConfirmedDepositChainIdEnum_number42161 =
     const ArbitrumConfirmedDepositChainIdEnum._('number42161');
-const ArbitrumConfirmedDepositChainIdEnum
-    _$arbitrumConfirmedDepositChainIdEnum_unknownDefaultOpenApi =
-    const ArbitrumConfirmedDepositChainIdEnum._('unknownDefaultOpenApi');
 
 ArbitrumConfirmedDepositChainIdEnum
     _$arbitrumConfirmedDepositChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number42161':
       return _$arbitrumConfirmedDepositChainIdEnum_number42161;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,25 +44,19 @@ final BuiltSet<ArbitrumConfirmedDepositChainIdEnum>
     _$arbitrumConfirmedDepositChainIdEnumValues = BuiltSet<
         ArbitrumConfirmedDepositChainIdEnum>(const <ArbitrumConfirmedDepositChainIdEnum>[
   _$arbitrumConfirmedDepositChainIdEnum_number42161,
-  _$arbitrumConfirmedDepositChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumConfirmedDepositTokenEnum
     _$arbitrumConfirmedDepositTokenEnum_USDC =
     const ArbitrumConfirmedDepositTokenEnum._('USDC');
-const ArbitrumConfirmedDepositTokenEnum
-    _$arbitrumConfirmedDepositTokenEnum_unknownDefaultOpenApi =
-    const ArbitrumConfirmedDepositTokenEnum._('unknownDefaultOpenApi');
 
 ArbitrumConfirmedDepositTokenEnum _$arbitrumConfirmedDepositTokenEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$arbitrumConfirmedDepositTokenEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumConfirmedDepositTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumConfirmedDepositTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -81,26 +64,20 @@ final BuiltSet<ArbitrumConfirmedDepositTokenEnum>
     _$arbitrumConfirmedDepositTokenEnumValues = BuiltSet<
         ArbitrumConfirmedDepositTokenEnum>(const <ArbitrumConfirmedDepositTokenEnum>[
   _$arbitrumConfirmedDepositTokenEnum_USDC,
-  _$arbitrumConfirmedDepositTokenEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumConfirmedDepositTokenContractEnum
     _$arbitrumConfirmedDepositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831 =
     const ArbitrumConfirmedDepositTokenContractEnum._(
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831');
-const ArbitrumConfirmedDepositTokenContractEnum
-    _$arbitrumConfirmedDepositTokenContractEnum_unknownDefaultOpenApi =
-    const ArbitrumConfirmedDepositTokenContractEnum._('unknownDefaultOpenApi');
 
 ArbitrumConfirmedDepositTokenContractEnum
     _$arbitrumConfirmedDepositTokenContractEnumValueOf(String name) {
   switch (name) {
     case 'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
       return _$arbitrumConfirmedDepositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -108,25 +85,19 @@ final BuiltSet<ArbitrumConfirmedDepositTokenContractEnum>
     _$arbitrumConfirmedDepositTokenContractEnumValues = BuiltSet<
         ArbitrumConfirmedDepositTokenContractEnum>(const <ArbitrumConfirmedDepositTokenContractEnum>[
   _$arbitrumConfirmedDepositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831,
-  _$arbitrumConfirmedDepositTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const ArbitrumConfirmedDepositTokenDecimalsEnum
     _$arbitrumConfirmedDepositTokenDecimalsEnum_number6 =
     const ArbitrumConfirmedDepositTokenDecimalsEnum._('number6');
-const ArbitrumConfirmedDepositTokenDecimalsEnum
-    _$arbitrumConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi =
-    const ArbitrumConfirmedDepositTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 ArbitrumConfirmedDepositTokenDecimalsEnum
     _$arbitrumConfirmedDepositTokenDecimalsEnumValueOf(String name) {
   switch (name) {
     case 'number6':
       return _$arbitrumConfirmedDepositTokenDecimalsEnum_number6;
-    case 'unknownDefaultOpenApi':
-      return _$arbitrumConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$arbitrumConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -134,7 +105,6 @@ final BuiltSet<ArbitrumConfirmedDepositTokenDecimalsEnum>
     _$arbitrumConfirmedDepositTokenDecimalsEnumValues = BuiltSet<
         ArbitrumConfirmedDepositTokenDecimalsEnum>(const <ArbitrumConfirmedDepositTokenDecimalsEnum>[
   _$arbitrumConfirmedDepositTokenDecimalsEnum_number6,
-  _$arbitrumConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<ArbitrumConfirmedDepositChainEnum>
@@ -157,11 +127,9 @@ class _$ArbitrumConfirmedDepositChainEnumSerializer
     implements PrimitiveSerializer<ArbitrumConfirmedDepositChainEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'arbitrum': 'Arbitrum',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Arbitrum': 'arbitrum',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -187,11 +155,9 @@ class _$ArbitrumConfirmedDepositChainIdEnumSerializer
     implements PrimitiveSerializer<ArbitrumConfirmedDepositChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number42161': 42161,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     42161: 'number42161',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -219,11 +185,9 @@ class _$ArbitrumConfirmedDepositTokenEnumSerializer
     implements PrimitiveSerializer<ArbitrumConfirmedDepositTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -250,12 +214,10 @@ class _$ArbitrumConfirmedDepositTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0xaf88d065e77c8cc2239327c5edb3a432268e5831':
         'n0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -283,11 +245,9 @@ class _$ArbitrumConfirmedDepositTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<ArbitrumConfirmedDepositTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number6': 6,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     6: 'number6',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

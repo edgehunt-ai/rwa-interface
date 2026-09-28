@@ -357,8 +357,6 @@ class LegacyDepositTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyDepositTokenEnum USDC = _$legacyDepositTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyDepositTokenEnum unknownDefaultOpenApi = _$legacyDepositTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyDepositTokenEnum> get serializer => _$legacyDepositTokenEnumSerializer;
 

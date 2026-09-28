@@ -12,9 +12,6 @@ const Hip3RealtimeCandleEnvironmentEnum
 const Hip3RealtimeCandleEnvironmentEnum
     _$hip3RealtimeCandleEnvironmentEnum_testnet =
     const Hip3RealtimeCandleEnvironmentEnum._('testnet');
-const Hip3RealtimeCandleEnvironmentEnum
-    _$hip3RealtimeCandleEnvironmentEnum_unknownDefaultOpenApi =
-    const Hip3RealtimeCandleEnvironmentEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimeCandleEnvironmentEnum _$hip3RealtimeCandleEnvironmentEnumValueOf(
     String name) {
@@ -23,10 +20,8 @@ Hip3RealtimeCandleEnvironmentEnum _$hip3RealtimeCandleEnvironmentEnumValueOf(
       return _$hip3RealtimeCandleEnvironmentEnum_mainnet;
     case 'testnet':
       return _$hip3RealtimeCandleEnvironmentEnum_testnet;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimeCandleEnvironmentEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimeCandleEnvironmentEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<Hip3RealtimeCandleEnvironmentEnum>
         Hip3RealtimeCandleEnvironmentEnum>(const <Hip3RealtimeCandleEnvironmentEnum>[
   _$hip3RealtimeCandleEnvironmentEnum_mainnet,
   _$hip3RealtimeCandleEnvironmentEnum_testnet,
-  _$hip3RealtimeCandleEnvironmentEnum_unknownDefaultOpenApi,
 ]);
 
 const Hip3RealtimeCandleIntervalEnum _$hip3RealtimeCandleIntervalEnum_n1m =
@@ -50,9 +44,6 @@ const Hip3RealtimeCandleIntervalEnum _$hip3RealtimeCandleIntervalEnum_n4h =
     const Hip3RealtimeCandleIntervalEnum._('n4h');
 const Hip3RealtimeCandleIntervalEnum _$hip3RealtimeCandleIntervalEnum_n1d =
     const Hip3RealtimeCandleIntervalEnum._('n1d');
-const Hip3RealtimeCandleIntervalEnum
-    _$hip3RealtimeCandleIntervalEnum_unknownDefaultOpenApi =
-    const Hip3RealtimeCandleIntervalEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimeCandleIntervalEnum _$hip3RealtimeCandleIntervalEnumValueOf(
     String name) {
@@ -69,10 +60,8 @@ Hip3RealtimeCandleIntervalEnum _$hip3RealtimeCandleIntervalEnumValueOf(
       return _$hip3RealtimeCandleIntervalEnum_n4h;
     case 'n1d':
       return _$hip3RealtimeCandleIntervalEnum_n1d;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimeCandleIntervalEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimeCandleIntervalEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -85,7 +74,6 @@ final BuiltSet<Hip3RealtimeCandleIntervalEnum>
   _$hip3RealtimeCandleIntervalEnum_n1h,
   _$hip3RealtimeCandleIntervalEnum_n4h,
   _$hip3RealtimeCandleIntervalEnum_n1d,
-  _$hip3RealtimeCandleIntervalEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3RealtimeCandleEnvironmentEnum>
@@ -100,12 +88,10 @@ class _$Hip3RealtimeCandleEnvironmentEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'mainnet': 'mainnet',
     'testnet': 'testnet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -136,7 +122,6 @@ class _$Hip3RealtimeCandleIntervalEnumSerializer
     'n1h': '1h',
     'n4h': '4h',
     'n1d': '1d',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '1m': 'n1m',
@@ -145,7 +130,6 @@ class _$Hip3RealtimeCandleIntervalEnumSerializer
     '1h': 'n1h',
     '4h': 'n4h',
     '1d': 'n1d',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

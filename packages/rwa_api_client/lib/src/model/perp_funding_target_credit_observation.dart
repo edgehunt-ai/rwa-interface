@@ -210,8 +210,6 @@ class PerpFundingTargetCreditObservationSource_Enum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid_info')
   static const PerpFundingTargetCreditObservationSource_Enum hyperliquidInfo = _$perpFundingTargetCreditObservationSourceEnum_hyperliquidInfo;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetCreditObservationSource_Enum unknownDefaultOpenApi = _$perpFundingTargetCreditObservationSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetCreditObservationSource_Enum> get serializer => _$perpFundingTargetCreditObservationSourceEnumSerializer;
 

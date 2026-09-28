@@ -9,19 +9,14 @@ part of 'legacy_bstock_order_preview.dart';
 const LegacyBstockOrderPreviewFundingModeEnum
     _$legacyBstockOrderPreviewFundingModeEnum_unreservedTransferFrom =
     const LegacyBstockOrderPreviewFundingModeEnum._('unreservedTransferFrom');
-const LegacyBstockOrderPreviewFundingModeEnum
-    _$legacyBstockOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
-    const LegacyBstockOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
 
 LegacyBstockOrderPreviewFundingModeEnum
     _$legacyBstockOrderPreviewFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$legacyBstockOrderPreviewFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyBstockOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<LegacyBstockOrderPreviewFundingModeEnum>
     _$legacyBstockOrderPreviewFundingModeEnumValues = BuiltSet<
         LegacyBstockOrderPreviewFundingModeEnum>(const <LegacyBstockOrderPreviewFundingModeEnum>[
   _$legacyBstockOrderPreviewFundingModeEnum_unreservedTransferFrom,
-  _$legacyBstockOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyBstockOrderPreviewKindEnum
     _$legacyBstockOrderPreviewKindEnum_bstock =
     const LegacyBstockOrderPreviewKindEnum._('bstock');
-const LegacyBstockOrderPreviewKindEnum
-    _$legacyBstockOrderPreviewKindEnum_unknownDefaultOpenApi =
-    const LegacyBstockOrderPreviewKindEnum._('unknownDefaultOpenApi');
 
 LegacyBstockOrderPreviewKindEnum _$legacyBstockOrderPreviewKindEnumValueOf(
     String name) {
   switch (name) {
     case 'bstock':
       return _$legacyBstockOrderPreviewKindEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockOrderPreviewKindEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyBstockOrderPreviewKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,25 +44,19 @@ final BuiltSet<LegacyBstockOrderPreviewKindEnum>
     _$legacyBstockOrderPreviewKindEnumValues = BuiltSet<
         LegacyBstockOrderPreviewKindEnum>(const <LegacyBstockOrderPreviewKindEnum>[
   _$legacyBstockOrderPreviewKindEnum_bstock,
-  _$legacyBstockOrderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyBstockOrderPreviewNetworkEnum
     _$legacyBstockOrderPreviewNetworkEnum_BSC =
     const LegacyBstockOrderPreviewNetworkEnum._('BSC');
-const LegacyBstockOrderPreviewNetworkEnum
-    _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi =
-    const LegacyBstockOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 LegacyBstockOrderPreviewNetworkEnum
     _$legacyBstockOrderPreviewNetworkEnumValueOf(String name) {
   switch (name) {
     case 'BSC':
       return _$legacyBstockOrderPreviewNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -81,26 +64,19 @@ final BuiltSet<LegacyBstockOrderPreviewNetworkEnum>
     _$legacyBstockOrderPreviewNetworkEnumValues = BuiltSet<
         LegacyBstockOrderPreviewNetworkEnum>(const <LegacyBstockOrderPreviewNetworkEnum>[
   _$legacyBstockOrderPreviewNetworkEnum_BSC,
-  _$legacyBstockOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyBstockOrderPreviewSettlementAssetEnum
     _$legacyBstockOrderPreviewSettlementAssetEnum_USDC =
     const LegacyBstockOrderPreviewSettlementAssetEnum._('USDC');
-const LegacyBstockOrderPreviewSettlementAssetEnum
-    _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const LegacyBstockOrderPreviewSettlementAssetEnum._(
-        'unknownDefaultOpenApi');
 
 LegacyBstockOrderPreviewSettlementAssetEnum
     _$legacyBstockOrderPreviewSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$legacyBstockOrderPreviewSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -108,7 +84,6 @@ final BuiltSet<LegacyBstockOrderPreviewSettlementAssetEnum>
     _$legacyBstockOrderPreviewSettlementAssetEnumValues = BuiltSet<
         LegacyBstockOrderPreviewSettlementAssetEnum>(const <LegacyBstockOrderPreviewSettlementAssetEnum>[
   _$legacyBstockOrderPreviewSettlementAssetEnum_USDC,
-  _$legacyBstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LegacyBstockOrderPreviewFundingModeEnum>
@@ -128,11 +103,9 @@ class _$LegacyBstockOrderPreviewFundingModeEnumSerializer
     implements PrimitiveSerializer<LegacyBstockOrderPreviewFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -160,11 +133,9 @@ class _$LegacyBstockOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<LegacyBstockOrderPreviewKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -190,11 +161,9 @@ class _$LegacyBstockOrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<LegacyBstockOrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -223,11 +192,9 @@ class _$LegacyBstockOrderPreviewSettlementAssetEnumSerializer
         PrimitiveSerializer<LegacyBstockOrderPreviewSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

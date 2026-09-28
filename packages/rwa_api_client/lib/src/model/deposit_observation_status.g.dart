@@ -14,8 +14,6 @@ const DepositObservationStatus _$confirmed =
     const DepositObservationStatus._('confirmed');
 const DepositObservationStatus _$manualReview =
     const DepositObservationStatus._('manualReview');
-const DepositObservationStatus _$unknownDefaultOpenApi =
-    const DepositObservationStatus._('unknownDefaultOpenApi');
 
 DepositObservationStatus _$valueOf(String name) {
   switch (name) {
@@ -27,10 +25,8 @@ DepositObservationStatus _$valueOf(String name) {
       return _$confirmed;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -40,7 +36,6 @@ final BuiltSet<DepositObservationStatus> _$values =
   _$confirming,
   _$confirmed,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$DepositObservationStatusMeta {
@@ -49,7 +44,6 @@ class _$DepositObservationStatusMeta {
   DepositObservationStatus get confirming => _$confirming;
   DepositObservationStatus get confirmed => _$confirmed;
   DepositObservationStatus get manualReview => _$manualReview;
-  DepositObservationStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   DepositObservationStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<DepositObservationStatus> get values => _$values;
 }
@@ -70,14 +64,12 @@ class _$DepositObservationStatusSerializer
     'confirming': 'confirming',
     'confirmed': 'confirmed',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'detected': 'detected',
     'confirming': 'confirming',
     'confirmed': 'confirmed',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

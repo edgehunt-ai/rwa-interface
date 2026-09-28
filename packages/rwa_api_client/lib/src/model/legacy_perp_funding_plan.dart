@@ -264,8 +264,6 @@ class LegacyPerpFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const LegacyPerpFundingPlanRailEnum perp = _$legacyPerpFundingPlanRailEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingPlanRailEnum unknownDefaultOpenApi = _$legacyPerpFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpFundingPlanRailEnum> get serializer => _$legacyPerpFundingPlanRailEnumSerializer;
 
@@ -280,8 +278,6 @@ class LegacyPerpFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const LegacyPerpFundingPlanNetworkEnum arbitrum = _$legacyPerpFundingPlanNetworkEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingPlanNetworkEnum unknownDefaultOpenApi = _$legacyPerpFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpFundingPlanNetworkEnum> get serializer => _$legacyPerpFundingPlanNetworkEnumSerializer;
 
@@ -296,8 +292,6 @@ class LegacyPerpFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const LegacyPerpFundingPlanAssetEnum USDC = _$legacyPerpFundingPlanAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingPlanAssetEnum unknownDefaultOpenApi = _$legacyPerpFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpFundingPlanAssetEnum> get serializer => _$legacyPerpFundingPlanAssetEnumSerializer;
 
@@ -316,8 +310,6 @@ class LegacyPerpFundingPlanStatusEnum extends EnumClass {
   static const LegacyPerpFundingPlanStatusEnum expired = _$legacyPerpFundingPlanStatusEnum_expired;
   @BuiltValueEnumConst(wireName: r'consumed')
   static const LegacyPerpFundingPlanStatusEnum consumed = _$legacyPerpFundingPlanStatusEnum_consumed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyPerpFundingPlanStatusEnum unknownDefaultOpenApi = _$legacyPerpFundingPlanStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<LegacyPerpFundingPlanStatusEnum> get serializer => _$legacyPerpFundingPlanStatusEnumSerializer;
 

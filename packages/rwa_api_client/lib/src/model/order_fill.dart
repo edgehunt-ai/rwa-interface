@@ -312,9 +312,6 @@ class OrderFillSideEnum extends EnumClass {
   /// 本次逐笔成交的买卖方向，不是持仓多空，也不能据此推断开仓或平仓。历史数据不可确认时为空。
   @BuiltValueEnumConst(wireName: r'sell')
   static const OrderFillSideEnum sell = _$orderFillSideEnum_sell;
-  /// 本次逐笔成交的买卖方向，不是持仓多空，也不能据此推断开仓或平仓。历史数据不可确认时为空。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderFillSideEnum unknownDefaultOpenApi = _$orderFillSideEnum_unknownDefaultOpenApi;
 
   static Serializer<OrderFillSideEnum> get serializer => _$orderFillSideEnumSerializer;
 

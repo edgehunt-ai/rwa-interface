@@ -159,8 +159,6 @@ class FundingSessionTradeIntentCreateRequestFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'funding_session')
   static const FundingSessionTradeIntentCreateRequestFundingModeEnum fundingSession = _$fundingSessionTradeIntentCreateRequestFundingModeEnum_fundingSession;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionTradeIntentCreateRequestFundingModeEnum unknownDefaultOpenApi = _$fundingSessionTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionTradeIntentCreateRequestFundingModeEnum> get serializer => _$fundingSessionTradeIntentCreateRequestFundingModeEnumSerializer;
 

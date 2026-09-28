@@ -9,19 +9,14 @@ part of 'completed_funding_transfer_state.dart';
 const CompletedFundingTransferStateStatusEnum
     _$completedFundingTransferStateStatusEnum_completed =
     const CompletedFundingTransferStateStatusEnum._('completed');
-const CompletedFundingTransferStateStatusEnum
-    _$completedFundingTransferStateStatusEnum_unknownDefaultOpenApi =
-    const CompletedFundingTransferStateStatusEnum._('unknownDefaultOpenApi');
 
 CompletedFundingTransferStateStatusEnum
     _$completedFundingTransferStateStatusEnumValueOf(String name) {
   switch (name) {
     case 'completed':
       return _$completedFundingTransferStateStatusEnum_completed;
-    case 'unknownDefaultOpenApi':
-      return _$completedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$completedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,16 +24,11 @@ final BuiltSet<CompletedFundingTransferStateStatusEnum>
     _$completedFundingTransferStateStatusEnumValues = BuiltSet<
         CompletedFundingTransferStateStatusEnum>(const <CompletedFundingTransferStateStatusEnum>[
   _$completedFundingTransferStateStatusEnum_completed,
-  _$completedFundingTransferStateStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const CompletedFundingTransferStateSourceExecutionStatusEnum
     _$completedFundingTransferStateSourceExecutionStatusEnum_confirmed =
     const CompletedFundingTransferStateSourceExecutionStatusEnum._('confirmed');
-const CompletedFundingTransferStateSourceExecutionStatusEnum
-    _$completedFundingTransferStateSourceExecutionStatusEnum_unknownDefaultOpenApi =
-    const CompletedFundingTransferStateSourceExecutionStatusEnum._(
-        'unknownDefaultOpenApi');
 
 CompletedFundingTransferStateSourceExecutionStatusEnum
     _$completedFundingTransferStateSourceExecutionStatusEnumValueOf(
@@ -46,10 +36,8 @@ CompletedFundingTransferStateSourceExecutionStatusEnum
   switch (name) {
     case 'confirmed':
       return _$completedFundingTransferStateSourceExecutionStatusEnum_confirmed;
-    case 'unknownDefaultOpenApi':
-      return _$completedFundingTransferStateSourceExecutionStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$completedFundingTransferStateSourceExecutionStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -57,26 +45,19 @@ final BuiltSet<CompletedFundingTransferStateSourceExecutionStatusEnum>
     _$completedFundingTransferStateSourceExecutionStatusEnumValues = BuiltSet<
         CompletedFundingTransferStateSourceExecutionStatusEnum>(const <CompletedFundingTransferStateSourceExecutionStatusEnum>[
   _$completedFundingTransferStateSourceExecutionStatusEnum_confirmed,
-  _$completedFundingTransferStateSourceExecutionStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const CompletedFundingTransferStateProviderStatusEnum
     _$completedFundingTransferStateProviderStatusEnum_succeeded =
     const CompletedFundingTransferStateProviderStatusEnum._('succeeded');
-const CompletedFundingTransferStateProviderStatusEnum
-    _$completedFundingTransferStateProviderStatusEnum_unknownDefaultOpenApi =
-    const CompletedFundingTransferStateProviderStatusEnum._(
-        'unknownDefaultOpenApi');
 
 CompletedFundingTransferStateProviderStatusEnum
     _$completedFundingTransferStateProviderStatusEnumValueOf(String name) {
   switch (name) {
     case 'succeeded':
       return _$completedFundingTransferStateProviderStatusEnum_succeeded;
-    case 'unknownDefaultOpenApi':
-      return _$completedFundingTransferStateProviderStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$completedFundingTransferStateProviderStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -84,26 +65,19 @@ final BuiltSet<CompletedFundingTransferStateProviderStatusEnum>
     _$completedFundingTransferStateProviderStatusEnumValues = BuiltSet<
         CompletedFundingTransferStateProviderStatusEnum>(const <CompletedFundingTransferStateProviderStatusEnum>[
   _$completedFundingTransferStateProviderStatusEnum_succeeded,
-  _$completedFundingTransferStateProviderStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const CompletedFundingTransferStateTargetCreditStatusEnum
     _$completedFundingTransferStateTargetCreditStatusEnum_confirmed =
     const CompletedFundingTransferStateTargetCreditStatusEnum._('confirmed');
-const CompletedFundingTransferStateTargetCreditStatusEnum
-    _$completedFundingTransferStateTargetCreditStatusEnum_unknownDefaultOpenApi =
-    const CompletedFundingTransferStateTargetCreditStatusEnum._(
-        'unknownDefaultOpenApi');
 
 CompletedFundingTransferStateTargetCreditStatusEnum
     _$completedFundingTransferStateTargetCreditStatusEnumValueOf(String name) {
   switch (name) {
     case 'confirmed':
       return _$completedFundingTransferStateTargetCreditStatusEnum_confirmed;
-    case 'unknownDefaultOpenApi':
-      return _$completedFundingTransferStateTargetCreditStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$completedFundingTransferStateTargetCreditStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -111,26 +85,19 @@ final BuiltSet<CompletedFundingTransferStateTargetCreditStatusEnum>
     _$completedFundingTransferStateTargetCreditStatusEnumValues = BuiltSet<
         CompletedFundingTransferStateTargetCreditStatusEnum>(const <CompletedFundingTransferStateTargetCreditStatusEnum>[
   _$completedFundingTransferStateTargetCreditStatusEnum_confirmed,
-  _$completedFundingTransferStateTargetCreditStatusEnum_unknownDefaultOpenApi,
 ]);
 
 const CompletedFundingTransferStateRecoveryStatusEnum
     _$completedFundingTransferStateRecoveryStatusEnum_none =
     const CompletedFundingTransferStateRecoveryStatusEnum._('none');
-const CompletedFundingTransferStateRecoveryStatusEnum
-    _$completedFundingTransferStateRecoveryStatusEnum_unknownDefaultOpenApi =
-    const CompletedFundingTransferStateRecoveryStatusEnum._(
-        'unknownDefaultOpenApi');
 
 CompletedFundingTransferStateRecoveryStatusEnum
     _$completedFundingTransferStateRecoveryStatusEnumValueOf(String name) {
   switch (name) {
     case 'none':
       return _$completedFundingTransferStateRecoveryStatusEnum_none;
-    case 'unknownDefaultOpenApi':
-      return _$completedFundingTransferStateRecoveryStatusEnum_unknownDefaultOpenApi;
     default:
-      return _$completedFundingTransferStateRecoveryStatusEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -138,7 +105,6 @@ final BuiltSet<CompletedFundingTransferStateRecoveryStatusEnum>
     _$completedFundingTransferStateRecoveryStatusEnumValues = BuiltSet<
         CompletedFundingTransferStateRecoveryStatusEnum>(const <CompletedFundingTransferStateRecoveryStatusEnum>[
   _$completedFundingTransferStateRecoveryStatusEnum_none,
-  _$completedFundingTransferStateRecoveryStatusEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<CompletedFundingTransferStateStatusEnum>
@@ -161,11 +127,9 @@ class _$CompletedFundingTransferStateStatusEnumSerializer
     implements PrimitiveSerializer<CompletedFundingTransferStateStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'completed': 'completed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'completed': 'completed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -195,11 +159,9 @@ class _$CompletedFundingTransferStateSourceExecutionStatusEnumSerializer
             CompletedFundingTransferStateSourceExecutionStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'confirmed': 'confirmed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'confirmed': 'confirmed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -229,11 +191,9 @@ class _$CompletedFundingTransferStateProviderStatusEnumSerializer
         PrimitiveSerializer<CompletedFundingTransferStateProviderStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'succeeded': 'succeeded',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'succeeded': 'succeeded',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -263,11 +223,9 @@ class _$CompletedFundingTransferStateTargetCreditStatusEnumSerializer
             CompletedFundingTransferStateTargetCreditStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'confirmed': 'confirmed',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'confirmed': 'confirmed',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -296,11 +254,9 @@ class _$CompletedFundingTransferStateRecoveryStatusEnumSerializer
         PrimitiveSerializer<CompletedFundingTransferStateRecoveryStatusEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'none': 'none',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'none': 'none',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

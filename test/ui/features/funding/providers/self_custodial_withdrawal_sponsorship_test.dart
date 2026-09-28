@@ -454,6 +454,14 @@ final class _Executions implements WalletActionExecutionRepository {
   }) async => _result();
 
   @override
+  Future<WalletActionExecution> createTransferWalletActionExecution({
+    required String transferId,
+    required String actionId,
+    required GasPaymentMode mode,
+    required String idempotencyKey,
+  }) async => _result();
+
+  @override
   Future<WalletActionExecution> createSelfCustodialWithdrawalExecution({
     required String withdrawalId,
     required GasPaymentMode mode,

@@ -404,8 +404,6 @@ class MultiSourcePerpFundingPlanModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_multi_source')
   static const MultiSourcePerpFundingPlanModeEnum autoMultiSource = _$multiSourcePerpFundingPlanModeEnum_autoMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourcePerpFundingPlanModeEnum unknownDefaultOpenApi = _$multiSourcePerpFundingPlanModeEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourcePerpFundingPlanModeEnum> get serializer => _$multiSourcePerpFundingPlanModeEnumSerializer;
 
@@ -419,8 +417,6 @@ class MultiSourcePerpFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const MultiSourcePerpFundingPlanRailEnum perp = _$multiSourcePerpFundingPlanRailEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourcePerpFundingPlanRailEnum unknownDefaultOpenApi = _$multiSourcePerpFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourcePerpFundingPlanRailEnum> get serializer => _$multiSourcePerpFundingPlanRailEnumSerializer;
 
@@ -434,8 +430,6 @@ class MultiSourcePerpFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Hyperliquid')
   static const MultiSourcePerpFundingPlanNetworkEnum hyperliquid = _$multiSourcePerpFundingPlanNetworkEnum_hyperliquid;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourcePerpFundingPlanNetworkEnum unknownDefaultOpenApi = _$multiSourcePerpFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourcePerpFundingPlanNetworkEnum> get serializer => _$multiSourcePerpFundingPlanNetworkEnumSerializer;
 
@@ -449,8 +443,6 @@ class MultiSourcePerpFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const MultiSourcePerpFundingPlanAssetEnum USDC = _$multiSourcePerpFundingPlanAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourcePerpFundingPlanAssetEnum unknownDefaultOpenApi = _$multiSourcePerpFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourcePerpFundingPlanAssetEnum> get serializer => _$multiSourcePerpFundingPlanAssetEnumSerializer;
 

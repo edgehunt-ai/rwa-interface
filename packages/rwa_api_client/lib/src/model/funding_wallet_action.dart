@@ -146,8 +146,6 @@ class FundingWalletActionKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'origin_transaction')
   static const FundingWalletActionKindEnum originTransaction = _$fundingWalletActionKindEnum_originTransaction;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingWalletActionKindEnum unknownDefaultOpenApi = _$fundingWalletActionKindEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingWalletActionKindEnum> get serializer => _$fundingWalletActionKindEnumSerializer;
 
@@ -167,8 +165,6 @@ class FundingWalletActionChainIdEnum extends EnumClass {
   static const FundingWalletActionChainIdEnum number8453 = _$fundingWalletActionChainIdEnum_number8453;
   @BuiltValueEnumConst(wireNumber: 42161)
   static const FundingWalletActionChainIdEnum number42161 = _$fundingWalletActionChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const FundingWalletActionChainIdEnum unknownDefaultOpenApi = _$fundingWalletActionChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingWalletActionChainIdEnum> get serializer => _$fundingWalletActionChainIdEnumSerializer;
 
@@ -183,9 +179,6 @@ class FundingWalletActionValueEnum extends EnumClass {
   /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
   @BuiltValueEnumConst(wireName: r'0x0')
   static const FundingWalletActionValueEnum n0x0 = _$fundingWalletActionValueEnum_n0x0;
-  /// Native-value transfer is forbidden; v1 only executes zero-value contract calls.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingWalletActionValueEnum unknownDefaultOpenApi = _$fundingWalletActionValueEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingWalletActionValueEnum> get serializer => _$fundingWalletActionValueEnumSerializer;
 

@@ -196,9 +196,6 @@ class DeviceInfoPushProviderEnum extends EnumClass {
   /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
   @BuiltValueEnumConst(wireName: r'fcm')
   static const DeviceInfoPushProviderEnum fcm = _$deviceInfoPushProviderEnum_fcm;
-  /// Flutter iOS / Android 客户端使用 Firebase 时显式传 `fcm`。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DeviceInfoPushProviderEnum unknownDefaultOpenApi = _$deviceInfoPushProviderEnum_unknownDefaultOpenApi;
 
   static Serializer<DeviceInfoPushProviderEnum> get serializer => _$deviceInfoPushProviderEnumSerializer;
 

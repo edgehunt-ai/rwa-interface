@@ -9,19 +9,14 @@ part of 'hip3_place_order_action_request.dart';
 const Hip3PlaceOrderActionRequestOperationEnum
     _$hip3PlaceOrderActionRequestOperationEnum_placeOrder =
     const Hip3PlaceOrderActionRequestOperationEnum._('placeOrder');
-const Hip3PlaceOrderActionRequestOperationEnum
-    _$hip3PlaceOrderActionRequestOperationEnum_unknownDefaultOpenApi =
-    const Hip3PlaceOrderActionRequestOperationEnum._('unknownDefaultOpenApi');
 
 Hip3PlaceOrderActionRequestOperationEnum
     _$hip3PlaceOrderActionRequestOperationEnumValueOf(String name) {
   switch (name) {
     case 'placeOrder':
       return _$hip3PlaceOrderActionRequestOperationEnum_placeOrder;
-    case 'unknownDefaultOpenApi':
-      return _$hip3PlaceOrderActionRequestOperationEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3PlaceOrderActionRequestOperationEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3PlaceOrderActionRequestOperationEnum>
     _$hip3PlaceOrderActionRequestOperationEnumValues = BuiltSet<
         Hip3PlaceOrderActionRequestOperationEnum>(const <Hip3PlaceOrderActionRequestOperationEnum>[
   _$hip3PlaceOrderActionRequestOperationEnum_placeOrder,
-  _$hip3PlaceOrderActionRequestOperationEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3PlaceOrderActionRequestOperationEnum>
@@ -40,11 +34,9 @@ class _$Hip3PlaceOrderActionRequestOperationEnumSerializer
     implements PrimitiveSerializer<Hip3PlaceOrderActionRequestOperationEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'placeOrder': 'place_order',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'place_order': 'placeOrder',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -20,9 +20,6 @@ class ProductType extends EnumClass {
   /// 首页 / 市场页一级筛选
   @BuiltValueEnumConst(wireName: r'contract')
   static const ProductType contract = _$contract;
-  /// 首页 / 市场页一级筛选
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ProductType unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<ProductType> get serializer => _$productTypeSerializer;
 

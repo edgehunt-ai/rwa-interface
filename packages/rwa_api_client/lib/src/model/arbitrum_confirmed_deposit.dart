@@ -355,8 +355,6 @@ class ArbitrumConfirmedDepositChainEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const ArbitrumConfirmedDepositChainEnum arbitrum = _$arbitrumConfirmedDepositChainEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumConfirmedDepositChainEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositChainEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumConfirmedDepositChainEnum> get serializer => _$arbitrumConfirmedDepositChainEnumSerializer;
 
@@ -370,8 +368,6 @@ class ArbitrumConfirmedDepositChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 42161)
   static const ArbitrumConfirmedDepositChainIdEnum number42161 = _$arbitrumConfirmedDepositChainIdEnum_number42161;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const ArbitrumConfirmedDepositChainIdEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumConfirmedDepositChainIdEnum> get serializer => _$arbitrumConfirmedDepositChainIdEnumSerializer;
 
@@ -385,8 +381,6 @@ class ArbitrumConfirmedDepositTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const ArbitrumConfirmedDepositTokenEnum USDC = _$arbitrumConfirmedDepositTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumConfirmedDepositTokenEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumConfirmedDepositTokenEnum> get serializer => _$arbitrumConfirmedDepositTokenEnumSerializer;
 
@@ -400,8 +394,6 @@ class ArbitrumConfirmedDepositTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0xaf88d065e77c8cc2239327c5edb3a432268e5831')
   static const ArbitrumConfirmedDepositTokenContractEnum n0xaf88d065e77c8cc2239327c5edb3a432268e5831 = _$arbitrumConfirmedDepositTokenContractEnum_n0xaf88d065e77c8cc2239327c5edb3a432268e5831;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const ArbitrumConfirmedDepositTokenContractEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumConfirmedDepositTokenContractEnum> get serializer => _$arbitrumConfirmedDepositTokenContractEnumSerializer;
 
@@ -415,8 +407,6 @@ class ArbitrumConfirmedDepositTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 6)
   static const ArbitrumConfirmedDepositTokenDecimalsEnum number6 = _$arbitrumConfirmedDepositTokenDecimalsEnum_number6;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const ArbitrumConfirmedDepositTokenDecimalsEnum unknownDefaultOpenApi = _$arbitrumConfirmedDepositTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<ArbitrumConfirmedDepositTokenDecimalsEnum> get serializer => _$arbitrumConfirmedDepositTokenDecimalsEnumSerializer;
 

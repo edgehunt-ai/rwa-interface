@@ -25,8 +25,6 @@ class FundingRouteBlocker extends EnumClass {
   static const FundingRouteBlocker routePaused = _$routePaused;
   @BuiltValueEnumConst(wireName: r'capability_stale')
   static const FundingRouteBlocker capabilityStale = _$capabilityStale;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRouteBlocker unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingRouteBlocker> get serializer => _$fundingRouteBlockerSerializer;
 

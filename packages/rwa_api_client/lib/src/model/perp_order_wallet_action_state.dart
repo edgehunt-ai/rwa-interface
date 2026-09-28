@@ -165,8 +165,6 @@ class PerpOrderWalletActionStateKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'perp')
   static const PerpOrderWalletActionStateKindEnum perp = _$perpOrderWalletActionStateKindEnum_perp;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderWalletActionStateKindEnum unknownDefaultOpenApi = _$perpOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderWalletActionStateKindEnum> get serializer => _$perpOrderWalletActionStateKindEnumSerializer;
 
@@ -180,8 +178,6 @@ class PerpOrderWalletActionStateWalletActionBlockerEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'not_applicable')
   static const PerpOrderWalletActionStateWalletActionBlockerEnum notApplicable = _$perpOrderWalletActionStateWalletActionBlockerEnum_notApplicable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpOrderWalletActionStateWalletActionBlockerEnum unknownDefaultOpenApi = _$perpOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpOrderWalletActionStateWalletActionBlockerEnum> get serializer => _$perpOrderWalletActionStateWalletActionBlockerEnumSerializer;
 

@@ -12,8 +12,6 @@ const UnifiedFundingDataStatus _$partial =
     const UnifiedFundingDataStatus._('partial');
 const UnifiedFundingDataStatus _$unavailable =
     const UnifiedFundingDataStatus._('unavailable');
-const UnifiedFundingDataStatus _$unknownDefaultOpenApi =
-    const UnifiedFundingDataStatus._('unknownDefaultOpenApi');
 
 UnifiedFundingDataStatus _$valueOf(String name) {
   switch (name) {
@@ -23,10 +21,8 @@ UnifiedFundingDataStatus _$valueOf(String name) {
       return _$partial;
     case 'unavailable':
       return _$unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +31,6 @@ final BuiltSet<UnifiedFundingDataStatus> _$values =
   _$complete,
   _$partial,
   _$unavailable,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$UnifiedFundingDataStatusMeta {
@@ -43,7 +38,6 @@ class _$UnifiedFundingDataStatusMeta {
   UnifiedFundingDataStatus get complete => _$complete;
   UnifiedFundingDataStatus get partial => _$partial;
   UnifiedFundingDataStatus get unavailable => _$unavailable;
-  UnifiedFundingDataStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   UnifiedFundingDataStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<UnifiedFundingDataStatus> get values => _$values;
 }
@@ -63,13 +57,11 @@ class _$UnifiedFundingDataStatusSerializer
     'complete': 'complete',
     'partial': 'partial',
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'complete': 'complete',
     'partial': 'partial',
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

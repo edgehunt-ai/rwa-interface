@@ -238,7 +238,6 @@ final class Hip3OrderExecutionRepositoryImpl
         );
       case api.Hip3ActionStatus.failed:
       case api.Hip3ActionStatus.cancelled:
-      case api.Hip3ActionStatus.unknownDefaultOpenApi:
         throw Hip3SigningFailure(
           Hip3SigningFailureCode.invalidPayload,
           reason: reason,

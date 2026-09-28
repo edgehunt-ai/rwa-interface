@@ -154,8 +154,6 @@ class RealtimeClaimEventEventEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'claim')
   static const RealtimeClaimEventEventEnum claim = _$realtimeClaimEventEventEnum_claim;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeClaimEventEventEnum unknownDefaultOpenApi = _$realtimeClaimEventEventEnum_unknownDefaultOpenApi;
 
   static Serializer<RealtimeClaimEventEventEnum> get serializer => _$realtimeClaimEventEventEnumSerializer;
 

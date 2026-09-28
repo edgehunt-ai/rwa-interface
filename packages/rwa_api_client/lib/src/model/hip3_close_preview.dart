@@ -450,8 +450,6 @@ class Hip3ClosePreviewSideEnum extends EnumClass {
   static const Hip3ClosePreviewSideEnum long = _$hip3ClosePreviewSideEnum_long;
   @BuiltValueEnumConst(wireName: r'short')
   static const Hip3ClosePreviewSideEnum short = _$hip3ClosePreviewSideEnum_short;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ClosePreviewSideEnum unknownDefaultOpenApi = _$hip3ClosePreviewSideEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ClosePreviewSideEnum> get serializer => _$hip3ClosePreviewSideEnumSerializer;
 
@@ -467,8 +465,6 @@ class Hip3ClosePreviewTypeEnum extends EnumClass {
   static const Hip3ClosePreviewTypeEnum market = _$hip3ClosePreviewTypeEnum_market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const Hip3ClosePreviewTypeEnum limit = _$hip3ClosePreviewTypeEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ClosePreviewTypeEnum unknownDefaultOpenApi = _$hip3ClosePreviewTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ClosePreviewTypeEnum> get serializer => _$hip3ClosePreviewTypeEnumSerializer;
 

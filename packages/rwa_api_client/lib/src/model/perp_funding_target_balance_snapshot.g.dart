@@ -9,20 +9,14 @@ part of 'perp_funding_target_balance_snapshot.dart';
 const PerpFundingTargetBalanceSnapshotAccountEnum
     _$perpFundingTargetBalanceSnapshotAccountEnum_hip3 =
     const PerpFundingTargetBalanceSnapshotAccountEnum._('hip3');
-const PerpFundingTargetBalanceSnapshotAccountEnum
-    _$perpFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetBalanceSnapshotAccountEnum._(
-        'unknownDefaultOpenApi');
 
 PerpFundingTargetBalanceSnapshotAccountEnum
     _$perpFundingTargetBalanceSnapshotAccountEnumValueOf(String name) {
   switch (name) {
     case 'hip3':
       return _$perpFundingTargetBalanceSnapshotAccountEnum_hip3;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,26 +24,19 @@ final BuiltSet<PerpFundingTargetBalanceSnapshotAccountEnum>
     _$perpFundingTargetBalanceSnapshotAccountEnumValues = BuiltSet<
         PerpFundingTargetBalanceSnapshotAccountEnum>(const <PerpFundingTargetBalanceSnapshotAccountEnum>[
   _$perpFundingTargetBalanceSnapshotAccountEnum_hip3,
-  _$perpFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetBalanceSnapshotSource_Enum
     _$perpFundingTargetBalanceSnapshotSourceEnum_hyperliquidInfo =
     const PerpFundingTargetBalanceSnapshotSource_Enum._('hyperliquidInfo');
-const PerpFundingTargetBalanceSnapshotSource_Enum
-    _$perpFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetBalanceSnapshotSource_Enum._(
-        'unknownDefaultOpenApi');
 
 PerpFundingTargetBalanceSnapshotSource_Enum
     _$perpFundingTargetBalanceSnapshotSourceEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquidInfo':
       return _$perpFundingTargetBalanceSnapshotSourceEnum_hyperliquidInfo;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -57,7 +44,6 @@ final BuiltSet<PerpFundingTargetBalanceSnapshotSource_Enum>
     _$perpFundingTargetBalanceSnapshotSourceEnumValues = BuiltSet<
         PerpFundingTargetBalanceSnapshotSource_Enum>(const <PerpFundingTargetBalanceSnapshotSource_Enum>[
   _$perpFundingTargetBalanceSnapshotSourceEnum_hyperliquidInfo,
-  _$perpFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpFundingTargetBalanceSnapshotAccountEnum>
@@ -72,11 +58,9 @@ class _$PerpFundingTargetBalanceSnapshotAccountEnumSerializer
         PrimitiveSerializer<PerpFundingTargetBalanceSnapshotAccountEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3': 'hip3',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3': 'hip3',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -105,11 +89,9 @@ class _$PerpFundingTargetBalanceSnapshotSource_EnumSerializer
         PrimitiveSerializer<PerpFundingTargetBalanceSnapshotSource_Enum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidInfo': 'hyperliquid_info',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid_info': 'hyperliquidInfo',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

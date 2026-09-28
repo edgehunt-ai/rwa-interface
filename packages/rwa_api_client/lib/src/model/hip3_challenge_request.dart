@@ -136,8 +136,6 @@ class Hip3ChallengeRequestPurposeEnum extends EnumClass {
   static const Hip3ChallengeRequestPurposeEnum register = _$hip3ChallengeRequestPurposeEnum_register;
   @BuiltValueEnumConst(wireName: r'rotate')
   static const Hip3ChallengeRequestPurposeEnum rotate = _$hip3ChallengeRequestPurposeEnum_rotate;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ChallengeRequestPurposeEnum unknownDefaultOpenApi = _$hip3ChallengeRequestPurposeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ChallengeRequestPurposeEnum> get serializer => _$hip3ChallengeRequestPurposeEnumSerializer;
 

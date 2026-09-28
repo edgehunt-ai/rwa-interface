@@ -32,6 +32,8 @@ import 'hip3_cross_liquidation_impacts_card.dart';
 import 'order_funding_sheet.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
+import '../providers/hip3_account_abstraction_providers.dart';
+import 'hip3_unified_account_sheet.dart';
 import '../../../../domain/models/hip3_opening_protection.dart';
 import '../../../../domain/models/hip3_opening_context.dart';
 import '../../../../domain/models/hip3_action_pending.dart';
@@ -79,6 +81,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _percentageWaitingForBalance = false;
   var _percentageSyncScheduled = false;
   var _submitting = false;
+  var _confirmationFromFunding = false;
   var _settingsUpdating = false;
   String? _error;
   OrderPreview? _preview;
@@ -811,6 +814,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     setState(() {
       _submitting = true;
       _error = null;
+      _confirmationFromFunding = false;
     });
     debugPrint(
       'HIP-3 order flow: product=${widget.productId ?? widget.symbol} '
@@ -850,7 +854,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final submitted = await showModalBottomSheet<TradingOrder>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => Hip3ConfirmSheet(preview: preview),
+      builder: (_) => Hip3ConfirmSheet(
+        preview: preview,
+        showFundingStep: _confirmationFromFunding,
+      ),
     );
     if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
     setState(() {
@@ -904,6 +911,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       setState(() => _error = AppLocalizations.of(context).validLimitPrice);
       return;
     }
+    var completedFundingFlow = false;
     try {
       _setProcessingStep('validating order intent');
       final intent = _intentFromFields();
@@ -943,6 +951,36 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           );
           return;
         }
+        completedFundingFlow = true;
+        await _refreshAvailableMargin();
+        if (!isCurrent()) return;
+      }
+      if (!intent.reduceOnly) {
+        _setProcessingStep('checking unified account');
+        final status = await ref.read(hip3AccountAbstractionProvider.future);
+        if (!mounted || !isCurrent()) return;
+        if (!status.isUnifiedAccount) {
+          if (!status.switchAvailable) {
+            throw StateError(
+              'Unified Account is unavailable for this account.',
+            );
+          }
+          final converted = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            isDismissible: false,
+            enableDrag: false,
+            backgroundColor: Colors.transparent,
+            barrierColor: const Color(0xB3000000),
+            builder: (_) => Hip3UnifiedAccountSheet(
+              onConfirm: () => ref
+                  .read(hip3AccountAbstractionCommandProvider)
+                  .convertToUnifiedAccount(),
+            ),
+          );
+          if (!mounted || !isCurrent()) return;
+          if (converted != true) return;
+        }
         await _refreshAvailableMargin();
         if (!isCurrent()) return;
       }
@@ -976,7 +1014,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         return;
       }
       if (!isCurrent() || !mounted) return;
-      setState(() => _preview = preview);
+      setState(() {
+        _preview = preview;
+        _confirmationFromFunding = completedFundingFlow;
+      });
     } on FormatException catch (error) {
       if (isCurrent()) {
         setState(() => _error = _specificErrorMessage(error));

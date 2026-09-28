@@ -40,6 +40,7 @@ import 'package:rwa_interface/domain/models/hip3_opening_context.dart';
 import 'package:rwa_interface/domain/models/hip3_account_abstraction.dart';
 import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
 import 'package:rwa_interface/domain/repositories/hip3_opening_repository.dart';
+import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
@@ -135,9 +136,9 @@ void main() {
       expect(funding.transfers, 1);
       // The second session is the loop re-checking funding after the transfer.
       expect(funding.sessions, 2);
-      // The settings action refreshes the authoritative context, and the
-      // completed transfer refreshes it once more.
-      expect(opening.contextCalls, 3);
+      // The settings action, completed transfer, and unified-account check
+      // each refresh the authoritative context.
+      expect(opening.contextCalls, 4);
       // The setting action and transfer refresh both preserve the selection.
       expect(orders.intent?.leverage?.value, '20');
     },
@@ -634,6 +635,10 @@ void main() {
     await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
     expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+    expect(
+      find.byKey(const Key('hip3-funding-confirmation-step-3')),
+      findsNothing,
+    );
     expect(orders.previews, 1);
 
     // Letting the window lapse must not report anything to the trader: the
@@ -662,6 +667,37 @@ void main() {
           .onPressed,
       isNotNull,
     );
+  });
+
+  testWidgets('funding confirmation renders the third-step header', (
+    tester,
+  ) async {
+    final intent = OrderIntent(
+      symbol: 'NVDA',
+      kind: MarketProductKind.perp,
+      side: TradingSide.long,
+      type: TradingOrderType.market,
+      amount: DecimalValue('100'),
+    );
+    final preview = OrderPreview(
+      previewId: 'funded-preview',
+      intent: intent,
+      orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+      settlementAsset: 'USDC',
+      hip3Execution: _previewExecution(intent),
+      expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    );
+
+    await tester.pumpWidget(
+      _app(Hip3ConfirmSheet(preview: preview, showFundingStep: true)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('hip3-funding-confirmation-step-3')),
+      findsOneWidget,
+    );
+    expect(find.text('3'), findsOneWidget);
   });
 
   testWidgets('slippage is edited on the confirmation and re-quoted', (
@@ -1125,6 +1161,13 @@ Widget _app(
     fundingRepositoryProvider.overrideWithValue(funding ?? FundedRepository()),
     hip3AccountAbstractionRepositoryProvider.overrideWithValue(
       _UnifiedAccountRepository(),
+    ),
+    hip3AccountAbstractionProvider.overrideWith(
+      (ref) async => const Hip3AccountAbstractionStatus(
+        ownerAddress: '0x0000000000000000000000000000000000000001',
+        currentMode: Hip3AccountAbstractionMode.unifiedAccount,
+        switchAvailable: false,
+      ),
     ),
     if (observability != null)
       observabilityReporterProvider.overrideWithValue(observability),

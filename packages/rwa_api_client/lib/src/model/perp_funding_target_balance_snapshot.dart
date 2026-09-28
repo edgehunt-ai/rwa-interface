@@ -209,8 +209,6 @@ class PerpFundingTargetBalanceSnapshotAccountEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hip3')
   static const PerpFundingTargetBalanceSnapshotAccountEnum hip3 = _$perpFundingTargetBalanceSnapshotAccountEnum_hip3;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetBalanceSnapshotAccountEnum unknownDefaultOpenApi = _$perpFundingTargetBalanceSnapshotAccountEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetBalanceSnapshotAccountEnum> get serializer => _$perpFundingTargetBalanceSnapshotAccountEnumSerializer;
 
@@ -224,8 +222,6 @@ class PerpFundingTargetBalanceSnapshotSource_Enum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'hyperliquid_info')
   static const PerpFundingTargetBalanceSnapshotSource_Enum hyperliquidInfo = _$perpFundingTargetBalanceSnapshotSourceEnum_hyperliquidInfo;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PerpFundingTargetBalanceSnapshotSource_Enum unknownDefaultOpenApi = _$perpFundingTargetBalanceSnapshotSourceEnum_unknownDefaultOpenApi;
 
   static Serializer<PerpFundingTargetBalanceSnapshotSource_Enum> get serializer => _$perpFundingTargetBalanceSnapshotSourceEnumSerializer;
 

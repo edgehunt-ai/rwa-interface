@@ -23,7 +23,11 @@ final class AccountRepositoryImpl implements AccountRepository {
         builder.language = switch (patch.language) {
           'zh-CN' => api.UserLanguage.zhCN,
           'en' => api.UserLanguage.en,
-          _ => api.UserLanguage.unknownDefaultOpenApi,
+          final language => throw ArgumentError.value(
+            language,
+            'patch.language',
+            'Unsupported user language',
+          ),
         };
       }
       builder

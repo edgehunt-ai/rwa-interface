@@ -19,8 +19,6 @@ class OrderReconciliationStatus extends EnumClass {
   static const OrderReconciliationStatus conflicting = _$conflicting;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const OrderReconciliationStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const OrderReconciliationStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<OrderReconciliationStatus> get serializer => _$orderReconciliationStatusSerializer;
 

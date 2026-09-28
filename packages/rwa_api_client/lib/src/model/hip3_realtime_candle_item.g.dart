@@ -9,19 +9,14 @@ part of 'hip3_realtime_candle_item.dart';
 const Hip3RealtimeCandleItemEventEnum
     _$hip3RealtimeCandleItemEventEnum_hip3Candle =
     const Hip3RealtimeCandleItemEventEnum._('hip3Candle');
-const Hip3RealtimeCandleItemEventEnum
-    _$hip3RealtimeCandleItemEventEnum_unknownDefaultOpenApi =
-    const Hip3RealtimeCandleItemEventEnum._('unknownDefaultOpenApi');
 
 Hip3RealtimeCandleItemEventEnum _$hip3RealtimeCandleItemEventEnumValueOf(
     String name) {
   switch (name) {
     case 'hip3Candle':
       return _$hip3RealtimeCandleItemEventEnum_hip3Candle;
-    case 'unknownDefaultOpenApi':
-      return _$hip3RealtimeCandleItemEventEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3RealtimeCandleItemEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3RealtimeCandleItemEventEnum>
     _$hip3RealtimeCandleItemEventEnumValues = BuiltSet<
         Hip3RealtimeCandleItemEventEnum>(const <Hip3RealtimeCandleItemEventEnum>[
   _$hip3RealtimeCandleItemEventEnum_hip3Candle,
-  _$hip3RealtimeCandleItemEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3RealtimeCandleItemEventEnum>
@@ -40,11 +34,9 @@ class _$Hip3RealtimeCandleItemEventEnumSerializer
     implements PrimitiveSerializer<Hip3RealtimeCandleItemEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hip3Candle': 'hip3_candle',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hip3_candle': 'hip3Candle',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

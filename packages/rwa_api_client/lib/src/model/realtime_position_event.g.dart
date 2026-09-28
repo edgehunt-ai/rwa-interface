@@ -8,19 +8,14 @@ part of 'realtime_position_event.dart';
 
 const RealtimePositionEventEventEnum _$realtimePositionEventEventEnum_position =
     const RealtimePositionEventEventEnum._('position');
-const RealtimePositionEventEventEnum
-    _$realtimePositionEventEventEnum_unknownDefaultOpenApi =
-    const RealtimePositionEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimePositionEventEventEnum _$realtimePositionEventEventEnumValueOf(
     String name) {
   switch (name) {
     case 'position':
       return _$realtimePositionEventEventEnum_position;
-    case 'unknownDefaultOpenApi':
-      return _$realtimePositionEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimePositionEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,7 +23,6 @@ final BuiltSet<RealtimePositionEventEventEnum>
     _$realtimePositionEventEventEnumValues = BuiltSet<
         RealtimePositionEventEventEnum>(const <RealtimePositionEventEventEnum>[
   _$realtimePositionEventEventEnum_position,
-  _$realtimePositionEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimePositionEventEventEnum>
@@ -39,11 +33,9 @@ class _$RealtimePositionEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimePositionEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'position': 'position',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'position': 'position',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

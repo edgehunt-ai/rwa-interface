@@ -9,11 +9,11 @@ import 'package:built_value/serializer.dart';
 
 part 'self_custodial_withdrawal_create_request.g.dart';
 
-/// 创建审计 intent 所需的精确用户选择。`wallet_id` 必须属于当前账户的已验证 Privy wallet；`asset_id` 必须是 allowlisted ERC-20，不能表示原生币。请求只包含产品意图， 不接受 `chain_id/from/to/data/value/payload_hash/valid_until`、签名或 raw transaction； 服务端不会根据本请求 approve、sign 或 broadcast。 
+/// 创建审计 intent 所需的精确用户选择。`wallet_id` 必须属于当前账户的已验证 Privy wallet；bStocks专用路径要求manifest/support catalog共同准入。其他路径仅接受所选钱包 portfolio中观测到、位于当前环境允许链上的非原生ERC-20，精度和符号由服务端恢复；不是任意合约调用。 请求只包含产品意图， 不接受 `chain_id/from/to/data/value/payload_hash/valid_until`、签名或 raw transaction； 服务端不会根据本请求 approve、sign 或 broadcast。 
 ///
 /// Properties:
 /// * [walletId] - 当前账户已有的服务端不透明 Privy wallet ID。
-/// * [assetId] - 当前 allowlist 中的 canonical asset identity。
+/// * [assetId] - 当前环境允许的 canonical ERC-20 asset identity；bStocks使用准入身份，其他资产须由所选钱包的portfolio观察提供元数据。
 /// * [chain] 
 /// * [amount] - 十进制字符串，避免浮点误差
 /// * [destinationAddress] 
@@ -23,7 +23,7 @@ abstract class SelfCustodialWithdrawalCreateRequest implements Built<SelfCustodi
   @BuiltValueField(wireName: r'wallet_id')
   String get walletId;
 
-  /// 当前 allowlist 中的 canonical asset identity。
+  /// 当前环境允许的 canonical ERC-20 asset identity；bStocks使用准入身份，其他资产须由所选钱包的portfolio观察提供元数据。
   @BuiltValueField(wireName: r'asset_id')
   String get assetId;
 

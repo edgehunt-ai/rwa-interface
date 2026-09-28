@@ -110,8 +110,6 @@ class BstocksRequoteValidityKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'requote_on_confirmation')
   static const BstocksRequoteValidityKindEnum requoteOnConfirmation = _$bstocksRequoteValidityKindEnum_requoteOnConfirmation;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksRequoteValidityKindEnum unknownDefaultOpenApi = _$bstocksRequoteValidityKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksRequoteValidityKindEnum> get serializer => _$bstocksRequoteValidityKindEnumSerializer;
 

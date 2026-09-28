@@ -13,9 +13,6 @@ const Hip3ProtectionSpecSizeModeEnum _$hip3ProtectionSpecSizeModeEnum_quantity =
     const Hip3ProtectionSpecSizeModeEnum._('quantity');
 const Hip3ProtectionSpecSizeModeEnum _$hip3ProtectionSpecSizeModeEnum_percent =
     const Hip3ProtectionSpecSizeModeEnum._('percent');
-const Hip3ProtectionSpecSizeModeEnum
-    _$hip3ProtectionSpecSizeModeEnum_unknownDefaultOpenApi =
-    const Hip3ProtectionSpecSizeModeEnum._('unknownDefaultOpenApi');
 
 Hip3ProtectionSpecSizeModeEnum _$hip3ProtectionSpecSizeModeEnumValueOf(
     String name) {
@@ -26,10 +23,8 @@ Hip3ProtectionSpecSizeModeEnum _$hip3ProtectionSpecSizeModeEnumValueOf(
       return _$hip3ProtectionSpecSizeModeEnum_quantity;
     case 'percent':
       return _$hip3ProtectionSpecSizeModeEnum_percent;
-    case 'unknownDefaultOpenApi':
-      return _$hip3ProtectionSpecSizeModeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3ProtectionSpecSizeModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -39,7 +34,6 @@ final BuiltSet<Hip3ProtectionSpecSizeModeEnum>
   _$hip3ProtectionSpecSizeModeEnum_entirePosition,
   _$hip3ProtectionSpecSizeModeEnum_quantity,
   _$hip3ProtectionSpecSizeModeEnum_percent,
-  _$hip3ProtectionSpecSizeModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3ProtectionSpecSizeModeEnum>
@@ -52,13 +46,11 @@ class _$Hip3ProtectionSpecSizeModeEnumSerializer
     'entirePosition': 'entire_position',
     'quantity': 'quantity',
     'percent': 'percent',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'entire_position': 'entirePosition',
     'quantity': 'quantity',
     'percent': 'percent',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

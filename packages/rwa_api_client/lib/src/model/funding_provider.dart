@@ -23,9 +23,6 @@ class FundingProvider extends EnumClass {
   /// `platform_float` 是平台垫付池：观测源链到池转账后由池在目标端垫付， 当前用于 testnet 与不依赖第三方桥的 rail。 
   @BuiltValueEnumConst(wireName: r'platform_float')
   static const FundingProvider platformFloat = _$platformFloat;
-  /// `platform_float` 是平台垫付池：观测源链到池转账后由池在目标端垫付， 当前用于 testnet 与不依赖第三方桥的 rail。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingProvider unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingProvider> get serializer => _$fundingProviderSerializer;
 

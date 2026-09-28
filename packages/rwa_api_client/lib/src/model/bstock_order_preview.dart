@@ -896,8 +896,6 @@ class BstockOrderPreviewFundingModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'unreserved_transfer_from')
   static const BstockOrderPreviewFundingModeEnum unreservedTransferFrom = _$bstockOrderPreviewFundingModeEnum_unreservedTransferFrom;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewFundingModeEnum unknownDefaultOpenApi = _$bstockOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewFundingModeEnum> get serializer => _$bstockOrderPreviewFundingModeEnumSerializer;
 
@@ -911,8 +909,6 @@ class BstockOrderPreviewKindEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockOrderPreviewKindEnum bstock = _$bstockOrderPreviewKindEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewKindEnum unknownDefaultOpenApi = _$bstockOrderPreviewKindEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewKindEnum> get serializer => _$bstockOrderPreviewKindEnumSerializer;
 
@@ -926,8 +922,6 @@ class BstockOrderPreviewNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const BstockOrderPreviewNetworkEnum BSC = _$bstockOrderPreviewNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewNetworkEnum unknownDefaultOpenApi = _$bstockOrderPreviewNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewNetworkEnum> get serializer => _$bstockOrderPreviewNetworkEnumSerializer;
 
@@ -941,8 +935,6 @@ class BstockOrderPreviewSettlementAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDT')
   static const BstockOrderPreviewSettlementAssetEnum USDT = _$bstockOrderPreviewSettlementAssetEnum_USDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewSettlementAssetEnum unknownDefaultOpenApi = _$bstockOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewSettlementAssetEnum> get serializer => _$bstockOrderPreviewSettlementAssetEnumSerializer;
 
@@ -956,8 +948,6 @@ class BstockOrderPreviewSettlementChainIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 56)
   static const BstockOrderPreviewSettlementChainIdEnum number56 = _$bstockOrderPreviewSettlementChainIdEnum_number56;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockOrderPreviewSettlementChainIdEnum unknownDefaultOpenApi = _$bstockOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewSettlementChainIdEnum> get serializer => _$bstockOrderPreviewSettlementChainIdEnumSerializer;
 
@@ -971,8 +961,6 @@ class BstockOrderPreviewSettlementAssetIdEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'eip155:56/erc20:0x55d398326f99059ff775485246999027b3197955')
   static const BstockOrderPreviewSettlementAssetIdEnum eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955 = _$bstockOrderPreviewSettlementAssetIdEnum_eip155Colon56SlashErc20Colon0x55d398326f99059ff775485246999027b3197955;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewSettlementAssetIdEnum unknownDefaultOpenApi = _$bstockOrderPreviewSettlementAssetIdEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewSettlementAssetIdEnum> get serializer => _$bstockOrderPreviewSettlementAssetIdEnumSerializer;
 
@@ -986,8 +974,6 @@ class BstockOrderPreviewSettlementTokenContractEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'0x55d398326f99059ff775485246999027b3197955')
   static const BstockOrderPreviewSettlementTokenContractEnum n0x55d398326f99059ff775485246999027b3197955 = _$bstockOrderPreviewSettlementTokenContractEnum_n0x55d398326f99059ff775485246999027b3197955;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockOrderPreviewSettlementTokenContractEnum unknownDefaultOpenApi = _$bstockOrderPreviewSettlementTokenContractEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewSettlementTokenContractEnum> get serializer => _$bstockOrderPreviewSettlementTokenContractEnumSerializer;
 
@@ -1001,8 +987,6 @@ class BstockOrderPreviewSettlementTokenDecimalsEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireNumber: 18)
   static const BstockOrderPreviewSettlementTokenDecimalsEnum number18 = _$bstockOrderPreviewSettlementTokenDecimalsEnum_number18;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const BstockOrderPreviewSettlementTokenDecimalsEnum unknownDefaultOpenApi = _$bstockOrderPreviewSettlementTokenDecimalsEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockOrderPreviewSettlementTokenDecimalsEnum> get serializer => _$bstockOrderPreviewSettlementTokenDecimalsEnumSerializer;
 

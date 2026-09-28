@@ -17,8 +17,6 @@ const TransferActionStatus _$ambiguous =
     const TransferActionStatus._('ambiguous');
 const TransferActionStatus _$manualReview =
     const TransferActionStatus._('manualReview');
-const TransferActionStatus _$unknownDefaultOpenApi =
-    const TransferActionStatus._('unknownDefaultOpenApi');
 
 TransferActionStatus _$valueOf(String name) {
   switch (name) {
@@ -36,10 +34,8 @@ TransferActionStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -52,7 +48,6 @@ final BuiltSet<TransferActionStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TransferActionStatusMeta {
@@ -64,7 +59,6 @@ class _$TransferActionStatusMeta {
   TransferActionStatus get failed => _$failed;
   TransferActionStatus get ambiguous => _$ambiguous;
   TransferActionStatus get manualReview => _$manualReview;
-  TransferActionStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   TransferActionStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<TransferActionStatus> get values => _$values;
 }
@@ -88,7 +82,6 @@ class _$TransferActionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'planned': 'planned',
@@ -98,7 +91,6 @@ class _$TransferActionStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

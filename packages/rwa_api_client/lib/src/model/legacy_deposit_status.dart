@@ -24,8 +24,6 @@ class LegacyDepositStatus extends EnumClass {
   static const LegacyDepositStatus ambiguous = _$ambiguous;
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const LegacyDepositStatus manualReview = _$manualReview;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const LegacyDepositStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<LegacyDepositStatus> get serializer => _$legacyDepositStatusSerializer;
 

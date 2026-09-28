@@ -37,6 +37,7 @@ final class UnifiedFundingAccountSummary {
     required this.inTransitUsd,
     required this.dataStatus,
     required this.calculatedAt,
+    this.positions = const [],
   });
 
   final DecimalValue totalUsd;
@@ -45,4 +46,21 @@ final class UnifiedFundingAccountSummary {
   final DecimalValue inTransitUsd;
   final String dataStatus;
   final DateTime calculatedAt;
+  final List<FundingSourcePosition> positions;
+}
+
+final class FundingSourcePosition {
+  const FundingSourcePosition({
+    required this.positionId,
+    required this.token,
+    required this.network,
+    required this.availableAmount,
+    required this.eligible,
+  });
+
+  final String positionId;
+  final String token;
+  final String network;
+  final DecimalValue availableAmount;
+  final bool eligible;
 }

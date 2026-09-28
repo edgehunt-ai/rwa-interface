@@ -9,8 +9,6 @@ part of 'gas_payment_mode.dart';
 const GasPaymentMode _$appSponsored = const GasPaymentMode._('appSponsored');
 const GasPaymentMode _$userPaidNative =
     const GasPaymentMode._('userPaidNative');
-const GasPaymentMode _$unknownDefaultOpenApi =
-    const GasPaymentMode._('unknownDefaultOpenApi');
 
 GasPaymentMode _$valueOf(String name) {
   switch (name) {
@@ -18,10 +16,8 @@ GasPaymentMode _$valueOf(String name) {
       return _$appSponsored;
     case 'userPaidNative':
       return _$userPaidNative;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,14 +25,12 @@ final BuiltSet<GasPaymentMode> _$values =
     BuiltSet<GasPaymentMode>(const <GasPaymentMode>[
   _$appSponsored,
   _$userPaidNative,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$GasPaymentModeMeta {
   const _$GasPaymentModeMeta();
   GasPaymentMode get appSponsored => _$appSponsored;
   GasPaymentMode get userPaidNative => _$userPaidNative;
-  GasPaymentMode get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   GasPaymentMode valueOf(String name) => _$valueOf(name);
   BuiltSet<GasPaymentMode> get values => _$values;
 }
@@ -54,12 +48,10 @@ class _$GasPaymentModeSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'appSponsored': 'app_sponsored',
     'userPaidNative': 'user_paid_native',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'app_sponsored': 'appSponsored',
     'user_paid_native': 'userPaidNative',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

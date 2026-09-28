@@ -174,8 +174,6 @@ class CreateDepositIntentRequestChainEnum extends EnumClass {
   static const CreateDepositIntentRequestChainEnum BSC = _$createDepositIntentRequestChainEnum_BSC;
   @BuiltValueEnumConst(wireName: r'Arbitrum')
   static const CreateDepositIntentRequestChainEnum arbitrum = _$createDepositIntentRequestChainEnum_arbitrum;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CreateDepositIntentRequestChainEnum unknownDefaultOpenApi = _$createDepositIntentRequestChainEnum_unknownDefaultOpenApi;
 
   static Serializer<CreateDepositIntentRequestChainEnum> get serializer => _$createDepositIntentRequestChainEnumSerializer;
 
@@ -190,8 +188,6 @@ class CreateDepositIntentRequestTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const CreateDepositIntentRequestTokenEnum USDC = _$createDepositIntentRequestTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CreateDepositIntentRequestTokenEnum unknownDefaultOpenApi = _$createDepositIntentRequestTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<CreateDepositIntentRequestTokenEnum> get serializer => _$createDepositIntentRequestTokenEnumSerializer;
 

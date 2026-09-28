@@ -10,8 +10,6 @@ const PortfolioSourceState _$available =
     const PortfolioSourceState._('available');
 const PortfolioSourceState _$unavailable =
     const PortfolioSourceState._('unavailable');
-const PortfolioSourceState _$unknownDefaultOpenApi =
-    const PortfolioSourceState._('unknownDefaultOpenApi');
 
 PortfolioSourceState _$valueOf(String name) {
   switch (name) {
@@ -19,10 +17,8 @@ PortfolioSourceState _$valueOf(String name) {
       return _$available;
     case 'unavailable':
       return _$unavailable;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,14 +26,12 @@ final BuiltSet<PortfolioSourceState> _$values =
     BuiltSet<PortfolioSourceState>(const <PortfolioSourceState>[
   _$available,
   _$unavailable,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$PortfolioSourceStateMeta {
   const _$PortfolioSourceStateMeta();
   PortfolioSourceState get available => _$available;
   PortfolioSourceState get unavailable => _$unavailable;
-  PortfolioSourceState get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   PortfolioSourceState valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioSourceState> get values => _$values;
 }
@@ -56,12 +50,10 @@ class _$PortfolioSourceStateSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'available': 'available',
     'unavailable': 'unavailable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'available': 'available',
     'unavailable': 'unavailable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

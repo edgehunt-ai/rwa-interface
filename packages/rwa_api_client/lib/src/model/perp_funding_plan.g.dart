@@ -8,70 +8,53 @@ part of 'perp_funding_plan.dart';
 
 const PerpFundingPlanRailEnum _$perpFundingPlanRailEnum_perp =
     const PerpFundingPlanRailEnum._('perp');
-const PerpFundingPlanRailEnum _$perpFundingPlanRailEnum_unknownDefaultOpenApi =
-    const PerpFundingPlanRailEnum._('unknownDefaultOpenApi');
 
 PerpFundingPlanRailEnum _$perpFundingPlanRailEnumValueOf(String name) {
   switch (name) {
     case 'perp':
       return _$perpFundingPlanRailEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingPlanRailEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingPlanRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<PerpFundingPlanRailEnum> _$perpFundingPlanRailEnumValues =
     BuiltSet<PerpFundingPlanRailEnum>(const <PerpFundingPlanRailEnum>[
   _$perpFundingPlanRailEnum_perp,
-  _$perpFundingPlanRailEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingPlanNetworkEnum _$perpFundingPlanNetworkEnum_hyperliquid =
     const PerpFundingPlanNetworkEnum._('hyperliquid');
-const PerpFundingPlanNetworkEnum
-    _$perpFundingPlanNetworkEnum_unknownDefaultOpenApi =
-    const PerpFundingPlanNetworkEnum._('unknownDefaultOpenApi');
 
 PerpFundingPlanNetworkEnum _$perpFundingPlanNetworkEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquid':
       return _$perpFundingPlanNetworkEnum_hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingPlanNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingPlanNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<PerpFundingPlanNetworkEnum> _$perpFundingPlanNetworkEnumValues =
     BuiltSet<PerpFundingPlanNetworkEnum>(const <PerpFundingPlanNetworkEnum>[
   _$perpFundingPlanNetworkEnum_hyperliquid,
-  _$perpFundingPlanNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingPlanAssetEnum _$perpFundingPlanAssetEnum_USDC =
     const PerpFundingPlanAssetEnum._('USDC');
-const PerpFundingPlanAssetEnum
-    _$perpFundingPlanAssetEnum_unknownDefaultOpenApi =
-    const PerpFundingPlanAssetEnum._('unknownDefaultOpenApi');
 
 PerpFundingPlanAssetEnum _$perpFundingPlanAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$perpFundingPlanAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingPlanAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingPlanAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<PerpFundingPlanAssetEnum> _$perpFundingPlanAssetEnumValues =
     BuiltSet<PerpFundingPlanAssetEnum>(const <PerpFundingPlanAssetEnum>[
   _$perpFundingPlanAssetEnum_USDC,
-  _$perpFundingPlanAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpFundingPlanRailEnum> _$perpFundingPlanRailEnumSerializer =
@@ -85,11 +68,9 @@ class _$PerpFundingPlanRailEnumSerializer
     implements PrimitiveSerializer<PerpFundingPlanRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -114,11 +95,9 @@ class _$PerpFundingPlanNetworkEnumSerializer
     implements PrimitiveSerializer<PerpFundingPlanNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquid': 'Hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -143,11 +122,9 @@ class _$PerpFundingPlanAssetEnumSerializer
     implements PrimitiveSerializer<PerpFundingPlanAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

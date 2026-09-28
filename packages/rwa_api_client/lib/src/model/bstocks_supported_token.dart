@@ -307,8 +307,6 @@ class BstocksSupportedTokenExecutionStatusEnum extends EnumClass {
   static const BstocksSupportedTokenExecutionStatusEnum discoveryOnly = _$bstocksSupportedTokenExecutionStatusEnum_discoveryOnly;
   @BuiltValueEnumConst(wireName: r'admitted')
   static const BstocksSupportedTokenExecutionStatusEnum admitted = _$bstocksSupportedTokenExecutionStatusEnum_admitted;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstocksSupportedTokenExecutionStatusEnum unknownDefaultOpenApi = _$bstocksSupportedTokenExecutionStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<BstocksSupportedTokenExecutionStatusEnum> get serializer => _$bstocksSupportedTokenExecutionStatusEnumSerializer;
 

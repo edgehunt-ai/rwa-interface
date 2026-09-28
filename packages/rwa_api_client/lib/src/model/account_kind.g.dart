@@ -9,8 +9,6 @@ part of 'account_kind.dart';
 const AccountKind _$app = const AccountKind._('app');
 const AccountKind _$bstocks = const AccountKind._('bstocks');
 const AccountKind _$hip3 = const AccountKind._('hip3');
-const AccountKind _$unknownDefaultOpenApi =
-    const AccountKind._('unknownDefaultOpenApi');
 
 AccountKind _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ AccountKind _$valueOf(String name) {
       return _$bstocks;
     case 'hip3':
       return _$hip3;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<AccountKind> _$values =
   _$app,
   _$bstocks,
   _$hip3,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$AccountKindMeta {
@@ -40,7 +35,6 @@ class _$AccountKindMeta {
   AccountKind get app => _$app;
   AccountKind get bstocks => _$bstocks;
   AccountKind get hip3 => _$hip3;
-  AccountKind get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   AccountKind valueOf(String name) => _$valueOf(name);
   BuiltSet<AccountKind> get values => _$values;
 }
@@ -57,13 +51,11 @@ class _$AccountKindSerializer implements PrimitiveSerializer<AccountKind> {
     'app': 'app',
     'bstocks': 'bstocks',
     'hip3': 'hip3',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'app': 'app',
     'bstocks': 'bstocks',
     'hip3': 'hip3',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

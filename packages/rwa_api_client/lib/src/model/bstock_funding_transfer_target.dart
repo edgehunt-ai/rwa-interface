@@ -147,8 +147,6 @@ class BstockFundingTransferTargetRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const BstockFundingTransferTargetRailEnum bstock = _$bstockFundingTransferTargetRailEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const BstockFundingTransferTargetRailEnum unknownDefaultOpenApi = _$bstockFundingTransferTargetRailEnum_unknownDefaultOpenApi;
 
   static Serializer<BstockFundingTransferTargetRailEnum> get serializer => _$bstockFundingTransferTargetRailEnumSerializer;
 

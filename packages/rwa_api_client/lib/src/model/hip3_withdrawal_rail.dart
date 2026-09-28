@@ -17,9 +17,6 @@ class Hip3WithdrawalRail extends EnumClass {
   /// 出金通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC，Bridge2 到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）。 
   @BuiltValueEnumConst(wireName: r'float')
   static const Hip3WithdrawalRail float = _$float;
-  /// 出金通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC，Bridge2 到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3WithdrawalRail unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3WithdrawalRail> get serializer => _$hip3WithdrawalRailSerializer;
 

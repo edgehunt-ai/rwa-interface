@@ -10,19 +10,14 @@ const PerpFundingTargetAssetAssetIdEnum
     _$perpFundingTargetAssetAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS =
     const PerpFundingTargetAssetAssetIdEnum._(
         'hyperliquidColon1337SlashPerpsColonUSDCPERPS');
-const PerpFundingTargetAssetAssetIdEnum
-    _$perpFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetAssetIdEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetAssetIdEnum _$perpFundingTargetAssetAssetIdEnumValueOf(
     String name) {
   switch (name) {
     case 'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
       return _$perpFundingTargetAssetAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,25 +25,19 @@ final BuiltSet<PerpFundingTargetAssetAssetIdEnum>
     _$perpFundingTargetAssetAssetIdEnumValues = BuiltSet<
         PerpFundingTargetAssetAssetIdEnum>(const <PerpFundingTargetAssetAssetIdEnum>[
   _$perpFundingTargetAssetAssetIdEnum_hyperliquidColon1337SlashPerpsColonUSDCPERPS,
-  _$perpFundingTargetAssetAssetIdEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetAssetNamespaceEnum
     _$perpFundingTargetAssetNamespaceEnum_hyperliquid =
     const PerpFundingTargetAssetNamespaceEnum._('hyperliquid');
-const PerpFundingTargetAssetNamespaceEnum
-    _$perpFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetNamespaceEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetNamespaceEnum
     _$perpFundingTargetAssetNamespaceEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquid':
       return _$perpFundingTargetAssetNamespaceEnum_hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,25 +45,19 @@ final BuiltSet<PerpFundingTargetAssetNamespaceEnum>
     _$perpFundingTargetAssetNamespaceEnumValues = BuiltSet<
         PerpFundingTargetAssetNamespaceEnum>(const <PerpFundingTargetAssetNamespaceEnum>[
   _$perpFundingTargetAssetNamespaceEnum_hyperliquid,
-  _$perpFundingTargetAssetNamespaceEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetAssetNetworkEnum
     _$perpFundingTargetAssetNetworkEnum_hyperliquid =
     const PerpFundingTargetAssetNetworkEnum._('hyperliquid');
-const PerpFundingTargetAssetNetworkEnum
-    _$perpFundingTargetAssetNetworkEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetNetworkEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetNetworkEnum _$perpFundingTargetAssetNetworkEnumValueOf(
     String name) {
   switch (name) {
     case 'hyperliquid':
       return _$perpFundingTargetAssetNetworkEnum_hyperliquid;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -82,25 +65,19 @@ final BuiltSet<PerpFundingTargetAssetNetworkEnum>
     _$perpFundingTargetAssetNetworkEnumValues = BuiltSet<
         PerpFundingTargetAssetNetworkEnum>(const <PerpFundingTargetAssetNetworkEnum>[
   _$perpFundingTargetAssetNetworkEnum_hyperliquid,
-  _$perpFundingTargetAssetNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetAssetChainIdEnum
     _$perpFundingTargetAssetChainIdEnum_number1337 =
     const PerpFundingTargetAssetChainIdEnum._('number1337');
-const PerpFundingTargetAssetChainIdEnum
-    _$perpFundingTargetAssetChainIdEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetChainIdEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetChainIdEnum _$perpFundingTargetAssetChainIdEnumValueOf(
     String name) {
   switch (name) {
     case 'number1337':
       return _$perpFundingTargetAssetChainIdEnum_number1337;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -108,25 +85,19 @@ final BuiltSet<PerpFundingTargetAssetChainIdEnum>
     _$perpFundingTargetAssetChainIdEnumValues = BuiltSet<
         PerpFundingTargetAssetChainIdEnum>(const <PerpFundingTargetAssetChainIdEnum>[
   _$perpFundingTargetAssetChainIdEnum_number1337,
-  _$perpFundingTargetAssetChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetAssetTokenEnum
     _$perpFundingTargetAssetTokenEnum_USDC_PERPS =
     const PerpFundingTargetAssetTokenEnum._('USDC_PERPS');
-const PerpFundingTargetAssetTokenEnum
-    _$perpFundingTargetAssetTokenEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetTokenEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetTokenEnum _$perpFundingTargetAssetTokenEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC_PERPS':
       return _$perpFundingTargetAssetTokenEnum_USDC_PERPS;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetTokenEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -134,26 +105,20 @@ final BuiltSet<PerpFundingTargetAssetTokenEnum>
     _$perpFundingTargetAssetTokenEnumValues = BuiltSet<
         PerpFundingTargetAssetTokenEnum>(const <PerpFundingTargetAssetTokenEnum>[
   _$perpFundingTargetAssetTokenEnum_USDC_PERPS,
-  _$perpFundingTargetAssetTokenEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetAssetTokenContractEnum
     _$perpFundingTargetAssetTokenContractEnum_n0x2100000000000000000000000000000000000000 =
     const PerpFundingTargetAssetTokenContractEnum._(
         'n0x2100000000000000000000000000000000000000');
-const PerpFundingTargetAssetTokenContractEnum
-    _$perpFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetTokenContractEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetTokenContractEnum
     _$perpFundingTargetAssetTokenContractEnumValueOf(String name) {
   switch (name) {
     case 'n0x2100000000000000000000000000000000000000':
       return _$perpFundingTargetAssetTokenContractEnum_n0x2100000000000000000000000000000000000000;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -161,25 +126,19 @@ final BuiltSet<PerpFundingTargetAssetTokenContractEnum>
     _$perpFundingTargetAssetTokenContractEnumValues = BuiltSet<
         PerpFundingTargetAssetTokenContractEnum>(const <PerpFundingTargetAssetTokenContractEnum>[
   _$perpFundingTargetAssetTokenContractEnum_n0x2100000000000000000000000000000000000000,
-  _$perpFundingTargetAssetTokenContractEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetAssetTokenDecimalsEnum
     _$perpFundingTargetAssetTokenDecimalsEnum_number8 =
     const PerpFundingTargetAssetTokenDecimalsEnum._('number8');
-const PerpFundingTargetAssetTokenDecimalsEnum
-    _$perpFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetTokenDecimalsEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetTokenDecimalsEnum
     _$perpFundingTargetAssetTokenDecimalsEnumValueOf(String name) {
   switch (name) {
     case 'number8':
       return _$perpFundingTargetAssetTokenDecimalsEnum_number8;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -187,25 +146,19 @@ final BuiltSet<PerpFundingTargetAssetTokenDecimalsEnum>
     _$perpFundingTargetAssetTokenDecimalsEnumValues = BuiltSet<
         PerpFundingTargetAssetTokenDecimalsEnum>(const <PerpFundingTargetAssetTokenDecimalsEnum>[
   _$perpFundingTargetAssetTokenDecimalsEnum_number8,
-  _$perpFundingTargetAssetTokenDecimalsEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpFundingTargetAssetProvenanceEnum
     _$perpFundingTargetAssetProvenanceEnum_hyperliquidPerps =
     const PerpFundingTargetAssetProvenanceEnum._('hyperliquidPerps');
-const PerpFundingTargetAssetProvenanceEnum
-    _$perpFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi =
-    const PerpFundingTargetAssetProvenanceEnum._('unknownDefaultOpenApi');
 
 PerpFundingTargetAssetProvenanceEnum
     _$perpFundingTargetAssetProvenanceEnumValueOf(String name) {
   switch (name) {
     case 'hyperliquidPerps':
       return _$perpFundingTargetAssetProvenanceEnum_hyperliquidPerps;
-    case 'unknownDefaultOpenApi':
-      return _$perpFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
     default:
-      return _$perpFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -213,7 +166,6 @@ final BuiltSet<PerpFundingTargetAssetProvenanceEnum>
     _$perpFundingTargetAssetProvenanceEnumValues = BuiltSet<
         PerpFundingTargetAssetProvenanceEnum>(const <PerpFundingTargetAssetProvenanceEnum>[
   _$perpFundingTargetAssetProvenanceEnum_hyperliquidPerps,
-  _$perpFundingTargetAssetProvenanceEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpFundingTargetAssetAssetIdEnum>
@@ -246,12 +198,10 @@ class _$PerpFundingTargetAssetAssetIdEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidColon1337SlashPerpsColonUSDCPERPS':
         'hyperliquid:1337/perps:USDC-PERPS',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid:1337/perps:USDC-PERPS':
         'hyperliquidColon1337SlashPerpsColonUSDCPERPS',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -277,11 +227,9 @@ class _$PerpFundingTargetAssetNamespaceEnumSerializer
     implements PrimitiveSerializer<PerpFundingTargetAssetNamespaceEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquid': 'hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -309,11 +257,9 @@ class _$PerpFundingTargetAssetNetworkEnumSerializer
     implements PrimitiveSerializer<PerpFundingTargetAssetNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquid': 'Hyperliquid',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'Hyperliquid': 'hyperliquid',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -339,11 +285,9 @@ class _$PerpFundingTargetAssetChainIdEnumSerializer
     implements PrimitiveSerializer<PerpFundingTargetAssetChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number1337': 1337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     1337: 'number1337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -369,11 +313,9 @@ class _$PerpFundingTargetAssetTokenEnumSerializer
     implements PrimitiveSerializer<PerpFundingTargetAssetTokenEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC_PERPS': 'USDC-PERPS',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC-PERPS': 'USDC_PERPS',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -400,12 +342,10 @@ class _$PerpFundingTargetAssetTokenContractEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'n0x2100000000000000000000000000000000000000':
         '0x2100000000000000000000000000000000000000',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     '0x2100000000000000000000000000000000000000':
         'n0x2100000000000000000000000000000000000000',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -433,11 +373,9 @@ class _$PerpFundingTargetAssetTokenDecimalsEnumSerializer
     implements PrimitiveSerializer<PerpFundingTargetAssetTokenDecimalsEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number8': 8,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     8: 'number8',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override
@@ -465,11 +403,9 @@ class _$PerpFundingTargetAssetProvenanceEnumSerializer
     implements PrimitiveSerializer<PerpFundingTargetAssetProvenanceEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'hyperliquidPerps': 'hyperliquid_perps',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'hyperliquid_perps': 'hyperliquidPerps',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

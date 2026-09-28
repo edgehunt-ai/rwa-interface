@@ -10,20 +10,14 @@ const BstocksPreviewEconomicsQuoteValidityKindEnum
     _$bstocksPreviewEconomicsQuoteValidityKindEnum_requoteOnConfirmation =
     const BstocksPreviewEconomicsQuoteValidityKindEnum._(
         'requoteOnConfirmation');
-const BstocksPreviewEconomicsQuoteValidityKindEnum
-    _$bstocksPreviewEconomicsQuoteValidityKindEnum_unknownDefaultOpenApi =
-    const BstocksPreviewEconomicsQuoteValidityKindEnum._(
-        'unknownDefaultOpenApi');
 
 BstocksPreviewEconomicsQuoteValidityKindEnum
     _$bstocksPreviewEconomicsQuoteValidityKindEnumValueOf(String name) {
   switch (name) {
     case 'requoteOnConfirmation':
       return _$bstocksPreviewEconomicsQuoteValidityKindEnum_requoteOnConfirmation;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPreviewEconomicsQuoteValidityKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPreviewEconomicsQuoteValidityKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -31,7 +25,6 @@ final BuiltSet<BstocksPreviewEconomicsQuoteValidityKindEnum>
     _$bstocksPreviewEconomicsQuoteValidityKindEnumValues = BuiltSet<
         BstocksPreviewEconomicsQuoteValidityKindEnum>(const <BstocksPreviewEconomicsQuoteValidityKindEnum>[
   _$bstocksPreviewEconomicsQuoteValidityKindEnum_requoteOnConfirmation,
-  _$bstocksPreviewEconomicsQuoteValidityKindEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksPreviewEconomicsQuoteValidityKindEnum>
@@ -43,11 +36,9 @@ class _$BstocksPreviewEconomicsQuoteValidityKindEnumSerializer
         PrimitiveSerializer<BstocksPreviewEconomicsQuoteValidityKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'requoteOnConfirmation': 'requote_on_confirmation',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'requote_on_confirmation': 'requoteOnConfirmation',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

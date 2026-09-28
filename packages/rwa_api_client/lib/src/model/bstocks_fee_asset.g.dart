@@ -12,9 +12,6 @@ const BstocksFeeAssetChainIdEnum _$bstocksFeeAssetChainIdEnum_number97 =
     const BstocksFeeAssetChainIdEnum._('number97');
 const BstocksFeeAssetChainIdEnum _$bstocksFeeAssetChainIdEnum_number31337 =
     const BstocksFeeAssetChainIdEnum._('number31337');
-const BstocksFeeAssetChainIdEnum
-    _$bstocksFeeAssetChainIdEnum_unknownDefaultOpenApi =
-    const BstocksFeeAssetChainIdEnum._('unknownDefaultOpenApi');
 
 BstocksFeeAssetChainIdEnum _$bstocksFeeAssetChainIdEnumValueOf(String name) {
   switch (name) {
@@ -24,10 +21,8 @@ BstocksFeeAssetChainIdEnum _$bstocksFeeAssetChainIdEnumValueOf(String name) {
       return _$bstocksFeeAssetChainIdEnum_number97;
     case 'number31337':
       return _$bstocksFeeAssetChainIdEnum_number31337;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksFeeAssetChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksFeeAssetChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -36,7 +31,6 @@ final BuiltSet<BstocksFeeAssetChainIdEnum> _$bstocksFeeAssetChainIdEnumValues =
   _$bstocksFeeAssetChainIdEnum_number56,
   _$bstocksFeeAssetChainIdEnum_number97,
   _$bstocksFeeAssetChainIdEnum_number31337,
-  _$bstocksFeeAssetChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksFeeAssetChainIdEnum> _$bstocksFeeAssetChainIdEnumSerializer =
@@ -48,13 +42,11 @@ class _$BstocksFeeAssetChainIdEnumSerializer
     'number56': 56,
     'number97': 97,
     'number31337': 31337,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     56: 'number56',
     97: 'number97',
     31337: 'number31337',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

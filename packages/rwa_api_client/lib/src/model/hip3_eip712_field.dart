@@ -129,8 +129,6 @@ class Hip3Eip712FieldNameEnum extends EnumClass {
   static const Hip3Eip712FieldNameEnum source_ = _$hip3Eip712FieldNameEnum_source_;
   @BuiltValueEnumConst(wireName: r'connectionId')
   static const Hip3Eip712FieldNameEnum connectionId = _$hip3Eip712FieldNameEnum_connectionId;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712FieldNameEnum unknownDefaultOpenApi = _$hip3Eip712FieldNameEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712FieldNameEnum> get serializer => _$hip3Eip712FieldNameEnumSerializer;
 
@@ -146,8 +144,6 @@ class Hip3Eip712FieldTypeEnum extends EnumClass {
   static const Hip3Eip712FieldTypeEnum string = _$hip3Eip712FieldTypeEnum_string;
   @BuiltValueEnumConst(wireName: r'bytes32')
   static const Hip3Eip712FieldTypeEnum bytes32 = _$hip3Eip712FieldTypeEnum_bytes32;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712FieldTypeEnum unknownDefaultOpenApi = _$hip3Eip712FieldTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712FieldTypeEnum> get serializer => _$hip3Eip712FieldTypeEnumSerializer;
 

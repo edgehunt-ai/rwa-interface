@@ -217,8 +217,6 @@ class Hip3ClosePreviewRequestTypeEnum extends EnumClass {
   static const Hip3ClosePreviewRequestTypeEnum market = _$hip3ClosePreviewRequestTypeEnum_market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const Hip3ClosePreviewRequestTypeEnum limit = _$hip3ClosePreviewRequestTypeEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ClosePreviewRequestTypeEnum unknownDefaultOpenApi = _$hip3ClosePreviewRequestTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3ClosePreviewRequestTypeEnum> get serializer => _$hip3ClosePreviewRequestTypeEnumSerializer;
 

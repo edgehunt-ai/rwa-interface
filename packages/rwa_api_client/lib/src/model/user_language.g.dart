@@ -10,8 +10,6 @@ const UserLanguage _$zhCN = const UserLanguage._('zhCN');
 const UserLanguage _$en = const UserLanguage._('en');
 const UserLanguage _$ja = const UserLanguage._('ja');
 const UserLanguage _$ko = const UserLanguage._('ko');
-const UserLanguage _$unknownDefaultOpenApi =
-    const UserLanguage._('unknownDefaultOpenApi');
 
 UserLanguage _$valueOf(String name) {
   switch (name) {
@@ -23,10 +21,8 @@ UserLanguage _$valueOf(String name) {
       return _$ja;
     case 'ko':
       return _$ko;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -36,7 +32,6 @@ final BuiltSet<UserLanguage> _$values =
   _$en,
   _$ja,
   _$ko,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$UserLanguageMeta {
@@ -45,7 +40,6 @@ class _$UserLanguageMeta {
   UserLanguage get en => _$en;
   UserLanguage get ja => _$ja;
   UserLanguage get ko => _$ko;
-  UserLanguage get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   UserLanguage valueOf(String name) => _$valueOf(name);
   BuiltSet<UserLanguage> get values => _$values;
 }
@@ -63,14 +57,12 @@ class _$UserLanguageSerializer implements PrimitiveSerializer<UserLanguage> {
     'en': 'en',
     'ja': 'ja',
     'ko': 'ko',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'zh-CN': 'zhCN',
     'en': 'en',
     'ja': 'ja',
     'ko': 'ko',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

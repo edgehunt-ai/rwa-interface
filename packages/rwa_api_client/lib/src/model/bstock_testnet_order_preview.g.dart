@@ -9,19 +9,14 @@ part of 'bstock_testnet_order_preview.dart';
 const BstockTestnetOrderPreviewFundingModeEnum
     _$bstockTestnetOrderPreviewFundingModeEnum_unreservedTransferFrom =
     const BstockTestnetOrderPreviewFundingModeEnum._('unreservedTransferFrom');
-const BstockTestnetOrderPreviewFundingModeEnum
-    _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi =
-    const BstockTestnetOrderPreviewFundingModeEnum._('unknownDefaultOpenApi');
 
 BstockTestnetOrderPreviewFundingModeEnum
     _$bstockTestnetOrderPreviewFundingModeEnumValueOf(String name) {
   switch (name) {
     case 'unreservedTransferFrom':
       return _$bstockTestnetOrderPreviewFundingModeEnum_unreservedTransferFrom;
-    case 'unknownDefaultOpenApi':
-      return _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,25 +24,19 @@ final BuiltSet<BstockTestnetOrderPreviewFundingModeEnum>
     _$bstockTestnetOrderPreviewFundingModeEnumValues = BuiltSet<
         BstockTestnetOrderPreviewFundingModeEnum>(const <BstockTestnetOrderPreviewFundingModeEnum>[
   _$bstockTestnetOrderPreviewFundingModeEnum_unreservedTransferFrom,
-  _$bstockTestnetOrderPreviewFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockTestnetOrderPreviewTypeEnum
     _$bstockTestnetOrderPreviewTypeEnum_market =
     const BstockTestnetOrderPreviewTypeEnum._('market');
-const BstockTestnetOrderPreviewTypeEnum
-    _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi =
-    const BstockTestnetOrderPreviewTypeEnum._('unknownDefaultOpenApi');
 
 BstockTestnetOrderPreviewTypeEnum _$bstockTestnetOrderPreviewTypeEnumValueOf(
     String name) {
   switch (name) {
     case 'market':
       return _$bstockTestnetOrderPreviewTypeEnum_market;
-    case 'unknownDefaultOpenApi':
-      return _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -55,25 +44,19 @@ final BuiltSet<BstockTestnetOrderPreviewTypeEnum>
     _$bstockTestnetOrderPreviewTypeEnumValues = BuiltSet<
         BstockTestnetOrderPreviewTypeEnum>(const <BstockTestnetOrderPreviewTypeEnum>[
   _$bstockTestnetOrderPreviewTypeEnum_market,
-  _$bstockTestnetOrderPreviewTypeEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockTestnetOrderPreviewKindEnum
     _$bstockTestnetOrderPreviewKindEnum_bstock =
     const BstockTestnetOrderPreviewKindEnum._('bstock');
-const BstockTestnetOrderPreviewKindEnum
-    _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi =
-    const BstockTestnetOrderPreviewKindEnum._('unknownDefaultOpenApi');
 
 BstockTestnetOrderPreviewKindEnum _$bstockTestnetOrderPreviewKindEnumValueOf(
     String name) {
   switch (name) {
     case 'bstock':
       return _$bstockTestnetOrderPreviewKindEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -81,25 +64,19 @@ final BuiltSet<BstockTestnetOrderPreviewKindEnum>
     _$bstockTestnetOrderPreviewKindEnumValues = BuiltSet<
         BstockTestnetOrderPreviewKindEnum>(const <BstockTestnetOrderPreviewKindEnum>[
   _$bstockTestnetOrderPreviewKindEnum_bstock,
-  _$bstockTestnetOrderPreviewKindEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockTestnetOrderPreviewNetworkEnum
     _$bstockTestnetOrderPreviewNetworkEnum_BSC =
     const BstockTestnetOrderPreviewNetworkEnum._('BSC');
-const BstockTestnetOrderPreviewNetworkEnum
-    _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi =
-    const BstockTestnetOrderPreviewNetworkEnum._('unknownDefaultOpenApi');
 
 BstockTestnetOrderPreviewNetworkEnum
     _$bstockTestnetOrderPreviewNetworkEnumValueOf(String name) {
   switch (name) {
     case 'BSC':
       return _$bstockTestnetOrderPreviewNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -107,26 +84,19 @@ final BuiltSet<BstockTestnetOrderPreviewNetworkEnum>
     _$bstockTestnetOrderPreviewNetworkEnumValues = BuiltSet<
         BstockTestnetOrderPreviewNetworkEnum>(const <BstockTestnetOrderPreviewNetworkEnum>[
   _$bstockTestnetOrderPreviewNetworkEnum_BSC,
-  _$bstockTestnetOrderPreviewNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockTestnetOrderPreviewSettlementAssetEnum
     _$bstockTestnetOrderPreviewSettlementAssetEnum_TUSDT =
     const BstockTestnetOrderPreviewSettlementAssetEnum._('TUSDT');
-const BstockTestnetOrderPreviewSettlementAssetEnum
-    _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi =
-    const BstockTestnetOrderPreviewSettlementAssetEnum._(
-        'unknownDefaultOpenApi');
 
 BstockTestnetOrderPreviewSettlementAssetEnum
     _$bstockTestnetOrderPreviewSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'TUSDT':
       return _$bstockTestnetOrderPreviewSettlementAssetEnum_TUSDT;
-    case 'unknownDefaultOpenApi':
-      return _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -134,26 +104,19 @@ final BuiltSet<BstockTestnetOrderPreviewSettlementAssetEnum>
     _$bstockTestnetOrderPreviewSettlementAssetEnumValues = BuiltSet<
         BstockTestnetOrderPreviewSettlementAssetEnum>(const <BstockTestnetOrderPreviewSettlementAssetEnum>[
   _$bstockTestnetOrderPreviewSettlementAssetEnum_TUSDT,
-  _$bstockTestnetOrderPreviewSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 const BstockTestnetOrderPreviewSettlementChainIdEnum
     _$bstockTestnetOrderPreviewSettlementChainIdEnum_number97 =
     const BstockTestnetOrderPreviewSettlementChainIdEnum._('number97');
-const BstockTestnetOrderPreviewSettlementChainIdEnum
-    _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi =
-    const BstockTestnetOrderPreviewSettlementChainIdEnum._(
-        'unknownDefaultOpenApi');
 
 BstockTestnetOrderPreviewSettlementChainIdEnum
     _$bstockTestnetOrderPreviewSettlementChainIdEnumValueOf(String name) {
   switch (name) {
     case 'number97':
       return _$bstockTestnetOrderPreviewSettlementChainIdEnum_number97;
-    case 'unknownDefaultOpenApi':
-      return _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
     default:
-      return _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -161,7 +124,6 @@ final BuiltSet<BstockTestnetOrderPreviewSettlementChainIdEnum>
     _$bstockTestnetOrderPreviewSettlementChainIdEnumValues = BuiltSet<
         BstockTestnetOrderPreviewSettlementChainIdEnum>(const <BstockTestnetOrderPreviewSettlementChainIdEnum>[
   _$bstockTestnetOrderPreviewSettlementChainIdEnum_number97,
-  _$bstockTestnetOrderPreviewSettlementChainIdEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstockTestnetOrderPreviewFundingModeEnum>
@@ -187,11 +149,9 @@ class _$BstockTestnetOrderPreviewFundingModeEnumSerializer
     implements PrimitiveSerializer<BstockTestnetOrderPreviewFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unreservedTransferFrom': 'unreserved_transfer_from',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unreserved_transfer_from': 'unreservedTransferFrom',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -219,11 +179,9 @@ class _$BstockTestnetOrderPreviewTypeEnumSerializer
     implements PrimitiveSerializer<BstockTestnetOrderPreviewTypeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'market': 'market',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'market': 'market',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -249,11 +207,9 @@ class _$BstockTestnetOrderPreviewKindEnumSerializer
     implements PrimitiveSerializer<BstockTestnetOrderPreviewKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -279,11 +235,9 @@ class _$BstockTestnetOrderPreviewNetworkEnumSerializer
     implements PrimitiveSerializer<BstockTestnetOrderPreviewNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -312,11 +266,9 @@ class _$BstockTestnetOrderPreviewSettlementAssetEnumSerializer
         PrimitiveSerializer<BstockTestnetOrderPreviewSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'TUSDT': 'TUSDT',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'TUSDT': 'TUSDT',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -345,11 +297,9 @@ class _$BstockTestnetOrderPreviewSettlementChainIdEnumSerializer
         PrimitiveSerializer<BstockTestnetOrderPreviewSettlementChainIdEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'number97': 97,
-    'unknownDefaultOpenApi': 11184809,
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     97: 'number97',
-    11184809: 'unknownDefaultOpenApi',
   };
 
   @override

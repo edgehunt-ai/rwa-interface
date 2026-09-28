@@ -263,8 +263,6 @@ class CompletedFundingTransferStateStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'completed')
   static const CompletedFundingTransferStateStatusEnum completed = _$completedFundingTransferStateStatusEnum_completed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<CompletedFundingTransferStateStatusEnum> get serializer => _$completedFundingTransferStateStatusEnumSerializer;
 
@@ -278,8 +276,6 @@ class CompletedFundingTransferStateSourceExecutionStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'confirmed')
   static const CompletedFundingTransferStateSourceExecutionStatusEnum confirmed = _$completedFundingTransferStateSourceExecutionStatusEnum_confirmed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateSourceExecutionStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateSourceExecutionStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<CompletedFundingTransferStateSourceExecutionStatusEnum> get serializer => _$completedFundingTransferStateSourceExecutionStatusEnumSerializer;
 
@@ -293,8 +289,6 @@ class CompletedFundingTransferStateProviderStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'succeeded')
   static const CompletedFundingTransferStateProviderStatusEnum succeeded = _$completedFundingTransferStateProviderStatusEnum_succeeded;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateProviderStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateProviderStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<CompletedFundingTransferStateProviderStatusEnum> get serializer => _$completedFundingTransferStateProviderStatusEnumSerializer;
 
@@ -308,8 +302,6 @@ class CompletedFundingTransferStateTargetCreditStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'confirmed')
   static const CompletedFundingTransferStateTargetCreditStatusEnum confirmed = _$completedFundingTransferStateTargetCreditStatusEnum_confirmed;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateTargetCreditStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateTargetCreditStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<CompletedFundingTransferStateTargetCreditStatusEnum> get serializer => _$completedFundingTransferStateTargetCreditStatusEnumSerializer;
 
@@ -323,8 +315,6 @@ class CompletedFundingTransferStateRecoveryStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'none')
   static const CompletedFundingTransferStateRecoveryStatusEnum none = _$completedFundingTransferStateRecoveryStatusEnum_none;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const CompletedFundingTransferStateRecoveryStatusEnum unknownDefaultOpenApi = _$completedFundingTransferStateRecoveryStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<CompletedFundingTransferStateRecoveryStatusEnum> get serializer => _$completedFundingTransferStateRecoveryStatusEnumSerializer;
 

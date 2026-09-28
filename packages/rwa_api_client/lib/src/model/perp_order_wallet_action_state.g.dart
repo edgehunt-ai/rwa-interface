@@ -9,19 +9,14 @@ part of 'perp_order_wallet_action_state.dart';
 const PerpOrderWalletActionStateKindEnum
     _$perpOrderWalletActionStateKindEnum_perp =
     const PerpOrderWalletActionStateKindEnum._('perp');
-const PerpOrderWalletActionStateKindEnum
-    _$perpOrderWalletActionStateKindEnum_unknownDefaultOpenApi =
-    const PerpOrderWalletActionStateKindEnum._('unknownDefaultOpenApi');
 
 PerpOrderWalletActionStateKindEnum _$perpOrderWalletActionStateKindEnumValueOf(
     String name) {
   switch (name) {
     case 'perp':
       return _$perpOrderWalletActionStateKindEnum_perp;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderWalletActionStateKindEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,26 +24,19 @@ final BuiltSet<PerpOrderWalletActionStateKindEnum>
     _$perpOrderWalletActionStateKindEnumValues = BuiltSet<
         PerpOrderWalletActionStateKindEnum>(const <PerpOrderWalletActionStateKindEnum>[
   _$perpOrderWalletActionStateKindEnum_perp,
-  _$perpOrderWalletActionStateKindEnum_unknownDefaultOpenApi,
 ]);
 
 const PerpOrderWalletActionStateWalletActionBlockerEnum
     _$perpOrderWalletActionStateWalletActionBlockerEnum_notApplicable =
     const PerpOrderWalletActionStateWalletActionBlockerEnum._('notApplicable');
-const PerpOrderWalletActionStateWalletActionBlockerEnum
-    _$perpOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi =
-    const PerpOrderWalletActionStateWalletActionBlockerEnum._(
-        'unknownDefaultOpenApi');
 
 PerpOrderWalletActionStateWalletActionBlockerEnum
     _$perpOrderWalletActionStateWalletActionBlockerEnumValueOf(String name) {
   switch (name) {
     case 'notApplicable':
       return _$perpOrderWalletActionStateWalletActionBlockerEnum_notApplicable;
-    case 'unknownDefaultOpenApi':
-      return _$perpOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
     default:
-      return _$perpOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -56,7 +44,6 @@ final BuiltSet<PerpOrderWalletActionStateWalletActionBlockerEnum>
     _$perpOrderWalletActionStateWalletActionBlockerEnumValues = BuiltSet<
         PerpOrderWalletActionStateWalletActionBlockerEnum>(const <PerpOrderWalletActionStateWalletActionBlockerEnum>[
   _$perpOrderWalletActionStateWalletActionBlockerEnum_notApplicable,
-  _$perpOrderWalletActionStateWalletActionBlockerEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<PerpOrderWalletActionStateKindEnum>
@@ -70,11 +57,9 @@ class _$PerpOrderWalletActionStateKindEnumSerializer
     implements PrimitiveSerializer<PerpOrderWalletActionStateKindEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'perp': 'perp',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'perp': 'perp',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -101,11 +86,9 @@ class _$PerpOrderWalletActionStateWalletActionBlockerEnumSerializer
         PrimitiveSerializer<PerpOrderWalletActionStateWalletActionBlockerEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'notApplicable': 'not_applicable',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'not_applicable': 'notApplicable',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

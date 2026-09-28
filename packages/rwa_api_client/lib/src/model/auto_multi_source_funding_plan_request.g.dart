@@ -9,19 +9,14 @@ part of 'auto_multi_source_funding_plan_request.dart';
 const AutoMultiSourceFundingPlanRequestModeEnum
     _$autoMultiSourceFundingPlanRequestModeEnum_autoMultiSource =
     const AutoMultiSourceFundingPlanRequestModeEnum._('autoMultiSource');
-const AutoMultiSourceFundingPlanRequestModeEnum
-    _$autoMultiSourceFundingPlanRequestModeEnum_unknownDefaultOpenApi =
-    const AutoMultiSourceFundingPlanRequestModeEnum._('unknownDefaultOpenApi');
 
 AutoMultiSourceFundingPlanRequestModeEnum
     _$autoMultiSourceFundingPlanRequestModeEnumValueOf(String name) {
   switch (name) {
     case 'autoMultiSource':
       return _$autoMultiSourceFundingPlanRequestModeEnum_autoMultiSource;
-    case 'unknownDefaultOpenApi':
-      return _$autoMultiSourceFundingPlanRequestModeEnum_unknownDefaultOpenApi;
     default:
-      return _$autoMultiSourceFundingPlanRequestModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<AutoMultiSourceFundingPlanRequestModeEnum>
     _$autoMultiSourceFundingPlanRequestModeEnumValues = BuiltSet<
         AutoMultiSourceFundingPlanRequestModeEnum>(const <AutoMultiSourceFundingPlanRequestModeEnum>[
   _$autoMultiSourceFundingPlanRequestModeEnum_autoMultiSource,
-  _$autoMultiSourceFundingPlanRequestModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<AutoMultiSourceFundingPlanRequestModeEnum>
@@ -40,11 +34,9 @@ class _$AutoMultiSourceFundingPlanRequestModeEnumSerializer
     implements PrimitiveSerializer<AutoMultiSourceFundingPlanRequestModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'autoMultiSource': 'auto_multi_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_multi_source': 'autoMultiSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -8,19 +8,14 @@ part of 'legacy_bstock_funding_rail.dart';
 
 const LegacyBstockFundingRailRailEnum _$legacyBstockFundingRailRailEnum_bstock =
     const LegacyBstockFundingRailRailEnum._('bstock');
-const LegacyBstockFundingRailRailEnum
-    _$legacyBstockFundingRailRailEnum_unknownDefaultOpenApi =
-    const LegacyBstockFundingRailRailEnum._('unknownDefaultOpenApi');
 
 LegacyBstockFundingRailRailEnum _$legacyBstockFundingRailRailEnumValueOf(
     String name) {
   switch (name) {
     case 'bstock':
       return _$legacyBstockFundingRailRailEnum_bstock;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockFundingRailRailEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyBstockFundingRailRailEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -28,25 +23,19 @@ final BuiltSet<LegacyBstockFundingRailRailEnum>
     _$legacyBstockFundingRailRailEnumValues = BuiltSet<
         LegacyBstockFundingRailRailEnum>(const <LegacyBstockFundingRailRailEnum>[
   _$legacyBstockFundingRailRailEnum_bstock,
-  _$legacyBstockFundingRailRailEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyBstockFundingRailNetworkEnum
     _$legacyBstockFundingRailNetworkEnum_BSC =
     const LegacyBstockFundingRailNetworkEnum._('BSC');
-const LegacyBstockFundingRailNetworkEnum
-    _$legacyBstockFundingRailNetworkEnum_unknownDefaultOpenApi =
-    const LegacyBstockFundingRailNetworkEnum._('unknownDefaultOpenApi');
 
 LegacyBstockFundingRailNetworkEnum _$legacyBstockFundingRailNetworkEnumValueOf(
     String name) {
   switch (name) {
     case 'BSC':
       return _$legacyBstockFundingRailNetworkEnum_BSC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockFundingRailNetworkEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyBstockFundingRailNetworkEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -54,25 +43,19 @@ final BuiltSet<LegacyBstockFundingRailNetworkEnum>
     _$legacyBstockFundingRailNetworkEnumValues = BuiltSet<
         LegacyBstockFundingRailNetworkEnum>(const <LegacyBstockFundingRailNetworkEnum>[
   _$legacyBstockFundingRailNetworkEnum_BSC,
-  _$legacyBstockFundingRailNetworkEnum_unknownDefaultOpenApi,
 ]);
 
 const LegacyBstockFundingRailSettlementAssetEnum
     _$legacyBstockFundingRailSettlementAssetEnum_USDC =
     const LegacyBstockFundingRailSettlementAssetEnum._('USDC');
-const LegacyBstockFundingRailSettlementAssetEnum
-    _$legacyBstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi =
-    const LegacyBstockFundingRailSettlementAssetEnum._('unknownDefaultOpenApi');
 
 LegacyBstockFundingRailSettlementAssetEnum
     _$legacyBstockFundingRailSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$legacyBstockFundingRailSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$legacyBstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$legacyBstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -80,7 +63,6 @@ final BuiltSet<LegacyBstockFundingRailSettlementAssetEnum>
     _$legacyBstockFundingRailSettlementAssetEnumValues = BuiltSet<
         LegacyBstockFundingRailSettlementAssetEnum>(const <LegacyBstockFundingRailSettlementAssetEnum>[
   _$legacyBstockFundingRailSettlementAssetEnum_USDC,
-  _$legacyBstockFundingRailSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<LegacyBstockFundingRailRailEnum>
@@ -97,11 +79,9 @@ class _$LegacyBstockFundingRailRailEnumSerializer
     implements PrimitiveSerializer<LegacyBstockFundingRailRailEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'bstock': 'bstock',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bstock': 'bstock',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -127,11 +107,9 @@ class _$LegacyBstockFundingRailNetworkEnumSerializer
     implements PrimitiveSerializer<LegacyBstockFundingRailNetworkEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'BSC': 'BSC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'BSC': 'BSC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -157,11 +135,9 @@ class _$LegacyBstockFundingRailSettlementAssetEnumSerializer
     implements PrimitiveSerializer<LegacyBstockFundingRailSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

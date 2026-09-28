@@ -129,9 +129,6 @@ class FundingSessionTransferIntentDestinationEnum extends EnumClass {
   /// Internal destination account. `hip3_margin` tops up HIP-3 perpetual margin.
   @BuiltValueEnumConst(wireName: r'hip3_margin')
   static const FundingSessionTransferIntentDestinationEnum hip3Margin = _$fundingSessionTransferIntentDestinationEnum_hip3Margin;
-  /// Internal destination account. `hip3_margin` tops up HIP-3 perpetual margin.
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingSessionTransferIntentDestinationEnum unknownDefaultOpenApi = _$fundingSessionTransferIntentDestinationEnum_unknownDefaultOpenApi;
 
   static Serializer<FundingSessionTransferIntentDestinationEnum> get serializer => _$fundingSessionTransferIntentDestinationEnumSerializer;
 

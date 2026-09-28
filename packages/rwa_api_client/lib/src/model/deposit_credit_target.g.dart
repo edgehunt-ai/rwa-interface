@@ -7,30 +7,24 @@ part of 'deposit_credit_target.dart';
 // **************************************************************************
 
 const DepositCreditTarget _$wallet = const DepositCreditTarget._('wallet');
-const DepositCreditTarget _$unknownDefaultOpenApi =
-    const DepositCreditTarget._('unknownDefaultOpenApi');
 
 DepositCreditTarget _$valueOf(String name) {
   switch (name) {
     case 'wallet':
       return _$wallet;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
 final BuiltSet<DepositCreditTarget> _$values =
     BuiltSet<DepositCreditTarget>(const <DepositCreditTarget>[
   _$wallet,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$DepositCreditTargetMeta {
   const _$DepositCreditTargetMeta();
   DepositCreditTarget get wallet => _$wallet;
-  DepositCreditTarget get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   DepositCreditTarget valueOf(String name) => _$valueOf(name);
   BuiltSet<DepositCreditTarget> get values => _$values;
 }
@@ -48,11 +42,9 @@ class _$DepositCreditTargetSerializer
     implements PrimitiveSerializer<DepositCreditTarget> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'wallet': 'wallet',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'wallet': 'wallet',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

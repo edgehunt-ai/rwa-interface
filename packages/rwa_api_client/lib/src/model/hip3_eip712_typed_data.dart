@@ -161,8 +161,6 @@ class Hip3Eip712TypedDataPrimaryTypeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'Agent')
   static const Hip3Eip712TypedDataPrimaryTypeEnum agent = _$hip3Eip712TypedDataPrimaryTypeEnum_agent;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3Eip712TypedDataPrimaryTypeEnum unknownDefaultOpenApi = _$hip3Eip712TypedDataPrimaryTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3Eip712TypedDataPrimaryTypeEnum> get serializer => _$hip3Eip712TypedDataPrimaryTypeEnumSerializer;
 

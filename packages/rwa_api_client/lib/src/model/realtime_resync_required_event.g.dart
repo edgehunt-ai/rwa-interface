@@ -9,19 +9,14 @@ part of 'realtime_resync_required_event.dart';
 const RealtimeResyncRequiredEventEventEnum
     _$realtimeResyncRequiredEventEventEnum_resyncRequired =
     const RealtimeResyncRequiredEventEventEnum._('resyncRequired');
-const RealtimeResyncRequiredEventEventEnum
-    _$realtimeResyncRequiredEventEventEnum_unknownDefaultOpenApi =
-    const RealtimeResyncRequiredEventEventEnum._('unknownDefaultOpenApi');
 
 RealtimeResyncRequiredEventEventEnum
     _$realtimeResyncRequiredEventEventEnumValueOf(String name) {
   switch (name) {
     case 'resyncRequired':
       return _$realtimeResyncRequiredEventEventEnum_resyncRequired;
-    case 'unknownDefaultOpenApi':
-      return _$realtimeResyncRequiredEventEventEnum_unknownDefaultOpenApi;
     default:
-      return _$realtimeResyncRequiredEventEventEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<RealtimeResyncRequiredEventEventEnum>
     _$realtimeResyncRequiredEventEventEnumValues = BuiltSet<
         RealtimeResyncRequiredEventEventEnum>(const <RealtimeResyncRequiredEventEventEnum>[
   _$realtimeResyncRequiredEventEventEnum_resyncRequired,
-  _$realtimeResyncRequiredEventEventEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<RealtimeResyncRequiredEventEventEnum>
@@ -40,11 +34,9 @@ class _$RealtimeResyncRequiredEventEventEnumSerializer
     implements PrimitiveSerializer<RealtimeResyncRequiredEventEventEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'resyncRequired': 'resync_required',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'resync_required': 'resyncRequired',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

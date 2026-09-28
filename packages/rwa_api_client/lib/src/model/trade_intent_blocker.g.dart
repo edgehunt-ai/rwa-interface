@@ -32,8 +32,6 @@ const TradeIntentBlocker _$capabilityDisabled =
     const TradeIntentBlocker._('capabilityDisabled');
 const TradeIntentBlocker _$manualReview =
     const TradeIntentBlocker._('manualReview');
-const TradeIntentBlocker _$unknownDefaultOpenApi =
-    const TradeIntentBlocker._('unknownDefaultOpenApi');
 
 TradeIntentBlocker _$valueOf(String name) {
   switch (name) {
@@ -63,10 +61,8 @@ TradeIntentBlocker _$valueOf(String name) {
       return _$capabilityDisabled;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -85,7 +81,6 @@ final BuiltSet<TradeIntentBlocker> _$values =
   _$transferFailed,
   _$capabilityDisabled,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$TradeIntentBlockerMeta {
@@ -103,7 +98,6 @@ class _$TradeIntentBlockerMeta {
   TradeIntentBlocker get transferFailed => _$transferFailed;
   TradeIntentBlocker get capabilityDisabled => _$capabilityDisabled;
   TradeIntentBlocker get manualReview => _$manualReview;
-  TradeIntentBlocker get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   TradeIntentBlocker valueOf(String name) => _$valueOf(name);
   BuiltSet<TradeIntentBlocker> get values => _$values;
 }
@@ -133,7 +127,6 @@ class _$TradeIntentBlockerSerializer
     'transferFailed': 'transfer_failed',
     'capabilityDisabled': 'capability_disabled',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'agent_required': 'agentRequired',
@@ -149,7 +142,6 @@ class _$TradeIntentBlockerSerializer
     'transfer_failed': 'transferFailed',
     'capability_disabled': 'capabilityDisabled',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

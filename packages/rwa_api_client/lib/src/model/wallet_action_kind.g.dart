@@ -13,8 +13,6 @@ const WalletActionKind _$originTransaction =
 const WalletActionKind _$erc20Transfer =
     const WalletActionKind._('erc20Transfer');
 const WalletActionKind _$spotSwap = const WalletActionKind._('spotSwap');
-const WalletActionKind _$unknownDefaultOpenApi =
-    const WalletActionKind._('unknownDefaultOpenApi');
 
 WalletActionKind _$valueOf(String name) {
   switch (name) {
@@ -26,10 +24,8 @@ WalletActionKind _$valueOf(String name) {
       return _$erc20Transfer;
     case 'spotSwap':
       return _$spotSwap;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -39,7 +35,6 @@ final BuiltSet<WalletActionKind> _$values =
   _$originTransaction,
   _$erc20Transfer,
   _$spotSwap,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$WalletActionKindMeta {
@@ -48,7 +43,6 @@ class _$WalletActionKindMeta {
   WalletActionKind get originTransaction => _$originTransaction;
   WalletActionKind get erc20Transfer => _$erc20Transfer;
   WalletActionKind get spotSwap => _$spotSwap;
-  WalletActionKind get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   WalletActionKind valueOf(String name) => _$valueOf(name);
   BuiltSet<WalletActionKind> get values => _$values;
 }
@@ -68,14 +62,12 @@ class _$WalletActionKindSerializer
     'originTransaction': 'origin_transaction',
     'erc20Transfer': 'erc20_transfer',
     'spotSwap': 'spot_swap',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'erc20_approval': 'erc20Approval',
     'origin_transaction': 'originTransaction',
     'erc20_transfer': 'erc20Transfer',
     'spot_swap': 'spotSwap',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

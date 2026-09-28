@@ -263,8 +263,6 @@ class HyperliquidUsdcCollateralAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const HyperliquidUsdcCollateralAssetEnum USDC = _$hyperliquidUsdcCollateralAssetEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const HyperliquidUsdcCollateralAssetEnum unknownDefaultOpenApi = _$hyperliquidUsdcCollateralAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<HyperliquidUsdcCollateralAssetEnum> get serializer => _$hyperliquidUsdcCollateralAssetEnumSerializer;
 

@@ -9,19 +9,14 @@ part of 'hip3_trading_context.dart';
 const Hip3TradingContextSettlementAssetEnum
     _$hip3TradingContextSettlementAssetEnum_USDC =
     const Hip3TradingContextSettlementAssetEnum._('USDC');
-const Hip3TradingContextSettlementAssetEnum
-    _$hip3TradingContextSettlementAssetEnum_unknownDefaultOpenApi =
-    const Hip3TradingContextSettlementAssetEnum._('unknownDefaultOpenApi');
 
 Hip3TradingContextSettlementAssetEnum
     _$hip3TradingContextSettlementAssetEnumValueOf(String name) {
   switch (name) {
     case 'USDC':
       return _$hip3TradingContextSettlementAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$hip3TradingContextSettlementAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3TradingContextSettlementAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<Hip3TradingContextSettlementAssetEnum>
     _$hip3TradingContextSettlementAssetEnumValues = BuiltSet<
         Hip3TradingContextSettlementAssetEnum>(const <Hip3TradingContextSettlementAssetEnum>[
   _$hip3TradingContextSettlementAssetEnum_USDC,
-  _$hip3TradingContextSettlementAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3TradingContextSettlementAssetEnum>
@@ -40,11 +34,9 @@ class _$Hip3TradingContextSettlementAssetEnumSerializer
     implements PrimitiveSerializer<Hip3TradingContextSettlementAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override
@@ -94,6 +86,8 @@ class _$Hip3TradingContext extends Hip3TradingContext {
   @override
   final String withdrawableUsdc;
   @override
+  final String? takerFeeRate;
+  @override
   final BuiltList<Hip3Operation> supportedOperations;
   @override
   final String? blocker;
@@ -119,6 +113,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
       this.currentMarginMode,
       required this.availableMarginUsdc,
       required this.withdrawableUsdc,
+      this.takerFeeRate,
       required this.supportedOperations,
       this.blocker,
       required this.observedAt,
@@ -149,6 +144,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
         currentMarginMode == other.currentMarginMode &&
         availableMarginUsdc == other.availableMarginUsdc &&
         withdrawableUsdc == other.withdrawableUsdc &&
+        takerFeeRate == other.takerFeeRate &&
         supportedOperations == other.supportedOperations &&
         blocker == other.blocker &&
         observedAt == other.observedAt &&
@@ -170,6 +166,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
     _$hash = $jc(_$hash, currentMarginMode.hashCode);
     _$hash = $jc(_$hash, availableMarginUsdc.hashCode);
     _$hash = $jc(_$hash, withdrawableUsdc.hashCode);
+    _$hash = $jc(_$hash, takerFeeRate.hashCode);
     _$hash = $jc(_$hash, supportedOperations.hashCode);
     _$hash = $jc(_$hash, blocker.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
@@ -193,6 +190,7 @@ class _$Hip3TradingContext extends Hip3TradingContext {
           ..add('currentMarginMode', currentMarginMode)
           ..add('availableMarginUsdc', availableMarginUsdc)
           ..add('withdrawableUsdc', withdrawableUsdc)
+          ..add('takerFeeRate', takerFeeRate)
           ..add('supportedOperations', supportedOperations)
           ..add('blocker', blocker)
           ..add('observedAt', observedAt)
@@ -264,6 +262,10 @@ class Hip3TradingContextBuilder
   set withdrawableUsdc(String? withdrawableUsdc) =>
       _$this._withdrawableUsdc = withdrawableUsdc;
 
+  String? _takerFeeRate;
+  String? get takerFeeRate => _$this._takerFeeRate;
+  set takerFeeRate(String? takerFeeRate) => _$this._takerFeeRate = takerFeeRate;
+
   ListBuilder<Hip3Operation>? _supportedOperations;
   ListBuilder<Hip3Operation> get supportedOperations =>
       _$this._supportedOperations ??= ListBuilder<Hip3Operation>();
@@ -301,6 +303,7 @@ class Hip3TradingContextBuilder
       _currentMarginMode = $v.currentMarginMode;
       _availableMarginUsdc = $v.availableMarginUsdc;
       _withdrawableUsdc = $v.withdrawableUsdc;
+      _takerFeeRate = $v.takerFeeRate;
       _supportedOperations = $v.supportedOperations.toBuilder();
       _blocker = $v.blocker;
       _observedAt = $v.observedAt;
@@ -350,6 +353,7 @@ class Hip3TradingContextBuilder
                 'availableMarginUsdc'),
             withdrawableUsdc: BuiltValueNullFieldError.checkNotNull(
                 withdrawableUsdc, r'Hip3TradingContext', 'withdrawableUsdc'),
+            takerFeeRate: takerFeeRate,
             supportedOperations: supportedOperations.build(),
             blocker: blocker,
             observedAt: BuiltValueNullFieldError.checkNotNull(

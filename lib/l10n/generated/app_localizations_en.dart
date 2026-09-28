@@ -1976,6 +1976,124 @@ class AppLocalizationsEn extends AppLocalizations {
       'Deposit USDT on BSC from another platform or wallet';
 
   @override
+  String get prepareFunds => 'Prepare Funds';
+
+  @override
+  String insufficientAssetInSpotAccount(Object asset) {
+    return 'Insufficient $asset in your spot account:';
+  }
+
+  @override
+  String addFundingAmountFrom(Object amount, Object asset) {
+    return 'Add $amount $asset from:';
+  }
+
+  @override
+  String get spot => 'Spot';
+
+  @override
+  String get fundsNeeded => 'Funds needed';
+
+  @override
+  String depositAssetOnNetwork(Object asset, Object network) {
+    return 'Deposit $asset on $network from another platform or wallet';
+  }
+
+  @override
+  String get transferFromSpot => 'Transfer from spot';
+
+  @override
+  String get transferWaitingArrival =>
+      'Transfer submitted. Waiting for funds to arrive.';
+
+  @override
+  String get addToken => 'Add token';
+
+  @override
+  String availableAmount(Object amount) {
+    return 'Available: $amount';
+  }
+
+  @override
+  String get estimateTime => 'Estimate time';
+
+  @override
+  String get bridgeFee => 'Bridge Fee';
+
+  @override
+  String get sendAccount => 'Send account';
+
+  @override
+  String get receiveAccount => 'Receive account';
+
+  @override
+  String get sendAmount => 'Send amount';
+
+  @override
+  String get receiveAmount => 'Receive amount';
+
+  @override
+  String get signAndTransfer => 'Sign & Transfer';
+
+  @override
+  String get transferInProgress => 'Transfer in progress…';
+
+  @override
+  String get transferCompleted => 'Transfer completed successfully';
+
+  @override
+  String get totalFee => 'Total Fee';
+
+  @override
+  String get transferEnterPositiveAmount =>
+      'Enter an amount greater than zero.';
+
+  @override
+  String get transferWaitForQuote =>
+      'Wait for the latest quote before transferring.';
+
+  @override
+  String get transferQuoteNotReady =>
+      'This quote is not ready to confirm. Adjust the send amount and try again.';
+
+  @override
+  String get transferQuoteChanged =>
+      'The quote changed and is no longer ready to confirm. Adjust the send amount and try again.';
+
+  @override
+  String get transferRequiresManualReview => 'Transfer requires manual review.';
+
+  @override
+  String get transferFailed => 'Transfer failed.';
+
+  @override
+  String get transferQuoteExpired =>
+      'Transfer quote expired. Request a new quote.';
+
+  @override
+  String get transferCancelled => 'Transfer was cancelled.';
+
+  @override
+  String get transferBlocked => 'Transfer is currently blocked.';
+
+  @override
+  String get transferOptionsLoadFailed => 'Unable to load transfer options.';
+
+  @override
+  String get loadingTransferDetails => 'Loading transfer details';
+
+  @override
+  String get noEligibleFundingAssets => 'No eligible funding assets';
+
+  @override
+  String get oneMinute => '1min';
+
+  @override
+  String minutesRange(Object minutes) {
+    return '1–${minutes}mins';
+  }
+
+  @override
   String get positionsUnavailable => 'Positions unavailable';
 
   @override

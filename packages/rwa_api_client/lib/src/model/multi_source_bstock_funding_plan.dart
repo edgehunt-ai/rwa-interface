@@ -404,8 +404,6 @@ class MultiSourceBstockFundingPlanModeEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'auto_multi_source')
   static const MultiSourceBstockFundingPlanModeEnum autoMultiSource = _$multiSourceBstockFundingPlanModeEnum_autoMultiSource;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourceBstockFundingPlanModeEnum unknownDefaultOpenApi = _$multiSourceBstockFundingPlanModeEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourceBstockFundingPlanModeEnum> get serializer => _$multiSourceBstockFundingPlanModeEnumSerializer;
 
@@ -419,8 +417,6 @@ class MultiSourceBstockFundingPlanRailEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'bstock')
   static const MultiSourceBstockFundingPlanRailEnum bstock = _$multiSourceBstockFundingPlanRailEnum_bstock;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourceBstockFundingPlanRailEnum unknownDefaultOpenApi = _$multiSourceBstockFundingPlanRailEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourceBstockFundingPlanRailEnum> get serializer => _$multiSourceBstockFundingPlanRailEnumSerializer;
 
@@ -434,8 +430,6 @@ class MultiSourceBstockFundingPlanNetworkEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'BSC')
   static const MultiSourceBstockFundingPlanNetworkEnum BSC = _$multiSourceBstockFundingPlanNetworkEnum_BSC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourceBstockFundingPlanNetworkEnum unknownDefaultOpenApi = _$multiSourceBstockFundingPlanNetworkEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourceBstockFundingPlanNetworkEnum> get serializer => _$multiSourceBstockFundingPlanNetworkEnumSerializer;
 
@@ -449,8 +443,6 @@ class MultiSourceBstockFundingPlanAssetEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDT')
   static const MultiSourceBstockFundingPlanAssetEnum USDT = _$multiSourceBstockFundingPlanAssetEnum_USDT;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const MultiSourceBstockFundingPlanAssetEnum unknownDefaultOpenApi = _$multiSourceBstockFundingPlanAssetEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourceBstockFundingPlanAssetEnum> get serializer => _$multiSourceBstockFundingPlanAssetEnumSerializer;
 

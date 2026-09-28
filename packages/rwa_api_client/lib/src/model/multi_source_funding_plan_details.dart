@@ -179,9 +179,6 @@ class MultiSourceFundingPlanDetailsMaxLegsEnum extends EnumClass {
   /// Server-owned upper bound; clients cannot submit or override it.
   @BuiltValueEnumConst(wireNumber: 3)
   static const MultiSourceFundingPlanDetailsMaxLegsEnum number3 = _$multiSourceFundingPlanDetailsMaxLegsEnum_number3;
-  /// Server-owned upper bound; clients cannot submit or override it.
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const MultiSourceFundingPlanDetailsMaxLegsEnum unknownDefaultOpenApi = _$multiSourceFundingPlanDetailsMaxLegsEnum_unknownDefaultOpenApi;
 
   static Serializer<MultiSourceFundingPlanDetailsMaxLegsEnum> get serializer => _$multiSourceFundingPlanDetailsMaxLegsEnumSerializer;
 

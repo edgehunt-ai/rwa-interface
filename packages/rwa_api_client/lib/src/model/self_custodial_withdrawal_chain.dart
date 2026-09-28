@@ -23,9 +23,6 @@ class SelfCustodialWithdrawalChain extends EnumClass {
   /// Privy embedded EVM wallet 当前允许自行签名和广播的网络。
   @BuiltValueEnumConst(wireName: r'BSC')
   static const SelfCustodialWithdrawalChain BSC = _$BSC;
-  /// Privy embedded EVM wallet 当前允许自行签名和广播的网络。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const SelfCustodialWithdrawalChain unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<SelfCustodialWithdrawalChain> get serializer => _$selfCustodialWithdrawalChainSerializer;
 

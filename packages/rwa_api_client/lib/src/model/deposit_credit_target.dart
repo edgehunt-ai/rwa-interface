@@ -14,9 +14,6 @@ class DepositCreditTarget extends EnumClass {
   /// `wallet` 表示资产位于用户自己的已验证链上钱包，不代表 App 内部账本已经记账。
   @BuiltValueEnumConst(wireName: r'wallet')
   static const DepositCreditTarget wallet = _$wallet;
-  /// `wallet` 表示资产位于用户自己的已验证链上钱包，不代表 App 内部账本已经记账。
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositCreditTarget unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<DepositCreditTarget> get serializer => _$depositCreditTargetSerializer;
 

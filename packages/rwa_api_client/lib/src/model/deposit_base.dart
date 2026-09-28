@@ -451,8 +451,6 @@ class DepositBaseTokenEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'USDC')
   static const DepositBaseTokenEnum USDC = _$depositBaseTokenEnum_USDC;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const DepositBaseTokenEnum unknownDefaultOpenApi = _$depositBaseTokenEnum_unknownDefaultOpenApi;
 
   static Serializer<DepositBaseTokenEnum> get serializer => _$depositBaseTokenEnumSerializer;
 

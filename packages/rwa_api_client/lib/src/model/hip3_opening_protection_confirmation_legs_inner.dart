@@ -163,8 +163,6 @@ class Hip3OpeningProtectionConfirmationLegsInnerRoleEnum extends EnumClass {
   static const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum takeProfit = _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_takeProfit;
   @BuiltValueEnumConst(wireName: r'stop_loss')
   static const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum stopLoss = _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_stopLoss;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3OpeningProtectionConfirmationLegsInnerRoleEnum unknownDefaultOpenApi = _$hip3OpeningProtectionConfirmationLegsInnerRoleEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3OpeningProtectionConfirmationLegsInnerRoleEnum> get serializer => _$hip3OpeningProtectionConfirmationLegsInnerRoleEnumSerializer;
 
@@ -180,8 +178,6 @@ class Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum extends EnumCl
   static const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum market = _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_market;
   @BuiltValueEnumConst(wireName: r'limit')
   static const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum limit = _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_limit;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum unknownDefaultOpenApi = _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnum> get serializer => _$hip3OpeningProtectionConfirmationLegsInnerExecutionTypeEnumSerializer;
 

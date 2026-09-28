@@ -9,19 +9,14 @@ part of 'asset_portfolio_allocation.dart';
 const AssetPortfolioAllocationDimensionEnum
     _$assetPortfolioAllocationDimensionEnum_asset =
     const AssetPortfolioAllocationDimensionEnum._('asset');
-const AssetPortfolioAllocationDimensionEnum
-    _$assetPortfolioAllocationDimensionEnum_unknownDefaultOpenApi =
-    const AssetPortfolioAllocationDimensionEnum._('unknownDefaultOpenApi');
 
 AssetPortfolioAllocationDimensionEnum
     _$assetPortfolioAllocationDimensionEnumValueOf(String name) {
   switch (name) {
     case 'asset':
       return _$assetPortfolioAllocationDimensionEnum_asset;
-    case 'unknownDefaultOpenApi':
-      return _$assetPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
     default:
-      return _$assetPortfolioAllocationDimensionEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<AssetPortfolioAllocationDimensionEnum>
     _$assetPortfolioAllocationDimensionEnumValues = BuiltSet<
         AssetPortfolioAllocationDimensionEnum>(const <AssetPortfolioAllocationDimensionEnum>[
   _$assetPortfolioAllocationDimensionEnum_asset,
-  _$assetPortfolioAllocationDimensionEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<AssetPortfolioAllocationDimensionEnum>
@@ -40,11 +34,9 @@ class _$AssetPortfolioAllocationDimensionEnumSerializer
     implements PrimitiveSerializer<AssetPortfolioAllocationDimensionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'asset': 'asset',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'asset': 'asset',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

@@ -9,20 +9,14 @@ part of 'hip3_account_abstraction_preparation.dart';
 const Hip3AccountAbstractionPreparationTargetModeEnum
     _$hip3AccountAbstractionPreparationTargetModeEnum_unifiedAccount =
     const Hip3AccountAbstractionPreparationTargetModeEnum._('unifiedAccount');
-const Hip3AccountAbstractionPreparationTargetModeEnum
-    _$hip3AccountAbstractionPreparationTargetModeEnum_unknownDefaultOpenApi =
-    const Hip3AccountAbstractionPreparationTargetModeEnum._(
-        'unknownDefaultOpenApi');
 
 Hip3AccountAbstractionPreparationTargetModeEnum
     _$hip3AccountAbstractionPreparationTargetModeEnumValueOf(String name) {
   switch (name) {
     case 'unifiedAccount':
       return _$hip3AccountAbstractionPreparationTargetModeEnum_unifiedAccount;
-    case 'unknownDefaultOpenApi':
-      return _$hip3AccountAbstractionPreparationTargetModeEnum_unknownDefaultOpenApi;
     default:
-      return _$hip3AccountAbstractionPreparationTargetModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -30,7 +24,6 @@ final BuiltSet<Hip3AccountAbstractionPreparationTargetModeEnum>
     _$hip3AccountAbstractionPreparationTargetModeEnumValues = BuiltSet<
         Hip3AccountAbstractionPreparationTargetModeEnum>(const <Hip3AccountAbstractionPreparationTargetModeEnum>[
   _$hip3AccountAbstractionPreparationTargetModeEnum_unifiedAccount,
-  _$hip3AccountAbstractionPreparationTargetModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<Hip3AccountAbstractionPreparationTargetModeEnum>
@@ -42,11 +35,9 @@ class _$Hip3AccountAbstractionPreparationTargetModeEnumSerializer
         PrimitiveSerializer<Hip3AccountAbstractionPreparationTargetModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'unifiedAccount': 'unifiedAccount',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'unifiedAccount': 'unifiedAccount',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

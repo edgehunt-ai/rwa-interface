@@ -13,8 +13,6 @@ const FundingPlanStatus _$blocked = const FundingPlanStatus._('blocked');
 const FundingPlanStatus _$expired = const FundingPlanStatus._('expired');
 const FundingPlanStatus _$consumed = const FundingPlanStatus._('consumed');
 const FundingPlanStatus _$cancelled = const FundingPlanStatus._('cancelled');
-const FundingPlanStatus _$unknownDefaultOpenApi =
-    const FundingPlanStatus._('unknownDefaultOpenApi');
 
 FundingPlanStatus _$valueOf(String name) {
   switch (name) {
@@ -30,10 +28,8 @@ FundingPlanStatus _$valueOf(String name) {
       return _$consumed;
     case 'cancelled':
       return _$cancelled;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -45,7 +41,6 @@ final BuiltSet<FundingPlanStatus> _$values =
   _$expired,
   _$consumed,
   _$cancelled,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$FundingPlanStatusMeta {
@@ -56,7 +51,6 @@ class _$FundingPlanStatusMeta {
   FundingPlanStatus get expired => _$expired;
   FundingPlanStatus get consumed => _$consumed;
   FundingPlanStatus get cancelled => _$cancelled;
-  FundingPlanStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   FundingPlanStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<FundingPlanStatus> get values => _$values;
 }
@@ -79,7 +73,6 @@ class _$FundingPlanStatusSerializer
     'expired': 'expired',
     'consumed': 'consumed',
     'cancelled': 'cancelled',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'ready': 'ready',
@@ -88,7 +81,6 @@ class _$FundingPlanStatusSerializer
     'expired': 'expired',
     'consumed': 'consumed',
     'cancelled': 'cancelled',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

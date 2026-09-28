@@ -15,8 +15,6 @@ class PortfolioSourceState extends EnumClass {
   static const PortfolioSourceState available = _$available;
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const PortfolioSourceState unavailable = _$unavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioSourceState unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<PortfolioSourceState> get serializer => _$portfolioSourceStateSerializer;
 

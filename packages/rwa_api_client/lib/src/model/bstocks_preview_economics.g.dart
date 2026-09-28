@@ -12,9 +12,6 @@ const BstocksPreviewEconomicsInputSemanticsEnum
 const BstocksPreviewEconomicsInputSemanticsEnum
     _$bstocksPreviewEconomicsInputSemanticsEnum_maximumFunding =
     const BstocksPreviewEconomicsInputSemanticsEnum._('maximumFunding');
-const BstocksPreviewEconomicsInputSemanticsEnum
-    _$bstocksPreviewEconomicsInputSemanticsEnum_unknownDefaultOpenApi =
-    const BstocksPreviewEconomicsInputSemanticsEnum._('unknownDefaultOpenApi');
 
 BstocksPreviewEconomicsInputSemanticsEnum
     _$bstocksPreviewEconomicsInputSemanticsEnumValueOf(String name) {
@@ -23,10 +20,8 @@ BstocksPreviewEconomicsInputSemanticsEnum
       return _$bstocksPreviewEconomicsInputSemanticsEnum_quotedGrossInput;
     case 'maximumFunding':
       return _$bstocksPreviewEconomicsInputSemanticsEnum_maximumFunding;
-    case 'unknownDefaultOpenApi':
-      return _$bstocksPreviewEconomicsInputSemanticsEnum_unknownDefaultOpenApi;
     default:
-      return _$bstocksPreviewEconomicsInputSemanticsEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -35,7 +30,6 @@ final BuiltSet<BstocksPreviewEconomicsInputSemanticsEnum>
         BstocksPreviewEconomicsInputSemanticsEnum>(const <BstocksPreviewEconomicsInputSemanticsEnum>[
   _$bstocksPreviewEconomicsInputSemanticsEnum_quotedGrossInput,
   _$bstocksPreviewEconomicsInputSemanticsEnum_maximumFunding,
-  _$bstocksPreviewEconomicsInputSemanticsEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<BstocksPreviewEconomicsInputSemanticsEnum>
@@ -47,12 +41,10 @@ class _$BstocksPreviewEconomicsInputSemanticsEnumSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'quotedGrossInput': 'quoted_gross_input',
     'maximumFunding': 'maximum_funding',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'quoted_gross_input': 'quotedGrossInput',
     'maximum_funding': 'maximumFunding',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

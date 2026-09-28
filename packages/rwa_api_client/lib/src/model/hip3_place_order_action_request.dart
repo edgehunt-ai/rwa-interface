@@ -126,8 +126,6 @@ class Hip3PlaceOrderActionRequestOperationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'place_order')
   static const Hip3PlaceOrderActionRequestOperationEnum placeOrder = _$hip3PlaceOrderActionRequestOperationEnum_placeOrder;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3PlaceOrderActionRequestOperationEnum unknownDefaultOpenApi = _$hip3PlaceOrderActionRequestOperationEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3PlaceOrderActionRequestOperationEnum> get serializer => _$hip3PlaceOrderActionRequestOperationEnumSerializer;
 

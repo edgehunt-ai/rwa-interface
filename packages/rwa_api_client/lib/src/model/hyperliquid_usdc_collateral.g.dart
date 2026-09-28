@@ -9,19 +9,14 @@ part of 'hyperliquid_usdc_collateral.dart';
 const HyperliquidUsdcCollateralAssetEnum
     _$hyperliquidUsdcCollateralAssetEnum_USDC =
     const HyperliquidUsdcCollateralAssetEnum._('USDC');
-const HyperliquidUsdcCollateralAssetEnum
-    _$hyperliquidUsdcCollateralAssetEnum_unknownDefaultOpenApi =
-    const HyperliquidUsdcCollateralAssetEnum._('unknownDefaultOpenApi');
 
 HyperliquidUsdcCollateralAssetEnum _$hyperliquidUsdcCollateralAssetEnumValueOf(
     String name) {
   switch (name) {
     case 'USDC':
       return _$hyperliquidUsdcCollateralAssetEnum_USDC;
-    case 'unknownDefaultOpenApi':
-      return _$hyperliquidUsdcCollateralAssetEnum_unknownDefaultOpenApi;
     default:
-      return _$hyperliquidUsdcCollateralAssetEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -29,7 +24,6 @@ final BuiltSet<HyperliquidUsdcCollateralAssetEnum>
     _$hyperliquidUsdcCollateralAssetEnumValues = BuiltSet<
         HyperliquidUsdcCollateralAssetEnum>(const <HyperliquidUsdcCollateralAssetEnum>[
   _$hyperliquidUsdcCollateralAssetEnum_USDC,
-  _$hyperliquidUsdcCollateralAssetEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<HyperliquidUsdcCollateralAssetEnum>
@@ -40,11 +34,9 @@ class _$HyperliquidUsdcCollateralAssetEnumSerializer
     implements PrimitiveSerializer<HyperliquidUsdcCollateralAssetEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'USDC': 'USDC',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'USDC': 'USDC',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

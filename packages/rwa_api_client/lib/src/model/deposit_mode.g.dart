@@ -9,8 +9,6 @@ part of 'deposit_mode.dart';
 const DepositMode _$wallet = const DepositMode._('wallet');
 const DepositMode _$trade = const DepositMode._('trade');
 const DepositMode _$externalImport = const DepositMode._('externalImport');
-const DepositMode _$unknownDefaultOpenApi =
-    const DepositMode._('unknownDefaultOpenApi');
 
 DepositMode _$valueOf(String name) {
   switch (name) {
@@ -20,10 +18,8 @@ DepositMode _$valueOf(String name) {
       return _$trade;
     case 'externalImport':
       return _$externalImport;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +28,6 @@ final BuiltSet<DepositMode> _$values =
   _$wallet,
   _$trade,
   _$externalImport,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$DepositModeMeta {
@@ -40,7 +35,6 @@ class _$DepositModeMeta {
   DepositMode get wallet => _$wallet;
   DepositMode get trade => _$trade;
   DepositMode get externalImport => _$externalImport;
-  DepositMode get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   DepositMode valueOf(String name) => _$valueOf(name);
   BuiltSet<DepositMode> get values => _$values;
 }
@@ -57,13 +51,11 @@ class _$DepositModeSerializer implements PrimitiveSerializer<DepositMode> {
     'wallet': 'wallet',
     'trade': 'trade',
     'externalImport': 'external_import',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'wallet': 'wallet',
     'trade': 'trade',
     'external_import': 'externalImport',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

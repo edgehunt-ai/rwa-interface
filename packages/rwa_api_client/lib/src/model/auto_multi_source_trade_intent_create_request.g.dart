@@ -10,10 +10,6 @@ const AutoMultiSourceTradeIntentCreateRequestFundingModeEnum
     _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_autoMultiSource =
     const AutoMultiSourceTradeIntentCreateRequestFundingModeEnum._(
         'autoMultiSource');
-const AutoMultiSourceTradeIntentCreateRequestFundingModeEnum
-    _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi =
-    const AutoMultiSourceTradeIntentCreateRequestFundingModeEnum._(
-        'unknownDefaultOpenApi');
 
 AutoMultiSourceTradeIntentCreateRequestFundingModeEnum
     _$autoMultiSourceTradeIntentCreateRequestFundingModeEnumValueOf(
@@ -21,10 +17,8 @@ AutoMultiSourceTradeIntentCreateRequestFundingModeEnum
   switch (name) {
     case 'autoMultiSource':
       return _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_autoMultiSource;
-    case 'unknownDefaultOpenApi':
-      return _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
     default:
-      return _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -32,7 +26,6 @@ final BuiltSet<AutoMultiSourceTradeIntentCreateRequestFundingModeEnum>
     _$autoMultiSourceTradeIntentCreateRequestFundingModeEnumValues = BuiltSet<
         AutoMultiSourceTradeIntentCreateRequestFundingModeEnum>(const <AutoMultiSourceTradeIntentCreateRequestFundingModeEnum>[
   _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_autoMultiSource,
-  _$autoMultiSourceTradeIntentCreateRequestFundingModeEnum_unknownDefaultOpenApi,
 ]);
 
 Serializer<AutoMultiSourceTradeIntentCreateRequestFundingModeEnum>
@@ -45,11 +38,9 @@ class _$AutoMultiSourceTradeIntentCreateRequestFundingModeEnumSerializer
             AutoMultiSourceTradeIntentCreateRequestFundingModeEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'autoMultiSource': 'auto_multi_source',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto_multi_source': 'autoMultiSource',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

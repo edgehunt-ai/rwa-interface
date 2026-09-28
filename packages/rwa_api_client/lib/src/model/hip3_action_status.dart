@@ -38,9 +38,6 @@ class Hip3ActionStatus extends EnumClass {
   /// 动作状态不替代订单或仓位状态。succeeded 表示所有动作步骤已被 Provider 确认成功， 不表示挂单已经成交。failed/expired 可能保留先前已成功步骤的副作用。 ambiguous/manual_review 不是可安全重试的终态；只能查询或人工处理。 
   @BuiltValueEnumConst(wireName: r'manual_review')
   static const Hip3ActionStatus manualReview = _$manualReview;
-  /// 动作状态不替代订单或仓位状态。succeeded 表示所有动作步骤已被 Provider 确认成功， 不表示挂单已经成交。failed/expired 可能保留先前已成功步骤的副作用。 ambiguous/manual_review 不是可安全重试的终态；只能查询或人工处理。 
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3ActionStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3ActionStatus> get serializer => _$hip3ActionStatusSerializer;
 

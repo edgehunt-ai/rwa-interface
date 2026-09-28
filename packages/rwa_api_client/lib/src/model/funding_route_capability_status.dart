@@ -15,8 +15,6 @@ class FundingRouteCapabilityStatus extends EnumClass {
   static const FundingRouteCapabilityStatus available = _$available;
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const FundingRouteCapabilityStatus unavailable = _$unavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const FundingRouteCapabilityStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<FundingRouteCapabilityStatus> get serializer => _$fundingRouteCapabilityStatusSerializer;
 

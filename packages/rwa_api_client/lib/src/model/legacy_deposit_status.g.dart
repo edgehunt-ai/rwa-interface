@@ -15,8 +15,6 @@ const LegacyDepositStatus _$ambiguous =
     const LegacyDepositStatus._('ambiguous');
 const LegacyDepositStatus _$manualReview =
     const LegacyDepositStatus._('manualReview');
-const LegacyDepositStatus _$unknownDefaultOpenApi =
-    const LegacyDepositStatus._('unknownDefaultOpenApi');
 
 LegacyDepositStatus _$valueOf(String name) {
   switch (name) {
@@ -32,10 +30,8 @@ LegacyDepositStatus _$valueOf(String name) {
       return _$ambiguous;
     case 'manualReview':
       return _$manualReview;
-    case 'unknownDefaultOpenApi':
-      return _$unknownDefaultOpenApi;
     default:
-      return _$unknownDefaultOpenApi;
+      throw ArgumentError(name);
   }
 }
 
@@ -47,7 +43,6 @@ final BuiltSet<LegacyDepositStatus> _$values =
   _$failed,
   _$ambiguous,
   _$manualReview,
-  _$unknownDefaultOpenApi,
 ]);
 
 class _$LegacyDepositStatusMeta {
@@ -58,7 +53,6 @@ class _$LegacyDepositStatusMeta {
   LegacyDepositStatus get failed => _$failed;
   LegacyDepositStatus get ambiguous => _$ambiguous;
   LegacyDepositStatus get manualReview => _$manualReview;
-  LegacyDepositStatus get unknownDefaultOpenApi => _$unknownDefaultOpenApi;
   LegacyDepositStatus valueOf(String name) => _$valueOf(name);
   BuiltSet<LegacyDepositStatus> get values => _$values;
 }
@@ -81,7 +75,6 @@ class _$LegacyDepositStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manualReview': 'manual_review',
-    'unknownDefaultOpenApi': 'unknown_default_open_api',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting': 'awaiting',
@@ -90,7 +83,6 @@ class _$LegacyDepositStatusSerializer
     'failed': 'failed',
     'ambiguous': 'ambiguous',
     'manual_review': 'manualReview',
-    'unknown_default_open_api': 'unknownDefaultOpenApi',
   };
 
   @override

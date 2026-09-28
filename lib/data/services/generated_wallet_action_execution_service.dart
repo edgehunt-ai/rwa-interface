@@ -42,6 +42,21 @@ final class GeneratedWalletActionExecutionService
   }
 
   @override
+  Future<api.WalletActionExecution> createTransferExecution(
+    String transferId,
+    String actionId,
+    api.WalletActionExecutionCreateRequest request, {
+    required String idempotencyKey,
+  }) => _body(
+    () => _funding.createTransferWalletActionExecution(
+      transferId: transferId,
+      actionId: actionId,
+      idempotencyKey: idempotencyKey,
+      walletActionExecutionCreateRequest: request,
+    ),
+  );
+
+  @override
   Future<api.WalletActionExecution> createSelfCustodialWithdrawalExecution(
     String withdrawalId,
     api.WalletActionExecutionCreateRequest request, {

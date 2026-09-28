@@ -817,9 +817,6 @@ class PositionSideEnum extends EnumClass {
   /// 仅 HIP-3
   @BuiltValueEnumConst(wireName: r'short')
   static const PositionSideEnum short = _$positionSideEnum_short;
-  /// 仅 HIP-3
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PositionSideEnum unknownDefaultOpenApi = _$positionSideEnum_unknownDefaultOpenApi;
 
   static Serializer<PositionSideEnum> get serializer => _$positionSideEnumSerializer;
 
@@ -837,8 +834,6 @@ class PositionChainIdEnum extends EnumClass {
   static const PositionChainIdEnum number97 = _$positionChainIdEnum_number97;
   @BuiltValueEnumConst(wireNumber: 31337)
   static const PositionChainIdEnum number31337 = _$positionChainIdEnum_number31337;
-  @BuiltValueEnumConst(wireNumber: 11184809, fallback: true)
-  static const PositionChainIdEnum unknownDefaultOpenApi = _$positionChainIdEnum_unknownDefaultOpenApi;
 
   static Serializer<PositionChainIdEnum> get serializer => _$positionChainIdEnumSerializer;
 
@@ -854,8 +849,6 @@ class PositionPnlStatusEnum extends EnumClass {
   static const PositionPnlStatusEnum known = _$positionPnlStatusEnum_known;
   @BuiltValueEnumConst(wireName: r'unknown_cost')
   static const PositionPnlStatusEnum unknownCost = _$positionPnlStatusEnum_unknownCost;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PositionPnlStatusEnum unknownDefaultOpenApi = _$positionPnlStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<PositionPnlStatusEnum> get serializer => _$positionPnlStatusEnumSerializer;
 
@@ -869,8 +862,6 @@ class PositionValuationStatusEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'reference_only')
   static const PositionValuationStatusEnum referenceOnly = _$positionValuationStatusEnum_referenceOnly;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PositionValuationStatusEnum unknownDefaultOpenApi = _$positionValuationStatusEnum_unknownDefaultOpenApi;
 
   static Serializer<PositionValuationStatusEnum> get serializer => _$positionValuationStatusEnumSerializer;
 

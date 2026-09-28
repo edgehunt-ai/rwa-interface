@@ -17,8 +17,6 @@ class UnifiedFundingDataStatus extends EnumClass {
   static const UnifiedFundingDataStatus partial = _$partial;
   @BuiltValueEnumConst(wireName: r'unavailable')
   static const UnifiedFundingDataStatus unavailable = _$unavailable;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const UnifiedFundingDataStatus unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<UnifiedFundingDataStatus> get serializer => _$unifiedFundingDataStatusSerializer;
 

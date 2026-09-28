@@ -178,8 +178,6 @@ class PortfolioHoldingPageAllOfCoverageScopeEnum extends EnumClass {
   static const PortfolioHoldingPageAllOfCoverageScopeEnum hip3 = _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3;
   @BuiltValueEnumConst(wireName: r'hip3+bstocks')
   static const PortfolioHoldingPageAllOfCoverageScopeEnum hip3PlusBstocks = _$portfolioHoldingPageAllOfCoverageScopeEnum_hip3PlusBstocks;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const PortfolioHoldingPageAllOfCoverageScopeEnum unknownDefaultOpenApi = _$portfolioHoldingPageAllOfCoverageScopeEnum_unknownDefaultOpenApi;
 
   static Serializer<PortfolioHoldingPageAllOfCoverageScopeEnum> get serializer => _$portfolioHoldingPageAllOfCoverageScopeEnumSerializer;
 

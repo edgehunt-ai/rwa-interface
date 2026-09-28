@@ -126,8 +126,6 @@ class Hip3CloseActionRequestOperationEnum extends EnumClass {
 
   @BuiltValueEnumConst(wireName: r'close_position')
   static const Hip3CloseActionRequestOperationEnum closePosition = _$hip3CloseActionRequestOperationEnum_closePosition;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3CloseActionRequestOperationEnum unknownDefaultOpenApi = _$hip3CloseActionRequestOperationEnum_unknownDefaultOpenApi;
 
   static Serializer<Hip3CloseActionRequestOperationEnum> get serializer => _$hip3CloseActionRequestOperationEnumSerializer;
 

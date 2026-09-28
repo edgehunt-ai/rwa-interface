@@ -27,8 +27,8 @@ class RealtimeResourceType extends EnumClass {
   static const RealtimeResourceType balance = _$balance;
   @BuiltValueEnumConst(wireName: r'activity')
   static const RealtimeResourceType activity = _$activity;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const RealtimeResourceType unknownDefaultOpenApi = _$unknownDefaultOpenApi;
+  @BuiltValueEnumConst(wireName: r'session')
+  static const RealtimeResourceType session = _$session;
 
   static Serializer<RealtimeResourceType> get serializer => _$realtimeResourceTypeSerializer;
 

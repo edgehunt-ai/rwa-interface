@@ -17,8 +17,6 @@ class Hip3AccountAbstractionMode extends EnumClass {
   static const Hip3AccountAbstractionMode unifiedAccount = _$unifiedAccount;
   @BuiltValueEnumConst(wireName: r'portfolioMargin')
   static const Hip3AccountAbstractionMode portfolioMargin = _$portfolioMargin;
-  @BuiltValueEnumConst(wireName: r'unknown_default_open_api', fallback: true)
-  static const Hip3AccountAbstractionMode unknownDefaultOpenApi = _$unknownDefaultOpenApi;
 
   static Serializer<Hip3AccountAbstractionMode> get serializer => _$hip3AccountAbstractionModeSerializer;
 
