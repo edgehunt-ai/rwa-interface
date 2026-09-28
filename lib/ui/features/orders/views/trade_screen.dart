@@ -198,14 +198,63 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     }
   }
 
+  ({
+    String? query,
+    String? cursor,
+    String? group,
+    MarketProductKind? productType,
+  })
+  get _productQuery => (
+    query: _underlyingSymbol(symbol),
+    cursor: null,
+    group: 'hot',
+    productType: null,
+  );
+
+  Future<void> _refreshDetails({bool waitForResults = true}) async {
+    final product = MarketProductRef(symbol: symbol, kind: productKind);
+    final positionFilter = (symbol: symbol, kind: productKind, cursor: null);
+    final openOrderQuery = (
+      symbol: symbol,
+      productId: _productId,
+      cursor: null,
+    );
+
+    ref.invalidate(marketProductLookupProvider(_productQuery));
+    ref.invalidate(marketProductProvider(product));
+    ref.invalidate(marketSnapshotProvider(product));
+    ref.invalidate(
+      marketCandlesProvider((product: product, range: chartRange)),
+    );
+    ref.invalidate(marketHoursProvider);
+    ref.invalidate(positionsProvider(positionFilter));
+    if (productKind == MarketProductKind.perp) {
+      ref.invalidate(hip3OpenOrdersProvider(openOrderQuery));
+      ref.invalidate(hip3OrdersProvider(null));
+    } else {
+      ref.invalidate(bstocksOrdersProvider(null));
+    }
+
+    if (!waitForResults) return;
+    await Future.wait([
+      ref.read(marketProductLookupProvider(_productQuery).future),
+      ref.read(marketProductProvider(product).future),
+      ref.read(marketSnapshotProvider(product).future),
+      ref.read(
+        marketCandlesProvider((product: product, range: chartRange)).future,
+      ),
+      ref.read(marketHoursProvider.future),
+      ref.read(positionsProvider(positionFilter).future),
+      if (productKind == MarketProductKind.perp)
+        ref.read(hip3OpenOrdersProvider(openOrderQuery).future)
+      else
+        ref.read(bstocksOrdersProvider(null).future),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final productQuery = (
-      query: _underlyingSymbol(symbol),
-      cursor: null,
-      group: 'hot',
-      productType: null,
-    );
+    final productQuery = _productQuery;
     final productsState = ref.watch(marketProductLookupProvider(productQuery));
     final availableProducts = productsState.value?.items
         .where(
@@ -256,6 +305,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     ref.listen<CommandState<OrderIntent, ResourceResult<TradingOrder>>>(
       orderCommandProvider,
       (_, next) {
+        if (next case CommandAccepted(intent: final intent)
+            when intent.kind == productKind) {
+          _refreshDetails(waitForResults: false);
+        }
         if (_orderPanelOpen || productKind != MarketProductKind.bstock) return;
         switch (next) {
           case CommandAccepted(intent: final intent)
@@ -279,86 +332,91 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            ListView(
-              key: const Key('trade-screen-scroll-view'),
-              controller: _pageScrollController,
-              padding: const EdgeInsets.fromLTRB(20, 30, 20, 160),
-              children: [
-                _NavigationBar(
-                  symbol: symbol,
-                  marketHours: marketHours,
-                  onMarketHours: () => setState(() => marketHoursOpen = true),
-                ),
-                const SizedBox(height: 16),
-                if (availableProducts case final products?
-                    when products.isNotEmpty) ...[
-                  _ProductSwitch(
-                    available: products.map((p) => p.kind).toSet(),
-                    kind: _unavailableKind ?? productKind,
-                    onChanged: (kind) => _selectKind(kind, products),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                if (_unavailableKind case final kind?)
-                  _ProductUnavailable(
-                    kind: kind,
-                    symbol: _underlyingSymbol(symbol),
-                  )
-                else ...[
-                  _ProductHeader(
+            RefreshIndicator(
+              onRefresh: _refreshDetails,
+              child: ListView(
+                key: const Key('trade-screen-scroll-view'),
+                controller: _pageScrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 30, 20, 160),
+                children: [
+                  _NavigationBar(
                     symbol: symbol,
-                    kind: productKind,
-                    chartStyle: chartStyle,
-                    snapshot: snapshot,
-                    selectedPrice: chartSelection?.close,
-                    selectedChangePercent: selectedChange,
-                    referencePrice:
-                        selectedReference?.close ??
-                        candles?.referencePoints.lastOrNull?.close ??
-                        candles?.referencePrice,
-                    loading: snapshotState.isLoading,
-                    isFavorite: isFavorite,
-                    favoriteLoading: _favoriteBusy,
+                    marketHours: marketHours,
                     onMarketHours: () => setState(() => marketHoursOpen = true),
-                    onFavoriteToggle: () =>
-                        _toggleFavorite(productRef, isFavorite),
                   ),
-                  const SizedBox(height: 12),
-                  RepaintBoundary(
-                    child: _Chart(
-                      style: chartStyle,
-                      range: chartRange,
-                      candles: candles,
-                      loading: candlesState.isLoading,
-                      onStyleChanged: (next) =>
-                          setState(() => chartStyle = next),
-                      onRangeChanged: (next) => setState(() {
-                        chartRange = next;
-                        chartSelection = null;
-                      }),
-                      selectedCandle: chartSelection,
-                      onSelectionChanged: (next) =>
-                          setState(() => chartSelection = next),
+                  const SizedBox(height: 16),
+                  if (availableProducts case final products?
+                      when products.isNotEmpty) ...[
+                    _ProductSwitch(
+                      available: products.map((p) => p.kind).toSet(),
+                      kind: _unavailableKind ?? productKind,
+                      onChanged: (kind) => _selectKind(kind, products),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _Statistics(
-                    snapshot: snapshot,
-                    candles: candles,
-                    loading: snapshotState.isLoading,
-                  ),
-                  const SizedBox(height: 16),
-                  _Details(
-                    key: _detailsKey,
-                    positionCardKey: _positionCardKey,
-                    activeTab: detailTab,
-                    onChanged: (tab) => setState(() => detailTab = tab),
-                    kind: productKind,
-                    symbol: symbol,
-                    productId: _productId,
-                  ),
+                    const SizedBox(height: 16),
+                  ],
+                  if (_unavailableKind case final kind?)
+                    _ProductUnavailable(
+                      kind: kind,
+                      symbol: _underlyingSymbol(symbol),
+                    )
+                  else ...[
+                    _ProductHeader(
+                      symbol: symbol,
+                      kind: productKind,
+                      chartStyle: chartStyle,
+                      snapshot: snapshot,
+                      selectedPrice: chartSelection?.close,
+                      selectedChangePercent: selectedChange,
+                      referencePrice:
+                          selectedReference?.close ??
+                          candles?.referencePoints.lastOrNull?.close ??
+                          candles?.referencePrice,
+                      loading: snapshotState.isLoading,
+                      isFavorite: isFavorite,
+                      favoriteLoading: _favoriteBusy,
+                      onMarketHours: () =>
+                          setState(() => marketHoursOpen = true),
+                      onFavoriteToggle: () =>
+                          _toggleFavorite(productRef, isFavorite),
+                    ),
+                    const SizedBox(height: 12),
+                    RepaintBoundary(
+                      child: _Chart(
+                        style: chartStyle,
+                        range: chartRange,
+                        candles: candles,
+                        loading: candlesState.isLoading,
+                        onStyleChanged: (next) =>
+                            setState(() => chartStyle = next),
+                        onRangeChanged: (next) => setState(() {
+                          chartRange = next;
+                          chartSelection = null;
+                        }),
+                        selectedCandle: chartSelection,
+                        onSelectionChanged: (next) =>
+                            setState(() => chartSelection = next),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _Statistics(
+                      snapshot: snapshot,
+                      candles: candles,
+                      loading: snapshotState.isLoading,
+                    ),
+                    const SizedBox(height: 16),
+                    _Details(
+                      key: _detailsKey,
+                      positionCardKey: _positionCardKey,
+                      activeTab: detailTab,
+                      onChanged: (tab) => setState(() => detailTab = tab),
+                      kind: productKind,
+                      symbol: symbol,
+                      productId: _productId,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
             if (_unavailableKind == null && productTradable)
               _TradeActions(

@@ -24,6 +24,7 @@ import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart'
 import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
+import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
 import '../../../../helpers/test_app.dart';
 
@@ -44,6 +45,106 @@ void expectNodeVisible({
 }
 
 void main() {
+  testWidgets('Trade pull-to-refresh reloads the current position list', (
+    tester,
+  ) async {
+    var positionLoads = 0;
+    const filter = (
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+      cursor: null,
+    );
+    const lookup = (
+      query: 'NVDA',
+      cursor: null,
+      group: 'hot',
+      productType: null,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketProductLookupProvider(lookup).overrideWith(
+            (_) async => DomainPage(
+              items: [_marketProduct('NVDAB', MarketProductKind.bstock)],
+            ),
+          ),
+          marketProductProvider(_bstockProduct).overrideWith(
+            (_) async => _marketProduct('NVDAB', MarketProductKind.bstock),
+          ),
+          marketSnapshotProvider(_bstockProduct)
+              .overrideWith((_) async => _bstockDisclosureSnapshot()),
+          marketCandlesProvider((
+            product: _bstockProduct,
+            range: CandleChartRange.oneHour,
+          )).overrideWith(
+            (_) async => _chart('NVDAB', CandleChartRange.oneHour),
+          ),
+          marketHoursProvider.overrideWith(
+            (_) async => MarketHours(
+              timezone: 'America/New_York',
+              current: MarketSessionKind.weekend,
+              currentLabel: 'Closed',
+              segments: const [],
+            ),
+          ),
+          positionsProvider(filter).overrideWith((_) async {
+            positionLoads++;
+            return const DomainPage<Position>(items: []);
+          }),
+          bstocksOrdersProvider(null)
+              .overrideWith((_) async => const DomainPage(items: [])),
+        ],
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(positionLoads, 1);
+
+    await tester.drag(
+      find.byKey(const Key('trade-screen-scroll-view')),
+      const Offset(0, 500),
+    );
+    await tester.pumpAndSettle();
+
+    expect(positionLoads, 2);
+  });
+
+  testWidgets('successful order reloads the detail position list', (
+    tester,
+  ) async {
+    var positionLoads = 0;
+    const filter = (
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+      cursor: null,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        ordersRepositoryProvider.overrideWithValue(
+          _OrderOutcomeRepository(shouldFail: false),
+        ),
+        positionsProvider(filter).overrideWith((_) async {
+          positionLoads++;
+          return const DomainPage<Position>(items: []);
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: buildTestApp(const TradeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(positionLoads, 1);
+
+    await container.read(orderCommandProvider.notifier).submit(_bstockIntent);
+    await tester.pumpAndSettle();
+
+    expect(positionLoads, 2);
+  });
+
   testWidgets('Trade switches chart states and exposes market hours', (
     tester,
   ) async {
@@ -1079,6 +1180,8 @@ final class _OrderOutcomeRepository implements OrdersRepository {
 }
 
 final class _PositionsRepository implements PositionsRepository {
+  var listCalls = 0;
+
   @override
   Future<Position> updateTpSl(
     Position position, {
@@ -1102,9 +1205,12 @@ final class _PositionsRepository implements PositionsRepository {
     String? symbol,
     MarketProductKind? kind,
     String? cursor,
-  }) => Future.value(
-    DomainPage(items: [_position(kind ?? MarketProductKind.bstock)]),
-  );
+  }) {
+    listCalls++;
+    return Future.value(
+      DomainPage(items: [_position(kind ?? MarketProductKind.bstock)]),
+    );
+  }
 
   @override
   Future<Position> get(String positionId) => throw UnimplementedError();
