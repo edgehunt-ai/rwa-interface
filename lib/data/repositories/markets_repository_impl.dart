@@ -1,5 +1,4 @@
 import '../../domain/models/bstocks_support.dart';
-import '../../domain/models/api_failure.dart';
 import '../../domain/models/domain_page.dart';
 import '../../domain/models/stock.dart';
 import '../../domain/models/decimal_value.dart';
@@ -123,11 +122,11 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     api.OrderBook? book;
     try {
       book = await _service.getOrderBook(ref.symbol, kind);
-    } on ApiFailure catch (failure) {
-      if (failure.kind != FailureKind.unavailable &&
-          failure.kind != FailureKind.network) {
-        rethrow;
-      }
+    } on Object {
+      // The product quote is authoritative for the displayed price. The
+      // orderbook is optional, and some venues legitimately return an empty
+      // or temporarily incompatible payload, so it must not make the whole
+      // market snapshot unavailable.
     }
     return MarketSnapshot(
       price: DecimalValue(product.quote.price, asset: 'USDC', unit: 'price'),

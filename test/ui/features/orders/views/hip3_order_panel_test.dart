@@ -33,6 +33,7 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
+import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/funding_session.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 
@@ -71,8 +72,11 @@ void main() {
       // frame for pumpAndSettle to wait for here.
       await tester.pump(const Duration(seconds: 1));
       expect(funding.previewIds, hasLength(1));
-      expect(find.text('Hyperliquid Perps USDC'), findsOneWidget);
-      expect(find.textContaining('5 USDC'), findsOneWidget);
+      expect(
+        find.text('Insufficient USDC in your spot account:'),
+        findsOneWidget,
+      );
+      expect(find.text('= Funds needed'), findsOneWidget);
       expect(find.text('Insufficient balance.'), findsNothing);
     },
   );
@@ -95,6 +99,7 @@ void main() {
             const Hip3OrderPanel(),
             opening: opening,
             funding: funding,
+            transferOptions: _transferOptions('40'),
           ),
         ),
       );
@@ -123,15 +128,21 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Completing the transfer closes the sheet and resumes the order.
-      final transfer = find.widgetWithText(FilledButton, 'In-App Transfer');
-      await tester.ensureVisible(transfer);
+      final spot = find.byKey(const Key('order-funding-spot-option'));
+      await tester.ensureVisible(spot);
       // Let the scroll settle without pumpAndSettle, which the parent's
       // indeterminate animation would never allow to return.
       for (var i = 0; i < 10; i++) {
         await tester.pump(const Duration(milliseconds: 50));
       }
+      await tester.tap(spot);
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final transfer = find.widgetWithText(FilledButton, 'Confirm');
+      await tester.ensureVisible(transfer);
       await tester.tap(transfer);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(funding.transfers, 1);
       // The second session is the loop re-checking funding after the transfer.
@@ -1171,12 +1182,15 @@ Widget _app(
   Hip3OpeningRepository? opening,
   ObservabilityReporter? observability,
   FundingRepository? funding,
+  TransferOptions? transferOptions,
 }) => ProviderScope(
   overrides: [
     fundingTransferCommandsProvider.overrideWith(
       (ref) => FundingTransferCommands(ref),
     ),
     fundingRepositoryProvider.overrideWithValue(funding ?? FundedRepository()),
+    if (transferOptions != null)
+      transferOptionsProvider.overrideWith((ref) async => transferOptions),
     hip3AccountAbstractionRepositoryProvider.overrideWithValue(
       _UnifiedAccountRepository(),
     ),
@@ -1591,6 +1605,18 @@ final class _FundingWallets implements WalletsRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+TransferOptions _transferOptions(String available) => TransferOptions(
+  account: UnifiedFundingAccountSummary(
+    totalUsd: DecimalValue(available, asset: 'USD'),
+    availableToFundUsd: DecimalValue(available, asset: 'USD'),
+    reservedUsd: DecimalValue('0', asset: 'USD'),
+    inTransitUsd: DecimalValue('0', asset: 'USD'),
+    dataStatus: 'complete',
+    calculatedAt: DateTime.utc(2026, 9, 28),
+  ),
+  catalog: null,
+);
 
 class _ShortfallFunding extends FundedRepository {
   @override
