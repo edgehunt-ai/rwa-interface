@@ -753,6 +753,8 @@ final class FundingRepositoryImpl implements FundingRepository {
     api.SelfCustodialWithdrawalChainId.n42161 => 42161,
     api.SelfCustodialWithdrawalChainId.n8453 => 8453,
     api.SelfCustodialWithdrawalChainId.n56 => 56,
+    api.SelfCustodialWithdrawalChainId.n97 => 97,
+    api.SelfCustodialWithdrawalChainId.n421614 => 421614,
     _ => throw ArgumentError('Unsupported self-custodial chain id'),
   };
 
@@ -762,6 +764,8 @@ final class FundingRepositoryImpl implements FundingRepository {
         api.SelfCustodialWithdrawalChainId.n42161 => 'Arbitrum',
         api.SelfCustodialWithdrawalChainId.n8453 => 'Base',
         api.SelfCustodialWithdrawalChainId.n56 => 'BSC',
+        api.SelfCustodialWithdrawalChainId.n97 => 'BSC',
+        api.SelfCustodialWithdrawalChainId.n421614 => 'Arbitrum',
         _ => throw ArgumentError('Unsupported self-custodial chain id'),
       };
   DepositState _confirmedDepositStatus(api.DepositStatus value) =>

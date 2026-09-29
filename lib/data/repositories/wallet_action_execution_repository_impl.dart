@@ -266,6 +266,7 @@ final class WalletActionExecutionRepositoryImpl
     api.PrivyAuthorizationBodyCaip2Enum.eip155Colon97 => 'eip155:97',
     api.PrivyAuthorizationBodyCaip2Enum.eip155Colon8453 => 'eip155:8453',
     api.PrivyAuthorizationBodyCaip2Enum.eip155Colon42161 => 'eip155:42161',
+    api.PrivyAuthorizationBodyCaip2Enum.eip155Colon421614 => 'eip155:421614',
     _ => value.name,
   };
 
@@ -275,6 +276,7 @@ final class WalletActionExecutionRepositoryImpl
     api.WalletActionExecutionChainIdEnum.number97 => 97,
     api.WalletActionExecutionChainIdEnum.number8453 => 8453,
     api.WalletActionExecutionChainIdEnum.number42161 => 42161,
+    api.WalletActionExecutionChainIdEnum.number421614 => 421614,
     _ => -1,
   };
 }

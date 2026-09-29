@@ -406,7 +406,7 @@ final class SelfCustodialWithdrawalCommands {
         prepared.destinationAddress.toLowerCase() !=
             quote.intent.address.toLowerCase() ||
         transaction.from.toLowerCase() != wallet.address.toLowerCase() ||
-        transaction.chainId != _chainId(quote.intent.chain) ||
+        !_matchesChainId(quote.intent.chain, transaction.chainId) ||
         transaction.to.toLowerCase() != asset.contractAddress!.toLowerCase() ||
         transaction.value.toLowerCase() != '0x0' ||
         prepared.transaction.payloadHash.isEmpty ||
@@ -460,14 +460,14 @@ final class SelfCustodialWithdrawalCommands {
     }
   }
 
-  int _chainId(String chain) => switch (normalizeChainLabel(chain)) {
-    'ethereum' => 1,
-    // Arbitrum testnet is used by the withdrawal contract in this app.
-    'arbitrum' => 421614,
-    'base' => 8453,
-    'bsc' => 56,
-    _ => -1,
-  };
+  bool _matchesChainId(String chain, int chainId) =>
+      switch (normalizeChainLabel(chain)) {
+        'ethereum' => chainId == 1,
+        'arbitrum' => chainId == 42161 || chainId == 421614,
+        'base' => chainId == 8453,
+        'bsc' => chainId == 56 || chainId == 97,
+        _ => false,
+      };
 }
 
 final _evmAddress = RegExp(r'^0x[0-9a-fA-F]{40}$');

@@ -43,14 +43,14 @@ final class PortfolioAsset {
     return 'eip155:$chainId/erc20:${contract.toLowerCase()}';
   }
 
-  /// Decimal EVM chain ID for [network], or null when it is not one of the four
-  /// allowlisted EVM chains.
+  /// Mainnet decimal EVM chain ID for [network], or null when it is not one of
+  /// the four allowlisted EVM chains. A testnet chain ID is never inferred from
+  /// the network label alone.
   int? get evmChainId => switch (normalizedNetwork) {
     'ethereum' => 1,
-    // Temporary testnet mapping for self-custodial withdrawal asset IDs.
-    'arbitrum' => 421614,
+    'arbitrum' => 42161,
     'base' => 8453,
-    'bsc' => 97,
+    'bsc' => 56,
     _ => null,
   };
 
