@@ -103,16 +103,19 @@ jobs:
 
           if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
             tagged_commit="$(git rev-list -n 1 "$tag")"
-            if [[ "$tagged_commit" != "$TARGET_SHA" ]]; then
-              if ! git diff --quiet "$tagged_commit" "$TARGET_SHA" -- .github/workflows/release.yml &&
-                git diff --quiet "$tagged_commit" "$TARGET_SHA" -- . ':(exclude).github/workflows/**'; then
-                echo "Release workflow changed since ${tag}; rebuilding artifacts without publishing a new release."
-                should_build="true"
-                should_release="false"
-              else
-                echo "Version ${version_name} already belongs to ${tagged_commit}; increment pubspec.yaml before releasing." >&2
-                exit 1
-              fi
+            if [[ "$tagged_commit" == "$TARGET_SHA" ]]; then
+              echo "Version ${version_name} is already released at ${TARGET_SHA}; skipping build and release."
+              should_build="false"
+              should_release="false"
+            elif ! git diff --quiet "$tagged_commit" "$TARGET_SHA" -- .github/workflows/release.yml &&
+              git diff --quiet "$tagged_commit" "$TARGET_SHA" -- . ':(exclude).github/workflows/**'; then
+              echo "Release workflow changed since ${tag}; rebuilding artifacts without publishing a new release."
+              should_build="true"
+              should_release="false"
+            else
+              echo "Version ${version_name} already belongs to ${tagged_commit}; no new release is needed. Skipping build and release."
+              should_build="false"
+              should_release="false"
             fi
           else
             should_release="true"
