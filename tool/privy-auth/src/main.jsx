@@ -7,7 +7,9 @@ import {
   useLogin,
   usePrivy,
   useUnlinkPasskey,
+  useWallets,
 } from '@privy-io/react-auth';
+import { signTypedDataV4 as requestTypedDataSignature } from './typed-data-signing.mjs';
 
 const state = {
   appId: null,
@@ -19,6 +21,7 @@ const state = {
   user: null,
   getAccessToken: null,
   logout: null,
+  wallets: [],
 };
 
 let root;
@@ -60,6 +63,7 @@ function PrivyBridge() {
   const { login } = useLogin({ onComplete: settleLogin });
   const { linkWithPasskey } = useLinkWithPasskey();
   const { unlink } = useUnlinkPasskey();
+  const { ready: walletsReady, wallets } = useWallets();
 
   useEffect(() => {
     state.ready = ready;
@@ -67,6 +71,7 @@ function PrivyBridge() {
     state.user = user;
     state.getAccessToken = getAccessToken;
     state.logout = logout;
+    state.wallets = walletsReady ? wallets : [];
     state.login = login;
     state.linkPasskey = linkWithPasskey;
     state.unlinkPasskey = unlink;
@@ -88,6 +93,8 @@ function PrivyBridge() {
     ready,
     unlink,
     user,
+    wallets,
+    walletsReady,
   ]);
 
   return null;
@@ -263,6 +270,15 @@ window.rwaPrivyAuth = {
   async getAccessToken() {
     if (!state.authenticated || !state.getAccessToken) return null;
     return state.getAccessToken();
+  },
+
+  signTypedDataV4(expectedSigner, typedDataJson) {
+    return requestTypedDataSignature({
+      authenticated: state.authenticated,
+      wallets: state.wallets,
+      expectedSigner,
+      typedDataJson,
+    });
   },
 
   async logout() {

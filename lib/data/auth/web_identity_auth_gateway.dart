@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
 import '../../domain/auth/authentication.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
+import '../../domain/services/hip3_typed_data_signer.dart';
 
 /// Browser implementation backed by the React Privy SDK bundle in
 /// `web/privy-auth`. The bundle is copied only into Flutter Web output.
-final class WebPrivyIdentityAuthGateway implements IdentityAuthGateway {
+final class WebPrivyIdentityAuthGateway
+    implements IdentityAuthGateway, Hip3TypedDataSigner {
   JSObject? _bridge;
   bool _sessionUsable = false;
 
@@ -186,6 +189,44 @@ final class WebPrivyIdentityAuthGateway implements IdentityAuthGateway {
 
   @override
   Future<String?> refreshAccessToken() => getAccessToken();
+
+  @override
+  Future<String> signTypedDataV4({
+    required String expectedSigner,
+    required Map<String, Object?> typedData,
+  }) async {
+    final normalizedSigner = expectedSigner.toLowerCase();
+    if (!RegExp(r'^0x[0-9a-f]{40}$').hasMatch(normalizedSigner) ||
+        typedData.isEmpty) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+    }
+    if (!_sessionUsable) {
+      throw const Hip3SigningFailure(
+        Hip3SigningFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+
+    try {
+      final value = await _call(
+        'signTypedDataV4',
+        normalizedSigner.toJS,
+        jsonEncode(typedData).toJS,
+      );
+      if (!value.isA<JSString>()) {
+        throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+      }
+      final signature = (value as JSString).toDart;
+      if (!RegExp(r'^0x[0-9a-fA-F]{130}$').hasMatch(signature)) {
+        throw const Hip3SigningFailure(Hip3SigningFailureCode.invalidPayload);
+      }
+      return signature;
+    } on Hip3SigningFailure {
+      rethrow;
+    } catch (_) {
+      throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected);
+    }
+  }
 
   @override
   Future<void> logout() async {
