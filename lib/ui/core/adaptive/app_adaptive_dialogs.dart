@@ -11,6 +11,7 @@ Future<bool?> showAppAlert({
   if (Theme.of(context).platform == TargetPlatform.iOS) {
     return showCupertinoDialog<bool>(
       context: context,
+      barrierDismissible: true,
       builder: (context) => CupertinoAlertDialog(
         title: Text(title),
         content: Text(message),
@@ -29,6 +30,7 @@ Future<bool?> showAppAlert({
   }
   return showDialog<bool>(
     context: context,
+    barrierDismissible: true,
     builder: (context) => AlertDialog(
       title: Text(title),
       content: Text(message),
@@ -54,6 +56,7 @@ Future<T?> showAppActionSheet<T>({
   if (Theme.of(context).platform == TargetPlatform.iOS) {
     return showCupertinoModalPopup<T>(
       context: context,
+      barrierDismissible: true,
       builder: (context) => CupertinoActionSheet(
         actions: [
           for (final action in actions)
@@ -71,6 +74,7 @@ Future<T?> showAppActionSheet<T>({
   }
   return showModalBottomSheet<T>(
     context: context,
+    isDismissible: true,
     builder: (context) => SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,

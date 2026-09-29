@@ -964,7 +964,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         final funded = await showModalBottomSheet<bool>(
           context: context,
           isScrollControlled: true,
-          isDismissible: false,
+          isDismissible: true,
           enableDrag: false,
           builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
         );
@@ -994,7 +994,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           final converted = await showModalBottomSheet<bool>(
             context: context,
             isScrollControlled: true,
-            isDismissible: false,
+            isDismissible: true,
             enableDrag: false,
             backgroundColor: Colors.transparent,
             barrierColor: const Color(0xB3000000),

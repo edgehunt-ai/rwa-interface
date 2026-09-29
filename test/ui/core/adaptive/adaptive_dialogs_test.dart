@@ -27,6 +27,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tapAt(const Offset(1, 1));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
   });
 
   testWidgets('alert and action sheet use Cupertino presentation on iOS', (
@@ -64,8 +67,9 @@ void main() {
     await tester.tap(find.text('Alert'));
     await tester.pumpAndSettle();
     expect(find.byType(CupertinoAlertDialog), findsOneWidget);
-    await tester.tap(find.text('No'));
+    await tester.tapAt(const Offset(1, 1));
     await tester.pumpAndSettle();
+    expect(find.byType(CupertinoAlertDialog), findsNothing);
     await tester.tap(find.text('Sheet'));
     await tester.pumpAndSettle();
     expect(find.byType(CupertinoActionSheet), findsOneWidget);

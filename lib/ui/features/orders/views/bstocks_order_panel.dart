@@ -385,7 +385,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           final funded = await showModalBottomSheet<bool>(
             context: context,
             isScrollControlled: true,
-            isDismissible: false,
+            isDismissible: true,
             enableDrag: false,
             builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
           );
