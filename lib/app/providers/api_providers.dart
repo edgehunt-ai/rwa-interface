@@ -11,6 +11,9 @@ import '../../domain/repositories/hip3_account_abstraction_repository.dart';
 import '../../domain/repositories/hip3_opening_repository.dart';
 import '../../data/repositories/hip3_order_execution_repository_impl.dart';
 import '../../data/repositories/funding_repository_impl.dart';
+import '../../data/repositories/hip3_withdrawal_repository_impl.dart';
+import '../../data/services/hip3_withdrawal_service.dart';
+import '../../domain/repositories/hip3_withdrawal_repository.dart';
 import '../../data/repositories/orders_repository_impl.dart';
 import '../../data/repositories/bstocks_order_execution_repository_impl.dart';
 import '../../data/repositories/bstocks_order_action_repository_impl.dart';
@@ -142,6 +145,19 @@ final fundingRepositoryProvider = Provider<FundingRepository>((ref) {
   final source = ref.watch(apiDataSourceProvider);
   return FundingRepositoryImpl(
     GeneratedFundingService(source.client.getFundingApi()),
+  );
+});
+
+final hip3WithdrawalRepositoryProvider = Provider<Hip3WithdrawalRepository>((
+  ref,
+) {
+  final generation = ref.watch(sessionGenerationProvider);
+  final source = ref.watch(apiDataSourceProvider);
+  return Hip3WithdrawalRepositoryImpl(
+    GeneratedHip3WithdrawalService(source.client.getFundingApi()),
+    _PositionSessionSigner(ref, generation),
+    isActive: () =>
+        ref.mounted && ref.read(sessionGenerationProvider) == generation,
   );
 });
 

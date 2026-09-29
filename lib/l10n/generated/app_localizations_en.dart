@@ -2027,6 +2027,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiveAccount => 'Receive account';
 
   @override
+  String get swapAccounts => 'Swap accounts';
+
+  @override
+  String get hip3TransferDestination => 'To your Arbitrum USDC address:';
+
+  @override
   String get sendAmount => 'Send amount';
 
   @override
@@ -2168,6 +2174,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get liquidationPriceShort => 'Liq. Price';
+
+  @override
+  String get safe => 'Safe';
+
+  @override
+  String get liquidationRisk => 'Liq. Risk';
+
+  @override
+  String get highLiquidationRisk => 'High Liq. Risk';
+
+  @override
+  String get marketPriceShort => 'Mkt.';
+
+  @override
+  String get toLiquidation => 'To liq.';
 
   @override
   String get tokenPosition => 'Token position';

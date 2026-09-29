@@ -10,11 +10,13 @@ class TransferAccountPair extends StatelessWidget {
     super.key,
     required this.send,
     required this.receive,
+    required this.sendIsSpot,
     this.onSwap,
   });
 
   final String send;
   final String receive;
+  final bool sendIsSpot;
   final VoidCallback? onSwap;
 
   @override
@@ -25,6 +27,7 @@ class TransferAccountPair extends StatelessWidget {
       String label,
       String value, {
       required bool receiveSide,
+      required bool isSpot,
     }) => Expanded(
       child: Container(
         height: 78,
@@ -54,8 +57,8 @@ class TransferAccountPair extends StatelessWidget {
                   SizedBox.square(
                     dimension: 24,
                     child: SvgPicture.asset(
-                      value == 'Spot'
-                          ? 'assets/figma/home_markets/venue_bnb.svg'
+                      isSpot
+                          ? 'assets/figma/funding/venue_bnb_chain_24.svg'
                           : 'assets/figma/home_markets/venue_hyperliquid.svg',
                     ),
                   ),
@@ -78,28 +81,28 @@ class TransferAccountPair extends StatelessWidget {
               AppLocalizations.of(context).sendAccount,
               send,
               receiveSide: false,
+              isSpot: sendIsSpot,
             ),
             const SizedBox(width: 4),
             account(
               AppLocalizations.of(context).receiveAccount,
               receive,
               receiveSide: true,
+              isSpot: !sendIsSpot,
             ),
           ],
         ),
-        Material(
-          color: colors.surface,
-          shape: CircleBorder(side: BorderSide(color: colors.border)),
-          child: SizedBox(
-            width: 28,
-            height: 28,
-            child: onSwap == null
-                ? const Icon(Icons.arrow_forward, size: 16)
-                : InkWell(
-                    onTap: onSwap,
-                    customBorder: const CircleBorder(),
-                    child: const Icon(Icons.arrow_forward, size: 16),
-                  ),
+        IconButton(
+          key: const Key('transfer-swap-accounts'),
+          tooltip: AppLocalizations.of(context).swapAccounts,
+          onPressed: onSwap,
+          icon: const Icon(Icons.arrow_forward, size: 16),
+          style: IconButton.styleFrom(
+            backgroundColor: colors.surface,
+            side: BorderSide(color: colors.border),
+            minimumSize: const Size(28, 28),
+            fixedSize: const Size(28, 28),
+            padding: EdgeInsets.zero,
           ),
         ),
       ],

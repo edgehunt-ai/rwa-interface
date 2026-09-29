@@ -3710,6 +3710,18 @@ abstract class AppLocalizations {
   /// **'Receive account'**
   String get receiveAccount;
 
+  /// No description provided for @swapAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Swap accounts'**
+  String get swapAccounts;
+
+  /// No description provided for @hip3TransferDestination.
+  ///
+  /// In en, this message translates to:
+  /// **'To your Arbitrum USDC address:'**
+  String get hip3TransferDestination;
+
   /// No description provided for @sendAmount.
   ///
   /// In en, this message translates to:
@@ -3939,6 +3951,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Liq. Price'**
   String get liquidationPriceShort;
+
+  /// No description provided for @safe.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe'**
+  String get safe;
+
+  /// No description provided for @liquidationRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Liq. Risk'**
+  String get liquidationRisk;
+
+  /// No description provided for @highLiquidationRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'High Liq. Risk'**
+  String get highLiquidationRisk;
+
+  /// No description provided for @marketPriceShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Mkt.'**
+  String get marketPriceShort;
+
+  /// No description provided for @toLiquidation.
+  ///
+  /// In en, this message translates to:
+  /// **'To liq.'**
+  String get toLiquidation;
 
   /// No description provided for @tokenPosition.
   ///

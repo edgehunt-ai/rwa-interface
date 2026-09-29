@@ -38,6 +38,10 @@ void main() {
                 afterLiquidationPrice: DecimalValue('131.20'),
               ),
             ],
+            marketPrices: {
+              'xyz:TSLA': DecimalValue('200'),
+              'xyz:NVDA': DecimalValue('140'),
+            },
           ),
         ),
       ),
@@ -49,9 +53,12 @@ void main() {
     await tester.tap(find.byKey(const Key('hip3-cross-liquidation-impacts')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Long TSLA Liq. Price'), findsOneWidget);
-    expect(find.textContaining('Short NVDA Liq. Price'), findsOneWidget);
-    expect(find.textContaining(r'$182.4 → $186.8'), findsOneWidget);
-    expect(find.textContaining(r'$128.40 → $131.20'), findsOneWidget);
+    expect(find.text('Liq. Risk'), findsOneWidget);
+    expect(find.textContaining('Long TSLA'), findsOneWidget);
+    expect(find.textContaining('Short NVDA'), findsOneWidget);
+    expect(find.textContaining(r'Mkt. $200'), findsOneWidget);
+    expect(find.textContaining('To liq. 8.8% →6.6%'), findsOneWidget);
+    expect(find.textContaining(r'Liq. $182.4 → $186.8'), findsOneWidget);
+    expect(find.textContaining(r'Liq. $128.40 → $131.20'), findsOneWidget);
   });
 }

@@ -1159,6 +1159,26 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         ? null
         : disabledReason;
     Position? currentPosition;
+    final impacts =
+        _quotePreview?.hip3Execution?.crossLiquidationImpacts ?? const [];
+    final impactPositions = impacts.isEmpty
+        ? const <Position>[]
+        : ref
+                  .watch(
+                    positionsProvider((
+                      symbol: null,
+                      kind: MarketProductKind.perp,
+                      cursor: null,
+                    )),
+                  )
+                  .value
+                  ?.items ??
+              const <Position>[];
+    final impactMarketPrices = <String, DecimalValue>{
+      for (final position in impactPositions)
+        if (position.productId != null && position.markPrice != null)
+          position.productId!: position.markPrice!,
+    };
     if (widget.onYourPositionTap != null) {
       currentPosition = ref
           .watch(
@@ -1390,6 +1410,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                 _Hip3RiskSummary(
                   settlementAsset: settlementAsset,
                   execution: _quotePreview?.hip3Execution,
+                  marketPrices: impactMarketPrices,
                   loading: _quoteLoading,
                   showTpSl: _showTpSl,
                   takeProfit: _protectionPrices[0].text.trim(),
@@ -1976,6 +1997,7 @@ class _Hip3RiskSummary extends StatelessWidget {
     this.position,
     this.orderSide,
     this.orderValue,
+    this.marketPrices = const {},
   });
 
   final String settlementAsset;
@@ -1989,6 +2011,7 @@ class _Hip3RiskSummary extends StatelessWidget {
   final Position? position;
   final TradingSide? orderSide;
   final double? orderValue;
+  final Map<String, DecimalValue> marketPrices;
 
   @override
   Widget build(BuildContext context) {
@@ -2077,7 +2100,10 @@ class _Hip3RiskSummary extends StatelessWidget {
         ],
         if (impacts.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Hip3CrossLiquidationImpactsCard(impacts: impacts),
+          Hip3CrossLiquidationImpactsCard(
+            impacts: impacts,
+            marketPrices: marketPrices,
+          ),
         ],
       ],
     );

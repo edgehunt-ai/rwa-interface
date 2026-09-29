@@ -1927,6 +1927,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get receiveAccount => '接收账户';
 
   @override
+  String get swapAccounts => '交换账户';
+
+  @override
+  String get hip3TransferDestination => '转至您的 Arbitrum USDC 地址：';
+
+  @override
   String get sendAmount => '转出数量';
 
   @override
@@ -2052,6 +2058,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get liquidationPriceShort => '强平价';
+
+  @override
+  String get safe => '安全';
+
+  @override
+  String get liquidationRisk => '强平风险';
+
+  @override
+  String get highLiquidationRisk => '高强平风险';
+
+  @override
+  String get marketPriceShort => '市价';
+
+  @override
+  String get toLiquidation => '距强平';
 
   @override
   String get tokenPosition => '代币持仓';
