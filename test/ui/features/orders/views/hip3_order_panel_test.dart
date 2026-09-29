@@ -12,6 +12,7 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/market_snapshot.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
@@ -43,6 +44,7 @@ import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repos
 import 'package:rwa_interface/domain/repositories/hip3_opening_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
@@ -840,6 +842,125 @@ void main() {
     await tester.pump();
     expect(find.text('Short NVDA'), findsWidgets);
   });
+
+  testWidgets('HIP-3 limit editor opens from the loaded snapshot price', (
+    tester,
+  ) async {
+    var quoteRequests = 0;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('123.45', asset: 'USDC', unit: 'price'),
+              change24hPercent: DecimalValue('0', unit: 'percent'),
+              bids: const [],
+              asks: const [],
+            ),
+          ),
+          marketProductProvider.overrideWith((ref, product) {
+            quoteRequests++;
+            return Completer<MarketProduct>().future;
+          }),
+        ],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit').last);
+    await tester.pumpAndSettle();
+
+    final input = find.byKey(const Key('hip3-limit-price-sheet-input'));
+    expect(input, findsOneWidget);
+    expect(tester.widget<TextField>(input).controller?.text, '123.45');
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    // The snapshot already carries the price, so no fallback quote is needed.
+    expect(quoteRequests, 0);
+  });
+
+  testWidgets(
+    'HIP-3 limit editor reports a quote failure and refetches on the next open',
+    (tester) async {
+      const productRef = MarketProductRef(
+        symbol: 'NVDA',
+        kind: MarketProductKind.perp,
+      );
+      var quoteFailing = true;
+      var quoteRequests = 0;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            // The snapshot endpoint is optional for this editor, and it fails
+            // here, so the fallback quote is the only price source.
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async => throw const NetworkFailure(),
+            ),
+            marketsRepositoryProvider.overrideWith(
+              (ref) => throw const ServerFailure(
+                statusCode: 429,
+                code: 'rate_limited',
+                message: 'Too many requests',
+              ),
+            ),
+            marketProductProvider.overrideWith((ref, product) {
+              quoteRequests++;
+              if (quoteFailing) {
+                // Fails because the repository it depends on is in error
+                // state, which wraps the failure in a ProviderException.
+                return ref.watch(marketsRepositoryProvider).getProduct(product);
+              }
+              return Future.value(
+                MarketProduct(
+                  symbol: 'NVDA',
+                  name: 'NVIDIA',
+                  kind: MarketProductKind.perp,
+                  price: DecimalValue('77.7', asset: 'USDC', unit: 'price'),
+                  settlementAsset: 'USDC',
+                  network: 'hyperliquid',
+                  tradable: true,
+                ),
+              );
+            }),
+          ],
+          child: _app(
+            Consumer(
+              builder: (context, ref, _) {
+                // Keep the quote alive so its failure stays cached, the way
+                // the market detail screen would leave it.
+                ref.watch(marketProductProvider(productRef));
+                return const Hip3OrderPanel();
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Limit').last);
+      await tester.pumpAndSettle();
+
+      final input = find.byKey(const Key('hip3-limit-price-sheet-input'));
+      expect(input, findsOneWidget);
+      expect(tester.widget<TextField>(input).controller?.text, isEmpty);
+      expect(find.byKey(const Key('hip3-limit-price-error')), findsOneWidget);
+      // The wrapped failure is unwrapped so the user sees the real reason.
+      expect(find.text('Too many requests'), findsOneWidget);
+      final requestsAfterFirstOpen = quoteRequests;
+      expect(requestsAfterFirstOpen, greaterThan(0));
+
+      // A cached failure must not be replayed: the next open asks again.
+      Navigator.of(tester.element(input)).pop();
+      await tester.pumpAndSettle();
+      quoteFailing = false;
+      await tester.tap(find.text('Limit').last);
+      await tester.pumpAndSettle();
+
+      expect(quoteRequests, greaterThan(requestsAfterFirstOpen));
+      expect(tester.widget<TextField>(input).controller?.text, '77.7');
+      expect(find.byKey(const Key('hip3-limit-price-error')), findsNothing);
+    },
+  );
 
   testWidgets(
     'HIP-3 limit quantity is truncated to trading-context precision',

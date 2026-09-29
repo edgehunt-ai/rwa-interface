@@ -90,7 +90,7 @@ abstract class ProductDetail implements Built<ProductDetail, ProductDetailBuilde
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ProductDetailBuilder b) => b
       ..isFavorite = false
-      ..tradingHours = ProductDetailTradingHoursEnum.valueOf('24x7');
+      ..tradingHours = ProductDetailTradingHoursEnum.n24x7;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<ProductDetail> get serializer => _$ProductDetailSerializer();

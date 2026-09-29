@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
@@ -62,6 +63,9 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
 }
 
 class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
+  /// Timeout for the optional product quote that backs the limit-price ruler.
+  static const _marketPriceRequestTimeout = Duration(seconds: 10);
+
   final _amount = TextEditingController();
   final _orderValue = TextEditingController();
   final _limitPrice = TextEditingController();
@@ -86,7 +90,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   String? _error;
   OrderPreview? _preview;
   OrderPreview? _quotePreview;
-  String? _marketPrice;
   var _quoteLoading = false;
   var _orderTypeChanging = false;
   var _limitPriceEditorOpen = false;
@@ -94,6 +97,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   String? _pendingOrderId;
   Timer? _quoteDebounce;
   var _quoteGeneration = 0;
+
+  MarketProductRef get _marketProductRef => MarketProductRef(
+    symbol: widget.symbol,
+    kind: MarketProductKind.perp,
+  );
 
   @override
   void initState() {
@@ -104,9 +112,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _orderValue.addListener(_onOrderValueChanged);
     _limitPrice.addListener(_onLimitPriceChanged);
     ref.listenManual(
-      marketSnapshotProvider(
-        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
-      ),
+      marketSnapshotProvider(_marketProductRef),
       (_, _) {
         _protectionReferenceNotifier.value = _protectionReference();
         if (mounted) setState(() {});
@@ -155,44 +161,71 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _scheduleQuote();
   }
 
-  Future<String?> _loadHip3MarketPrice() async {
-    if (_marketPrice != null) return _marketPrice;
-    final ref = MarketProductRef(
-      symbol: widget.symbol,
-      kind: MarketProductKind.perp,
+  /// Order-book snapshot price for this product, when it is already cached.
+  ///
+  /// The snapshot is the single source of truth for the price shown by the
+  /// limit-price editor, so it is read when the editor opens instead of being
+  /// memoized on the widget state. That keeps a failed load recoverable on the
+  /// next open.
+  String? _cachedSnapshotPrice() {
+    final price = ref
+        .read(marketSnapshotProvider(_marketProductRef))
+        .value
+        ?.price
+        .value;
+    return price != null && double.tryParse(price) != null ? price : null;
+  }
+
+  /// Shows the limit-price editor with the market price it should display.
+  ///
+  /// The order-book snapshot seeds the ruler when it is cached. Otherwise a
+  /// single product quote is requested, because limit-price editing must remain
+  /// available when the optional snapshot endpoint is unavailable. Nothing is
+  /// memoized on the widget state, so a failure recovers on the next open.
+  Future<String?> _showLimitPriceEditor() {
+    final snapshotPrice = _cachedSnapshotPrice();
+    final quoteRequest = snapshotPrice == null ? _requestProductQuote() : null;
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _Hip3LimitPriceSheet(
+        initialPrice: _limitPrice.text,
+        marketPrice: snapshotPrice,
+        marketPriceFuture: quoteRequest,
+      ),
     );
-    debugPrint(
-      'HIP-3 limit price: loading product quote symbol=${ref.symbol} kind=${ref.kind.name}',
-    );
+  }
+
+  /// Starts the fallback quote shown by the limit-price editor.
+  ///
+  /// A failure cached by another screen is dropped first, so opening the editor
+  /// issues a real request instead of replaying that failure.
+  Future<String?> _requestProductQuote() {
+    final productProvider = marketProductProvider(_marketProductRef);
+    if (ref.read(productProvider).hasError) ref.invalidate(productProvider);
+    final request = _fetchProductQuote(productProvider);
+    // The sheet reports the outcome, which may arrive before it mounts; this
+    // keeps a dismissed editor from surfacing an unhandled async error.
+    request.ignore();
+    return request;
+  }
+
+  Future<String?> _fetchProductQuote(
+    FutureProvider<MarketProduct> productProvider,
+  ) async {
     try {
-      // Limit-price initialization only needs the product quote. Do not wait
-      // for the optional orderbook endpoint, whose empty/unavailable response
-      // is unrelated to the price shown in this editor.
-      final product = await this.ref
-          .read(marketProductProvider(ref).future)
-          .timeout(const Duration(seconds: 30));
-      _marketPrice = product.price.value;
-      debugPrint(
-        'HIP-3 limit price: product quote loaded symbol=${ref.symbol} price=$_marketPrice',
-      );
+      final product = await ref
+          .read(productProvider.future)
+          .timeout(_marketPriceRequestTimeout);
+      return product.price.value;
     } on Object catch (error, stackTrace) {
       debugPrint(
-        'HIP-3 limit price: product quote failed symbol=${ref.symbol} error=$error',
+        'HIP-3 limit price: product quote failed '
+        'symbol=${_marketProductRef.symbol} error=$error',
       );
-      debugPrintStack(stackTrace: stackTrace);
-      // A market quote is only a convenience for the ruler. Limit-price
-      // editing must remain available when the optional market endpoint is
-      // unavailable (including in offline/test environments).
-      try {
-        final snapshot = await this.ref.read(
-          marketSnapshotProvider(ref).future,
-        );
-        _marketPrice = snapshot.price.value;
-      } on Object {
-        // The editor can still accept a manually entered limit price.
-      }
+      Error.throwWithStackTrace(error, stackTrace);
     }
-    return _marketPrice;
   }
 
   void _onOrderValueChanged() {
@@ -222,15 +255,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     try {
       if (next == TradingOrderType.limit) {
         if (!mounted) return;
-        final value = await showModalBottomSheet<String>(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (_) => _Hip3LimitPriceSheet(
-            initialPrice: _limitPrice.text,
-            marketPriceFuture: _loadHip3MarketPrice(),
-          ),
-        );
+        final value = await _showLimitPriceEditor();
         if (!mounted || value == null) return;
         setState(() {
           _type = next;
@@ -259,15 +284,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _limitPriceEditorOpen = true;
     try {
       if (!mounted) return;
-      final value = await showModalBottomSheet<String>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => _Hip3LimitPriceSheet(
-          initialPrice: _limitPrice.text,
-          marketPriceFuture: _loadHip3MarketPrice(),
-        ),
-      );
+      final value = await _showLimitPriceEditor();
       if (!mounted || value == null) return;
       _limitPrice.text = value;
     } finally {
@@ -493,16 +510,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       final limit = double.tryParse(_limitPrice.text.trim());
       if (limit != null) return limit;
     }
-    final snapshot = ref
-        .read(
-          marketSnapshotProvider(
-            MarketProductRef(
-              symbol: widget.symbol,
-              kind: MarketProductKind.perp,
-            ),
-          ),
-        )
-        .value;
+    final snapshot = ref.read(marketSnapshotProvider(_marketProductRef)).value;
     return double.tryParse(snapshot?.price.value ?? '');
   }
 
@@ -1140,12 +1148,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final marketSnapshot = ref.watch(
-      marketSnapshotProvider(
-        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp),
-      ),
-    );
-    _marketPrice = marketSnapshot.value?.price.value;
     final isShort = _side == TradingSide.short || _reduceOnly;
     final actionColor = isShort ? kShortTradeColor : semantic.success;
     final amount = _amount.text.trim();
@@ -3195,9 +3197,17 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
 class _Hip3LimitPriceSheet extends StatefulWidget {
   const _Hip3LimitPriceSheet({
     required this.initialPrice,
+    this.marketPrice,
     this.marketPriceFuture,
   });
   final String initialPrice;
+
+  /// Market price already known when the sheet opens, so the ruler renders
+  /// without a loading state.
+  final String? marketPrice;
+
+  /// Fallback quote used when [marketPrice] is unavailable. A failure is shown
+  /// in the sheet and never blocks a manually entered price.
   final Future<String?>? marketPriceFuture;
   @override
   State<_Hip3LimitPriceSheet> createState() => _Hip3LimitPriceSheetState();
@@ -3214,7 +3224,7 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
   @override
   void initState() {
     super.initState();
-    _resolvedMarketPrice = null;
+    _resolvedMarketPrice = widget.marketPrice;
     final initial = double.tryParse(widget.initialPrice) ?? _market;
     _controller = TextEditingController(
       text: initial == null ? '' : _formatHip3Price(initial),
@@ -3247,12 +3257,11 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
           });
         },
         onError: (Object error, StackTrace _) {
-          if (mounted) {
-            setState(() {
-              _marketPriceLoading = false;
-              _marketPriceError = _marketPriceErrorMessage(error);
-            });
-          }
+          if (!mounted) return;
+          setState(() {
+            _marketPriceLoading = false;
+            _marketPriceError = _marketPriceErrorMessage(error);
+          });
         },
       );
     }
@@ -3492,11 +3501,17 @@ String _formatHip3Price(double value) {
 }
 
 String _marketPriceErrorMessage(Object error) {
-  if (error is ApiFailure) {
-    return apiFailureMessage(error, fallback: '市场价格加载失败');
+  // Provider failures reach the sheet wrapped, and the underlying failure is
+  // the one the user needs to see.
+  var failure = error;
+  while (failure is ProviderException) {
+    failure = failure.exception;
   }
-  final message = error.toString().trim();
-  return message.isEmpty ? '市场价格加载失败' : message;
+  if (failure is ApiFailure) {
+    return apiFailureMessage(failure, fallback: '市场价格加载失败');
+  }
+  if (failure is TimeoutException) return '市场价格请求超时，请重试。';
+  return '市场价格加载失败，请重试。';
 }
 
 String _formatHip3Quantity(double value, int? decimals) =>
