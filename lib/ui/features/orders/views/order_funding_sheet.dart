@@ -176,15 +176,30 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                     onClose: () => Navigator.of(context).pop(false),
                   )
                 else if (_transferStep)
-                  _TransferContent(
-                    plan: _plan,
-                    busy: _busy,
-                    pending: _pending,
-                    error: _error,
-                    onBack: () => setState(() => _transferStep = false),
-                    onConfirm: () => _continue(),
-                    onRetry: () => _continue(refresh: true),
-                  )
+                  switch (options) {
+                    AsyncData(:final value) => _TransferContent(
+                      plan: _plan,
+                      busy: _busy,
+                      pending: _pending,
+                      error: _error,
+                      availableByPositionId: {
+                        for (final position in value.account.positions)
+                          position.positionId: position.availableAmount,
+                      },
+                      onBack: () => setState(() => _transferStep = false),
+                      onConfirm: () => _continue(),
+                      onRetry: () => _continue(refresh: true),
+                    ),
+                    _ => _TransferContent(
+                      plan: _plan,
+                      busy: _busy,
+                      pending: _pending,
+                      error: _error,
+                      onBack: () => setState(() => _transferStep = false),
+                      onConfirm: () => _continue(),
+                      onRetry: () => _continue(refresh: true),
+                    ),
+                  }
                 else
                   _PrepareContent(
                     plan: _plan,
@@ -526,11 +541,13 @@ class _TransferContent extends StatelessWidget {
     required this.onBack,
     required this.onConfirm,
     required this.onRetry,
+    this.availableByPositionId = const {},
   });
   final FundingPlan plan;
   final bool busy, pending;
   final String? error;
   final VoidCallback onBack, onConfirm, onRetry;
+  final Map<String, DecimalValue> availableByPositionId;
 
   @override
   Widget build(BuildContext context) {
@@ -546,6 +563,7 @@ class _TransferContent extends StatelessWidget {
         const SizedBox(height: 8),
         _AssetsCard(
           legs: plan.legs,
+          availableByPositionId: availableByPositionId,
           needed: plan.shortfall.value,
           transferAmount: leg?.outputAmount.value ?? plan.shortfall.value,
         ),
@@ -665,9 +683,11 @@ class _AssetsCard extends StatelessWidget {
     required this.legs,
     required this.needed,
     required this.transferAmount,
+    this.availableByPositionId = const {},
   });
   final List<FundingLeg> legs;
   final String needed, transferAmount;
+  final Map<String, DecimalValue> availableByPositionId;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -678,7 +698,10 @@ class _AssetsCard extends StatelessWidget {
         color: colors.canvas,
         child: Column(
           children: [
-            _FundingLegs(legs: legs),
+            _FundingLegs(
+              legs: legs,
+              availableByPositionId: availableByPositionId,
+            ),
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               decoration: BoxDecoration(
@@ -707,9 +730,13 @@ class _AssetsCard extends StatelessWidget {
 }
 
 class _FundingLegs extends StatefulWidget {
-  const _FundingLegs({required this.legs});
+  const _FundingLegs({
+    required this.legs,
+    this.availableByPositionId = const {},
+  });
 
   final List<FundingLeg> legs;
+  final Map<String, DecimalValue> availableByPositionId;
 
   @override
   State<_FundingLegs> createState() => _FundingLegsState();
@@ -730,7 +757,13 @@ class _FundingLegsState extends State<_FundingLegs> {
   Widget build(BuildContext context) {
     if (widget.legs.length <= _maximumVisibleRows) {
       return Column(
-        children: [for (final leg in widget.legs) _AssetRow(leg: leg)],
+        children: [
+          for (final leg in widget.legs)
+            _AssetRow(
+              leg: leg,
+              available: widget.availableByPositionId[leg.sourcePositionId],
+            ),
+        ],
       );
     }
 
@@ -745,7 +778,13 @@ class _FundingLegsState extends State<_FundingLegs> {
           padding: EdgeInsets.zero,
           itemCount: widget.legs.length,
           itemExtent: _rowHeight,
-          itemBuilder: (context, index) => _AssetRow(leg: widget.legs[index]),
+          itemBuilder: (context, index) {
+            final leg = widget.legs[index];
+            return _AssetRow(
+              leg: leg,
+              available: widget.availableByPositionId[leg.sourcePositionId],
+            );
+          },
         ),
       ),
     );
@@ -753,13 +792,15 @@ class _FundingLegsState extends State<_FundingLegs> {
 }
 
 class _AssetRow extends StatelessWidget {
-  const _AssetRow({required this.leg});
+  const _AssetRow({required this.leg, this.available});
   final FundingLeg leg;
+  final DecimalValue? available;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     final usdc = leg.asset.toUpperCase() == 'USDC';
+    final network = leg.network;
     return Container(
       height: 63,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -795,7 +836,9 @@ class _AssetRow extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       TextSpan(
-                        text: usdc ? ' (Ethereum)' : ' (Arbitrum)',
+                        text: network == null || network.isEmpty
+                            ? ''
+                            : ' ($network)',
                         style: TextStyle(
                           fontSize: 11,
                           color: colors.secondaryText,
@@ -805,7 +848,7 @@ class _AssetRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  l10n.availableAmount(leg.maximumAmount.value),
+                  l10n.availableAmount(available?.value ?? '-'),
                   style: TextStyle(
                     fontSize: 11,
                     height: 14 / 11,
@@ -827,6 +870,9 @@ class _AssetRow extends StatelessWidget {
             ),
             child: Text(
               leg.maximumAmount.value,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.fade,
               style: const TextStyle(
                 fontSize: 15,
                 height: 22 / 15,

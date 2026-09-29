@@ -203,7 +203,18 @@ void main() {
       ProviderScope(
         overrides: [
           transferOptionsProvider.overrideWith(
-            (ref) async => _transferOptions('100'),
+            (ref) async => _transferOptions(
+              '100',
+              positions: [
+                FundingSourcePosition(
+                  positionId: 'position-1',
+                  token: 'USDC',
+                  network: 'Arbitrum',
+                  availableAmount: DecimalValue('150', asset: 'USDC'),
+                  eligible: true,
+                ),
+              ],
+            ),
           ),
         ],
         child: buildTestApp(
@@ -1125,6 +1136,7 @@ final _readyFundingPlan = FundingPlan(
       legId: 'leg-1',
       walletId: 'wallet-1',
       asset: 'USDC',
+      sourcePositionId: 'position-1',
       maximumAmount: DecimalValue('150', asset: 'USDC', unit: 'token'),
       outputAmount: DecimalValue('100', asset: 'USDT', unit: 'token'),
       status: FundingLegState.actionReleased,
@@ -1177,7 +1189,10 @@ FundingPlan _fundingPlanWithLegCount(int count) => FundingPlan(
   ),
 );
 
-TransferOptions _transferOptions(String available) => TransferOptions(
+TransferOptions _transferOptions(
+  String available, {
+  List<FundingSourcePosition> positions = const [],
+}) => TransferOptions(
   account: UnifiedFundingAccountSummary(
     totalUsd: DecimalValue(available, asset: 'USD'),
     availableToFundUsd: DecimalValue(available, asset: 'USD'),
@@ -1185,6 +1200,7 @@ TransferOptions _transferOptions(String available) => TransferOptions(
     inTransitUsd: DecimalValue('0', asset: 'USD'),
     dataStatus: 'complete',
     calculatedAt: DateTime.utc(2026, 9, 28),
+    positions: positions,
   ),
   catalog: null,
 );

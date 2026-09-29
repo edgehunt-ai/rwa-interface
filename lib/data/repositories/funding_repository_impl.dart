@@ -642,6 +642,8 @@ final class FundingRepositoryImpl implements FundingRepository {
               legId: leg.legId,
               walletId: source.walletId,
               asset: source.asset.token,
+              sourcePositionId: source.positionId,
+              network: source.asset.network,
               maximumAmount: _money(leg.route.maximumInputAmount)!,
               outputAmount: _money(leg.outputAmount)!,
               status: switch (leg.status.name) {

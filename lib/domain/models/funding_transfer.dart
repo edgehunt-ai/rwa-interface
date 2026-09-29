@@ -47,6 +47,8 @@ final class FundingLeg {
     required this.maximumAmount,
     required this.outputAmount,
     required this.status,
+    this.sourcePositionId,
+    this.network,
     this.etaSeconds,
     this.bridgeFee,
     this.networkFee,
@@ -57,6 +59,13 @@ final class FundingLeg {
   final String legId;
   final String walletId;
   final String asset;
+
+  /// Account position ID used to match the live funding-account balance.
+  final String? sourcePositionId;
+
+  /// Network from the server-frozen source position snapshot.
+  final String? network;
+
   final DecimalValue maximumAmount;
   final DecimalValue outputAmount;
   final FundingLegState status;

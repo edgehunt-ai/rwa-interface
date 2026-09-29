@@ -153,6 +153,8 @@ void main() {
       expect(plan.legs, hasLength(1));
       expect(plan.legs.single.walletId, 'wallet-1');
       expect(plan.legs.single.asset, 'USDC');
+      expect(plan.legs.single.network, 'Arbitrum');
+      expect(plan.legs.single.sourcePositionId, 'position-1');
       expect(plan.legs.single.outputAmount.value, '5');
     },
   );
