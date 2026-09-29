@@ -26,7 +26,7 @@ part 'portfolio_source_summary.g.dart';
 abstract class PortfolioSourceSummary implements Built<PortfolioSourceSummary, PortfolioSourceSummaryBuilder> {
   @BuiltValueField(wireName: r'source')
   PortfolioSourceKind get source_;
-  // enum source_Enum {  evm_rpc,  hyperliquid_info,  dodoex_price,  fixed_peg,  internal_ledger,  };
+  // enum source_Enum {  evm_rpc,  hyperliquid_info,  dodoex_price,  bstocks_market_data,  fixed_peg,  internal_ledger,  };
 
   @BuiltValueField(wireName: r'network')
   PortfolioAssetNetwork? get network;
@@ -45,7 +45,7 @@ abstract class PortfolioSourceSummary implements Built<PortfolioSourceSummary, P
 
   @BuiltValueField(wireName: r'warning_code')
   PortfolioWarningCode? get warningCode;
-  // enum warningCodeEnum {  evm_rpc_unavailable,  hyperliquid_unavailable,  price_unavailable,  asset_unvalued,  using_last_good,  wallet_set_changed,  internal_ledger_stale,  internal_ledger_unreconciled,  };
+  // enum warningCodeEnum {  evm_rpc_unavailable,  hyperliquid_unavailable,  price_unavailable,  asset_unvalued,  using_last_good,  wallet_set_changed,  internal_ledger_stale,  internal_ledger_unreconciled,  portfolio_history_write_unavailable,  portfolio_valuation_invalid,  };
 
   PortfolioSourceSummary._();
 

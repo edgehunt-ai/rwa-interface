@@ -652,6 +652,20 @@ void main() {
     expect(hip3OpeningNotional(balance, 2, 50, quote: quote), '6');
   });
 
+  test('a quote without a venue maximum keeps the balance-based amount', () {
+    final intent = OrderIntent(
+      symbol: 'TSLA',
+      kind: MarketProductKind.perp,
+      side: TradingSide.long,
+      type: TradingOrderType.market,
+      amount: DecimalValue('6'),
+    );
+    final quote = _previewExecution(intent, maximum: null);
+    final balance = DecimalValue('6', asset: 'USD', unit: 'fiat');
+
+    expect(hip3OpeningNotional(balance, 5, 100, quote: quote), '30');
+  });
+
   testWidgets('a quote that lapses on the confirmation is re-requested', (
     tester,
   ) async {
@@ -1611,7 +1625,7 @@ final class _Hip3Execution implements Hip3OrderExecutionRepository {
 
 Hip3PreviewExecution _previewExecution(
   OrderIntent intent, {
-  String maximum = '1',
+  String? maximum = '1',
   String margin = '20',
   String slippage = '1',
   bool missingLiquidationPrice = false,
@@ -1648,7 +1662,7 @@ Hip3PreviewExecution _previewExecution(
   notional: DecimalValue('100'),
   marginRequired: DecimalValue('10'),
   availableMargin: DecimalValue(margin),
-  maximumQuantity: DecimalValue(maximum),
+  maximumQuantity: maximum == null ? null : DecimalValue(maximum),
   estimatedFee: DecimalValue('0.05'),
   slippagePercent: DecimalValue(slippage),
   liquidationPriceUnavailableReason:

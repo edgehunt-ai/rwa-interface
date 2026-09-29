@@ -147,6 +147,8 @@ class _$Hip3CrossLiquidationImpact extends Hip3CrossLiquidationImpact {
   @override
   final Hip3CrossLiquidationImpactSideEnum side;
   @override
+  final String? markPrice;
+  @override
   final String? beforeLiquidationPrice;
   @override
   final String? afterLiquidationPrice;
@@ -160,6 +162,7 @@ class _$Hip3CrossLiquidationImpact extends Hip3CrossLiquidationImpact {
   _$Hip3CrossLiquidationImpact._(
       {required this.productId,
       required this.side,
+      this.markPrice,
       this.beforeLiquidationPrice,
       this.afterLiquidationPrice,
       this.unavailableReason})
@@ -179,6 +182,7 @@ class _$Hip3CrossLiquidationImpact extends Hip3CrossLiquidationImpact {
     return other is Hip3CrossLiquidationImpact &&
         productId == other.productId &&
         side == other.side &&
+        markPrice == other.markPrice &&
         beforeLiquidationPrice == other.beforeLiquidationPrice &&
         afterLiquidationPrice == other.afterLiquidationPrice &&
         unavailableReason == other.unavailableReason;
@@ -189,6 +193,7 @@ class _$Hip3CrossLiquidationImpact extends Hip3CrossLiquidationImpact {
     var _$hash = 0;
     _$hash = $jc(_$hash, productId.hashCode);
     _$hash = $jc(_$hash, side.hashCode);
+    _$hash = $jc(_$hash, markPrice.hashCode);
     _$hash = $jc(_$hash, beforeLiquidationPrice.hashCode);
     _$hash = $jc(_$hash, afterLiquidationPrice.hashCode);
     _$hash = $jc(_$hash, unavailableReason.hashCode);
@@ -201,6 +206,7 @@ class _$Hip3CrossLiquidationImpact extends Hip3CrossLiquidationImpact {
     return (newBuiltValueToStringHelper(r'Hip3CrossLiquidationImpact')
           ..add('productId', productId)
           ..add('side', side)
+          ..add('markPrice', markPrice)
           ..add('beforeLiquidationPrice', beforeLiquidationPrice)
           ..add('afterLiquidationPrice', afterLiquidationPrice)
           ..add('unavailableReason', unavailableReason))
@@ -220,6 +226,10 @@ class Hip3CrossLiquidationImpactBuilder
   Hip3CrossLiquidationImpactSideEnum? _side;
   Hip3CrossLiquidationImpactSideEnum? get side => _$this._side;
   set side(Hip3CrossLiquidationImpactSideEnum? side) => _$this._side = side;
+
+  String? _markPrice;
+  String? get markPrice => _$this._markPrice;
+  set markPrice(String? markPrice) => _$this._markPrice = markPrice;
 
   String? _beforeLiquidationPrice;
   String? get beforeLiquidationPrice => _$this._beforeLiquidationPrice;
@@ -247,6 +257,7 @@ class Hip3CrossLiquidationImpactBuilder
     if ($v != null) {
       _productId = $v.productId;
       _side = $v.side;
+      _markPrice = $v.markPrice;
       _beforeLiquidationPrice = $v.beforeLiquidationPrice;
       _afterLiquidationPrice = $v.afterLiquidationPrice;
       _unavailableReason = $v.unavailableReason;
@@ -275,6 +286,7 @@ class Hip3CrossLiquidationImpactBuilder
               productId, r'Hip3CrossLiquidationImpact', 'productId'),
           side: BuiltValueNullFieldError.checkNotNull(
               side, r'Hip3CrossLiquidationImpact', 'side'),
+          markPrice: markPrice,
           beforeLiquidationPrice: beforeLiquidationPrice,
           afterLiquidationPrice: afterLiquidationPrice,
           unavailableReason: unavailableReason,

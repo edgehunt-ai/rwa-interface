@@ -14,9 +14,10 @@ import 'package:built_value/serializer.dart';
 
 part 'hip3_preview_execution.g.dart';
 
-/// HIP3 预览规范化后的执行条件。amount 是名义金额而非保证金；费用明确以 USDC 计价。 market 使用有滑点边界的 IOC；limit 按指定 TIF，不保证成交。 maximum_quantity 是该方向/价格/杠杆下允许的最大量（reduce-only 为可减仓量）。 preview 冻结条件而非保证市场成交价；create order 必须与预览一致，且再次校验过期、 仓位、可用余额与规则。强平价无法估算时为 null 并给出 reason，不展示为 0。 
+/// HIP3 预览规范化后的执行条件。amount 是名义金额而非保证金；费用明确以 USDC 计价。 market 使用有滑点边界的 IOC；limit 按指定 TIF，不保证成交。 maximum_quantity 是该方向/价格/杠杆下允许的最大量（reduce-only 为可减仓量）。 preview 冻结条件而非保证市场成交价；create order 必须与预览一致，且再次校验过期、 仓位、可用余额与规则。强平价无法估算时为 null 并给出 reason，不展示为 0。 余额不足、账户未激活、杠杆/保证金模式待设置或当前方向容量不足不阻止预览返回 HTTP 200； 仍返回按请求计算的数量、名义金额、费用及所需保证金，并在 blockers 中说明下单阻塞。 杠杆及 margin_mode 返回用户请求的目标设置，金额、费用及所需保证金按目标设置计算。 账户有这些阻塞时不模拟未确认的充值或设置变更：强平价为 null，其他仓位影响的 after 值为 null。 设置不一致时 maximum_quantity 为 null：官方 maxTradeSzs 只适用于当前设置，不能当作目标设置的容量。 真实余额及容量为零时返回 \"0\"；上游不可用不等同于零余额，仍返回错误。 
 ///
 /// Properties:
+/// * [blockers] - 当前账户执行此订单的阻塞原因，非预览计算错误。当前包括 account_not_activated、 insufficient_margin、insufficient_size_capacity、leverage_update_required、 margin_mode_update_required；无阻塞返回 []。设置不一致时应先完成设置，再刷新预览。 客户端应容忍未知原因；旧服务可能缺少此字段，缺省不代表已通过执行校验。 即使数组为空，下单及广播仍须重新验证账户状态、余额、容量和行情。 
 /// * [openingProtection] - 开仓请求附带 protection 时必须返回，与同次父单签名中的子保护完全一致。无保护时省略；不得作为已激活证明。
 /// * [contextId] 
 /// * [productId] 
@@ -32,6 +33,7 @@ part 'hip3_preview_execution.g.dart';
 /// * [marginRequiredUsdc] - 十进制字符串，避免浮点误差
 /// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
 /// * [maximumQuantity] - 十进制字符串，避免浮点误差
+/// * [maximumQuantityUnavailableReason] - 最大数量不可用的原因；设置尚未生效时为 account_settings_update_required，可用时为 null。旧服务可能不返回此字段。
 /// * [estimatedFeeUsdc] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 十进制字符串，避免浮点误差
 /// * [liquidationPriceUnavailableReason] 
@@ -39,6 +41,10 @@ part 'hip3_preview_execution.g.dart';
 /// * [slippagePercent] - 十进制字符串，避免浮点误差
 @BuiltValue()
 abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3PreviewExecutionBuilder> {
+  /// 当前账户执行此订单的阻塞原因，非预览计算错误。当前包括 account_not_activated、 insufficient_margin、insufficient_size_capacity、leverage_update_required、 margin_mode_update_required；无阻塞返回 []。设置不一致时应先完成设置，再刷新预览。 客户端应容忍未知原因；旧服务可能缺少此字段，缺省不代表已通过执行校验。 即使数组为空，下单及广播仍须重新验证账户状态、余额、容量和行情。 
+  @BuiltValueField(wireName: r'blockers')
+  BuiltSet<String>? get blockers;
+
   /// 开仓请求附带 protection 时必须返回，与同次父单签名中的子保护完全一致。无保护时省略；不得作为已激活证明。
   @BuiltValueField(wireName: r'opening_protection')
   Hip3OpeningProtectionConfirmation? get openingProtection;
@@ -94,7 +100,11 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'maximum_quantity')
-  String get maximumQuantity;
+  String? get maximumQuantity;
+
+  /// 最大数量不可用的原因；设置尚未生效时为 account_settings_update_required，可用时为 null。旧服务可能不返回此字段。
+  @BuiltValueField(wireName: r'maximum_quantity_unavailable_reason')
+  String? get maximumQuantityUnavailableReason;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'estimated_fee_usdc')
@@ -138,6 +148,13 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
     Hip3PreviewExecution object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.blockers != null) {
+      yield r'blockers';
+      yield serializers.serialize(
+        object.blockers,
+        specifiedType: const FullType(BuiltSet, [FullType(String)]),
+      );
+    }
     if (object.openingProtection != null) {
       yield r'opening_protection';
       yield serializers.serialize(
@@ -211,10 +228,17 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
       specifiedType: const FullType(String),
     );
     yield r'maximum_quantity';
-    yield serializers.serialize(
+    yield object.maximumQuantity == null ? null : serializers.serialize(
       object.maximumQuantity,
-      specifiedType: const FullType(String),
+      specifiedType: const FullType.nullable(String),
     );
+    if (object.maximumQuantityUnavailableReason != null) {
+      yield r'maximum_quantity_unavailable_reason';
+      yield serializers.serialize(
+        object.maximumQuantityUnavailableReason,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'estimated_fee_usdc';
     yield serializers.serialize(
       object.estimatedFeeUsdc,
@@ -263,6 +287,14 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'blockers':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltSet, [FullType(String)]),
+          ) as BuiltSet<String>?;
+          if (valueDes == null) continue;
+          result.blockers.replace(valueDes);
+          break;
         case r'opening_protection':
           final valueDes = serializers.deserialize(
             value,
@@ -365,9 +397,18 @@ class _$Hip3PreviewExecutionSerializer implements PrimitiveSerializer<Hip3Previe
         case r'maximum_quantity':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(String),
-          ) as String;
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
           result.maximumQuantity = valueDes;
+          break;
+        case r'maximum_quantity_unavailable_reason':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.maximumQuantityUnavailableReason = valueDes;
           break;
         case r'estimated_fee_usdc':
           final valueDes = serializers.deserialize(

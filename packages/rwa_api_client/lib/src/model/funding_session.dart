@@ -12,6 +12,7 @@ import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/funding_target_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/funding_session_status.dart';
 import 'package:rwa_api_client/src/model/unified_funding_position.dart';
+import 'package:rwa_api_client/src/model/hip3_collateral_risk_preview.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -20,6 +21,7 @@ part 'funding_session.g.dart';
 /// A 24-hour recoverable, non-executable funding draft. `recommended_top_up` is advisory only: it may initialize a client form but must never be used as a minimum, maximum or rejection rule. Balances and route estimates are refreshed independently and never inherit the session lifetime. 
 ///
 /// Properties:
+/// * [riskPreview] - 仅未执行且有来源选择的 HIP-3 补款/独立划转返回估算；按 minimum_received 模拟到账后抵押变化。非 HIP-3、无选择、执行中或已完成时为 null，避免重复计入资金。
 /// * [fundingSessionId] 
 /// * [status] 
 /// * [version] 
@@ -47,6 +49,10 @@ part 'funding_session.g.dart';
 /// * [expiresAt] - Exactly 24 hours after session creation; it does not extend balance or Provider quote validity.
 @BuiltValue()
 abstract class FundingSession implements Built<FundingSession, FundingSessionBuilder> {
+  /// 仅未执行且有来源选择的 HIP-3 补款/独立划转返回估算；按 minimum_received 模拟到账后抵押变化。非 HIP-3、无选择、执行中或已完成时为 null，避免重复计入资金。
+  @BuiltValueField(wireName: r'risk_preview')
+  Hip3CollateralRiskPreview? get riskPreview;
+
   @BuiltValueField(wireName: r'funding_session_id')
   String get fundingSessionId;
 
@@ -158,6 +164,13 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
     FundingSession object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.riskPreview != null) {
+      yield r'risk_preview';
+      yield serializers.serialize(
+        object.riskPreview,
+        specifiedType: const FullType.nullable(Hip3CollateralRiskPreview),
+      );
+    }
     yield r'funding_session_id';
     yield serializers.serialize(
       object.fundingSessionId,
@@ -306,6 +319,14 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'risk_preview':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3CollateralRiskPreview),
+          ) as Hip3CollateralRiskPreview?;
+          if (valueDes == null) continue;
+          result.riskPreview.replace(valueDes);
+          break;
         case r'funding_session_id':
           final valueDes = serializers.deserialize(
             value,

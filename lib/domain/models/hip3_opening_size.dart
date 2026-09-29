@@ -29,6 +29,12 @@ String hip3OpeningNotional(
 
   if (quote != null) {
     final maximum = quote.maximumQuantity;
+    if (maximum == null) {
+      return _decimal(
+        affordable * BigInt.from(percent) ~/ BigInt.from(100),
+        scale,
+      );
+    }
     final price = DecimalValue(quote.limitPrice.value);
     final maximumUnits = _units(maximum);
     final priceUnits = _units(price);

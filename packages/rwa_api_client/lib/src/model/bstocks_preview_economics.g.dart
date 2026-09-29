@@ -70,6 +70,8 @@ class _$BstocksPreviewEconomicsInputSemanticsEnumSerializer
 
 class _$BstocksPreviewEconomics extends BstocksPreviewEconomics {
   @override
+  final BuiltSet<String>? blockers;
+  @override
   final BstocksFeeAsset inputAsset;
   @override
   final String? nominalInput;
@@ -93,7 +95,8 @@ class _$BstocksPreviewEconomics extends BstocksPreviewEconomics {
       (BstocksPreviewEconomicsBuilder()..update(updates))._build();
 
   _$BstocksPreviewEconomics._(
-      {required this.inputAsset,
+      {this.blockers,
+      required this.inputAsset,
       this.nominalInput,
       required this.totalInput,
       required this.inputSemantics,
@@ -116,6 +119,7 @@ class _$BstocksPreviewEconomics extends BstocksPreviewEconomics {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is BstocksPreviewEconomics &&
+        blockers == other.blockers &&
         inputAsset == other.inputAsset &&
         nominalInput == other.nominalInput &&
         totalInput == other.totalInput &&
@@ -130,6 +134,7 @@ class _$BstocksPreviewEconomics extends BstocksPreviewEconomics {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, blockers.hashCode);
     _$hash = $jc(_$hash, inputAsset.hashCode);
     _$hash = $jc(_$hash, nominalInput.hashCode);
     _$hash = $jc(_$hash, totalInput.hashCode);
@@ -146,6 +151,7 @@ class _$BstocksPreviewEconomics extends BstocksPreviewEconomics {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'BstocksPreviewEconomics')
+          ..add('blockers', blockers)
           ..add('inputAsset', inputAsset)
           ..add('nominalInput', nominalInput)
           ..add('totalInput', totalInput)
@@ -163,6 +169,10 @@ class BstocksPreviewEconomicsBuilder
     implements
         Builder<BstocksPreviewEconomics, BstocksPreviewEconomicsBuilder> {
   _$BstocksPreviewEconomics? _$v;
+
+  SetBuilder<String>? _blockers;
+  SetBuilder<String> get blockers => _$this._blockers ??= SetBuilder<String>();
+  set blockers(SetBuilder<String>? blockers) => _$this._blockers = blockers;
 
   BstocksFeeAssetBuilder? _inputAsset;
   BstocksFeeAssetBuilder get inputAsset =>
@@ -220,6 +230,7 @@ class BstocksPreviewEconomicsBuilder
   BstocksPreviewEconomicsBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _blockers = $v.blockers?.toBuilder();
       _inputAsset = $v.inputAsset.toBuilder();
       _nominalInput = $v.nominalInput;
       _totalInput = $v.totalInput;
@@ -252,6 +263,7 @@ class BstocksPreviewEconomicsBuilder
     try {
       _$result = _$v ??
           _$BstocksPreviewEconomics._(
+            blockers: _blockers?.build(),
             inputAsset: inputAsset.build(),
             nominalInput: nominalInput,
             totalInput: BuiltValueNullFieldError.checkNotNull(
@@ -271,6 +283,8 @@ class BstocksPreviewEconomicsBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'blockers';
+        _blockers?.build();
         _$failedField = 'inputAsset';
         inputAsset.build();
 

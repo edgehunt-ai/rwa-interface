@@ -28,6 +28,7 @@ void main() {
               Hip3CrossLiquidationImpact(
                 productId: 'xyz:TSLA',
                 side: TradingSide.long,
+                markPrice: DecimalValue('200'),
                 beforeLiquidationPrice: DecimalValue('182.4'),
                 afterLiquidationPrice: DecimalValue('186.8'),
               ),
@@ -39,7 +40,8 @@ void main() {
               ),
             ],
             marketPrices: {
-              'xyz:TSLA': DecimalValue('200'),
+              // The contract snapshot must win over this stale fallback.
+              'xyz:TSLA': DecimalValue('190'),
               'xyz:NVDA': DecimalValue('140'),
             },
           ),

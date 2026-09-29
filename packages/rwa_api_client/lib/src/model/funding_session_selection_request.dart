@@ -10,15 +10,20 @@ import 'package:built_value/serializer.dart';
 
 part 'funding_session_selection_request.g.dart';
 
-/// Replaces the editable source selection for the expected session version. A selection below the minimum may be saved, but the returned session must keep transfer confirmation disabled. 
+/// Replaces the editable source selection for the expected session version. A selection below the minimum may be saved, but the returned session must keep transfer confirmation disabled. `amount` optionally retargets the session's top-up requirement: it is interpreted as the net amount to add on top of the freshly observed target balance, so the session minimum becomes exactly the amount the caller intends to move. Standalone `account_transfer` sessions must send it; order-driven sessions may omit it to keep the frozen order requirement unchanged. 
 ///
 /// Properties:
 /// * [version] 
+/// * [amount] - 十进制字符串，避免浮点误差
 /// * [allocations] 
 @BuiltValue()
 abstract class FundingSessionSelectionRequest implements Built<FundingSessionSelectionRequest, FundingSessionSelectionRequestBuilder> {
   @BuiltValueField(wireName: r'version')
   int get version;
+
+  /// 十进制字符串，避免浮点误差
+  @BuiltValueField(wireName: r'amount')
+  String? get amount;
 
   @BuiltValueField(wireName: r'allocations')
   BuiltSet<FundingSessionSourceAllocationInput> get allocations;
@@ -51,6 +56,13 @@ class _$FundingSessionSelectionRequestSerializer implements PrimitiveSerializer<
       object.version,
       specifiedType: const FullType(int),
     );
+    if (object.amount != null) {
+      yield r'amount';
+      yield serializers.serialize(
+        object.amount,
+        specifiedType: const FullType(String),
+      );
+    }
     yield r'allocations';
     yield serializers.serialize(
       object.allocations,
@@ -85,6 +97,14 @@ class _$FundingSessionSelectionRequestSerializer implements PrimitiveSerializer<
             specifiedType: const FullType(int),
           ) as int;
           result.version = valueDes;
+          break;
+        case r'amount':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.amount = valueDes;
           break;
         case r'allocations':
           final valueDes = serializers.deserialize(

@@ -14,6 +14,7 @@ part 'hip3_cross_liquidation_impact.g.dart';
 /// Properties:
 /// * [productId] 
 /// * [side] 
+/// * [markPrice] - 该受影响仓位在同一 HL 仓位快照中的当前标记价格，按 positionValue / abs(szi) 推导。 用于计算距强平价的百分比；不是下单成交价或外部行情价格。旧快照或缺少有效行情时为 null/缺省。 多仓距离=(mark_price-liquidation_price)/mark_price；空仓距离=(liquidation_price-mark_price)/mark_price。 前后距离分别使用 before/after_liquidation_price，展示百分数时乘 100；任一所需值为 null 时不得计算。 
 /// * [beforeLiquidationPrice] - 十进制字符串，避免浮点误差
 /// * [afterLiquidationPrice] - 十进制字符串，避免浮点误差
 /// * [unavailableReason] 
@@ -25,6 +26,10 @@ abstract class Hip3CrossLiquidationImpact implements Built<Hip3CrossLiquidationI
   @BuiltValueField(wireName: r'side')
   Hip3CrossLiquidationImpactSideEnum get side;
   // enum sideEnum {  long,  short,  };
+
+  /// 该受影响仓位在同一 HL 仓位快照中的当前标记价格，按 positionValue / abs(szi) 推导。 用于计算距强平价的百分比；不是下单成交价或外部行情价格。旧快照或缺少有效行情时为 null/缺省。 多仓距离=(mark_price-liquidation_price)/mark_price；空仓距离=(liquidation_price-mark_price)/mark_price。 前后距离分别使用 before/after_liquidation_price，展示百分数时乘 100；任一所需值为 null 时不得计算。 
+  @BuiltValueField(wireName: r'mark_price')
+  String? get markPrice;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'before_liquidation_price')
@@ -71,6 +76,13 @@ class _$Hip3CrossLiquidationImpactSerializer implements PrimitiveSerializer<Hip3
       object.side,
       specifiedType: const FullType(Hip3CrossLiquidationImpactSideEnum),
     );
+    if (object.markPrice != null) {
+      yield r'mark_price';
+      yield serializers.serialize(
+        object.markPrice,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'before_liquidation_price';
     yield object.beforeLiquidationPrice == null ? null : serializers.serialize(
       object.beforeLiquidationPrice,
@@ -122,6 +134,14 @@ class _$Hip3CrossLiquidationImpactSerializer implements PrimitiveSerializer<Hip3
             specifiedType: const FullType(Hip3CrossLiquidationImpactSideEnum),
           ) as Hip3CrossLiquidationImpactSideEnum;
           result.side = valueDes;
+          break;
+        case r'mark_price':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.markPrice = valueDes;
           break;
         case r'before_liquidation_price':
           final valueDes = serializers.deserialize(

@@ -10,6 +10,8 @@ class _$FundingSessionSelectionRequest extends FundingSessionSelectionRequest {
   @override
   final int version;
   @override
+  final String? amount;
+  @override
   final BuiltSet<FundingSessionSourceAllocationInput> allocations;
 
   factory _$FundingSessionSelectionRequest(
@@ -17,7 +19,7 @@ class _$FundingSessionSelectionRequest extends FundingSessionSelectionRequest {
       (FundingSessionSelectionRequestBuilder()..update(updates))._build();
 
   _$FundingSessionSelectionRequest._(
-      {required this.version, required this.allocations})
+      {required this.version, this.amount, required this.allocations})
       : super._();
   @override
   FundingSessionSelectionRequest rebuild(
@@ -33,6 +35,7 @@ class _$FundingSessionSelectionRequest extends FundingSessionSelectionRequest {
     if (identical(other, this)) return true;
     return other is FundingSessionSelectionRequest &&
         version == other.version &&
+        amount == other.amount &&
         allocations == other.allocations;
   }
 
@@ -40,6 +43,7 @@ class _$FundingSessionSelectionRequest extends FundingSessionSelectionRequest {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, version.hashCode);
+    _$hash = $jc(_$hash, amount.hashCode);
     _$hash = $jc(_$hash, allocations.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -49,6 +53,7 @@ class _$FundingSessionSelectionRequest extends FundingSessionSelectionRequest {
   String toString() {
     return (newBuiltValueToStringHelper(r'FundingSessionSelectionRequest')
           ..add('version', version)
+          ..add('amount', amount)
           ..add('allocations', allocations))
         .toString();
   }
@@ -63,6 +68,10 @@ class FundingSessionSelectionRequestBuilder
   int? _version;
   int? get version => _$this._version;
   set version(int? version) => _$this._version = version;
+
+  String? _amount;
+  String? get amount => _$this._amount;
+  set amount(String? amount) => _$this._amount = amount;
 
   SetBuilder<FundingSessionSourceAllocationInput>? _allocations;
   SetBuilder<FundingSessionSourceAllocationInput> get allocations =>
@@ -79,6 +88,7 @@ class FundingSessionSelectionRequestBuilder
     final $v = _$v;
     if ($v != null) {
       _version = $v.version;
+      _amount = $v.amount;
       _allocations = $v.allocations.toBuilder();
       _$v = null;
     }
@@ -105,6 +115,7 @@ class FundingSessionSelectionRequestBuilder
           _$FundingSessionSelectionRequest._(
             version: BuiltValueNullFieldError.checkNotNull(
                 version, r'FundingSessionSelectionRequest', 'version'),
+            amount: amount,
             allocations: allocations.build(),
           );
     } catch (_) {

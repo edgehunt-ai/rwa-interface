@@ -22,6 +22,10 @@ const PortfolioWarningCode _$internalLedgerStale =
     const PortfolioWarningCode._('internalLedgerStale');
 const PortfolioWarningCode _$internalLedgerUnreconciled =
     const PortfolioWarningCode._('internalLedgerUnreconciled');
+const PortfolioWarningCode _$portfolioHistoryWriteUnavailable =
+    const PortfolioWarningCode._('portfolioHistoryWriteUnavailable');
+const PortfolioWarningCode _$portfolioValuationInvalid =
+    const PortfolioWarningCode._('portfolioValuationInvalid');
 
 PortfolioWarningCode _$valueOf(String name) {
   switch (name) {
@@ -41,6 +45,10 @@ PortfolioWarningCode _$valueOf(String name) {
       return _$internalLedgerStale;
     case 'internalLedgerUnreconciled':
       return _$internalLedgerUnreconciled;
+    case 'portfolioHistoryWriteUnavailable':
+      return _$portfolioHistoryWriteUnavailable;
+    case 'portfolioValuationInvalid':
+      return _$portfolioValuationInvalid;
     default:
       throw ArgumentError(name);
   }
@@ -56,6 +64,8 @@ final BuiltSet<PortfolioWarningCode> _$values =
   _$walletSetChanged,
   _$internalLedgerStale,
   _$internalLedgerUnreconciled,
+  _$portfolioHistoryWriteUnavailable,
+  _$portfolioValuationInvalid,
 ]);
 
 class _$PortfolioWarningCodeMeta {
@@ -69,6 +79,10 @@ class _$PortfolioWarningCodeMeta {
   PortfolioWarningCode get internalLedgerStale => _$internalLedgerStale;
   PortfolioWarningCode get internalLedgerUnreconciled =>
       _$internalLedgerUnreconciled;
+  PortfolioWarningCode get portfolioHistoryWriteUnavailable =>
+      _$portfolioHistoryWriteUnavailable;
+  PortfolioWarningCode get portfolioValuationInvalid =>
+      _$portfolioValuationInvalid;
   PortfolioWarningCode valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioWarningCode> get values => _$values;
 }
@@ -93,6 +107,8 @@ class _$PortfolioWarningCodeSerializer
     'walletSetChanged': 'wallet_set_changed',
     'internalLedgerStale': 'internal_ledger_stale',
     'internalLedgerUnreconciled': 'internal_ledger_unreconciled',
+    'portfolioHistoryWriteUnavailable': 'portfolio_history_write_unavailable',
+    'portfolioValuationInvalid': 'portfolio_valuation_invalid',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'evm_rpc_unavailable': 'evmRpcUnavailable',
@@ -103,6 +119,8 @@ class _$PortfolioWarningCodeSerializer
     'wallet_set_changed': 'walletSetChanged',
     'internal_ledger_stale': 'internalLedgerStale',
     'internal_ledger_unreconciled': 'internalLedgerUnreconciled',
+    'portfolio_history_write_unavailable': 'portfolioHistoryWriteUnavailable',
+    'portfolio_valuation_invalid': 'portfolioValuationInvalid',
   };
 
   @override

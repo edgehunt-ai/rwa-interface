@@ -2037,7 +2037,7 @@ class _Hip3RiskSummary extends StatelessWidget {
         if (execution case final value?)
           _Hip3RiskRow(
             AppLocalizations.of(context).maximumQuantity,
-            value.maximumQuantity.value,
+            value.maximumQuantity?.value ?? '-',
           ),
         const SizedBox(height: 8),
         if (allowProtection)

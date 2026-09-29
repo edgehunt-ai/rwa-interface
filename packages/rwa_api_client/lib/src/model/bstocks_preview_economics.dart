@@ -16,6 +16,7 @@ part 'bstocks_preview_economics.g.dart';
 /// trading fee 以输入 token 计价且已包含在 total_input；不是 BNB gas。 当前 network 为 not_estimated、amount/rate/included 为 null；限价路由的完整交易费为 unavailable，不能伪造0。 confirmation_binding 是服务端确认边界，不会预留余额、锁定未来路由或替代正式 RFQ。 
 ///
 /// Properties:
+/// * [blockers] - 当前交易执行的阻塞原因，不是预览计算错误。当前包括 insufficient_balance、 approval_required、price_condition_not_met（仅限 IOC 限价单）；无已识别阻塞时为 []。 客户端应容忍未知原因；旧服务可能省略此字段。余额为零或授权不足时仍返回 HTTP 200 和可靠报价。 买入检查报价资产，卖出检查股票 token；金额以含手续费的 total_input 为准，限价单使用最大所需资金。 GTC 的 price_condition_met=false 表示等待触发，不列为阻塞。 授权完成或充值后应使用新的 Idempotency-Key 刷新预览；同一 key 重放原结果，不刷新余额。 创建订单仍会重新检查余额、授权和执行条件，可能先返回授权动作。 空数组不代表已经确认 gas 足够、完成代付或保证成交；无法取得可靠报价/账户 RPC 数据时仍返回错误。 
 /// * [inputAsset] 
 /// * [nominalInput] - 十进制字符串，避免浮点误差
 /// * [totalInput] - 十进制字符串，避免浮点误差
@@ -27,6 +28,10 @@ part 'bstocks_preview_economics.g.dart';
 /// * [confirmationBinding] 
 @BuiltValue()
 abstract class BstocksPreviewEconomics implements Built<BstocksPreviewEconomics, BstocksPreviewEconomicsBuilder> {
+  /// 当前交易执行的阻塞原因，不是预览计算错误。当前包括 insufficient_balance、 approval_required、price_condition_not_met（仅限 IOC 限价单）；无已识别阻塞时为 []。 客户端应容忍未知原因；旧服务可能省略此字段。余额为零或授权不足时仍返回 HTTP 200 和可靠报价。 买入检查报价资产，卖出检查股票 token；金额以含手续费的 total_input 为准，限价单使用最大所需资金。 GTC 的 price_condition_met=false 表示等待触发，不列为阻塞。 授权完成或充值后应使用新的 Idempotency-Key 刷新预览；同一 key 重放原结果，不刷新余额。 创建订单仍会重新检查余额、授权和执行条件，可能先返回授权动作。 空数组不代表已经确认 gas 足够、完成代付或保证成交；无法取得可靠报价/账户 RPC 数据时仍返回错误。 
+  @BuiltValueField(wireName: r'blockers')
+  BuiltSet<String>? get blockers;
+
   @BuiltValueField(wireName: r'input_asset')
   BstocksFeeAsset get inputAsset;
 
@@ -80,6 +85,13 @@ class _$BstocksPreviewEconomicsSerializer implements PrimitiveSerializer<Bstocks
     BstocksPreviewEconomics object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.blockers != null) {
+      yield r'blockers';
+      yield serializers.serialize(
+        object.blockers,
+        specifiedType: const FullType(BuiltSet, [FullType(String)]),
+      );
+    }
     yield r'input_asset';
     yield serializers.serialize(
       object.inputAsset,
@@ -150,6 +162,14 @@ class _$BstocksPreviewEconomicsSerializer implements PrimitiveSerializer<Bstocks
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'blockers':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(BuiltSet, [FullType(String)]),
+          ) as BuiltSet<String>?;
+          if (valueDes == null) continue;
+          result.blockers.replace(valueDes);
+          break;
         case r'input_asset':
           final valueDes = serializers.deserialize(
             value,

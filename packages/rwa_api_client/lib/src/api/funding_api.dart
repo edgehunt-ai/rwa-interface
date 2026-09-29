@@ -25,6 +25,7 @@ import 'package:rwa_api_client/src/model/funding_session_create_request.dart';
 import 'package:rwa_api_client/src/model/funding_session_selection_request.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_submission_request.dart';
 import 'package:rwa_api_client/src/model/legacy_deposit.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
@@ -2384,6 +2385,107 @@ class FundingApi {
     }
 
     return Response<WithdrawalPage>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 预览 Perps 转出金额及 Cross 强平价影响
+  /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 amount 为 HL USDC 总扣减额；minimum_received 为扣费后到账额。 风险按总扣减额计算，不能按净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。 
+  ///
+  /// Parameters:
+  /// * [hip3WithdrawalCreateRequest] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [Hip3WithdrawalPreview] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<Hip3WithdrawalPreview>> previewHip3Withdrawal({ 
+    required Hip3WithdrawalCreateRequest hip3WithdrawalCreateRequest,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/hip3/withdrawals/preview';
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      const _type = FullType(Hip3WithdrawalCreateRequest);
+      _bodyData = _serializers.serialize(hip3WithdrawalCreateRequest, specifiedType: _type);
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    Hip3WithdrawalPreview? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(Hip3WithdrawalPreview),
+      ) as Hip3WithdrawalPreview;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<Hip3WithdrawalPreview>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,

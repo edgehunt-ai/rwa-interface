@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_order_preview_request.g.dart';
 
-/// bStocks 现货订单。只接受 buy/sell：市价买入传 amount，市价卖出传 quantity， 限价买卖均传 limit_price 和 quantity；金额/价格以当前准入 quote token 计价，主网通常 USDT、测试网 TUSDT。 市价只接受 ioc（省略也按 IOC），不支持启用 TP/SL；报价是参考值，确认时重新报价并校验冻结边界。 
+/// bStocks 现货订单。只接受 buy/sell：市价买入传 amount，市价卖出传 quantity， 限价买卖均传 limit_price 和 quantity；金额/价格以当前准入 quote token 计价，主网通常 USDT、测试网 TUSDT。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定等价。 市价只接受 ioc（省略也按 IOC），不支持启用 TP/SL；报价是参考值，确认时重新报价并校验冻结边界。 
 ///
 /// Properties:
 /// * [symbol] 

@@ -6,7 +6,71 @@ part of 'portfolio_summary.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const PortfolioSummaryTodayPnlStatusEnum
+    _$portfolioSummaryTodayPnlStatusEnum_available =
+    const PortfolioSummaryTodayPnlStatusEnum._('available');
+const PortfolioSummaryTodayPnlStatusEnum
+    _$portfolioSummaryTodayPnlStatusEnum_unavailable =
+    const PortfolioSummaryTodayPnlStatusEnum._('unavailable');
+
+PortfolioSummaryTodayPnlStatusEnum _$portfolioSummaryTodayPnlStatusEnumValueOf(
+    String name) {
+  switch (name) {
+    case 'available':
+      return _$portfolioSummaryTodayPnlStatusEnum_available;
+    case 'unavailable':
+      return _$portfolioSummaryTodayPnlStatusEnum_unavailable;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<PortfolioSummaryTodayPnlStatusEnum>
+    _$portfolioSummaryTodayPnlStatusEnumValues = BuiltSet<
+        PortfolioSummaryTodayPnlStatusEnum>(const <PortfolioSummaryTodayPnlStatusEnum>[
+  _$portfolioSummaryTodayPnlStatusEnum_available,
+  _$portfolioSummaryTodayPnlStatusEnum_unavailable,
+]);
+
+Serializer<PortfolioSummaryTodayPnlStatusEnum>
+    _$portfolioSummaryTodayPnlStatusEnumSerializer =
+    _$PortfolioSummaryTodayPnlStatusEnumSerializer();
+
+class _$PortfolioSummaryTodayPnlStatusEnumSerializer
+    implements PrimitiveSerializer<PortfolioSummaryTodayPnlStatusEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'available': 'available',
+    'unavailable': 'unavailable',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'available': 'available',
+    'unavailable': 'unavailable',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[PortfolioSummaryTodayPnlStatusEnum];
+  @override
+  final String wireName = 'PortfolioSummaryTodayPnlStatusEnum';
+
+  @override
+  Object serialize(
+          Serializers serializers, PortfolioSummaryTodayPnlStatusEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PortfolioSummaryTodayPnlStatusEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PortfolioSummaryTodayPnlStatusEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$PortfolioSummary extends PortfolioSummary {
+  @override
+  final PortfolioSummaryTodayPnlStatusEnum? todayPnlStatus;
+  @override
+  final PortfolioAccountAllocation? allocation;
   @override
   final String totalValueUsd;
   @override
@@ -45,7 +109,9 @@ class _$PortfolioSummary extends PortfolioSummary {
       (PortfolioSummaryBuilder()..update(updates))._build();
 
   _$PortfolioSummary._(
-      {required this.totalValueUsd,
+      {this.todayPnlStatus,
+      this.allocation,
+      required this.totalValueUsd,
       this.todayPnlUsd,
       this.todayPnlPercent,
       required this.availableToTradeUsd,
@@ -74,6 +140,8 @@ class _$PortfolioSummary extends PortfolioSummary {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is PortfolioSummary &&
+        todayPnlStatus == other.todayPnlStatus &&
+        allocation == other.allocation &&
         totalValueUsd == other.totalValueUsd &&
         todayPnlUsd == other.todayPnlUsd &&
         todayPnlPercent == other.todayPnlPercent &&
@@ -95,6 +163,8 @@ class _$PortfolioSummary extends PortfolioSummary {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, todayPnlStatus.hashCode);
+    _$hash = $jc(_$hash, allocation.hashCode);
     _$hash = $jc(_$hash, totalValueUsd.hashCode);
     _$hash = $jc(_$hash, todayPnlUsd.hashCode);
     _$hash = $jc(_$hash, todayPnlPercent.hashCode);
@@ -118,6 +188,8 @@ class _$PortfolioSummary extends PortfolioSummary {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'PortfolioSummary')
+          ..add('todayPnlStatus', todayPnlStatus)
+          ..add('allocation', allocation)
           ..add('totalValueUsd', totalValueUsd)
           ..add('todayPnlUsd', todayPnlUsd)
           ..add('todayPnlPercent', todayPnlPercent)
@@ -141,6 +213,18 @@ class _$PortfolioSummary extends PortfolioSummary {
 class PortfolioSummaryBuilder
     implements Builder<PortfolioSummary, PortfolioSummaryBuilder> {
   _$PortfolioSummary? _$v;
+
+  PortfolioSummaryTodayPnlStatusEnum? _todayPnlStatus;
+  PortfolioSummaryTodayPnlStatusEnum? get todayPnlStatus =>
+      _$this._todayPnlStatus;
+  set todayPnlStatus(PortfolioSummaryTodayPnlStatusEnum? todayPnlStatus) =>
+      _$this._todayPnlStatus = todayPnlStatus;
+
+  PortfolioAccountAllocationBuilder? _allocation;
+  PortfolioAccountAllocationBuilder get allocation =>
+      _$this._allocation ??= PortfolioAccountAllocationBuilder();
+  set allocation(PortfolioAccountAllocationBuilder? allocation) =>
+      _$this._allocation = allocation;
 
   String? _totalValueUsd;
   String? get totalValueUsd => _$this._totalValueUsd;
@@ -231,6 +315,8 @@ class PortfolioSummaryBuilder
   PortfolioSummaryBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _todayPnlStatus = $v.todayPnlStatus;
+      _allocation = $v.allocation?.toBuilder();
       _totalValueUsd = $v.totalValueUsd;
       _todayPnlUsd = $v.todayPnlUsd;
       _todayPnlPercent = $v.todayPnlPercent;
@@ -270,6 +356,8 @@ class PortfolioSummaryBuilder
     try {
       _$result = _$v ??
           _$PortfolioSummary._(
+            todayPnlStatus: todayPnlStatus,
+            allocation: _allocation?.build(),
             totalValueUsd: BuiltValueNullFieldError.checkNotNull(
                 totalValueUsd, r'PortfolioSummary', 'totalValueUsd'),
             todayPnlUsd: todayPnlUsd,
@@ -299,6 +387,9 @@ class PortfolioSummaryBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'allocation';
+        _allocation?.build();
+
         _$failedField = 'hyperliquidUsdcCollateral';
         _hyperliquidUsdcCollateral?.build();
 

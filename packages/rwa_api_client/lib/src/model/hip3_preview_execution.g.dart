@@ -65,6 +65,8 @@ class _$Hip3PreviewExecutionTypeEnumSerializer
 
 class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
+  final BuiltSet<String>? blockers;
+  @override
   final Hip3OpeningProtectionConfirmation? openingProtection;
   @override
   final String contextId;
@@ -93,7 +95,9 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
   final String availableMarginUsdc;
   @override
-  final String maximumQuantity;
+  final String? maximumQuantity;
+  @override
+  final String? maximumQuantityUnavailableReason;
   @override
   final String estimatedFeeUsdc;
   @override
@@ -110,7 +114,8 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
       (Hip3PreviewExecutionBuilder()..update(updates))._build();
 
   _$Hip3PreviewExecution._(
-      {this.openingProtection,
+      {this.blockers,
+      this.openingProtection,
       required this.contextId,
       required this.productId,
       required this.environment,
@@ -124,7 +129,8 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
       required this.notionalUsdc,
       required this.marginRequiredUsdc,
       required this.availableMarginUsdc,
-      required this.maximumQuantity,
+      this.maximumQuantity,
+      this.maximumQuantityUnavailableReason,
       required this.estimatedFeeUsdc,
       this.liquidationPrice,
       this.liquidationPriceUnavailableReason,
@@ -144,6 +150,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Hip3PreviewExecution &&
+        blockers == other.blockers &&
         openingProtection == other.openingProtection &&
         contextId == other.contextId &&
         productId == other.productId &&
@@ -159,6 +166,8 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
         marginRequiredUsdc == other.marginRequiredUsdc &&
         availableMarginUsdc == other.availableMarginUsdc &&
         maximumQuantity == other.maximumQuantity &&
+        maximumQuantityUnavailableReason ==
+            other.maximumQuantityUnavailableReason &&
         estimatedFeeUsdc == other.estimatedFeeUsdc &&
         liquidationPrice == other.liquidationPrice &&
         liquidationPriceUnavailableReason ==
@@ -170,6 +179,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, blockers.hashCode);
     _$hash = $jc(_$hash, openingProtection.hashCode);
     _$hash = $jc(_$hash, contextId.hashCode);
     _$hash = $jc(_$hash, productId.hashCode);
@@ -185,6 +195,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
     _$hash = $jc(_$hash, marginRequiredUsdc.hashCode);
     _$hash = $jc(_$hash, availableMarginUsdc.hashCode);
     _$hash = $jc(_$hash, maximumQuantity.hashCode);
+    _$hash = $jc(_$hash, maximumQuantityUnavailableReason.hashCode);
     _$hash = $jc(_$hash, estimatedFeeUsdc.hashCode);
     _$hash = $jc(_$hash, liquidationPrice.hashCode);
     _$hash = $jc(_$hash, liquidationPriceUnavailableReason.hashCode);
@@ -197,6 +208,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Hip3PreviewExecution')
+          ..add('blockers', blockers)
           ..add('openingProtection', openingProtection)
           ..add('contextId', contextId)
           ..add('productId', productId)
@@ -212,6 +224,8 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
           ..add('marginRequiredUsdc', marginRequiredUsdc)
           ..add('availableMarginUsdc', availableMarginUsdc)
           ..add('maximumQuantity', maximumQuantity)
+          ..add('maximumQuantityUnavailableReason',
+              maximumQuantityUnavailableReason)
           ..add('estimatedFeeUsdc', estimatedFeeUsdc)
           ..add('liquidationPrice', liquidationPrice)
           ..add('liquidationPriceUnavailableReason',
@@ -225,6 +239,10 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
 class Hip3PreviewExecutionBuilder
     implements Builder<Hip3PreviewExecution, Hip3PreviewExecutionBuilder> {
   _$Hip3PreviewExecution? _$v;
+
+  SetBuilder<String>? _blockers;
+  SetBuilder<String> get blockers => _$this._blockers ??= SetBuilder<String>();
+  set blockers(SetBuilder<String>? blockers) => _$this._blockers = blockers;
 
   Hip3OpeningProtectionConfirmationBuilder? _openingProtection;
   Hip3OpeningProtectionConfirmationBuilder get openingProtection =>
@@ -294,6 +312,14 @@ class Hip3PreviewExecutionBuilder
   set maximumQuantity(String? maximumQuantity) =>
       _$this._maximumQuantity = maximumQuantity;
 
+  String? _maximumQuantityUnavailableReason;
+  String? get maximumQuantityUnavailableReason =>
+      _$this._maximumQuantityUnavailableReason;
+  set maximumQuantityUnavailableReason(
+          String? maximumQuantityUnavailableReason) =>
+      _$this._maximumQuantityUnavailableReason =
+          maximumQuantityUnavailableReason;
+
   String? _estimatedFeeUsdc;
   String? get estimatedFeeUsdc => _$this._estimatedFeeUsdc;
   set estimatedFeeUsdc(String? estimatedFeeUsdc) =>
@@ -332,6 +358,7 @@ class Hip3PreviewExecutionBuilder
   Hip3PreviewExecutionBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _blockers = $v.blockers?.toBuilder();
       _openingProtection = $v.openingProtection?.toBuilder();
       _contextId = $v.contextId;
       _productId = $v.productId;
@@ -347,6 +374,7 @@ class Hip3PreviewExecutionBuilder
       _marginRequiredUsdc = $v.marginRequiredUsdc;
       _availableMarginUsdc = $v.availableMarginUsdc;
       _maximumQuantity = $v.maximumQuantity;
+      _maximumQuantityUnavailableReason = $v.maximumQuantityUnavailableReason;
       _estimatedFeeUsdc = $v.estimatedFeeUsdc;
       _liquidationPrice = $v.liquidationPrice;
       _liquidationPriceUnavailableReason = $v.liquidationPriceUnavailableReason;
@@ -375,6 +403,7 @@ class Hip3PreviewExecutionBuilder
     try {
       _$result = _$v ??
           _$Hip3PreviewExecution._(
+            blockers: _blockers?.build(),
             openingProtection: _openingProtection?.build(),
             contextId: BuiltValueNullFieldError.checkNotNull(
                 contextId, r'Hip3PreviewExecution', 'contextId'),
@@ -406,8 +435,8 @@ class Hip3PreviewExecutionBuilder
                 availableMarginUsdc,
                 r'Hip3PreviewExecution',
                 'availableMarginUsdc'),
-            maximumQuantity: BuiltValueNullFieldError.checkNotNull(
-                maximumQuantity, r'Hip3PreviewExecution', 'maximumQuantity'),
+            maximumQuantity: maximumQuantity,
+            maximumQuantityUnavailableReason: maximumQuantityUnavailableReason,
             estimatedFeeUsdc: BuiltValueNullFieldError.checkNotNull(
                 estimatedFeeUsdc, r'Hip3PreviewExecution', 'estimatedFeeUsdc'),
             liquidationPrice: liquidationPrice,
@@ -420,6 +449,8 @@ class Hip3PreviewExecutionBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'blockers';
+        _blockers?.build();
         _$failedField = 'openingProtection';
         _openingProtection?.build();
 

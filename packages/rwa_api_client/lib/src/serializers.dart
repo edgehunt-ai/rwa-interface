@@ -210,6 +210,7 @@ import 'package:rwa_api_client/src/model/hip3_clear_tp_sl_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_close_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_close_preview_request.dart';
+import 'package:rwa_api_client/src/model/hip3_collateral_risk_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_conditional_order.dart';
 import 'package:rwa_api_client/src/model/hip3_cross_liquidation_impact.dart';
 import 'package:rwa_api_client/src/model/hip3_eip712_domain.dart';
@@ -262,6 +263,7 @@ import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
 import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_rail.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_status.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_submission_request.dart';
@@ -328,18 +330,22 @@ import 'package:rwa_api_client/src/model/perp_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/perp_order_wallet_action_state.dart';
+import 'package:rwa_api_client/src/model/portfolio_account_allocation.dart';
+import 'package:rwa_api_client/src/model/portfolio_account_allocation_item.dart';
 import 'package:rwa_api_client/src/model/portfolio_account_page.dart';
 import 'package:rwa_api_client/src/model/portfolio_allocation.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_network.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_page.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
+import 'package:rwa_api_client/src/model/portfolio_availability_status.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_history.dart';
 import 'package:rwa_api_client/src/model/portfolio_history_point.dart';
 import 'package:rwa_api_client/src/model/portfolio_holding_page.dart';
 import 'package:rwa_api_client/src/model/portfolio_holding_page_all_of_coverage.dart';
+import 'package:rwa_api_client/src/model/portfolio_holding_return.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice_severity.dart';
 import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
@@ -675,6 +681,7 @@ part 'serializers.g.dart';
   Hip3CloseActionRequest,
   Hip3ClosePreview,
   Hip3ClosePreviewRequest,
+  Hip3CollateralRiskPreview,
   Hip3ConditionalOrder,
   Hip3CrossLiquidationImpact,
   Hip3Eip712Domain,
@@ -727,6 +734,7 @@ part 'serializers.g.dart';
   Hip3TriggerSpec,
   Hip3Withdrawal,
   Hip3WithdrawalCreateRequest,
+  Hip3WithdrawalPreview,
   Hip3WithdrawalRail,
   Hip3WithdrawalStatus,
   Hip3WithdrawalSubmissionRequest,
@@ -793,18 +801,22 @@ part 'serializers.g.dart';
   PerpOrderPreview,
   PerpOrderPreviewRequest,
   PerpOrderWalletActionState,
+  PortfolioAccountAllocation,
+  PortfolioAccountAllocationItem,
   PortfolioAccountPage,
   PortfolioAllocation,
   PortfolioAsset,
   PortfolioAssetNetwork,
   PortfolioAssetPage,
   PortfolioAssetSourceKind,
+  PortfolioAvailabilityStatus,
   PortfolioDataStatus,
   PortfolioFreshness,
   PortfolioHistory,
   PortfolioHistoryPoint,
   PortfolioHoldingPage,
   PortfolioHoldingPageAllOfCoverage,
+  PortfolioHoldingReturn,
   PortfolioNotice,
   PortfolioNoticeSeverity,
   PortfolioPriceSource,
@@ -1009,6 +1021,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
         () => ListBuilder<UnifiedFundingPosition>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(PortfolioAccountAllocationItem)]),
+        () => ListBuilder<PortfolioAccountAllocationItem>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingRouteBlocker)]),

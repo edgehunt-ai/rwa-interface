@@ -8,6 +8,8 @@ part of 'funding_session.dart';
 
 class _$FundingSession extends FundingSession {
   @override
+  final Hip3CollateralRiskPreview? riskPreview;
+  @override
   final String fundingSessionId;
   @override
   final FundingSessionStatus status;
@@ -62,7 +64,8 @@ class _$FundingSession extends FundingSession {
       (FundingSessionBuilder()..update(updates))._build();
 
   _$FundingSession._(
-      {required this.fundingSessionId,
+      {this.riskPreview,
+      required this.fundingSessionId,
       required this.status,
       required this.version,
       required this.trade,
@@ -99,6 +102,7 @@ class _$FundingSession extends FundingSession {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is FundingSession &&
+        riskPreview == other.riskPreview &&
         fundingSessionId == other.fundingSessionId &&
         status == other.status &&
         version == other.version &&
@@ -129,6 +133,7 @@ class _$FundingSession extends FundingSession {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, riskPreview.hashCode);
     _$hash = $jc(_$hash, fundingSessionId.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, version.hashCode);
@@ -161,6 +166,7 @@ class _$FundingSession extends FundingSession {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'FundingSession')
+          ..add('riskPreview', riskPreview)
           ..add('fundingSessionId', fundingSessionId)
           ..add('status', status)
           ..add('version', version)
@@ -193,6 +199,12 @@ class _$FundingSession extends FundingSession {
 class FundingSessionBuilder
     implements Builder<FundingSession, FundingSessionBuilder> {
   _$FundingSession? _$v;
+
+  Hip3CollateralRiskPreviewBuilder? _riskPreview;
+  Hip3CollateralRiskPreviewBuilder get riskPreview =>
+      _$this._riskPreview ??= Hip3CollateralRiskPreviewBuilder();
+  set riskPreview(Hip3CollateralRiskPreviewBuilder? riskPreview) =>
+      _$this._riskPreview = riskPreview;
 
   String? _fundingSessionId;
   String? get fundingSessionId => _$this._fundingSessionId;
@@ -324,6 +336,7 @@ class FundingSessionBuilder
   FundingSessionBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _riskPreview = $v.riskPreview?.toBuilder();
       _fundingSessionId = $v.fundingSessionId;
       _status = $v.status;
       _version = $v.version;
@@ -372,6 +385,7 @@ class FundingSessionBuilder
     try {
       _$result = _$v ??
           _$FundingSession._(
+            riskPreview: _riskPreview?.build(),
             fundingSessionId: BuiltValueNullFieldError.checkNotNull(
                 fundingSessionId, r'FundingSession', 'fundingSessionId'),
             status: BuiltValueNullFieldError.checkNotNull(
@@ -429,6 +443,9 @@ class FundingSessionBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'riskPreview';
+        _riskPreview?.build();
+
         _$failedField = 'trade';
         trade.build();
         _$failedField = 'continuation';

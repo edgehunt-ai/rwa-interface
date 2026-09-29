@@ -70,12 +70,14 @@ final class Hip3PreviewExecution {
     required this.notional,
     required this.marginRequired,
     required this.availableMargin,
-    required this.maximumQuantity,
     required this.estimatedFee,
     required this.slippagePercent,
+    this.maximumQuantity,
+    this.maximumQuantityUnavailableReason,
     this.liquidationPrice,
     this.liquidationPriceUnavailableReason,
     this.openingProtection,
+    this.blockers = const [],
     this.crossLiquidationImpacts = const [],
   });
   final String contextId;
@@ -91,12 +93,14 @@ final class Hip3PreviewExecution {
   final DecimalValue notional;
   final DecimalValue marginRequired;
   final DecimalValue availableMargin;
-  final DecimalValue maximumQuantity;
+  final DecimalValue? maximumQuantity;
+  final String? maximumQuantityUnavailableReason;
   final DecimalValue estimatedFee;
   final DecimalValue slippagePercent;
   final DecimalValue? liquidationPrice;
   final String? liquidationPriceUnavailableReason;
   final Hip3OpeningProtectionConfirmation? openingProtection;
+  final List<String> blockers;
   final List<Hip3CrossLiquidationImpact> crossLiquidationImpacts;
 }
 
@@ -104,6 +108,7 @@ final class Hip3CrossLiquidationImpact {
   const Hip3CrossLiquidationImpact({
     required this.productId,
     required this.side,
+    this.markPrice,
     this.beforeLiquidationPrice,
     this.afterLiquidationPrice,
     this.unavailableReason,
@@ -111,6 +116,7 @@ final class Hip3CrossLiquidationImpact {
 
   final String productId;
   final TradingSide side;
+  final DecimalValue? markPrice;
   final DecimalValue? beforeLiquidationPrice;
   final DecimalValue? afterLiquidationPrice;
   final String? unavailableReason;

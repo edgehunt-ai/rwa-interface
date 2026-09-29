@@ -188,7 +188,10 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       asset: 'USDC',
       unit: 'margin',
     ),
-    maximumQuantity: DecimalValue(value.maximumQuantity, unit: 'quantity'),
+    maximumQuantity: value.maximumQuantity == null
+        ? null
+        : DecimalValue(value.maximumQuantity!, unit: 'quantity'),
+    maximumQuantityUnavailableReason: value.maximumQuantityUnavailableReason,
     estimatedFee: DecimalValue(
       value.estimatedFeeUsdc,
       asset: 'USDC',
@@ -199,6 +202,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
         ? null
         : DecimalValue(value.liquidationPrice!, asset: 'USDC', unit: 'price'),
     liquidationPriceUnavailableReason: value.liquidationPriceUnavailableReason,
+    blockers: List.unmodifiable(value.blockers ?? const <String>[]),
     crossLiquidationImpacts: List.unmodifiable(
       value.crossLiquidationImpacts.map(
         (impact) => Hip3CrossLiquidationImpact(
@@ -210,6 +214,9 @@ final class OrdersRepositoryImpl implements OrdersRepository {
               'Unsupported cross liquidation impact side',
             ),
           },
+          markPrice: impact.markPrice == null
+              ? null
+              : DecimalValue(impact.markPrice!, asset: 'USDC', unit: 'price'),
           beforeLiquidationPrice: impact.beforeLiquidationPrice == null
               ? null
               : DecimalValue(

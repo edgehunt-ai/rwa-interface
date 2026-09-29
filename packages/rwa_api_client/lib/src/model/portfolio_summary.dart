@@ -6,6 +6,7 @@
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/portfolio_account_allocation.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_usdc_collateral.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
@@ -17,9 +18,11 @@ part 'portfolio_summary.g.dart';
 /// 去重后的只读资产总览；金额字段均使用 Decimal wire string。
 ///
 /// Properties:
+/// * [todayPnlStatus] - 最近24小时盈亏是否可计算；不可计算时金额和百分比为 null。
+/// * [allocation] - 同一次余额快照的 Spot/Perps 分组，独立于列表筛选；无法计算时为 null 并附 warnings。
 /// * [totalValueUsd] - 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。 Hyperliquid Unified Account 的抵押物从 spotClearinghouseState 读取且只计一次； 不叠加各 DEX 的 accountValue、仓位名义价值或再次叠加未实现损益。 
-/// * [todayPnlUsd] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
-/// * [todayPnlPercent] - 首版固定返回 null，不从不完整的缓存或历史估值推导。
+/// * [todayPnlUsd] - 沿用最近24小时历史基准算法；历史缺失、不完整或 stale 时返回 null。
+/// * [todayPnlPercent] - 沿用最近24小时历史基准算法；历史缺失、不完整或 stale 时返回 null。
 /// * [availableToTradeUsd] - 可证明可用的余额子集；普通钱包余额不会自动等于 available to trade。 Hyperliquid Unified Account 使用 USDC spot total 减去 hold，最低为零， 并在上游提供 tokenToAvailableAfterMaintenance 时受该 USDC 上限约束。 过期或不可用来源不计入此金额，调用方必须同时展示 freshness、data_status 和 warnings。 这是只读快照估计值，不是可提款额或下单承诺；具体订单仍需通过实时预览、费用和风险检查。 
 /// * [pendingTransferUsd] - 尚未划转到任何交易场所的钱包资产小计（`assets` 中未带 `account_ref` 的条目）， 需要先 Transfer 才能计入 available_to_trade_usd。与 `/v1/portfolio/accounts` 中 `available_requires_transfer: true` 分组的 `available_usd` 之和为同一口径。 
 /// * [marginInUseUsd] - Hyperliquid 所覆盖 DEX 持仓报告的 margin used 合计；不表示独立于统一抵押物之外的额外资产。
@@ -35,15 +38,24 @@ part 'portfolio_summary.g.dart';
 /// * [sources] 
 @BuiltValue()
 abstract class PortfolioSummary implements Built<PortfolioSummary, PortfolioSummaryBuilder> {
+  /// 最近24小时盈亏是否可计算；不可计算时金额和百分比为 null。
+  @BuiltValueField(wireName: r'today_pnl_status')
+  PortfolioSummaryTodayPnlStatusEnum? get todayPnlStatus;
+  // enum todayPnlStatusEnum {  available,  unavailable,  };
+
+  /// 同一次余额快照的 Spot/Perps 分组，独立于列表筛选；无法计算时为 null 并附 warnings。
+  @BuiltValueField(wireName: r'allocation')
+  PortfolioAccountAllocation? get allocation;
+
   /// 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。 Hyperliquid Unified Account 的抵押物从 spotClearinghouseState 读取且只计一次； 不叠加各 DEX 的 accountValue、仓位名义价值或再次叠加未实现损益。 
   @BuiltValueField(wireName: r'total_value_usd')
   String get totalValueUsd;
 
-  /// 首版固定返回 null，不从不完整的缓存或历史估值推导。
+  /// 沿用最近24小时历史基准算法；历史缺失、不完整或 stale 时返回 null。
   @BuiltValueField(wireName: r'today_pnl_usd')
   String? get todayPnlUsd;
 
-  /// 首版固定返回 null，不从不完整的缓存或历史估值推导。
+  /// 沿用最近24小时历史基准算法；历史缺失、不完整或 stale 时返回 null。
   @BuiltValueField(wireName: r'today_pnl_percent')
   String? get todayPnlPercent;
 
@@ -120,6 +132,20 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
     PortfolioSummary object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.todayPnlStatus != null) {
+      yield r'today_pnl_status';
+      yield serializers.serialize(
+        object.todayPnlStatus,
+        specifiedType: const FullType(PortfolioSummaryTodayPnlStatusEnum),
+      );
+    }
+    if (object.allocation != null) {
+      yield r'allocation';
+      yield serializers.serialize(
+        object.allocation,
+        specifiedType: const FullType.nullable(PortfolioAccountAllocation),
+      );
+    }
     yield r'total_value_usd';
     yield serializers.serialize(
       object.totalValueUsd,
@@ -237,6 +263,22 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'today_pnl_status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioSummaryTodayPnlStatusEnum),
+          ) as PortfolioSummaryTodayPnlStatusEnum?;
+          if (valueDes == null) continue;
+          result.todayPnlStatus = valueDes;
+          break;
+        case r'allocation':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioAccountAllocation),
+          ) as PortfolioAccountAllocation?;
+          if (valueDes == null) continue;
+          result.allocation.replace(valueDes);
+          break;
         case r'total_value_usd':
           final valueDes = serializers.deserialize(
             value,
@@ -383,5 +425,22 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
     );
     return result.build();
   }
+}
+
+class PortfolioSummaryTodayPnlStatusEnum extends EnumClass {
+
+  /// 最近24小时盈亏是否可计算；不可计算时金额和百分比为 null。
+  @BuiltValueEnumConst(wireName: r'available')
+  static const PortfolioSummaryTodayPnlStatusEnum available = _$portfolioSummaryTodayPnlStatusEnum_available;
+  /// 最近24小时盈亏是否可计算；不可计算时金额和百分比为 null。
+  @BuiltValueEnumConst(wireName: r'unavailable')
+  static const PortfolioSummaryTodayPnlStatusEnum unavailable = _$portfolioSummaryTodayPnlStatusEnum_unavailable;
+
+  static Serializer<PortfolioSummaryTodayPnlStatusEnum> get serializer => _$portfolioSummaryTodayPnlStatusEnumSerializer;
+
+  const PortfolioSummaryTodayPnlStatusEnum._(String name): super(name);
+
+  static BuiltSet<PortfolioSummaryTodayPnlStatusEnum> get values => _$portfolioSummaryTodayPnlStatusEnumValues;
+  static PortfolioSummaryTodayPnlStatusEnum valueOf(String name) => _$portfolioSummaryTodayPnlStatusEnumValueOf(name);
 }
 

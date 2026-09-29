@@ -21,7 +21,7 @@ part 'portfolio_notice.g.dart';
 abstract class PortfolioNotice implements Built<PortfolioNotice, PortfolioNoticeBuilder> {
   @BuiltValueField(wireName: r'code')
   PortfolioWarningCode get code;
-  // enum codeEnum {  evm_rpc_unavailable,  hyperliquid_unavailable,  price_unavailable,  asset_unvalued,  using_last_good,  wallet_set_changed,  internal_ledger_stale,  internal_ledger_unreconciled,  };
+  // enum codeEnum {  evm_rpc_unavailable,  hyperliquid_unavailable,  price_unavailable,  asset_unvalued,  using_last_good,  wallet_set_changed,  internal_ledger_stale,  internal_ledger_unreconciled,  portfolio_history_write_unavailable,  portfolio_valuation_invalid,  };
 
   @BuiltValueField(wireName: r'severity')
   PortfolioNoticeSeverity get severity;

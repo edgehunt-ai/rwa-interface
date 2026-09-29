@@ -133,6 +133,7 @@ Class | Method | HTTP request | Description
 [*FundingApi*](doc/FundingApi.md) | [**listDepositObservations**](doc/FundingApi.md#listdepositobservations) | **GET** /v1/deposit-observations | 获取脱敏入金观察进度
 [*FundingApi*](doc/FundingApi.md) | [**listDeposits**](doc/FundingApi.md#listdeposits) | **GET** /v1/deposits | 入金记录列表
 [*FundingApi*](doc/FundingApi.md) | [**listWithdrawals**](doc/FundingApi.md#listwithdrawals) | **GET** /v1/withdrawals | 提现列表
+[*FundingApi*](doc/FundingApi.md) | [**previewHip3Withdrawal**](doc/FundingApi.md#previewhip3withdrawal) | **POST** /v1/hip3/withdrawals/preview | 预览 Perps 转出金额及 Cross 强平价影响
 [*FundingApi*](doc/FundingApi.md) | [**submitHip3Withdrawal**](doc/FundingApi.md#submithip3withdrawal) | **POST** /v1/hip3/withdrawals/{withdrawal_id}/submission | 提交 HIP-3 提现签名
 [*FundingApi*](doc/FundingApi.md) | [**submitSelfCustodialWithdrawal**](doc/FundingApi.md#submitselfcustodialwithdrawal) | **POST** /v1/self-custodial-withdrawals/{withdrawal_id}/submission | 提交自托管提现交易哈希
 [*FundingApi*](doc/FundingApi.md) | [**updateFundingSessionSelection**](doc/FundingApi.md#updatefundingsessionselection) | **PUT** /v1/funding/sessions/{funding_session_id}/selection | 更新用户选择的补资来源与金额
@@ -391,6 +392,7 @@ Class | Method | HTTP request | Description
  - [Hip3CloseActionRequest](doc/Hip3CloseActionRequest.md)
  - [Hip3ClosePreview](doc/Hip3ClosePreview.md)
  - [Hip3ClosePreviewRequest](doc/Hip3ClosePreviewRequest.md)
+ - [Hip3CollateralRiskPreview](doc/Hip3CollateralRiskPreview.md)
  - [Hip3ConditionalOrder](doc/Hip3ConditionalOrder.md)
  - [Hip3CrossLiquidationImpact](doc/Hip3CrossLiquidationImpact.md)
  - [Hip3Eip712Domain](doc/Hip3Eip712Domain.md)
@@ -443,6 +445,7 @@ Class | Method | HTTP request | Description
  - [Hip3TriggerSpec](doc/Hip3TriggerSpec.md)
  - [Hip3Withdrawal](doc/Hip3Withdrawal.md)
  - [Hip3WithdrawalCreateRequest](doc/Hip3WithdrawalCreateRequest.md)
+ - [Hip3WithdrawalPreview](doc/Hip3WithdrawalPreview.md)
  - [Hip3WithdrawalRail](doc/Hip3WithdrawalRail.md)
  - [Hip3WithdrawalStatus](doc/Hip3WithdrawalStatus.md)
  - [Hip3WithdrawalSubmissionRequest](doc/Hip3WithdrawalSubmissionRequest.md)
@@ -509,18 +512,22 @@ Class | Method | HTTP request | Description
  - [PerpOrderPreview](doc/PerpOrderPreview.md)
  - [PerpOrderPreviewRequest](doc/PerpOrderPreviewRequest.md)
  - [PerpOrderWalletActionState](doc/PerpOrderWalletActionState.md)
+ - [PortfolioAccountAllocation](doc/PortfolioAccountAllocation.md)
+ - [PortfolioAccountAllocationItem](doc/PortfolioAccountAllocationItem.md)
  - [PortfolioAccountPage](doc/PortfolioAccountPage.md)
  - [PortfolioAllocation](doc/PortfolioAllocation.md)
  - [PortfolioAsset](doc/PortfolioAsset.md)
  - [PortfolioAssetNetwork](doc/PortfolioAssetNetwork.md)
  - [PortfolioAssetPage](doc/PortfolioAssetPage.md)
  - [PortfolioAssetSourceKind](doc/PortfolioAssetSourceKind.md)
+ - [PortfolioAvailabilityStatus](doc/PortfolioAvailabilityStatus.md)
  - [PortfolioDataStatus](doc/PortfolioDataStatus.md)
  - [PortfolioFreshness](doc/PortfolioFreshness.md)
  - [PortfolioHistory](doc/PortfolioHistory.md)
  - [PortfolioHistoryPoint](doc/PortfolioHistoryPoint.md)
  - [PortfolioHoldingPage](doc/PortfolioHoldingPage.md)
  - [PortfolioHoldingPageAllOfCoverage](doc/PortfolioHoldingPageAllOfCoverage.md)
+ - [PortfolioHoldingReturn](doc/PortfolioHoldingReturn.md)
  - [PortfolioNotice](doc/PortfolioNotice.md)
  - [PortfolioNoticeSeverity](doc/PortfolioNoticeSeverity.md)
  - [PortfolioPriceSource](doc/PortfolioPriceSource.md)

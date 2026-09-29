@@ -68,6 +68,8 @@ class _$Hip3WithdrawalHyperliquidChainEnumSerializer
 
 class _$Hip3Withdrawal extends Hip3Withdrawal {
   @override
+  final Hip3CollateralRiskPreview? riskPreview;
+  @override
   final String withdrawalId;
   @override
   final String ownerAddress;
@@ -116,7 +118,8 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
       (Hip3WithdrawalBuilder()..update(updates))._build();
 
   _$Hip3Withdrawal._(
-      {required this.withdrawalId,
+      {this.riskPreview,
+      required this.withdrawalId,
       required this.ownerAddress,
       required this.destinationAddress,
       required this.amount,
@@ -150,6 +153,7 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is Hip3Withdrawal &&
+        riskPreview == other.riskPreview &&
         withdrawalId == other.withdrawalId &&
         ownerAddress == other.ownerAddress &&
         destinationAddress == other.destinationAddress &&
@@ -177,6 +181,7 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, riskPreview.hashCode);
     _$hash = $jc(_$hash, withdrawalId.hashCode);
     _$hash = $jc(_$hash, ownerAddress.hashCode);
     _$hash = $jc(_$hash, destinationAddress.hashCode);
@@ -206,6 +211,7 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'Hip3Withdrawal')
+          ..add('riskPreview', riskPreview)
           ..add('withdrawalId', withdrawalId)
           ..add('ownerAddress', ownerAddress)
           ..add('destinationAddress', destinationAddress)
@@ -235,6 +241,12 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
 class Hip3WithdrawalBuilder
     implements Builder<Hip3Withdrawal, Hip3WithdrawalBuilder> {
   _$Hip3Withdrawal? _$v;
+
+  Hip3CollateralRiskPreviewBuilder? _riskPreview;
+  Hip3CollateralRiskPreviewBuilder get riskPreview =>
+      _$this._riskPreview ??= Hip3CollateralRiskPreviewBuilder();
+  set riskPreview(Hip3CollateralRiskPreviewBuilder? riskPreview) =>
+      _$this._riskPreview = riskPreview;
 
   String? _withdrawalId;
   String? get withdrawalId => _$this._withdrawalId;
@@ -338,6 +350,7 @@ class Hip3WithdrawalBuilder
   Hip3WithdrawalBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _riskPreview = $v.riskPreview?.toBuilder();
       _withdrawalId = $v.withdrawalId;
       _ownerAddress = $v.ownerAddress;
       _destinationAddress = $v.destinationAddress;
@@ -379,43 +392,57 @@ class Hip3WithdrawalBuilder
   Hip3Withdrawal build() => _build();
 
   _$Hip3Withdrawal _build() {
-    final _$result = _$v ??
-        _$Hip3Withdrawal._(
-          withdrawalId: BuiltValueNullFieldError.checkNotNull(
-              withdrawalId, r'Hip3Withdrawal', 'withdrawalId'),
-          ownerAddress: BuiltValueNullFieldError.checkNotNull(
-              ownerAddress, r'Hip3Withdrawal', 'ownerAddress'),
-          destinationAddress: BuiltValueNullFieldError.checkNotNull(
-              destinationAddress, r'Hip3Withdrawal', 'destinationAddress'),
-          amount: BuiltValueNullFieldError.checkNotNull(
-              amount, r'Hip3Withdrawal', 'amount'),
-          fee: BuiltValueNullFieldError.checkNotNull(
-              fee, r'Hip3Withdrawal', 'fee'),
-          minimumReceived: BuiltValueNullFieldError.checkNotNull(
-              minimumReceived, r'Hip3Withdrawal', 'minimumReceived'),
-          status: BuiltValueNullFieldError.checkNotNull(
-              status, r'Hip3Withdrawal', 'status'),
-          rail: BuiltValueNullFieldError.checkNotNull(
-              rail, r'Hip3Withdrawal', 'rail'),
-          nonce: BuiltValueNullFieldError.checkNotNull(
-              nonce, r'Hip3Withdrawal', 'nonce'),
-          hyperliquidChain: hyperliquidChain,
-          chainId: chainId,
-          amountText: amountText,
-          typedDataJson: typedDataJson,
-          payloadHash: payloadHash,
-          failureReason: failureReason,
-          observedLedgerTime: observedLedgerTime,
-          payoutTxHash: payoutTxHash,
-          expiresAt: BuiltValueNullFieldError.checkNotNull(
-              expiresAt, r'Hip3Withdrawal', 'expiresAt'),
-          createdAt: BuiltValueNullFieldError.checkNotNull(
-              createdAt, r'Hip3Withdrawal', 'createdAt'),
-          updatedAt: BuiltValueNullFieldError.checkNotNull(
-              updatedAt, r'Hip3Withdrawal', 'updatedAt'),
-          submittedAt: submittedAt,
-          confirmedAt: confirmedAt,
-        );
+    _$Hip3Withdrawal _$result;
+    try {
+      _$result = _$v ??
+          _$Hip3Withdrawal._(
+            riskPreview: _riskPreview?.build(),
+            withdrawalId: BuiltValueNullFieldError.checkNotNull(
+                withdrawalId, r'Hip3Withdrawal', 'withdrawalId'),
+            ownerAddress: BuiltValueNullFieldError.checkNotNull(
+                ownerAddress, r'Hip3Withdrawal', 'ownerAddress'),
+            destinationAddress: BuiltValueNullFieldError.checkNotNull(
+                destinationAddress, r'Hip3Withdrawal', 'destinationAddress'),
+            amount: BuiltValueNullFieldError.checkNotNull(
+                amount, r'Hip3Withdrawal', 'amount'),
+            fee: BuiltValueNullFieldError.checkNotNull(
+                fee, r'Hip3Withdrawal', 'fee'),
+            minimumReceived: BuiltValueNullFieldError.checkNotNull(
+                minimumReceived, r'Hip3Withdrawal', 'minimumReceived'),
+            status: BuiltValueNullFieldError.checkNotNull(
+                status, r'Hip3Withdrawal', 'status'),
+            rail: BuiltValueNullFieldError.checkNotNull(
+                rail, r'Hip3Withdrawal', 'rail'),
+            nonce: BuiltValueNullFieldError.checkNotNull(
+                nonce, r'Hip3Withdrawal', 'nonce'),
+            hyperliquidChain: hyperliquidChain,
+            chainId: chainId,
+            amountText: amountText,
+            typedDataJson: typedDataJson,
+            payloadHash: payloadHash,
+            failureReason: failureReason,
+            observedLedgerTime: observedLedgerTime,
+            payoutTxHash: payoutTxHash,
+            expiresAt: BuiltValueNullFieldError.checkNotNull(
+                expiresAt, r'Hip3Withdrawal', 'expiresAt'),
+            createdAt: BuiltValueNullFieldError.checkNotNull(
+                createdAt, r'Hip3Withdrawal', 'createdAt'),
+            updatedAt: BuiltValueNullFieldError.checkNotNull(
+                updatedAt, r'Hip3Withdrawal', 'updatedAt'),
+            submittedAt: submittedAt,
+            confirmedAt: confirmedAt,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'riskPreview';
+        _riskPreview?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'Hip3Withdrawal', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

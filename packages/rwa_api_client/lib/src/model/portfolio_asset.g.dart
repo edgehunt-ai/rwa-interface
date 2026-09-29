@@ -6,7 +6,116 @@ part of 'portfolio_asset.dart';
 // BuiltValueGenerator
 // **************************************************************************
 
+const PortfolioAssetKindEnum _$portfolioAssetKindEnum_spotAsset =
+    const PortfolioAssetKindEnum._('spotAsset');
+
+PortfolioAssetKindEnum _$portfolioAssetKindEnumValueOf(String name) {
+  switch (name) {
+    case 'spotAsset':
+      return _$portfolioAssetKindEnum_spotAsset;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<PortfolioAssetKindEnum> _$portfolioAssetKindEnumValues =
+    BuiltSet<PortfolioAssetKindEnum>(const <PortfolioAssetKindEnum>[
+  _$portfolioAssetKindEnum_spotAsset,
+]);
+
+const PortfolioAssetAssetTypeEnum _$portfolioAssetAssetTypeEnum_cash =
+    const PortfolioAssetAssetTypeEnum._('cash');
+const PortfolioAssetAssetTypeEnum _$portfolioAssetAssetTypeEnum_bstock =
+    const PortfolioAssetAssetTypeEnum._('bstock');
+
+PortfolioAssetAssetTypeEnum _$portfolioAssetAssetTypeEnumValueOf(String name) {
+  switch (name) {
+    case 'cash':
+      return _$portfolioAssetAssetTypeEnum_cash;
+    case 'bstock':
+      return _$portfolioAssetAssetTypeEnum_bstock;
+    default:
+      throw ArgumentError(name);
+  }
+}
+
+final BuiltSet<PortfolioAssetAssetTypeEnum>
+    _$portfolioAssetAssetTypeEnumValues =
+    BuiltSet<PortfolioAssetAssetTypeEnum>(const <PortfolioAssetAssetTypeEnum>[
+  _$portfolioAssetAssetTypeEnum_cash,
+  _$portfolioAssetAssetTypeEnum_bstock,
+]);
+
+Serializer<PortfolioAssetKindEnum> _$portfolioAssetKindEnumSerializer =
+    _$PortfolioAssetKindEnumSerializer();
+Serializer<PortfolioAssetAssetTypeEnum>
+    _$portfolioAssetAssetTypeEnumSerializer =
+    _$PortfolioAssetAssetTypeEnumSerializer();
+
+class _$PortfolioAssetKindEnumSerializer
+    implements PrimitiveSerializer<PortfolioAssetKindEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'spotAsset': 'spot_asset',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'spot_asset': 'spotAsset',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[PortfolioAssetKindEnum];
+  @override
+  final String wireName = 'PortfolioAssetKindEnum';
+
+  @override
+  Object serialize(Serializers serializers, PortfolioAssetKindEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PortfolioAssetKindEnum deserialize(Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PortfolioAssetKindEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
+class _$PortfolioAssetAssetTypeEnumSerializer
+    implements PrimitiveSerializer<PortfolioAssetAssetTypeEnum> {
+  static const Map<String, Object> _toWire = const <String, Object>{
+    'cash': 'cash',
+    'bstock': 'bstock',
+  };
+  static const Map<Object, String> _fromWire = const <Object, String>{
+    'cash': 'cash',
+    'bstock': 'bstock',
+  };
+
+  @override
+  final Iterable<Type> types = const <Type>[PortfolioAssetAssetTypeEnum];
+  @override
+  final String wireName = 'PortfolioAssetAssetTypeEnum';
+
+  @override
+  Object serialize(Serializers serializers, PortfolioAssetAssetTypeEnum object,
+          {FullType specifiedType = FullType.unspecified}) =>
+      _toWire[object.name] ?? object.name;
+
+  @override
+  PortfolioAssetAssetTypeEnum deserialize(
+          Serializers serializers, Object serialized,
+          {FullType specifiedType = FullType.unspecified}) =>
+      PortfolioAssetAssetTypeEnum.valueOf(
+          _fromWire[serialized] ?? (serialized is String ? serialized : ''));
+}
+
 class _$PortfolioAsset extends PortfolioAsset {
+  @override
+  final PortfolioAssetKindEnum? kind;
+  @override
+  final PortfolioAssetAssetTypeEnum? assetType;
+  @override
+  final String? productId;
+  @override
+  final PortfolioHoldingReturn? holdingReturn;
   @override
   final BstocksPortfolioAvailability? bstocks;
   @override
@@ -54,7 +163,11 @@ class _$PortfolioAsset extends PortfolioAsset {
       (PortfolioAssetBuilder()..update(updates))._build();
 
   _$PortfolioAsset._(
-      {this.bstocks,
+      {this.kind,
+      this.assetType,
+      this.productId,
+      this.holdingReturn,
+      this.bstocks,
       required this.assetId,
       required this.source_,
       required this.network,
@@ -87,6 +200,10 @@ class _$PortfolioAsset extends PortfolioAsset {
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
     return other is PortfolioAsset &&
+        kind == other.kind &&
+        assetType == other.assetType &&
+        productId == other.productId &&
+        holdingReturn == other.holdingReturn &&
         bstocks == other.bstocks &&
         assetId == other.assetId &&
         source_ == other.source_ &&
@@ -113,6 +230,10 @@ class _$PortfolioAsset extends PortfolioAsset {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, kind.hashCode);
+    _$hash = $jc(_$hash, assetType.hashCode);
+    _$hash = $jc(_$hash, productId.hashCode);
+    _$hash = $jc(_$hash, holdingReturn.hashCode);
     _$hash = $jc(_$hash, bstocks.hashCode);
     _$hash = $jc(_$hash, assetId.hashCode);
     _$hash = $jc(_$hash, source_.hashCode);
@@ -141,6 +262,10 @@ class _$PortfolioAsset extends PortfolioAsset {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'PortfolioAsset')
+          ..add('kind', kind)
+          ..add('assetType', assetType)
+          ..add('productId', productId)
+          ..add('holdingReturn', holdingReturn)
           ..add('bstocks', bstocks)
           ..add('assetId', assetId)
           ..add('source_', source_)
@@ -169,6 +294,25 @@ class _$PortfolioAsset extends PortfolioAsset {
 class PortfolioAssetBuilder
     implements Builder<PortfolioAsset, PortfolioAssetBuilder> {
   _$PortfolioAsset? _$v;
+
+  PortfolioAssetKindEnum? _kind;
+  PortfolioAssetKindEnum? get kind => _$this._kind;
+  set kind(PortfolioAssetKindEnum? kind) => _$this._kind = kind;
+
+  PortfolioAssetAssetTypeEnum? _assetType;
+  PortfolioAssetAssetTypeEnum? get assetType => _$this._assetType;
+  set assetType(PortfolioAssetAssetTypeEnum? assetType) =>
+      _$this._assetType = assetType;
+
+  String? _productId;
+  String? get productId => _$this._productId;
+  set productId(String? productId) => _$this._productId = productId;
+
+  PortfolioHoldingReturnBuilder? _holdingReturn;
+  PortfolioHoldingReturnBuilder get holdingReturn =>
+      _$this._holdingReturn ??= PortfolioHoldingReturnBuilder();
+  set holdingReturn(PortfolioHoldingReturnBuilder? holdingReturn) =>
+      _$this._holdingReturn = holdingReturn;
 
   BstocksPortfolioAvailabilityBuilder? _bstocks;
   BstocksPortfolioAvailabilityBuilder get bstocks =>
@@ -267,6 +411,10 @@ class PortfolioAssetBuilder
   PortfolioAssetBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _kind = $v.kind;
+      _assetType = $v.assetType;
+      _productId = $v.productId;
+      _holdingReturn = $v.holdingReturn?.toBuilder();
       _bstocks = $v.bstocks?.toBuilder();
       _assetId = $v.assetId;
       _source_ = $v.source_;
@@ -311,6 +459,10 @@ class PortfolioAssetBuilder
     try {
       _$result = _$v ??
           _$PortfolioAsset._(
+            kind: kind,
+            assetType: assetType,
+            productId: productId,
+            holdingReturn: _holdingReturn?.build(),
             bstocks: _bstocks?.build(),
             assetId: BuiltValueNullFieldError.checkNotNull(
                 assetId, r'PortfolioAsset', 'assetId'),
@@ -347,6 +499,8 @@ class PortfolioAssetBuilder
     } catch (_) {
       late String _$failedField;
       try {
+        _$failedField = 'holdingReturn';
+        _holdingReturn?.build();
         _$failedField = 'bstocks';
         _bstocks?.build();
 

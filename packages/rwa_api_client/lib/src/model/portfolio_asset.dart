@@ -6,6 +6,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
+import 'package:rwa_api_client/src/model/portfolio_holding_return.dart';
 import 'package:rwa_api_client/src/model/portfolio_warning_code.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
 import 'package:rwa_api_client/src/model/bstocks_portfolio_availability.dart';
@@ -18,6 +19,10 @@ part 'portfolio_asset.g.dart';
 /// 只读余额事实。EVM 资产的 network 仅使用 BSC、Arbitrum、Base、Ethereum 四链 allowlist；venue 资产使用 Hyperliquid。任何标识都由服务端已验证的 用户钱包集合或 venue account 派生，客户端不能覆盖所有权输入。 
 ///
 /// Properties:
+/// * [kind] - account=spot 首页展示模式返回。
+/// * [assetType] - account=spot 时区分普通钱包资产和 admission 内的 bStocks。
+/// * [productId] - account=spot 时 bStocks 返回产品标识，Cash 为 null。
+/// * [holdingReturn] - account=spot 时返回；Cash 为 null，bStocks 暂保留空收益字段。
 /// * [bstocks] 
 /// * [assetId] 
 /// * [source_] 
@@ -41,6 +46,24 @@ part 'portfolio_asset.g.dart';
 /// * [warnings] 
 @BuiltValue()
 abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBuilder> {
+  /// account=spot 首页展示模式返回。
+  @BuiltValueField(wireName: r'kind')
+  PortfolioAssetKindEnum? get kind;
+  // enum kindEnum {  spot_asset,  };
+
+  /// account=spot 时区分普通钱包资产和 admission 内的 bStocks。
+  @BuiltValueField(wireName: r'asset_type')
+  PortfolioAssetAssetTypeEnum? get assetType;
+  // enum assetTypeEnum {  cash,  bstock,  };
+
+  /// account=spot 时 bStocks 返回产品标识，Cash 为 null。
+  @BuiltValueField(wireName: r'product_id')
+  String? get productId;
+
+  /// account=spot 时返回；Cash 为 null，bStocks 暂保留空收益字段。
+  @BuiltValueField(wireName: r'holding_return')
+  PortfolioHoldingReturn? get holdingReturn;
+
   @BuiltValueField(wireName: r'bstocks')
   BstocksPortfolioAvailability? get bstocks;
 
@@ -93,7 +116,7 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
   /// USD 估值来源；不代表余额或钱包所有权来源。
   @BuiltValueField(wireName: r'pricing_source')
   PortfolioPriceSource get pricingSource;
-  // enum pricingSourceEnum {  fixed_peg,  dodoex,  unavailable,  };
+  // enum pricingSourceEnum {  fixed_peg,  dodoex,  bstocks_market_data,  unavailable,  };
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'value_usd')
@@ -138,6 +161,34 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
     PortfolioAsset object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.kind != null) {
+      yield r'kind';
+      yield serializers.serialize(
+        object.kind,
+        specifiedType: const FullType(PortfolioAssetKindEnum),
+      );
+    }
+    if (object.assetType != null) {
+      yield r'asset_type';
+      yield serializers.serialize(
+        object.assetType,
+        specifiedType: const FullType(PortfolioAssetAssetTypeEnum),
+      );
+    }
+    if (object.productId != null) {
+      yield r'product_id';
+      yield serializers.serialize(
+        object.productId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.holdingReturn != null) {
+      yield r'holding_return';
+      yield serializers.serialize(
+        object.holdingReturn,
+        specifiedType: const FullType.nullable(PortfolioHoldingReturn),
+      );
+    }
     if (object.bstocks != null) {
       yield r'bstocks';
       yield serializers.serialize(
@@ -284,6 +335,38 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'kind':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioAssetKindEnum),
+          ) as PortfolioAssetKindEnum?;
+          if (valueDes == null) continue;
+          result.kind = valueDes;
+          break;
+        case r'asset_type':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioAssetAssetTypeEnum),
+          ) as PortfolioAssetAssetTypeEnum?;
+          if (valueDes == null) continue;
+          result.assetType = valueDes;
+          break;
+        case r'product_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.productId = valueDes;
+          break;
+        case r'holding_return':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioHoldingReturn),
+          ) as PortfolioHoldingReturn?;
+          if (valueDes == null) continue;
+          result.holdingReturn.replace(valueDes);
+          break;
         case r'bstocks':
           final valueDes = serializers.deserialize(
             value,
@@ -467,5 +550,36 @@ class _$PortfolioAssetSerializer implements PrimitiveSerializer<PortfolioAsset> 
     );
     return result.build();
   }
+}
+
+class PortfolioAssetKindEnum extends EnumClass {
+
+  /// account=spot 首页展示模式返回。
+  @BuiltValueEnumConst(wireName: r'spot_asset')
+  static const PortfolioAssetKindEnum spotAsset = _$portfolioAssetKindEnum_spotAsset;
+
+  static Serializer<PortfolioAssetKindEnum> get serializer => _$portfolioAssetKindEnumSerializer;
+
+  const PortfolioAssetKindEnum._(String name): super(name);
+
+  static BuiltSet<PortfolioAssetKindEnum> get values => _$portfolioAssetKindEnumValues;
+  static PortfolioAssetKindEnum valueOf(String name) => _$portfolioAssetKindEnumValueOf(name);
+}
+
+class PortfolioAssetAssetTypeEnum extends EnumClass {
+
+  /// account=spot 时区分普通钱包资产和 admission 内的 bStocks。
+  @BuiltValueEnumConst(wireName: r'cash')
+  static const PortfolioAssetAssetTypeEnum cash = _$portfolioAssetAssetTypeEnum_cash;
+  /// account=spot 时区分普通钱包资产和 admission 内的 bStocks。
+  @BuiltValueEnumConst(wireName: r'bstock')
+  static const PortfolioAssetAssetTypeEnum bstock = _$portfolioAssetAssetTypeEnum_bstock;
+
+  static Serializer<PortfolioAssetAssetTypeEnum> get serializer => _$portfolioAssetAssetTypeEnumSerializer;
+
+  const PortfolioAssetAssetTypeEnum._(String name): super(name);
+
+  static BuiltSet<PortfolioAssetAssetTypeEnum> get values => _$portfolioAssetAssetTypeEnumValues;
+  static PortfolioAssetAssetTypeEnum valueOf(String name) => _$portfolioAssetAssetTypeEnumValueOf(name);
 }
 

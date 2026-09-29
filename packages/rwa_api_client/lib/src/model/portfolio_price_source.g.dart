@@ -9,6 +9,8 @@ part of 'portfolio_price_source.dart';
 const PortfolioPriceSource _$fixedPeg =
     const PortfolioPriceSource._('fixedPeg');
 const PortfolioPriceSource _$dodoex = const PortfolioPriceSource._('dodoex');
+const PortfolioPriceSource _$bstocksMarketData =
+    const PortfolioPriceSource._('bstocksMarketData');
 const PortfolioPriceSource _$unavailable =
     const PortfolioPriceSource._('unavailable');
 
@@ -18,6 +20,8 @@ PortfolioPriceSource _$valueOf(String name) {
       return _$fixedPeg;
     case 'dodoex':
       return _$dodoex;
+    case 'bstocksMarketData':
+      return _$bstocksMarketData;
     case 'unavailable':
       return _$unavailable;
     default:
@@ -29,6 +33,7 @@ final BuiltSet<PortfolioPriceSource> _$values =
     BuiltSet<PortfolioPriceSource>(const <PortfolioPriceSource>[
   _$fixedPeg,
   _$dodoex,
+  _$bstocksMarketData,
   _$unavailable,
 ]);
 
@@ -36,6 +41,7 @@ class _$PortfolioPriceSourceMeta {
   const _$PortfolioPriceSourceMeta();
   PortfolioPriceSource get fixedPeg => _$fixedPeg;
   PortfolioPriceSource get dodoex => _$dodoex;
+  PortfolioPriceSource get bstocksMarketData => _$bstocksMarketData;
   PortfolioPriceSource get unavailable => _$unavailable;
   PortfolioPriceSource valueOf(String name) => _$valueOf(name);
   BuiltSet<PortfolioPriceSource> get values => _$values;
@@ -55,11 +61,13 @@ class _$PortfolioPriceSourceSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'fixedPeg': 'fixed_peg',
     'dodoex': 'dodoex',
+    'bstocksMarketData': 'bstocks_market_data',
     'unavailable': 'unavailable',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'fixed_peg': 'fixedPeg',
     'dodoex': 'dodoex',
+    'bstocks_market_data': 'bstocksMarketData',
     'unavailable': 'unavailable',
   };
 

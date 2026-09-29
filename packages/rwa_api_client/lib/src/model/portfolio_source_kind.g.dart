@@ -11,6 +11,8 @@ const PortfolioSourceKind _$hyperliquidInfo =
     const PortfolioSourceKind._('hyperliquidInfo');
 const PortfolioSourceKind _$dodoexPrice =
     const PortfolioSourceKind._('dodoexPrice');
+const PortfolioSourceKind _$bstocksMarketData =
+    const PortfolioSourceKind._('bstocksMarketData');
 const PortfolioSourceKind _$fixedPeg = const PortfolioSourceKind._('fixedPeg');
 const PortfolioSourceKind _$internalLedger =
     const PortfolioSourceKind._('internalLedger');
@@ -23,6 +25,8 @@ PortfolioSourceKind _$valueOf(String name) {
       return _$hyperliquidInfo;
     case 'dodoexPrice':
       return _$dodoexPrice;
+    case 'bstocksMarketData':
+      return _$bstocksMarketData;
     case 'fixedPeg':
       return _$fixedPeg;
     case 'internalLedger':
@@ -37,6 +41,7 @@ final BuiltSet<PortfolioSourceKind> _$values =
   _$evmRpc,
   _$hyperliquidInfo,
   _$dodoexPrice,
+  _$bstocksMarketData,
   _$fixedPeg,
   _$internalLedger,
 ]);
@@ -46,6 +51,7 @@ class _$PortfolioSourceKindMeta {
   PortfolioSourceKind get evmRpc => _$evmRpc;
   PortfolioSourceKind get hyperliquidInfo => _$hyperliquidInfo;
   PortfolioSourceKind get dodoexPrice => _$dodoexPrice;
+  PortfolioSourceKind get bstocksMarketData => _$bstocksMarketData;
   PortfolioSourceKind get fixedPeg => _$fixedPeg;
   PortfolioSourceKind get internalLedger => _$internalLedger;
   PortfolioSourceKind valueOf(String name) => _$valueOf(name);
@@ -67,6 +73,7 @@ class _$PortfolioSourceKindSerializer
     'evmRpc': 'evm_rpc',
     'hyperliquidInfo': 'hyperliquid_info',
     'dodoexPrice': 'dodoex_price',
+    'bstocksMarketData': 'bstocks_market_data',
     'fixedPeg': 'fixed_peg',
     'internalLedger': 'internal_ledger',
   };
@@ -74,6 +81,7 @@ class _$PortfolioSourceKindSerializer
     'evm_rpc': 'evmRpc',
     'hyperliquid_info': 'hyperliquidInfo',
     'dodoex_price': 'dodoexPrice',
+    'bstocks_market_data': 'bstocksMarketData',
     'fixed_peg': 'fixedPeg',
     'internal_ledger': 'internalLedger',
   };

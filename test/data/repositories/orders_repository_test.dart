@@ -147,7 +147,10 @@ void main() {
       expect(execution.timeInForce, 'ioc');
       expect(execution.quantity.value, '0.148');
       expect(execution.limitPrice.value, '101');
-      expect(execution.maximumQuantity.value, '0.148');
+      expect(execution.maximumQuantity?.value, '0.148');
+      expect(execution.maximumQuantityUnavailableReason, isNull);
+      expect(execution.blockers, isEmpty);
+      expect(execution.crossLiquidationImpacts.single.markPrice?.value, '100');
       expect(execution.availableMargin.value, '20');
       expect(execution.marginRequired.value, '7.474');
       expect(execution.estimatedFee.asset, 'USDC');
@@ -160,6 +163,38 @@ void main() {
       expect(preview.feeNote, 'Estimate only');
       expect(preview.details.single.label, 'Risk');
       expect(preview.details.single.tone, 'negative');
+    },
+  );
+  test(
+    'HIP3 preview preserves blockers when maximum quantity is unavailable',
+    () async {
+      final preview =
+          await OrdersRepositoryImpl(
+            _PreviewOrders(
+              maximumQuantity: null,
+              maximumQuantityUnavailableReason:
+                  'account_settings_update_required',
+              blockers: const ['leverage_update_required'],
+            ),
+          ).preview(
+            OrderIntent(
+              symbol: 'TSLA',
+              kind: MarketProductKind.perp,
+              side: TradingSide.long,
+              type: TradingOrderType.market,
+              marginMode: TradingMarginMode.cross,
+              amount: DecimalValue('15'),
+            ),
+            idempotencyKey: 'preview-blocked',
+          );
+
+      final execution = preview.hip3Execution!;
+      expect(execution.maximumQuantity, isNull);
+      expect(
+        execution.maximumQuantityUnavailableReason,
+        'account_settings_update_required',
+      );
+      expect(execution.blockers, ['leverage_update_required']);
     },
   );
   test('pending signature is a non-retryable wait capability', () async {
@@ -181,8 +216,16 @@ void main() {
 }
 
 final class _PreviewOrders implements OrdersService {
-  _PreviewOrders({this.protectionQuantity});
+  _PreviewOrders({
+    this.protectionQuantity,
+    this.maximumQuantity = '0.148',
+    this.maximumQuantityUnavailableReason,
+    this.blockers = const [],
+  });
   final String? protectionQuantity;
+  final String? maximumQuantity;
+  final String? maximumQuantityUnavailableReason;
+  final List<String> blockers;
   Map<String, Object?>? previewWire;
   Map<String, Object?>? createWire;
   @override
@@ -211,7 +254,19 @@ final class _PreviewOrders implements OrdersService {
         ..notionalUsdc = '14.948'
         ..marginRequiredUsdc = '7.474'
         ..availableMarginUsdc = '20'
-        ..maximumQuantity = '0.148'
+        ..maximumQuantity = maximumQuantity
+        ..maximumQuantityUnavailableReason = maximumQuantityUnavailableReason
+        ..blockers.addAll(blockers)
+        ..crossLiquidationImpacts.add(
+          api.Hip3CrossLiquidationImpact(
+            (b) => b
+              ..productId = 'xyz:TSLA'
+              ..side = api.Hip3CrossLiquidationImpactSideEnum.long
+              ..markPrice = '100'
+              ..beforeLiquidationPrice = '80'
+              ..afterLiquidationPrice = '85',
+          ),
+        )
         ..estimatedFeeUsdc = '0.007474'
         ..slippagePercent = '1'
         ..openingProtection = protectionQuantity == null

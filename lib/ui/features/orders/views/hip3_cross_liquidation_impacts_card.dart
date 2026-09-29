@@ -23,7 +23,7 @@ class Hip3CrossLiquidationImpactsCard extends StatelessWidget {
       for (final impact in impacts)
         LiquidationRiskPosition(
           title: _title(context, impact),
-          marketPrice: marketPrices[impact.productId],
+          marketPrice: impact.markPrice ?? marketPrices[impact.productId],
           beforeLiquidationPrice: impact.beforeLiquidationPrice,
           afterLiquidationPrice: impact.afterLiquidationPrice,
         ),

@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_create_order_request.g.dart';
 
-/// 当前非 localnet 实现要求有效 preview_id，并严格匹配账户/owner/输入/准入和经济量边界。 字段可选保留旧 wire 兼容，不表示运行时允许省略；缺失/过期/变更需重新预览。 返回 approval action 不代表已创建 swap，确认审批后须使用新 preview 和新创建幂等键。 
+/// 当前非 localnet 实现要求有效 preview_id，并严格匹配账户/owner/输入/准入和经济量边界。 preview_id 字段可选保留旧 wire 兼容，不表示运行时允许省略；缺失/过期/变更需重新预览。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定及创建幂等语义等价。 市价单省略 time_in_force 时仍按 IOC，不受限价默认值影响。 返回 approval action 不代表已创建 swap，确认审批后须使用新 preview 和新创建幂等键。 
 ///
 /// Properties:
 /// * [symbol] 

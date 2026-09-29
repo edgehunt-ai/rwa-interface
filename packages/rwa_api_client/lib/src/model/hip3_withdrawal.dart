@@ -6,6 +6,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_status.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_rail.dart';
+import 'package:rwa_api_client/src/model/hip3_collateral_risk_preview.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
@@ -14,6 +15,7 @@ part 'hip3_withdrawal.g.dart';
 /// HIP-3 统一账户提现资源。`typed_data_json`/`payload_hash` 仅在创建响应中返回，供客户端 原样签名；`destination_address` 始终等于 `owner_address`。 
 ///
 /// Properties:
+/// * [riskPreview] - 仅创建响应中尚待签名的提现返回；按 HL 总扣减 amount 计算。已提交等状态重放时不再模拟扣减。
 /// * [withdrawalId] 
 /// * [ownerAddress] 
 /// * [destinationAddress] 
@@ -38,6 +40,10 @@ part 'hip3_withdrawal.g.dart';
 /// * [confirmedAt] 
 @BuiltValue()
 abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBuilder> {
+  /// 仅创建响应中尚待签名的提现返回；按 HL 总扣减 amount 计算。已提交等状态重放时不再模拟扣减。
+  @BuiltValueField(wireName: r'risk_preview')
+  Hip3CollateralRiskPreview? get riskPreview;
+
   @BuiltValueField(wireName: r'withdrawal_id')
   String get withdrawalId;
 
@@ -140,6 +146,13 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
     Hip3Withdrawal object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    if (object.riskPreview != null) {
+      yield r'risk_preview';
+      yield serializers.serialize(
+        object.riskPreview,
+        specifiedType: const FullType.nullable(Hip3CollateralRiskPreview),
+      );
+    }
     yield r'withdrawal_id';
     yield serializers.serialize(
       object.withdrawalId,
@@ -283,6 +296,14 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'risk_preview':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3CollateralRiskPreview),
+          ) as Hip3CollateralRiskPreview?;
+          if (valueDes == null) continue;
+          result.riskPreview.replace(valueDes);
+          break;
         case r'withdrawal_id':
           final valueDes = serializers.deserialize(
             value,
