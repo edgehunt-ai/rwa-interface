@@ -528,17 +528,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _scheduleQuote();
   }
 
-  void _removeTpSl() {
-    setState(() {
-      _showTpSl = false;
-      _quotePreview = null;
-      for (final controller in _protectionPrices) {
-        controller.clear();
-      }
-    });
-    _scheduleQuote();
-  }
-
   void _scheduleQuote() {
     _quoteDebounce?.cancel();
     final generation = ++_quoteGeneration;
@@ -1375,17 +1364,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   execution: _quotePreview?.hip3Execution,
                   loading: _quoteLoading,
                   showTpSl: _showTpSl,
+                  takeProfit: _protectionPrices[0].text.trim(),
+                  stopLoss: _protectionPrices[2].text.trim(),
                   allowProtection: !_reduceOnly,
                   position: currentPosition,
                   orderSide: _side,
                   orderValue: enteredOrderValue,
                   onTpSlTap: () {
                     if (_reduceOnly) return;
-                    if (_showTpSl) {
-                      _removeTpSl();
-                    } else {
-                      _editTpSl();
-                    }
+                    _editTpSl();
                   },
                 ),
                 if ((visibleError ?? visibleDisabledReason)
@@ -1952,6 +1939,8 @@ class _Hip3RiskSummary extends StatelessWidget {
   const _Hip3RiskSummary({
     required this.settlementAsset,
     required this.showTpSl,
+    required this.takeProfit,
+    required this.stopLoss,
     required this.onTpSlTap,
     this.execution,
     this.loading = false,
@@ -1963,6 +1952,8 @@ class _Hip3RiskSummary extends StatelessWidget {
 
   final String settlementAsset;
   final bool showTpSl;
+  final String takeProfit;
+  final String stopLoss;
   final VoidCallback onTpSlTap;
   final Hip3PreviewExecution? execution;
   final bool loading;
@@ -2013,24 +2004,28 @@ class _Hip3RiskSummary extends StatelessWidget {
                     ),
                   ),
                 ),
-                Container(
-                  width: 18,
-                  height: 18,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFF7BE5),
-                    shape: BoxShape.circle,
+                if (showTpSl)
+                  const Icon(
+                    Icons.edit_outlined,
+                    key: Key('hip3-tp-sl-action-icon'),
+                    size: 16,
+                  )
+                else
+                  Container(
+                    width: 18,
+                    height: 18,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF7BE5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 14),
                   ),
-                  child: Icon(
-                    showTpSl ? Icons.remove : Icons.add,
-                    color: Colors.white,
-                    size: 14,
-                  ),
-                ),
                 const SizedBox(width: 4),
                 Text(
                   showTpSl
-                      ? AppLocalizations.of(context).remove
+                      ? '${takeProfit.isEmpty ? '—' : '\$$takeProfit'} / '
+                            '${stopLoss.isEmpty ? '—' : '\$$stopLoss'}'
                       : AppLocalizations.of(context).add,
                   style: const TextStyle(
                     fontSize: 13,

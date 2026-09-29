@@ -1022,7 +1022,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(Hip3ConfirmSheet), findsNothing);
       expect(find.text('20×'), findsWidgets);
-      expect(find.text('Remove'), findsOneWidget);
+      expect(find.text('Remove'), findsNothing);
+      expect(find.text(r'$120 / $90'), findsOneWidget);
+      expect(
+        tester
+            .widget<Icon>(find.byKey(const Key('hip3-tp-sl-action-icon')))
+            .icon,
+        Icons.edit_outlined,
+      );
+
+      await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
+      await tester.pumpAndSettle();
+      expect(find.text('Take Profit & stop loss'), findsOneWidget);
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const Key('opening-protection-0')))
+            .controller!
+            .text,
+        '120',
+      );
     },
   );
 
