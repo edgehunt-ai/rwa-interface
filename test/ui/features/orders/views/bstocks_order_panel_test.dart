@@ -19,6 +19,7 @@ import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
@@ -582,6 +583,30 @@ void main() {
     expect(find.byKey(const Key('bstocks-balance-loading')), findsNothing);
     expect(find.text('0 TUSDT'), findsOneWidget);
   });
+
+  testWidgets(
+    'does not dispose the account request during the initial order panel load',
+    (tester) async {
+      final accounts = Completer<List<TradingAccount>>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            tradingAccountsProvider.overrideWith((_) => accounts.future),
+          ],
+          child: buildTestApp(const BstocksOrderPanel()),
+        ),
+      );
+
+      // Allow initState's post-frame refresh callback to run while the
+      // account request is still pending.
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+
+      accounts.complete(const <TradingAccount>[]);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('bStocks sell form uses the short trade color', (tester) async {
     await tester.pumpWidget(

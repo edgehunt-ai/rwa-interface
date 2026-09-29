@@ -88,6 +88,18 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     limitPrice.addListener(_onLimitPriceChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        // The first build starts these requests. Invalidating an in-flight
+        // FutureProvider here disposes its future before it can emit a value,
+        // which surfaces as a Riverpod state error on Web. Refresh only a
+        // settled request; an initial load is already the fresh request.
+        final accounts = ref.read(tradingAccountsProvider);
+        final balance = ref.read(bstocksOrderAvailableBalanceProvider);
+        if (accounts.isLoading ||
+            accounts.isRefreshing ||
+            balance.isLoading ||
+            balance.isRefreshing) {
+          return;
+        }
         ref.invalidate(tradingAccountsProvider);
         ref.invalidate(bstocksOrderAvailableBalanceProvider);
       }
