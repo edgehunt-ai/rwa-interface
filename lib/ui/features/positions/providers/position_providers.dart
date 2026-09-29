@@ -197,6 +197,7 @@ final class PositionCommands {
     Position position,
     String leverage, {
     PositionMarginMode? marginMode,
+    bool confirmBeforeSigning = true,
   }) async {
     final result = await _run(
       operation: 'leverage',
@@ -207,6 +208,7 @@ final class PositionCommands {
             position,
             leverage: leverage,
             marginMode: marginMode,
+            confirmBeforeSigning: confirmBeforeSigning,
             idempotencyKey: key,
           ),
     );

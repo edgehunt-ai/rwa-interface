@@ -149,6 +149,25 @@ void main() {
   );
 
   test(
+    'leverage command forwards the signing confirmation preference',
+    () async {
+      final repository = _PositionsRepository();
+      final container = ProviderContainer(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final commands = container.listen(positionCommandProvider, (_, _) {});
+      addTearDown(commands.close);
+
+      await container
+          .read(positionCommandProvider)
+          .updateLeverage(_position(), '2', confirmBeforeSigning: false);
+
+      expect(repository.leverageConfirmBeforeSigning, isFalse);
+    },
+  );
+
+  test(
     'close retry reuses key while a changed economic intent gets a new key',
     () async {
       final repository = _PositionsRepository();
@@ -257,6 +276,7 @@ final class _PositionsRepository implements PositionsRepository {
   Hip3ActionPending? pending;
   int activeCalls = 0;
   int contextCalls = 0;
+  bool? leverageConfirmBeforeSigning;
   @override
   Future<PositionLeverageContext> leverageContext(String productId) async {
     contextCalls++;
@@ -305,9 +325,11 @@ final class _PositionsRepository implements PositionsRepository {
     Position position, {
     required String leverage,
     PositionMarginMode? marginMode,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
     leverageKeys.add(idempotencyKey);
+    leverageConfirmBeforeSigning = confirmBeforeSigning;
     await leverageCompletion?.future;
     await Future<void>.delayed(const Duration(milliseconds: 2));
     if (failUpdates) throw const NetworkFailure();

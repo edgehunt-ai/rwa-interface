@@ -809,7 +809,7 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
           const SizedBox(height: 16),
           _Hip3MetricRow(
             metrics: [
-              _Hip3Metric(l10n.value, _formatUsd(position.valueUsd)),
+              _Hip3Metric(l10n.value, _formatUsd(position.markNotional)),
               _Hip3Metric(l10n.marketPrice, _formatUsd(position.markPrice)),
               _Hip3Metric(l10n.entryPrice, _formatUsd(position.entryPrice)),
             ],

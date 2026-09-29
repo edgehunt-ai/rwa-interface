@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,17 +11,22 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_leverage_context.dart';
 import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
+import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_position_settings_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../helpers/display_config.dart';
 import '../../../../helpers/test_app.dart';
 
 void main() {
@@ -148,6 +155,97 @@ void main() {
     expect(repo.takeProfit, '130');
     expect(repo.stopLoss, isNull);
   });
+
+  testWidgets(
+    'position settings signs and submits without a second confirmation',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(800, 800));
+      final repo = _Positions();
+      final leverageDone = Completer<void>();
+      repo.leverageDelay = leverageDone.future;
+      final position = _position();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(repo),
+            positionLeverageContextProvider(position.productId!).overrideWith(
+              (_) async => PositionLeverageContext(
+                productId: position.productId!,
+                current: DecimalValue('2'),
+                maximum: DecimalValue('20'),
+                marginMode: PositionMarginMode.cross,
+                marginModes: const {
+                  PositionMarginMode.cross,
+                  PositionMarginMode.isolated,
+                },
+                validUntil: DateTime.utc(2099),
+                canChange: true,
+              ),
+            ),
+          ],
+          child: buildTestApp(Hip3PositionSettingsSheet(position: position)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('5x'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pump();
+      expect(repo.leverage, '5');
+      leverageDone.complete();
+      await tester.pumpAndSettle();
+
+      expect(repo.leverage, '5');
+      expect(repo.leverageConfirmBeforeSigning, isFalse);
+    },
+  );
+
+  testWidgets(
+    'position settings maps wallet signing failures to readable copy',
+    (tester) async {
+      await configureDisplay(tester, size: const Size(800, 800));
+      final repo = _Positions()
+        ..leverageError = const Hip3SigningFailure(
+          Hip3SigningFailureCode.rejected,
+        );
+      final position = _position();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(repo),
+            positionLeverageContextProvider(position.productId!).overrideWith(
+              (_) async => PositionLeverageContext(
+                productId: position.productId!,
+                current: DecimalValue('2'),
+                maximum: DecimalValue('20'),
+                marginMode: PositionMarginMode.cross,
+                marginModes: const {
+                  PositionMarginMode.cross,
+                  PositionMarginMode.isolated,
+                },
+                validUntil: DateTime.utc(2099),
+                canChange: true,
+              ),
+            ),
+          ],
+          child: buildTestApp(Hip3PositionSettingsSheet(position: position)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('5x'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Signature request was cancelled.'), findsOneWidget);
+      expect(find.text("Instance of 'Hip3SigningFailure'"), findsNothing);
+    },
+  );
 
   testWidgets('pending close cannot be submitted again from the form', (
     tester,
@@ -431,6 +529,10 @@ class _Positions implements PositionsRepository {
   Position? closePosition;
   TradingOrderType? type;
   String? quantity, percent, limitPrice, takeProfit, stopLoss;
+  String? leverage;
+  bool? leverageConfirmBeforeSigning;
+  Future<void>? leverageDelay;
+  Object? leverageError;
   ProtectionClearScope? clearScope;
   @override
   Future<TradingOrder> close(
@@ -469,6 +571,21 @@ class _Positions implements PositionsRepository {
     this.stopLoss = stopLoss;
     this.quantity = quantity;
     this.clearScope = clearScope;
+    return position;
+  }
+
+  @override
+  Future<Position> updateLeverage(
+    Position position, {
+    required String leverage,
+    PositionMarginMode? marginMode,
+    bool confirmBeforeSigning = true,
+    required String idempotencyKey,
+  }) async {
+    this.leverage = leverage;
+    leverageConfirmBeforeSigning = confirmBeforeSigning;
+    if (leverageError case final error?) throw error;
+    if (leverageDelay != null) await leverageDelay;
     return position;
   }
 

@@ -686,7 +686,7 @@ void main() {
       'Unrealized PnL',
       r'+$16',
       '+3%',
-      r'$550',
+      r'$550.01',
       r'$182.4',
       r'$177.09',
       r'+$1.05',
@@ -695,7 +695,10 @@ void main() {
       'Close',
       'TP/SL',
     ]) {
-      expect(find.text(text), text == r'$550' ? findsWidgets : findsOneWidget);
+      expect(
+        find.text(text),
+        text == r'$550.01' ? findsWidgets : findsOneWidget,
+      );
     }
     expect(
       tester.getSize(find.widgetWithText(OutlinedButton, 'Close')).height,
@@ -889,7 +892,7 @@ Position _position(MarketProductKind kind) => switch (kind) {
     kind: kind,
     side: PositionSide.long,
     quantity: DecimalValue('3.0154', unit: 'quantity'),
-    valueUsd: DecimalValue('550', asset: 'USDC', unit: 'token'),
+    valueUsd: DecimalValue('700', asset: 'USDC', unit: 'token'),
     leverage: DecimalValue('10'),
     entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
     markPrice: DecimalValue('182.4', asset: 'USDC', unit: 'price'),
@@ -1227,6 +1230,7 @@ final class _PositionsRepository implements PositionsRepository {
     Position position, {
     required String leverage,
     PositionMarginMode? marginMode,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) => throw UnimplementedError();
 

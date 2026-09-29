@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/position_leverage_context.dart';
+import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_order_messages.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
@@ -36,6 +38,7 @@ class _Hip3PositionSettingsSheetState
             widget.position,
             '$leverage',
             marginMode: settings.marginMode,
+            confirmBeforeSigning: false,
           );
       if (mounted) {
         AppToast.showSuccess(
@@ -54,6 +57,9 @@ class _Hip3PositionSettingsSheetState
   }
 
   String _errorMessage(Object error) {
+    if (error is Hip3SigningFailure) {
+      return hip3SigningError(context, error);
+    }
     if (error is ApiFailure) {
       return apiFailureMessage(
         error,
@@ -72,6 +78,8 @@ class _Hip3PositionSettingsSheetState
 
   @override
   Widget build(BuildContext context) {
+    // Keep the command scope alive while signing and submitting across frames.
+    ref.watch(positionCommandProvider);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final productId = widget.position.productId;
     final state = productId == null
@@ -291,7 +299,7 @@ class _SettingsContent extends StatelessWidget {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Text(l10n.confirm),
+                  : Text(l10n.signAndConfirm),
             ),
           ),
         ],

@@ -593,6 +593,7 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     Position position, {
     required String leverage,
     PositionMarginMode? marginMode,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async => position;
 

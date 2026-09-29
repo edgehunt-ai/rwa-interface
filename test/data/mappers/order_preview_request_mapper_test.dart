@@ -8,20 +8,39 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 
 void main() {
-  OrderIntent bstockIntent() => OrderIntent(
-    symbol: 'NVDA',
-    kind: MarketProductKind.bstock,
-    side: TradingSide.buy,
-    type: TradingOrderType.market,
-    amount: DecimalValue('15'),
-    slippage: DecimalValue('0.12', unit: 'percent'),
-  );
+  OrderIntent bstockIntent({TradingOrderType type = TradingOrderType.market}) =>
+      OrderIntent(
+        symbol: 'NVDA',
+        kind: MarketProductKind.bstock,
+        side: TradingSide.buy,
+        type: type,
+        amount: type == TradingOrderType.market ? DecimalValue('15') : null,
+        quantity: type == TradingOrderType.limit ? DecimalValue('1') : null,
+        limitPrice: type == TradingOrderType.limit ? DecimalValue('100') : null,
+        slippage: DecimalValue('0.12', unit: 'percent'),
+      );
+
+  OrderIntent perpIntent({TradingOrderType type = TradingOrderType.market}) =>
+      OrderIntent(
+        symbol: 'TSLA',
+        kind: MarketProductKind.perp,
+        side: TradingSide.long,
+        type: type,
+        amount: type == TradingOrderType.market ? DecimalValue('15') : null,
+        quantity: type == TradingOrderType.limit ? DecimalValue('1') : null,
+        limitPrice: type == TradingOrderType.limit ? DecimalValue('100') : null,
+        leverage: DecimalValue('2', asset: 'x', unit: 'multiple'),
+        marginMode: TradingMarginMode.cross,
+      );
+
+  Map<String, Object?> previewWire(OrderIntent intent) =>
+      api.standardSerializers.serializeWith(
+        api.OrderPreviewRequest.serializer,
+        orderPreviewRequest(intent),
+      ) as Map<String, Object?>;
 
   test('bStocks preview never serializes tp_sl', () {
-    final wire = api.standardSerializers.serializeWith(
-      api.OrderPreviewRequest.serializer,
-      orderPreviewRequest(bstockIntent()),
-    ) as Map;
+    final wire = previewWire(bstockIntent());
     // The generated builder's `tpSl` getter lazily instantiates an empty
     // TpSlSpec, so an unconditional `_tpSl(builder.tpSl, ...)` call leaked
     // `tp_sl: {enabled: false}` onto a plain bStocks preview.
@@ -37,6 +56,58 @@ void main() {
     expect(service.createWire!.containsKey('tp_sl'), isFalse);
     expect(service.createWire!['preview_id'], 'preview-1');
     expect(service.createWire!['kind'], 'bstock');
+  });
+
+  test('bStocks sends GTC for limit orders and IOC for market orders', () {
+    expect(previewWire(bstockIntent())['time_in_force'], 'ioc');
+    expect(
+      previewWire(bstockIntent(type: TradingOrderType.limit))['time_in_force'],
+      'gtc',
+    );
+  });
+
+  test('HIP3 sends GTC for limit orders and omits TIF for market orders', () {
+    // Market orders keep the provider default (IOC); only a resting limit
+    // order pins GTC explicitly.
+    expect(previewWire(perpIntent()).containsKey('time_in_force'), isFalse);
+    expect(
+      previewWire(perpIntent(type: TradingOrderType.limit))['time_in_force'],
+      'gtc',
+    );
+  });
+
+  test('create mirrors the preview time_in_force for both products', () async {
+    final service = _CapturingOrders();
+    final repository = OrdersRepositoryImpl(service);
+
+    await repository.create(
+      bstockIntent(),
+      idempotencyKey: 'bstock-market',
+      previewId: 'preview-1',
+    );
+    expect(service.createWire!['time_in_force'], 'ioc');
+
+    await repository.create(
+      bstockIntent(type: TradingOrderType.limit),
+      idempotencyKey: 'bstock-limit',
+      previewId: 'preview-1',
+    );
+    expect(service.createWire!['time_in_force'], 'gtc');
+
+    await repository.create(
+      perpIntent(),
+      idempotencyKey: 'perp-market',
+      previewId: 'preview-1',
+    );
+    expect(service.createWire!.containsKey('time_in_force'), isFalse);
+    expect(service.createWire!['kind'], 'perp');
+
+    await repository.create(
+      perpIntent(type: TradingOrderType.limit),
+      idempotencyKey: 'perp-limit',
+      previewId: 'preview-1',
+    );
+    expect(service.createWire!['time_in_force'], 'gtc');
   });
 }
 

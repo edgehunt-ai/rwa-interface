@@ -1206,7 +1206,13 @@ class _HoldingSection extends ConsumerWidget {
         children: [
           _SectionTitle(
             title: title,
-            value: _sumUsd(positions.map((item) => item.valueUsd)),
+            value: _sumUsd(
+              positions.map(
+                (item) => item.kind == MarketProductKind.perp
+                    ? item.markNotional
+                    : item.valueUsd,
+              ),
+            ),
           ),
           for (final position in positions)
             _HoldingRow(
@@ -1310,7 +1316,15 @@ class _HoldingRow extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            TokenAmountFormatter.formatUsd(position.valueUsd),
+                            position.kind == MarketProductKind.perp
+                                ? position.markNotional == null
+                                      ? '—'
+                                      : TokenAmountFormatter.formatUsd(
+                                          position.markNotional!,
+                                        )
+                                : TokenAmountFormatter.formatUsd(
+                                    position.valueUsd,
+                                  ),
                             maxLines: 1,
                             style: const TextStyle(
                               fontSize: 15,

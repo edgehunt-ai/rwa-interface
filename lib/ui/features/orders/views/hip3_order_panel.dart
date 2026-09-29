@@ -98,10 +98,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   Timer? _quoteDebounce;
   var _quoteGeneration = 0;
 
-  MarketProductRef get _marketProductRef => MarketProductRef(
-    symbol: widget.symbol,
-    kind: MarketProductKind.perp,
-  );
+  MarketProductRef get _marketProductRef =>
+      MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.perp);
 
   @override
   void initState() {
@@ -111,13 +109,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     _amount.addListener(_onAmountChanged);
     _orderValue.addListener(_onOrderValueChanged);
     _limitPrice.addListener(_onLimitPriceChanged);
-    ref.listenManual(
-      marketSnapshotProvider(_marketProductRef),
-      (_, _) {
-        _protectionReferenceNotifier.value = _protectionReference();
-        if (mounted) setState(() {});
-      },
-    );
+    ref.listenManual(marketSnapshotProvider(_marketProductRef), (_, _) {
+      _protectionReferenceNotifier.value = _protectionReference();
+      if (mounted) setState(() {});
+    });
     for (final controller in _protectionPrices) {
       controller.addListener(_scheduleQuote);
     }
@@ -2071,7 +2066,8 @@ class _Hip3RiskSummary extends StatelessWidget {
         if (position case final current?
             when orderSide != null &&
                 orderValue != null &&
-                orderValue! > 0) ...[
+                orderValue! > 0 &&
+                current.markNotional != null) ...[
           const SizedBox(height: 8),
           _Hip3PositionWillBeRow(
             position: current,
@@ -2938,7 +2934,8 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final currentValue = double.tryParse(position.valueUsd.value) ?? 0;
+    final currentValue =
+        double.tryParse(position.markNotional?.value ?? '') ?? 0;
     final currentSide = position.side == PositionSide.short
         ? TradingSide.short
         : TradingSide.long;
@@ -3021,7 +3018,8 @@ class _Hip3PositionWillBeRow extends StatelessWidget {
       color: Color(0xFF676776),
     );
     final strong = base.copyWith(fontWeight: FontWeight.w600);
-    final currentValue = double.tryParse(position.valueUsd.value) ?? 0;
+    final currentValue =
+        double.tryParse(position.markNotional?.value ?? '') ?? 0;
     final currentSide = position.side == PositionSide.short
         ? TradingSide.short
         : TradingSide.long;

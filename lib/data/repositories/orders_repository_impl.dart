@@ -294,7 +294,9 @@ final class OrdersRepositoryImpl implements OrdersRepository {
                   ? api.BstockCreateOrderRequestSideEnum.buy
                   : api.BstockCreateOrderRequestSideEnum.sell
               ..type = _type(intent.type)
-              ..timeInForce = api.BstocksTimeInForce.ioc
+              ..timeInForce = intent.type == TradingOrderType.limit
+                  ? api.BstocksTimeInForce.gtc
+                  : api.BstocksTimeInForce.ioc
               ..amount = intent.amount?.value
               ..quantity = intent.quantity?.value
               ..limitPrice = intent.limitPrice?.value
@@ -315,6 +317,12 @@ final class OrdersRepositoryImpl implements OrdersRepository {
                   ? api.PerpCreateOrderRequestSideEnum.long
                   : api.PerpCreateOrderRequestSideEnum.short
               ..type = _type(intent.type)
+              // A resting limit order must be GTC. Market orders keep the
+              // provider default (IOC); sending IOC on a limit order would
+              // cancel an unfilled quote immediately.
+              ..timeInForce = intent.type == TradingOrderType.limit
+                  ? api.Hip3TimeInForce.gtc
+                  : null
               ..amount = intent.amount?.value
               ..quantity = intent.quantity?.value
               ..limitPrice = intent.limitPrice?.value

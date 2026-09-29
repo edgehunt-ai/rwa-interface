@@ -302,6 +302,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     Position position, {
     required String leverage,
     PositionMarginMode? marginMode,
+    bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
     if (!RegExp(r'^[1-9][0-9]*$').hasMatch(leverage)) {
@@ -329,6 +330,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       idempotencyKey,
       bindPosition: false,
       environment: context.environment,
+      confirmBeforeSigning: confirmBeforeSigning,
     );
     return get(position.positionId);
   }

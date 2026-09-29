@@ -321,7 +321,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
               const SizedBox(height: 12),
               _CloseSummaryRow(
                 label: l10n.value,
-                value: _formatUsd(position.valueUsd),
+                value: _formatUsd(position.markNotional),
               ),
               _CloseSummaryRow(
                 label: l10n.entryPrice,
