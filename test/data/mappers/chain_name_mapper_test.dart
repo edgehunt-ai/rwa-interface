@@ -14,12 +14,15 @@ void main() {
     expect(canonicalChainName('SOLANA'), 'Solana');
   });
 
-  test('maps BSC chain ids to BSC without inferring a chain id from the label', () {
-    expect(canonicalSettlementChainName(network: 'BSC', chainId: 56), 'BSC');
-    expect(canonicalSettlementChainName(network: 'BSC', chainId: 97), 'BSC');
-    expect(
-      canonicalSettlementChainName(network: 'Arbitrum', chainId: 42161),
-      'Arbitrum',
-    );
-  });
+  test(
+    'maps BSC chain ids to BSC without inferring a chain id from the label',
+    () {
+      expect(canonicalSettlementChainName(network: 'BSC', chainId: 56), 'BSC');
+      expect(canonicalSettlementChainName(network: 'BSC', chainId: 97), 'BSC');
+      expect(
+        canonicalSettlementChainName(network: 'Arbitrum', chainId: 42161),
+        'Arbitrum',
+      );
+    },
+  );
 }

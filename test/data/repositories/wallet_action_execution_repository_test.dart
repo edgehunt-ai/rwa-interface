@@ -122,39 +122,42 @@ void main() {
     expect(execution.authorization?.body['caip2'], 'eip155:97');
   });
 
-  test('preserves Arbitrum Sepolia caip2 in the generated client payload', () async {
-    final json = {
-      ..._sponsoredExecutionJson,
-      'chain_id': 421614,
-      'privy_authorization_payload': {
-        ...(_sponsoredExecutionJson['privy_authorization_payload'] as Map),
-        'body': {
-          ...((_sponsoredExecutionJson['privy_authorization_payload']
-                  as Map)['body']
-              as Map),
-          'caip2': 'eip155:421614',
+  test(
+    'preserves Arbitrum Sepolia caip2 in the generated client payload',
+    () async {
+      final json = {
+        ..._sponsoredExecutionJson,
+        'chain_id': 421614,
+        'privy_authorization_payload': {
+          ...(_sponsoredExecutionJson['privy_authorization_payload'] as Map),
+          'body': {
+            ...((_sponsoredExecutionJson['privy_authorization_payload']
+                    as Map)['body']
+                as Map),
+            'caip2': 'eip155:421614',
+          },
         },
-      },
-    };
-    final context = harness([
-      ControlledResponse.json(
-        method: 'POST',
-        path: '/v1/self-custodial-withdrawals/withdrawal-1/executions',
-        statusCode: 201,
-        body: json,
-      ),
-    ]);
-    final execution = await context.repository
-        .createSelfCustodialWithdrawalExecution(
-          withdrawalId: 'withdrawal-1',
-          mode: GasPaymentMode.appSponsored,
-          idempotencyKey: 'key-1',
-        );
+      };
+      final context = harness([
+        ControlledResponse.json(
+          method: 'POST',
+          path: '/v1/self-custodial-withdrawals/withdrawal-1/executions',
+          statusCode: 201,
+          body: json,
+        ),
+      ]);
+      final execution = await context.repository
+          .createSelfCustodialWithdrawalExecution(
+            withdrawalId: 'withdrawal-1',
+            mode: GasPaymentMode.appSponsored,
+            idempotencyKey: 'key-1',
+          );
 
-    expect(execution.chainId, 421614);
-    expect(execution.authorization?.caip2, 'eip155:421614');
-    expect(execution.authorization?.body['caip2'], 'eip155:421614');
-  });
+      expect(execution.chainId, 421614);
+      expect(execution.authorization?.caip2, 'eip155:421614');
+      expect(execution.authorization?.body['caip2'], 'eip155:421614');
+    },
+  );
 
   test('a refused sponsorship carries no request to sign', () async {
     final context = harness([
