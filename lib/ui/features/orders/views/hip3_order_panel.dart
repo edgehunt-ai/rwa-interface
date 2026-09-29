@@ -636,8 +636,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final rules = _context;
     if (rules == null || balance == null) return null;
     final minimum = double.tryParse(rules.minimumNotional.value);
-    final affordable = double.tryParse(balance.value);
-    if (minimum == null || affordable == null) return null;
+    final availableBalance = double.tryParse(balance.value);
+    if (minimum == null || availableBalance == null) return null;
+    // HIP-3 order value is notional. The slider represents the notional
+    // buying power available at the selected leverage, not the margin alone.
+    final affordable = availableBalance * _leverage;
     final maximumRule = rules.maximumNotional == null
         ? double.infinity
         : double.tryParse(rules.maximumNotional!.value) ?? 0;

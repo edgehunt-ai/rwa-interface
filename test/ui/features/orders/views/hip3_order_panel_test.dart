@@ -205,6 +205,31 @@ void main() {
     );
   });
 
+  testWidgets('HIP-3 slider uses leveraged balance as its notional base', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(const Hip3OrderPanel(), opening: _Opening(availableMargin: '16')),
+    );
+    await tester.pumpAndSettle();
+
+    final slider = find.byType(Slider);
+    await tester.drag(slider, const Offset(1000, 0));
+    await tester.pump();
+
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      '160',
+    );
+
+    await tester.drag(slider, const Offset(-1000, 0));
+    await tester.pump();
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      '12',
+    );
+  });
+
   testWidgets(
     'an unreachable trading context explains itself on submit and is reported',
     (tester) async {
