@@ -20,7 +20,12 @@ api.OrderPreviewRequest orderPreviewRequest(OrderIntent intent) {
             ..quantity = intent.quantity?.value
             ..limitPrice = intent.limitPrice?.value
             ..slippagePercent = intent.slippage?.value;
-          _tpSl(builder.tpSl, intent.tpSl);
+          if (intent.tpSl != null) {
+            // bStocks does not support TP/SL. Reading builder.tpSl would
+            // instantiate an empty TpSlSpec and leak `tp_sl:{enabled:false}`
+            // onto the wire, so fail closed instead of touching the builder.
+            throw ArgumentError('bStocks orders do not support TP/SL');
+          }
         })
       : api.PerpOrderPreviewRequest((builder) {
           builder
@@ -50,15 +55,6 @@ api.OrderPreviewRequest orderPreviewRequest(OrderIntent intent) {
       value: value,
     ),
   );
-}
-
-void _tpSl(api.TpSlSpecBuilder builder, TakeProfitStopLoss? value) {
-  if (value == null) return;
-  builder
-    ..enabled = true
-    ..takeProfitPrice = value.takeProfit?.value
-    ..stopLossPrice = value.stopLoss?.value
-    ..stopLimitPrice = value.stopLimit?.value;
 }
 
 api.Hip3OrderProtectionSpec? _openingProtection(Hip3OpeningProtection? value) {

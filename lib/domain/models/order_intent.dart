@@ -53,6 +53,9 @@ final class OrderIntent {
         (leverage != null || marginMode != null || reduceOnly)) {
       throw ArgumentError('Spot orders cannot carry perpetual fields');
     }
+    if (kind == MarketProductKind.bstock && tpSl != null) {
+      throw ArgumentError('bStocks orders do not support TP/SL');
+    }
     if (openingProtection != null &&
         (kind != MarketProductKind.perp || reduceOnly || tpSl != null)) {
       throw ArgumentError(

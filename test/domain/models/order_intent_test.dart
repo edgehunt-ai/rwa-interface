@@ -28,6 +28,20 @@ void main() {
       ),
       throwsArgumentError,
     );
+    expect(
+      () => OrderIntent(
+        symbol: 'NVDA',
+        kind: MarketProductKind.bstock,
+        side: TradingSide.buy,
+        type: TradingOrderType.market,
+        quantity: value('1'),
+        tpSl: TakeProfitStopLoss(
+          takeProfit: DecimalValue('110'),
+          stopLoss: DecimalValue('90'),
+        ),
+      ),
+      throwsArgumentError,
+    );
   });
 
   test('limit requires quantity and price and amount is exclusive', () {
