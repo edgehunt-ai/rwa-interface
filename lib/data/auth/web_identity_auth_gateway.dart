@@ -4,12 +4,17 @@ import 'dart:js_interop_unsafe';
 
 import '../../domain/auth/authentication.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
+import '../../domain/models/wallet_action_execution.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
+import '../../domain/services/wallet_authorization_signer.dart';
 
 /// Browser implementation backed by the React Privy SDK bundle in
 /// `web/privy-auth`. The bundle is copied only into Flutter Web output.
 final class WebPrivyIdentityAuthGateway
-    implements IdentityAuthGateway, Hip3TypedDataSigner {
+    implements
+        IdentityAuthGateway,
+        Hip3TypedDataSigner,
+        WalletAuthorizationSigner {
   JSObject? _bridge;
   bool _sessionUsable = false;
 
@@ -225,6 +230,66 @@ final class WebPrivyIdentityAuthGateway
       rethrow;
     } catch (_) {
       throw const Hip3SigningFailure(Hip3SigningFailureCode.rejected);
+    }
+  }
+
+  @override
+  Future<String> signWalletAuthorization({
+    required String expectedSigner,
+    required WalletAuthorizationRequest request,
+  }) async {
+    final normalizedSigner = expectedSigner.toLowerCase();
+    if (!RegExp(r'^0x[0-9a-f]{40}$').hasMatch(normalizedSigner) ||
+        request.transaction.from.toLowerCase() != normalizedSigner ||
+        !request.url.startsWith('https://api.privy.io/v1/wallets/') ||
+        request.method != 'POST' ||
+        request.version != 1 ||
+        request.headers.isEmpty ||
+        request.body.isEmpty) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.invalidPayload,
+      );
+    }
+    if (!_sessionUsable) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.walletUnavailable,
+        retryable: true,
+      );
+    }
+
+    try {
+      final value = await _call(
+        'signWalletAuthorization',
+        jsonEncode({
+          // The bridge uses this only to verify the currently connected
+          // embedded wallet; it is removed before Privy signs the payload.
+          'expectedSigner': normalizedSigner,
+          'version': request.version,
+          'method': request.method,
+          'url': request.url,
+          'headers': request.headers,
+          'body': request.body,
+        }).toJS,
+      );
+      if (!value.isA<JSString>()) {
+        throw const WalletAuthorizationFailure(
+          WalletAuthorizationFailureCode.invalidPayload,
+        );
+      }
+      final signature = (value as JSString).toDart;
+      if (signature.trim().isEmpty) {
+        throw const WalletAuthorizationFailure(
+          WalletAuthorizationFailureCode.rejected,
+        );
+      }
+      return signature;
+    } on WalletAuthorizationFailure {
+      rethrow;
+    } catch (_) {
+      throw const WalletAuthorizationFailure(
+        WalletAuthorizationFailureCode.rejected,
+        retryable: true,
+      );
     }
   }
 

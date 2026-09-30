@@ -6,6 +6,7 @@ import {
   useLinkWithPasskey,
   useLogin,
   usePrivy,
+  useAuthorizationSignature,
   useUnlinkPasskey,
   useWallets,
 } from '@privy-io/react-auth';
@@ -22,6 +23,7 @@ const state = {
   getAccessToken: null,
   logout: null,
   wallets: [],
+  signAuthorization: null,
 };
 
 let root;
@@ -64,6 +66,7 @@ function PrivyBridge() {
   const { linkWithPasskey } = useLinkWithPasskey();
   const { unlink } = useUnlinkPasskey();
   const { ready: walletsReady, wallets } = useWallets();
+  const { generateAuthorizationSignature } = useAuthorizationSignature();
 
   useEffect(() => {
     state.ready = ready;
@@ -72,6 +75,7 @@ function PrivyBridge() {
     state.getAccessToken = getAccessToken;
     state.logout = logout;
     state.wallets = walletsReady ? wallets : [];
+    state.signAuthorization = generateAuthorizationSignature;
     state.login = login;
     state.linkPasskey = linkWithPasskey;
     state.unlinkPasskey = unlink;
@@ -95,6 +99,7 @@ function PrivyBridge() {
     user,
     wallets,
     walletsReady,
+    generateAuthorizationSignature,
   ]);
 
   return null;
@@ -279,6 +284,25 @@ window.rwaPrivyAuth = {
       expectedSigner,
       typedDataJson,
     });
+  },
+
+  signWalletAuthorization(request) {
+    if (!state.authenticated || !state.signAuthorization) {
+      return Promise.reject(new Error('Privy is not ready.'));
+    }
+    const { expectedSigner, ...payload } = JSON.parse(request);
+    const normalizedSigner = String(expectedSigner || '').toLowerCase();
+    const owned = state.wallets.some(
+      (wallet) =>
+        wallet?.walletClientType === 'privy' &&
+        String(wallet?.address || '').toLowerCase() === normalizedSigner,
+    );
+    if (!owned) {
+      return Promise.reject(new Error('The expected signer is not connected.'));
+    }
+    return state.signAuthorization(payload).then(
+      ({ signature }) => signature,
+    );
   },
 
   async logout() {
