@@ -84,6 +84,24 @@ void main() {
     expect(position.protectionOrderIds, isEmpty);
   });
 
+  test('maps the bStocks reference return for spot holdings', () {
+    final position = mapPosition(
+      api.Position(
+        (b) => b
+          ..positionId = 'holding-return-1'
+          ..symbol = 'NVDA'
+          ..kind = api.ProductKind.bstock
+          ..quantity = '2'
+          ..valueUsd = '240'
+          ..unrealizedPnlReferenceUsd = '16.25'
+          ..unrealizedPnlPercent = '7.261744',
+      ),
+    );
+
+    expect(position.unrealizedPnl?.value, '16.25');
+    expect(position.unrealizedPnlPercent?.value, '7.261744');
+  });
+
   test('maps account kind and preserves token precision', () async {
     final accounts = await PortfolioRepositoryImpl(_Portfolio()).listAccounts();
     expect(accounts.single.kind, TradingAccountKind.hip3);

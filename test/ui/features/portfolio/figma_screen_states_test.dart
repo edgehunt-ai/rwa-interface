@@ -171,7 +171,7 @@ void main() {
     expect(find.text('bStocks'), findsWidgets);
     expect(find.text('3.0154 NVDAB'), findsOneWidget);
     expect(find.text(r'$3,015.40'), findsOneWidget);
-    expect(find.text('Holding return'), findsOneWidget);
+    expect(find.text('Unrealized PnL'), findsOneWidget);
     expect(find.text(r'+$16.00 (+3.00%)'), findsOneWidget);
     expect(
       find.byWidgetPredicate(
@@ -183,7 +183,7 @@ void main() {
     );
   });
 
-  testWidgets('Assets localizes the bStocks holding return label', (
+  testWidgets('Assets localizes the bStocks unrealized PnL label', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -197,8 +197,30 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('持仓收益'), findsOneWidget);
-    expect(find.text('Holding return'), findsNothing);
+    expect(find.text('未实现盈亏'), findsOneWidget);
+    expect(find.text('持仓收益'), findsNothing);
+  });
+
+  testWidgets('Assets keeps the bStocks PnL row when PnL is unavailable', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            const _BstockHoldingsPortfolio(includeReturn: false),
+          ),
+        ],
+        child: _assetsApp(locale: const Locale('zh')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('未实现盈亏'), findsOneWidget);
+    final returnValue = tester.widget<Text>(
+      find.byKey(const Key('unrealized-pnl-nvda-bstock')),
+    );
+    expect(returnValue.data, '—');
   });
 
   testWidgets('Assets shows the Figma empty portfolio state', (tester) async {
@@ -460,6 +482,10 @@ final class _BalanceOnlyPortfolio implements PortfolioRepository {
 }
 
 final class _BstockHoldingsPortfolio implements PortfolioRepository {
+  const _BstockHoldingsPortfolio({this.includeReturn = true});
+
+  final bool includeReturn;
+
   @override
   Future<Portfolio> getSummary() async => Portfolio(
     totalValueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
@@ -485,8 +511,12 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
                 quantity: DecimalValue('3.0154', asset: 'NVDA', unit: 'token'),
                 valueUsd: DecimalValue('1', asset: 'USD', unit: 'fiat'),
                 markPrice: DecimalValue('1000', asset: 'USD', unit: 'price'),
-                unrealizedPnl: DecimalValue('16', asset: 'USD', unit: 'fiat'),
-                unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
+                unrealizedPnl: includeReturn
+                    ? DecimalValue('16', asset: 'USD', unit: 'fiat')
+                    : null,
+                unrealizedPnlPercent: includeReturn
+                    ? DecimalValue('3', unit: 'percent')
+                    : null,
               ),
             ],
           ),

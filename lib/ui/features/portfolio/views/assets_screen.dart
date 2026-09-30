@@ -1726,10 +1726,18 @@ class _HoldingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pnl = position.unrealizedPnl ?? position.realizedPnl;
+    final pnlPercent = position.unrealizedPnlPercent;
     final l10n = AppLocalizations.of(context);
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final isBstock = position.kind == MarketProductKind.bstock;
+    final pnlText = [
+      if (pnl != null) _formatSignedUsd(pnl),
+      if (pnlPercent != null) '(${_formatPercentFixed2(pnlPercent)})',
+    ].join(' ');
+    final pnlIsNegative =
+        pnl?.value.startsWith('-') == true ||
+        (pnl == null && pnlPercent?.value.startsWith('-') == true);
     final quantitySymbol = isBstock
         ? '${_underlyingSymbol(position.symbol)}B'
         : position.symbol;
@@ -1829,7 +1837,7 @@ class _HoldingRow extends StatelessWidget {
                   ],
                 ),
               ),
-              if (pnl != null) ...[
+              if (isBstock || pnlText.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 SizedBox(
                   height: 16,
@@ -1838,7 +1846,7 @@ class _HoldingRow extends StatelessWidget {
                       const SizedBox(width: 52),
                       Expanded(
                         child: Text(
-                          isBstock ? l10n.holdingReturn : l10n.unrealizedPnl,
+                          l10n.unrealizedPnl,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -1856,17 +1864,16 @@ class _HoldingRow extends StatelessWidget {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerRight,
                             child: Text(
-                              [
-                                _formatSignedUsd(pnl),
-                                if (position.unrealizedPnlPercent != null)
-                                  '(${_formatPercentFixed2(position.unrealizedPnlPercent!)})',
-                              ].join(' '),
+                              key: Key('unrealized-pnl-${position.positionId}'),
+                              pnlText.isEmpty ? '—' : pnlText,
                               maxLines: 1,
                               textAlign: TextAlign.end,
                               style: TextStyle(
                                 fontSize: 12,
                                 height: 16 / 12,
-                                color: pnl.value.startsWith('-')
+                                color: pnlText.isEmpty
+                                    ? colors.secondaryText
+                                    : pnlIsNegative
                                     ? semantic.loss
                                     : semantic.success,
                               ),

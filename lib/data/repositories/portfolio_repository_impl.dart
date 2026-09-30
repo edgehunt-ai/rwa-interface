@@ -195,7 +195,13 @@ Position mapPosition(api.Position value) => Position(
   valueUsd: DecimalValue(value.valueUsd ?? '0', asset: 'USD', unit: 'fiat'),
   entryPrice: _optional(value.entryPrice, 'price'),
   markPrice: _optional(value.markPrice, 'price'),
-  unrealizedPnl: _optional(value.unrealizedPnl, 'pnl'),
+  unrealizedPnl: _optional(
+    value.unrealizedPnl ??
+        (value.kind == api.ProductKind.bstock
+            ? value.unrealizedPnlReferenceUsd
+            : null),
+    'pnl',
+  ),
   unrealizedPnlPercent: _optional(value.unrealizedPnlPercent, 'percent'),
   realizedPnl: _optional(value.realizedPnl, 'pnl'),
   fundingPaid: _optional(value.fundingPaid, 'funding'),
