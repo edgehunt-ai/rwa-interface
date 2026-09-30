@@ -486,23 +486,27 @@ final class AppReviewActivityRepository implements ActivityRepository {
   Future<DomainPage<ActivityRecord>> list({
     ActivityCategory? category,
     ActivityState? status,
+    String? type,
+    String? productOrAsset,
     String? cursor,
   }) async {
     final records = <ActivityRecord>[
       ActivityRecord(
         id: 'review-activity-order',
         category: ActivityCategory.orders,
-        type: 'order_filled',
+        type: 'market',
         status: ActivityState.success,
         title: 'Bought NVDA',
         amount: _usd('2500.00'),
         context: 'App Review simulated order',
+        symbol: 'NVDA',
+        kind: MarketProductKind.bstock.name,
         createdAt: _now.subtract(const Duration(days: 1)),
       ),
       ActivityRecord(
         id: 'review-activity-deposit',
         category: ActivityCategory.cash,
-        type: 'deposit_credited',
+        type: 'deposit',
         status: ActivityState.success,
         title: 'USDC deposit',
         amount: _token('5000.00', 'USDC'),
@@ -513,12 +517,14 @@ final class AppReviewActivityRepository implements ActivityRepository {
         ActivityRecord(
           id: 'activity-${order.orderId}',
           category: ActivityCategory.orders,
-          type: 'order_filled',
+          type: order.conditional == null ? order.type.name : 'tpsl',
           status: ActivityState.success,
           title: '${order.side.name} ${order.symbol}',
           amount: order.orderValue,
           context: 'App Review simulated order',
           reference: ActivityReference(type: 'order', id: order.orderId),
+          symbol: order.symbol,
+          kind: order.kind.name,
           createdAt: order.createdAt,
         ),
     ];
@@ -526,6 +532,13 @@ final class AppReviewActivityRepository implements ActivityRepository {
       items: records
           .where((item) => category == null || item.category == category)
           .where((item) => status == null || item.status == status)
+          .where((item) => type == null || item.type == type)
+          .where(
+            (item) =>
+                productOrAsset == null ||
+                item.symbol == productOrAsset ||
+                item.asset == productOrAsset,
+          )
           .toList(growable: false),
     );
   }

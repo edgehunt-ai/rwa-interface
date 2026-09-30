@@ -15,12 +15,16 @@ final class GeneratedActivityService implements ActivityService {
   Future<api.ActivityPage> list({
     api.ActivityCategory? category,
     api.ActivityStatus? status,
+    api.ActivityType? type,
+    String? productOrAsset,
     String? cursor,
   }) async {
     try {
       final data = (await _api.listActivity(
         category: category,
         status: status,
+        type: type,
+        productOrAsset: productOrAsset,
         cursor: cursor,
       )).data;
       if (data == null) throw const FormatException('Missing response body');

@@ -10,6 +10,8 @@ import '../../../../domain/models/domain_page.dart';
 typedef ActivityFilter = ({
   ActivityCategory? category,
   ActivityState? status,
+  String? type,
+  String? productOrAsset,
   String? cursor,
 });
 
@@ -61,6 +63,8 @@ final activityProvider = FutureProvider.autoDispose
           .list(
             category: filter.category,
             status: filter.status,
+            type: filter.type,
+            productOrAsset: filter.productOrAsset,
             cursor: filter.cursor,
           );
     });

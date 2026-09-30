@@ -5,6 +5,8 @@ abstract interface class ActivityRepository {
   Future<DomainPage<ActivityRecord>> list({
     ActivityCategory? category,
     ActivityState? status,
+    String? type,
+    String? productOrAsset,
     String? cursor,
   });
 }

@@ -19,6 +19,8 @@ void main() {
       const filter = (
         category: ActivityCategory.orders,
         status: ActivityState.success,
+        type: null,
+        productOrAsset: null,
         cursor: null,
       );
       final page = await container.read(activityProvider(filter).future);
@@ -37,9 +39,17 @@ final class _ActivityRepository implements ActivityRepository {
   Future<DomainPage<ActivityRecord>> list({
     ActivityCategory? category,
     ActivityState? status,
+    String? type,
+    String? productOrAsset,
     String? cursor,
   }) async {
-    lastFilter = (category: category, status: status, cursor: cursor);
+    lastFilter = (
+      category: category,
+      status: status,
+      type: type,
+      productOrAsset: productOrAsset,
+      cursor: cursor,
+    );
     return DomainPage(
       items: [
         ActivityRecord(

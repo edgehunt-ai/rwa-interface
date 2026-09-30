@@ -8,6 +8,7 @@ import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/models/activity_record.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
@@ -17,6 +18,7 @@ import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/activity/providers/activity_provider.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
+import 'package:rwa_interface/app/providers/session_scope.dart';
 
 class ActivityScreen extends ConsumerStatefulWidget {
   const ActivityScreen({super.key, this.initialCategory});
@@ -32,6 +34,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   ActivityState? _status;
   String? _type;
   MarketProductKind? _productKind;
+  final List<String?> _cursors = [null];
 
   @override
   void initState() {
@@ -48,11 +51,44 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
       _status = null;
       _type = null;
       _productKind = null;
+      _resetPagination();
     }
+  }
+
+  void _resetPagination() {
+    _cursors
+      ..clear()
+      ..add(null);
+  }
+
+  ActivityFilter _filter(String? cursor) => (
+    category: _category,
+    status: _status,
+    type: _serverType(_type),
+    productOrAsset: null,
+    cursor: cursor,
+  );
+
+  String? _serverType(String? type) => type == 'transfer' ? 'bridge' : type;
+
+  Future<void> _refreshActivity() async {
+    setState(_resetPagination);
+    final provider = activityProvider(_filter(null));
+    ref.invalidate(provider);
+    await ref.read(provider.future);
+  }
+
+  void _loadMore(String cursor) {
+    if (_cursors.contains(cursor)) return;
+    setState(() => _cursors.add(cursor));
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(sessionGenerationProvider, (_, _) {
+      if (!mounted) return;
+      setState(_resetPagination);
+    });
     final authentication = ref.watch(authenticationProvider);
     if (authentication is AuthenticationInitializing) {
       return Scaffold(
@@ -82,8 +118,37 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
         ),
       );
     }
-    final filter = (category: _category, status: _status, cursor: null);
-    final activity = ref.watch(activityProvider(filter));
+    final pageStates = [
+      for (final cursor in _cursors)
+        ref.watch(activityProvider(_filter(cursor))),
+    ];
+    final pages = pageStates
+        .map((state) => state.value)
+        .whereType<DomainPage<ActivityRecord>>()
+        .toList(growable: false);
+    final recordsById = <String, ActivityRecord>{};
+    for (final page in pages) {
+      for (final record in page.items) {
+        recordsById[record.id] = record;
+      }
+    }
+    final records = recordsById.values
+        .where((record) {
+          // Product kind has no corresponding server query parameter. Keep
+          // this compatibility filter until the selector uses an exact
+          // product ID/symbol accepted by `product_or_asset`.
+          return _productKind == null || record.kind == _productKind!.name;
+        })
+        .toList(growable: false);
+    final lastPage = pages.isEmpty ? null : pages.last;
+    final nextCursor = lastPage?.nextCursor;
+    final hasMore =
+        lastPage?.hasMore == true &&
+        nextCursor != null &&
+        !_cursors.contains(nextCursor);
+    final loading = pageStates.any((state) => state.isLoading);
+    final loadingMore = _cursors.length > 1 && pageStates.last.isLoading;
+    final hasError = pageStates.any((state) => state.hasError);
     return Scaffold(
       bottomNavigationBar: const AppBottomNavigation(
         current: AppDestination.activity,
@@ -106,6 +171,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                   _status = null;
                   _type = null;
                   _productKind = null;
+                  _resetPagination();
                 }),
               ),
               if (_category != ActivityCategory.funding) ...[
@@ -113,55 +179,54 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                 _Filters(
                   category: _category,
                   productKind: _productKind,
-                  onProductChanged: (value) =>
-                      setState(() => _productKind = value),
+                  onProductChanged: (value) => setState(() {
+                    _productKind = value;
+                    _resetPagination();
+                  }),
                   status: _status,
-                  onStatusChanged: (value) => setState(() => _status = value),
+                  onStatusChanged: (value) => setState(() {
+                    _status = value;
+                    _resetPagination();
+                  }),
                   type: _type,
-                  onTypeChanged: (value) => setState(() => _type = value),
+                  onTypeChanged: (value) => setState(() {
+                    _type = value;
+                    _resetPagination();
+                  }),
                 ),
                 const SizedBox(height: 8),
               ],
               Expanded(
-                child: activity.when(
-                  loading: () => DesignStateFeedback(
-                    state: DesignState.loading,
-                    title: AppLocalizations.of(context).activityLoading,
-                  ),
-                  error: (_, _) => DesignStateFeedback(
-                    state: DesignState.failure,
-                    title: AppLocalizations.of(context).activityUnavailable,
-                    message: AppLocalizations.of(context).activityRetry,
-                    onRetry: () => ref.refresh(activityProvider(filter).future),
-                  ),
-                  data: (page) {
-                    final records = page.items
-                        .where((record) {
-                          final productMatches =
-                              _productKind == null ||
-                              record.kind == _productKind!.name;
-                          final typeMatches =
-                              _type == null ||
-                              _matchesActivityType(record, _type!);
-                          return productMatches && typeMatches;
-                        })
-                        .toList(growable: false);
-                    return records.isEmpty
-                        ? DesignStateFeedback(
-                            state: DesignState.empty,
-                            title: AppLocalizations.of(context)
-                                .activityEmptyTitle,
-                            message: AppLocalizations.of(context)
-                                .activityEmptyMessage,
-                          )
-                        : RefreshIndicator(
-                            onRefresh: () =>
-                                ref.refresh(activityProvider(filter).future),
-                            child: _ActivityList(records: records),
-                          );
-                  },
-                  skipLoadingOnRefresh: true,
-                ),
+                child: hasError
+                    ? DesignStateFeedback(
+                        state: DesignState.failure,
+                        title: AppLocalizations.of(context).activityUnavailable,
+                        message: AppLocalizations.of(context).activityRetry,
+                        onRetry: _refreshActivity,
+                      )
+                    : loading && pages.isEmpty
+                    ? DesignStateFeedback(
+                        state: DesignState.loading,
+                        title: AppLocalizations.of(context).activityLoading,
+                      )
+                    : records.isEmpty && !hasMore && !loadingMore
+                    ? DesignStateFeedback(
+                        state: DesignState.empty,
+                        title: AppLocalizations.of(context).activityEmptyTitle,
+                        message: AppLocalizations.of(context)
+                            .activityEmptyMessage,
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _refreshActivity,
+                        child: _ActivityList(
+                          records: records,
+                          hasMore: hasMore,
+                          loadingMore: loadingMore,
+                          onLoadMore: nextCursor == null
+                              ? null
+                              : () => _loadMore(nextCursor),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -361,27 +426,35 @@ class _ActivityFilterMenu<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return PopupMenuButton<T>(
+    // PopupMenuButton treats a null selected value as menu dismissal, so a
+    // nullable filter option ("All") can never be selected directly. Use a
+    // non-null option index for the menu value and forward the actual filter
+    // value, including null, through onChanged.
+    return PopupMenuButton<int>(
       tooltip: label,
       color: colors.surface,
       constraints: const BoxConstraints.tightFor(width: 168),
       menuPadding: const EdgeInsets.all(4),
       offset: const Offset(0, 40),
-      onSelected: onChanged,
+      onSelected: (index) => onChanged(options[index].value),
       itemBuilder: (context) => options
+          .asMap()
+          .entries
           .map(
-            (option) => PopupMenuItem<T>(
-              value: option.value,
+            (entry) => PopupMenuItem<int>(
+              value: entry.key,
               height: 40,
               padding: EdgeInsets.zero,
               child: Container(
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: option.value == value ? colors.selectedSoft : null,
+                  color: entry.value.value == value
+                      ? colors.selectedSoft
+                      : null,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(option.label),
+                child: Text(entry.value.label),
               ),
             ),
           )
@@ -565,8 +638,17 @@ class _Filters extends StatelessWidget {
 }
 
 class _ActivityList extends StatelessWidget {
-  const _ActivityList({required this.records});
+  const _ActivityList({
+    required this.records,
+    required this.hasMore,
+    required this.loadingMore,
+    required this.onLoadMore,
+  });
   final List<ActivityRecord> records;
+  final bool hasMore;
+  final bool loadingMore;
+  final VoidCallback? onLoadMore;
+
   @override
   Widget build(BuildContext context) {
     final groups = <String, List<ActivityRecord>>{};
@@ -574,12 +656,30 @@ class _ActivityList extends StatelessWidget {
       final key = DateFormat('yyyy/MM/dd').format(record.createdAt.toLocal());
       (groups[key] ??= []).add(record);
     }
+    final entries = groups.entries.toList(growable: false);
     return ListView.separated(
       physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: groups.length,
+      itemCount: entries.length + (hasMore ? 1 : 0),
       separatorBuilder: (_, _) => const SizedBox(height: 16),
       itemBuilder: (_, index) {
-        final entry = groups.entries.elementAt(index);
+        if (index == entries.length) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 12),
+              child: TextButton(
+                onPressed: loadingMore ? null : onLoadMore,
+                child: loadingMore
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(AppLocalizations.of(context).loadMore),
+              ),
+            ),
+          );
+        }
+        final entry = entries[index];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -626,12 +726,19 @@ class _ActivityRow extends StatelessWidget {
     return _ExpandableActivityRow(
       record: record,
       statusColor: statusColor,
-      amount: _amount(record.amount),
+      amount: _amount(record),
     );
   }
 
-  String _amount(DecimalValue? amount) =>
-      amount == null ? '-' : TokenAmountFormatter.formatUsd(amount);
+  String _amount(ActivityRecord record) {
+    final amount = record.amount;
+    if (amount == null) return '-';
+    final asset = record.asset ?? amount.asset;
+    if (asset == null || asset.trim().isEmpty) {
+      return TokenAmountFormatter.formatUsd(amount);
+    }
+    return TokenAmountFormatter.format(amount, symbol: asset);
+  }
 }
 
 class _ExpandableActivityRow extends StatefulWidget {
@@ -919,7 +1026,12 @@ class _ActivityDetails extends StatelessWidget {
       fields.insert(0, ActivityField(label: 'Tx Hash', value: record.txHash!));
     }
     if (record.amount != null && !_hasField(fields, 'amount')) {
-      fields.add(ActivityField(label: 'Amount', value: record.amount!.value));
+      fields.add(
+        ActivityField(
+          label: 'Amount',
+          value: _formatActivityAmount(record.amount!, record.asset),
+        ),
+      );
     }
     if (!_hasField(fields, 'status')) {
       fields.add(
@@ -942,6 +1054,14 @@ class _ActivityDetails extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatActivityAmount(DecimalValue amount, String? asset) {
+  final numeric = TokenAmountFormatter.formatValue(amount);
+  final symbol = asset ?? amount.asset;
+  return symbol == null || symbol.trim().isEmpty
+      ? numeric
+      : '$numeric ${symbol.trim()}';
 }
 
 class _DetailRow extends StatelessWidget {
@@ -1111,22 +1231,5 @@ String _statusLabel(BuildContext context, ActivityState status) {
     ActivityState.failed => l10n.activityFailed,
     ActivityState.cancelled => l10n.activityCancelled,
     ActivityState.unknown => l10n.activityUnknown,
-  };
-}
-
-bool _matchesActivityType(ActivityRecord record, String selectedType) {
-  final type = record.type.toLowerCase();
-  final title = record.title.toLowerCase();
-  final context = (record.context ?? '').toLowerCase();
-  final value = '$type $title $context';
-  return switch (selectedType) {
-    'tpsl' =>
-      value.contains('tpsl') ||
-          value.contains('take_profit') ||
-          value.contains('stop_loss') ||
-          value.contains('take profit') ||
-          value.contains('stop loss'),
-    'close' => value.contains('close') || value.contains('liquidat'),
-    _ => value.contains(selectedType),
   };
 }

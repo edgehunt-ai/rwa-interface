@@ -23,6 +23,8 @@ final class _Activity implements ActivityService {
   Future<api.ActivityPage> list({
     api.ActivityCategory? category,
     api.ActivityStatus? status,
+    api.ActivityType? type,
+    String? productOrAsset,
     String? cursor,
   }) async => api.ActivityPage(
     (page) => page

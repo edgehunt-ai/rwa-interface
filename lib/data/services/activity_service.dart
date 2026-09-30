@@ -4,6 +4,8 @@ abstract interface class ActivityService {
   Future<api.ActivityPage> list({
     api.ActivityCategory? category,
     api.ActivityStatus? status,
+    api.ActivityType? type,
+    String? productOrAsset,
     String? cursor,
   });
 }
