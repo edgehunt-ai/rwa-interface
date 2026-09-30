@@ -3830,6 +3830,12 @@ abstract class AppLocalizations {
   /// **'Transfer is currently blocked.'**
   String get transferBlocked;
 
+  /// No description provided for @transferInsufficientWithdrawableBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawable balance is insufficient. You can transfer up to {amount} USDC.'**
+  String transferInsufficientWithdrawableBalance(Object amount);
+
   /// No description provided for @transferOptionsLoadFailed.
   ///
   /// In en, this message translates to:

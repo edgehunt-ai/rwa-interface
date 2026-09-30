@@ -2092,6 +2092,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transferBlocked => 'Transfer is currently blocked.';
 
   @override
+  String transferInsufficientWithdrawableBalance(Object amount) {
+    return 'Withdrawable balance is insufficient. You can transfer up to $amount USDC.';
+  }
+
+  @override
   String get transferOptionsLoadFailed => 'Unable to load transfer options.';
 
   @override

@@ -674,6 +674,8 @@
   "transferQuoteExpired": "转账报价已过期，请重新询价。",
   "transferCancelled": "转账已取消。",
   "transferBlocked": "此次转账当前被阻止。",
+  "transferInsufficientWithdrawableBalance": "可提现余额不足，当前最多可转出 {amount} USDC。",
+  "@transferInsufficientWithdrawableBalance": {"placeholders": {"amount": {}}},
   "transferOptionsLoadFailed": "无法加载转账选项。",
   "loadingTransferDetails": "正在加载转账详情",
   "noEligibleFundingAssets": "没有可用的资金资产",

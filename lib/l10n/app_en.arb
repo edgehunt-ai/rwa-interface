@@ -712,6 +712,8 @@
   "transferQuoteExpired": "Transfer quote expired. Request a new quote.",
   "transferCancelled": "Transfer was cancelled.",
   "transferBlocked": "Transfer is currently blocked.",
+  "transferInsufficientWithdrawableBalance": "Withdrawable balance is insufficient. You can transfer up to {amount} USDC.",
+  "@transferInsufficientWithdrawableBalance": {"placeholders": {"amount": {}}},
   "transferOptionsLoadFailed": "Unable to load transfer options.",
   "loadingTransferDetails": "Loading transfer details",
   "noEligibleFundingAssets": "No eligible funding assets",

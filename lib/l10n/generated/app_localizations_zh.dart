@@ -1987,6 +1987,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get transferBlocked => '此次转账当前被阻止。';
 
   @override
+  String transferInsufficientWithdrawableBalance(Object amount) {
+    return '可提现余额不足，当前最多可转出 $amount USDC。';
+  }
+
+  @override
   String get transferOptionsLoadFailed => '无法加载转账选项。';
 
   @override

@@ -21,6 +21,7 @@ import 'package:rwa_interface/ui/core/navigation/app_page_header.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/hip3_withdrawal_providers.dart';
+import 'package:rwa_interface/ui/features/funding/hip3_withdrawal_blocker_message.dart';
 import 'package:rwa_interface/ui/features/funding/widgets/transfer_account_pair.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 
@@ -151,9 +152,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       setState(() {
         _withdrawalPreview = preview;
         _withdrawalPreviewing = false;
-        _error = preview.canProceed
-            ? null
-            : AppLocalizations.of(context).transferBlocked;
+        _error = hip3WithdrawalBlockerMessage(
+          preview,
+          AppLocalizations.of(context),
+        );
       });
     } catch (error) {
       if (!mounted || sequence != _withdrawalPreviewSequence) return;
