@@ -653,6 +653,39 @@ void main() {
     },
   );
 
+  testWidgets('manual bStocks quantities are limited to 18 decimals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+        ],
+        child: buildTestApp(
+          const BstocksOrderPanel(initialSide: TradingSide.sell),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    const entered = '0.1234567890123456789';
+    const expected = '0.123456789012345678';
+    final marketQuantity = find.byKey(const Key('bstocks-market-amount-input'));
+    await tester.enterText(marketQuantity, entered);
+    expect(tester.widget<TextField>(marketQuantity).controller?.text, expected);
+
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    final priceInput = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    await tester.enterText(priceInput, '100');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    final limitQuantity = find.byKey(const Key('bstocks-limit-quantity-input'));
+    await tester.enterText(limitQuantity, entered);
+    expect(tester.widget<TextField>(limitQuantity).controller?.text, expected);
+  });
+
   testWidgets('bStocks order form shows a skeleton while the balance loads', (
     tester,
   ) async {

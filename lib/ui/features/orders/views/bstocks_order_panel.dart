@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -809,7 +810,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
     final formHeight =
-        (type == TradingOrderType.limit ? 575.0 : 560.0) +
+        (type == TradingOrderType.limit ? 607.0 : 560.0) +
         // The failure notice is normally one compact row. Its text scrolls
         // internally when a server returns a longer message, so it must not
         // reserve the old fixed 190px block in the whole order sheet.
@@ -900,6 +901,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     controller: quantity,
                     label: l10n.quantity,
                     suffix: widget.symbol,
+                    inputFormatters: [_decimalTruncatingFormatter(18)],
                     inputKey: const Key('bstocks-limit-quantity-input'),
                   ),
                 ),
@@ -970,6 +972,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
+                          inputFormatters:
+                              type == TradingOrderType.market && !isBuy
+                              ? [_decimalTruncatingFormatter(18)]
+                              : null,
                           style: Theme.of(context).textTheme.titleLarge,
                           decoration: const InputDecoration(
                             hintText: '0.0',
@@ -1950,12 +1956,14 @@ class _LimitInput extends StatefulWidget {
     required this.suffix,
     this.onTap,
     this.inputKey,
+    this.inputFormatters,
   });
   final TextEditingController controller;
   final String label;
   final String suffix;
   final VoidCallback? onTap;
   final Key? inputKey;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<_LimitInput> createState() => _LimitInputState();
@@ -2012,6 +2020,7 @@ class _LimitInputState extends State<_LimitInput> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
+                          inputFormatters: widget.inputFormatters,
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w600),
                           decoration: const InputDecoration(
@@ -2350,6 +2359,22 @@ String _formatDecimal(double value) {
   final text = value.toStringAsFixed(8);
   return text.replaceFirst(RegExp(r'\.?0+$'), '');
 }
+
+TextInputFormatter _decimalTruncatingFormatter(int decimals) =>
+    TextInputFormatter.withFunction((oldValue, newValue) {
+      if (!RegExp(r'^\d*\.?\d*$').hasMatch(newValue.text)) return oldValue;
+      final separator = newValue.text.indexOf('.');
+      if (separator == -1 || newValue.text.length <= separator + 1 + decimals) {
+        return newValue;
+      }
+      final text = newValue.text.substring(0, separator + 1 + decimals);
+      return TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(
+          offset: newValue.selection.end.clamp(0, text.length),
+        ),
+      );
+    });
 
 String _formatDraggedLimitPrice(double value) {
   if (value.abs() >= 1) return value.round().toString();
