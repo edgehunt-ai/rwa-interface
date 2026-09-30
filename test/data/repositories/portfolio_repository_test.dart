@@ -101,7 +101,100 @@ void main() {
     expect(history.points.single.pnlPercent?.value, '1.234567');
     expect(history.points.single.timestamp, DateTime.utc(2026, 1, 1));
   });
+
+  test('maps account allocation and expands known spot breakdowns', () {
+    final allocation = mapRailPortfolioAllocation(
+      _allocation(
+        spot: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.spot,
+          valueUsd: '750',
+          percent: '75',
+          cash: _allocationValue('250'),
+          bstocks: _allocationValue('500'),
+        ),
+        perps: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.perps,
+          valueUsd: '250',
+          percent: '25',
+        ),
+      ),
+    );
+
+    expect(
+      allocation.items.map(
+        (item) => (item.rail, item.valueUsd.value, item.percent.value),
+      ),
+      const [
+        ('cash', '250', '25'),
+        ('bstock', '500', '50'),
+        ('perp', '250', '25'),
+      ],
+    );
+  });
+
+  test('does not convert unavailable allocation values to zero', () {
+    final allocation = mapRailPortfolioAllocation(
+      _allocation(
+        spot: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.spot,
+          cash: _allocationValue(null),
+        ),
+        perps: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.perps,
+          valueUsd: '250',
+          percent: '25',
+        ),
+      ),
+    );
+
+    expect(allocation.items, hasLength(1));
+    expect(allocation.items.single.rail, 'perp');
+    expect(allocation.items.single.valueUsd.value, '250');
+  });
 }
+
+api.RailPortfolioAllocation _allocation({
+  required api.PortfolioAccountAllocationItem spot,
+  required api.PortfolioAccountAllocationItem perps,
+}) => api.RailPortfolioAllocation(
+  (builder) => builder
+    ..dimension = api.RailPortfolioAllocationDimensionEnum.rail
+    ..items.addAll([spot, perps])
+    ..valuedTotalUsd = '1000'
+    ..unvaluedAssetCount = 0
+    ..dataStatus = api.PortfolioDataStatus.complete
+    ..freshness = api.PortfolioFreshness.live
+    ..calculatedAt = DateTime.utc(2026, 1, 1),
+);
+
+api.PortfolioAccountAllocationItem _accountAllocation({
+  required api.PortfolioAccountAllocationItemAccountEnum account,
+  String? valueUsd,
+  String? percent,
+  api.PortfolioAllocationValue? cash,
+  api.PortfolioAllocationValue? bstocks,
+}) => api.PortfolioAccountAllocationItem((builder) {
+  builder
+    ..account = account
+    ..status = api.PortfolioAvailabilityStatus.available
+    ..valueUsd = valueUsd
+    ..percent = percent
+    ..unvaluedAssetCount = 0;
+  if (cash != null || bstocks != null) {
+    builder.breakdown.update((breakdown) {
+      if (cash != null) breakdown.cash.replace(cash);
+      if (bstocks != null) breakdown.bstocks.replace(bstocks);
+    });
+  }
+});
+
+api.PortfolioAllocationValue _allocationValue(String? valueUsd) =>
+    api.PortfolioAllocationValue(
+      (builder) => builder
+        ..status = api.PortfolioAvailabilityStatus.available
+        ..valueUsd = valueUsd
+        ..unvaluedAssetCount = valueUsd == null ? 1 : 0,
+    );
 
 final class _Portfolio implements PortfolioService {
   @override

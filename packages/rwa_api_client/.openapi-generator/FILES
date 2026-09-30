@@ -272,6 +272,7 @@ lib/src/model/hip3_trading_rules.dart
 lib/src/model/hip3_trigger_spec.dart
 lib/src/model/hip3_withdrawal.dart
 lib/src/model/hip3_withdrawal_create_request.dart
+lib/src/model/hip3_withdrawal_fee_detail.dart
 lib/src/model/hip3_withdrawal_preview.dart
 lib/src/model/hip3_withdrawal_rail.dart
 lib/src/model/hip3_withdrawal_status.dart
@@ -339,15 +340,17 @@ lib/src/model/perp_funding_transfer_target.dart
 lib/src/model/perp_order_preview.dart
 lib/src/model/perp_order_preview_request.dart
 lib/src/model/perp_order_wallet_action_state.dart
-lib/src/model/portfolio_account_allocation.dart
+lib/src/model/portfolio_account_allocation_breakdown.dart
 lib/src/model/portfolio_account_allocation_item.dart
 lib/src/model/portfolio_account_page.dart
 lib/src/model/portfolio_allocation.dart
+lib/src/model/portfolio_allocation_value.dart
 lib/src/model/portfolio_asset.dart
 lib/src/model/portfolio_asset_network.dart
 lib/src/model/portfolio_asset_page.dart
 lib/src/model/portfolio_asset_source_kind.dart
 lib/src/model/portfolio_availability_status.dart
+lib/src/model/portfolio_cross_liquidation_risk.dart
 lib/src/model/portfolio_data_status.dart
 lib/src/model/portfolio_freshness.dart
 lib/src/model/portfolio_history.dart
@@ -357,8 +360,8 @@ lib/src/model/portfolio_holding_page_all_of_coverage.dart
 lib/src/model/portfolio_holding_return.dart
 lib/src/model/portfolio_notice.dart
 lib/src/model/portfolio_notice_severity.dart
+lib/src/model/portfolio_open_order_margin_estimate.dart
 lib/src/model/portfolio_price_source.dart
-lib/src/model/portfolio_rail.dart
 lib/src/model/portfolio_source_kind.dart
 lib/src/model/portfolio_source_state.dart
 lib/src/model/portfolio_source_summary.dart
@@ -383,7 +386,6 @@ lib/src/model/product_ref.dart
 lib/src/model/product_type.dart
 lib/src/model/quote.dart
 lib/src/model/rail_portfolio_allocation.dart
-lib/src/model/rail_portfolio_allocation_item.dart
 lib/src/model/ready_funding_wallet_action.dart
 lib/src/model/realtime_activity_event.dart
 lib/src/model/realtime_balance_event.dart

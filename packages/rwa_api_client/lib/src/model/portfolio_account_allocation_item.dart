@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/portfolio_account_allocation_breakdown.dart';
 import 'package:rwa_api_client/src/model/portfolio_availability_status.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -18,6 +19,7 @@ part 'portfolio_account_allocation_item.g.dart';
 /// * [valueUsd] - Spot 是 EVM 钱包已估值资产小计；Perps 是 HL 资产小计，与总资产使用同一快照。 不累加仓位名义价值或保证金。该组全部来源失败或所有资产未估值时为 null。 部分来源失败时允许返回已知小计，必须配合 status=partial 展示。 
 /// * [percent] - 0..100 的百分数；任一组不完整时两个百分比均为 null；完整且总额为零时为0。
 /// * [unvaluedAssetCount] 
+/// * [breakdown] 
 @BuiltValue()
 abstract class PortfolioAccountAllocationItem implements Built<PortfolioAccountAllocationItem, PortfolioAccountAllocationItemBuilder> {
   @BuiltValueField(wireName: r'account')
@@ -38,6 +40,9 @@ abstract class PortfolioAccountAllocationItem implements Built<PortfolioAccountA
 
   @BuiltValueField(wireName: r'unvalued_asset_count')
   int get unvaluedAssetCount;
+
+  @BuiltValueField(wireName: r'breakdown')
+  PortfolioAccountAllocationBreakdown? get breakdown;
 
   PortfolioAccountAllocationItem._();
 
@@ -87,6 +92,13 @@ class _$PortfolioAccountAllocationItemSerializer implements PrimitiveSerializer<
       object.unvaluedAssetCount,
       specifiedType: const FullType(int),
     );
+    if (object.breakdown != null) {
+      yield r'breakdown';
+      yield serializers.serialize(
+        object.breakdown,
+        specifiedType: const FullType(PortfolioAccountAllocationBreakdown),
+      );
+    }
   }
 
   @override
@@ -146,6 +158,14 @@ class _$PortfolioAccountAllocationItemSerializer implements PrimitiveSerializer<
             specifiedType: const FullType(int),
           ) as int;
           result.unvaluedAssetCount = valueDes;
+          break;
+        case r'breakdown':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioAccountAllocationBreakdown),
+          ) as PortfolioAccountAllocationBreakdown?;
+          if (valueDes == null) continue;
+          result.breakdown.replace(valueDes);
           break;
         default:
           unhandled.add(key);

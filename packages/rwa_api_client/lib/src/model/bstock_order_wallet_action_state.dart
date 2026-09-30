@@ -28,7 +28,7 @@ part 'bstock_order_wallet_action_state.g.dart';
 /// * [actionStatus] 
 /// * [submittedTransactionHash] 
 /// * [confirmedTransactionHash] 
-/// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
+/// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget. Cancellation actions omit this field; null is not a valid funding amount.
 /// * [previewId] - 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
 /// * [chainId] 
 /// * [router] 
@@ -83,7 +83,7 @@ abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletAc
   @BuiltValueField(wireName: r'confirmed_transaction_hash')
   String? get confirmedTransactionHash;
 
-  /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget.
+  /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget. Cancellation actions omit this field; null is not a valid funding amount.
   @BuiltValueField(wireName: r'required_funding_raw')
   String? get requiredFundingRaw;
 

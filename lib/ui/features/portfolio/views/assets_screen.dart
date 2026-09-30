@@ -289,6 +289,7 @@ class _AssetsScreenState extends ConsumerState<AssetsScreen>
 }
 
 String _railLabel(String rail, AppLocalizations l10n) => switch (rail) {
+  'spot' => l10n.spot,
   'cash' => l10n.cash,
   'bstock' => l10n.bstocks,
   'perp' => l10n.perps,
@@ -1697,7 +1698,7 @@ class _HoldingSection extends ConsumerWidget {
               positions.map(
                 (item) => item.kind == MarketProductKind.perp
                     ? item.markNotional
-                    : item.valueUsd,
+                    : item.markValue,
               ),
             ),
           ),
@@ -1800,7 +1801,9 @@ class _HoldingRow extends StatelessWidget {
                                 ? position.markNotional == null
                                       ? '—'
                                       : _formatUsdFixed2(position.markNotional!)
-                                : _formatUsdFixed2(position.valueUsd),
+                                : position.markValue == null
+                                ? '—'
+                                : _formatUsdFixed2(position.markValue!),
                             maxLines: 1,
                             style: const TextStyle(
                               fontSize: 15,
@@ -1895,7 +1898,7 @@ String _formatSignedUsd(DecimalValue? value) {
 }
 
 String _formatUsdFixed2(DecimalValue value) =>
-    _padFractionDigits(TokenAmountFormatter.formatUsd(value), 2);
+    TokenAmountFormatter.formatUsdFixed(value);
 
 String _formatPercentFixed2(DecimalValue value) =>
     TokenAmountFormatter.formatPercent(
@@ -1905,17 +1908,7 @@ String _formatPercentFixed2(DecimalValue value) =>
     );
 
 String _sumUsdFixed2(Iterable<DecimalValue?> values) =>
-    _padFractionDigits(TokenAmountFormatter.sumUsd(values), 2);
-
-String _padFractionDigits(String value, int digits) {
-  if (value == '—') return value;
-  final separator = value.lastIndexOf('.');
-  if (separator == -1) return '$value.${'0' * digits}';
-  final fractionLength = value.length - separator - 1;
-  return fractionLength >= digits
-      ? value
-      : '$value${'0' * (digits - fractionLength)}';
-}
+    TokenAmountFormatter.sumUsdFixed(values);
 
 String _formatBalanceQuantity(TokenBalance balance) {
   if (balance.symbol == 'USDC' || balance.symbol == 'USDT') {

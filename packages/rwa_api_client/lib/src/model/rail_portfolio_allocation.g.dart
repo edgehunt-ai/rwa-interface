@@ -64,7 +64,7 @@ class _$RailPortfolioAllocation extends RailPortfolioAllocation {
   @override
   final RailPortfolioAllocationDimensionEnum dimension;
   @override
-  final BuiltList<RailPortfolioAllocationItem> items;
+  final BuiltList<PortfolioAccountAllocationItem> items;
   @override
   final String valuedTotalUsd;
   @override
@@ -161,10 +161,10 @@ class RailPortfolioAllocationBuilder
   set dimension(RailPortfolioAllocationDimensionEnum? dimension) =>
       _$this._dimension = dimension;
 
-  ListBuilder<RailPortfolioAllocationItem>? _items;
-  ListBuilder<RailPortfolioAllocationItem> get items =>
-      _$this._items ??= ListBuilder<RailPortfolioAllocationItem>();
-  set items(ListBuilder<RailPortfolioAllocationItem>? items) =>
+  ListBuilder<PortfolioAccountAllocationItem>? _items;
+  ListBuilder<PortfolioAccountAllocationItem> get items =>
+      _$this._items ??= ListBuilder<PortfolioAccountAllocationItem>();
+  set items(ListBuilder<PortfolioAccountAllocationItem>? items) =>
       _$this._items = items;
 
   String? _valuedTotalUsd;

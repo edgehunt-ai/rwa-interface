@@ -727,12 +727,12 @@ void main() {
       'Unrealized PnL',
       r'+$16',
       '+3%',
-      r'$550',
-      r'$182.4',
+      r'$0.41',
+      r'$228.71',
       r'$177.09',
       'Close',
     ]) {
-      expect(find.text(text), text == r'$550' ? findsWidgets : findsOneWidget);
+      expect(find.text(text), findsOneWidget);
     }
     expect(
       tester.getSize(find.widgetWithText(OutlinedButton, 'Close')).height,
@@ -908,10 +908,10 @@ Position _position(MarketProductKind kind) => switch (kind) {
     symbol: 'NVDA',
     kind: kind,
     side: PositionSide.long,
-    quantity: DecimalValue('3.0154', unit: 'quantity'),
+    quantity: DecimalValue('0.0018', unit: 'quantity'),
     valueUsd: DecimalValue('550', asset: 'USDC', unit: 'token'),
     entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
-    markPrice: DecimalValue('182.4', asset: 'USDC', unit: 'price'),
+    markPrice: DecimalValue('228.71', asset: 'USDC', unit: 'price'),
     unrealizedPnl: DecimalValue('16', asset: 'USDC', unit: 'token'),
     unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
   ),

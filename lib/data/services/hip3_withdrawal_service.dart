@@ -4,6 +4,10 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import '../api/api_failure_mapper.dart';
 
 abstract interface class Hip3WithdrawalService {
+  Future<api.Hip3WithdrawalPreview> preview(
+    api.Hip3WithdrawalCreateRequest request,
+  );
+
   Future<api.Hip3Withdrawal> create(
     api.Hip3WithdrawalCreateRequest request, {
     required String idempotencyKey,
@@ -26,6 +30,13 @@ final class GeneratedHip3WithdrawalService implements Hip3WithdrawalService {
 
   final api.FundingApi _api;
   final ApiFailureMapper mapper;
+
+  @override
+  Future<api.Hip3WithdrawalPreview> preview(
+    api.Hip3WithdrawalCreateRequest request,
+  ) => _body(
+    () => _api.previewHip3Withdrawal(hip3WithdrawalCreateRequest: request),
+  );
 
   @override
   Future<api.Hip3Withdrawal> create(

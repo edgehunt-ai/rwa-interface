@@ -263,6 +263,7 @@ import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
 import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_create_request.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_fee_detail.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_rail.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_status.dart';
@@ -330,15 +331,17 @@ import 'package:rwa_api_client/src/model/perp_funding_transfer_target.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview.dart';
 import 'package:rwa_api_client/src/model/perp_order_preview_request.dart';
 import 'package:rwa_api_client/src/model/perp_order_wallet_action_state.dart';
-import 'package:rwa_api_client/src/model/portfolio_account_allocation.dart';
+import 'package:rwa_api_client/src/model/portfolio_account_allocation_breakdown.dart';
 import 'package:rwa_api_client/src/model/portfolio_account_allocation_item.dart';
 import 'package:rwa_api_client/src/model/portfolio_account_page.dart';
 import 'package:rwa_api_client/src/model/portfolio_allocation.dart';
+import 'package:rwa_api_client/src/model/portfolio_allocation_value.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_network.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_page.dart';
 import 'package:rwa_api_client/src/model/portfolio_asset_source_kind.dart';
 import 'package:rwa_api_client/src/model/portfolio_availability_status.dart';
+import 'package:rwa_api_client/src/model/portfolio_cross_liquidation_risk.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_history.dart';
@@ -348,8 +351,8 @@ import 'package:rwa_api_client/src/model/portfolio_holding_page_all_of_coverage.
 import 'package:rwa_api_client/src/model/portfolio_holding_return.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice_severity.dart';
+import 'package:rwa_api_client/src/model/portfolio_open_order_margin_estimate.dart';
 import 'package:rwa_api_client/src/model/portfolio_price_source.dart';
-import 'package:rwa_api_client/src/model/portfolio_rail.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_kind.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_state.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
@@ -374,7 +377,6 @@ import 'package:rwa_api_client/src/model/product_ref.dart';
 import 'package:rwa_api_client/src/model/product_type.dart';
 import 'package:rwa_api_client/src/model/quote.dart';
 import 'package:rwa_api_client/src/model/rail_portfolio_allocation.dart';
-import 'package:rwa_api_client/src/model/rail_portfolio_allocation_item.dart';
 import 'package:rwa_api_client/src/model/ready_funding_wallet_action.dart';
 import 'package:rwa_api_client/src/model/realtime_activity_event.dart';
 import 'package:rwa_api_client/src/model/realtime_balance_event.dart';
@@ -734,6 +736,7 @@ part 'serializers.g.dart';
   Hip3TriggerSpec,
   Hip3Withdrawal,
   Hip3WithdrawalCreateRequest,
+  Hip3WithdrawalFeeDetail,
   Hip3WithdrawalPreview,
   Hip3WithdrawalRail,
   Hip3WithdrawalStatus,
@@ -801,15 +804,17 @@ part 'serializers.g.dart';
   PerpOrderPreview,
   PerpOrderPreviewRequest,
   PerpOrderWalletActionState,
-  PortfolioAccountAllocation,
+  PortfolioAccountAllocationBreakdown,
   PortfolioAccountAllocationItem,
   PortfolioAccountPage,
   PortfolioAllocation,
+  PortfolioAllocationValue,
   PortfolioAsset,
   PortfolioAssetNetwork,
   PortfolioAssetPage,
   PortfolioAssetSourceKind,
   PortfolioAvailabilityStatus,
+  PortfolioCrossLiquidationRisk,
   PortfolioDataStatus,
   PortfolioFreshness,
   PortfolioHistory,
@@ -819,8 +824,8 @@ part 'serializers.g.dart';
   PortfolioHoldingReturn,
   PortfolioNotice,
   PortfolioNoticeSeverity,
+  PortfolioOpenOrderMarginEstimate,
   PortfolioPriceSource,
-  PortfolioRail,
   PortfolioSourceKind,
   PortfolioSourceState,
   PortfolioSourceSummary,
@@ -845,7 +850,6 @@ part 'serializers.g.dart';
   ProductType,
   Quote,
   RailPortfolioAllocation,
-  RailPortfolioAllocationItem,
   ReadyFundingWalletAction,
   RealtimeActivityEvent,
   RealtimeBalanceEvent,
@@ -993,10 +997,6 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(NetworkPortfolioAllocationItem)]),
         () => ListBuilder<NetworkPortfolioAllocationItem>(),
-      )
-      ..addBuilderFactory(
-        const FullType(BuiltList, [FullType(RailPortfolioAllocationItem)]),
-        () => ListBuilder<RailPortfolioAllocationItem>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(UnifiedFundingTransfer)]),
@@ -1157,6 +1157,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(MarginMode)]),
         () => ListBuilder<MarginMode>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),
+        () => ListBuilder<Hip3WithdrawalFeeDetail>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Chain)]),

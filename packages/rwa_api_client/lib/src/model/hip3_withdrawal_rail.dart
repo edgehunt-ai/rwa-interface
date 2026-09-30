@@ -11,10 +11,10 @@ part 'hip3_withdrawal_rail.g.dart';
 
 class Hip3WithdrawalRail extends EnumClass {
 
-  /// 出金通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC，Bridge2 到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）。 
+  /// 出金通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）。 
   @BuiltValueEnumConst(wireName: r'bridge2')
   static const Hip3WithdrawalRail bridge2 = _$bridge2;
-  /// 出金通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC，Bridge2 到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）。 
+  /// 出金通道：`bridge2` 走官方 `withdraw3`（venue 收 1 USDC；Arbitrum 主网到账 USDC，测试网到账 USDC2）； `float` 由用户 `sendAsset` 到平台池、平台在 Arbitrum 垫付原生 USDC（0 venue 费）。 
   @BuiltValueEnumConst(wireName: r'float')
   static const Hip3WithdrawalRail float = _$float;
 

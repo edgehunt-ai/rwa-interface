@@ -175,8 +175,19 @@ final class OrderCommandNotifier
   Future<ResourceResult<TradingOrder>?> submit(
     OrderIntent intent, {
     String? previewId,
+  }) => _runOrderCommand(intent, previewId: previewId, approvalOnly: false);
+
+  Future<ResourceResult<TradingOrder>?> approve(
+    OrderIntent intent, {
+    required String previewId,
+  }) => _runOrderCommand(intent, previewId: previewId, approvalOnly: true);
+
+  Future<ResourceResult<TradingOrder>?> _runOrderCommand(
+    OrderIntent intent, {
+    required String? previewId,
+    required bool approvalOnly,
   }) async {
-    const operation = 'create_order';
+    final operation = approvalOnly ? 'approve_bstocks' : 'create_order';
     final generation = ref.read(sessionGenerationProvider);
     if (_inFlight case final active?) {
       try {
@@ -197,9 +208,12 @@ final class OrderCommandNotifier
         ref.mounted &&
         ref.read(sessionGenerationProvider) == generation &&
         _submissionGeneration == submissionGeneration;
-    if (_fingerprint != intent.fingerprint) {
-      _fingerprint = intent.fingerprint;
-      _idempotencyKey = 'order-${DateTime.now().microsecondsSinceEpoch}';
+    final commandFingerprint =
+        '${approvalOnly ? 'approval' : 'order'}|${intent.fingerprint}';
+    if (_fingerprint != commandFingerprint) {
+      _fingerprint = commandFingerprint;
+      _idempotencyKey =
+          '${approvalOnly ? 'approval' : 'order'}-${DateTime.now().microsecondsSinceEpoch}';
     }
     final key = _idempotencyKey!;
     debugPrint(
@@ -215,6 +229,7 @@ final class OrderCommandNotifier
       idempotencyKey: key,
       previewId: previewId,
       submissionGeneration: submissionGeneration,
+      stopAfterApproval: approvalOnly,
     );
     _inFlight = request;
     ref
@@ -279,7 +294,11 @@ final class OrderCommandNotifier
       final message = error.toString().trim();
       final failure = UnknownFailure(
         retryable: true,
-        userAction: message.isEmpty ? '订单提交失败' : '订单提交失败: $message',
+        userAction: message.isEmpty
+            ? approvalOnly
+                  ? '授权失败'
+                  : '订单提交失败'
+            : '${approvalOnly ? '授权失败' : '订单提交失败'}: $message',
       );
       ref
           .read(observabilityReporterProvider)
@@ -308,6 +327,7 @@ final class OrderCommandNotifier
     required String idempotencyKey,
     String? previewId,
     required int submissionGeneration,
+    required bool stopAfterApproval,
   }) async {
     final created = await ref
         .read(ordersRepositoryProvider)
@@ -341,6 +361,7 @@ final class OrderCommandNotifier
           created: created,
           previewId: previewId!,
           isCancelled: () => _submissionGeneration != submissionGeneration,
+          stopAfterApproval: stopAfterApproval,
         );
   }
 

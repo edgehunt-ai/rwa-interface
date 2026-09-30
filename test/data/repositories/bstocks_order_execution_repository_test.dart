@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/data/repositories/bstocks_order_execution_repository_impl.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -99,6 +100,71 @@ void main() {
       expect(sender.steps, ['swap-1']);
     },
   );
+
+  test('approval-only execution stops before recreating the swap', () async {
+    final approval = _action(
+      orderId: 'order-1',
+      stepId: 'approval-1',
+      kind: BstocksOrderActionKind.erc20Approval,
+    );
+    final orders = _ScriptedOrders(
+      initial: _order('order-1', action: approval),
+      refreshes: [
+        _order(
+          'order-1',
+          action: approval,
+          actionStatus: BstocksOrderActionStatus.submitted,
+        ),
+        _order('order-1', actionStatus: BstocksOrderActionStatus.confirmed),
+      ],
+    );
+    final actions = _Actions();
+    final sender = _Sender();
+
+    final result =
+        await BstocksOrderExecutionRepositoryImpl(
+          orders,
+          actions,
+          sender,
+        ).execute(
+          intent: _intent(),
+          created: ResourceResult(resource: orders.initial),
+          previewId: 'preview-1',
+          stopAfterApproval: true,
+        );
+
+    expect(result.resource.actionStatus, BstocksOrderActionStatus.confirmed);
+    expect(sender.steps, ['approval-1']);
+    expect(actions.steps, ['approval-1']);
+    expect(orders.createCalls, 0);
+  });
+
+  test('approval-only execution refuses a swap action', () async {
+    final swap = _action(
+      orderId: 'order-1',
+      stepId: 'swap-1',
+      kind: BstocksOrderActionKind.spotSwap,
+    );
+    final sender = _Sender();
+
+    await expectLater(
+      BstocksOrderExecutionRepositoryImpl(
+        _ScriptedOrders(
+          initial: _order('order-1', action: swap),
+          refreshes: const [],
+        ),
+        _Actions(),
+        sender,
+      ).execute(
+        intent: _intent(),
+        created: ResourceResult(resource: _order('order-1', action: swap)),
+        previewId: 'preview-1',
+        stopAfterApproval: true,
+      ),
+      throwsA(isA<CompatibilityFailure>()),
+    );
+    expect(sender.steps, isEmpty);
+  });
 
   test(
     'polls when the order is created before its first action is released',

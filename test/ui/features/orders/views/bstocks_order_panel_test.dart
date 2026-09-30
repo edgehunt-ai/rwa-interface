@@ -22,6 +22,7 @@ import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
+import 'package:rwa_interface/domain/repositories/bstocks_order_execution_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
@@ -337,7 +338,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Spot balance: '), findsOneWidget);
-    expect(find.text('456.78 TUSDT'), findsOneWidget);
+    expect(find.text('456.78 USDT'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.pump(const Duration(milliseconds: 301));
@@ -482,13 +483,58 @@ void main() {
     expect(tester.widget<Slider>(slider).value, 0);
   });
 
-  testWidgets('small balances keep slider decimals', (tester) async {
+  testWidgets('zero amount disables review and skips order preview', (
+    tester,
+  ) async {
+    final orders = _CountingOrdersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(orders),
+          bstocksOrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('10', asset: 'USD', unit: 'fiat'),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final input = find.byType(TextField).first;
+    final slider = find.byKey(const Key('bstocks-percentage-slider'));
+    final action = find.byKey(const Key('bstocks-primary-order-action'));
+
+    await tester.enterText(input, '0');
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(orders.previewCalls, 0);
+    expect(tester.widget<FilledButton>(action).onPressed, isNull);
+
+    await tester.enterText(input, '1');
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(orders.previewCalls, 1);
+    expect(tester.widget<FilledButton>(action).onPressed, isNotNull);
+
+    tester.widget<Slider>(slider).onChanged!(0);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tester.widget<TextField>(input).controller!.text, '0');
+    expect(orders.previewCalls, 1);
+    expect(tester.widget<FilledButton>(action).onPressed, isNull);
+  });
+
+  testWidgets('tiny settlement balance does not reset slider to zero', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           bstocksOrderAvailableBalanceProvider.overrideWith(
-            (ref) async => DecimalValue('1.5', asset: 'USD', unit: 'fiat'),
+            (ref) async => DecimalValue('0', asset: 'USD', unit: 'fiat'),
+          ),
+          bstocksSettlementBalanceProvider('USDT').overrideWith(
+            (ref) async =>
+                DecimalValue('0.000000001', asset: 'USDT', unit: 'token'),
           ),
         ],
         child: buildTestApp(const BstocksOrderPanel()),
@@ -501,7 +547,55 @@ void main() {
     tester.widget<Slider>(slider).onChanged!(50);
     await tester.pump();
 
-    expect(tester.widget<TextField>(input).controller!.text, '0.75');
+    expect(tester.widget<TextField>(input).controller!.text, '0.0000000005');
+    expect(tester.widget<Slider>(slider).value, 50);
+  });
+
+  testWidgets('approval-required preview approves before order confirmation', (
+    tester,
+  ) async {
+    final orders = _ApprovalOrdersRepository();
+    final execution = _ApprovalExecutionRepository(orders);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(orders),
+          bstocksOrderExecutionRepositoryProvider.overrideWithValue(execution),
+          bstocksOrderAvailableBalanceProvider.overrideWith(
+            (ref) async => DecimalValue('100', asset: 'USD', unit: 'fiat'),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final action = find.byKey(const Key('bstocks-primary-order-action'));
+    await tester.enterText(find.byType(TextField).first, '10');
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.widgetWithText(FilledButton, 'Approve'), findsOneWidget);
+    await tester.tap(action);
+    await tester.pump();
+
+    expect(find.byKey(const Key('bstocks-approval-loading')), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsNothing);
+    expect(execution.stopAfterApproval, isTrue);
+
+    execution.completeApproval();
+    await _pumpUntilFound(tester, find.text(r'Buy NVDAB · $10'));
+
+    expect(orders.createCalls, 1);
+    expect(find.byKey(const Key('bstocks-approval-loading')), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Approve'), findsNothing);
+
+    await tester.tap(action);
+    await _pumpUntilFound(
+      tester,
+      find.widgetWithText(FilledButton, 'Confirm Buy'),
+    );
+    expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsOneWidget);
   });
 
   testWidgets(
@@ -581,7 +675,7 @@ void main() {
     balance.complete(DecimalValue('0', asset: 'USD', unit: 'fiat'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('bstocks-balance-loading')), findsNothing);
-    expect(find.text('0 TUSDT'), findsOneWidget);
+    expect(find.text('0 USDT'), findsOneWidget);
   });
 
   testWidgets(
@@ -1105,6 +1199,106 @@ final class _QuotedOrdersRepository extends _DelayedOrdersRepository {
     fee: DecimalValue('0.02', asset: 'NVDAB', unit: 'token'),
     settlementAsset: 'USDC',
   );
+}
+
+final class _CountingOrdersRepository extends _DelayedOrdersRepository {
+  var previewCalls = 0;
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) {
+    previewCalls++;
+    return super.preview(intent, idempotencyKey: idempotencyKey);
+  }
+}
+
+final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
+  var approved = false;
+  var createCalls = 0;
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async => OrderPreview(
+    previewId: approved ? 'post-approval-preview' : 'approval-preview',
+    intent: intent,
+    orderValue: DecimalValue('10', asset: 'TUSDT', unit: 'token'),
+    estimatedQuantity: DecimalValue('0.1', asset: 'NVDAB', unit: 'token'),
+    settlementAsset: 'TUSDT',
+    approvalRequired: !approved,
+  );
+
+  @override
+  Future<ResourceResult<TradingOrder>> create(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) async {
+    createCalls++;
+    return ResourceResult(
+      resource: TradingOrder(
+        orderId: 'approval-order',
+        symbol: intent.symbol,
+        kind: intent.kind,
+        side: intent.side,
+        type: intent.type,
+        status: TradingOrderStatus.pendingSignature,
+        createdAt: DateTime.utc(2026, 9, 30),
+        nextAction: BstocksOrderAction(
+          orderId: 'approval-order',
+          stepId: 'approval-step',
+          ordinal: 1,
+          kind: BstocksOrderActionKind.erc20Approval,
+          chainId: 56,
+          from: '0x1111111111111111111111111111111111111111',
+          to: '0x2222222222222222222222222222222222222222',
+          data: '0xaa',
+          value: '0x0',
+          payloadHash: 'approval-hash',
+          validUntil: DateTime.utc(2030),
+        ),
+      ),
+    );
+  }
+}
+
+final class _ApprovalExecutionRepository
+    implements BstocksOrderExecutionRepository {
+  _ApprovalExecutionRepository(this.orders);
+
+  final _ApprovalOrdersRepository orders;
+  final _completion = Completer<void>();
+  bool? stopAfterApproval;
+
+  void completeApproval() => _completion.complete();
+
+  @override
+  Future<ResourceResult<TradingOrder>> execute({
+    required OrderIntent intent,
+    required ResourceResult<TradingOrder> created,
+    required String previewId,
+    bool Function()? isCancelled,
+    bool stopAfterApproval = false,
+  }) async {
+    this.stopAfterApproval = stopAfterApproval;
+    await _completion.future;
+    orders.approved = true;
+    return ResourceResult(
+      resource: TradingOrder(
+        orderId: created.resource.orderId,
+        symbol: intent.symbol,
+        kind: intent.kind,
+        side: intent.side,
+        type: intent.type,
+        status: TradingOrderStatus.open,
+        actionStatus: BstocksOrderActionStatus.confirmed,
+        createdAt: created.resource.createdAt,
+      ),
+    );
+  }
 }
 
 final class _SettlementFeeOrdersRepository extends _DelayedOrdersRepository {

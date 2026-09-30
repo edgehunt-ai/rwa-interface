@@ -22,7 +22,7 @@ part 'portfolio_asset.g.dart';
 /// * [kind] - account=spot 首页展示模式返回。
 /// * [assetType] - account=spot 时区分普通钱包资产和 admission 内的 bStocks。
 /// * [productId] - account=spot 时 bStocks 返回产品标识，Cash 为 null。
-/// * [holdingReturn] - account=spot 时返回；Cash 为 null，bStocks 暂保留空收益字段。
+/// * [holdingReturn] - account=spot 时返回；Cash 为 null，bStocks 为基于 FIFO 剩余成本的未实现参考收益。 成本/估值证据不足或收益查询失败时，对应 amount_usd/percent 为 null，不影响余额和列表。 不是已实现收益或实际美元结算承诺；前端不得用0替代未知。 
 /// * [bstocks] 
 /// * [assetId] 
 /// * [source_] 
@@ -60,7 +60,7 @@ abstract class PortfolioAsset implements Built<PortfolioAsset, PortfolioAssetBui
   @BuiltValueField(wireName: r'product_id')
   String? get productId;
 
-  /// account=spot 时返回；Cash 为 null，bStocks 暂保留空收益字段。
+  /// account=spot 时返回；Cash 为 null，bStocks 为基于 FIFO 剩余成本的未实现参考收益。 成本/估值证据不足或收益查询失败时，对应 amount_usd/percent 为 null，不影响余额和列表。 不是已实现收益或实际美元结算承诺；前端不得用0替代未知。 
   @BuiltValueField(wireName: r'holding_return')
   PortfolioHoldingReturn? get holdingReturn;
 

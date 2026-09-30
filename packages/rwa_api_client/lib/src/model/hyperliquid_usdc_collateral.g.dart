@@ -74,6 +74,10 @@ class _$HyperliquidUsdcCollateral extends HyperliquidUsdcCollateral {
   @override
   final String availableCollateralLimit;
   @override
+  final PortfolioOpenOrderMarginEstimate? perpsOpenOrderMarginEstimate;
+  @override
+  final String? estimatedWithdrawableUsd;
+  @override
   final DateTime observedAt;
   @override
   final PortfolioFreshness freshness;
@@ -92,6 +96,8 @@ class _$HyperliquidUsdcCollateral extends HyperliquidUsdcCollateral {
       required this.crossMaintenanceMarginRequired,
       required this.hold,
       required this.availableCollateralLimit,
+      this.perpsOpenOrderMarginEstimate,
+      this.estimatedWithdrawableUsd,
       required this.observedAt,
       required this.freshness,
       this.warningCode})
@@ -117,6 +123,8 @@ class _$HyperliquidUsdcCollateral extends HyperliquidUsdcCollateral {
             other.crossMaintenanceMarginRequired &&
         hold == other.hold &&
         availableCollateralLimit == other.availableCollateralLimit &&
+        perpsOpenOrderMarginEstimate == other.perpsOpenOrderMarginEstimate &&
+        estimatedWithdrawableUsd == other.estimatedWithdrawableUsd &&
         observedAt == other.observedAt &&
         freshness == other.freshness &&
         warningCode == other.warningCode;
@@ -132,6 +140,8 @@ class _$HyperliquidUsdcCollateral extends HyperliquidUsdcCollateral {
     _$hash = $jc(_$hash, crossMaintenanceMarginRequired.hashCode);
     _$hash = $jc(_$hash, hold.hashCode);
     _$hash = $jc(_$hash, availableCollateralLimit.hashCode);
+    _$hash = $jc(_$hash, perpsOpenOrderMarginEstimate.hashCode);
+    _$hash = $jc(_$hash, estimatedWithdrawableUsd.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
     _$hash = $jc(_$hash, freshness.hashCode);
     _$hash = $jc(_$hash, warningCode.hashCode);
@@ -150,6 +160,8 @@ class _$HyperliquidUsdcCollateral extends HyperliquidUsdcCollateral {
               'crossMaintenanceMarginRequired', crossMaintenanceMarginRequired)
           ..add('hold', hold)
           ..add('availableCollateralLimit', availableCollateralLimit)
+          ..add('perpsOpenOrderMarginEstimate', perpsOpenOrderMarginEstimate)
+          ..add('estimatedWithdrawableUsd', estimatedWithdrawableUsd)
           ..add('observedAt', observedAt)
           ..add('freshness', freshness)
           ..add('warningCode', warningCode))
@@ -195,6 +207,20 @@ class HyperliquidUsdcCollateralBuilder
   set availableCollateralLimit(String? availableCollateralLimit) =>
       _$this._availableCollateralLimit = availableCollateralLimit;
 
+  PortfolioOpenOrderMarginEstimateBuilder? _perpsOpenOrderMarginEstimate;
+  PortfolioOpenOrderMarginEstimateBuilder get perpsOpenOrderMarginEstimate =>
+      _$this._perpsOpenOrderMarginEstimate ??=
+          PortfolioOpenOrderMarginEstimateBuilder();
+  set perpsOpenOrderMarginEstimate(
+          PortfolioOpenOrderMarginEstimateBuilder?
+              perpsOpenOrderMarginEstimate) =>
+      _$this._perpsOpenOrderMarginEstimate = perpsOpenOrderMarginEstimate;
+
+  String? _estimatedWithdrawableUsd;
+  String? get estimatedWithdrawableUsd => _$this._estimatedWithdrawableUsd;
+  set estimatedWithdrawableUsd(String? estimatedWithdrawableUsd) =>
+      _$this._estimatedWithdrawableUsd = estimatedWithdrawableUsd;
+
   DateTime? _observedAt;
   DateTime? get observedAt => _$this._observedAt;
   set observedAt(DateTime? observedAt) => _$this._observedAt = observedAt;
@@ -221,6 +247,9 @@ class HyperliquidUsdcCollateralBuilder
       _crossMaintenanceMarginRequired = $v.crossMaintenanceMarginRequired;
       _hold = $v.hold;
       _availableCollateralLimit = $v.availableCollateralLimit;
+      _perpsOpenOrderMarginEstimate =
+          $v.perpsOpenOrderMarginEstimate?.toBuilder();
+      _estimatedWithdrawableUsd = $v.estimatedWithdrawableUsd;
       _observedAt = $v.observedAt;
       _freshness = $v.freshness;
       _warningCode = $v.warningCode;
@@ -243,34 +272,51 @@ class HyperliquidUsdcCollateralBuilder
   HyperliquidUsdcCollateral build() => _build();
 
   _$HyperliquidUsdcCollateral _build() {
-    final _$result = _$v ??
-        _$HyperliquidUsdcCollateral._(
-          accountRefHash: BuiltValueNullFieldError.checkNotNull(
-              accountRefHash, r'HyperliquidUsdcCollateral', 'accountRefHash'),
-          asset: BuiltValueNullFieldError.checkNotNull(
-              asset, r'HyperliquidUsdcCollateral', 'asset'),
-          total: BuiltValueNullFieldError.checkNotNull(
-              total, r'HyperliquidUsdcCollateral', 'total'),
-          isolatedMarginUsed: BuiltValueNullFieldError.checkNotNull(
-              isolatedMarginUsed,
-              r'HyperliquidUsdcCollateral',
-              'isolatedMarginUsed'),
-          crossMaintenanceMarginRequired: BuiltValueNullFieldError.checkNotNull(
-              crossMaintenanceMarginRequired,
-              r'HyperliquidUsdcCollateral',
-              'crossMaintenanceMarginRequired'),
-          hold: BuiltValueNullFieldError.checkNotNull(
-              hold, r'HyperliquidUsdcCollateral', 'hold'),
-          availableCollateralLimit: BuiltValueNullFieldError.checkNotNull(
-              availableCollateralLimit,
-              r'HyperliquidUsdcCollateral',
-              'availableCollateralLimit'),
-          observedAt: BuiltValueNullFieldError.checkNotNull(
-              observedAt, r'HyperliquidUsdcCollateral', 'observedAt'),
-          freshness: BuiltValueNullFieldError.checkNotNull(
-              freshness, r'HyperliquidUsdcCollateral', 'freshness'),
-          warningCode: warningCode,
-        );
+    _$HyperliquidUsdcCollateral _$result;
+    try {
+      _$result = _$v ??
+          _$HyperliquidUsdcCollateral._(
+            accountRefHash: BuiltValueNullFieldError.checkNotNull(
+                accountRefHash, r'HyperliquidUsdcCollateral', 'accountRefHash'),
+            asset: BuiltValueNullFieldError.checkNotNull(
+                asset, r'HyperliquidUsdcCollateral', 'asset'),
+            total: BuiltValueNullFieldError.checkNotNull(
+                total, r'HyperliquidUsdcCollateral', 'total'),
+            isolatedMarginUsed: BuiltValueNullFieldError.checkNotNull(
+                isolatedMarginUsed,
+                r'HyperliquidUsdcCollateral',
+                'isolatedMarginUsed'),
+            crossMaintenanceMarginRequired:
+                BuiltValueNullFieldError.checkNotNull(
+                    crossMaintenanceMarginRequired,
+                    r'HyperliquidUsdcCollateral',
+                    'crossMaintenanceMarginRequired'),
+            hold: BuiltValueNullFieldError.checkNotNull(
+                hold, r'HyperliquidUsdcCollateral', 'hold'),
+            availableCollateralLimit: BuiltValueNullFieldError.checkNotNull(
+                availableCollateralLimit,
+                r'HyperliquidUsdcCollateral',
+                'availableCollateralLimit'),
+            perpsOpenOrderMarginEstimate:
+                _perpsOpenOrderMarginEstimate?.build(),
+            estimatedWithdrawableUsd: estimatedWithdrawableUsd,
+            observedAt: BuiltValueNullFieldError.checkNotNull(
+                observedAt, r'HyperliquidUsdcCollateral', 'observedAt'),
+            freshness: BuiltValueNullFieldError.checkNotNull(
+                freshness, r'HyperliquidUsdcCollateral', 'freshness'),
+            warningCode: warningCode,
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'perpsOpenOrderMarginEstimate';
+        _perpsOpenOrderMarginEstimate?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'HyperliquidUsdcCollateral', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

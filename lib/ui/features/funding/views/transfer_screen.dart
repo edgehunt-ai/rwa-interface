@@ -12,6 +12,7 @@ import 'package:rwa_interface/domain/models/funding_catalog.dart';
 import 'package:rwa_interface/domain/models/funding_session.dart';
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
 import 'package:rwa_interface/domain/models/hip3_withdrawal.dart';
+import 'package:rwa_interface/domain/models/hip3_withdrawal_preview.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
@@ -21,6 +22,7 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:rwa_interface/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 import 'package:rwa_interface/ui/features/funding/widgets/transfer_account_pair.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 
 /// Presents the internal Spot/Perps transfer flow.
 ///
@@ -42,6 +44,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   Timer? _quoteRefresh;
   Timer? _planRefresh;
   Timer? _withdrawalRefresh;
+  Timer? _withdrawalPreviewDebounce;
+  bool _withdrawalPreviewing = false;
+  Hip3WithdrawalPreview? _withdrawalPreview;
+  int _withdrawalPreviewSequence = 0;
   bool _withdrawalPolling = false;
   Hip3Withdrawal? _withdrawal;
   FundingPlan? _activePlan;
@@ -91,6 +97,8 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteDebounce?.cancel();
     _quoteRefresh?.cancel();
     _quoteSequence++;
+    _withdrawalPreviewDebounce?.cancel();
+    _withdrawalPreviewSequence++;
     setState(() {
       _sendFromSpot = !_sendFromSpot;
       _quote = null;
@@ -98,8 +106,67 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       _error = null;
       _statusMessage = null;
       _withdrawal = null;
+      _withdrawalPreview = null;
+      _withdrawalPreviewing = false;
     });
-    if (_sendFromSpot) _scheduleQuote();
+    if (_sendFromSpot) {
+      _scheduleQuote();
+    } else {
+      _scheduleHip3Preview();
+    }
+  }
+
+  void _scheduleHip3Preview() {
+    _withdrawalPreviewDebounce?.cancel();
+    final sequence = ++_withdrawalPreviewSequence;
+    final amount = _withdrawalAmount.text.trim();
+    setState(() {
+      _error = null;
+      _withdrawal = null;
+      _withdrawalPreview = null;
+      _withdrawalPreviewing = false;
+    });
+    if (amount.isEmpty) return;
+    try {
+      final parsed = DecimalValue(amount);
+      if (parsed.scale > 6 || parsed.compareTo(DecimalValue('0')) <= 0) {
+        return;
+      }
+    } on FormatException {
+      return;
+    }
+    setState(() => _withdrawalPreviewing = true);
+    _withdrawalPreviewDebounce = Timer(
+      const Duration(milliseconds: 500),
+      () => _requestHip3Preview(sequence, amount),
+    );
+  }
+
+  Future<void> _requestHip3Preview(int sequence, String amount) async {
+    try {
+      final preview = await ref
+          .read(hip3WithdrawalCommandsProvider)
+          .preview(amount);
+      if (!mounted || sequence != _withdrawalPreviewSequence) return;
+      setState(() {
+        _withdrawalPreview = preview;
+        _withdrawalPreviewing = false;
+        _error = preview.canProceed
+            ? null
+            : AppLocalizations.of(context).transferBlocked;
+      });
+    } catch (error) {
+      if (!mounted || sequence != _withdrawalPreviewSequence) return;
+      setState(() {
+        _withdrawalPreviewing = false;
+        _error = error is ApiFailure
+            ? apiFailureMessage(
+                error,
+                fallback: AppLocalizations.of(context).transferFailed,
+              )
+            : AppLocalizations.of(context).transferFailed;
+      });
+    }
   }
 
   Future<void> _requestQuote() async {
@@ -277,7 +344,11 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     });
     try {
       final commands = ref.read(hip3WithdrawalCommandsProvider);
-      final prepared = await commands.prepare(amount);
+      final preview = _withdrawalPreview;
+      if (preview == null || preview.amount != amount || !preview.canProceed) {
+        throw StateError(AppLocalizations.of(context).transferWaitForQuote);
+      }
+      final prepared = await commands.prepare(amount, rail: preview.rail);
       if (!mounted) return;
       if (prepared.status != 'awaiting_signature') {
         _handleWithdrawalStatus(prepared);
@@ -545,6 +616,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteRefresh?.cancel();
     _planRefresh?.cancel();
     _withdrawalRefresh?.cancel();
+    _withdrawalPreviewDebounce?.cancel();
     _withdrawalAmount.dispose();
     for (final controller in _amounts.values) {
       controller.dispose();
@@ -571,7 +643,10 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                   _quote?.canConfirmTransfer == true &&
                   _quote?.status != 'transferring' &&
                   _quote?.status != 'funded'
-            : _withdrawalAmount.text.trim().isNotEmpty);
+            : _withdrawalAmount.text.trim().isNotEmpty &&
+                  !_withdrawalPreviewing &&
+                  _withdrawalPreview?.canProceed == true &&
+                  _withdrawalPreview?.amount == _withdrawalAmount.text.trim());
 
     return PopScope(
       canPop: !_submitting,
@@ -663,10 +738,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         _Hip3SendAmountCard(
                           controller: _withdrawalAmount,
                           balance: hip3Balance?.value,
-                          onChanged: () => setState(() {
-                            _error = null;
-                            _withdrawal = null;
-                          }),
+                          onChanged: _scheduleHip3Preview,
                         ),
                         if (hip3Balance?.hasError ?? false)
                           _LoadError(
@@ -679,10 +751,27 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         _ReceiveAmountCard(
                           asset: 'USDC',
                           network: 'Arbitrum',
-                          value: _withdrawal?.minimumReceived ?? '',
+                          value: _withdrawalPreviewing
+                              ? '...'
+                              : _withdrawalPreview?.minimumReceived ??
+                                    _withdrawal?.minimumReceived ??
+                                    '',
                         ),
                         const SizedBox(height: 16),
-                        _Hip3FeeSummary(withdrawal: _withdrawal),
+                        _Hip3FeeSummary(
+                          preview: _withdrawalPreview,
+                          withdrawal: _withdrawal,
+                        ),
+                        if (_withdrawalPreview
+                                ?.crossLiquidationImpacts
+                                .isNotEmpty ==
+                            true) ...[
+                          const SizedBox(height: 12),
+                          Hip3CrossLiquidationImpactsCard(
+                            impacts:
+                                _withdrawalPreview!.crossLiquidationImpacts,
+                          ),
+                        ],
                       ],
                       if (_error case final error?) ...[
                         const SizedBox(height: 8),
@@ -1142,14 +1231,23 @@ class _Hip3SendAmountCard extends StatelessWidget {
 }
 
 class _Hip3FeeSummary extends StatelessWidget {
-  const _Hip3FeeSummary({required this.withdrawal});
+  const _Hip3FeeSummary({this.preview, this.withdrawal});
 
+  final Hip3WithdrawalPreview? preview;
   final Hip3Withdrawal? withdrawal;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final fee = withdrawal == null ? '-' : '${withdrawal!.fee} USDC';
+    final feeValue = preview?.fee ?? withdrawal?.fee;
+    final fee = feeValue == null ? '-' : '$feeValue USDC';
+    final details = preview?.feeDetails ?? const <Hip3WithdrawalFeeDetail>[];
+    final withdrawalFee = _formatDetail(
+      details,
+      type: 'withdrawal',
+      payer: 'user',
+    );
+    final networkFee = _formatDetail(details, type: 'network', payer: 'user');
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1158,16 +1256,40 @@ class _Hip3FeeSummary extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _FeeRow(AppLocalizations.of(context).estimateTime, '-'),
+          _FeeRow(
+            AppLocalizations.of(context).estimateTime,
+            _formatEta(preview?.estimatedArrivalSeconds),
+          ),
           const SizedBox(height: 8),
-          _FeeRow(AppLocalizations.of(context).bridgeFee, '-'),
+          _FeeRow(AppLocalizations.of(context).bridgeFee, withdrawalFee),
           const SizedBox(height: 8),
-          _FeeRow(AppLocalizations.of(context).networkFee, '-'),
+          _FeeRow(AppLocalizations.of(context).networkFee, networkFee),
           const SizedBox(height: 8),
           _FeeRow(AppLocalizations.of(context).totalFee, fee),
         ],
       ),
     );
+  }
+
+  static String _formatEta(int? seconds) {
+    if (seconds == null) return '-';
+    if (seconds < 60) return '${seconds}s';
+    return '~${(seconds / 60).ceil()}min';
+  }
+
+  static String _formatDetail(
+    List<Hip3WithdrawalFeeDetail> details, {
+    required String type,
+    required String payer,
+  }) {
+    for (final detail in details) {
+      if (detail.type == type && detail.payer == payer) {
+        final amount = detail.amount;
+        if (amount == null) return '-';
+        return '$amount ${detail.currency}';
+      }
+    }
+    return '-';
   }
 }
 

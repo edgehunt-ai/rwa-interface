@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_order_preview_request.g.dart';
 
-/// bStocks 现货订单。只接受 buy/sell：市价买入传 amount，市价卖出传 quantity， 限价买卖均传 limit_price 和 quantity；金额/价格以当前准入 quote token 计价，主网通常 USDT、测试网 TUSDT。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定等价。 市价只接受 ioc（省略也按 IOC），不支持启用 TP/SL；报价是参考值，确认时重新报价并校验冻结边界。 
+/// bStocks 现货订单。只接受 buy/sell：市价买入传 amount，市价卖出传 quantity， 限价买卖均传 limit_price 和 quantity；金额/价格以当前准入 quote token 计价，主网通常 USDT、测试网 TUSDT。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定等价。 市价只接受 ioc（省略也按 IOC）。tp_sl 仅兼容 disabled 的旧客户端输入，省略、空对象或 enabled=false 等价； enabled=true 在预览和下单均返回422 invalid_json，不会静默忽略保护。报价是参考值，确认时重新报价并校验冻结边界。 
 ///
 /// Properties:
 /// * [symbol] 
@@ -23,7 +23,7 @@ part 'bstock_order_preview_request.g.dart';
 /// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
-/// * [slippagePercent] - 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 冻结最低输出=floor(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。限价单不得传非null值（含\"0\"）。 
+/// * [slippagePercent] - 市价单和显式 time_in_force=ioc 的限价单可用；百分数（\"1\" 表示1%），省略/null 默认0，范围 0 <= slippage_percent < 100。 冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0；向上取整避免超过用户容忍损失。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。GTC（含省略 time_in_force 的限价单）不得传非null值（含\"0\"）。 
 /// * [tpSl] 
 @BuiltValue()
 abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequest, BstockOrderPreviewRequestBuilder> {
@@ -58,7 +58,7 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 冻结最低输出=floor(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。限价单不得传非null值（含\"0\"）。 
+  /// 市价单和显式 time_in_force=ioc 的限价单可用；百分数（\"1\" 表示1%），省略/null 默认0，范围 0 <= slippage_percent < 100。 冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0；向上取整避免超过用户容忍损失。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。GTC（含省略 time_in_force 的限价单）不得传非null值（含\"0\"）。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 

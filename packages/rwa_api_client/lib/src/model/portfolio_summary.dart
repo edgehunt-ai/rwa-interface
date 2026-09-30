@@ -6,7 +6,6 @@
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/portfolio_account_allocation.dart';
 import 'package:rwa_api_client/src/model/hyperliquid_usdc_collateral.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
@@ -19,7 +18,6 @@ part 'portfolio_summary.g.dart';
 ///
 /// Properties:
 /// * [todayPnlStatus] - 最近24小时盈亏是否可计算；不可计算时金额和百分比为 null。
-/// * [allocation] - 同一次余额快照的 Spot/Perps 分组，独立于列表筛选；无法计算时为 null 并附 warnings。
 /// * [totalValueUsd] - 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。 Hyperliquid Unified Account 的抵押物从 spotClearinghouseState 读取且只计一次； 不叠加各 DEX 的 accountValue、仓位名义价值或再次叠加未实现损益。 
 /// * [todayPnlUsd] - 沿用最近24小时历史基准算法；历史缺失、不完整或 stale 时返回 null。
 /// * [todayPnlPercent] - 沿用最近24小时历史基准算法；历史缺失、不完整或 stale 时返回 null。
@@ -42,10 +40,6 @@ abstract class PortfolioSummary implements Built<PortfolioSummary, PortfolioSumm
   @BuiltValueField(wireName: r'today_pnl_status')
   PortfolioSummaryTodayPnlStatusEnum? get todayPnlStatus;
   // enum todayPnlStatusEnum {  available,  unavailable,  };
-
-  /// 同一次余额快照的 Spot/Perps 分组，独立于列表筛选；无法计算时为 null 并附 warnings。
-  @BuiltValueField(wireName: r'allocation')
-  PortfolioAccountAllocation? get allocation;
 
   /// 所有已成功估值且去重资产的 subtotal；未估值资产不作为零计入。 Hyperliquid Unified Account 的抵押物从 spotClearinghouseState 读取且只计一次； 不叠加各 DEX 的 accountValue、仓位名义价值或再次叠加未实现损益。 
   @BuiltValueField(wireName: r'total_value_usd')
@@ -137,13 +131,6 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
       yield serializers.serialize(
         object.todayPnlStatus,
         specifiedType: const FullType(PortfolioSummaryTodayPnlStatusEnum),
-      );
-    }
-    if (object.allocation != null) {
-      yield r'allocation';
-      yield serializers.serialize(
-        object.allocation,
-        specifiedType: const FullType.nullable(PortfolioAccountAllocation),
       );
     }
     yield r'total_value_usd';
@@ -270,14 +257,6 @@ class _$PortfolioSummarySerializer implements PrimitiveSerializer<PortfolioSumma
           ) as PortfolioSummaryTodayPnlStatusEnum?;
           if (valueDes == null) continue;
           result.todayPnlStatus = valueDes;
-          break;
-        case r'allocation':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(PortfolioAccountAllocation),
-          ) as PortfolioAccountAllocation?;
-          if (valueDes == null) continue;
-          result.allocation.replace(valueDes);
           break;
         case r'total_value_usd':
           final valueDes = serializers.deserialize(

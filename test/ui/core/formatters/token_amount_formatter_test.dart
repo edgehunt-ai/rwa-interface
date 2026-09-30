@@ -105,6 +105,28 @@ void main() {
       },
     );
 
+    test('fixed-formats compact USD labels with decimal rounding', () {
+      expect(
+        TokenAmountFormatter.formatUsdFixed(DecimalValue('0.412546030148')),
+        r'$0.41',
+      );
+      expect(
+        TokenAmountFormatter.formatUsdFixed(DecimalValue('1253.125')),
+        r'$1,253.13',
+      );
+      expect(
+        TokenAmountFormatter.formatUsdFixed(DecimalValue('0.0049')),
+        r'$0.00',
+      );
+      expect(
+        TokenAmountFormatter.sumUsdFixed([
+          DecimalValue('0.206273015074'),
+          DecimalValue('0.206273015074'),
+        ]),
+        r'$0.41',
+      );
+    });
+
     test('formats large values with compact suffixes', () {
       expect(
         TokenAmountFormatter.formatCompact(DecimalValue('12580.42'), usd: true),

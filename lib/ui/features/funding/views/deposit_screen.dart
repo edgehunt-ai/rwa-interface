@@ -472,9 +472,9 @@ class _DepositReceivedSheet extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Image.asset(
-                'assets/figma/funding/deposit_received.png',
-                width: 160,
-                height: 160,
+                'assets/figma/funding/deposit_received.webp',
+                width: 120,
+                height: 120,
               ),
               const SizedBox(height: 8),
               Text(

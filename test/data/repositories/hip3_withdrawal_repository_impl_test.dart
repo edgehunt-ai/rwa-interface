@@ -6,12 +6,34 @@ import 'package:rwa_interface/domain/models/hip3_withdrawal.dart' as domain;
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
-  test('creates only native Arbitrum USDC float withdrawals', () async {
+  test('previews with auto rail and maps risk details', () async {
+    final service = _Service();
+    final preview = await Hip3WithdrawalRepositoryImpl(
+      service,
+      _Signer(),
+    ).preview(amount: '51.4');
+    expect(service.previewRequest!.amount, '51.4');
+    expect(
+      service.previewRequest!.rail,
+      api.Hip3WithdrawalCreateRequestRailEnum.auto,
+    );
+    expect(preview.rail, 'float');
+    expect(preview.minimumReceived, '50.22');
+    expect(preview.estimatedArrivalSeconds, 120);
+    expect(preview.feeDetails.single.amount, '0');
+    expect(preview.crossLiquidationImpacts.single.productId, 'xyz:BTC');
+    expect(
+      preview.crossLiquidationImpacts.single.afterLiquidationPrice?.value,
+      '900',
+    );
+  });
+
+  test('creates using the rail selected by preview', () async {
     final service = _Service();
     final prepared = await Hip3WithdrawalRepositoryImpl(
       service,
       _Signer(),
-    ).create(amount: '51.4', idempotencyKey: 'create-key');
+    ).create(amount: '51.4', rail: 'float', idempotencyKey: 'create-key');
     expect(service.request!.amount, '51.4');
     expect(
       service.request!.rail,
@@ -29,6 +51,7 @@ void main() {
       final repo = Hip3WithdrawalRepositoryImpl(service, signer);
       final prepared = await repo.create(
         amount: '51.4',
+        rail: 'float',
         idempotencyKey: 'create-key',
       );
       final submitted = await repo.signAndSubmit(
@@ -53,7 +76,11 @@ void main() {
       final service = _Service();
       final signer = _Signer();
       final repo = Hip3WithdrawalRepositoryImpl(service, signer);
-      final base = await repo.create(amount: '51.4', idempotencyKey: 'key');
+      final base = await repo.create(
+        amount: '51.4',
+        rail: 'float',
+        idempotencyKey: 'key',
+      );
       Future<void> rejects(domain.Hip3Withdrawal intent) async {
         await expectLater(
           repo.signAndSubmit(intent, idempotencyKey: 'key'),
@@ -82,7 +109,11 @@ void main() {
         signer,
         isActive: () => active,
       );
-      final prepared = await repo.create(amount: '51.4', idempotencyKey: 'key');
+      final prepared = await repo.create(
+        amount: '51.4',
+        rail: 'float',
+        idempotencyKey: 'key',
+      );
       await expectLater(
         repo.signAndSubmit(prepared, idempotencyKey: 'key'),
         throwsA(isA<Hip3SigningFailure>()),
@@ -130,6 +161,7 @@ class _Signer implements Hip3TypedDataSigner {
 
 class _Service implements Hip3WithdrawalService {
   final address = '0x1111111111111111111111111111111111111111';
+  api.Hip3WithdrawalCreateRequest? previewRequest;
   api.Hip3WithdrawalCreateRequest? request;
   api.Hip3WithdrawalSubmissionRequest? signature;
   String? createKey;
@@ -154,6 +186,55 @@ class _Service implements Hip3WithdrawalService {
           ..createdAt = DateTime.now()
           ..updatedAt = DateTime.now(),
       );
+
+  api.Hip3WithdrawalPreview get previewResource => api.Hip3WithdrawalPreview(
+    (b) => b
+      ..amount = '51.4'
+      ..fee = '1.18'
+      ..minimumReceived = '50.22'
+      ..rail = api.Hip3WithdrawalRail.float
+      ..destinationAddress = address
+      ..chainId = '42161'
+      ..maximumTransferable = '100'
+      ..blockers
+      ..estimatedArrivalSeconds = 120
+      ..feeDetails.add(
+        api.Hip3WithdrawalFeeDetail(
+          (detail) => detail
+            ..type = api.Hip3WithdrawalFeeDetailTypeEnum.withdrawal
+            ..amount = '0'
+            ..currency = api.Hip3WithdrawalFeeDetailCurrencyEnum.USDC
+            ..payer = api.Hip3WithdrawalFeeDetailPayerEnum.user,
+        ),
+      )
+      ..riskPreview.replace(
+        api.Hip3CollateralRiskPreview(
+          (risk) => risk
+            ..status = api.Hip3CollateralRiskPreviewStatusEnum.available
+            ..collateralAsset =
+                api.Hip3CollateralRiskPreviewCollateralAssetEnum.USDC
+            ..sharedMarginDelta = '-51.4'
+            ..crossLiquidationImpacts.add(
+              api.Hip3CrossLiquidationImpact(
+                (impact) => impact
+                  ..productId = 'xyz:BTC'
+                  ..side = api.Hip3CrossLiquidationImpactSideEnum.long
+                  ..markPrice = '1000'
+                  ..beforeLiquidationPrice = '800'
+                  ..afterLiquidationPrice = '900',
+              ),
+            ),
+        ),
+      ),
+  );
+
+  @override
+  Future<api.Hip3WithdrawalPreview> preview(
+    api.Hip3WithdrawalCreateRequest request,
+  ) async {
+    previewRequest = request;
+    return previewResource;
+  }
 
   @override
   Future<api.Hip3Withdrawal> create(

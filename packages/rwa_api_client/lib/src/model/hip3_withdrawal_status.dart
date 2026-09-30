@@ -11,16 +11,25 @@ part 'hip3_withdrawal_status.g.dart';
 
 class Hip3WithdrawalStatus extends EnumClass {
 
+  /// `submitting` 表示签名已通过校验且已经持久化提交声明，但外部 Hyperliquid `/exchange` 的响应尚未被可靠确认。客户端必须继续读取该提现， 不得重放签名或创建新的提现；服务端对账后会推进到 `submitted`、`completed` 或明确的失败状态。 
   @BuiltValueEnumConst(wireName: r'awaiting_signature')
   static const Hip3WithdrawalStatus awaitingSignature = _$awaitingSignature;
+  /// `submitting` 表示签名已通过校验且已经持久化提交声明，但外部 Hyperliquid `/exchange` 的响应尚未被可靠确认。客户端必须继续读取该提现， 不得重放签名或创建新的提现；服务端对账后会推进到 `submitted`、`completed` 或明确的失败状态。 
+  @BuiltValueEnumConst(wireName: r'submitting')
+  static const Hip3WithdrawalStatus submitting = _$submitting;
+  /// `submitting` 表示签名已通过校验且已经持久化提交声明，但外部 Hyperliquid `/exchange` 的响应尚未被可靠确认。客户端必须继续读取该提现， 不得重放签名或创建新的提现；服务端对账后会推进到 `submitted`、`completed` 或明确的失败状态。 
   @BuiltValueEnumConst(wireName: r'submitted')
   static const Hip3WithdrawalStatus submitted = _$submitted;
+  /// `submitting` 表示签名已通过校验且已经持久化提交声明，但外部 Hyperliquid `/exchange` 的响应尚未被可靠确认。客户端必须继续读取该提现， 不得重放签名或创建新的提现；服务端对账后会推进到 `submitted`、`completed` 或明确的失败状态。 
   @BuiltValueEnumConst(wireName: r'payout')
   static const Hip3WithdrawalStatus payout = _$payout;
+  /// `submitting` 表示签名已通过校验且已经持久化提交声明，但外部 Hyperliquid `/exchange` 的响应尚未被可靠确认。客户端必须继续读取该提现， 不得重放签名或创建新的提现；服务端对账后会推进到 `submitted`、`completed` 或明确的失败状态。 
   @BuiltValueEnumConst(wireName: r'completed')
   static const Hip3WithdrawalStatus completed = _$completed;
+  /// `submitting` 表示签名已通过校验且已经持久化提交声明，但外部 Hyperliquid `/exchange` 的响应尚未被可靠确认。客户端必须继续读取该提现， 不得重放签名或创建新的提现；服务端对账后会推进到 `submitted`、`completed` 或明确的失败状态。 
   @BuiltValueEnumConst(wireName: r'failed')
   static const Hip3WithdrawalStatus failed = _$failed;
+  /// `submitting` 表示签名已通过校验且已经持久化提交声明，但外部 Hyperliquid `/exchange` 的响应尚未被可靠确认。客户端必须继续读取该提现， 不得重放签名或创建新的提现；服务端对账后会推进到 `submitted`、`completed` 或明确的失败状态。 
   @BuiltValueEnumConst(wireName: r'expired')
   static const Hip3WithdrawalStatus expired = _$expired;
 

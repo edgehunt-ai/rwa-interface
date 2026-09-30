@@ -67,7 +67,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
 
   @BuiltValueField(wireName: r'status')
   Hip3WithdrawalStatus get status;
-  // enum statusEnum {  awaiting_signature,  submitted,  payout,  completed,  failed,  expired,  };
+  // enum statusEnum {  awaiting_signature,  submitting,  submitted,  payout,  completed,  failed,  expired,  };
 
   @BuiltValueField(wireName: r'rail')
   Hip3WithdrawalRail get rail;

@@ -4,6 +4,7 @@
 
 // ignore_for_file: unused_element
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/portfolio_open_order_margin_estimate.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -20,6 +21,8 @@ part 'hyperliquid_usdc_collateral.g.dart';
 /// * [crossMaintenanceMarginRequired] - 使用 USDC 抵押的所有 DEX crossMaintenanceMarginUsed 合计；这是风险门槛，不是冻结资金。
 /// * [hold] - spotClearinghouseState 中 USDC 的 hold 总额；不承诺只来自 HIP-3 委托。
 /// * [availableCollateralLimit] - 当前 Portfolio 使用的 min(max(total - hold, 0), HL 提供的维持保证金后额度)；不是可提款额或下单承诺。
+/// * [perpsOpenOrderMarginEstimate] - 未成交 Perps 开仓单保证金估算；订单查询失败时为 null，不影响其他资产字段。
+/// * [estimatedWithdrawableUsd] - available_collateral_limit 减去 perps_open_order_margin_estimate.amount_usd 后的估算值，下限为0。
 /// * [observedAt] 
 /// * [freshness] 
 /// * [warningCode] 
@@ -52,6 +55,14 @@ abstract class HyperliquidUsdcCollateral implements Built<HyperliquidUsdcCollate
   /// 当前 Portfolio 使用的 min(max(total - hold, 0), HL 提供的维持保证金后额度)；不是可提款额或下单承诺。
   @BuiltValueField(wireName: r'available_collateral_limit')
   String get availableCollateralLimit;
+
+  /// 未成交 Perps 开仓单保证金估算；订单查询失败时为 null，不影响其他资产字段。
+  @BuiltValueField(wireName: r'perps_open_order_margin_estimate')
+  PortfolioOpenOrderMarginEstimate? get perpsOpenOrderMarginEstimate;
+
+  /// available_collateral_limit 减去 perps_open_order_margin_estimate.amount_usd 后的估算值，下限为0。
+  @BuiltValueField(wireName: r'estimated_withdrawable_usd')
+  String? get estimatedWithdrawableUsd;
 
   @BuiltValueField(wireName: r'observed_at')
   DateTime get observedAt;
@@ -121,6 +132,20 @@ class _$HyperliquidUsdcCollateralSerializer implements PrimitiveSerializer<Hyper
       object.availableCollateralLimit,
       specifiedType: const FullType(String),
     );
+    if (object.perpsOpenOrderMarginEstimate != null) {
+      yield r'perps_open_order_margin_estimate';
+      yield serializers.serialize(
+        object.perpsOpenOrderMarginEstimate,
+        specifiedType: const FullType.nullable(PortfolioOpenOrderMarginEstimate),
+      );
+    }
+    if (object.estimatedWithdrawableUsd != null) {
+      yield r'estimated_withdrawable_usd';
+      yield serializers.serialize(
+        object.estimatedWithdrawableUsd,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
     yield r'observed_at';
     yield serializers.serialize(
       object.observedAt,
@@ -207,6 +232,22 @@ class _$HyperliquidUsdcCollateralSerializer implements PrimitiveSerializer<Hyper
             specifiedType: const FullType(String),
           ) as String;
           result.availableCollateralLimit = valueDes;
+          break;
+        case r'perps_open_order_margin_estimate':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(PortfolioOpenOrderMarginEstimate),
+          ) as PortfolioOpenOrderMarginEstimate?;
+          if (valueDes == null) continue;
+          result.perpsOpenOrderMarginEstimate.replace(valueDes);
+          break;
+        case r'estimated_withdrawable_usd':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.estimatedWithdrawableUsd = valueDes;
           break;
         case r'observed_at':
           final valueDes = serializers.deserialize(

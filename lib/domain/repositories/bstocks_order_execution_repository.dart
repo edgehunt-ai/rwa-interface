@@ -8,5 +8,6 @@ abstract interface class BstocksOrderExecutionRepository {
     required ResourceResult<TradingOrder> created,
     required String previewId,
     bool Function()? isCancelled,
+    bool stopAfterApproval = false,
   });
 }

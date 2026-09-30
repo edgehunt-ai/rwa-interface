@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_create_order_request.g.dart';
 
-/// 当前非 localnet 实现要求有效 preview_id，并严格匹配账户/owner/输入/准入和经济量边界。 preview_id 字段可选保留旧 wire 兼容，不表示运行时允许省略；缺失/过期/变更需重新预览。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定及创建幂等语义等价。 市价单省略 time_in_force 时仍按 IOC，不受限价默认值影响。 返回 approval action 不代表已创建 swap，确认审批后须使用新 preview 和新创建幂等键。 
+/// 当前非 localnet 实现要求有效 preview_id，并严格匹配账户/owner/输入/准入和经济量边界。 preview_id 字段可选保留旧 wire 兼容，不表示运行时允许省略；缺失/过期/变更需重新预览。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定及创建幂等语义等价。 市价单省略 time_in_force 时仍按 IOC，不受限价默认值影响。 返回 approval action 不代表已创建 swap。授权确认后，若 approval_requires_new_preview=false， 可在原有效期及冻结边界内使用同一 preview_id 和新的创建幂等键创建一次交易 action；否则重新预览。 相同创建幂等键只重放原 action（包括 approval），不会升级成 swap。一个 preview 最多一个 approval 和一个交易 action。 tp_sl 仅兼容省略、空对象或 enabled=false；enabled=true 返回422 invalid_json，不会静默忽略保护。 
 ///
 /// Properties:
 /// * [symbol] 
@@ -23,7 +23,7 @@ part 'bstock_create_order_request.g.dart';
 /// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
-/// * [slippagePercent] - 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 必须匹配 preview 的规范化输入，不增加最大输入预算。新路由最低输出不得低于冻结最低输出； 链上 minAmountOut 当前使用新路由报价输出，没有另行放宽百分比。限价单不得传非null值（含\"0\"）， 限价 IOC/GTC 每次成交由合约检查买入均价不高于限价、卖出均价不低于限价。 
+/// * [slippagePercent] - 市价单和显式 time_in_force=ioc 的限价单可用；百分数（\"1\" 表示1%），省略/null 默认0，范围 0 <= slippage_percent < 100。 必须匹配 preview 的规范化输入，不增加最大输入预算。新路由最低输出不得低于冻结最低输出； 链上 minAmountOut 当前使用新路由报价输出，没有另行放宽百分比。GTC（含省略 time_in_force 的限价单）不得传非null值（含\"0\"）， 限价 IOC/GTC 每次成交由合约检查买入均价不高于限价、卖出均价不低于限价。 
 /// * [tpSl] 
 /// * [previewId] - 引用账户绑定的有效预览和经济量边界，不锁定成交；审批消费后或过期后重新预览。
 @BuiltValue()
@@ -59,7 +59,7 @@ abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderReques
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// 仅市价单；百分数（\"1\" 表示1%），省略/null 默认0，运行时要求 0 <= slippage_percent < 100。 必须匹配 preview 的规范化输入，不增加最大输入预算。新路由最低输出不得低于冻结最低输出； 链上 minAmountOut 当前使用新路由报价输出，没有另行放宽百分比。限价单不得传非null值（含\"0\"）， 限价 IOC/GTC 每次成交由合约检查买入均价不高于限价、卖出均价不低于限价。 
+  /// 市价单和显式 time_in_force=ioc 的限价单可用；百分数（\"1\" 表示1%），省略/null 默认0，范围 0 <= slippage_percent < 100。 必须匹配 preview 的规范化输入，不增加最大输入预算。新路由最低输出不得低于冻结最低输出； 链上 minAmountOut 当前使用新路由报价输出，没有另行放宽百分比。GTC（含省略 time_in_force 的限价单）不得传非null值（含\"0\"）， 限价 IOC/GTC 每次成交由合约检查买入均价不高于限价、卖出均价不低于限价。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 

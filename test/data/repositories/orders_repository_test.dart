@@ -125,6 +125,25 @@ void main() {
       }
     },
   );
+
+  test('bStocks preview maps approval_required', () async {
+    final preview =
+        await OrdersRepositoryImpl(
+          _PreviewOrders(bstocks: true, approvalRequired: true),
+        ).preview(
+          OrderIntent(
+            symbol: 'NVDAB',
+            kind: MarketProductKind.bstock,
+            side: TradingSide.buy,
+            type: TradingOrderType.market,
+            amount: DecimalValue('10', asset: 'TUSDT', unit: 'token'),
+          ),
+          idempotencyKey: 'bstocks-approval-preview',
+        );
+
+    expect(preview.approvalRequired, isTrue);
+    expect(preview.executionReady, isTrue);
+  });
   test(
     'HIP3 preview retains frozen execution economics and risk reasons',
     () async {
@@ -221,11 +240,15 @@ final class _PreviewOrders implements OrdersService {
     this.maximumQuantity = '0.148',
     this.maximumQuantityUnavailableReason,
     this.blockers = const [],
+    this.bstocks = false,
+    this.approvalRequired = false,
   });
   final String? protectionQuantity;
   final String? maximumQuantity;
   final String? maximumQuantityUnavailableReason;
   final List<String> blockers;
+  final bool bstocks;
+  final bool approvalRequired;
   Map<String, Object?>? previewWire;
   Map<String, Object?>? createWire;
   @override
@@ -301,6 +324,7 @@ final class _PreviewOrders implements OrdersService {
         ..side = api.OrderSide.long
         ..type = api.OrderType.market
         ..orderValue = '14.948'
+        ..approvalRequired = approvalRequired
         ..hip3Execution.replace(execution)
         ..feeRate = '0.0005'
         ..feeNote = 'Estimate only'
@@ -333,11 +357,25 @@ final class _PreviewOrders implements OrdersService {
           types: const [OrderPreviewPayload],
           value: OrderPreviewPayload(
             common: value,
-            fields: const {
-              'kind': 'perp',
-              'network': 'Hyperliquid',
-              'settlement_asset': 'USDC',
-            },
+            fields: bstocks
+                ? {
+                    'kind': 'bstock',
+                    'network': 'BSC_TESTNET',
+                    'settlement_asset': 'TUSDT',
+                    'approval_required': approvalRequired,
+                    'bstocks': {
+                      'confirmation_binding': {
+                        'maximum_input_raw': '10000000000000000000',
+                        'minimum_output_raw': '1',
+                        'expires_at': '2030-01-01T00:00:00Z',
+                      },
+                    },
+                  }
+                : const {
+                    'kind': 'perp',
+                    'network': 'Hyperliquid',
+                    'settlement_asset': 'USDC',
+                  },
           ),
         ),
       ),

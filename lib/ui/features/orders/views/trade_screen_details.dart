@@ -637,7 +637,7 @@ class _BstocksPositionSummaryCard extends StatelessWidget {
           const SizedBox(height: 16),
           _Hip3MetricRow(
             metrics: [
-              _Hip3Metric(l10n.value, _formatUsd(position.valueUsd)),
+              _Hip3Metric(l10n.value, _formatUsdFixed2(position.markValue)),
               _Hip3Metric(l10n.marketPrice, _formatUsd(position.markPrice)),
               _Hip3Metric(l10n.entryPrice, _formatUsd(position.entryPrice)),
             ],
@@ -891,6 +891,9 @@ Color _valueColor({
 
 String _formatUsd(DecimalValue? value) =>
     value == null ? '—' : TokenAmountFormatter.formatUsd(value);
+
+String _formatUsdFixed2(DecimalValue? value) =>
+    value == null ? '—' : TokenAmountFormatter.formatUsdFixed(value);
 
 String _formatSignedUsd(DecimalValue? value) {
   if (value == null) return '—';

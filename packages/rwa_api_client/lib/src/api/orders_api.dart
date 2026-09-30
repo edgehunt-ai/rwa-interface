@@ -2009,7 +2009,7 @@ class OrdersApi {
   }
 
   /// 订单列表
-  /// 筛选在分页前应用；组合条件取交集。按 created_at、order_id 稳定倒序分页。 open 包括 open/partially_filled 和仍有效的未触发条件单（不含已终结的条件单）；pending 包括待签名、提交中、 ambiguous/manual_review；terminal 为 filled/cancelled/failed。all 返回全部。 HIP3 条件单作为独立 Order 返回，可按 order_id 单独撤销。 当前运行时要求显式 kind；省略返回422/order_kind_required，user_action&#x3D;select_order_kind，不可盲目重试。 kind&#x3D;bstock 查询持久化 action、canonical GTC/IOC 历史。未确认 action ID 为 bstocks-action:&lt;UUID&gt;； 链上订单/成交使用服务端返回的规范 ID，不要自行拼接。 
+  /// 筛选在分页前应用；组合条件取交集。按 created_at、order_id 稳定倒序分页。 open 包括 open/partially_filled 和仍有效的未触发条件单（不含已终结的条件单）；pending 包括待签名、提交中、 ambiguous/manual_review；terminal 为 filled/cancelled/failed。all 返回全部。 HIP3 条件单作为独立 Order 返回，可按 order_id 单独撤销。 当前运行时要求显式 kind；省略返回422/order_kind_required，user_action&#x3D;select_order_kind，不可盲目重试。 kind&#x3D;bstock 查询持久化 action、canonical GTC/IOC 历史，支持 symbol、product_id、status_group， 筛选在各数据源分页前应用；status_group&#x3D;all 与省略等价。symbol 支持 token symbol 或唯一匹配的 underlying symbol。 bStocks 不支持条件单，conditional_role&#x3D;none 与省略等价，take_profit/stop_loss 返回空列表。 未确认 action ID 为 bstocks-action:&lt;UUID&gt;；链上订单/成交使用服务端返回的规范 ID，不要自行拼接。 
   ///
   /// Parameters:
   /// * [symbol] 

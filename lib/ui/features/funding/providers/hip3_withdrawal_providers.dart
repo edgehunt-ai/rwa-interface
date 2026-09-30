@@ -5,6 +5,7 @@ import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/hip3_withdrawal.dart';
+import '../../../../domain/models/hip3_withdrawal_preview.dart';
 import '../../../../domain/models/trading_account.dart';
 
 // Portfolio availability is a snapshot, not a withdrawal guarantee. The create
@@ -33,6 +34,7 @@ final class Hip3WithdrawalCommands {
   final Object _session;
   final _guard = IdempotentCommandGuard();
   int _generation = 0;
+  Hip3WithdrawalPreview? _preview;
   Hip3Withdrawal? _prepared;
 
   void _checkSession() {
@@ -41,7 +43,23 @@ final class Hip3WithdrawalCommands {
     }
   }
 
-  Future<Hip3Withdrawal> prepare(String amount) async {
+  Future<Hip3WithdrawalPreview> preview(String amount) async {
+    _checkSession();
+    final decimal = DecimalValue(amount);
+    if (decimal.scale > 6 || decimal.compareTo(DecimalValue('0')) <= 0) {
+      throw const FormatException('Invalid USDC amount');
+    }
+    final current = _preview;
+    if (current?.amount == amount) return current!;
+    final result = await _ref
+        .read(hip3WithdrawalRepositoryProvider)
+        .preview(amount: amount);
+    _checkSession();
+    _preview = result;
+    return result;
+  }
+
+  Future<Hip3Withdrawal> prepare(String amount, {required String rail}) async {
     _checkSession();
     final decimal = DecimalValue(amount);
     if (decimal.scale > 6 || decimal.compareTo(DecimalValue('0')) <= 0) {
@@ -50,6 +68,7 @@ final class Hip3WithdrawalCommands {
     final current = _prepared;
     if (current != null &&
         current.amount == amount &&
+        current.rail == rail &&
         current.status == 'awaiting_signature' &&
         current.expiresAt.isAfter(DateTime.now())) {
       final latest = await _ref
@@ -66,7 +85,7 @@ final class Hip3WithdrawalCommands {
       fingerprint: '$amount|$generation',
       command: (key) => _ref
           .read(hip3WithdrawalRepositoryProvider)
-          .create(amount: amount, idempotencyKey: key),
+          .create(amount: amount, rail: rail, idempotencyKey: key),
     );
     _checkSession();
     _prepared = prepared;

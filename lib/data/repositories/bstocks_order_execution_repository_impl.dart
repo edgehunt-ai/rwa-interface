@@ -35,6 +35,7 @@ final class BstocksOrderExecutionRepositoryImpl
     required ResourceResult<TradingOrder> created,
     required String previewId,
     bool Function()? isCancelled,
+    bool stopAfterApproval = false,
   }) async {
     var current = created;
     var awaitingApprovalConfirmation = false;
@@ -50,6 +51,12 @@ final class BstocksOrderExecutionRepositoryImpl
         if (order.actionStatus == BstocksOrderActionStatus.failed ||
             order.actionStatus == BstocksOrderActionStatus.manualReview) {
           return current;
+        }
+        if (stopAfterApproval &&
+            action.kind != BstocksOrderActionKind.erc20Approval) {
+          throw const CompatibilityFailure(
+            userAction: 'Approval flow received a non-approval wallet action',
+          );
         }
 
         awaitingApprovalConfirmation =
@@ -98,6 +105,7 @@ final class BstocksOrderExecutionRepositoryImpl
               BstocksOrderActionStatus.confirmed &&
           refreshed.resource.nextAction == null;
       if (approvalConfirmed) {
+        if (stopAfterApproval) return refreshed;
         // The approval action is a prerequisite, not the order itself. The
         // backend creates the swap action when this same order request is
         // replayed after allowance confirmation.

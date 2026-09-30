@@ -3,10 +3,10 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/rail_portfolio_allocation_item.dart';
 import 'package:rwa_api_client/src/model/portfolio_notice.dart';
 import 'package:rwa_api_client/src/model/portfolio_source_summary.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/portfolio_account_allocation_item.dart';
 import 'package:rwa_api_client/src/model/portfolio_freshness.dart';
 import 'package:rwa_api_client/src/model/portfolio_data_status.dart';
 import 'package:built_value/built_value.dart';
@@ -14,11 +14,11 @@ import 'package:built_value/serializer.dart';
 
 part 'rail_portfolio_allocation.g.dart';
 
-/// RailPortfolioAllocation
+/// 当前全账户快照的 Spot/Perps 配置分组，包含展开详情；不依赖历史采样。
 ///
 /// Properties:
 /// * [dimension] 
-/// * [items] 
+/// * [items] - 固定按 account=spot、perps 顺序返回；局部失败保留对应项并标记不可用。
 /// * [valuedTotalUsd] - 十进制字符串，避免浮点误差
 /// * [unvaluedAssetCount] 
 /// * [dataStatus] 
@@ -32,8 +32,9 @@ abstract class RailPortfolioAllocation implements Built<RailPortfolioAllocation,
   RailPortfolioAllocationDimensionEnum get dimension;
   // enum dimensionEnum {  rail,  };
 
+  /// 固定按 account=spot、perps 顺序返回；局部失败保留对应项并标记不可用。
   @BuiltValueField(wireName: r'items')
-  BuiltList<RailPortfolioAllocationItem> get items;
+  BuiltList<PortfolioAccountAllocationItem> get items;
 
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'valued_total_usd')
@@ -90,7 +91,7 @@ class _$RailPortfolioAllocationSerializer implements PrimitiveSerializer<RailPor
     yield r'items';
     yield serializers.serialize(
       object.items,
-      specifiedType: const FullType(BuiltList, [FullType(RailPortfolioAllocationItem)]),
+      specifiedType: const FullType(BuiltList, [FullType(PortfolioAccountAllocationItem)]),
     );
     yield r'valued_total_usd';
     yield serializers.serialize(
@@ -160,8 +161,8 @@ class _$RailPortfolioAllocationSerializer implements PrimitiveSerializer<RailPor
         case r'items':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType(BuiltList, [FullType(RailPortfolioAllocationItem)]),
-          ) as BuiltList<RailPortfolioAllocationItem>;
+            specifiedType: const FullType(BuiltList, [FullType(PortfolioAccountAllocationItem)]),
+          ) as BuiltList<PortfolioAccountAllocationItem>;
           result.items.replace(valueDes);
           break;
         case r'valued_total_usd':

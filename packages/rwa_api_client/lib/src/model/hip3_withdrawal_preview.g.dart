@@ -77,6 +77,10 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
   @override
   final BuiltList<Hip3WithdrawalPreviewBlockersEnum> blockers;
   @override
+  final int estimatedArrivalSeconds;
+  @override
+  final BuiltList<Hip3WithdrawalFeeDetail> feeDetails;
+  @override
   final Hip3CollateralRiskPreview riskPreview;
 
   factory _$Hip3WithdrawalPreview(
@@ -92,6 +96,8 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
       required this.chainId,
       required this.maximumTransferable,
       required this.blockers,
+      required this.estimatedArrivalSeconds,
+      required this.feeDetails,
       required this.riskPreview})
       : super._();
   @override
@@ -115,6 +121,8 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
         chainId == other.chainId &&
         maximumTransferable == other.maximumTransferable &&
         blockers == other.blockers &&
+        estimatedArrivalSeconds == other.estimatedArrivalSeconds &&
+        feeDetails == other.feeDetails &&
         riskPreview == other.riskPreview;
   }
 
@@ -129,6 +137,8 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
     _$hash = $jc(_$hash, chainId.hashCode);
     _$hash = $jc(_$hash, maximumTransferable.hashCode);
     _$hash = $jc(_$hash, blockers.hashCode);
+    _$hash = $jc(_$hash, estimatedArrivalSeconds.hashCode);
+    _$hash = $jc(_$hash, feeDetails.hashCode);
     _$hash = $jc(_$hash, riskPreview.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
@@ -145,6 +155,8 @@ class _$Hip3WithdrawalPreview extends Hip3WithdrawalPreview {
           ..add('chainId', chainId)
           ..add('maximumTransferable', maximumTransferable)
           ..add('blockers', blockers)
+          ..add('estimatedArrivalSeconds', estimatedArrivalSeconds)
+          ..add('feeDetails', feeDetails)
           ..add('riskPreview', riskPreview))
         .toString();
   }
@@ -191,6 +203,17 @@ class Hip3WithdrawalPreviewBuilder
   set blockers(ListBuilder<Hip3WithdrawalPreviewBlockersEnum>? blockers) =>
       _$this._blockers = blockers;
 
+  int? _estimatedArrivalSeconds;
+  int? get estimatedArrivalSeconds => _$this._estimatedArrivalSeconds;
+  set estimatedArrivalSeconds(int? estimatedArrivalSeconds) =>
+      _$this._estimatedArrivalSeconds = estimatedArrivalSeconds;
+
+  ListBuilder<Hip3WithdrawalFeeDetail>? _feeDetails;
+  ListBuilder<Hip3WithdrawalFeeDetail> get feeDetails =>
+      _$this._feeDetails ??= ListBuilder<Hip3WithdrawalFeeDetail>();
+  set feeDetails(ListBuilder<Hip3WithdrawalFeeDetail>? feeDetails) =>
+      _$this._feeDetails = feeDetails;
+
   Hip3CollateralRiskPreviewBuilder? _riskPreview;
   Hip3CollateralRiskPreviewBuilder get riskPreview =>
       _$this._riskPreview ??= Hip3CollateralRiskPreviewBuilder();
@@ -212,6 +235,8 @@ class Hip3WithdrawalPreviewBuilder
       _chainId = $v.chainId;
       _maximumTransferable = $v.maximumTransferable;
       _blockers = $v.blockers.toBuilder();
+      _estimatedArrivalSeconds = $v.estimatedArrivalSeconds;
+      _feeDetails = $v.feeDetails.toBuilder();
       _riskPreview = $v.riskPreview.toBuilder();
       _$v = null;
     }
@@ -255,6 +280,11 @@ class Hip3WithdrawalPreviewBuilder
                 r'Hip3WithdrawalPreview',
                 'maximumTransferable'),
             blockers: blockers.build(),
+            estimatedArrivalSeconds: BuiltValueNullFieldError.checkNotNull(
+                estimatedArrivalSeconds,
+                r'Hip3WithdrawalPreview',
+                'estimatedArrivalSeconds'),
+            feeDetails: feeDetails.build(),
             riskPreview: riskPreview.build(),
           );
     } catch (_) {
@@ -262,6 +292,9 @@ class Hip3WithdrawalPreviewBuilder
       try {
         _$failedField = 'blockers';
         blockers.build();
+
+        _$failedField = 'feeDetails';
+        feeDetails.build();
         _$failedField = 'riskPreview';
         riskPreview.build();
       } catch (e) {

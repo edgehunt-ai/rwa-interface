@@ -170,6 +170,7 @@ void main() {
     expect(find.text('NVDAB'), findsOneWidget);
     expect(find.text('bStocks'), findsWidgets);
     expect(find.text('3.0154 NVDAB'), findsOneWidget);
+    expect(find.text(r'$3,015.40'), findsOneWidget);
     expect(find.text('Holding return'), findsOneWidget);
     expect(find.text(r'+$16.00 (+3.00%)'), findsOneWidget);
     expect(
@@ -482,7 +483,8 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
                 kind: MarketProductKind.bstock,
                 side: PositionSide.long,
                 quantity: DecimalValue('3.0154', asset: 'NVDA', unit: 'token'),
-                valueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
+                valueUsd: DecimalValue('1', asset: 'USD', unit: 'fiat'),
+                markPrice: DecimalValue('1000', asset: 'USD', unit: 'price'),
                 unrealizedPnl: DecimalValue('16', asset: 'USD', unit: 'fiat'),
                 unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
               ),

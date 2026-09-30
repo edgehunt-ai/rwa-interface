@@ -64,7 +64,7 @@ class PrivateKeyExportSheet extends StatelessWidget {
               const Center(
                 child: Image(
                   image: AssetImage(
-                    'assets/figma/account_activity/private_key_warning.png',
+                    'assets/figma/account_activity/private_key_warning.webp',
                   ),
                   width: 160,
                   height: 160,

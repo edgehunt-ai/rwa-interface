@@ -70,8 +70,6 @@ class _$PortfolioSummary extends PortfolioSummary {
   @override
   final PortfolioSummaryTodayPnlStatusEnum? todayPnlStatus;
   @override
-  final PortfolioAccountAllocation? allocation;
-  @override
   final String totalValueUsd;
   @override
   final String? todayPnlUsd;
@@ -110,7 +108,6 @@ class _$PortfolioSummary extends PortfolioSummary {
 
   _$PortfolioSummary._(
       {this.todayPnlStatus,
-      this.allocation,
       required this.totalValueUsd,
       this.todayPnlUsd,
       this.todayPnlPercent,
@@ -141,7 +138,6 @@ class _$PortfolioSummary extends PortfolioSummary {
     if (identical(other, this)) return true;
     return other is PortfolioSummary &&
         todayPnlStatus == other.todayPnlStatus &&
-        allocation == other.allocation &&
         totalValueUsd == other.totalValueUsd &&
         todayPnlUsd == other.todayPnlUsd &&
         todayPnlPercent == other.todayPnlPercent &&
@@ -164,7 +160,6 @@ class _$PortfolioSummary extends PortfolioSummary {
   int get hashCode {
     var _$hash = 0;
     _$hash = $jc(_$hash, todayPnlStatus.hashCode);
-    _$hash = $jc(_$hash, allocation.hashCode);
     _$hash = $jc(_$hash, totalValueUsd.hashCode);
     _$hash = $jc(_$hash, todayPnlUsd.hashCode);
     _$hash = $jc(_$hash, todayPnlPercent.hashCode);
@@ -189,7 +184,6 @@ class _$PortfolioSummary extends PortfolioSummary {
   String toString() {
     return (newBuiltValueToStringHelper(r'PortfolioSummary')
           ..add('todayPnlStatus', todayPnlStatus)
-          ..add('allocation', allocation)
           ..add('totalValueUsd', totalValueUsd)
           ..add('todayPnlUsd', todayPnlUsd)
           ..add('todayPnlPercent', todayPnlPercent)
@@ -219,12 +213,6 @@ class PortfolioSummaryBuilder
       _$this._todayPnlStatus;
   set todayPnlStatus(PortfolioSummaryTodayPnlStatusEnum? todayPnlStatus) =>
       _$this._todayPnlStatus = todayPnlStatus;
-
-  PortfolioAccountAllocationBuilder? _allocation;
-  PortfolioAccountAllocationBuilder get allocation =>
-      _$this._allocation ??= PortfolioAccountAllocationBuilder();
-  set allocation(PortfolioAccountAllocationBuilder? allocation) =>
-      _$this._allocation = allocation;
 
   String? _totalValueUsd;
   String? get totalValueUsd => _$this._totalValueUsd;
@@ -316,7 +304,6 @@ class PortfolioSummaryBuilder
     final $v = _$v;
     if ($v != null) {
       _todayPnlStatus = $v.todayPnlStatus;
-      _allocation = $v.allocation?.toBuilder();
       _totalValueUsd = $v.totalValueUsd;
       _todayPnlUsd = $v.todayPnlUsd;
       _todayPnlPercent = $v.todayPnlPercent;
@@ -357,7 +344,6 @@ class PortfolioSummaryBuilder
       _$result = _$v ??
           _$PortfolioSummary._(
             todayPnlStatus: todayPnlStatus,
-            allocation: _allocation?.build(),
             totalValueUsd: BuiltValueNullFieldError.checkNotNull(
                 totalValueUsd, r'PortfolioSummary', 'totalValueUsd'),
             todayPnlUsd: todayPnlUsd,
@@ -387,9 +373,6 @@ class PortfolioSummaryBuilder
     } catch (_) {
       late String _$failedField;
       try {
-        _$failedField = 'allocation';
-        _allocation?.build();
-
         _$failedField = 'hyperliquidUsdcCollateral';
         _hyperliquidUsdcCollateral?.build();
 

@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/hip3_withdrawal.dart';
+import 'package:rwa_interface/domain/models/hip3_withdrawal_preview.dart';
 import 'package:rwa_interface/domain/repositories/hip3_withdrawal_repository.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
@@ -227,7 +228,7 @@ void main() {
       find.byKey(const Key('hip3-transfer-amount')),
       '51.4',
     );
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
       isNotNull,
@@ -236,8 +237,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     expect(withdrawals.createdAmounts, ['51.4']);
+    expect(withdrawals.previewAmounts, ['51.4']);
+    expect(withdrawals.createdRails, ['float']);
     expect(find.text('50.22'), findsOneWidget);
-    expect(find.text('1.18 USDC'), findsOneWidget);
+    expect(find.text('1.18 USDC'), findsNWidgets(2));
     expect(find.text('总费用: 1.18 USDC'), findsOneWidget);
     expect(find.text('接收数量: 50.22 USDC'), findsOneWidget);
     expect(find.text(withdrawals.destination), findsOneWidget);
@@ -261,6 +264,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
     await tester.tap(find.byType(FilledButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
@@ -303,8 +307,36 @@ void main() {
 
 class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   final destination = '0x1111111111111111111111111111111111111111';
+  final previewAmounts = <String>[];
   final createdAmounts = <String>[];
+  final createdRails = <String>[];
   int submissions = 0;
+
+  @override
+  Future<Hip3WithdrawalPreview> preview({required String amount}) async {
+    previewAmounts.add(amount);
+    return Hip3WithdrawalPreview(
+      amount: amount,
+      fee: '1.18',
+      minimumReceived: '50.22',
+      rail: 'float',
+      destinationAddress: destination,
+      chainId: '42161',
+      maximumTransferable: '100',
+      blockers: const [],
+      estimatedArrivalSeconds: 120,
+      feeDetails: const [
+        Hip3WithdrawalFeeDetail(
+          type: 'withdrawal',
+          amount: '1.18',
+          currency: 'USDC',
+          payer: 'user',
+        ),
+      ],
+      crossLiquidationImpacts: const [],
+      riskStatus: 'available',
+    );
+  }
 
   Hip3Withdrawal get prepared => Hip3Withdrawal(
     id: 'withdrawal-1',
@@ -323,9 +355,11 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   @override
   Future<Hip3Withdrawal> create({
     required String amount,
+    required String rail,
     required String idempotencyKey,
   }) async {
     createdAmounts.add(amount);
+    createdRails.add(rail);
     return prepared;
   }
 

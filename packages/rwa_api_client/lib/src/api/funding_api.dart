@@ -2397,7 +2397,7 @@ class FundingApi {
   }
 
   /// 预览 Perps 转出金额及 Cross 强平价影响
-  /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 amount 为 HL USDC 总扣减额；minimum_received 为扣费后到账额。 风险按总扣减额计算，不能按净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。 
+  /// 只读，不创建提现单、不冻结 nonce、不返回签名材料、不广播。钱包和环境由认证账户解析。 amount 为 HL USDC 总扣减额；minimum_received 为扣费后到账额。 风险按总扣减额计算，不能按净到账额计算。当前支持 Unified Account 的同 USDC 抵押 Cross 仓位。 fee 为用户承担且从 amount 中扣除的 USDC 总费用；fee_details 仅解释费用，不应再次扣减。 estimated_arrival_seconds 为提交后按通道设置的展示预估，不是实时报价、有效期或到账保证。 blockers 仅描述当前用户可提现余额限制；实际创建提现时仍需重新检查余额、通道及平台池流动性。 risk_preview 仅用于展示，不是转账授权。观察失败时明确返回 unavailable，不能解释为没有受影响仓位。 
   ///
   /// Parameters:
   /// * [hip3WithdrawalCreateRequest] 
@@ -2710,7 +2710,7 @@ class FundingApi {
   }
 
   /// 更新用户选择的补资来源与金额
-  /// 保存用户编辑后的来源金额并重新计算预计目标到账。20% 缓冲只用于推荐和默认值； 高于或低于推荐值均不得单独导致拒绝。低于最低缺口可以保存，但不能确认 Transfer。 
+  /// 保存用户编辑后的来源金额并重新计算预计目标到账。20% 缓冲只用于推荐和默认值； 高于或低于推荐值均不得单独导致拒绝。低于最低缺口可以保存，但不能确认 Transfer。 每次成功保存递增 session 的 version；创建计划须等待保存完成，并使用保存响应中的 version 作为 selection_version。保存选择时提交过旧的 version 返回 409，顶层 code&#x3D;conflict， details.blockers[].code&#x3D;funding_session_version_conflict，user_action&#x3D;refresh_funding_session。 
   ///
   /// Parameters:
   /// * [fundingSessionId] 

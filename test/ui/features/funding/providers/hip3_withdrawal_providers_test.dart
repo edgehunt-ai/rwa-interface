@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/hip3_withdrawal.dart';
+import 'package:rwa_interface/domain/models/hip3_withdrawal_preview.dart';
 import 'package:rwa_interface/domain/repositories/hip3_withdrawal_repository.dart';
 import 'package:rwa_interface/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 
@@ -15,10 +16,14 @@ void main() {
     addTearDown(container.dispose);
     final commands = container.read(hip3WithdrawalCommandsProvider);
 
-    final first = await commands.prepare('51.4');
-    final repeated = await commands.prepare('51.4');
+    final preview = await commands.preview('51.4');
+    expect(preview.rail, 'float');
+    final first = await commands.prepare('51.4', rail: preview.rail);
+    final repeated = await commands.prepare('51.4', rail: preview.rail);
     expect(identical(first, repeated), isTrue);
+    expect(repo.previewAmounts, ['51.4']);
     expect(repo.creationKeys, hasLength(1));
+    expect(repo.creationRails, ['float']);
     await commands.submit(first);
     expect(repo.submitted, 1);
     expect(repo.submittedIntent, same(first));
@@ -37,9 +42,10 @@ void main() {
       );
       addTearDown(container.dispose);
       final commands = container.read(hip3WithdrawalCommandsProvider);
-      final intent = await commands.prepare('51.4');
+      final preview = await commands.preview('51.4');
+      final intent = await commands.prepare('51.4', rail: preview.rail);
       await expectLater(commands.submit(intent), throwsStateError);
-      expect(await commands.prepare('51.4'), same(intent));
+      expect(await commands.prepare('51.4', rail: preview.rail), same(intent));
       await commands.submit(intent);
       expect(repo.creationKeys, hasLength(1));
       expect(repo.submissionKeys.toSet(), hasLength(1));
@@ -53,9 +59,10 @@ void main() {
     );
     addTearDown(container.dispose);
     final commands = container.read(hip3WithdrawalCommandsProvider);
-    await commands.prepare('51.4');
+    final preview = await commands.preview('51.4');
+    await commands.prepare('51.4', rail: preview.rail);
     repo.status = 'failed';
-    await commands.prepare('51.4');
+    await commands.prepare('51.4', rail: preview.rail);
     expect(repo.creationKeys, hasLength(2));
     expect(repo.creationKeys.toSet(), hasLength(2));
   });
@@ -67,7 +74,8 @@ void main() {
     );
     addTearDown(container.dispose);
     final commands = container.read(hip3WithdrawalCommandsProvider);
-    final intent = await commands.prepare('51.4');
+    final preview = await commands.preview('51.4');
+    final intent = await commands.prepare('51.4', rail: preview.rail);
     container.read(sessionGenerationProvider.notifier).clearUserScope();
     await expectLater(commands.submit(intent), throwsStateError);
     expect(repo.submitted, 0);
@@ -75,12 +83,33 @@ void main() {
 }
 
 class _Repository implements Hip3WithdrawalRepository {
+  final previewAmounts = <String>[];
   final creationKeys = <String>[];
+  final creationRails = <String>[];
   final submissionKeys = <String>[];
   int submitted = 0;
   bool failSubmissionOnce = false;
   String status = 'awaiting_signature';
   Hip3Withdrawal? submittedIntent;
+
+  @override
+  Future<Hip3WithdrawalPreview> preview({required String amount}) async {
+    previewAmounts.add(amount);
+    return const Hip3WithdrawalPreview(
+      amount: '51.4',
+      fee: '1.18',
+      minimumReceived: '50.22',
+      rail: 'float',
+      destinationAddress: '0x1111111111111111111111111111111111111111',
+      chainId: '42161',
+      maximumTransferable: '100',
+      blockers: [],
+      estimatedArrivalSeconds: 120,
+      feeDetails: [],
+      crossLiquidationImpacts: [],
+      riskStatus: 'available',
+    );
+  }
 
   Hip3Withdrawal _intent(String status) => Hip3Withdrawal(
     id: 'id',
@@ -99,9 +128,11 @@ class _Repository implements Hip3WithdrawalRepository {
   @override
   Future<Hip3Withdrawal> create({
     required String amount,
+    required String rail,
     required String idempotencyKey,
   }) async {
     creationKeys.add(idempotencyKey);
+    creationRails.add(rail);
     return _intent('awaiting_signature');
   }
 

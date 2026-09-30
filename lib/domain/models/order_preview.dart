@@ -23,6 +23,7 @@ final class OrderPreview {
     this.feeNote,
     this.details = const [],
     this.executionReady = true,
+    this.approvalRequired = false,
   });
   final String previewId;
   final OrderIntent intent;
@@ -43,6 +44,7 @@ final class OrderPreview {
   final String? feeNote;
   final List<PreviewDetail> details;
   final bool executionReady;
+  final bool approvalRequired;
   bool get isExpired => expiresAt?.isBefore(DateTime.now().toUtc()) ?? false;
   bool get openingProtectionMatchesIntent {
     final requested = intent.openingProtection;

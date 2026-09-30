@@ -25,6 +25,17 @@ abstract final class TokenAmountFormatter {
     return '\$${_groupIntegerDigits(formatted)}';
   }
 
+  /// Formats USD values with an exact number of fractional digits.
+  ///
+  /// This is intended for compact price/value labels where unrestricted
+  /// sub-dollar precision would overflow the available layout.
+  static String formatUsdFixed(DecimalValue amount, {int fractionDigits = 2}) {
+    _validateDecimals(fractionDigits);
+    final rounded = _roundToFractionDigits(amount.value, fractionDigits);
+    final fixed = _padFractionDigits(rounded, fractionDigits);
+    return '\$${_groupIntegerDigits(fixed)}';
+  }
+
   /// Formats large values with a compact uppercase suffix while preserving
   /// decimal precision without converting through binary floating point.
   static String formatCompact(DecimalValue amount, {bool usd = false}) {
@@ -94,8 +105,24 @@ abstract final class TokenAmountFormatter {
 
   /// Adds USD decimal values without passing through binary floating point.
   static String sumUsd(Iterable<DecimalValue?> amounts) {
+    final total = _sum(amounts);
+    return total == null ? '—' : formatUsd(total);
+  }
+
+  /// Adds and fixed-formats USD values without binary floating point.
+  static String sumUsdFixed(
+    Iterable<DecimalValue?> amounts, {
+    int fractionDigits = 2,
+  }) {
+    final total = _sum(amounts);
+    return total == null
+        ? '—'
+        : formatUsdFixed(total, fractionDigits: fractionDigits);
+  }
+
+  static DecimalValue? _sum(Iterable<DecimalValue?> amounts) {
     final values = amounts.whereType<DecimalValue>().toList(growable: false);
-    if (values.isEmpty) return '—';
+    if (values.isEmpty) return null;
     final scale = values.fold<int>(
       0,
       (current, value) => current > value.scale ? current : value.scale,
@@ -117,7 +144,7 @@ abstract final class TokenAmountFormatter {
         : '${negative ? '-' : ''}'
               '${digits.substring(0, digits.length - scale)}.'
               '${digits.substring(digits.length - scale)}';
-    return formatUsd(DecimalValue(value));
+    return DecimalValue(value);
   }
 
   static String format(

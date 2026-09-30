@@ -13,14 +13,14 @@ part 'hip3_withdrawal_create_request.g.dart';
 ///
 /// Properties:
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [rail] - 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 
+/// * [rail] - 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 
 @BuiltValue()
 abstract class Hip3WithdrawalCreateRequest implements Built<Hip3WithdrawalCreateRequest, Hip3WithdrawalCreateRequestBuilder> {
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 
+  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 
   @BuiltValueField(wireName: r'rail')
   Hip3WithdrawalCreateRequestRailEnum? get rail;
   // enum railEnum {  auto,  bridge2,  float,  };
@@ -129,13 +129,13 @@ class _$Hip3WithdrawalCreateRequestSerializer implements PrimitiveSerializer<Hip
 
 class Hip3WithdrawalCreateRequestRailEnum extends EnumClass {
 
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 
+  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 
   @BuiltValueEnumConst(wireName: r'auto')
   static const Hip3WithdrawalCreateRequestRailEnum auto = _$hip3WithdrawalCreateRequestRailEnum_auto;
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 
+  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 
   @BuiltValueEnumConst(wireName: r'bridge2')
   static const Hip3WithdrawalCreateRequestRailEnum bridge2 = _$hip3WithdrawalCreateRequestRailEnum_bridge2;
-  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 
+  /// 出金通道选择；缺省或 `auto` 时平台池已配置走 `float`、否则回落 `bridge2`。 显式请求 `float` 而平台池未配置时返回错误，不会静默降级。 预览后创建提现应显式回传预览响应的 rail，不再传 auto；签名前核对创建响应的金额和费用。 
   @BuiltValueEnumConst(wireName: r'float')
   static const Hip3WithdrawalCreateRequestRailEnum float = _$hip3WithdrawalCreateRequestRailEnum_float;
 

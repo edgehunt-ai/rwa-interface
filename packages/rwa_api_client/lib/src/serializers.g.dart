@@ -486,6 +486,10 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3Withdrawal.serializer)
       ..add(Hip3WithdrawalCreateRequest.serializer)
       ..add(Hip3WithdrawalCreateRequestRailEnum.serializer)
+      ..add(Hip3WithdrawalFeeDetail.serializer)
+      ..add(Hip3WithdrawalFeeDetailCurrencyEnum.serializer)
+      ..add(Hip3WithdrawalFeeDetailPayerEnum.serializer)
+      ..add(Hip3WithdrawalFeeDetailTypeEnum.serializer)
       ..add(Hip3WithdrawalHyperliquidChainEnum.serializer)
       ..add(Hip3WithdrawalPreview.serializer)
       ..add(Hip3WithdrawalPreviewBlockersEnum.serializer)
@@ -650,12 +654,13 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PerpOrderWalletActionState.serializer)
       ..add(PerpOrderWalletActionStateKindEnum.serializer)
       ..add(PerpOrderWalletActionStateWalletActionBlockerEnum.serializer)
-      ..add(PortfolioAccountAllocation.serializer)
+      ..add(PortfolioAccountAllocationBreakdown.serializer)
       ..add(PortfolioAccountAllocationItem.serializer)
       ..add(PortfolioAccountAllocationItemAccountEnum.serializer)
       ..add(PortfolioAccountPage.serializer)
       ..add(PortfolioAccountPageScopeEnum.serializer)
       ..add(PortfolioAllocation.serializer)
+      ..add(PortfolioAllocationValue.serializer)
       ..add(PortfolioAsset.serializer)
       ..add(PortfolioAssetAssetTypeEnum.serializer)
       ..add(PortfolioAssetKindEnum.serializer)
@@ -664,6 +669,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PortfolioAssetPageAccountEnum.serializer)
       ..add(PortfolioAssetSourceKind.serializer)
       ..add(PortfolioAvailabilityStatus.serializer)
+      ..add(PortfolioCrossLiquidationRisk.serializer)
+      ..add(PortfolioCrossLiquidationRiskStatusEnum.serializer)
       ..add(PortfolioDataStatus.serializer)
       ..add(PortfolioFreshness.serializer)
       ..add(PortfolioHistory.serializer)
@@ -676,8 +683,9 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(PortfolioHoldingReturn.serializer)
       ..add(PortfolioNotice.serializer)
       ..add(PortfolioNoticeSeverity.serializer)
+      ..add(PortfolioOpenOrderMarginEstimate.serializer)
+      ..add(PortfolioOpenOrderMarginEstimateStatusEnum.serializer)
       ..add(PortfolioPriceSource.serializer)
-      ..add(PortfolioRail.serializer)
       ..add(PortfolioSourceKind.serializer)
       ..add(PortfolioSourceState.serializer)
       ..add(PortfolioSourceSummary.serializer)
@@ -724,7 +732,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(QuotePriceKindEnum.serializer)
       ..add(RailPortfolioAllocation.serializer)
       ..add(RailPortfolioAllocationDimensionEnum.serializer)
-      ..add(RailPortfolioAllocationItem.serializer)
       ..add(ReadyFundingWalletAction.serializer)
       ..add(RealtimeActivityEvent.serializer)
       ..add(RealtimeActivityEventEventEnum.serializer)
@@ -1052,6 +1059,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           () => ListBuilder<Hip3WithdrawalPreviewBlockersEnum>())
       ..addBuilderFactory(
           const FullType(
+              BuiltList, const [const FullType(Hip3WithdrawalFeeDetail)]),
+          () => ListBuilder<Hip3WithdrawalFeeDetail>())
+      ..addBuilderFactory(
+          const FullType(
               BuiltList, const [const FullType(HyperliquidUsdcCollateral)]),
           () => ListBuilder<HyperliquidUsdcCollateral>())
       ..addBuilderFactory(
@@ -1136,6 +1147,13 @@ Serializers _$serializers = (Serializers().toBuilder()
               const [const FullType(PortfolioAccountAllocationItem)]),
           () => ListBuilder<PortfolioAccountAllocationItem>())
       ..addBuilderFactory(
+          const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
+          () => ListBuilder<PortfolioNotice>())
+      ..addBuilderFactory(
+          const FullType(
+              BuiltList, const [const FullType(PortfolioSourceSummary)]),
+          () => ListBuilder<PortfolioSourceSummary>())
+      ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(PortfolioAsset)]),
           () => ListBuilder<PortfolioAsset>())
       ..addBuilderFactory(
@@ -1203,17 +1221,6 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(ProductRef)]),
           () => ListBuilder<ProductRef>())
-      ..addBuilderFactory(
-          const FullType(
-              BuiltList, const [const FullType(RailPortfolioAllocationItem)]),
-          () => ListBuilder<RailPortfolioAllocationItem>())
-      ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(PortfolioNotice)]),
-          () => ListBuilder<PortfolioNotice>())
-      ..addBuilderFactory(
-          const FullType(
-              BuiltList, const [const FullType(PortfolioSourceSummary)]),
-          () => ListBuilder<PortfolioSourceSummary>())
       ..addBuilderFactory(
           const FullType(BuiltList, const [const FullType(RealtimeEvent)]),
           () => ListBuilder<RealtimeEvent>())

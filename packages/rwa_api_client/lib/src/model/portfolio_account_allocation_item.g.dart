@@ -79,6 +79,8 @@ class _$PortfolioAccountAllocationItem extends PortfolioAccountAllocationItem {
   final String? percent;
   @override
   final int unvaluedAssetCount;
+  @override
+  final PortfolioAccountAllocationBreakdown? breakdown;
 
   factory _$PortfolioAccountAllocationItem(
           [void Function(PortfolioAccountAllocationItemBuilder)? updates]) =>
@@ -89,7 +91,8 @@ class _$PortfolioAccountAllocationItem extends PortfolioAccountAllocationItem {
       required this.status,
       this.valueUsd,
       this.percent,
-      required this.unvaluedAssetCount})
+      required this.unvaluedAssetCount,
+      this.breakdown})
       : super._();
   @override
   PortfolioAccountAllocationItem rebuild(
@@ -108,7 +111,8 @@ class _$PortfolioAccountAllocationItem extends PortfolioAccountAllocationItem {
         status == other.status &&
         valueUsd == other.valueUsd &&
         percent == other.percent &&
-        unvaluedAssetCount == other.unvaluedAssetCount;
+        unvaluedAssetCount == other.unvaluedAssetCount &&
+        breakdown == other.breakdown;
   }
 
   @override
@@ -119,6 +123,7 @@ class _$PortfolioAccountAllocationItem extends PortfolioAccountAllocationItem {
     _$hash = $jc(_$hash, valueUsd.hashCode);
     _$hash = $jc(_$hash, percent.hashCode);
     _$hash = $jc(_$hash, unvaluedAssetCount.hashCode);
+    _$hash = $jc(_$hash, breakdown.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -130,7 +135,8 @@ class _$PortfolioAccountAllocationItem extends PortfolioAccountAllocationItem {
           ..add('status', status)
           ..add('valueUsd', valueUsd)
           ..add('percent', percent)
-          ..add('unvaluedAssetCount', unvaluedAssetCount))
+          ..add('unvaluedAssetCount', unvaluedAssetCount)
+          ..add('breakdown', breakdown))
         .toString();
   }
 }
@@ -163,6 +169,12 @@ class PortfolioAccountAllocationItemBuilder
   set unvaluedAssetCount(int? unvaluedAssetCount) =>
       _$this._unvaluedAssetCount = unvaluedAssetCount;
 
+  PortfolioAccountAllocationBreakdownBuilder? _breakdown;
+  PortfolioAccountAllocationBreakdownBuilder get breakdown =>
+      _$this._breakdown ??= PortfolioAccountAllocationBreakdownBuilder();
+  set breakdown(PortfolioAccountAllocationBreakdownBuilder? breakdown) =>
+      _$this._breakdown = breakdown;
+
   PortfolioAccountAllocationItemBuilder() {
     PortfolioAccountAllocationItem._defaults(this);
   }
@@ -175,6 +187,7 @@ class PortfolioAccountAllocationItemBuilder
       _valueUsd = $v.valueUsd;
       _percent = $v.percent;
       _unvaluedAssetCount = $v.unvaluedAssetCount;
+      _breakdown = $v.breakdown?.toBuilder();
       _$v = null;
     }
     return this;
@@ -194,19 +207,33 @@ class PortfolioAccountAllocationItemBuilder
   PortfolioAccountAllocationItem build() => _build();
 
   _$PortfolioAccountAllocationItem _build() {
-    final _$result = _$v ??
-        _$PortfolioAccountAllocationItem._(
-          account: BuiltValueNullFieldError.checkNotNull(
-              account, r'PortfolioAccountAllocationItem', 'account'),
-          status: BuiltValueNullFieldError.checkNotNull(
-              status, r'PortfolioAccountAllocationItem', 'status'),
-          valueUsd: valueUsd,
-          percent: percent,
-          unvaluedAssetCount: BuiltValueNullFieldError.checkNotNull(
-              unvaluedAssetCount,
-              r'PortfolioAccountAllocationItem',
-              'unvaluedAssetCount'),
-        );
+    _$PortfolioAccountAllocationItem _$result;
+    try {
+      _$result = _$v ??
+          _$PortfolioAccountAllocationItem._(
+            account: BuiltValueNullFieldError.checkNotNull(
+                account, r'PortfolioAccountAllocationItem', 'account'),
+            status: BuiltValueNullFieldError.checkNotNull(
+                status, r'PortfolioAccountAllocationItem', 'status'),
+            valueUsd: valueUsd,
+            percent: percent,
+            unvaluedAssetCount: BuiltValueNullFieldError.checkNotNull(
+                unvaluedAssetCount,
+                r'PortfolioAccountAllocationItem',
+                'unvaluedAssetCount'),
+            breakdown: _breakdown?.build(),
+          );
+    } catch (_) {
+      late String _$failedField;
+      try {
+        _$failedField = 'breakdown';
+        _breakdown?.build();
+      } catch (e) {
+        throw BuiltValueNestedFieldError(
+            r'PortfolioAccountAllocationItem', _$failedField, e.toString());
+      }
+      rethrow;
+    }
     replace(_$result);
     return _$result;
   }

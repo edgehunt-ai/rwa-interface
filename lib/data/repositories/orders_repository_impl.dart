@@ -42,6 +42,9 @@ final class OrdersRepositoryImpl implements OrdersRepository {
         : isBstock
         ? canonicalSettlementChainName(network: network)
         : canonicalChainName(network);
+    final approvalRequired =
+        common.approvalRequired ??
+        (payload.fields['approval_required'] == true);
     final preview = OrderPreview(
       previewId: common.previewId,
       intent: intent,
@@ -90,6 +93,7 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       ),
       // Only bStocks submission depends on a confirmation binding.
       executionReady: !isBstock || _hasBstocksExecutionBinding(payload.fields),
+      approvalRequired: isBstock && approvalRequired,
     );
     if (!preview.openingProtectionMatchesIntent) {
       throw const FormatException(

@@ -61,19 +61,23 @@ final class Position {
   final DecimalValue? stopLimitPrice;
   final DateTime? updatedAt;
 
-  /// Current HIP-3 position notional derived from its quantity and mark price.
+  /// Current mark-to-market value derived from quantity and mark price.
+  DecimalValue? get markValue {
+    if (markPrice == null) return null;
+    return DecimalValue(
+      _multiplyDecimalStrings(quantity.value, markPrice!.value),
+      asset: markPrice!.asset ?? 'USD',
+      unit: 'notional',
+    );
+  }
+
+  /// Current HIP-3 position notional.
   ///
   /// `value_usd` has a different contract meaning for perpetual positions
   /// (position equity), so it must not be used where the UI labels the
   /// mark-to-market position value/notional.
-  DecimalValue? get markNotional {
-    if (kind != MarketProductKind.perp || markPrice == null) return null;
-    return DecimalValue(
-      _multiplyDecimalStrings(quantity.value, markPrice!.value),
-      asset: markPrice!.asset,
-      unit: 'notional',
-    );
-  }
+  DecimalValue? get markNotional =>
+      kind == MarketProductKind.perp ? markValue : null;
 }
 
 String _multiplyDecimalStrings(String left, String right) {

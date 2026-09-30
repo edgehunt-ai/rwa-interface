@@ -26,7 +26,7 @@ class PortfolioApi {
   const PortfolioApi(this._dio, this._serializers);
 
   /// 获取资产组合配置分布
-  /// 按且只按一个 &#x60;dimension&#x60; 返回资产组合配置。响应是由 &#x60;dimension&#x60; 标记的互斥 oneOf：asset、product、rail、network 各有独立 item shape，客户端不得把不同 维度混合或跨响应累加。未估值资产不会伪装为零或分配到任一 bucket；结果通过 &#x60;unvalued_asset_count&#x60;、&#x60;data_status&#x60;、&#x60;freshness&#x60; 和 warnings 暴露证据缺口。 
+  /// 按且只按一个 &#x60;dimension&#x60; 返回资产组合配置。响应是由 &#x60;dimension&#x60; 标记的互斥 oneOf：asset、product、rail、network 各有独立 item shape，客户端不得把不同 维度混合或跨响应累加。未估值资产不会伪装为零或分配到任一 bucket；结果通过 &#x60;unvalued_asset_count&#x60;、&#x60;data_status&#x60;、&#x60;freshness&#x60; 和 warnings 暴露证据缺口。  dimension&#x3D;rail 使用与 summary 相同的当前全账户余额快照及来源缓存，独立读取，不要求先调用 summary。 items 固定按 account&#x3D;spot、perps 返回账户金额、占总资产的比例和 breakdown。 Spot 展开 Cash/bStocks；Perps 展开 Cross/Isolated 保证金、挂单保证金估算、可转出估算及强平风险。 此模式不读写历史存储；局部来源失败时返回 200 partial，未知组金额和相关占比为 null； 全部必要余额来源不可用且无合格缓存时返回503。无已验证钱包返回200 empty。 asset/product/network 维度继续读取数据库中最新保存的配置快照。 本次前期开发接口调整移除了 summary.allocation，并用 account 分组替换了旧 rail&#x3D;cash/bstock/perp 列表； 客户端需使用本接口的新 items 结构，不得将新 Perps 账户总额与旧仓位保证金口径混用。 
   ///
   /// Parameters:
   /// * [dimension] 
@@ -201,7 +201,7 @@ class PortfolioApi {
   }
 
   /// 资产总览
-  /// 已验证身份下的只读资产总览，不接受 wallet address、account ID 或 network 作为资产所有权输入。总资产仅统计已成功估值且去重后的余额；普通钱包余额不会 自动计入可交易金额。  用户没有已验证钱包时返回 &#x60;200 empty&#x60;；部分余额来源或价格失败时返回 &#x60;200 partial&#x60;，使用合格的 PostgreSQL last-good snapshot 时 freshness 为 &#x60;stale&#x60;。只有所有必要 balance source 均不可用且没有合格 last-good 时才 返回 &#x60;503&#x60;。禁止 Mock fallback，也不得把来源错误转换为零余额。 新资产页复用本接口：allocation 返回 Spot/Perps 金额和占比，Today 保留现有24小时算法。 各余额来源超时隔离；历史读取与写入为可选操作，失败不丢弃已经读取的余额。 图表单独调用 /v1/portfolio/history，本响应不含 points 或列表。 
+  /// 已验证身份下的只读资产总览，不接受 wallet address、account ID 或 network 作为资产所有权输入。总资产仅统计已成功估值且去重后的余额；普通钱包余额不会 自动计入可交易金额。  用户没有已验证钱包时返回 &#x60;200 empty&#x60;；部分余额来源或价格失败时返回 &#x60;200 partial&#x60;，使用合格的 PostgreSQL last-good snapshot 时 freshness 为 &#x60;stale&#x60;。只有所有必要 balance source 均不可用且没有合格 last-good 时才 返回 &#x60;503&#x60;。禁止 Mock fallback，也不得把来源错误转换为零余额。 新资产页复用本接口返回总额、Today 与余额概况；Today 保留现有24小时算法。 资产配置分组单独调用 /v1/portfolio/allocation?dimension&#x3D;rail；本响应不再返回 allocation。 各余额来源超时隔离；历史读取与写入为可选操作，失败不丢弃已经读取的余额。 图表单独调用 /v1/portfolio/history，本响应不含 points 或列表。 
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation

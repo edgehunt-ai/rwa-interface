@@ -8,18 +8,18 @@ import 'package:built_value/serializer.dart';
 
 part 'portfolio_holding_return.g.dart';
 
-/// TODO(bstocks) 后续接入有成本证据的持仓收益；当前两个字段固定为 null，禁止按现价推测成本。
+/// bStocks 剩余持仓的未实现参考收益，沿用持仓接口 reference_only 口径。 以 canonical Router 成交与 ERC20 Transfer 证据计算 FIFO 剩余成本；部分卖出消耗最早买入批次， 买入成本包含已成交的 quote-token 支出，不额外计入原生 Gas。 无法确定成本的外部转入/转出、历史覆盖不足、链重组、剩余数量与余额不符、 估值缺失/stale、查询失败或超时均保留未知，不从现价推测成本。 测试网 TUSDT 仅以相同市场参考单位展示，不代表测试币美元锚定或实际结算收益。 
 ///
 /// Properties:
-/// * [amountUsd] - 十进制字符串，避免浮点误差
-/// * [percent] - 十进制字符串，避免浮点误差
+/// * [amountUsd] - 参考市值减FIFO剩余参考成本；盈利为正、亏损为负，证据完整且盈亏平衡才返回0。未知为null。
+/// * [percent] - (参考市值 - FIFO剩余参考成本) / FIFO剩余参考成本 × 100；25表示25%，不是0.25。 18位小数half-even舍入。成本未知/为零、估值缺失/stale或数值越界时为null。 
 @BuiltValue()
 abstract class PortfolioHoldingReturn implements Built<PortfolioHoldingReturn, PortfolioHoldingReturnBuilder> {
-  /// 十进制字符串，避免浮点误差
+  /// 参考市值减FIFO剩余参考成本；盈利为正、亏损为负，证据完整且盈亏平衡才返回0。未知为null。
   @BuiltValueField(wireName: r'amount_usd')
   String? get amountUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// (参考市值 - FIFO剩余参考成本) / FIFO剩余参考成本 × 100；25表示25%，不是0.25。 18位小数half-even舍入。成本未知/为零、估值缺失/stale或数值越界时为null。 
   @BuiltValueField(wireName: r'percent')
   String? get percent;
 

@@ -3,6 +3,7 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/hip3_withdrawal_fee_detail.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_rail.dart';
 import 'package:rwa_api_client/src/model/hip3_collateral_risk_preview.dart';
@@ -15,13 +16,15 @@ part 'hip3_withdrawal_preview.g.dart';
 ///
 /// Properties:
 /// * [amount] - 十进制字符串，避免浮点误差
-/// * [fee] - 十进制字符串，避免浮点误差
+/// * [fee] - 用户承担并从 amount 中扣除的 USDC 总费用；不包含平台承担的 ETH Gas。到账金额为 amount - fee，明细不能再重复扣费。
 /// * [minimumReceived] - 十进制字符串，避免浮点误差
 /// * [rail] 
 /// * [destinationAddress] 
 /// * [chainId] - 自有 Arbitrum 钱包所在链，主网 42161 / 测试网 421614。
 /// * [maximumTransferable] - 十进制字符串，避免浮点误差
 /// * [blockers] 
+/// * [estimatedArrivalSeconds] - 从成功提交算起的静态展示预估秒数；当前 float 暂定为 120、bridge2 为 300（官方 withdraw3 约 5 分钟）。不包含用户签名等待；不是实测延迟、截止时间或 SLA，拥堵和资金池异常可能延长到账时间。
+/// * [feeDetails] - 按实际通道返回的费用解释。float 返回用户 USDC 提现费 0 和平台承担的 ETH 网络费（未知金额为 null）；bridge2 仅返回用户承担的官方桥提现费，不拆分、不重复增加网络费。仅 user/USDC 项计入 fee，不能跨币种求和。
 /// * [riskPreview] 
 @BuiltValue()
 abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip3WithdrawalPreviewBuilder> {
@@ -29,7 +32,7 @@ abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
-  /// 十进制字符串，避免浮点误差
+  /// 用户承担并从 amount 中扣除的 USDC 总费用；不包含平台承担的 ETH Gas。到账金额为 amount - fee，明细不能再重复扣费。
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
@@ -55,6 +58,14 @@ abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip
   @BuiltValueField(wireName: r'blockers')
   BuiltList<Hip3WithdrawalPreviewBlockersEnum> get blockers;
   // enum blockersEnum {  insufficient_withdrawable_balance,  };
+
+  /// 从成功提交算起的静态展示预估秒数；当前 float 暂定为 120、bridge2 为 300（官方 withdraw3 约 5 分钟）。不包含用户签名等待；不是实测延迟、截止时间或 SLA，拥堵和资金池异常可能延长到账时间。
+  @BuiltValueField(wireName: r'estimated_arrival_seconds')
+  int get estimatedArrivalSeconds;
+
+  /// 按实际通道返回的费用解释。float 返回用户 USDC 提现费 0 和平台承担的 ETH 网络费（未知金额为 null）；bridge2 仅返回用户承担的官方桥提现费，不拆分、不重复增加网络费。仅 user/USDC 项计入 fee，不能跨币种求和。
+  @BuiltValueField(wireName: r'fee_details')
+  BuiltList<Hip3WithdrawalFeeDetail> get feeDetails;
 
   @BuiltValueField(wireName: r'risk_preview')
   Hip3CollateralRiskPreview get riskPreview;
@@ -121,6 +132,16 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
     yield serializers.serialize(
       object.blockers,
       specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalPreviewBlockersEnum)]),
+    );
+    yield r'estimated_arrival_seconds';
+    yield serializers.serialize(
+      object.estimatedArrivalSeconds,
+      specifiedType: const FullType(int),
+    );
+    yield r'fee_details';
+    yield serializers.serialize(
+      object.feeDetails,
+      specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),
     );
     yield r'risk_preview';
     yield serializers.serialize(
@@ -205,6 +226,20 @@ class _$Hip3WithdrawalPreviewSerializer implements PrimitiveSerializer<Hip3Withd
             specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalPreviewBlockersEnum)]),
           ) as BuiltList<Hip3WithdrawalPreviewBlockersEnum>;
           result.blockers.replace(valueDes);
+          break;
+        case r'estimated_arrival_seconds':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(int),
+          ) as int;
+          result.estimatedArrivalSeconds = valueDes;
+          break;
+        case r'fee_details':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(Hip3WithdrawalFeeDetail)]),
+          ) as BuiltList<Hip3WithdrawalFeeDetail>;
+          result.feeDetails.replace(valueDes);
           break;
         case r'risk_preview':
           final valueDes = serializers.deserialize(

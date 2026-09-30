@@ -63,6 +63,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   TradingOrder? submittedOrder;
   String? error;
   bool reviewing = false;
+  bool _approving = false;
   bool _confirmationFromFunding = false;
   Timer? _quoteDebounce;
   Timer? _previewPollingTimer;
@@ -109,17 +110,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   void _refreshAmount() {
     if (type == TradingOrderType.limit) return;
     _percentageWaitingForAmount = false;
-    final available = double.tryParse(
-      _availableAmount(
-            side: side,
-            symbol: widget.symbol,
-            availableBalance: ref
-                .read(bstocksOrderAvailableBalanceProvider)
-                .value,
-            holdings: ref.read(holdingsProvider(null)).value?.items,
-          )?.value ??
-          '',
-    );
+    final available = _percentageAvailable;
     final entered = double.tryParse(amount.text.trim());
     final nextPercentage =
         available == null ||
@@ -232,15 +223,13 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     DecimalValue? availableBalance,
     List<HoldingGroup>? holdings,
   ) {
-    final available = double.tryParse(
-      _availableAmount(
-            side: side,
-            symbol: widget.symbol,
-            availableBalance: availableBalance,
-            holdings: holdings,
-          )?.value ??
-          '',
+    final availableAmount = _availableAmount(
+      side: side,
+      symbol: widget.symbol,
+      availableBalance: availableBalance,
+      holdings: holdings,
     );
+    final available = double.tryParse(availableAmount?.value ?? '');
     if (available == null) {
       setState(() {
         percentage = value;
@@ -256,12 +245,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       return;
     }
 
-    final nextAmount = available * value / 100;
-    final nextText = _formatInputAmount(
-      nextAmount,
-      available: available,
-      percentage: value,
-    );
+    final nextText = _formatInputAmount(availableAmount!, percentage: value);
     _percentageWaitingForAmount = false;
     if (mounted) setState(() => percentage = value);
     final controller = type == TradingOrderType.limit
@@ -301,7 +285,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final generation = ++_quoteGeneration;
     final intent = _intentFromFields();
     if (intent == null) {
-      if (quotePreview != null || _quoting) {
+      if (mounted) {
         setState(() {
           quotePreview = null;
           _quoting = false;
@@ -354,14 +338,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final inputValue = type == TradingOrderType.limit
         ? quantity.text.trim()
         : amount.text.trim();
-    if (inputValue.isEmpty || !_isDecimal(inputValue)) {
+    if (!_isPositiveDecimal(inputValue)) {
       setState(() => error = AppLocalizations.of(context).validOrderValue);
       return;
     }
     if (type == TradingOrderType.limit &&
-        (limitPrice.text.trim().isEmpty ||
-            !_isDecimal(limitPrice.text.trim()) ||
-            double.tryParse(limitPrice.text.trim())! <= 0)) {
+        !_isPositiveDecimal(limitPrice.text.trim())) {
       setState(() => error = AppLocalizations.of(context).validLimitPrice);
       return;
     }
@@ -403,6 +385,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ? cachedQuote!
           : await ref.read(orderPreviewProvider(intent).future);
       if (!mounted) return;
+      if (next.approvalRequired) {
+        await _approvePreview(next);
+        return;
+      }
       _showConfirmation(next, fromFunding: completedFundingFlow);
     } on Object catch (error) {
       if (mounted) {
@@ -417,6 +403,80 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       if (mounted) {
         setState(() => reviewing = false);
       }
+    }
+  }
+
+  Future<void> _approve() async {
+    final current = quotePreview;
+    if (current == null ||
+        current.intent.fingerprint != _intentFromFields()?.fingerprint ||
+        current.isExpired ||
+        !current.approvalRequired) {
+      _scheduleQuote();
+      return;
+    }
+    await _approvePreview(current);
+  }
+
+  Future<void> _approvePreview(OrderPreview current) async {
+    if (_approving) return;
+    final fingerprint = current.intent.fingerprint;
+    setState(() {
+      error = null;
+      _approving = true;
+    });
+    try {
+      final approved = await _orderCommands.approve(
+        current.intent,
+        previewId: current.previewId,
+      );
+      if (!mounted) return;
+      if (approved == null) {
+        final state = ref.read(orderCommandProvider);
+        final failure =
+            state is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>
+            ? state.failure
+            : const CompatibilityFailure();
+        setState(
+          () => error = apiFailureMessage(
+            failure,
+            fallback: AppLocalizations.of(context).orderSubmissionFailed,
+          ),
+        );
+        return;
+      }
+
+      OrderPreview refreshed = current;
+      for (var attempt = 0; attempt < 5; attempt++) {
+        final provider = orderPreviewProvider(current.intent);
+        ref.invalidate(provider);
+        refreshed = await ref.read(provider.future);
+        if (!refreshed.approvalRequired) break;
+        if (attempt < 4) await Future<void>.delayed(const Duration(seconds: 1));
+      }
+      if (!mounted) return;
+      if (refreshed.approvalRequired) {
+        throw const UnknownFailure(
+          retryable: true,
+          userAction: 'Approval confirmed, but the refreshed quote still requires approval',
+        );
+      }
+      if (_intentFromFields()?.fingerprint != fingerprint) {
+        _scheduleQuote();
+        return;
+      }
+      setState(() => quotePreview = refreshed);
+    } on Object catch (approvalError) {
+      if (mounted) {
+        setState(
+          () => error = _errorMessage(
+            error: approvalError,
+            fallback: AppLocalizations.of(context).orderSubmissionFailed,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _approving = false);
     }
   }
 
@@ -510,14 +570,13 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   OrderIntent? _intentFromFields() {
     final amountValue = amount.text.trim();
     final rawPrice = limitPrice.text.trim();
-    if (type == TradingOrderType.limit &&
-        (rawPrice.isEmpty || !_isDecimal(rawPrice))) {
+    if (type == TradingOrderType.limit && !_isPositiveDecimal(rawPrice)) {
       return null;
     }
     final limitQuantity = quantity.text.trim();
     if (type == TradingOrderType.limit) {
-      if (limitQuantity.isEmpty || !_isDecimal(limitQuantity)) return null;
-    } else if (amountValue.isEmpty || !_isDecimal(amountValue)) {
+      if (!_isPositiveDecimal(limitQuantity)) return null;
+    } else if (!_isPositiveDecimal(amountValue)) {
       return null;
     }
     final sellsBstocks = side == TradingSide.sell;
@@ -548,7 +607,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   String get _settlementAssetForInput =>
-      quotePreview?.settlementAsset ?? 'TUSDT';
+      quotePreview?.settlementAsset ?? 'USDT';
 
   Future<void> _submit() async {
     final current = preview;
@@ -699,7 +758,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final success = Theme.of(context).extension<AppSemanticColors>()!.success;
     final isBuy = side == TradingSide.buy;
     final actionColor = isBuy ? success : kShortTradeColor;
-    final settlementAsset = quotePreview?.settlementAsset ?? 'TUSDT';
+    final settlementAsset = quotePreview?.settlementAsset ?? 'USDT';
     final snapshot = ref.watch(
       marketSnapshotProvider(
         MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.bstock),
@@ -717,6 +776,13 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ? (isBuy ? orderValue.text.trim() : quantity.text.trim())
         : amount.text.trim();
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
+    final hasExplicitInvalidAmount =
+        enteredAmount.isNotEmpty && !_isPositiveDecimal(enteredAmount);
+    final currentIntent = _intentFromFields();
+    final approvalRequired =
+        quotePreview?.approvalRequired == true &&
+        quotePreview?.intent.fingerprint == currentIntent?.fingerprint &&
+        quotePreview?.isExpired == false;
     final availableBalance = settlementBalance;
     final holdings = ref.watch(holdingsProvider(null));
     _schedulePendingPercentageSync(
@@ -1013,12 +1079,28 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     ? colors.onPrimaryAction
                     : Colors.white,
               ),
-              onPressed: reviewing ? null : _review,
-              child: Text(
-                reviewing
-                    ? l10n.preparingOrder
-                    : '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
-              ),
+              onPressed: reviewing || _approving || hasExplicitInvalidAmount
+                  ? null
+                  : approvalRequired
+                  ? _approve
+                  : _review,
+              child: _approving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        key: Key('bstocks-approval-loading'),
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      reviewing
+                          ? l10n.preparingOrder
+                          : approvalRequired
+                          ? 'Approve'
+                          : '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
+                    ),
             ),
           ),
         ],
@@ -1236,10 +1318,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   );
 }
 
-bool _isDecimal(String value) {
+bool _isPositiveDecimal(String value) {
   try {
-    DecimalValue(value);
-    return true;
+    return DecimalValue(value).compareMagnitudeTo(DecimalValue('0')) > 0;
   } on FormatException {
     return false;
   }
@@ -1286,20 +1367,50 @@ DecimalValue? _availableAmount({
 }
 
 String _formatInputAmount(
-  double value, {
-  double? available,
-  double? percentage,
+  DecimalValue available, {
+  required double percentage,
 }) {
-  final shouldKeepDecimals =
-      available == null ||
-      percentage == null ||
-      available <= 2 ||
-      percentage >= 100;
+  final numericAvailable = double.parse(available.value);
+  final value = numericAvailable * percentage / 100;
+  final shouldKeepDecimals = numericAvailable <= 2 || percentage >= 100;
   if (!shouldKeepDecimals) {
     return value.floor().toString();
   }
-  final fixed = value.toStringAsFixed(8);
-  return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
+  return _scaleDecimalByPercentage(available.value, percentage);
+}
+
+String _scaleDecimalByPercentage(String amount, double percentage) {
+  final negative = amount.startsWith('-');
+  final unsignedAmount = negative ? amount.substring(1) : amount;
+  final amountParts = unsignedAmount.split('.');
+  final amountScale = amountParts.length == 1 ? 0 : amountParts.last.length;
+  final amountDigits = BigInt.parse(
+    '${amountParts.first}${amountParts.length == 1 ? '' : amountParts.last}',
+  );
+
+  final percentageText = percentage
+      .clamp(0.0, 100.0)
+      .toStringAsFixed(6)
+      .replaceFirst(RegExp(r'\.?0+$'), '');
+  final percentageParts = percentageText.split('.');
+  final percentageScale = percentageParts.length == 1
+      ? 0
+      : percentageParts.last.length;
+  final percentageDigits = BigInt.parse(
+    '${percentageParts.first}'
+    '${percentageParts.length == 1 ? '' : percentageParts.last}',
+  );
+
+  final product = amountDigits * percentageDigits;
+  final scale = amountScale + percentageScale + 2;
+  final digits = product.toString().padLeft(scale + 1, '0');
+  final split = digits.length - scale;
+  final raw = scale == 0
+      ? digits
+      : '${digits.substring(0, split)}.${digits.substring(split)}';
+  final normalized = raw.replaceFirst(RegExp(r'\.?0+$'), '');
+  if (normalized == '0') return normalized;
+  return '${negative ? '-' : ''}$normalized';
 }
 
 class _ChoiceRow<T> extends StatelessWidget {

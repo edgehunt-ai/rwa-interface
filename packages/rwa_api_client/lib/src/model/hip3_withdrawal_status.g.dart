@@ -8,6 +8,8 @@ part of 'hip3_withdrawal_status.dart';
 
 const Hip3WithdrawalStatus _$awaitingSignature =
     const Hip3WithdrawalStatus._('awaitingSignature');
+const Hip3WithdrawalStatus _$submitting =
+    const Hip3WithdrawalStatus._('submitting');
 const Hip3WithdrawalStatus _$submitted =
     const Hip3WithdrawalStatus._('submitted');
 const Hip3WithdrawalStatus _$payout = const Hip3WithdrawalStatus._('payout');
@@ -20,6 +22,8 @@ Hip3WithdrawalStatus _$valueOf(String name) {
   switch (name) {
     case 'awaitingSignature':
       return _$awaitingSignature;
+    case 'submitting':
+      return _$submitting;
     case 'submitted':
       return _$submitted;
     case 'payout':
@@ -38,6 +42,7 @@ Hip3WithdrawalStatus _$valueOf(String name) {
 final BuiltSet<Hip3WithdrawalStatus> _$values =
     BuiltSet<Hip3WithdrawalStatus>(const <Hip3WithdrawalStatus>[
   _$awaitingSignature,
+  _$submitting,
   _$submitted,
   _$payout,
   _$completed,
@@ -48,6 +53,7 @@ final BuiltSet<Hip3WithdrawalStatus> _$values =
 class _$Hip3WithdrawalStatusMeta {
   const _$Hip3WithdrawalStatusMeta();
   Hip3WithdrawalStatus get awaitingSignature => _$awaitingSignature;
+  Hip3WithdrawalStatus get submitting => _$submitting;
   Hip3WithdrawalStatus get submitted => _$submitted;
   Hip3WithdrawalStatus get payout => _$payout;
   Hip3WithdrawalStatus get completed => _$completed;
@@ -70,6 +76,7 @@ class _$Hip3WithdrawalStatusSerializer
     implements PrimitiveSerializer<Hip3WithdrawalStatus> {
   static const Map<String, Object> _toWire = const <String, Object>{
     'awaitingSignature': 'awaiting_signature',
+    'submitting': 'submitting',
     'submitted': 'submitted',
     'payout': 'payout',
     'completed': 'completed',
@@ -78,6 +85,7 @@ class _$Hip3WithdrawalStatusSerializer
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'awaiting_signature': 'awaitingSignature',
+    'submitting': 'submitting',
     'submitted': 'submitted',
     'payout': 'payout',
     'completed': 'completed',
