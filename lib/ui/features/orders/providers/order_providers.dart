@@ -17,6 +17,7 @@ import '../../../../domain/models/order.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/order_preview.dart';
+import '../../portfolio/providers/portfolio_providers.dart';
 import '../../../../domain/models/resource_result.dart';
 
 final hip3OpeningContextProvider = FutureProvider.autoDispose
@@ -231,6 +232,12 @@ final class OrderCommandNotifier
       ref.invalidate(bstocksOrdersProvider);
       ref.invalidate(hip3OrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
+      // Order acceptance can change reserved/available balances and holdings
+      // even when the order is still processing. Keep portfolio surfaces from
+      // serving the pre-order snapshot while the user moves between pages.
+      ref.invalidate(portfolioSummaryProvider);
+      ref.invalidate(tradingAccountsProvider);
+      ref.invalidate(holdingsProvider);
       ref
           .read(observabilityReporterProvider)
           .recordOperation(operation, outcome: 'succeeded');

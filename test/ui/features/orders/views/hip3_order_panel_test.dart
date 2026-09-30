@@ -11,11 +11,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/market_snapshot.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
+import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_protection.dart';
 import 'package:rwa_interface/domain/models/hip3_step_confirmation.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
@@ -45,6 +47,7 @@ import 'package:rwa_interface/domain/repositories/hip3_opening_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
+import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
@@ -1287,15 +1290,34 @@ void main() {
   ) async {
     final orders = _ExecutableHip3Orders();
     final execution = _Hip3Execution();
+    var positionLoads = 0;
+    const positionFilter = (
+      symbol: 'NVDA',
+      kind: MarketProductKind.perp,
+      cursor: null,
+    );
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           ordersRepositoryProvider.overrideWithValue(orders),
           hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+          positionsProvider(positionFilter).overrideWith((_) async {
+            positionLoads++;
+            return const DomainPage<Position>(items: []);
+          }),
         ],
-        child: _app(const Hip3OrderPanel()),
+        child: _app(
+          Stack(
+            children: [
+              const Hip3OrderPanel(),
+              const Offstage(child: _PositionProbe(filter: positionFilter)),
+            ],
+          ),
+        ),
       ),
     );
+    await tester.pumpAndSettle();
+    expect(positionLoads, 1);
 
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.tap(find.byType(FilledButton).first);
@@ -1305,6 +1327,7 @@ void main() {
 
     expect(execution.orderId, 'order-1');
     expect(find.text('Order submitted'), findsOneWidget);
+    expect(positionLoads, 2);
     final successImage = tester.widget<Image>(find.byType(Image));
     expect(
       (successImage.image as AssetImage).assetName,
@@ -1312,6 +1335,18 @@ void main() {
     );
     expect(find.text('Close & View Later'), findsOneWidget);
   });
+}
+
+final class _PositionProbe extends ConsumerWidget {
+  const _PositionProbe({required this.filter});
+
+  final PositionFilter filter;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(positionsProvider(filter));
+    return const SizedBox.shrink();
+  }
 }
 
 final class _CapturingHip3Orders implements OrdersRepository {

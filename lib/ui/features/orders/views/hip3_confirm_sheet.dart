@@ -17,6 +17,8 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../providers/order_providers.dart';
+import '../../portfolio/providers/portfolio_providers.dart';
+import '../../positions/providers/position_providers.dart';
 import 'hip3_order_messages.dart';
 import 'slippage_controls.dart';
 import 'order_funding_confirmation_header.dart';
@@ -188,6 +190,20 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
         );
         return;
       }
+      // A pending-signature order is accepted by the create-order request
+      // before its wallet action is actually submitted. The initial
+      // `orderCommandProvider` acceptance therefore refreshes the order list,
+      // but it cannot refresh the position/account data that changes only
+      // after this final action succeeds. Invalidate all dependent queries
+      // here so the trade page (and any portfolio view kept alive underneath
+      // the sheet) reads the authoritative post-submission state.
+      ref.invalidate(activeHip3ActionsProvider);
+      ref.invalidate(hip3OpenOrdersProvider);
+      ref.invalidate(positionsProvider);
+      ref.invalidate(positionProvider);
+      ref.invalidate(portfolioSummaryProvider);
+      ref.invalidate(tradingAccountsProvider);
+      ref.invalidate(holdingsProvider);
       if (!mounted) return;
       Navigator.of(context).pop(submitted.resource);
       return;
