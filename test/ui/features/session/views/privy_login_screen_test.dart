@@ -1,13 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
 import 'package:rwa_interface/data/auth/reown_wallet_connector.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
+import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
+import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/session/views/privy_login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -119,6 +122,38 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
+  testWidgets('keeps the legal footer fixed when the keyboard appears', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    addTearDown(tester.view.resetViewInsets);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(),
+          ),
+        ],
+        child: _buildLoginApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationUnauthenticated(),
+          ),
+        ),
+      ),
+    );
+
+    final legalCopy = find.text(
+      'By using this app, you agree to the Terms & Conditions.',
+    );
+    final bottomBeforeKeyboard = tester.getBottomLeft(legalCopy).dy;
+
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pump();
+
+    expect(tester.getBottomLeft(legalCopy).dy, bottomBeforeKeyboard);
+  });
+
   testWidgets('restores verification input focus after keyboard dismissal', (
     tester,
   ) async {
@@ -185,6 +220,18 @@ void main() {
     expect(find.text('Code resent'), findsOneWidget);
   });
 }
+
+Widget _buildLoginApp(Widget child) => MaterialApp(
+  theme: AppTheme.light,
+  localizationsDelegates: const [
+    AppLocalizations.delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: child,
+);
 
 final class _FakeWalletConnector implements WalletConnector {
   var connectCalls = 0;

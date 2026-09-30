@@ -231,6 +231,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
         ref.read(authenticationProvider.notifier).cancelEmailCode();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
             const Positioned.fill(
@@ -271,7 +272,12 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
             SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(28, 48, 28, 132),
+                  padding: EdgeInsets.fromLTRB(
+                    28,
+                    48,
+                    28,
+                    132 + MediaQuery.viewInsetsOf(context).bottom,
+                  ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 393),
                     child: Column(
