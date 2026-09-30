@@ -356,6 +356,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cashBalances => 'Cash balances';
 
   @override
+  String get allTokens => 'All tokens';
+
+  @override
+  String get allNetworks => 'All network';
+
+  @override
+  String get totalBalances => 'Total balances';
+
+  @override
   String get activity => 'Activity';
 
   @override

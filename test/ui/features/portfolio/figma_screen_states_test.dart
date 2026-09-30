@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rwa_interface/app_review/repositories.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
@@ -34,24 +35,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Assets'), findsWidgets);
-    expect(find.text(r'$248.32 (+2.01%) Today'), findsOneWidget);
+    expect(find.text(r'+$248.32 (+2.01%) Today'), findsOneWidget);
     expect(find.text('View portfolio trend'), findsNothing);
     expect(find.byKey(const Key('portfolio-trend-trigger')), findsOneWidget);
     expect(find.text('Allocation'), findsOneWidget);
-    expect(find.text('Cash balances'), findsOneWidget);
+    expect(find.text('Total balances'), findsOneWidget);
+    expect(find.text('All tokens'), findsOneWidget);
+    expect(find.text('All network'), findsOneWidget);
+    expect(find.text('Spot'), findsWidgets);
+    expect(find.text('Perps'), findsWidgets);
     expect(find.text('ETH'), findsNothing);
     await tester.tap(find.text('Allocation'));
     await tester.pump();
     expect(find.text('Cash · 25.8%'), findsOneWidget);
     expect(find.text('bStocks · 44.6%'), findsOneWidget);
     expect(find.text('Perps · 29.6%'), findsOneWidget);
-    expect(find.text('\$3,240.2'), findsOneWidget);
+    expect(find.text('\$3,240.20'), findsOneWidget);
     expect(find.text('\$5,610.22'), findsOneWidget);
-    expect(find.text('\$3,730'), findsOneWidget);
-    await tester.tap(find.text('bStocks'));
-    await tester.pumpAndSettle();
-    expect(find.text('bStocks'), findsWidgets);
-    expect(find.text('Buy a bStock to see it here.'), findsOneWidget);
+    expect(find.text('\$3,730.00'), findsOneWidget);
     await tester.tap(find.byKey(const Key('portfolio-trend-trigger')));
     await tester.pump();
     expect(find.text('Portfolio trend'), findsOneWidget);
@@ -149,7 +150,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Allocation unavailable'), findsNothing);
-    expect(find.text('Cash 100%'), findsOneWidget);
+    expect(find.text('Spot 100%'), findsOneWidget);
   });
 
   testWidgets('Assets bStocks rows match the holding design content', (
@@ -166,14 +167,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('bStocks'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('NVIDIA'), findsOneWidget);
+    expect(find.text('NVDAB'), findsOneWidget);
     expect(find.text('bStocks'), findsWidgets);
     expect(find.text('3.0154 NVDAB'), findsOneWidget);
     expect(find.text('Holding return'), findsOneWidget);
-    expect(find.text(r'+$16 (+3%)'), findsOneWidget);
+    expect(find.text(r'+$16.00 (+3.00%)'), findsOneWidget);
     expect(
       find.byWidgetPredicate(
         (widget) =>
@@ -198,9 +196,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('bStocks'));
-    await tester.pumpAndSettle();
-
     expect(find.text('持仓收益'), findsOneWidget);
     expect(find.text('Holding return'), findsNothing);
   });
@@ -225,6 +220,93 @@ void main() {
     expect(find.text('Withdraw'), findsNothing);
     expect(find.text('Allocation'), findsNothing);
     expect(find.text('Cash'), findsNothing);
+  });
+
+  testWidgets('Assets filters the combined Spot list by product', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            _BstockHoldingsPortfolio(),
+          ),
+        ],
+        child: _assetsApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDAB'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('spot-product-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cash').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDAB'), findsNothing);
+    expect(find.text('No matching assets'), findsOneWidget);
+  });
+
+  testWidgets('Assets keeps the Figma layout stable at compact widths', (
+    tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+
+    for (final width in [393.0, 320.0]) {
+      tester.view.physicalSize = Size(width, 852);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            portfolioRepositoryProvider.overrideWithValue(
+              AppReviewPortfolioRepository(),
+            ),
+          ],
+          child: _assetsApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull, reason: 'width: $width');
+      expect(find.text('NVDAB'), findsOneWidget);
+      expect(find.text('USDC'), findsOneWidget);
+      expect(find.text('Total balances'), findsOneWidget);
+      if (width == 393) {
+        final title = tester.getRect(find.text('Assets').first);
+        expect(title.left, 20);
+        expect(title.top, 28);
+        expect(title.height, 34);
+
+        final portfolioLabel = tester.getRect(find.text('Portfolio value'));
+        expect(portfolioLabel.top, 89);
+        expect(portfolioLabel.height, 18);
+
+        final allocation = tester.getRect(find.text('Allocation'));
+        expect(allocation.top, 270);
+        expect(allocation.height, 18);
+
+        final filters = tester.getRect(
+          find.byKey(const Key('spot-product-filter')),
+        );
+        expect(filters.left, 20);
+        expect(filters.top, 410);
+        expect(filters.width, 135);
+        expect(filters.height, 36);
+
+        final sectionTitle = tester.getRect(find.text('Total balances'));
+        expect(sectionTitle.top, 458);
+        expect(sectionTitle.height, 26);
+        final sectionValue = tester.getRect(find.text(r'$25,000.00'));
+        expect(sectionValue.right, 373);
+        expect(sectionValue.top, 460);
+
+        final firstAsset = tester.getRect(find.text('NVDAB'));
+        expect(firstAsset.left, 72);
+        expect(firstAsset.top, 500);
+        expect(firstAsset.height, 22);
+      }
+    }
   });
 }
 

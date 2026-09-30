@@ -89,6 +89,7 @@ flutter:
     - assets/figma/account_activity/
     - assets/figma/session/
     - assets/figma/common/
+    - assets/figma/portfolio/
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

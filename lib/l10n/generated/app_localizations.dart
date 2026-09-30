@@ -770,6 +770,24 @@ abstract class AppLocalizations {
   /// **'Cash balances'**
   String get cashBalances;
 
+  /// No description provided for @allTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'All tokens'**
+  String get allTokens;
+
+  /// No description provided for @allNetworks.
+  ///
+  /// In en, this message translates to:
+  /// **'All network'**
+  String get allNetworks;
+
+  /// No description provided for @totalBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Total balances'**
+  String get totalBalances;
+
   /// No description provided for @activity.
   ///
   /// In en, this message translates to:

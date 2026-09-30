@@ -114,13 +114,23 @@ class _DestinationButton extends StatelessWidget {
               ),
               if (showLabel) ...[
                 const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: selected ? colors.primaryText : colors.tertiaryText,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 11,
-                    height: 1,
+                SizedBox(
+                  height: 14,
+                  child: Text(
+                    label,
+                    strutStyle: const StrutStyle(
+                      fontSize: 11,
+                      height: 14 / 11,
+                      forceStrutHeight: true,
+                    ),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: selected
+                          ? colors.primaryText
+                          : colors.tertiaryText,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                      height: 14 / 11,
+                    ),
                   ),
                 ),
               ],

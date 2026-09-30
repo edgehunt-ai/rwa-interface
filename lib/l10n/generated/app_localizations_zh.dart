@@ -350,6 +350,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cashBalances => '现金余额';
 
   @override
+  String get allTokens => '全部代币';
+
+  @override
+  String get allNetworks => '全部网络';
+
+  @override
+  String get totalBalances => '总余额';
+
+  @override
   String get activity => '活动';
 
   @override
