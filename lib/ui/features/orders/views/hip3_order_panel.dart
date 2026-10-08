@@ -2057,22 +2057,19 @@ class _Hip3RiskSummary extends StatelessWidget {
         _Hip3RiskRow(
           AppLocalizations.of(context).liquidationPrice,
           loading ? null : execution?.liquidationPrice?.value ?? '-',
+          key: const Key('hip3-liquidation-price-row'),
           loading: loading,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         _Hip3RiskRow(
           AppLocalizations.of(context).marginRequired,
           loading
               ? null
               : '${execution?.marginRequired.value ?? '—'} $settlementAsset',
+          key: const Key('hip3-margin-required-row'),
           loading: loading,
         ),
-        if (execution case final value?)
-          _Hip3RiskRow(
-            AppLocalizations.of(context).maximumQuantity,
-            value.maximumQuantity?.value ?? '-',
-          ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         if (allowProtection)
           InkWell(
             key: const Key('hip3-tp-sl-toggle'),
@@ -2127,7 +2124,7 @@ class _Hip3RiskSummary extends StatelessWidget {
                 orderValue != null &&
                 orderValue! > 0 &&
                 current.markNotional != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           _Hip3PositionWillBeRow(
             position: current,
             orderSide: orderSide!,
@@ -2135,7 +2132,7 @@ class _Hip3RiskSummary extends StatelessWidget {
           ),
         ],
         if (impacts.isNotEmpty) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Hip3CrossLiquidationImpactsCard(
             impacts: impacts,
             marketPrices: marketPrices,
@@ -3188,22 +3185,33 @@ String _formatPositionUsd(double value) {
 }
 
 class _Hip3RiskRow extends StatelessWidget {
-  const _Hip3RiskRow(this.label, this.value, {this.loading = false});
+  const _Hip3RiskRow(this.label, this.value, {super.key, this.loading = false});
 
   final String label;
   final String? value;
   final bool loading;
 
   @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
-      if (loading)
-        const SkeletonBlock(width: 72, height: 14, radius: 4)
-      else
-        Text(value ?? '-', style: const TextStyle(fontWeight: FontWeight.w600)),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 13, color: colors.secondaryText),
+          ),
+        ),
+        if (loading)
+          const SkeletonBlock(width: 72, height: 14, radius: 4)
+        else
+          Text(
+            value ?? '-',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+      ],
+    );
+  }
 }
 
 class _Hip3LimitInput extends StatefulWidget {

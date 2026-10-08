@@ -26,6 +26,7 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/order_funding_sheet.dart';
+import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 
 import 'package:rwa_interface/app/observability/observability_reporter.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
@@ -988,7 +989,14 @@ void main() {
   testWidgets('HIP-3 panel exposes perpetual-only order controls', (
     tester,
   ) async {
-    await tester.pumpWidget(ProviderScope(child: _app(const Hip3OrderPanel())));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(_ExecutableHip3Orders()),
+        ],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
 
     await tester.pumpAndSettle();
     expect(find.text('Long NVDA'), findsWidgets);
@@ -998,6 +1006,37 @@ void main() {
     expect(find.byKey(const Key('hip3-tp-sl-toggle')), findsOneWidget);
     expect(find.text('Liquidation Price'), findsOneWidget);
     expect(find.text('Margin Required'), findsOneWidget);
+    expect(find.text('Maximum quantity'), findsNothing);
+
+    final colors = Theme.of(
+      tester.element(find.byKey(const Key('hip3-liquidation-price-row'))),
+    ).extension<AppRwaColors>()!;
+    expect(
+      tester.widget<Text>(find.text('Liquidation Price')).style?.color,
+      colors.secondaryText,
+    );
+    expect(
+      tester.widget<Text>(find.text('Margin Required')).style?.color,
+      colors.secondaryText,
+    );
+
+    final liquidationRow = tester.getRect(
+      find.byKey(const Key('hip3-liquidation-price-row')),
+    );
+    final marginRow = tester.getRect(
+      find.byKey(const Key('hip3-margin-required-row')),
+    );
+    final protectionRow = tester.getRect(
+      find.byKey(const Key('hip3-tp-sl-toggle')),
+    );
+    expect(marginRow.top - liquidationRow.bottom, 10);
+    expect(protectionRow.top - marginRow.bottom, 10);
+
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(find.text('90'), findsOneWidget);
+    expect(find.text('Maximum quantity'), findsNothing);
 
     await tester.tap(find.text('Short').first);
     await tester.pump();
