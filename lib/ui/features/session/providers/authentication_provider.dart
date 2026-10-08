@@ -364,8 +364,10 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       await ref
           .read(walletsRepositoryProvider)
           .syncWallet(
-            idempotencyKey:
-                scopedIdempotencyKey('wallet-sync-${session.sessionId}'));
+            idempotencyKey: scopedIdempotencyKey(
+              'wallet-sync-${session.sessionId}',
+            ),
+          );
     } on ApiFailure catch (failure) {
       throw IdentityFailure(
         AuthenticationFailureCode.walletSync,

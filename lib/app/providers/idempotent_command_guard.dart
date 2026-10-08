@@ -13,12 +13,9 @@ final class IdempotentCommandGuard {
     final active = _inFlight[identity];
     if (active != null) return active.then((value) => value as T);
 
-    // The contract pins Idempotency-Key to `format: uuid`; a deterministic
-    // v5 keeps every retry of this identity on the exact same key.
-    final key = _keys.putIfAbsent(
-      identity,
-      () => scopedIdempotencyKey(identity),
-    );
+    // Keep retries stable within this command scope. A replacement scope must
+    // receive a fresh key so a later session cannot replay an earlier command.
+    final key = _keys.putIfAbsent(identity, newIdempotencyKey);
     // Start the request before registering its cleanup.  An immediately
     // completed future can otherwise run `finally` while a self-referential
     // local future is still uninitialized.

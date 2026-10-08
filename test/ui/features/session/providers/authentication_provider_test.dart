@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/config/privy_configuration.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
+import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
@@ -34,7 +35,10 @@ void main() {
     expect(repository.createCalls, 1);
     expect(gateway.ensureEmbeddedWalletCalls, 1);
     expect(wallets.syncCalls, 1);
-    expect(wallets.lastIdempotencyKey, 'wallet-sync-session-1');
+    expect(
+      wallets.lastIdempotencyKey,
+      scopedIdempotencyKey('wallet-sync-session-1'),
+    );
     expect(
       container.read(authenticationProvider),
       isA<AuthenticationAuthenticated>(),

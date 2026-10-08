@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
+import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/data/repositories/positions_repository_impl.dart';
 import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
 import 'package:rwa_interface/data/services/positions_service.dart';
@@ -211,7 +212,10 @@ void main() {
     expect(set.protection.quantity, '0.2');
     expect(set.protection.takeProfit, isNull);
     expect(set.protection.stopLoss!.triggerPrice, '90');
-    expect(actions.keys, ['edit-clear', 'edit-set']);
+    expect(actions.keys, [
+      scopedIdempotencyKey('edit-clear'),
+      scopedIdempotencyKey('edit-set'),
+    ]);
   });
 
   test(

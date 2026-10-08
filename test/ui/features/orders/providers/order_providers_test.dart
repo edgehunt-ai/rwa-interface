@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
 import 'package:rwa_interface/app/observability/observability_reporter.dart';
+import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/hip3_action_summary.dart';
@@ -115,7 +116,7 @@ void main() {
     addTearDown(container.dispose);
     await container.read(orderCommandProvider.notifier).cancel(_perpOrder());
     expect(execution.orderId, 'perp-1');
-    expect(execution.key, 'hip3-cancel-perp-1');
+    expect(execution.key, scopedIdempotencyKey('hip3-cancel-perp-1'));
   });
   test(
     '20 concurrent submits share one request and one idempotency key',

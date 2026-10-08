@@ -218,7 +218,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         initial,
         Hip3PositionIntents.clearProtection(initial, scope: clearScope),
         api.Hip3Operation.clearTpsl,
-        '$idempotencyKey-clear',
+        scopedIdempotencyKey('$idempotencyKey-clear'),
         confirmBeforeSigning: confirmBeforeSigning,
       );
       if (takeProfit == null && stopLoss == null) {
@@ -402,7 +402,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
               ..quantity = quantity
               ..percent = percent ?? (quantity == null ? '100' : null),
           ),
-          '$idempotencyKey-preview',
+          scopedIdempotencyKey('$idempotencyKey-preview'),
         );
         return (position, preview);
       },

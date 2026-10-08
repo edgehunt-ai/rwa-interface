@@ -407,8 +407,9 @@ final class OrderCommandNotifier
                 .read(hip3OrderExecutionRepositoryProvider)
                 .cancelOrder(
                   order.orderId,
-                  idempotencyKey:
-                      scopedIdempotencyKey('hip3-cancel-${order.orderId}'),
+                  idempotencyKey: scopedIdempotencyKey(
+                    'hip3-cancel-${order.orderId}',
+                  ),
                 )
           : await ref
                 .read(ordersRepositoryProvider)

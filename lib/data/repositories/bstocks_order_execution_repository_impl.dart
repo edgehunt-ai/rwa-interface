@@ -152,7 +152,8 @@ final class BstocksOrderExecutionRepositoryImpl
       stepId: action.stepId,
       mode: GasPaymentMode.appSponsored,
       idempotencyKey: scopedIdempotencyKey(
-        'bstocks-sponsored-${action.orderId}-${action.stepId}'),
+        'bstocks-sponsored-${action.orderId}-${action.stepId}',
+      ),
     );
     if (execution.requiresUserPaidFallback) {
       throw UnknownFailure(
@@ -179,7 +180,8 @@ final class BstocksOrderExecutionRepositoryImpl
             executionId: execution.executionId,
             signature: signature,
             idempotencyKey: scopedIdempotencyKey(
-              'bstocks-sponsored-submit-${execution.executionId}'),
+              'bstocks-sponsored-submit-${execution.executionId}',
+            ),
           )
           .timeout(const Duration(seconds: 20));
       switch (submitted.status) {

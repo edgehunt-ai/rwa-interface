@@ -10,4 +10,4 @@ String newIdempotencyKey() => _uuid.v4();
 /// same logical operation must replay the exact same key, so derive it from
 /// the identity instead of generating a fresh UUID per attempt.
 String scopedIdempotencyKey(String identity) =>
-    _uuid.v5(Uuid.NAMESPACE_URL, 'rwa:$identity');
+    _uuid.v5(Namespace.url.value, 'rwa:$identity');

@@ -72,8 +72,9 @@ final class WithdrawalCommands {
         .read(fundingRepositoryProvider)
         .quoteWithdrawal(
           intent,
-          idempotencyKey:
-            scopedIdempotencyKey('withdrawal-quote-${intent.fingerprint}'),
+          idempotencyKey: scopedIdempotencyKey(
+            'withdrawal-quote-${intent.fingerprint}',
+          ),
         ),
   );
   Future<WalletAuthorization> authorize({
@@ -87,8 +88,9 @@ final class WithdrawalCommands {
           walletId: walletId,
           quoteId: quote.quoteId,
           amount: quote.intent.amount.value,
-          idempotencyKey:
-            scopedIdempotencyKey('withdrawal-authorization-${quote.quoteId}'),
+          idempotencyKey: scopedIdempotencyKey(
+            'withdrawal-authorization-${quote.quoteId}',
+          ),
         ),
   );
   Future<Withdrawal> create({

@@ -4,7 +4,7 @@
 
 ## 技术栈
 
-- Flutter 3.47 / Dart 3.13
+- Flutter 3.47.6 / Dart 3.13.5
 - Riverpod、GoRouter、Dio
 - OpenAPI Generator `dart-dio` 客户端
 - Privy 身份认证与 Reown AppKit 钱包连接
@@ -14,7 +14,7 @@
 ### 环境要求
 
 - Node.js 22
-- Flutter 3.47 / Dart 3.13
+- Flutter 3.47.6 / Dart 3.13.5
 - Docker daemon（仅在更新或生成 API 客户端时需要）
 
 ### 安装依赖
