@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 import '../../domain/models/domain_page.dart';
+import '../api/idempotency_key.dart';
 import '../services/hip3_action_binding.dart';
 import '../services/hip3_position_action_executor.dart';
 import '../services/hip3_position_action_service.dart';
@@ -242,7 +243,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         stopLimit: stopLimit,
         quantity: quantity,
         confirmBeforeSigning: confirmBeforeSigning,
-        idempotencyKey: '$idempotencyKey-set',
+        idempotencyKey: scopedIdempotencyKey('$idempotencyKey-set'),
       );
     }
     final intent = await _preparations.get(

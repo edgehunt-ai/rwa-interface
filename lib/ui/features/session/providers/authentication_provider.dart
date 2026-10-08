@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/auth_providers.dart';
 import '../../../../app_review/app_review.dart';
 import '../../../../app/providers/session_scope.dart';
@@ -362,7 +363,9 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     try {
       await ref
           .read(walletsRepositoryProvider)
-          .syncWallet(idempotencyKey: 'wallet-sync-${session.sessionId}');
+          .syncWallet(
+            idempotencyKey:
+                scopedIdempotencyKey('wallet-sync-${session.sessionId}'));
     } on ApiFailure catch (failure) {
       throw IdentityFailure(
         AuthenticationFailureCode.walletSync,

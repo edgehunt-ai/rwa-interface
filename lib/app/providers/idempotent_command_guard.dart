@@ -1,7 +1,8 @@
+import '../../data/api/idempotency_key.dart';
+
 final class IdempotentCommandGuard {
   final Map<String, String> _keys = {};
   final Map<String, Future<Object?>> _inFlight = {};
-  int _sequence = 0;
 
   Future<T> run<T>({
     required String operation,
@@ -12,10 +13,11 @@ final class IdempotentCommandGuard {
     final active = _inFlight[identity];
     if (active != null) return active.then((value) => value as T);
 
+    // The contract pins Idempotency-Key to `format: uuid`; a deterministic
+    // v5 keeps every retry of this identity on the exact same key.
     final key = _keys.putIfAbsent(
       identity,
-      () =>
-          '$operation-${DateTime.now().microsecondsSinceEpoch}-${_sequence++}',
+      () => scopedIdempotencyKey(identity),
     );
     // Start the request before registering its cleanup.  An immediately
     // completed future can otherwise run `finally` while a self-referential

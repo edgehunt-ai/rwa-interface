@@ -14,6 +14,7 @@ import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
@@ -399,8 +400,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             productId,
             leverage,
             marginMode,
-            idempotencyKey:
-                'hip3-order-settings-$productId-${DateTime.now().microsecondsSinceEpoch}',
+            idempotencyKey: newIdempotencyKey(),
             confirm: (_) async => true,
           );
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;

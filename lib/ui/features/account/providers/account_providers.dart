@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/auth_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/auth/identity_auth_gateway.dart';
@@ -51,8 +52,7 @@ final accountDeletionCommandProvider =
     );
 
 final class AccountDeletionCommand extends AsyncNotifier<AccountDeletion?> {
-  final String _idempotencyKey =
-      'account-deletion-${DateTime.now().toUtc().microsecondsSinceEpoch}';
+  final String _idempotencyKey = newIdempotencyKey();
 
   @override
   AccountDeletion? build() => null;

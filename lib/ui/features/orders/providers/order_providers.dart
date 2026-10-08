@@ -8,6 +8,7 @@ import '../../../../domain/models/hip3_opening_context.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
+import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/application_state.dart';
@@ -214,8 +215,7 @@ final class OrderCommandNotifier
         '${approvalOnly ? 'approval' : 'order'}|${intent.fingerprint}';
     if (_fingerprint != commandFingerprint) {
       _fingerprint = commandFingerprint;
-      _idempotencyKey =
-          '${approvalOnly ? 'approval' : 'order'}-${DateTime.now().microsecondsSinceEpoch}';
+      _idempotencyKey = newIdempotencyKey();
       _approvalPreviewId = approvalOnly ? previewId : null;
     }
     final key = _idempotencyKey!;
@@ -394,8 +394,7 @@ final class OrderCommandNotifier
 
   Future<void> cancel(TradingOrder order) async {
     const operation = 'cancel_order';
-    final key =
-        'cancel-${order.orderId}-${DateTime.now().microsecondsSinceEpoch}';
+    final key = newIdempotencyKey();
     ref
         .read(observabilityReporterProvider)
         .recordOperation(operation, outcome: 'started');
@@ -408,7 +407,8 @@ final class OrderCommandNotifier
                 .read(hip3OrderExecutionRepositoryProvider)
                 .cancelOrder(
                   order.orderId,
-                  idempotencyKey: 'hip3-cancel-${order.orderId}',
+                  idempotencyKey:
+                      scopedIdempotencyKey('hip3-cancel-${order.orderId}'),
                 )
           : await ref
                 .read(ordersRepositoryProvider)

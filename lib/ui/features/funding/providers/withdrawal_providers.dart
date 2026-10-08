@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
+import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
@@ -71,7 +72,8 @@ final class WithdrawalCommands {
         .read(fundingRepositoryProvider)
         .quoteWithdrawal(
           intent,
-          idempotencyKey: 'quote-${intent.fingerprint.hashCode}',
+          idempotencyKey:
+            scopedIdempotencyKey('withdrawal-quote-${intent.fingerprint}'),
         ),
   );
   Future<WalletAuthorization> authorize({
@@ -85,7 +87,8 @@ final class WithdrawalCommands {
           walletId: walletId,
           quoteId: quote.quoteId,
           amount: quote.intent.amount.value,
-          idempotencyKey: 'authorization-${quote.quoteId}',
+          idempotencyKey:
+            scopedIdempotencyKey('withdrawal-authorization-${quote.quoteId}'),
         ),
   );
   Future<Withdrawal> create({

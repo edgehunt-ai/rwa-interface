@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../domain/auth/authentication.dart';
+import '../api/idempotency_key.dart';
 import '../../domain/models/api_failure.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
@@ -150,7 +151,8 @@ final class BstocksOrderExecutionRepositoryImpl
       orderId: action.orderId,
       stepId: action.stepId,
       mode: GasPaymentMode.appSponsored,
-      idempotencyKey: 'bstocks-sponsored-${action.orderId}-${action.stepId}',
+      idempotencyKey: scopedIdempotencyKey(
+        'bstocks-sponsored-${action.orderId}-${action.stepId}'),
     );
     if (execution.requiresUserPaidFallback) {
       throw UnknownFailure(
@@ -176,7 +178,8 @@ final class BstocksOrderExecutionRepositoryImpl
           .submitAuthorization(
             executionId: execution.executionId,
             signature: signature,
-            idempotencyKey: 'bstocks-sponsored-submit-${execution.executionId}',
+            idempotencyKey: scopedIdempotencyKey(
+              'bstocks-sponsored-submit-${execution.executionId}'),
           )
           .timeout(const Duration(seconds: 20));
       switch (submitted.status) {

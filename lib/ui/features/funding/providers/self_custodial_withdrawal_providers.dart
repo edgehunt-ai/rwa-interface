@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
+import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/auth_providers.dart';
 import '../../../../app/providers/session_scope.dart';
@@ -152,7 +153,7 @@ final class SelfCustodialWithdrawalCommands {
           .submitAuthorization(
             executionId: execution.executionId,
             signature: signature,
-            idempotencyKey: '$key-authorization',
+            idempotencyKey: scopedIdempotencyKey('$key-authorization'),
           );
       return _reload(prepared.withdrawalId);
     },
