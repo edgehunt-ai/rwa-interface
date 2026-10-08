@@ -3650,6 +3650,74 @@ abstract class AppLocalizations {
   /// **'Prepare Funds'**
   String get prepareFunds;
 
+  /// No description provided for @approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// No description provided for @addFundingOnNetworkToContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {amount} {asset} on {network} to continue'**
+  String addFundingOnNetworkToContinue(
+    Object amount,
+    Object asset,
+    Object network,
+  );
+
+  /// No description provided for @fundingReadyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {available} {asset} on {network} ready. Transfer existing assets or deposit {asset} on {network}.'**
+  String fundingReadyDescription(
+    Object available,
+    Object asset,
+    Object network,
+  );
+
+  /// No description provided for @readyOnNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready on {network}'**
+  String readyOnNetwork(Object network);
+
+  /// No description provided for @otherAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Other assets'**
+  String get otherAssets;
+
+  /// No description provided for @otherNetworks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 other network} other{{count} other networks}}'**
+  String otherNetworks(num count);
+
+  /// No description provided for @stillNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Still needed'**
+  String get stillNeeded;
+
+  /// No description provided for @transferExistingBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Existing Balances'**
+  String get transferExistingBalances;
+
+  /// No description provided for @chooseAssetsToTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your other assets to transfer'**
+  String get chooseAssetsToTransfer;
+
+  /// No description provided for @fromAnotherWalletOrPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'From another wallet or platform'**
+  String get fromAnotherWalletOrPlatform;
+
   /// No description provided for @insufficientAssetInSpotAccount.
   ///
   /// In en, this message translates to:

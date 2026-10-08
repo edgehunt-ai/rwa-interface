@@ -968,7 +968,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           isScrollControlled: true,
           isDismissible: true,
           enableDrag: false,
-          builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
+          builder: (_) => OrderFundingSheet(
+            plan: plan,
+            kind: intent.kind,
+            slippage: intent.slippage,
+          ),
         );
         _setProcessingStep('reconciling funding result');
         if (!isCurrent()) return;
@@ -1518,9 +1522,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Image.asset(
-                'assets/figma/trade/order_success.png',
-                width: 160,
-                height: 160,
+                'assets/figma/trade/order_success.webp',
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
               ),
               const SizedBox(height: 8),
               Text(

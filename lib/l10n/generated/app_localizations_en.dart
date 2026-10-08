@@ -1988,6 +1988,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prepareFunds => 'Prepare Funds';
 
   @override
+  String get approve => 'Approve';
+
+  @override
+  String addFundingOnNetworkToContinue(
+    Object amount,
+    Object asset,
+    Object network,
+  ) {
+    return 'Add $amount $asset on $network to continue';
+  }
+
+  @override
+  String fundingReadyDescription(
+    Object available,
+    Object asset,
+    Object network,
+  ) {
+    return 'You have $available $asset on $network ready. Transfer existing assets or deposit $asset on $network.';
+  }
+
+  @override
+  String readyOnNetwork(Object network) {
+    return 'Ready on $network';
+  }
+
+  @override
+  String get otherAssets => 'Other assets';
+
+  @override
+  String otherNetworks(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other networks',
+      one: '1 other network',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get stillNeeded => 'Still needed';
+
+  @override
+  String get transferExistingBalances => 'Transfer Existing Balances';
+
+  @override
+  String get chooseAssetsToTransfer => 'Choose your other assets to transfer';
+
+  @override
+  String get fromAnotherWalletOrPlatform => 'From another wallet or platform';
+
+  @override
   String insufficientAssetInSpotAccount(Object asset) {
     return 'Insufficient $asset in your spot account:';
   }

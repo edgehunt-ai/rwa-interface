@@ -150,6 +150,8 @@ void main() {
       expect(plan.planId, 'plan-1');
       expect(plan.tradePreviewId, 'session-1');
       expect(plan.status.name, 'ready');
+      expect(plan.targetAsset, 'USDC-PERPS');
+      expect(plan.targetNetwork, 'Hyperliquid');
       expect(plan.legs, hasLength(1));
       expect(plan.legs.single.walletId, 'wallet-1');
       expect(plan.legs.single.asset, 'USDC');

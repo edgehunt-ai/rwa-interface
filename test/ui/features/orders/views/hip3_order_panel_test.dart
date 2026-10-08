@@ -78,11 +78,9 @@ void main() {
       // frame for pumpAndSettle to wait for here.
       await tester.pump(const Duration(seconds: 1));
       expect(funding.previewIds, hasLength(1));
-      expect(
-        find.text('Insufficient USDC in your spot account:'),
-        findsOneWidget,
-      );
-      expect(find.text('= Funds needed'), findsOneWidget);
+      expect(find.text('Add 5 USDC on Arbitrum to continue'), findsOneWidget);
+      expect(find.text('Still needed'), findsOneWidget);
+      expect(find.text('5 USDC'), findsNWidgets(2));
       expect(find.text('Insufficient balance.'), findsNothing);
     },
   );
@@ -1438,7 +1436,8 @@ void main() {
     tester,
   ) async {
     final orders = _ExecutableHip3Orders();
-    final execution = _Hip3Execution();
+    final submission = Completer<void>();
+    final execution = _Hip3Execution(waitFor: submission.future);
     var positionLoads = 0;
     const positionFilter = (
       symbol: 'NVDA',
@@ -1475,13 +1474,36 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(execution.orderId, 'order-1');
+    final illustration = find.image(
+      const AssetImage('assets/figma/trade/order_submitting.webp'),
+    );
+    expect(illustration, findsOneWidget);
+    final image = tester.widget<Image>(illustration);
+    expect(image.width, 120);
+    expect(image.height, 120);
+    expect(image.fit, BoxFit.contain);
+    expect(tester.getSize(illustration).height, 120);
+    expect(tester.takeException(), isNull);
+
+    submission.complete();
+    await tester.pumpAndSettle();
+
     expect(find.text('Order submitted'), findsOneWidget);
     expect(positionLoads, 2);
-    final successImage = tester.widget<Image>(find.byType(Image));
+    final successIllustration = find.image(
+      const AssetImage('assets/figma/trade/order_success.webp'),
+    );
+    expect(successIllustration, findsOneWidget);
+    final successImage = tester.widget<Image>(successIllustration);
     expect(
       (successImage.image as AssetImage).assetName,
-      'assets/figma/trade/order_success.png',
+      'assets/figma/trade/order_success.webp',
     );
+    expect(successImage.width, 120);
+    expect(successImage.height, 120);
+    expect(successImage.fit, BoxFit.contain);
+    expect(tester.getSize(successIllustration).height, 120);
+    expect(tester.takeException(), isNull);
     expect(find.text('Close & View Later'), findsOneWidget);
   });
 }

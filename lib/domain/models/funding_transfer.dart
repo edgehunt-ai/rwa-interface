@@ -9,6 +9,8 @@ final class FundingPlan {
     required this.status,
     this.requiredTargetAmount,
     this.targetAvailableAmount,
+    this.targetAsset,
+    this.targetNetwork,
     this.sourceWalletId,
     this.sourceAsset,
     this.sourceMaximum,
@@ -21,6 +23,8 @@ final class FundingPlan {
   final DecimalValue shortfall;
   final DecimalValue? requiredTargetAmount;
   final DecimalValue? targetAvailableAmount;
+  final String? targetAsset;
+  final String? targetNetwork;
   final FundingPlanState status;
   final String? sourceWalletId;
   final String? sourceAsset;

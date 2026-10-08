@@ -635,6 +635,8 @@ final class FundingRepositoryImpl implements FundingRepository {
             api.UserSelectedMultiSourceBstockTestnetFundingPlan() ||
             api.UserSelectedMultiSourcePerpFundingPlan()) {
       final plan = value as dynamic;
+      final targetAsset = (plan.targetSnapshot as dynamic).asset as dynamic;
+      final targetToken = (targetAsset.token as dynamic).name as String;
       final legs = (plan.multiSource as api.MultiSourceFundingPlanDetails).legs
           .map((leg) {
             final source = leg.sourcePositionSnapshot;
@@ -674,6 +676,10 @@ final class FundingRepositoryImpl implements FundingRepository {
         requiredTargetAmount: _money(plan.requiredTargetAmount as String),
         targetAvailableAmount: _money(
           (plan.targetSnapshot as dynamic).availableAmount as String,
+        ),
+        targetAsset: targetToken == 'USDC_PERPS' ? 'USDC-PERPS' : targetToken,
+        targetNetwork: canonicalChainName(
+          (targetAsset.network as dynamic).name as String,
         ),
         status: switch (plan.status.name as String) {
           'ready' => FundingPlanState.ready,

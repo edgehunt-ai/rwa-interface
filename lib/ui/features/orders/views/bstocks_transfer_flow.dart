@@ -201,9 +201,9 @@ class _BstocksTransferFlowState
         _TransferHeader(step: '2', title: l10n.transfer),
         const Divider(),
         Image.asset(
-          'assets/figma/trade/funding_pending.png',
-          width: 160,
-          height: 160,
+          'assets/figma/trade/funding_pending.webp',
+          width: 120,
+          height: 120,
         ),
         Text(
           l10n.preparingTradingFunds,
@@ -237,9 +237,10 @@ class _BstocksTransferFlowState
         _TransferHeader(step: '3', title: l10n.buySymbol(widget.symbol)),
         const Divider(),
         Image.asset(
-          'assets/figma/trade/order_submitting.png',
-          width: 160,
-          height: 160,
+          'assets/figma/trade/order_submitting.webp',
+          width: 120,
+          height: 120,
+          fit: BoxFit.contain,
         ),
         Text(
           l10n.submittingOrder,

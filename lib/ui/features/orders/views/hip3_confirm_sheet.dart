@@ -376,9 +376,10 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Image.asset(
-                'assets/figma/trade/order_submitting.png',
-                width: 160,
-                height: 160,
+                'assets/figma/trade/order_submitting.webp',
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
               ),
               Text(
                 l10n.submittingOrder,

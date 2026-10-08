@@ -71,6 +71,9 @@ void main() {
       await tester.tap(find.text('Open funding'));
       await tester.pumpAndSettle();
       expect(wallets.authorizations, 0);
+      await tester.ensureVisible(
+        find.byKey(const Key('order-funding-spot-option')),
+      );
       await tester.tap(find.byKey(const Key('order-funding-spot-option')));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.widgetWithText(FilledButton, 'Confirm'));
@@ -130,6 +133,7 @@ void main() {
         find.byKey(const Key('order-funding-transfer-pending')),
         findsNothing,
       );
+      expect(find.text('滑点'), findsNothing);
       expect(
         tester
             .widget<FilledButton>(find.widgetWithText(FilledButton, '确认'))
@@ -186,8 +190,8 @@ void main() {
     );
 
     expect(find.byKey(const Key('order-funding-spot-option')), findsOneWidget);
-    expect(find.text('现货'), findsOneWidget);
-    expect(find.text('余额:'), findsOneWidget);
+    expect(find.text('转入现有余额'), findsOneWidget);
+    expect(find.text('选择其他资产进行转账'), findsOneWidget);
     expect(
       find.byKey(const Key('order-funding-spot-balance-loading')),
       findsOneWidget,
@@ -196,6 +200,84 @@ void main() {
     options.complete(_transferOptions('0'));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('order-funding-spot-option')), findsNothing);
+  });
+
+  testWidgets('order funding prepare step follows the funding breakdown', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transferOptionsProvider.overrideWith(
+            (ref) async => _transferOptions(
+              '100',
+              positions: [
+                FundingSourcePosition(
+                  positionId: 'polygon-usdt',
+                  token: 'USDT',
+                  network: 'Polygon',
+                  availableAmount: DecimalValue('51.22', asset: 'USDT'),
+                  eligible: true,
+                ),
+                FundingSourcePosition(
+                  positionId: 'bsc-usdc',
+                  token: 'USDC',
+                  network: 'BSC',
+                  availableAmount: DecimalValue('48.78', asset: 'USDC'),
+                  eligible: true,
+                ),
+              ],
+            ),
+          ),
+        ],
+        child: buildTestApp(
+          OrderFundingSheet(
+            plan: _prepareFundingPlan,
+            kind: MarketProductKind.perp,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add 90 USDC on Arbitrum to continue'), findsOneWidget);
+    expect(
+      find.text(
+        'You have 10 USDC on Arbitrum ready. Transfer existing assets or '
+        'deposit USDC on Arbitrum.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Order Value'), findsOneWidget);
+    expect(find.text('100 USDC'), findsOneWidget);
+    expect(find.text('Ready on Arbitrum'), findsOneWidget);
+    expect(find.text('10 USDC'), findsOneWidget);
+    expect(find.text('Other assets'), findsOneWidget);
+    expect(find.text(r'$100'), findsOneWidget);
+    expect(find.text('2 other networks'), findsOneWidget);
+    expect(find.text('Still needed'), findsOneWidget);
+    expect(find.text('90 USDC'), findsOneWidget);
+    expect(find.text('Add 90 USDC from:'), findsOneWidget);
+    expect(find.text('Transfer Existing Balances'), findsOneWidget);
+    expect(find.text('Choose your other assets to transfer'), findsOneWidget);
+    expect(find.text('Deposit'), findsOneWidget);
+    expect(find.text('From another wallet or platform'), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const Key('order-funding-other-assets-row'))),
+      const Size(321, 32),
+    );
+    expect(
+      tester.getSize(find.byKey(const Key('order-funding-breakdown'))),
+      const Size(353, 185),
+    );
+    expect(
+      tester.getSize(find.byKey(const Key('order-funding-spot-option'))),
+      const Size(353, 72),
+    );
   });
 
   testWidgets('order funding opens the shared Spot transfer review', (
@@ -223,6 +305,7 @@ void main() {
           OrderFundingSheet(
             plan: _readyFundingPlan,
             kind: MarketProductKind.bstock,
+            slippage: DecimalValue('0.12', unit: 'percent'),
           ),
         ),
       ),
@@ -235,10 +318,15 @@ void main() {
     expect(find.text('Transfer from spot'), findsOneWidget);
     expect(find.text('Available: 150'), findsOneWidget);
     expect(find.text('150'), findsOneWidget);
-    expect(find.text(r'$100'), findsOneWidget);
+    expect(find.text('USDC (Arbitrum)', findRichText: true), findsOneWidget);
+    expect(find.text('USDT (BSC)'), findsOneWidget);
+    expect(find.text('100'), findsOneWidget);
     expect(find.byIcon(Icons.check_box), findsNothing);
     expect(find.text('Add token'), findsNothing);
-    expect(find.text('Slippage'), findsNothing);
+    expect(find.text('Slippage'), findsOneWidget);
+    expect(find.text('0.12%'), findsOneWidget);
+    expect(find.text('Amount needed'), findsNothing);
+    expect(find.text('Transfer amount'), findsNothing);
   });
 
   testWidgets('order funding scrolls when more than four tokens are shown', (
@@ -661,51 +749,181 @@ void main() {
     expect(tester.widget<Slider>(slider).value, 50);
   });
 
-  testWidgets('approval-required preview approves before order confirmation', (
+  for (final isLimit in [false, true]) {
+    testWidgets(
+      '${isLimit ? 'limit' : 'market'} funding requires explicit approval before confirmation',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final orders = _ApprovalOrdersRepository();
+        final execution = _ApprovalExecutionRepository(orders);
+        final funding = _PanelCompletedFundingRepository();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              fundingRepositoryProvider.overrideWithValue(funding),
+              ordersRepositoryProvider.overrideWithValue(orders),
+              bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+                execution,
+              ),
+              walletsRepositoryProvider.overrideWithValue(
+                _FundingWalletsRepository(),
+              ),
+              transferOptionsProvider.overrideWith(
+                (ref) async => _transferOptions('100'),
+              ),
+            ],
+            child: buildTestApp(const BstocksOrderPanel()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final action = find.byKey(const Key('bstocks-primary-order-action'));
+        if (isLimit) {
+          await tester.tap(find.text('Limit'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const Key('bstocks-limit-price-sheet-input')),
+            '100',
+          );
+          await tester.pump();
+          await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const Key('bstocks-limit-quantity-input')),
+            '0.1',
+          );
+        } else {
+          await tester.enterText(find.byType(TextField).first, '10');
+        }
+        await tester.pump(const Duration(milliseconds: 400));
+
+        expect(
+          find.widgetWithText(FilledButton, r'Buy NVDAB · $10'),
+          findsOneWidget,
+        );
+        await tester.tap(action);
+        await _pumpUntilFound(
+          tester,
+          find.byKey(const Key('order-funding-spot-option')),
+        );
+        tester
+            .widget<InkWell>(
+              find.descendant(
+                of: find.byKey(const Key('order-funding-spot-option')),
+                matching: find.byType(InkWell),
+              ),
+            )
+            .onTap!();
+        await tester.pump();
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+            .onPressed!();
+        await _pumpUntilFound(
+          tester,
+          find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+        );
+
+        expect(funding.sessions, 2);
+        expect(funding.transfers, 1);
+        expect(orders.createCalls, 0);
+        expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsNothing);
+        expect(find.widgetWithText(FilledButton, 'Approve'), findsOneWidget);
+
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Approve'))
+            .onPressed!();
+        await tester.pump();
+        expect(orders.createCalls, 1);
+        expect(execution.stopAfterApproval, isTrue);
+        expect(
+          find.byKey(const Key('bstocks-approval-loading')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+          findsOneWidget,
+        );
+        expect(
+          tester
+              .widget<OutlinedButton>(
+                find.widgetWithText(OutlinedButton, 'Back'),
+              )
+              .onPressed,
+          isNull,
+        );
+
+        execution.completeApproval();
+        await _pumpUntilFound(
+          tester,
+          find.widgetWithText(FilledButton, 'Confirm Buy'),
+        );
+        expect(orders.createCalls, 1);
+        expect(find.text('Order submitted'), findsNothing);
+        expect(find.widgetWithText(FilledButton, 'Approve'), findsNothing);
+        expect(
+          find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+          findsOneWidget,
+        );
+        orders.complete();
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(FilledButton, 'Confirm Buy'),
+            )
+            .onPressed!();
+        await _pumpUntilFound(tester, find.text('Order submitted'));
+        expect(orders.createCalls, 2);
+        expect(orders.createdPreviewIds, [
+          'approval-preview',
+          'post-approval-preview',
+        ]);
+      },
+    );
+  }
+
+  testWidgets('failed approval stays at confirmation and can be retried', (
     tester,
   ) async {
     final orders = _ApprovalOrdersRepository();
-    final execution = _ApprovalExecutionRepository(orders);
+    final execution = _ApprovalExecutionRepository(orders, failOnce: true);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(orders),
           bstocksOrderExecutionRepositoryProvider.overrideWithValue(execution),
-          bstocksOrderAvailableBalanceProvider.overrideWith(
-            (ref) async => DecimalValue('100', asset: 'USD', unit: 'fiat'),
-          ),
         ],
         child: buildTestApp(const BstocksOrderPanel()),
       ),
     );
     await tester.pumpAndSettle();
-
-    final action = find.byKey(const Key('bstocks-primary-order-action'));
     await tester.enterText(find.byType(TextField).first, '10');
     await tester.pump(const Duration(milliseconds: 400));
-
-    expect(find.widgetWithText(FilledButton, 'Approve'), findsOneWidget);
-    await tester.tap(action);
-    await tester.pump();
-
-    expect(find.byKey(const Key('bstocks-approval-loading')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    final approve = find.widgetWithText(FilledButton, 'Approve');
+    await _pumpUntilFound(tester, approve);
+    expect(orders.createCalls, 0);
+    await tester.ensureVisible(approve);
+    await tester.tap(approve);
+    await _pumpUntilFound(tester, find.text('Approval rejected'));
+    expect(tester.widget<FilledButton>(approve).onPressed, isNotNull);
     expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsNothing);
-    expect(execution.stopAfterApproval, isTrue);
-
-    execution.completeApproval();
-    await _pumpUntilFound(tester, find.text(r'Buy NVDAB · $10'));
-
+    expect(find.text('Order submitted'), findsNothing);
     expect(orders.createCalls, 1);
-    expect(find.byKey(const Key('bstocks-approval-loading')), findsNothing);
-    expect(find.widgetWithText(FilledButton, 'Approve'), findsNothing);
 
-    await tester.tap(action);
+    await tester.tap(approve);
+    await tester.pump();
+    expect(execution.stopAfterApproval, isTrue);
+    execution.completeApproval();
     await _pumpUntilFound(
       tester,
       find.widgetWithText(FilledButton, 'Confirm Buy'),
     );
-    expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsOneWidget);
+    expect(orders.createCalls, 2);
+    expect(find.text('Order submitted'), findsNothing);
+    expect(find.text('Approval rejected'), findsNothing);
   });
 
   testWidgets(
@@ -1025,6 +1243,17 @@ void main() {
     expect(find.text('Submitting Order…'), findsOneWidget);
     expect(find.text('Close & View Later'), findsOneWidget);
 
+    final illustration = find.image(
+      const AssetImage('assets/figma/trade/order_submitting.webp'),
+    );
+    expect(illustration, findsOneWidget);
+    final image = tester.widget<Image>(illustration);
+    expect(image.width, 120);
+    expect(image.height, 120);
+    expect(image.fit, BoxFit.contain);
+    expect(tester.getSize(illustration).height, 120);
+    expect(tester.takeException(), isNull);
+
     repository.complete();
     await tester.pump();
   });
@@ -1190,6 +1419,12 @@ void main() {
       );
       expect(orders.receivedPreviewIds, [preview.previewId]);
       expect(find.text('Submitting Order…'), findsOneWidget);
+      expect(
+        find.image(
+          const AssetImage('assets/figma/trade/order_submitting.webp'),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(
         find.widgetWithText(OutlinedButton, 'Close & View Later'),
       );
@@ -1234,6 +1469,16 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Trade Successful'), findsOneWidget);
+    final illustration = find.image(
+      const AssetImage('assets/figma/trade/order_success.webp'),
+    );
+    expect(illustration, findsOneWidget);
+    final image = tester.widget<Image>(illustration);
+    expect(image.width, 120);
+    expect(image.height, 120);
+    expect(image.fit, BoxFit.contain);
+    expect(tester.getSize(illustration).height, 120);
+    expect(tester.takeException(), isNull);
     expect(
       find.text('You can check the order status on the activities page.'),
       findsOneWidget,
@@ -1437,6 +1682,7 @@ final class _CountingOrdersRepository extends _DelayedOrdersRepository {
 final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
   var approved = false;
   var createCalls = 0;
+  final createdPreviewIds = <String?>[];
 
   @override
   Future<OrderPreview> preview(
@@ -1458,6 +1704,14 @@ final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
     String? previewId,
   }) async {
     createCalls++;
+    createdPreviewIds.add(previewId);
+    if (approved) {
+      return super.create(
+        intent,
+        idempotencyKey: idempotencyKey,
+        previewId: previewId,
+      );
+    }
     return ResourceResult(
       resource: TradingOrder(
         orderId: 'approval-order',
@@ -1487,11 +1741,12 @@ final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
 
 final class _ApprovalExecutionRepository
     implements BstocksOrderExecutionRepository {
-  _ApprovalExecutionRepository(this.orders);
+  _ApprovalExecutionRepository(this.orders, {this.failOnce = false});
 
   final _ApprovalOrdersRepository orders;
   final _completion = Completer<void>();
   bool? stopAfterApproval;
+  bool failOnce;
 
   void completeApproval() => _completion.complete();
 
@@ -1504,6 +1759,10 @@ final class _ApprovalExecutionRepository
     bool stopAfterApproval = false,
   }) async {
     this.stopAfterApproval = stopAfterApproval;
+    if (failOnce) {
+      failOnce = false;
+      throw const UnknownFailure(userAction: 'Approval rejected');
+    }
     await _completion.future;
     orders.approved = true;
     return ResourceResult(
@@ -1570,12 +1829,15 @@ final _readyFundingPlan = FundingPlan(
   sourceWalletId: 'wallet-1',
   sourceAsset: 'USDC',
   sourceMaximum: DecimalValue('150', asset: 'USDC', unit: 'token'),
+  targetAsset: 'USDT',
+  targetNetwork: 'BSC',
   legs: [
     FundingLeg(
       legId: 'leg-1',
       walletId: 'wallet-1',
       asset: 'USDC',
       sourcePositionId: 'position-1',
+      network: 'Arbitrum',
       maximumAmount: DecimalValue('150', asset: 'USDC', unit: 'token'),
       outputAmount: DecimalValue('100', asset: 'USDT', unit: 'token'),
       status: FundingLegState.actionReleased,
@@ -1599,6 +1861,27 @@ final _plannedFundingPlan = FundingPlan(
       maximumAmount: DecimalValue('150', asset: 'USDC', unit: 'token'),
       outputAmount: DecimalValue('100', asset: 'USDT', unit: 'token'),
       status: FundingLegState.planned,
+    ),
+  ],
+);
+
+final _prepareFundingPlan = FundingPlan(
+  planId: 'prepare-plan',
+  tradePreviewId: 'prepare-preview',
+  shortfall: DecimalValue('90', asset: 'USDC', unit: 'token'),
+  requiredTargetAmount: DecimalValue('100', asset: 'USDC', unit: 'token'),
+  targetAvailableAmount: DecimalValue('10', asset: 'USDC', unit: 'token'),
+  targetAsset: 'USDC-PERPS',
+  targetNetwork: 'Hyperliquid',
+  status: FundingPlanState.ready,
+  legs: [
+    FundingLeg(
+      legId: 'prepare-leg',
+      walletId: 'wallet-1',
+      asset: 'USDT',
+      maximumAmount: DecimalValue('90', asset: 'USDT', unit: 'token'),
+      outputAmount: DecimalValue('90', asset: 'USDC', unit: 'token'),
+      status: FundingLegState.actionReleased,
     ),
   ],
 );

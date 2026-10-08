@@ -1889,6 +1889,52 @@ class AppLocalizationsZh extends AppLocalizations {
   String get prepareFunds => '准备资金';
 
   @override
+  String get approve => '授权';
+
+  @override
+  String addFundingOnNetworkToContinue(
+    Object amount,
+    Object asset,
+    Object network,
+  ) {
+    return '在 $network 补充 $amount $asset 以继续';
+  }
+
+  @override
+  String fundingReadyDescription(
+    Object available,
+    Object asset,
+    Object network,
+  ) {
+    return '您已有 $available $asset 在 $network 就绪。可转入现有资产，或向 $network 充值 $asset。';
+  }
+
+  @override
+  String readyOnNetwork(Object network) {
+    return '$network 已就绪';
+  }
+
+  @override
+  String get otherAssets => '其他资产';
+
+  @override
+  String otherNetworks(num count) {
+    return '其他 $count 个网络';
+  }
+
+  @override
+  String get stillNeeded => '仍需补充';
+
+  @override
+  String get transferExistingBalances => '转入现有余额';
+
+  @override
+  String get chooseAssetsToTransfer => '选择其他资产进行转账';
+
+  @override
+  String get fromAnotherWalletOrPlatform => '从其他钱包或平台充值';
+
+  @override
   String insufficientAssetInSpotAccount(Object asset) {
     return '现货账户中的 $asset 余额不足：';
   }

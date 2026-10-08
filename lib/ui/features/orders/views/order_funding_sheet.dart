@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/routing/routes.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
+import '../../../../domain/models/funding_catalog.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -15,9 +16,15 @@ import '../../../core/theme/app_theme.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
 
 class OrderFundingSheet extends ConsumerStatefulWidget {
-  const OrderFundingSheet({super.key, required this.plan, required this.kind});
+  const OrderFundingSheet({
+    super.key,
+    required this.plan,
+    required this.kind,
+    this.slippage,
+  });
   final FundingPlan plan;
   final MarketProductKind kind;
+  final DecimalValue? slippage;
 
   @override
   ConsumerState<OrderFundingSheet> createState() => _OrderFundingSheetState();
@@ -34,6 +41,9 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
 
   String get _targetAsset =>
       widget.kind == MarketProductKind.bstock ? 'USDT' : 'USDC';
+
+  String get _targetNetwork =>
+      widget.kind == MarketProductKind.bstock ? 'BSC' : 'Arbitrum';
 
   @override
   void dispose() {
@@ -160,7 +170,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            padding: EdgeInsets.fromLTRB(20, 12, 20, _transferStep ? 24 : 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -169,7 +179,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                 const SizedBox(height: 16),
                 _Steps(current: _transferStep ? 2 : 1),
                 const SizedBox(height: 16),
-                Divider(color: colors.subtleSurface),
+                Divider(height: 1, color: colors.subtleSurface),
                 const SizedBox(height: 16),
                 if (_transferStep && _pending)
                   OrderFundingPendingContent(
@@ -179,6 +189,8 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                   switch (options) {
                     AsyncData(:final value) => _TransferContent(
                       plan: _plan,
+                      fallbackTargetAsset: _targetAsset,
+                      slippage: widget.slippage,
                       busy: _busy,
                       pending: _pending,
                       error: _error,
@@ -192,6 +204,8 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                     ),
                     _ => _TransferContent(
                       plan: _plan,
+                      fallbackTargetAsset: _targetAsset,
+                      slippage: widget.slippage,
                       busy: _busy,
                       pending: _pending,
                       error: _error,
@@ -204,8 +218,16 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                   _PrepareContent(
                     plan: _plan,
                     targetAsset: _targetAsset,
+                    targetNetwork: _targetNetwork,
                     spotBalance: spotBalance,
                     spotBalanceLoading: spotBalanceLoading,
+                    sourcePositions: switch (options) {
+                      AsyncData(:final value) =>
+                        value.account.positions
+                            .where((position) => position.eligible)
+                            .toList(growable: false),
+                      _ => const [],
+                    },
                     showSpot: canUseSpot,
                     onSpot: () => setState(() => _transferStep = true),
                     onDeposit: () {
@@ -253,11 +275,20 @@ class _Steps extends StatelessWidget {
       ],
       _Circle(active: true, child: Text('$current')),
       const SizedBox(width: 4),
-      Text(
-        current == 1
-            ? AppLocalizations.of(context).prepareFunds
-            : AppLocalizations.of(context).transfer,
-        style: Theme.of(context).textTheme.titleLarge,
+      Flexible(
+        child: Text(
+          current == 1
+              ? AppLocalizations.of(context).prepareFunds
+              : AppLocalizations.of(context).transfer,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 20,
+            height: 26 / 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
+          ),
+        ),
       ),
       const SizedBox(width: 8),
       if (current == 1) ...[
@@ -301,16 +332,20 @@ class _PrepareContent extends StatelessWidget {
   const _PrepareContent({
     required this.plan,
     required this.targetAsset,
+    required this.targetNetwork,
     required this.spotBalance,
     required this.spotBalanceLoading,
+    required this.sourcePositions,
     required this.showSpot,
     required this.onSpot,
     required this.onDeposit,
   });
   final FundingPlan plan;
   final String targetAsset;
+  final String targetNetwork;
   final DecimalValue? spotBalance;
   final bool spotBalanceLoading;
+  final List<FundingSourcePosition> sourcePositions;
   final bool showSpot;
   final VoidCallback onSpot;
   final VoidCallback onDeposit;
@@ -324,15 +359,38 @@ class _PrepareContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          l10n.insufficientAssetInSpotAccount(targetAsset),
-          style: Theme.of(context).textTheme.labelMedium,
+          l10n.addFundingOnNetworkToContinue(
+            plan.shortfall.value,
+            targetAsset,
+            targetNetwork,
+          ),
+          style: const TextStyle(
+            fontSize: 17,
+            height: 26 / 17,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
+        Text(
+          l10n.fundingReadyDescription(available, targetAsset, targetNetwork),
+          style: TextStyle(
+            fontSize: 13,
+            height: 18 / 13,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
+          ),
+        ),
+        const SizedBox(height: 12),
         _Breakdown(
           required: required,
           available: available,
           shortfall: plan.shortfall.value,
           asset: targetAsset,
+          network: targetNetwork,
+          otherAssetsUsd: spotBalance?.value,
+          otherAssetsLoading: spotBalanceLoading,
+          sourcePositions: sourcePositions,
         ),
         const SizedBox(height: 16),
         Text(
@@ -343,21 +401,18 @@ class _PrepareContent extends StatelessWidget {
         if (showSpot) ...[
           _SourceTile(
             key: const Key('order-funding-spot-option'),
-            icon: Icons.swap_horiz,
-            title: l10n.spot,
-            detail: spotBalance == null
-                ? null
-                : '${l10n.balance}: \$${spotBalance!.value}',
-            detailLoading: spotBalanceLoading,
+            iconAsset: 'assets/figma/funding/order_funding_trade.svg',
+            title: l10n.transferExistingBalances,
+            detail: l10n.chooseAssetsToTransfer,
             onTap: onSpot,
           ),
           const SizedBox(height: 12),
         ],
         _SourceTile(
           key: const Key('order-funding-deposit-option'),
-          icon: Icons.file_download_outlined,
-          title: l10n.externalDeposit,
-          detail: l10n.depositAssetOnNetwork('USDC', 'Arbitrum'),
+          iconAsset: 'assets/figma/funding/order_funding_deposit.svg',
+          title: l10n.deposit,
+          detail: l10n.fromAnotherWalletOrPlatform,
           onTap: onDeposit,
         ),
       ],
@@ -371,32 +426,56 @@ class _Breakdown extends StatelessWidget {
     required this.available,
     required this.shortfall,
     required this.asset,
+    required this.network,
+    required this.otherAssetsUsd,
+    required this.otherAssetsLoading,
+    required this.sourcePositions,
   });
-  final String required, available, shortfall, asset;
+  final String required, available, shortfall, asset, network;
+  final String? otherAssetsUsd;
+  final bool otherAssetsLoading;
+  final List<FundingSourcePosition> sourcePositions;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      key: const Key('order-funding-breakdown'),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: colors.canvas,
+        border: Border.all(color: colors.border),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
-          _ValueRow(label: l10n.orderValue, value: '$required $asset'),
-          const SizedBox(height: 8),
-          _ValueRow(
-            label: '- ${l10n.availableBalance}',
-            value: '$available $asset',
+          _FundingSummaryRow(
+            label: l10n.orderValue,
+            amount: required,
+            asset: asset,
+            network: network,
           ),
-          const SizedBox(height: 8),
-          Divider(color: colors.border),
-          const SizedBox(height: 8),
-          _ValueRow(
-            label: '= ${l10n.fundsNeeded}',
-            value: '$shortfall $asset',
+          const SizedBox(height: 12),
+          _FundingSummaryRow(
+            label: l10n.readyOnNetwork(network),
+            amount: available,
+            asset: asset,
+            network: network,
+          ),
+          const SizedBox(height: 12),
+          _OtherAssetsRow(
+            value: otherAssetsUsd,
+            loading: otherAssetsLoading,
+            positions: sourcePositions,
+          ),
+          const SizedBox(height: 12),
+          Container(height: 1, color: colors.border),
+          const SizedBox(height: 12),
+          _FundingSummaryRow(
+            label: l10n.stillNeeded,
+            amount: shortfall,
+            asset: asset,
+            network: network,
             emphasized: true,
           ),
         ],
@@ -405,38 +484,142 @@ class _Breakdown extends StatelessWidget {
   }
 }
 
-class _ValueRow extends StatelessWidget {
-  const _ValueRow({
+class _FundingSummaryRow extends StatelessWidget {
+  const _FundingSummaryRow({
     required this.label,
-    required this.value,
+    required this.amount,
+    required this.asset,
+    required this.network,
     this.emphasized = false,
   });
-  final String label, value;
+  final String label, amount, asset, network;
   final bool emphasized;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            height: 18 / 13,
-            fontWeight: FontWeight.w500,
-            color: emphasized ? colors.primaryText : colors.secondaryText,
+    return SizedBox(
+      height: 24,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: emphasized ? 13 : 12,
+                height: 18 / (emphasized ? 13 : 12),
+                fontWeight: emphasized ? FontWeight.w600 : FontWeight.w500,
+                color: emphasized ? colors.primaryText : colors.secondaryText,
+              ),
+            ),
           ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: emphasized ? 17 : 13,
-            height: emphasized ? 22 / 17 : 18 / 13,
-            fontWeight: emphasized ? FontWeight.w600 : FontWeight.w500,
+          const SizedBox(width: 8),
+          Text(
+            '$amount $asset',
+            maxLines: 1,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 18 / 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          _CompactAssetIcon(asset: asset, network: network),
+        ],
+      ),
+    );
+  }
+}
+
+class _OtherAssetsRow extends StatelessWidget {
+  const _OtherAssetsRow({
+    required this.value,
+    required this.loading,
+    required this.positions,
+  });
+
+  final String? value;
+  final bool loading;
+  final List<FundingSourcePosition> positions;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    final networks = positions.map((position) => position.network).toSet();
+    return SizedBox(
+      key: const Key('order-funding-other-assets-row'),
+      height: 32,
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.otherAssets,
+              style: TextStyle(
+                fontSize: 12,
+                height: 18 / 12,
+                fontWeight: FontWeight.w500,
+                color: colors.secondaryText,
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 32,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (loading)
+                  const SizedBox(
+                    height: 18,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox.square(
+                        key: Key('order-funding-spot-balance-loading'),
+                        dimension: 14,
+                        child: CircularProgressIndicator(strokeWidth: 1.5),
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    '\$${value ?? '--'}',
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      height: 18 / 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                SizedBox(
+                  height: 14,
+                  child: networks.isEmpty
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _NetworkStack(networks: networks.take(2).toList()),
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.otherNetworks(networks.length),
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 11,
+                                height: 14 / 11,
+                                color: colors.secondaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          ),
+          if (positions.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            _MiniAssetGrid(positions: positions.take(4).toList()),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -444,28 +627,26 @@ class _ValueRow extends StatelessWidget {
 class _SourceTile extends StatelessWidget {
   const _SourceTile({
     super.key,
-    required this.icon,
+    required this.iconAsset,
     required this.title,
-    this.detail,
-    this.detailLoading = false,
+    required this.detail,
     required this.onTap,
   });
-  final IconData icon;
+  final String iconAsset;
   final String title;
-  final String? detail;
-  final bool detailLoading;
+  final String detail;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final l10n = AppLocalizations.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: colors.border),
+          color: colors.subtleSurface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -475,56 +656,48 @@ class _SourceTile extends StatelessWidget {
               height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: colors.subtleSurface,
+                color: colors.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, size: 20),
+              child: SvgPicture.asset(iconAsset, width: 20, height: 20),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      height: 22 / 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (detailLoading)
-                    Row(
-                      children: [
-                        Text(
-                          '${l10n.balance}:',
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 16 / 12,
-                            color: colors.secondaryText,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const SizedBox.square(
-                          key: Key('order-funding-spot-balance-loading'),
-                          dimension: 12,
-                          child: CircularProgressIndicator(strokeWidth: 1.5),
-                        ),
-                      ],
-                    )
-                  else if (detail != null)
+              child: SizedBox(
+                height: 40,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      detail!,
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 22 / 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      detail,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
                         height: 16 / 12,
                         color: colors.secondaryText,
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
             ),
-            const Icon(Icons.chevron_right, size: 20),
+            SvgPicture.asset(
+              'assets/figma/funding/chevron_right.svg',
+              width: 20,
+              height: 20,
+            ),
           ],
         ),
       ),
@@ -532,9 +705,84 @@ class _SourceTile extends StatelessWidget {
   }
 }
 
+class _CompactAssetIcon extends StatelessWidget {
+  const _CompactAssetIcon({required this.asset, required this.network});
+
+  final String asset;
+  final String network;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 24,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _TokenIcon(asset: asset, size: 24),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: _NetworkIcon(network: network, size: 12),
+        ),
+      ],
+    ),
+  );
+}
+
+class _NetworkStack extends StatelessWidget {
+  const _NetworkStack({required this.networks});
+
+  final List<String> networks;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = networks
+        .where((network) => _networkAssetPath(network) != null)
+        .toList(growable: false);
+    return SizedBox(
+      width: visible.isEmpty ? 0 : 12 + (visible.length - 1) * 8,
+      height: 12,
+      child: Stack(
+        children: [
+          for (var index = 0; index < visible.length; index++)
+            Positioned(
+              left: index * 8,
+              child: _NetworkIcon(network: visible[index], size: 12),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniAssetGrid extends StatelessWidget {
+  const _MiniAssetGrid({required this.positions});
+
+  final List<FundingSourcePosition> positions;
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 24,
+    child: Wrap(
+      spacing: 1,
+      runSpacing: 1,
+      children: [
+        for (final position in positions)
+          SizedBox.square(
+            dimension: 11.5,
+            child: ClipOval(
+              child: _TokenIcon(asset: position.token, size: 11.5),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
 class _TransferContent extends StatelessWidget {
   const _TransferContent({
     required this.plan,
+    required this.fallbackTargetAsset,
+    required this.slippage,
     required this.busy,
     required this.pending,
     required this.error,
@@ -544,6 +792,8 @@ class _TransferContent extends StatelessWidget {
     this.availableByPositionId = const {},
   });
   final FundingPlan plan;
+  final String fallbackTargetAsset;
+  final DecimalValue? slippage;
   final bool busy, pending;
   final String? error;
   final VoidCallback onBack, onConfirm, onRetry;
@@ -564,11 +814,14 @@ class _TransferContent extends StatelessWidget {
         _AssetsCard(
           legs: plan.legs,
           availableByPositionId: availableByPositionId,
-          needed: plan.shortfall.value,
-          transferAmount: leg?.outputAmount.value ?? plan.shortfall.value,
+          targetAsset: _displayTargetAsset(
+            plan.targetAsset ?? fallbackTargetAsset,
+          ),
+          targetNetwork: plan.targetNetwork,
+          targetAmount: _outputAmount(plan),
         ),
         const SizedBox(height: 16),
-        _RouteRows(leg: leg),
+        _RouteRows(leg: leg, slippage: slippage),
         if (error != null) ...[
           const SizedBox(height: 8),
           Text(
@@ -581,13 +834,12 @@ class _TransferContent extends StatelessWidget {
         const SizedBox(height: 28),
         Row(
           children: [
-            Expanded(
-              child: SizedBox(
-                height: 48,
-                child: OutlinedButton(
-                  onPressed: busy ? null : onBack,
-                  child: Text(l10n.back),
-                ),
+            SizedBox(
+              width: 160,
+              height: 48,
+              child: OutlinedButton(
+                onPressed: busy ? null : onBack,
+                child: Text(l10n.back),
               ),
             ),
             const SizedBox(width: 12),
@@ -616,6 +868,22 @@ class _TransferContent extends StatelessWidget {
       ],
     );
   }
+
+  static String _displayTargetAsset(String asset) =>
+      asset.toUpperCase().replaceFirst(RegExp(r'-PERPS$'), '');
+
+  static String _outputAmount(FundingPlan plan) {
+    if (plan.legs.isEmpty) return plan.shortfall.value;
+    var total = plan.legs.first.outputAmount;
+    for (final leg in plan.legs.skip(1)) {
+      try {
+        total = total.plusMagnitude(leg.outputAmount);
+      } on ArgumentError {
+        return plan.shortfall.value;
+      }
+    }
+    return total.value;
+  }
 }
 
 class OrderFundingPendingContent extends StatelessWidget {
@@ -633,9 +901,9 @@ class OrderFundingPendingContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Image.asset(
-          'assets/figma/trade/funding_pending.png',
-          width: 160,
-          height: 160,
+          'assets/figma/trade/funding_pending.webp',
+          width: 120,
+          height: 120,
         ),
         Text(
           l10n.preparingTradingFunds,
@@ -681,17 +949,18 @@ class OrderFundingPendingContent extends StatelessWidget {
 class _AssetsCard extends StatelessWidget {
   const _AssetsCard({
     required this.legs,
-    required this.needed,
-    required this.transferAmount,
+    required this.targetAsset,
+    required this.targetAmount,
+    required this.targetNetwork,
     this.availableByPositionId = const {},
   });
   final List<FundingLeg> legs;
-  final String needed, transferAmount;
+  final String targetAsset, targetAmount;
+  final String? targetNetwork;
   final Map<String, DecimalValue> availableByPositionId;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final l10n = AppLocalizations.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: ColoredBox(
@@ -702,25 +971,10 @@ class _AssetsCard extends StatelessWidget {
               legs: legs,
               availableByPositionId: availableByPositionId,
             ),
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: colors.surface)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _Total(label: l10n.amountNeeded, value: '\$$needed'),
-                  ),
-                  Expanded(
-                    child: _Total(
-                      label: l10n.transferAmount,
-                      value: '~\$$transferAmount',
-                      alignEnd: true,
-                    ),
-                  ),
-                ],
-              ),
+            _TargetAssetRow(
+              asset: targetAsset,
+              network: targetNetwork,
+              amount: targetAmount,
             ),
           ],
         ),
@@ -762,6 +1016,7 @@ class _FundingLegsState extends State<_FundingLegs> {
             _AssetRow(
               leg: leg,
               available: widget.availableByPositionId[leg.sourcePositionId],
+              showConnector: true,
             ),
         ],
       );
@@ -783,6 +1038,7 @@ class _FundingLegsState extends State<_FundingLegs> {
             return _AssetRow(
               leg: leg,
               available: widget.availableByPositionId[leg.sourcePositionId],
+              showConnector: true,
             );
           },
         ),
@@ -792,14 +1048,18 @@ class _FundingLegsState extends State<_FundingLegs> {
 }
 
 class _AssetRow extends StatelessWidget {
-  const _AssetRow({required this.leg, this.available});
+  const _AssetRow({
+    required this.leg,
+    required this.showConnector,
+    this.available,
+  });
   final FundingLeg leg;
+  final bool showConnector;
   final DecimalValue? available;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
-    final usdc = leg.asset.toUpperCase() == 'USDC';
     final network = leg.network;
     return Container(
       height: 63,
@@ -809,14 +1069,11 @@ class _AssetRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (usdc)
-            SvgPicture.asset(
-              'assets/figma/funding/usdc.svg',
-              width: 28,
-              height: 28,
-            )
-          else
-            Image.asset('assets/figma/funding/usdt.png', width: 28, height: 28),
+          _RouteAssetIcon(
+            asset: leg.asset,
+            network: network,
+            showConnector: showConnector,
+          ),
           const SizedBox(width: 4),
           Expanded(
             child: Column(
@@ -860,7 +1117,7 @@ class _AssetRow extends StatelessWidget {
           ),
           Container(
             width: 88,
-            height: 34,
+            height: 32,
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
@@ -886,47 +1143,181 @@ class _AssetRow extends StatelessWidget {
   }
 }
 
-class _Total extends StatelessWidget {
-  const _Total({
-    required this.label,
-    required this.value,
-    this.alignEnd = false,
+class _TargetAssetRow extends StatelessWidget {
+  const _TargetAssetRow({
+    required this.asset,
+    required this.network,
+    required this.amount,
   });
-  final String label, value;
-  final bool alignEnd;
+
+  final String asset;
+  final String? network;
+  final String amount;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Column(
-      crossAxisAlignment: alignEnd
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            height: 14 / 11,
-            color: colors.tertiaryText,
-          ),
+    return SizedBox(
+      height: 63,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            _RouteAssetIcon(asset: asset, network: network),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text.rich(
+                TextSpan(
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 18 / 13,
+                    color: colors.primaryText,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: asset,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    if (network != null && network!.isNotEmpty)
+                      TextSpan(
+                        text: ' ($network)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colors.secondaryText,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Text(
+              amount,
+              style: const TextStyle(
+                fontSize: 15,
+                height: 22 / 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 15,
-            height: 22 / 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
 
+class _RouteAssetIcon extends StatelessWidget {
+  const _RouteAssetIcon({
+    required this.asset,
+    required this.network,
+    this.showConnector = false,
+  });
+
+  final String asset;
+  final String? network;
+  final bool showConnector;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          if (showConnector)
+            Positioned(
+              left: 13,
+              top: 27,
+              child: Container(width: 2, height: 18, color: colors.border),
+            ),
+          _TokenIcon(asset: asset),
+          if (_networkAssetPath(network) != null)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: _NetworkIcon(network: network!, size: 12),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TokenIcon extends StatelessWidget {
+  const _TokenIcon({required this.asset, this.size = 28});
+
+  final String asset;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (asset.toUpperCase().startsWith('USDC')) {
+      return SvgPicture.asset(
+        'assets/figma/funding/usdc.svg',
+        width: size,
+        height: size,
+      );
+    }
+    if (asset.toUpperCase() == 'ETH') {
+      return SvgPicture.asset(
+        'assets/figma/funding/eth.svg',
+        width: size,
+        height: size,
+      );
+    }
+    return Image.asset(
+      'assets/figma/funding/usdt.png',
+      width: size,
+      height: size,
+    );
+  }
+}
+
+class _NetworkIcon extends StatelessWidget {
+  const _NetworkIcon({required this.network, required this.size});
+
+  final String network;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final path = _networkAssetPath(network);
+    if (path == null) return const SizedBox.shrink();
+    if (network.toLowerCase() != 'arbitrum') {
+      return SvgPicture.asset(path, width: size, height: size);
+    }
+
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return Container(
+      width: size,
+      height: size,
+      padding: EdgeInsets.symmetric(
+        horizontal: size * 0.165,
+        vertical: size * 0.125,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2F3749),
+        border: Border.all(color: colors.border, width: size / 16),
+        borderRadius: BorderRadius.circular(size / 4),
+      ),
+      child: SvgPicture.asset(path),
+    );
+  }
+}
+
+String? _networkAssetPath(String? network) => switch (network?.toLowerCase()) {
+  'polygon' => 'assets/figma/funding/polygon.svg',
+  'bsc' || 'bnb chain' => 'assets/figma/portfolio/network_bsc.svg',
+  'arbitrum' => 'assets/figma/portfolio/network_arbitrum_mark.svg',
+  'hyperliquid' => 'assets/figma/home_markets/venue_hyperliquid.svg',
+  _ => null,
+};
+
 class _RouteRows extends StatelessWidget {
-  const _RouteRows({required this.leg});
+  const _RouteRows({required this.leg, required this.slippage});
   final FundingLeg? leg;
+  final DecimalValue? slippage;
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -943,6 +1334,14 @@ class _RouteRows extends StatelessWidget {
           label: l10n.networkFee,
           value: _fee(leg?.networkFee, leg?.feeAsset),
         ),
+        if (slippage != null) ...[
+          const SizedBox(height: 8),
+          _InfoRow(
+            label: l10n.slippage,
+            labelIcon: 'assets/figma/trade/order_slippage_edit.svg',
+            value: '${slippage!.value}%',
+          ),
+        ],
       ],
     );
   }
@@ -962,22 +1361,31 @@ class _RouteRows extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+  const _InfoRow({required this.label, required this.value, this.labelIcon});
   final String label, value;
+  final String? labelIcon;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            height: 18 / 13,
-            fontWeight: FontWeight.w500,
-            color: colors.secondaryText,
-          ),
+        Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                height: 18 / 13,
+                fontWeight: FontWeight.w500,
+                color: colors.secondaryText,
+              ),
+            ),
+            if (labelIcon != null) ...[
+              const SizedBox(width: 4),
+              SvgPicture.asset(labelIcon!, width: 12, height: 12),
+            ],
+          ],
         ),
         Text(
           value,

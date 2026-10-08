@@ -371,7 +371,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             isScrollControlled: true,
             isDismissible: true,
             enableDrag: false,
-            builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
+            builder: (_) => OrderFundingSheet(
+              plan: plan,
+              kind: intent.kind,
+              slippage: intent.slippage,
+            ),
           );
           if (!mounted || funded != true) return;
           setState(() => _fundingRechecking = true);
@@ -388,10 +392,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           ? cachedQuote!
           : await ref.read(orderPreviewProvider(intent).future);
       if (!mounted) return;
-      if (next.approvalRequired) {
-        await _approvePreview(next);
-        return;
-      }
       _showConfirmation(next, fromFunding: completedFundingFlow);
     } on Object catch (error) {
       if (mounted) {
@@ -412,21 +412,23 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     }
   }
 
-  Future<void> _approve() async {
-    final current = quotePreview;
-    if (current == null ||
-        current.intent.fingerprint != _intentFromFields()?.fingerprint ||
-        current.isExpired ||
-        !current.approvalRequired) {
-      _scheduleQuote();
-      return;
+  String _errorMessage({required Object error, required String fallback}) {
+    if (error is ApiFailure) {
+      return apiFailureMessage(error, fallback: fallback);
     }
-    await _approvePreview(current);
+    final message = error.toString().trim();
+    return message.isEmpty ? fallback : message;
   }
 
-  Future<void> _approvePreview(OrderPreview current) async {
-    if (_approving) return;
-    final fingerprint = current.intent.fingerprint;
+  Future<void> _approveConfirmation() async {
+    final current = preview;
+    if (current == null ||
+        !current.approvalRequired ||
+        _approving ||
+        reviewing) {
+      return;
+    }
+    _stopPreviewPolling();
     setState(() {
       error = null;
       _approving = true;
@@ -439,24 +441,19 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       if (!mounted) return;
       if (approved == null) {
         final state = ref.read(orderCommandProvider);
-        final failure =
-            state is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>
+        throw state is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>
             ? state.failure
             : const CompatibilityFailure();
-        setState(
-          () => error = apiFailureMessage(
-            failure,
-            fallback: AppLocalizations.of(context).orderSubmissionFailed,
-          ),
-        );
-        return;
       }
 
-      OrderPreview refreshed = current;
+      // Approval only changes allowance. Keep the user at confirmation until
+      // a fresh preview verifies that a separate order submission is ready.
+      var refreshed = current;
       for (var attempt = 0; attempt < 5; attempt++) {
         final provider = orderPreviewProvider(current.intent);
         ref.invalidate(provider);
         refreshed = await ref.read(provider.future);
+        if (!mounted) return;
         if (!refreshed.approvalRequired) break;
         if (attempt < 4) await Future<void>.delayed(const Duration(seconds: 1));
       }
@@ -467,11 +464,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           userAction: 'Approval confirmed, but the refreshed quote still requires approval',
         );
       }
-      if (_intentFromFields()?.fingerprint != fingerprint) {
-        _scheduleQuote();
-        return;
-      }
       setState(() => quotePreview = refreshed);
+      _showConfirmation(refreshed, fromFunding: _confirmationFromFunding);
     } on Object catch (approvalError) {
       if (mounted) {
         setState(
@@ -484,14 +478,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     } finally {
       if (mounted) setState(() => _approving = false);
     }
-  }
-
-  String _errorMessage({required Object error, required String fallback}) {
-    if (error is ApiFailure) {
-      return apiFailureMessage(error, fallback: fallback);
-    }
-    final message = error.toString().trim();
-    return message.isEmpty ? fallback : message;
   }
 
   void _showConfirmation(OrderPreview next, {required bool fromFunding}) {
@@ -621,7 +607,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   Future<void> _submit() async {
     final current = preview;
-    if (current == null) return;
+    if (current == null || reviewing || _approving) return;
+    if (current.approvalRequired) {
+      await _approveConfirmation();
+      return;
+    }
     debugPrint(
       'bStocks submit: started preview=${current.previewId} '
       'intent=${current.intent.fingerprint}',
@@ -792,11 +782,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final buttonAmount = enteredAmount.isEmpty ? '0' : enteredAmount;
     final hasExplicitInvalidAmount =
         enteredAmount.isNotEmpty && !_isPositiveDecimal(enteredAmount);
-    final currentIntent = _intentFromFields();
-    final approvalRequired =
-        quotePreview?.approvalRequired == true &&
-        quotePreview?.intent.fingerprint == currentIntent?.fingerprint &&
-        quotePreview?.isExpired == false;
     final availableBalance = settlementBalance;
     final holdings = ref.watch(holdingsProvider(null));
     _schedulePendingPercentageSync(
@@ -1092,28 +1077,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     ? colors.onPrimaryAction
                     : Colors.white,
               ),
-              onPressed: reviewing || _approving || hasExplicitInvalidAmount
-                  ? null
-                  : approvalRequired
-                  ? _approve
-                  : _review,
-              child: _approving
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        key: Key('bstocks-approval-loading'),
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      reviewing
-                          ? l10n.preparingOrder
-                          : approvalRequired
-                          ? 'Approve'
-                          : '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
-                    ),
+              onPressed: reviewing || hasExplicitInvalidAmount ? null : _review,
+              child: Text(
+                reviewing
+                    ? l10n.preparingOrder
+                    : '${isBuy ? l10n.buy : l10n.sell} ${widget.symbol} · ${isBuy ? '\$' : ''}$buttonAmount',
+              ),
             ),
           ),
         ],
@@ -1230,10 +1199,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               child: SizedBox(
                 height: 48,
                 child: OutlinedButton(
-                  onPressed: () {
-                    _stopPreviewPolling();
-                    setState(() => preview = null);
-                  },
+                  onPressed: _approving || reviewing
+                      ? null
+                      : () {
+                          _stopPreviewPolling();
+                          setState(() => preview = null);
+                        },
                   child: Text(l10n.back),
                 ),
               ),
@@ -1244,12 +1215,27 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 height: 48,
                 child: FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: actionColor),
-                  onPressed: reviewing ? null : _submit,
-                  child: Text(
-                    reviewing
-                        ? l10n.submittingOrder
-                        : '${l10n.confirm} $action',
-                  ),
+                  onPressed: reviewing || _approving
+                      ? null
+                      : current.approvalRequired
+                      ? _approveConfirmation
+                      : _submit,
+                  child: _approving
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(
+                            key: Key('bstocks-approval-loading'),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          reviewing
+                              ? l10n.submittingOrder
+                              : current.approvalRequired
+                              ? l10n.approve
+                              : '${l10n.confirm} $action',
+                        ),
                 ),
               ),
             ),
@@ -1266,9 +1252,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Image.asset(
-          'assets/figma/trade/order_success.png',
-          width: 160,
-          height: 160,
+          'assets/figma/trade/order_success.webp',
+          width: 120,
+          height: 120,
+          fit: BoxFit.contain,
         ),
         const SizedBox(height: 8),
         Text(
@@ -1305,9 +1292,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Image.asset(
-        'assets/figma/trade/order_submitting.png',
-        width: 160,
-        height: 160,
+        'assets/figma/trade/order_submitting.webp',
+        width: 120,
+        height: 120,
+        fit: BoxFit.contain,
       ),
       const SizedBox(height: 8),
       Text(
