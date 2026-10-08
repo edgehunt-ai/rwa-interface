@@ -39,9 +39,9 @@ class EmptyState extends StatelessWidget {
           children: [
             if (illustration) ...[
               Image.asset(
-                'assets/figma/common/empty_state_illustration.png',
-                width: 160,
-                height: 160,
+                'assets/figma/common/empty_state_illustration.webp',
+                width: 120,
+                height: 120,
                 fit: BoxFit.contain,
               ),
               if (title != null ||
@@ -100,24 +100,11 @@ class FavoritesEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: 160,
-            height: 160,
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 16.2,
-                  top: 22.6,
-                  width: 127.6,
-                  height: 127.6,
-                  child: Image.asset(
-                    'assets/figma/home_markets/'
-                    'favorites_empty_illustration.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ],
-            ),
+          Image.asset(
+            'assets/figma/home_markets/favorites_empty_illustration.webp',
+            width: 120,
+            height: 120,
+            fit: BoxFit.contain,
           ),
           const SizedBox(height: 10),
           Text(

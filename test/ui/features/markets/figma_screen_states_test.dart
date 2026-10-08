@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/data/services/market_search_history_service.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
@@ -51,6 +52,57 @@ void main() {
 
     expect(find.text('Favorites'), findsNothing);
     expect(find.text('Popular'), findsOneWidget);
+  });
+
+  testWidgets('empty favorites show the illustration and explore Popular', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await configureDisplay(tester, size: const Size(393, 852));
+    final requestedGroups = <String?>[];
+    final repository = _MarketsRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          marketRankingTabProvider.overrideWithBuild((_, _) => 'Favorites'),
+          marketsRepositoryProvider.overrideWithValue(repository),
+          marketProductsProvider.overrideWith((ref, query) async {
+            requestedGroups.add(query.group);
+            return query.group == 'favorites'
+                ? const DomainPage<MarketProduct>(items: [])
+                : repository.listProducts();
+          }),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No favorites yet'), findsOneWidget);
+    expect(find.text('No matching products'), findsNothing);
+    final illustration = find.image(
+      const AssetImage(
+        'assets/figma/home_markets/favorites_empty_illustration.webp',
+      ),
+    );
+    expect(illustration, findsOneWidget);
+    expect(tester.getSize(illustration), const Size(120, 120));
+    expect(tester.takeException(), isNull);
+
+    final explore = find.widgetWithText(OutlinedButton, 'Explore markets');
+    await tester.ensureVisible(explore);
+    await tester.tap(explore);
+    await tester.pumpAndSettle();
+
+    expect(find.text('No favorites yet'), findsNothing);
+    expect(requestedGroups, contains('hot'));
+    expect(
+      tester.widget<MarketRankingTabs>(find.byType(MarketRankingTabs)).active,
+      'Popular',
+    );
+    expect(find.text('NVDA'), findsWidgets);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(

@@ -333,11 +333,11 @@ class _LoggedOutPrompt extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onLogin,
           borderRadius: BorderRadius.circular(24),
           child: Ink(
-            padding: const EdgeInsets.fromLTRB(16, 11, 14, 11),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
@@ -346,35 +346,47 @@ class _LoggedOutPrompt extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Stack(
               children: [
-                SizedBox(
-                  width: 190,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.readyWhenYouAre,
-                        style: Theme.of(context).textTheme.titleMedium,
+                Positioned(
+                  left: 16,
+                  right: 142,
+                  top: 11,
+                  bottom: 11,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: SizedBox(
+                      width: 190,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.readyWhenYouAre,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            l10n.loginToViewPortfolio,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(color: colors.secondaryText),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l10n.loginToViewPortfolio,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyLarge
-                            ?.copyWith(color: colors.secondaryText),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-                Image.asset(
-                  'assets/figma/home_markets/login_prompt.png',
-                  width: 112,
-                  height: 112,
-                  fit: BoxFit.cover,
+                Positioned(
+                  right: -11,
+                  top: 26,
+                  width: 126,
+                  height: 126,
+                  child: Image.asset(
+                    'assets/figma/home_markets/login_prompt.webp',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ],
             ),

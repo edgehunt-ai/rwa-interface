@@ -257,9 +257,9 @@ class _LoggedOutActivity extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/figma/home_markets/login_prompt.png',
-                width: 180,
-                height: 180,
+                'assets/figma/common/sign_in_illustration.webp',
+                width: 120,
+                height: 120,
                 fit: BoxFit.contain,
               ),
               const SizedBox(height: 20),

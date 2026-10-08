@@ -8,6 +8,7 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/stock.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
+import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:rwa_interface/ui/core/layout/app_bottom_navigation.dart';
 import 'package:rwa_interface/ui/core/markets/market_session_presentation.dart';
@@ -147,6 +148,16 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                 data: (page) {
                   final items = page.items;
                   if (items.isEmpty) {
+                    if (selectedTab == 'Favorites') {
+                      return SizedBox(
+                        height: 280,
+                        child: FavoritesEmptyState(
+                          onExplore: () => ref
+                              .read(marketRankingTabProvider.notifier)
+                              .select('Popular'),
+                        ),
+                      );
+                    }
                     return SizedBox(
                       height: 280,
                       child: DesignStateFeedback(

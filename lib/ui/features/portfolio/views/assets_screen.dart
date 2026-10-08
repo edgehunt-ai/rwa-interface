@@ -363,10 +363,13 @@ class _EmptyAssets extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 42),
-        Image.asset(
-          'assets/figma/common/empty_state_illustration.png',
-          width: 168,
-          height: 168,
+        Center(
+          child: Image.asset(
+            'assets/figma/common/empty_state_illustration.webp',
+            width: 120,
+            height: 120,
+            fit: BoxFit.contain,
+          ),
         ),
         const SizedBox(height: 22),
         Text(
@@ -408,9 +411,9 @@ class _LoggedOutAssets extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/figma/home_markets/login_prompt.png',
-                width: 180,
-                height: 180,
+                'assets/figma/common/sign_in_illustration.webp',
+                width: 120,
+                height: 120,
                 fit: BoxFit.contain,
               ),
               const SizedBox(height: 20),

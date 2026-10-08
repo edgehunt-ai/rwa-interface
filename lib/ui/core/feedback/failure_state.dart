@@ -56,9 +56,9 @@ class _FailureStateState extends State<FailureState> {
             Semantics(
               label: widget.title ?? widget.description ?? l10n.requestFailed,
               child: Image.asset(
-                'assets/figma/common/error_state_illustration.png',
-                width: 160,
-                height: 160,
+                'assets/figma/common/error_state_illustration.webp',
+                width: 120,
+                height: 120,
               ),
             ),
             if (widget.title != null) ...[

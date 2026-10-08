@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
 import 'package:rwa_interface/app/config/privy_configuration.dart';
@@ -23,11 +24,65 @@ import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/home/views/home_screen.dart';
 import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
+import 'package:rwa_interface/ui/features/session/views/privy_login_screen.dart';
 
+import '../../../helpers/display_config.dart';
 import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final width in [320.0, 393.0]) {
+    testWidgets('logged-out banner fits ${width.toInt()}px and opens login', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      await configureDisplay(tester, size: Size(width, 852));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticationProvider.overrideWithBuild(
+              (_, _) => const AuthenticationUnauthenticated(),
+            ),
+            identityAuthGatewayProvider.overrideWithValue(
+              FakeIdentityAuthGateway(),
+            ),
+            privyConfigurationProvider.overrideWithValue(
+              const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+            ),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+          child: buildTestApp(const HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final illustration = find.image(
+        const AssetImage('assets/figma/home_markets/login_prompt.webp'),
+      );
+      expect(illustration, findsOneWidget);
+      expect(tester.getSize(illustration), const Size(126, 126));
+      final banner = find.ancestor(
+        of: illustration,
+        matching: find.byType(Ink),
+      );
+      final bannerRect = tester.getRect(banner);
+      final imageRect = tester.getRect(illustration);
+      expect(imageRect.top - bannerRect.top, 26);
+      expect(imageRect.right - bannerRect.right, 11);
+      final material = find
+          .ancestor(of: illustration, matching: find.byType(Material))
+          .first;
+      expect(tester.widget<Material>(material).clipBehavior, Clip.antiAlias);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Ready when you are'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PrivyLoginScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('Home shows portfolio, quick actions, and market ranking', (
     tester,
   ) async {

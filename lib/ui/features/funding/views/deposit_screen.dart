@@ -771,9 +771,9 @@ class _DepositSelectorState extends ConsumerState<_DepositSelector> {
                 const SizedBox(height: 60),
                 Center(
                   child: Image.asset(
-                    'assets/figma/funding/deposit_empty.png',
-                    width: 160,
-                    height: 160,
+                    'assets/figma/funding/deposit_empty.webp',
+                    width: 120,
+                    height: 120,
                   ),
                 ),
                 const SizedBox(height: 12),
