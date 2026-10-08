@@ -439,6 +439,116 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsOneWidget);
   });
 
+  for (final refreshFails in [false, true]) {
+    testWidgets(
+      refreshFails
+          ? 'exits funding pending when the refreshed limit preview fails'
+          : 'shows funding pending while refreshing the limit preview after transfer',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final funding = _PanelCompletedFundingRepository();
+        final orders = _DelayedFundingPreviewOrdersRepository();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              ordersRepositoryProvider.overrideWithValue(orders),
+              fundingRepositoryProvider.overrideWithValue(funding),
+              walletsRepositoryProvider.overrideWithValue(
+                _FundingWalletsRepository(),
+              ),
+              transferOptionsProvider.overrideWith(
+                (ref) async => _transferOptions('100'),
+              ),
+            ],
+            child: buildTestApp(const BstocksOrderPanel()),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Limit'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('bstocks-limit-price-sheet-input')),
+          '100',
+        );
+        await tester.pump();
+        await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('bstocks-limit-quantity-input')),
+          '1',
+        );
+        await tester.pump(const Duration(milliseconds: 301));
+        await tester.pumpAndSettle();
+        expect(orders.previewCalls, 1);
+        await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+        await _pumpUntilFound(
+          tester,
+          find.byKey(const Key('order-funding-spot-option')),
+        );
+        await tester.ensureVisible(
+          find.byKey(const Key('order-funding-spot-option')),
+        );
+        tester
+            .widget<InkWell>(
+              find.descendant(
+                of: find.byKey(const Key('order-funding-spot-option')),
+                matching: find.byType(InkWell),
+              ),
+            )
+            .onTap!();
+        await tester.pump();
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+            .onPressed!();
+        await _pumpUntilFound(
+          tester,
+          find.byKey(const Key('order-funding-transfer-pending')),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byType(OrderFundingSheet), findsNothing);
+        expect(orders.previewCalls, 2);
+        expect(funding.sessions, 2);
+        expect(funding.transfers, 1);
+        expect(
+          find.byKey(const Key('bstocks-primary-order-action')),
+          findsNothing,
+        );
+
+        if (refreshFails) {
+          orders.failRefreshedPreview();
+          await _pumpUntilFound(tester, find.text('Preview refresh failed'));
+          expect(
+            find.byKey(const Key('order-funding-transfer-pending')),
+            findsNothing,
+          );
+          expect(
+            tester
+                .widget<FilledButton>(
+                  find.byKey(const Key('bstocks-primary-order-action')),
+                )
+                .onPressed,
+            isNotNull,
+          );
+        } else {
+          orders.completeRefreshedPreview();
+          await _pumpUntilFound(
+            tester,
+            find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+          );
+          expect(
+            find.byKey(const Key('order-funding-transfer-pending')),
+            findsNothing,
+          );
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets('balance slider and order value stay synchronized', (
     tester,
   ) async {
@@ -1235,6 +1345,46 @@ final class _DelayedOrdersRepository implements OrdersRepository {
     String orderId, {
     required String idempotencyKey,
   }) => throw UnimplementedError();
+}
+
+final class _DelayedFundingPreviewOrdersRepository implements OrdersRepository {
+  var previewCalls = 0;
+  final _refreshedPreview = Completer<OrderPreview>();
+  late OrderIntent _intent;
+
+  void completeRefreshedPreview() {
+    _refreshedPreview.complete(
+      OrderPreview(
+        previewId: 'refreshed-preview',
+        intent: _intent,
+        orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+      ),
+    );
+  }
+
+  void failRefreshedPreview() => _refreshedPreview.completeError(
+    const UnknownFailure(userAction: 'Preview refresh failed'),
+  );
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async {
+    previewCalls++;
+    _intent = intent;
+    if (previewCalls == 1) {
+      return OrderPreview(
+        previewId: 'initial-preview',
+        intent: intent,
+        orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+      );
+    }
+    return _refreshedPreview.future;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 final class _FilledOrdersRepository extends _DelayedOrdersRepository {

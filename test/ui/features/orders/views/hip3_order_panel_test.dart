@@ -25,6 +25,7 @@ import 'package:rwa_interface/domain/repositories/hip3_order_execution_repositor
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_order_panel.dart';
+import 'package:rwa_interface/ui/features/orders/views/order_funding_sheet.dart';
 
 import 'package:rwa_interface/app/observability/observability_reporter.dart';
 import 'package:rwa_interface/app/providers/observability_providers.dart';
@@ -157,6 +158,115 @@ void main() {
       expect(opening.contextCalls, 4);
       // The setting action and transfer refresh both preserve the selection.
       expect(orders.intent?.leverage?.value, '20');
+    },
+  );
+
+  testWidgets(
+    'shows funding pending while refreshing HIP-3 after a limit transfer',
+    (tester) async {
+      final refreshGate = Completer<void>();
+      final opening = _Opening(
+        availableMargin: '16',
+        blockedContextCall: 2,
+        contextGate: refreshGate,
+      );
+      final funding = _TransferThenFunded(
+        onTransfer: () => opening.availableMargin = '40',
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(_CapturingHip3Orders()),
+            walletsRepositoryProvider.overrideWithValue(_FundingWallets()),
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async => MarketSnapshot(
+                price: DecimalValue('100', asset: 'USDC', unit: 'price'),
+              ),
+            ),
+          ],
+          child: _app(
+            const Hip3OrderPanel(),
+            opening: opening,
+            funding: funding,
+            transferOptions: _transferOptions('40'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Limit').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('hip3-limit-price-sheet-input')),
+        '100',
+      );
+      Navigator.of(
+        tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+      ).pop('100');
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('hip3-limit-quantity-input')),
+        '1',
+      );
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+
+      final submit = find.byKey(const Key('hip3-submit-button'));
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pump(const Duration(seconds: 1));
+      final spot = find.byKey(const Key('order-funding-spot-option'));
+      await tester.ensureVisible(spot);
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      await tester.tap(spot);
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final transfer = find.widgetWithText(FilledButton, 'Confirm');
+      await tester.ensureVisible(transfer);
+      await tester.tap(transfer);
+
+      for (
+        var i = 0;
+        i < 20 && find.byType(OrderFundingSheet).evaluate().isNotEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(OrderFundingSheet), findsNothing);
+      expect(opening.contextCalls, 2);
+      expect(funding.sessions, 1);
+      expect(funding.transfers, 1);
+      expect(
+        find.byKey(const Key('order-funding-transfer-pending')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('hip3-submit-button')), findsNothing);
+
+      refreshGate.complete();
+      for (
+        var i = 0;
+        i < 50 &&
+            find
+                .byKey(const Key('hip3-funding-confirmation-step-3'))
+                .evaluate()
+                .isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(
+        find.byKey(const Key('hip3-funding-confirmation-step-3')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('order-funding-transfer-pending')),
+        findsNothing,
+      );
+      expect(funding.sessions, 2);
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -1515,12 +1625,16 @@ final class _Opening implements Hip3OpeningRepository {
     this.maximumNotional = '1000',
     this.availableMargin = '1000',
     this.sizeDecimals = 3,
+    this.blockedContextCall,
+    this.contextGate,
   });
   final int maximum;
   final bool failing;
   final String maximumNotional;
   String availableMargin;
   final int sizeDecimals;
+  final int? blockedContextCall;
+  final Completer<void>? contextGate;
   int contextCalls = 0;
   int settingsRequests = 0;
   int leverage = 10;
@@ -1528,6 +1642,7 @@ final class _Opening implements Hip3OpeningRepository {
   @override
   Future<Hip3OpeningContext> context(String productOrSymbol) async {
     contextCalls++;
+    if (contextCalls == blockedContextCall) await contextGate?.future;
     if (failing) {
       throw const ServerFailure(statusCode: 503, code: 'unavailable');
     }

@@ -85,6 +85,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   var _percentageWaitingForBalance = false;
   var _percentageSyncScheduled = false;
   var _submitting = false;
+  var _fundingRechecking = false;
   var _confirmationFromFunding = false;
   var _settingsUpdating = false;
   String? _error;
@@ -865,6 +866,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         );
         setState(() {
           _submitting = false;
+          _fundingRechecking = false;
         });
       }
     }
@@ -977,6 +979,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           );
           return;
         }
+        setState(() => _fundingRechecking = true);
         completedFundingFlow = true;
         await _refreshAvailableMargin();
         if (!isCurrent()) return;
@@ -1124,6 +1127,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         _pendingOrderId = null;
         _error = null;
         _submitting = false;
+        _fundingRechecking = false;
         _percentage = 0;
         _percentageWaitingForBalance = false;
         _percentageSyncScheduled = false;
@@ -1139,6 +1143,20 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       });
     });
     if (_submitted != null) return _result(context);
+    if (_fundingRechecking) {
+      return Material(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: OrderFundingPendingContent(
+              onClose: () => Navigator.of(context).pop(),
+            ),
+          ),
+        ),
+      );
+    }
     return IgnorePointer(ignoring: _submitting, child: _form(context));
   }
 

@@ -172,7 +172,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                 Divider(color: colors.subtleSurface),
                 const SizedBox(height: 16),
                 if (_transferStep && _pending)
-                  _TransferPendingContent(
+                  OrderFundingPendingContent(
                     onClose: () => Navigator.of(context).pop(false),
                   )
                 else if (_transferStep)
@@ -618,8 +618,8 @@ class _TransferContent extends StatelessWidget {
   }
 }
 
-class _TransferPendingContent extends StatelessWidget {
-  const _TransferPendingContent({required this.onClose});
+class OrderFundingPendingContent extends StatelessWidget {
+  const OrderFundingPendingContent({super.key, required this.onClose});
 
   final VoidCallback onClose;
 

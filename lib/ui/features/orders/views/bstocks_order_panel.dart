@@ -65,6 +65,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   String? error;
   bool reviewing = false;
   bool _approving = false;
+  bool _fundingRechecking = false;
   bool _confirmationFromFunding = false;
   Timer? _quoteDebounce;
   Timer? _previewPollingTimer;
@@ -373,6 +374,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             builder: (_) => OrderFundingSheet(plan: plan, kind: intent.kind),
           );
           if (!mounted || funded != true) return;
+          setState(() => _fundingRechecking = true);
           completedFundingFlow = true;
         }
       }
@@ -402,7 +404,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       }
     } finally {
       if (mounted) {
-        setState(() => reviewing = false);
+        setState(() {
+          reviewing = false;
+          _fundingRechecking = false;
+        });
       }
     }
   }
@@ -747,6 +752,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         child: SingleChildScrollView(
           child: submittedOrder != null
               ? _submitted(context)
+              : _fundingRechecking
+              ? OrderFundingPendingContent(
+                  onClose: () => Navigator.of(context).pop(),
+                )
               : reviewing && preview != null
               ? _submitting(context)
               : preview == null
