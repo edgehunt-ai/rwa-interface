@@ -173,6 +173,7 @@ class _DepositRouteTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
+    final tokenIcon = _depositTokenIcon(route.token, size: 40);
     return Semantics(
       button: true,
       label: l10n.depositOn(route.token, route.chain),
@@ -201,8 +202,7 @@ class _DepositRouteTile extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              _AssetMark(asset: route.token),
-              const SizedBox(width: 12),
+              if (tokenIcon != null) ...[tokenIcon, const SizedBox(width: 12)],
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -233,43 +233,6 @@ class _DepositRouteTile extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _AssetMark extends StatelessWidget {
-  const _AssetMark({required this.asset});
-  final String asset;
-
-  @override
-  Widget build(BuildContext context) =>
-      SizedBox(width: 40, height: 40, child: _tokenIcon(context));
-
-  Widget _tokenIcon(BuildContext context) {
-    if (asset == 'USDC') {
-      return SvgPicture.asset(
-        'assets/figma/funding/usdc.svg',
-        width: 40,
-        height: 40,
-      );
-    }
-    if (asset == 'USDT') {
-      return Image.asset(
-        'assets/figma/funding/usdt.png',
-        width: 40,
-        height: 40,
-      );
-    }
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Container(
-      width: 40,
-      height: 40,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        shape: BoxShape.circle,
-      ),
-      child: Text(asset, style: const TextStyle(fontWeight: FontWeight.w600)),
     );
   }
 }
@@ -584,15 +547,13 @@ class _ReadonlyRoute extends StatelessWidget {
           _RouteValue(
             label: l10n.network,
             value: instruction.chain,
-            asset: instruction.chain == 'BSC'
-                ? 'assets/figma/funding/bnb_chain.svg'
-                : 'assets/figma/funding/arbitrum.svg',
+            icon: _depositNetworkIcon(instruction.chain),
           ),
           Divider(height: 1, color: colors.border),
           _RouteValue(
             label: l10n.token,
             value: instruction.token,
-            asset: 'assets/figma/funding/usdc.svg',
+            icon: _depositTokenIcon(instruction.token),
           ),
         ],
       ),
@@ -601,14 +562,10 @@ class _ReadonlyRoute extends StatelessWidget {
 }
 
 class _RouteValue extends StatelessWidget {
-  const _RouteValue({
-    required this.label,
-    required this.value,
-    required this.asset,
-  });
+  const _RouteValue({required this.label, required this.value, this.icon});
   final String label;
   final String value;
-  final String asset;
+  final Widget? icon;
 
   @override
   Widget build(BuildContext context) => SizedBox(
@@ -619,14 +576,48 @@ class _RouteValue extends StatelessWidget {
         children: [
           Text(label),
           const Spacer(),
-          SvgPicture.asset(asset, width: 24, height: 24),
-          const SizedBox(width: 8),
+          if (icon != null) ...[icon!, const SizedBox(width: 8)],
           Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     ),
   );
 }
+
+Widget? _depositNetworkIcon(String network, {double size = 24}) {
+  final asset = switch (network.trim().toLowerCase()) {
+    'bsc' || 'bnb chain' => 'assets/figma/funding/bnb_chain.svg',
+    'arbitrum' => 'assets/figma/funding/arbitrum.svg',
+    'ethereum' => 'assets/figma/funding/eth.svg',
+    'polygon' => 'assets/figma/funding/polygon.svg',
+    _ => null,
+  };
+  return asset == null
+      ? null
+      : SvgPicture.asset(
+          asset,
+          key: ValueKey('deposit-network-icon-${network.toLowerCase()}'),
+          width: size,
+          height: size,
+        );
+}
+
+Widget? _depositTokenIcon(String token, {double size = 24}) =>
+    switch (token.trim().toUpperCase()) {
+      'USDC' => SvgPicture.asset(
+        'assets/figma/funding/usdc.svg',
+        key: const ValueKey('deposit-token-icon-usdc'),
+        width: size,
+        height: size,
+      ),
+      'USDT' => Image.asset(
+        'assets/figma/funding/usdt.png',
+        key: const ValueKey('deposit-token-icon-usdt'),
+        width: size,
+        height: size,
+      ),
+      _ => null,
+    };
 
 class _RouteDetails extends ConsumerWidget {
   const _RouteDetails({required this.instruction});

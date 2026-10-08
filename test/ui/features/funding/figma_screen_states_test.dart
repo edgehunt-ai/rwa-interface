@@ -129,6 +129,63 @@ void main() {
     );
   });
 
+  testWidgets('deposit instructions use the matching token icon', (
+    tester,
+  ) async {
+    const route = (chain: 'BSC', token: 'USDT');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositInstructionProvider(route)
+              .overrideWith((_) async => _depositInstruction(route)),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => const Stream.empty()),
+        ],
+        child: buildTestApp(const DepositScreen(chain: 'BSC', token: 'USDT')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('deposit-network-icon-bsc')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('deposit-token-icon-usdt')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('deposit-token-icon-usdc')), findsNothing);
+  });
+
+  testWidgets('deposit instructions omit icons for unknown route values', (
+    tester,
+  ) async {
+    const route = (chain: 'Base', token: 'DAI');
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositInstructionProvider(route)
+              .overrideWith((_) async => _depositInstruction(route)),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => const Stream.empty()),
+        ],
+        child: buildTestApp(const DepositScreen(chain: 'Base', token: 'DAI')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('deposit-network-icon-base')),
+      findsNothing,
+    );
+    expect(find.byKey(const ValueKey('deposit-token-icon-usdc')), findsNothing);
+    expect(find.byKey(const ValueKey('deposit-token-icon-usdt')), findsNothing);
+    expect(find.text('Base'), findsWidgets);
+    expect(find.text('DAI'), findsWidgets);
+  });
+
   testWidgets('deposit balance shows a skeleton while loading', (tester) async {
     const route = (chain: 'Arbitrum', token: 'USDC');
 
