@@ -159,6 +159,7 @@ final class OrderCommandNotifier
     extends Notifier<CommandState<OrderIntent, ResourceResult<TradingOrder>>> {
   String? _fingerprint;
   String? _idempotencyKey;
+  String? _approvalPreviewId;
   Future<ResourceResult<TradingOrder>>? _inFlight;
   var _submissionGeneration = 0;
 
@@ -167,6 +168,7 @@ final class OrderCommandNotifier
     ref.watch(sessionGenerationProvider);
     _fingerprint = null;
     _idempotencyKey = null;
+    _approvalPreviewId = null;
     _inFlight = null;
     _submissionGeneration = 0;
     return const CommandIdle();
@@ -214,11 +216,15 @@ final class OrderCommandNotifier
       _fingerprint = commandFingerprint;
       _idempotencyKey =
           '${approvalOnly ? 'approval' : 'order'}-${DateTime.now().microsecondsSinceEpoch}';
+      _approvalPreviewId = approvalOnly ? previewId : null;
     }
     final key = _idempotencyKey!;
+    // Replaying an uncertain approval must preserve the entire create request,
+    // even if the confirmation view has fetched a newer display quote.
+    final requestPreviewId = approvalOnly ? _approvalPreviewId : previewId;
     debugPrint(
       'bStocks/order submit: creating order '
-      'preview=$previewId key=$key kind=${intent.kind.name}',
+      'preview=$requestPreviewId key=$key kind=${intent.kind.name}',
     );
     state = CommandSubmitting<OrderIntent, ResourceResult<TradingOrder>>(
       intent,
@@ -227,7 +233,7 @@ final class OrderCommandNotifier
     final request = _submitOrder(
       intent,
       idempotencyKey: key,
-      previewId: previewId,
+      previewId: requestPreviewId,
       submissionGeneration: submissionGeneration,
       stopAfterApproval: approvalOnly,
     );
@@ -269,6 +275,19 @@ final class OrderCommandNotifier
             stackTrace: stackTrace,
           );
       if (!isCurrent()) return null;
+      // A rejected preview created no wallet action. A replacement quote
+      // needs a new create key; ambiguous failures must keep their original key.
+      if (approvalOnly &&
+          failure is ServerFailure &&
+          const {
+            'preview_expired',
+            'bstocks_preview_changed',
+            'bstocks_preview_already_consumed',
+          }.contains(failure.code)) {
+        _fingerprint = null;
+        _idempotencyKey = null;
+        _approvalPreviewId = null;
+      }
       state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
         intent: intent,
         idempotencyKey: key,

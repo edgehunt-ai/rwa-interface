@@ -244,17 +244,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Add 90 USDC on Arbitrum to continue'), findsOneWidget);
+    expect(find.text('Add 90 USDC on Hyperliquid to continue'), findsOneWidget);
     expect(
       find.text(
-        'You have 10 USDC on Arbitrum ready. Transfer existing assets or '
-        'deposit USDC on Arbitrum.',
+        'You have 10 USDC on Hyperliquid ready. Transfer existing assets or '
+        'deposit USDC on Hyperliquid.',
       ),
       findsOneWidget,
     );
     expect(find.text('Order Value'), findsOneWidget);
     expect(find.text('100 USDC'), findsOneWidget);
-    expect(find.text('Ready on Arbitrum'), findsOneWidget);
+    expect(find.text('Ready on Hyperliquid'), findsOneWidget);
+    expect(find.textContaining('Arbitrum'), findsNothing);
     expect(find.text('10 USDC'), findsOneWidget);
     expect(find.text('Other assets'), findsOneWidget);
     expect(find.text(r'$100'), findsOneWidget);
@@ -278,6 +279,37 @@ void main() {
       tester.getSize(find.byKey(const Key('order-funding-spot-option'))),
       const Size(353, 72),
     );
+  });
+
+  testWidgets('order funding uses the target asset from the plan', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transferOptionsProvider.overrideWith(
+            (ref) async => _transferOptions('100'),
+          ),
+        ],
+        child: buildTestApp(
+          OrderFundingSheet(
+            plan: FundingPlan(
+              planId: 'testnet-plan',
+              tradePreviewId: 'testnet-preview',
+              shortfall: DecimalValue('90'),
+              targetAsset: 'TUSDT',
+              targetNetwork: 'BSC',
+              status: FundingPlanState.blocked,
+            ),
+            kind: MarketProductKind.bstock,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Add 90 TUSDT on BSC to continue'), findsOneWidget);
+    expect(find.text('90 TUSDT'), findsNWidgets(2));
+    expect(find.text('Add 90 USDT on BSC to continue'), findsNothing);
   });
 
   testWidgets('order funding opens the shared Spot transfer review', (
@@ -886,7 +918,7 @@ void main() {
   testWidgets('failed approval stays at confirmation and can be retried', (
     tester,
   ) async {
-    final orders = _ApprovalOrdersRepository();
+    final orders = _ApprovalOrdersRepository(uniquePreviewIds: true);
     final execution = _ApprovalExecutionRepository(orders, failOnce: true);
     await tester.pumpWidget(
       ProviderScope(
@@ -913,6 +945,15 @@ void main() {
     expect(find.text('Order submitted'), findsNothing);
     expect(orders.createCalls, 1);
 
+    final recoveredPreviewCalls = orders.previewCalls;
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(orders.previewCalls, greaterThan(recoveredPreviewCalls));
+    final firstPollingCalls = orders.previewCalls;
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(orders.previewCalls, greaterThan(firstPollingCalls));
+
     await tester.tap(approve);
     await tester.pump();
     expect(execution.stopAfterApproval, isTrue);
@@ -922,9 +963,118 @@ void main() {
       find.widgetWithText(FilledButton, 'Confirm Buy'),
     );
     expect(orders.createCalls, 2);
+    expect(orders.createdPreviewIds.last, orders.createdPreviewIds.first);
+    expect(orders.createKeys.last, orders.createKeys.first);
     expect(find.text('Order submitted'), findsNothing);
     expect(find.text('Approval rejected'), findsNothing);
   });
+
+  testWidgets(
+    'expired approval preview is refreshed before creating an action',
+    (tester) async {
+      final orders = _ApprovalOrdersRepository(uniquePreviewIds: true)
+        ..expirePreviews = true;
+      final execution = _ApprovalExecutionRepository(orders);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+            ordersRepositoryProvider.overrideWithValue(orders),
+            bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+              execution,
+            ),
+          ],
+          child: buildTestApp(const BstocksOrderPanel()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, '10');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+      final approve = find.widgetWithText(FilledButton, 'Approve');
+      await _pumpUntilFound(tester, approve);
+      final expiredPreviewCalls = orders.previewCalls;
+      orders.expirePreviews = false;
+      await tester.ensureVisible(approve);
+      await tester.tap(approve);
+      await tester.pump();
+      expect(orders.previewCalls, greaterThan(expiredPreviewCalls));
+      expect(orders.createdPreviewIds, [
+        'approval-preview-${orders.previewCalls}',
+      ]);
+      execution.completeApproval();
+      await _pumpUntilFound(
+        tester,
+        find.widgetWithText(FilledButton, 'Confirm Buy'),
+      );
+      expect(orders.createCalls, 1);
+      expect(find.text('Order submitted'), findsNothing);
+    },
+  );
+
+  for (final isLimit in [false, true]) {
+    testWidgets(
+      '${isLimit ? 'limit' : 'market'} approval replaces a rejected preview before retry',
+      (tester) async {
+        final orders = _ApprovalOrdersRepository(uniquePreviewIds: true)
+          ..rejectNextCreate = true;
+        final execution = _ApprovalExecutionRepository(orders);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+              ordersRepositoryProvider.overrideWithValue(orders),
+              bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+                execution,
+              ),
+            ],
+            child: buildTestApp(const BstocksOrderPanel()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (isLimit) {
+          await tester.tap(find.text('Limit'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const Key('bstocks-limit-price-sheet-input')),
+            '100',
+          );
+          await tester.pump();
+          await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const Key('bstocks-limit-quantity-input')),
+            '0.1',
+          );
+        } else {
+          await tester.enterText(find.byType(TextField).first, '10');
+        }
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+        final approve = find.widgetWithText(FilledButton, 'Approve');
+        await _pumpUntilFound(tester, approve);
+        await tester.ensureVisible(approve);
+        await tester.tap(approve);
+        await _pumpUntilFound(tester, find.text('Preview expired'));
+        expect(orders.createCalls, 1);
+
+        await tester.tap(approve);
+        await tester.pump();
+        expect(orders.createCalls, 2);
+        expect(
+          orders.createdPreviewIds.last,
+          isNot(orders.createdPreviewIds.first),
+        );
+        expect(orders.createKeys.last, isNot(orders.createKeys.first));
+        execution.completeApproval();
+        await _pumpUntilFound(
+          tester,
+          find.widgetWithText(FilledButton, 'Confirm Buy'),
+        );
+        expect(find.text('Order submitted'), findsNothing);
+      },
+    );
+  }
 
   testWidgets(
     'sell uses the matching position quantity without a dollar sign',
@@ -1680,22 +1830,39 @@ final class _CountingOrdersRepository extends _DelayedOrdersRepository {
 }
 
 final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
+  _ApprovalOrdersRepository({this.uniquePreviewIds = false});
+
+  final bool uniquePreviewIds;
   var approved = false;
   var createCalls = 0;
+  var previewCalls = 0;
+  var rejectNextCreate = false;
+  var expirePreviews = false;
   final createdPreviewIds = <String?>[];
+  final createKeys = <String>[];
 
   @override
   Future<OrderPreview> preview(
     OrderIntent intent, {
     required String idempotencyKey,
-  }) async => OrderPreview(
-    previewId: approved ? 'post-approval-preview' : 'approval-preview',
-    intent: intent,
-    orderValue: DecimalValue('10', asset: 'TUSDT', unit: 'token'),
-    estimatedQuantity: DecimalValue('0.1', asset: 'NVDAB', unit: 'token'),
-    settlementAsset: 'TUSDT',
-    approvalRequired: !approved,
-  );
+  }) async {
+    previewCalls++;
+    return OrderPreview(
+      previewId: uniquePreviewIds
+          ? 'approval-preview-$previewCalls'
+          : approved
+          ? 'post-approval-preview'
+          : 'approval-preview',
+      intent: intent,
+      orderValue: DecimalValue('10', asset: 'TUSDT', unit: 'token'),
+      estimatedQuantity: DecimalValue('0.1', asset: 'NVDAB', unit: 'token'),
+      settlementAsset: 'TUSDT',
+      approvalRequired: !approved,
+      expiresAt: DateTime.now().toUtc().add(
+        Duration(seconds: expirePreviews ? -1 : 120),
+      ),
+    );
+  }
 
   @override
   Future<ResourceResult<TradingOrder>> create(
@@ -1705,6 +1872,15 @@ final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
   }) async {
     createCalls++;
     createdPreviewIds.add(previewId);
+    createKeys.add(idempotencyKey);
+    if (rejectNextCreate) {
+      rejectNextCreate = false;
+      throw const ServerFailure(
+        statusCode: 409,
+        code: 'preview_expired',
+        message: 'Preview expired',
+      );
+    }
     if (approved) {
       return super.create(
         intent,

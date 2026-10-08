@@ -78,7 +78,12 @@ void main() {
       // frame for pumpAndSettle to wait for here.
       await tester.pump(const Duration(seconds: 1));
       expect(funding.previewIds, hasLength(1));
-      expect(find.text('Add 5 USDC on Arbitrum to continue'), findsOneWidget);
+      expect(
+        find.text('Add 5 USDC on Hyperliquid to continue'),
+        findsOneWidget,
+      );
+      expect(find.text('Ready on Hyperliquid'), findsOneWidget);
+      expect(find.textContaining('Arbitrum'), findsNothing);
       expect(find.text('Still needed'), findsOneWidget);
       expect(find.text('5 USDC'), findsNWidgets(2));
       expect(find.text('Insufficient balance.'), findsNothing);

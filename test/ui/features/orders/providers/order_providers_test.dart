@@ -172,6 +172,71 @@ void main() {
       expect(observability.failures, hasLength(1));
     },
   );
+
+  for (final code in [
+    'preview_expired',
+    'bstocks_preview_changed',
+    'bstocks_preview_already_consumed',
+    null,
+  ]) {
+    test(
+      'approval retry only replaces the key for rejected preview $code',
+      () async {
+        final repository = _RejectedApprovalOrders(
+          code == null
+              ? const NetworkFailure()
+              : ServerFailure(statusCode: 409, code: code),
+        );
+        final container = ProviderContainer(
+          overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+        );
+        addTearDown(container.dispose);
+        final notifier = container.read(orderCommandProvider.notifier);
+        expect(
+          await notifier.approve(_intent('NVDA'), previewId: 'old-preview'),
+          isNull,
+        );
+        expect(
+          await notifier.approve(_intent('NVDA'), previewId: 'fresh-preview'),
+          isNotNull,
+        );
+        expect(repository.keys, hasLength(2));
+        expect(
+          repository.keys.last,
+          code == null ? repository.keys.first : isNot(repository.keys.first),
+        );
+        expect(repository.previewIds, [
+          'old-preview',
+          code == null ? 'old-preview' : 'fresh-preview',
+        ]);
+      },
+    );
+  }
+}
+
+final class _RejectedApprovalOrders extends _OrdersRepository {
+  _RejectedApprovalOrders(this.failure);
+
+  final ApiFailure failure;
+  final previewIds = <String?>[];
+
+  @override
+  Future<ResourceResult<TradingOrder>> create(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) {
+    previewIds.add(previewId);
+    if (keys.isEmpty) {
+      keys.add(idempotencyKey);
+      throw failure;
+    }
+    return super.create(
+      intent,
+      idempotencyKey: idempotencyKey,
+      previewId: previewId,
+    );
+  }
 }
 
 final class _RecordingObservabilityReporter implements ObservabilityReporter {

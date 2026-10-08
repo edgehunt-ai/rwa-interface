@@ -39,11 +39,14 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   bool _transferStep = false;
   String? _error;
 
-  String get _targetAsset =>
-      widget.kind == MarketProductKind.bstock ? 'USDT' : 'USDC';
+  String get _targetAsset => _displayTargetAsset(
+    _plan.targetAsset ??
+        (widget.kind == MarketProductKind.bstock ? 'USDT' : 'USDC'),
+  );
 
   String get _targetNetwork =>
-      widget.kind == MarketProductKind.bstock ? 'BSC' : 'Arbitrum';
+      _plan.targetNetwork ??
+      (widget.kind == MarketProductKind.bstock ? 'BSC' : 'Hyperliquid');
 
   @override
   void dispose() {
@@ -869,9 +872,6 @@ class _TransferContent extends StatelessWidget {
     );
   }
 
-  static String _displayTargetAsset(String asset) =>
-      asset.toUpperCase().replaceFirst(RegExp(r'-PERPS$'), '');
-
   static String _outputAmount(FundingPlan plan) {
     if (plan.legs.isEmpty) return plan.shortfall.value;
     var total = plan.legs.first.outputAmount;
@@ -885,6 +885,9 @@ class _TransferContent extends StatelessWidget {
     return total.value;
   }
 }
+
+String _displayTargetAsset(String asset) =>
+    asset.toUpperCase().replaceFirst(RegExp(r'-PERPS$'), '');
 
 class OrderFundingPendingContent extends StatelessWidget {
   const OrderFundingPendingContent({super.key, required this.onClose});

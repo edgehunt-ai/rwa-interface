@@ -65,6 +65,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   String? error;
   bool reviewing = false;
   bool _approving = false;
+  bool _approvalNeedsPreviewRefresh = false;
   bool _fundingRechecking = false;
   bool _confirmationFromFunding = false;
   Timer? _quoteDebounce;
@@ -421,19 +422,42 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   Future<void> _approveConfirmation() async {
-    final current = preview;
-    if (current == null ||
-        !current.approvalRequired ||
+    final initial = preview;
+    if (initial == null ||
+        !initial.approvalRequired ||
         _approving ||
         reviewing) {
       return;
     }
+    var current = initial;
     _stopPreviewPolling();
     setState(() {
       error = null;
       _approving = true;
     });
     try {
+      if (_approvalNeedsPreviewRefresh || current.isExpired) {
+        final provider = orderPreviewProvider(current.intent);
+        ref.invalidate(provider);
+        current = await ref.read(provider.future);
+        if (!mounted) return;
+        if (current.isExpired) {
+          throw UnknownFailure(
+            retryable: true,
+            userAction: AppLocalizations.of(context).orderQuoteUnavailable,
+          );
+        }
+        setState(() {
+          preview = current;
+          quotePreview = current;
+          _liveMarketPrice = current.marketPrice;
+        });
+        _approvalNeedsPreviewRefresh = false;
+        if (!current.executionReady || !current.approvalRequired) {
+          _showConfirmation(current, fromFunding: _confirmationFromFunding);
+          return;
+        }
+      }
       final approved = await _orderCommands.approve(
         current.intent,
         previewId: current.previewId,
@@ -468,6 +492,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       _showConfirmation(refreshed, fromFunding: _confirmationFromFunding);
     } on Object catch (approvalError) {
       if (mounted) {
+        _approvalNeedsPreviewRefresh = true;
         setState(
           () => error = _errorMessage(
             error: approvalError,
@@ -476,7 +501,13 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         );
       }
     } finally {
-      if (mounted) setState(() => _approving = false);
+      if (mounted) {
+        setState(() => _approving = false);
+        final currentPreview = preview;
+        if (currentPreview != null && _previewPollingTimer == null) {
+          _startPreviewPolling(currentPreview);
+        }
+      }
     }
   }
 
@@ -506,7 +537,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
     Future<void> refresh() async {
       if (!mounted ||
-          preview?.previewId != next.previewId ||
+          preview?.intent.fingerprint != next.intent.fingerprint ||
           generation != _previewPollingGeneration ||
           _refreshingPreview) {
         return;
@@ -517,7 +548,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ref.invalidate(provider);
         final refreshed = await ref.read(provider.future);
         if (mounted &&
-            preview?.previewId == next.previewId &&
+            preview?.intent.fingerprint == next.intent.fingerprint &&
             generation == _previewPollingGeneration) {
           // The preview ID binds the quote used by both the initial order
           // creation and the post-approval order recreation. Keep the full
