@@ -43,6 +43,11 @@ final class OrderIntent {
         'Limit orders require a limit price; spot orders require quantity',
       );
     }
+    if (type == TradingOrderType.limit && slippage != null) {
+      // Limit orders rest as GTC, and the provider rejects a non-null
+      // slippage tolerance on GTC. The tolerance only bounds an IOC fill.
+      throw ArgumentError('Limit orders must not carry a slippage tolerance');
+    }
     if (amount != null && quantity != null) {
       throw ArgumentError('Amount and quantity are mutually exclusive');
     }

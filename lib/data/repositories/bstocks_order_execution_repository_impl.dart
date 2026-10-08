@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../domain/auth/authentication.dart';
 import '../../domain/models/api_failure.dart';
+import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/order_intent.dart';
 import '../../domain/models/resource_result.dart';
@@ -46,6 +47,11 @@ final class BstocksOrderExecutionRepositoryImpl
       }
       final order = current.resource;
       if (order.isTerminal) return current;
+      // A confirmed GTC placement is accepted while its order remains open;
+      // waiting for `filled` would incorrectly time out a valid resting order.
+      if (!awaitingApprovalConfirmation && _isConfirmedPlacement(order)) {
+        return current;
+      }
       final action = order.nextAction;
       if (action != null) {
         if (order.actionStatus == BstocksOrderActionStatus.failed ||
@@ -125,6 +131,15 @@ final class BstocksOrderExecutionRepositoryImpl
       userAction: 'bStocks order confirmation timed out after 60 attempts',
     );
   }
+
+  bool _isConfirmedPlacement(TradingOrder order) =>
+      order.kind == MarketProductKind.bstock &&
+      order.actionStatus == BstocksOrderActionStatus.confirmed &&
+      order.nextAction == null &&
+      const {
+        TradingOrderStatus.open,
+        TradingOrderStatus.partiallyFilled,
+      }.contains(order.status);
 
   Future<void> _sendSponsored(
     WalletActionExecutionRepository executions,

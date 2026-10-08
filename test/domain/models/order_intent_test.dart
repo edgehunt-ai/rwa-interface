@@ -91,4 +91,33 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('limit orders reject a slippage tolerance', () {
+    // A resting limit order is GTC; the provider rejects a non-null
+    // slippage_percent on GTC, so the domain refuses to build one.
+    expect(
+      () => OrderIntent(
+        symbol: 'NVDA',
+        kind: MarketProductKind.bstock,
+        side: TradingSide.buy,
+        type: TradingOrderType.limit,
+        quantity: value('1'),
+        limitPrice: value('100'),
+        slippage: DecimalValue('0.12', unit: 'percent'),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => OrderIntent(
+        symbol: 'TSLA',
+        kind: MarketProductKind.perp,
+        side: TradingSide.long,
+        type: TradingOrderType.limit,
+        quantity: value('1'),
+        limitPrice: value('100'),
+        slippage: DecimalValue('0.12', unit: 'percent'),
+      ),
+      throwsArgumentError,
+    );
+  });
 }

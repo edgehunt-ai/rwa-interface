@@ -17,7 +17,11 @@ void main() {
         amount: type == TradingOrderType.market ? DecimalValue('15') : null,
         quantity: type == TradingOrderType.limit ? DecimalValue('1') : null,
         limitPrice: type == TradingOrderType.limit ? DecimalValue('100') : null,
-        slippage: DecimalValue('0.12', unit: 'percent'),
+        // A resting limit order is GTC and must not carry a slippage
+        // tolerance; only the IOC market order does.
+        slippage: type == TradingOrderType.market
+            ? DecimalValue('0.12', unit: 'percent')
+            : null,
       );
 
   OrderIntent perpIntent({TradingOrderType type = TradingOrderType.market}) =>
@@ -66,6 +70,23 @@ void main() {
     );
   });
 
+  test('limit previews never serialize slippage_percent', () {
+    // The provider rejects a non-null slippage tolerance on a GTC limit order.
+    expect(previewWire(bstockIntent())['slippage_percent'], '0.12');
+    expect(
+      previewWire(bstockIntent(type: TradingOrderType.limit)).containsKey(
+        'slippage_percent',
+      ),
+      isFalse,
+    );
+    expect(
+      previewWire(perpIntent(type: TradingOrderType.limit)).containsKey(
+        'slippage_percent',
+      ),
+      isFalse,
+    );
+  });
+
   test('HIP3 sends GTC for limit orders and omits TIF for market orders', () {
     // Market orders keep the provider default (IOC); only a resting limit
     // order pins GTC explicitly.
@@ -93,6 +114,7 @@ void main() {
       previewId: 'preview-1',
     );
     expect(service.createWire!['time_in_force'], 'gtc');
+    expect(service.createWire!.containsKey('slippage_percent'), isFalse);
 
     await repository.create(
       perpIntent(),
@@ -108,6 +130,7 @@ void main() {
       previewId: 'preview-1',
     );
     expect(service.createWire!['time_in_force'], 'gtc');
+    expect(service.createWire!.containsKey('slippage_percent'), isFalse);
   });
 }
 

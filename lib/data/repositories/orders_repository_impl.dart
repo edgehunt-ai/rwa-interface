@@ -108,7 +108,6 @@ final class OrdersRepositoryImpl implements OrdersRepository {
     final binding = bstocks is Map ? bstocks['confirmation_binding'] : null;
     return binding is Map &&
         binding['maximum_input_raw'] is String &&
-        binding['minimum_output_raw'] is String &&
         binding['expires_at'] is String;
   }
 
@@ -311,7 +310,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
               ..amount = intent.amount?.value
               ..quantity = intent.quantity?.value
               ..limitPrice = intent.limitPrice?.value
-              ..slippagePercent = intent.slippage?.value
+              // A resting limit order is GTC, which the contract forbids from
+              // carrying a slippage tolerance; only the IOC market order does.
+              ..slippagePercent = intent.type == TradingOrderType.limit
+                  ? null
+                  : intent.slippage?.value
               ..previewId = previewId;
             if (intent.tpSl != null) {
               // bStocks does not support TP/SL. Reading builder.tpSl would
@@ -340,7 +343,11 @@ final class OrdersRepositoryImpl implements OrdersRepository {
               ..leverage = intent.leverage?.value
               ..marginMode = _margin(intent.marginMode)
               ..reduceOnly = intent.reduceOnly
-              ..slippagePercent = intent.slippage?.value
+              // A resting limit order is GTC, which the contract forbids from
+              // carrying a slippage tolerance; only the IOC market order does.
+              ..slippagePercent = intent.type == TradingOrderType.limit
+                  ? null
+                  : intent.slippage?.value
               ..previewId = previewId;
             if (intent.tpSl != null) {
               throw ArgumentError('Use openingProtection for HIP3 orders');

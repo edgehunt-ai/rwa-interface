@@ -21,7 +21,11 @@ api.OrderPreviewRequest orderPreviewRequest(OrderIntent intent) {
             ..amount = intent.amount?.value
             ..quantity = intent.quantity?.value
             ..limitPrice = intent.limitPrice?.value
-            ..slippagePercent = intent.slippage?.value;
+            // A resting limit order is GTC, which the contract forbids from
+            // carrying a slippage tolerance; only the IOC market order does.
+            ..slippagePercent = intent.type == TradingOrderType.limit
+                ? null
+                : intent.slippage?.value;
           if (intent.tpSl != null) {
             // bStocks does not support TP/SL. Reading builder.tpSl would
             // instantiate an empty TpSlSpec and leak `tp_sl:{enabled:false}`
@@ -49,7 +53,11 @@ api.OrderPreviewRequest orderPreviewRequest(OrderIntent intent) {
             ..leverage = intent.leverage?.value
             ..marginMode = _margin(intent.marginMode)
             ..reduceOnly = intent.reduceOnly
-            ..slippagePercent = intent.slippage?.value;
+            // A resting limit order is GTC, which the contract forbids from
+            // carrying a slippage tolerance; only the IOC market order does.
+            ..slippagePercent = intent.type == TradingOrderType.limit
+                ? null
+                : intent.slippage?.value;
           if (intent.tpSl != null) {
             throw ArgumentError('Use openingProtection for HIP3 orders');
           }

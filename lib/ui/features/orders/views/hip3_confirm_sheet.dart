@@ -525,13 +525,16 @@ class _Terms extends StatelessWidget {
               '${execution.leverage.value}x・'
               '${execution.marginMode == TradingMarginMode.cross ? l10n.cross : l10n.isolated}',
         ),
-        _TermRow(
-          key: const Key('hip3-slippage-row'),
-          label: l10n.slippage,
-          value: '${execution.slippagePercent.value}%',
-          icon: 'assets/figma/trade/order_slippage_edit.svg',
-          onTap: onEditSlippage,
-        ),
+        // A resting limit order is GTC and carries no slippage tolerance, so
+        // there is nothing to show or edit for it.
+        if (execution.type == TradingOrderType.market)
+          _TermRow(
+            key: const Key('hip3-slippage-row'),
+            label: l10n.slippage,
+            value: '${execution.slippagePercent.value}%',
+            icon: 'assets/figma/trade/order_slippage_edit.svg',
+            onTap: onEditSlippage,
+          ),
         _TermRow(
           label: l10n.estimatedFee,
           value: '${execution.estimatedFee.value} USDC',

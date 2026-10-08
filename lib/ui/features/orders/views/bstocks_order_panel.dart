@@ -603,7 +603,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       limitPrice: type == TradingOrderType.limit
           ? DecimalValue(rawPrice, asset: 'USD', unit: 'fiat')
           : null,
-      slippage: DecimalValue(slippage.toString(), unit: 'percent'),
+      // A limit order rests as GTC and must not carry a slippage tolerance;
+      // only the IOC market order is bounded by it.
+      slippage: type == TradingOrderType.limit
+          ? null
+          : DecimalValue(slippage.toString(), unit: 'percent'),
     );
   }
 
@@ -810,7 +814,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
     final formHeight =
-        (type == TradingOrderType.limit ? 607.0 : 560.0) +
+        (type == TradingOrderType.limit ? 579.0 : 560.0) +
         // The failure notice is normally one compact row. Its text scrolls
         // internally when a server returns a longer message, so it must not
         // reserve the old fixed 190px block in the whole order sheet.
@@ -1010,12 +1014,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             const SizedBox(height: 16),
             Divider(color: colors.subtleSurface),
             const SizedBox(height: 14),
-            SlippageRow(
-              value: slippage,
-              onEdit: _editSlippage,
-              editKey: const Key('bstocks-edit-slippage'),
-            ),
-            const SizedBox(height: 8),
             if (_quoting)
               _LoadingSummaryRow(label: l10n.estimatedFee)
             else
@@ -1195,10 +1193,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             original: price,
             current: marketPriceChanged ? liveMarketPrice : null,
           ),
-        _SummaryRow(
-          label: l10n.slippage,
-          value: '${current.intent.slippage?.value ?? slippage}%',
-        ),
+        if (current.intent.type == TradingOrderType.market)
+          _SummaryRow(
+            label: l10n.slippage,
+            value: '${current.intent.slippage?.value ?? slippage}%',
+          ),
         if (current.fee case final fee?)
           _SummaryRow(
             label: l10n.estimatedFee,

@@ -852,6 +852,43 @@ void main() {
     );
   });
 
+  testWidgets('limit orders hide slippage and never send it', (tester) async {
+    final repository = _CapturingOrdersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-price-sheet-input')),
+      '100',
+    );
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+
+    // A resting limit order is GTC: no slippage control, and none on the wire.
+    expect(find.byKey(const Key('bstocks-edit-slippage')), findsNothing);
+    expect(find.text('Slippage'), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-quantity-input')),
+      '1',
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.previewIntent?.type, TradingOrderType.limit);
+    expect(repository.previewIntent?.slippage, isNull);
+  });
+
   testWidgets('confirmation first shows the submitting-order state', (
     tester,
   ) async {

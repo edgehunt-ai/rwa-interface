@@ -144,6 +144,28 @@ void main() {
     expect(preview.approvalRequired, isTrue);
     expect(preview.executionReady, isTrue);
   });
+  test('bStocks GTC preview accepts a null minimum output binding', () async {
+    final preview =
+        await OrdersRepositoryImpl(
+          _PreviewOrders(
+            bstocks: true,
+            bstocksLimit: true,
+            minimumOutputRaw: null,
+          ),
+        ).preview(
+          OrderIntent(
+            symbol: 'NVDAB',
+            kind: MarketProductKind.bstock,
+            side: TradingSide.buy,
+            type: TradingOrderType.limit,
+            quantity: DecimalValue('1', unit: 'token'),
+            limitPrice: DecimalValue('100', asset: 'USDT', unit: 'fiat'),
+          ),
+          idempotencyKey: 'bstocks-gtc-preview',
+        );
+
+    expect(preview.executionReady, isTrue);
+  });
   test(
     'HIP3 preview retains frozen execution economics and risk reasons',
     () async {
@@ -241,14 +263,18 @@ final class _PreviewOrders implements OrdersService {
     this.maximumQuantityUnavailableReason,
     this.blockers = const [],
     this.bstocks = false,
+    this.bstocksLimit = false,
     this.approvalRequired = false,
+    this.minimumOutputRaw = '1',
   });
   final String? protectionQuantity;
   final String? maximumQuantity;
   final String? maximumQuantityUnavailableReason;
   final List<String> blockers;
   final bool bstocks;
+  final bool bstocksLimit;
   final bool approvalRequired;
+  final String? minimumOutputRaw;
   Map<String, Object?>? previewWire;
   Map<String, Object?>? createWire;
   @override
@@ -322,7 +348,7 @@ final class _PreviewOrders implements OrdersService {
         ..previewId = 'preview'
         ..symbol = 'TSLA'
         ..side = api.OrderSide.long
-        ..type = api.OrderType.market
+        ..type = bstocksLimit ? api.OrderType.limit : api.OrderType.market
         ..orderValue = '14.948'
         ..approvalRequired = approvalRequired
         ..hip3Execution.replace(execution)
@@ -366,7 +392,7 @@ final class _PreviewOrders implements OrdersService {
                     'bstocks': {
                       'confirmation_binding': {
                         'maximum_input_raw': '10000000000000000000',
-                        'minimum_output_raw': '1',
+                        'minimum_output_raw': minimumOutputRaw,
                         'expires_at': '2030-01-01T00:00:00Z',
                       },
                     },

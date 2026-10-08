@@ -101,6 +101,40 @@ void main() {
     },
   );
 
+  test('returns when a GTC placement is confirmed but still open', () async {
+    final swap = _action(
+      orderId: 'order-1',
+      stepId: 'swap-1',
+      kind: BstocksOrderActionKind.spotSwap,
+    );
+    final orders = _ScriptedOrders(
+      initial: _order('order-1', action: swap),
+      refreshes: [
+        _order(
+          'order-1',
+          status: TradingOrderStatus.open,
+          actionStatus: BstocksOrderActionStatus.confirmed,
+        ),
+      ],
+    );
+    final sender = _Sender();
+
+    final result =
+        await BstocksOrderExecutionRepositoryImpl(
+          orders,
+          _Actions(),
+          sender,
+        ).execute(
+          intent: _intent(),
+          created: ResourceResult(resource: orders.initial),
+          previewId: 'preview-1',
+        );
+
+    expect(result.resource.status, TradingOrderStatus.open);
+    expect(result.resource.actionStatus, BstocksOrderActionStatus.confirmed);
+    expect(sender.steps, ['swap-1']);
+  });
+
   test('approval-only execution stops before recreating the swap', () async {
     final approval = _action(
       orderId: 'order-1',

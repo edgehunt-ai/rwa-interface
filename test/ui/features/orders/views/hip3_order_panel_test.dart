@@ -1037,6 +1037,45 @@ void main() {
     },
   );
 
+  testWidgets('HIP-3 limit orders hide slippage and never send it', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel(), opening: _Opening(sizeDecimals: 3)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('hip3-limit-price-sheet-input')),
+      '100',
+    );
+    Navigator.of(
+      tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+    ).pop('100');
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('hip3-limit-quantity-input')),
+      '1',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FilledButton).first);
+    await tester.pumpAndSettle();
+
+    // A resting limit order is GTC: the confirmation has no slippage row and
+    // the request carries no tolerance.
+    expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+    expect(find.byKey(const Key('hip3-slippage-row')), findsNothing);
+    expect(orders.intents.last.type, TradingOrderType.limit);
+    expect(orders.intents.last.slippage, isNull);
+  });
+
   testWidgets('HIP-3 reduce-only flow identifies the close-position state', (
     tester,
   ) async {
