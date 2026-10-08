@@ -40,5 +40,12 @@ final class Hip3OpeningContext {
   final DateTime validUntil;
   final Set<String> operations;
   final String? blocker;
+
+  bool get tradingSettingsEnabled =>
+      availableMargin.compareMagnitudeTo(
+        DecimalValue('0', asset: availableMargin.asset),
+      ) >
+      0;
+
   bool get isExpired => !validUntil.isAfter(DateTime.now().toUtc());
 }

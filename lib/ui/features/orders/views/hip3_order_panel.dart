@@ -667,7 +667,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       }
     }
     _scheduleQuote();
-    if (_error != null && mounted) setState(() => _error = null);
+    if (mounted) setState(() => _error = null);
   }
 
   void _truncateLimitQuantity(int decimals) {
@@ -792,6 +792,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   String? _disabledReason(AppLocalizations l10n) {
     if (_submitting) return null;
+    if (_amount.text.trim().isEmpty) return l10n.enterOrderValue;
     if (_amountError() case final error?) return error;
     // Context/rule/preview validation happens in _review after the user
     // presses the button. Local input is also validated here so the button
@@ -1173,6 +1174,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final amount = _amount.text.trim();
     final settlementAsset = _quotePreview?.settlementAsset ?? 'USDC';
     final availableBalance = _context?.availableMargin;
+    final tradingSettingsEnabled = _context?.tradingSettingsEnabled ?? true;
     _schedulePendingPercentageSync(availableBalance);
     final protectionErrors = _openingProtectionValidationErrors();
     final formError = protectionErrors.firstOrNull ?? _amountError() ?? _error;
@@ -1355,6 +1357,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       _type == TradingOrderType.market && !_inputNotional,
                   availableMargin: availableBalance?.value,
                   availableMarginLoading: _contextLoading,
+                  settingsEnabled: tradingSettingsEnabled,
                   percentage: _percentage,
                   onMarginModeTap: () async {
                     if (_submitting || _settingsUpdating) return;
@@ -1458,6 +1461,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   ),
                 ],
                 const SizedBox(height: 24),
+                if (!tradingSettingsEnabled) ...[
+                  _Hip3TradingSettingsNotice(
+                    key: const Key('hip3-trading-settings-notice'),
+                    message: l10n.hip3TradingSettingsLocked,
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -2224,6 +2234,39 @@ class _Hip3OrderFailureNotice extends StatelessWidget {
   }
 }
 
+class _Hip3TradingSettingsNotice extends StatelessWidget {
+  const _Hip3TradingSettingsNotice({super.key, required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      label: message,
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 60),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7ED),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          message,
+          style: const TextStyle(
+            color: Color(0xFFB45309),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            height: 18 / 13,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 String _formatHip3SliderAmount(
   double value,
   double availableBalance,
@@ -2252,6 +2295,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     required this.quantityInput,
     this.availableMargin,
     required this.availableMarginLoading,
+    required this.settingsEnabled,
     required this.percentage,
     required this.onMarginModeTap,
     required this.onLeverageTap,
@@ -2275,6 +2319,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   final bool quantityInput;
   final String? availableMargin;
   final bool availableMarginLoading;
+  final bool settingsEnabled;
   final double percentage;
   final VoidCallback onMarginModeTap;
   final VoidCallback onLeverageTap;
@@ -2299,7 +2344,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                   Expanded(
                     child: InkWell(
                       key: const Key('hip3-margin-mode-toggle'),
-                      onTap: onMarginModeTap,
+                      onTap: settingsEnabled ? onMarginModeTap : null,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -2309,13 +2354,22 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                                 : marginMode == TradingMarginMode.cross
                                 ? AppLocalizations.of(context).cross
                                 : AppLocalizations.of(context).isolated,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
+                              color: settingsEnabled
+                                  ? colors.primaryText
+                                  : colors.tertiaryText,
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_down, size: 18),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 18,
+                            color: settingsEnabled
+                                ? colors.primaryText
+                                : colors.tertiaryText,
+                          ),
                         ],
                       ),
                     ),
@@ -2324,22 +2378,25 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                   Expanded(
                     child: InkWell(
                       key: const Key('hip3-leverage-toggle'),
-                      onTap: onLeverageTap,
+                      onTap: settingsEnabled ? onLeverageTap : null,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             '$leverage×',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
+                              color: settingsEnabled
+                                  ? colors.primaryText
+                                  : colors.tertiaryText,
                             ),
                           ),
-                          if (maximumLeverage case final maximum?) ...[
+                          if (settingsEnabled && maximumLeverage != null) ...[
                             const SizedBox(width: 4),
                             Text(
                               AppLocalizations.of(context)
-                                  .hip3MaximumLeverageHint('$maximum'),
+                                  .hip3MaximumLeverageHint('$maximumLeverage'),
                               key: const Key('hip3-maximum-leverage'),
                               style: TextStyle(
                                 fontSize: 11,
@@ -2347,7 +2404,13 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
                               ),
                             ),
                           ],
-                          const Icon(Icons.keyboard_arrow_down, size: 18),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 18,
+                            color: settingsEnabled
+                                ? colors.primaryText
+                                : colors.tertiaryText,
+                          ),
                         ],
                       ),
                     ),

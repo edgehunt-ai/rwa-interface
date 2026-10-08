@@ -1082,6 +1082,12 @@ abstract class AppLocalizations {
   /// **'Insufficient balance.'**
   String get hip3InsufficientBalance;
 
+  /// No description provided for @hip3TradingSettingsLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'No Perps balance. Order settings are locked. Tap below to add funds and continue.'**
+  String get hip3TradingSettingsLocked;
+
   /// No description provided for @hip3MaximumLeverageHint.
   ///
   /// In en, this message translates to:

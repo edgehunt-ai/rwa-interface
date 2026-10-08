@@ -171,6 +171,8 @@
   "@hip3NotionalAboveMaximum": {"placeholders": {"maximum": {}}},
   "hip3InsufficientBalance": "余额不足。",
   "@hip3InsufficientBalance": {},
+  "hip3TradingSettingsLocked": "暂无合约余额，订单设置已锁定。点击下方按钮充值后继续。",
+  "@hip3TradingSettingsLocked": {},
   "hip3MaximumLeverageHint": "最高 {maximum}×",
   "@hip3MaximumLeverageHint": {"placeholders": {"maximum": {}}},
   "hip3OrderValueRangeHint": "限额 {minimum}-{maximum} USDC",

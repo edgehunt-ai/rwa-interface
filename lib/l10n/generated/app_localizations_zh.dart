@@ -514,6 +514,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3InsufficientBalance => '余额不足。';
 
   @override
+  String get hip3TradingSettingsLocked => '暂无合约余额，订单设置已锁定。点击下方按钮充值后继续。';
+
+  @override
   String hip3MaximumLeverageHint(Object maximum) {
     return '最高 $maximum×';
   }

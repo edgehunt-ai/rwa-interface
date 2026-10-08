@@ -530,6 +530,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3InsufficientBalance => 'Insufficient balance.';
 
   @override
+  String get hip3TradingSettingsLocked =>
+      'No Perps balance. Order settings are locked. Tap below to add funds and continue.';
+
+  @override
   String hip3MaximumLeverageHint(Object maximum) {
     return 'Max ${maximum}x';
   }

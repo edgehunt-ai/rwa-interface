@@ -207,6 +207,8 @@
   "@hip3NotionalAboveMaximum": {"placeholders": {"maximum": {}}},
   "hip3InsufficientBalance": "Insufficient balance.",
   "@hip3InsufficientBalance": {},
+  "hip3TradingSettingsLocked": "No Perps balance. Order settings are locked. Tap below to add funds and continue.",
+  "@hip3TradingSettingsLocked": {},
   "hip3MaximumLeverageHint": "Max {maximum}x",
   "@hip3MaximumLeverageHint": {"placeholders": {"maximum": {}}},
   "hip3OrderValueRangeHint": "Allowed {minimum}-{maximum} USDC",

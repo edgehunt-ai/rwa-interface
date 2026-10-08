@@ -583,6 +583,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.enterText(find.byType(TextField).first, '100');
+        await tester.pump();
         await tester.tap(find.byType(FilledButton).first);
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(const Key('hip3-confirm-button')));
@@ -626,6 +627,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump();
     await tester.tap(find.byType(FilledButton).first);
     await tester.pump();
     final container = ProviderScope.containerOf(
@@ -800,6 +802,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump();
     await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
     expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
@@ -880,6 +883,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump();
     await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
     // The first quote carries no client tolerance: the server's value is shown.
@@ -922,6 +926,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, '100');
+      await tester.pump();
       await tester.tap(find.byType(FilledButton).first);
       await tester.pumpAndSettle();
       expect(find.byType(Hip3ConfirmSheet), findsNothing);
@@ -970,6 +975,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, '100');
+      await tester.pump();
       await tester.tap(find.byType(FilledButton).first);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('hip3-confirm-button')));
@@ -1320,6 +1326,7 @@ void main() {
       await tester.tap(find.byKey(const Key('hip3-tp-sl-confirm')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, '100');
+      await tester.pump();
       await tester.ensureVisible(find.byType(FilledButton).first);
       await tester.tap(find.byType(FilledButton).first);
       await tester.pumpAndSettle();
@@ -1407,6 +1414,68 @@ void main() {
     },
   );
 
+  testWidgets(
+    'zero Perps balance locks margin and leverage and shows funding hint',
+    (tester) async {
+      final opening = _Opening(availableMargin: '0');
+      await tester.pumpWidget(_app(const Hip3OrderPanel(), opening: opening));
+      await tester.pumpAndSettle();
+
+      final marginMode = tester.widget<InkWell>(
+        find.byKey(const Key('hip3-margin-mode-toggle')),
+      );
+      final leverage = tester.widget<InkWell>(
+        find.byKey(const Key('hip3-leverage-toggle')),
+      );
+      expect(marginMode.onTap, isNull);
+      expect(leverage.onTap, isNull);
+      expect(
+        find.byKey(const Key('hip3-trading-settings-notice')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Order settings are locked'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).first, '100');
+      await tester.pump();
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('hip3-submit-button')))
+            .onPressed,
+        isNotNull,
+        reason: 'the order action remains available to enter the funding flow',
+      );
+    },
+  );
+
+  testWidgets('submit stays disabled until an order amount is entered', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+
+    final submit = find.byKey(const Key('hip3-submit-button'));
+    expect(tester.widget<FilledButton>(submit).onPressed, isNull);
+
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump();
+
+    expect(tester.widget<FilledButton>(submit).onPressed, isNotNull);
+  });
+
+  testWidgets('positive Perps balance keeps order settings enabled', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<InkWell>(find.byKey(const Key('hip3-margin-mode-toggle')))
+          .onTap,
+      isNotNull,
+    );
+    expect(find.byKey(const Key('hip3-trading-settings-notice')), findsNothing);
+  });
+
   testWidgets('order settings remain usable when trading rules cannot load', (
     tester,
   ) async {
@@ -1473,6 +1542,7 @@ void main() {
     expect(positionLoads, 1);
 
     await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump();
     await tester.tap(find.byType(FilledButton).first);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('hip3-confirm-button')));
