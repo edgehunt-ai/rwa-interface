@@ -362,10 +362,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       var completedFundingFlow = false;
       if (intent.side == TradingSide.buy) {
         while (true) {
-          final plan = await ref
+          final funding = await ref
               .read(fundingTransferCommandsProvider)
               .session(intent: intent);
           if (!mounted) return;
+          final plan = funding.plan;
           if (plan.status == FundingPlanState.alreadyFunded) break;
           final funded = await showModalBottomSheet<bool>(
             context: context,
@@ -375,6 +376,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             builder: (_) => OrderFundingSheet(
               plan: plan,
               kind: intent.kind,
+              canConfirmTransfer: funding.canConfirmTransfer,
               slippage: intent.slippage,
             ),
           );

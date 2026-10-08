@@ -57,6 +57,16 @@ final class TransferOptions {
   final FundingCatalogSummary? catalog;
 }
 
+final class OrderFundingRequirement {
+  const OrderFundingRequirement({
+    required this.plan,
+    required this.canConfirmTransfer,
+  });
+
+  final FundingPlan plan;
+  final bool canConfirmTransfer;
+}
+
 final fundingSessionProvider = FutureProvider.autoDispose
     .family<FundingSessionSummary, String>(
       (ref, id) => ref.watch(fundingRepositoryProvider).getFundingSession(id),
@@ -110,7 +120,7 @@ final class FundingTransferCommands {
     return result;
   }
 
-  Future<FundingPlan> session({required OrderIntent intent}) async {
+  Future<OrderFundingRequirement> session({required OrderIntent intent}) async {
     final session = await _run(
       operation: 'funding_session',
       command: () => _commands.run(
@@ -125,15 +135,42 @@ final class FundingTransferCommands {
     // Creating a plan after this response is both unnecessary and can make
     // the server re-evaluate an already-satisfied funding request.
     if (session.status == 'funded') {
-      return FundingPlan(
-        planId: session.sessionId,
-        tradePreviewId: '',
-        shortfall: DecimalValue('0'),
-        status: FundingPlanState.alreadyFunded,
+      return OrderFundingRequirement(
+        canConfirmTransfer: session.canConfirmTransfer,
+        plan: FundingPlan(
+          planId: session.sessionId,
+          tradePreviewId: '',
+          shortfall: DecimalValue('0'),
+          status: FundingPlanState.alreadyFunded,
+        ),
+      );
+    }
+    if (!session.canConfirmTransfer) {
+      // Use the session snapshot only to display funding requirements. This
+      // blocked value has no executable legs and must never create a transfer.
+      return OrderFundingRequirement(
+        canConfirmTransfer: false,
+        plan: FundingPlan(
+          planId: session.sessionId,
+          tradePreviewId: '',
+          shortfall: DecimalValue(session.remainingMinimumTopUp ?? '0'),
+          requiredTargetAmount: session.requiredTargetBalance == null
+              ? null
+              : DecimalValue(session.requiredTargetBalance!),
+          targetAvailableAmount: session.targetAvailableAmount == null
+              ? null
+              : DecimalValue(session.targetAvailableAmount!),
+          targetAsset: session.targetToken,
+          targetNetwork: session.targetNetwork,
+          status: FundingPlanState.blocked,
+        ),
       );
     }
     final plan = await planForSession(session);
-    return plan;
+    return OrderFundingRequirement(
+      plan: plan,
+      canConfirmTransfer: session.canConfirmTransfer,
+    );
   }
 
   Future<FundingPlan> transferSession({

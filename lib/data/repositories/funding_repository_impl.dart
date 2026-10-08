@@ -207,6 +207,9 @@ final class FundingRepositoryImpl implements FundingRepository {
         version: value.version,
         canConfirmTransfer: value.canConfirmTransfer,
         expiresAt: value.expiresAt.toUtc(),
+        requiredTargetBalance: value.requiredTargetBalance,
+        targetAvailableAmount: value.targetSnapshot.availableAmount,
+        remainingMinimumTopUp: value.remainingMinimumTopUp,
         selectedTargetAmount: value.selectedTargetAmount,
         minimumReceived: value.minimumReceived,
         fees: FundingSessionFees(
@@ -217,7 +220,9 @@ final class FundingRepositoryImpl implements FundingRepository {
         ),
         etaSeconds: value.etaSeconds,
         targetToken: value.targetSnapshot.asset.token,
-        targetNetwork: value.targetSnapshot.asset.network.name,
+        targetNetwork: canonicalChainName(
+          value.targetSnapshot.asset.network.name,
+        ),
         allocations: {
           for (final allocation in value.allocations)
             allocation.sourcePositionId: allocation.inputAmount,

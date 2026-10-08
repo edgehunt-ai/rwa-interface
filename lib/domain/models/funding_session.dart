@@ -5,6 +5,9 @@ final class FundingSessionSummary {
     required this.version,
     required this.canConfirmTransfer,
     required this.expiresAt,
+    this.requiredTargetBalance,
+    this.targetAvailableAmount,
+    this.remainingMinimumTopUp,
     this.selectedTargetAmount,
     this.minimumReceived,
     this.fees,
@@ -18,6 +21,9 @@ final class FundingSessionSummary {
   final int version;
   final bool canConfirmTransfer;
   final DateTime expiresAt;
+  final String? requiredTargetBalance;
+  final String? targetAvailableAmount;
+  final String? remainingMinimumTopUp;
   final String? selectedTargetAmount;
   final String? minimumReceived;
   final FundingSessionFees? fees;

@@ -20,10 +20,12 @@ class OrderFundingSheet extends ConsumerStatefulWidget {
     super.key,
     required this.plan,
     required this.kind,
+    required this.canConfirmTransfer,
     this.slippage,
   });
   final FundingPlan plan;
   final MarketProductKind kind;
+  final bool canConfirmTransfer;
   final DecimalValue? slippage;
 
   @override
@@ -55,7 +57,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   }
 
   Future<void> _continue({bool refresh = false}) async {
-    if (_busy) return;
+    if (_busy || !widget.canConfirmTransfer) return;
     setState(() {
       _busy = true;
       if (!refresh) _pending = true;
@@ -156,14 +158,16 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
       _ => null,
     };
     final spotBalanceLoading = options is AsyncLoading<TransferOptions>;
-    final canUseSpot = switch (options) {
-      AsyncLoading() => true,
-      AsyncData(:final value) =>
-        DecimalValue(value.account.availableToFundUsd.value)
-                .compareMagnitudeTo(DecimalValue(_plan.shortfall.value)) >=
-            0,
-      _ => false,
-    };
+    final canUseSpot =
+        widget.canConfirmTransfer &&
+        switch (options) {
+          AsyncLoading() => true,
+          AsyncData(:final value) =>
+            DecimalValue(value.account.availableToFundUsd.value)
+                    .compareMagnitudeTo(DecimalValue(_plan.shortfall.value)) >=
+                0,
+          _ => false,
+        };
     return PopScope(
       canPop: !_busy,
       child: Material(

@@ -959,10 +959,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       // Hyperliquid Perps available margin from the trading context.
       while (!intent.reduceOnly) {
         _setProcessingStep('checking funding requirements');
-        final plan = await ref
+        final funding = await ref
             .read(fundingTransferCommandsProvider)
             .session(intent: intent);
         if (!mounted || !isCurrent()) return;
+        final plan = funding.plan;
         if (plan.status == FundingPlanState.alreadyFunded) break;
         final funded = await showModalBottomSheet<bool>(
           context: context,
@@ -972,6 +973,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           builder: (_) => OrderFundingSheet(
             plan: plan,
             kind: intent.kind,
+            canConfirmTransfer: funding.canConfirmTransfer,
             slippage: intent.slippage,
           ),
         );

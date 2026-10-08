@@ -58,8 +58,11 @@ void main() {
                 onPressed: () async {
                   funded = await showModalBottomSheet<bool>(
                     context: context,
-                    builder: (_) =>
-                        OrderFundingSheet(plan: _readyFundingPlan, kind: kind),
+                    builder: (_) => OrderFundingSheet(
+                      plan: _readyFundingPlan,
+                      kind: kind,
+                      canConfirmTransfer: true,
+                    ),
                   );
                 },
                 child: const Text('Open funding'),
@@ -112,6 +115,7 @@ void main() {
             OrderFundingSheet(
               plan: _plannedFundingPlan,
               kind: MarketProductKind.bstock,
+              canConfirmTransfer: true,
             ),
             locale: const Locale('zh'),
           ),
@@ -157,6 +161,7 @@ void main() {
           OrderFundingSheet(
             plan: _readyFundingPlan,
             kind: MarketProductKind.bstock,
+            canConfirmTransfer: true,
           ),
         ),
       ),
@@ -169,6 +174,35 @@ void main() {
     );
     expect(find.byKey(const Key('order-funding-spot-option')), findsNothing);
   });
+
+  testWidgets(
+    'order funding hides Spot when the session cannot confirm a transfer',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            transferOptionsProvider.overrideWith(
+              (ref) async => _transferOptions('1000'),
+            ),
+          ],
+          child: buildTestApp(
+            OrderFundingSheet(
+              plan: _readyFundingPlan,
+              kind: MarketProductKind.bstock,
+              canConfirmTransfer: false,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const Key('order-funding-deposit-option')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('order-funding-spot-option')), findsNothing);
+    },
+  );
 
   testWidgets('order funding shows Spot while its balance is loading', (
     tester,
@@ -183,6 +217,7 @@ void main() {
           OrderFundingSheet(
             plan: _readyFundingPlan,
             kind: MarketProductKind.bstock,
+            canConfirmTransfer: true,
           ),
           locale: const Locale('zh'),
         ),
@@ -238,6 +273,7 @@ void main() {
           OrderFundingSheet(
             plan: _prepareFundingPlan,
             kind: MarketProductKind.perp,
+            canConfirmTransfer: true,
           ),
         ),
       ),
@@ -302,6 +338,7 @@ void main() {
               status: FundingPlanState.blocked,
             ),
             kind: MarketProductKind.bstock,
+            canConfirmTransfer: true,
           ),
         ),
       ),
@@ -337,6 +374,7 @@ void main() {
           OrderFundingSheet(
             plan: _readyFundingPlan,
             kind: MarketProductKind.bstock,
+            canConfirmTransfer: true,
             slippage: DecimalValue('0.12', unit: 'percent'),
           ),
         ),
@@ -375,6 +413,7 @@ void main() {
           OrderFundingSheet(
             plan: _fundingPlanWithLegCount(5),
             kind: MarketProductKind.bstock,
+            canConfirmTransfer: true,
           ),
         ),
       ),
@@ -1463,6 +1502,41 @@ void main() {
   );
 
   testWidgets(
+    'bStocks only offers deposit when the session cannot confirm a transfer',
+    (tester) async {
+      final funding = _FundingPlanRepository(
+        _readyFundingPlan,
+        canConfirmTransfer: false,
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(
+              _DelayedOrdersRepository(executionReady: false),
+            ),
+            fundingRepositoryProvider.overrideWithValue(funding),
+            transferOptionsProvider.overrideWith(
+              (ref) async => _transferOptions('1000'),
+            ),
+          ],
+          child: buildTestApp(const BstocksOrderPanel()),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField).first, '100');
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+      await _pumpUntilFound(tester, find.text('Add 100 USDT from:'));
+
+      expect(
+        find.byKey(const Key('order-funding-deposit-option')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('order-funding-spot-option')), findsNothing);
+      expect(funding.planRequests, 0);
+    },
+  );
+
+  testWidgets(
     'transfer flow renders the server-selected source through review',
     (tester) async {
       await tester.pumpWidget(
@@ -2222,10 +2296,12 @@ final class _PanelCompletedFundingRepository implements FundingRepository {
 }
 
 final class _FundingPlanRepository implements FundingRepository {
-  _FundingPlanRepository(this.plan);
+  _FundingPlanRepository(this.plan, {this.canConfirmTransfer = true});
 
   final FundingPlan plan;
+  final bool canConfirmTransfer;
   final intents = <OrderIntent>[];
+  var planRequests = 0;
 
   @override
   Future<FundingSessionSummary> createFundingSession({
@@ -2237,8 +2313,13 @@ final class _FundingPlanRepository implements FundingRepository {
       sessionId: 'bstocks-session',
       status: 'ready_to_confirm',
       version: 1,
-      canConfirmTransfer: true,
+      canConfirmTransfer: canConfirmTransfer,
       expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+      requiredTargetBalance: '100',
+      targetAvailableAmount: '0',
+      remainingMinimumTopUp: '100',
+      targetToken: 'USDT',
+      targetNetwork: 'BSC',
     );
   }
 
@@ -2248,6 +2329,7 @@ final class _FundingPlanRepository implements FundingRepository {
     required int selectionVersion,
     required String idempotencyKey,
   }) async {
+    planRequests++;
     return plan;
   }
 

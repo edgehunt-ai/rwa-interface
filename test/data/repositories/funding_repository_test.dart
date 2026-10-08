@@ -8,6 +8,22 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 
 void main() {
+  test(
+    'funding session maps transfer capability and target balances',
+    () async {
+      final repository = FundingRepositoryImpl(_MappedSessionFunding());
+
+      final session = await repository.getFundingSession('session-1');
+
+      expect(session.canConfirmTransfer, isFalse);
+      expect(session.requiredTargetBalance, '20');
+      expect(session.targetAvailableAmount, '15');
+      expect(session.remainingMinimumTopUp, '5');
+      expect(session.targetToken, 'USDC-PERPS');
+      expect(session.targetNetwork, 'Hyperliquid');
+    },
+  );
+
   test('funding session wraps the order draft in the trade variant', () async {
     final service = _CaptureFunding();
     final repository = FundingRepositoryImpl(service);
@@ -191,6 +207,77 @@ void main() {
     },
   );
 }
+
+final class _MappedSessionFunding implements FundingService {
+  @override
+  Future<api.FundingSession> getFundingSession(String id) async => api
+      .standardSerializers
+      .deserializeWith(api.FundingSession.serializer, _fundingSessionBody(id))!;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Map<String, Object?> _fundingSessionBody(String id) => {
+  'funding_session_id': id,
+  'status': 'editing',
+  'version': 1,
+  'trade': {
+    'symbol': 'NVDA',
+    'kind': 'perp',
+    'side': 'long',
+    'type': 'market',
+    'amount': '20',
+    'margin_mode': 'cross',
+    'reduce_only': false,
+  },
+  'continuation': null,
+  'rail': 'perp',
+  'target_snapshot': {
+    'account': 'hip3',
+    'account_ref': '0x09920a496942e7aa8c9adabf97cdf035524248c1',
+    'asset': {
+      'asset_id': 'hyperliquid:1337/perps:USDC-PERPS',
+      'namespace': 'hyperliquid',
+      'network': 'Hyperliquid',
+      'chain_id': 1337,
+      'token': 'USDC-PERPS',
+      'token_contract': '0x2100000000000000000000000000000000000000',
+      'token_decimals': 8,
+      'provenance': 'hyperliquid_perps',
+    },
+    'available_amount': '15',
+    'source': 'hyperliquid_info',
+    'observed_at': '2026-09-28T08:27:18.098Z',
+    'valid_until': '2026-09-28T08:28:18.098Z',
+  },
+  'required_target_balance': '20',
+  'minimum_top_up': '5',
+  'recommended_top_up': '6',
+  'safety_buffer_bps': 2000,
+  'selected_target_amount': '0',
+  'minimum_received': '0',
+  'maximum_selectable_target_amount': '0',
+  'total_source_value_usd': '0',
+  'estimated_fees': {
+    'fee_asset': 'USDC',
+    'provider_fee': '0',
+    'bridge_fee': '0',
+    'swap_fee': '0',
+    'network_fee': '0',
+    'total_fee': '0',
+    'total_cost_usd': '0',
+  },
+  'eta_seconds': 0,
+  'positions': <Object?>[],
+  'allocations': <Object?>[],
+  'can_confirm_transfer': false,
+  'remaining_minimum_top_up': '5',
+  'estimate_observed_at': '2026-09-28T08:27:18.098Z',
+  'created_at': '2026-09-28T08:27:18.098Z',
+  'updated_at': '2026-09-28T08:27:18.098Z',
+  'expires_at': '2026-09-29T08:27:18.098Z',
+};
 
 final class _CaptureFunding implements FundingService {
   Object? session;

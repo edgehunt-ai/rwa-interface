@@ -66,7 +66,11 @@ void main() {
           overrides: [
             ordersRepositoryProvider.overrideWithValue(_ExecutableHip3Orders()),
           ],
-          child: _app(const Hip3OrderPanel(), funding: funding),
+          child: _app(
+            const Hip3OrderPanel(),
+            funding: funding,
+            transferOptions: _transferOptions('1000'),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -78,7 +82,7 @@ void main() {
       // while the funding sheet is open, so there is intentionally no stable
       // frame for pumpAndSettle to wait for here.
       await tester.pump(const Duration(seconds: 1));
-      expect(funding.previewIds, hasLength(1));
+      expect(funding.previewIds, isEmpty);
       expect(
         find.text('Add 5 USDC on Hyperliquid to continue'),
         findsOneWidget,
@@ -86,8 +90,13 @@ void main() {
       expect(find.text('Ready on Hyperliquid'), findsOneWidget);
       expect(find.textContaining('Arbitrum'), findsNothing);
       expect(find.text('Still needed'), findsOneWidget);
-      expect(find.text('5 USDC'), findsNWidgets(2));
+      expect(find.text('5 USDC'), findsOneWidget);
       expect(find.text('Insufficient balance.'), findsNothing);
+      expect(
+        find.byKey(const Key('order-funding-deposit-option')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('order-funding-spot-option')), findsNothing);
     },
   );
 
@@ -2114,6 +2123,11 @@ class _ShortfallFunding extends FundedRepository {
     version: 1,
     canConfirmTransfer: false,
     expiresAt: DateTime.now().toUtc().add(const Duration(hours: 24)),
+    requiredTargetBalance: '20',
+    targetAvailableAmount: '15',
+    remainingMinimumTopUp: '5',
+    targetToken: 'USDC',
+    targetNetwork: 'Hyperliquid',
   );
 
   @override
