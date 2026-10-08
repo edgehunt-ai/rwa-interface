@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -254,6 +255,30 @@ void main() {
 
     expect(find.text('NVDA'), findsNothing);
     expect(repository.productQueries, isEmpty);
+  });
+
+  testWidgets('all stocks marks every supported venue per stock', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+        ],
+        child: _marketApp(const MarketSearchScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Finder venue(String asset) => find.byWidgetPredicate(
+      (widget) =>
+          widget is SvgPicture &&
+          widget.bytesLoader.toString().contains(asset),
+    );
+
+    // NVDA trades as a bStock and a HIP-3 perp, TSLA only as a HIP-3 perp.
+    expect(venue('venue_bnb.svg'), findsOneWidget);
+    expect(venue('venue_hyperliquid.svg'), findsNWidgets(2));
   });
 
   testWidgets('MarketDiscoverySearchScreen debounces remote searches', (

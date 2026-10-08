@@ -478,12 +478,26 @@ class _StockBrowseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final products = stock.products.toSet();
+    final kinds = {for (final product in products) product.kind};
+    final destination = products.firstWhere(
+      (product) => product.kind == MarketProductKind.bstock,
+      orElse: () => products.isNotEmpty
+          ? products.first
+          : MarketProductRef(
+              symbol: stock.symbol,
+              kind: MarketProductKind.bstock,
+            ),
+    );
     return Semantics(
       button: true,
       label: '${stock.symbol}, ${stock.name}',
       child: InkWell(
         onTap: () => context.push(
-          AppRoutes.tradeLocation(symbol: stock.symbol, kind: 'bstock'),
+          AppRoutes.tradeLocation(
+            symbol: destination.symbol,
+            kind: destination.kind.name,
+          ),
         ),
         child: SizedBox(
           height: 68,
@@ -508,11 +522,19 @@ class _StockBrowseRow extends StatelessWidget {
                   ],
                 ),
               ),
-              SvgPicture.asset(
-                'assets/figma/home_markets/venue_bnb.svg',
-                width: 20,
-                height: 20,
-              ),
+              if (kinds.contains(MarketProductKind.bstock))
+                SvgPicture.asset(
+                  'assets/figma/home_markets/venue_bnb.svg',
+                  width: 20,
+                  height: 20,
+                ),
+              if (kinds.length > 1) const SizedBox(width: 8),
+              if (kinds.contains(MarketProductKind.perp))
+                SvgPicture.asset(
+                  'assets/figma/home_markets/venue_hyperliquid.svg',
+                  width: 20,
+                  height: 20,
+                ),
               const SizedBox(width: 8),
               SvgPicture.asset(
                 'assets/figma/home_markets/chevron_right.svg',
