@@ -115,6 +115,18 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
     DecimalValue? marketMinimum(String? value) => value == null
         ? null
         : DecimalValue(value, asset: 'USDC', unit: 'notional');
+    Hip3OpeningDirectionalCapacity capacity(api.Hip3OrderCapacitySide value) =>
+        Hip3OpeningDirectionalCapacity(
+          availableMargin: DecimalValue(
+            value.availableMarginUsdc,
+            asset: 'USDC',
+            unit: 'margin',
+          ),
+          venueMaximumQuantity: DecimalValue(
+            value.venueMaximumQuantity,
+            unit: 'quantity',
+          ),
+        );
     return Hip3OpeningContext(
       contextId: value.contextId,
       productId: value.productId,
@@ -158,6 +170,18 @@ final class Hip3OpeningRepositoryImpl implements Hip3OpeningRepository {
       operations: Set.unmodifiable(
         value.supportedOperations.map((v) => v.name),
       ),
+      orderCapacity: value.orderCapacity == null
+          ? null
+          : Hip3OpeningOrderCapacity(
+              long: capacity(value.orderCapacity!.long),
+              short: capacity(value.orderCapacity!.short),
+            ),
+      takerFeeRate: value.takerFeeRate == null
+          ? null
+          : DecimalValue(value.takerFeeRate!, unit: 'rate'),
+      feeReserveMultiplier: value.feeReserveMultiplier == null
+          ? null
+          : DecimalValue(value.feeReserveMultiplier!, unit: 'multiple'),
       blocker: value.blocker,
     );
   }

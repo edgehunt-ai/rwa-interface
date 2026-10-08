@@ -180,6 +180,7 @@ lib/src/model/funding_session_trade_intent_create_request.dart
 lib/src/model/funding_session_transfer_create_request.dart
 lib/src/model/funding_session_transfer_intent.dart
 lib/src/model/funding_session_transfer_snapshot.dart
+lib/src/model/funding_session_unavailable_sources_inner.dart
 lib/src/model/funding_source_asset.dart
 lib/src/model/funding_source_asset_catalog.dart
 lib/src/model/funding_source_asset_id.dart
@@ -242,6 +243,8 @@ lib/src/model/hip3_market_order_minimums.dart
 lib/src/model/hip3_opening_protection_confirmation.dart
 lib/src/model/hip3_opening_protection_confirmation_legs_inner.dart
 lib/src/model/hip3_operation.dart
+lib/src/model/hip3_order_capacity.dart
+lib/src/model/hip3_order_capacity_side.dart
 lib/src/model/hip3_order_protection_spec.dart
 lib/src/model/hip3_place_order_action_request.dart
 lib/src/model/hip3_preview_execution.dart
@@ -273,6 +276,7 @@ lib/src/model/hip3_trigger_spec.dart
 lib/src/model/hip3_withdrawal.dart
 lib/src/model/hip3_withdrawal_create_request.dart
 lib/src/model/hip3_withdrawal_fee_detail.dart
+lib/src/model/hip3_withdrawal_nonce_mapping.dart
 lib/src/model/hip3_withdrawal_preview.dart
 lib/src/model/hip3_withdrawal_rail.dart
 lib/src/model/hip3_withdrawal_status.dart

@@ -25,19 +25,19 @@ part 'bstock_localnet_order_preview.g.dart';
 /// Properties:
 /// * [bstocks] 
 /// * [approvalMode] 
-/// * [approvalAmountRaw] - bStocks 服务端授权目标，输入token最小单位字符串，不是交易预算；历史/localnet响应可省略。
+/// * [approvalAmountRaw] - bStocks 服务端建议的 approve 授权目标，输入 token 最小单位字符串，不是交易预算。 allowance_sufficient 比较 required_funding_raw，而不是此值；即使 approval_mode=unlimited， 当前有限 allowance 已覆盖本次交易时也不要求补到 uint256.max。历史/localnet响应可省略。 slippage 模式的目标以预览观测的输入 token balance_raw 为 cap；全部卖出不会生成超出持仓的有限授权。 余额不足时预览仍可返回（目标可为0），但创建订单仍拒绝，不自动缩小交易。 
 /// * [timeInForce] 
 /// * [limitPrice] - 十进制字符串，避免浮点误差
 /// * [priceConditionMet] 
 /// * [fundingMode] 
 /// * [fundsReserved] 
-/// * [requiredFundingRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
+/// * [requiredFundingRaw] - 本次 bStocks 预览检查余额和 allowance 的实际阈值，与 allowance_raw 使用同一输入 token 最小单位。 输入身份及精度见 bstocks.input_asset；买入为 quote token，卖出为 bStock，不一定是结算 token。 市价为当前报价含输入交易费的 order_value/total_input 转 raw，不包含未使用的预算尾差。 限价买入为 ceil(quantity × limit_price × 10^quote_decimals)，限价卖出为 quantity × 10^base_decimals。 不包含额外原生 gas，不等于 approval_amount_raw；新 bStocks 市价和限价预览均返回，旧快照可缺失。 
 /// * [fundingToken] 
-/// * [balanceRaw] - 十进制字符串，避免浮点误差
-/// * [allowanceRaw] - 原始最小单位的无符号十进制整数字符串；不允许指数、小数或负号。
-/// * [balanceSufficient] 
-/// * [allowanceSufficient] 
-/// * [approvalRequired] 
+/// * [balanceRaw] - 预览时读取的认证用户输入 token 余额，与 required_funding_raw 同单位；不是原生 gas 余额。
+/// * [allowanceRaw] - 预览时链上 allowance(owner, spender) 的十进制整数字符串，owner 为认证账户的钱包， token 为 bstocks.input_asset，spender 为服务端选定的执行合约（正常交易为订单 Router）。 数量可以为 uint256.max，客户端须使用大整数而非浮点；RPC 失败返回错误，不能把未知量当作 0 或已授权。 同一 Idempotency-Key 重放原预览，不刷新此观测。字段缺失表示旧响应未提供，不能推断授权充足。 
+/// * [balanceSufficient] - balance_raw >= required_funding_raw，等于也算足够；与授权是否足够独立，不表示 gas 已满足。
+/// * [allowanceSufficient] - allowance_raw >= required_funding_raw，等于也算足够；不是与 approval_amount_raw 比较。 仅为预览时的授权快照，创建订单仍重新查询；true 不保证余额充足、价格条件满足或最终成交。 
+/// * [approvalRequired] - 与 allowance_sufficient 互为取反；true 时 bstocks.blockers 包含 approval_required。 false 表示观测时本次交易无需额外 approve，而非已经成交或资金已预留。 授权完成后旧 preview 的值不会自动改变；刷新展示须用新的预览幂等键。 这些检查字段不授予复用旧 preview_id 的权限，仍须遵守当前下单确认契约。 旧服务/历史响应可能省略这些检查字段，客户端必须按未知处理。 
 /// * [orderRouter] 
 /// * [route] 
 /// * [cancellationPolicy] 
@@ -55,7 +55,7 @@ part 'bstock_localnet_order_preview.g.dart';
 /// * [orderValue] - 十进制字符串，避免浮点误差
 /// * [fee] - 十进制字符串，避免浮点误差
 /// * [feeRate] - 十进制字符串，避免浮点误差
-/// * [slippagePercent] - 十进制字符串，避免浮点误差
+/// * [slippagePercent] - bStocks限价预览回显请求比例，省略时为\"0\"。GTC为未来每次Keeper执行的策略，不是当前preview的冻结输出下限；IOC口径不变。
 /// * [orderBookImpactPercent] - 十进制字符串，避免浮点误差
 /// * [networkFee] - Network fee as a decimal string. The asset is carried separately in fee_asset.
 /// * [settlementAccount] - 成交后资产的到账账户

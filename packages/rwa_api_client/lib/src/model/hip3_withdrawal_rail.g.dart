@@ -8,6 +8,7 @@ part of 'hip3_withdrawal_rail.dart';
 
 const Hip3WithdrawalRail _$bridge2 = const Hip3WithdrawalRail._('bridge2');
 const Hip3WithdrawalRail _$float = const Hip3WithdrawalRail._('float');
+const Hip3WithdrawalRail _$relay = const Hip3WithdrawalRail._('relay');
 
 Hip3WithdrawalRail _$valueOf(String name) {
   switch (name) {
@@ -15,6 +16,8 @@ Hip3WithdrawalRail _$valueOf(String name) {
       return _$bridge2;
     case 'float':
       return _$float;
+    case 'relay':
+      return _$relay;
     default:
       throw ArgumentError(name);
   }
@@ -24,12 +27,14 @@ final BuiltSet<Hip3WithdrawalRail> _$values =
     BuiltSet<Hip3WithdrawalRail>(const <Hip3WithdrawalRail>[
   _$bridge2,
   _$float,
+  _$relay,
 ]);
 
 class _$Hip3WithdrawalRailMeta {
   const _$Hip3WithdrawalRailMeta();
   Hip3WithdrawalRail get bridge2 => _$bridge2;
   Hip3WithdrawalRail get float => _$float;
+  Hip3WithdrawalRail get relay => _$relay;
   Hip3WithdrawalRail valueOf(String name) => _$valueOf(name);
   BuiltSet<Hip3WithdrawalRail> get values => _$values;
 }
@@ -48,10 +53,12 @@ class _$Hip3WithdrawalRailSerializer
   static const Map<String, Object> _toWire = const <String, Object>{
     'bridge2': 'bridge2',
     'float': 'float',
+    'relay': 'relay',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'bridge2': 'bridge2',
     'float': 'float',
+    'relay': 'relay',
   };
 
   @override

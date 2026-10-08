@@ -46,6 +46,8 @@ class _$FundingSession extends FundingSession {
   @override
   final BuiltList<UnifiedFundingPosition> positions;
   @override
+  final BuiltList<FundingSessionUnavailableSourcesInner> unavailableSources;
+  @override
   final BuiltList<FundingSessionSourceAllocation> allocations;
   @override
   final bool canConfirmTransfer;
@@ -83,6 +85,7 @@ class _$FundingSession extends FundingSession {
       required this.estimatedFees,
       required this.etaSeconds,
       required this.positions,
+      required this.unavailableSources,
       required this.allocations,
       required this.canConfirmTransfer,
       required this.remainingMinimumTopUp,
@@ -121,6 +124,7 @@ class _$FundingSession extends FundingSession {
         estimatedFees == other.estimatedFees &&
         etaSeconds == other.etaSeconds &&
         positions == other.positions &&
+        unavailableSources == other.unavailableSources &&
         allocations == other.allocations &&
         canConfirmTransfer == other.canConfirmTransfer &&
         remainingMinimumTopUp == other.remainingMinimumTopUp &&
@@ -152,6 +156,7 @@ class _$FundingSession extends FundingSession {
     _$hash = $jc(_$hash, estimatedFees.hashCode);
     _$hash = $jc(_$hash, etaSeconds.hashCode);
     _$hash = $jc(_$hash, positions.hashCode);
+    _$hash = $jc(_$hash, unavailableSources.hashCode);
     _$hash = $jc(_$hash, allocations.hashCode);
     _$hash = $jc(_$hash, canConfirmTransfer.hashCode);
     _$hash = $jc(_$hash, remainingMinimumTopUp.hashCode);
@@ -185,6 +190,7 @@ class _$FundingSession extends FundingSession {
           ..add('estimatedFees', estimatedFees)
           ..add('etaSeconds', etaSeconds)
           ..add('positions', positions)
+          ..add('unavailableSources', unavailableSources)
           ..add('allocations', allocations)
           ..add('canConfirmTransfer', canConfirmTransfer)
           ..add('remainingMinimumTopUp', remainingMinimumTopUp)
@@ -296,6 +302,15 @@ class FundingSessionBuilder
   set positions(ListBuilder<UnifiedFundingPosition>? positions) =>
       _$this._positions = positions;
 
+  ListBuilder<FundingSessionUnavailableSourcesInner>? _unavailableSources;
+  ListBuilder<FundingSessionUnavailableSourcesInner> get unavailableSources =>
+      _$this._unavailableSources ??=
+          ListBuilder<FundingSessionUnavailableSourcesInner>();
+  set unavailableSources(
+          ListBuilder<FundingSessionUnavailableSourcesInner>?
+              unavailableSources) =>
+      _$this._unavailableSources = unavailableSources;
+
   ListBuilder<FundingSessionSourceAllocation>? _allocations;
   ListBuilder<FundingSessionSourceAllocation> get allocations =>
       _$this._allocations ??= ListBuilder<FundingSessionSourceAllocation>();
@@ -355,6 +370,7 @@ class FundingSessionBuilder
       _estimatedFees = $v.estimatedFees.toBuilder();
       _etaSeconds = $v.etaSeconds;
       _positions = $v.positions.toBuilder();
+      _unavailableSources = $v.unavailableSources.toBuilder();
       _allocations = $v.allocations.toBuilder();
       _canConfirmTransfer = $v.canConfirmTransfer;
       _remainingMinimumTopUp = $v.remainingMinimumTopUp;
@@ -424,6 +440,7 @@ class FundingSessionBuilder
             etaSeconds: BuiltValueNullFieldError.checkNotNull(
                 etaSeconds, r'FundingSession', 'etaSeconds'),
             positions: positions.build(),
+            unavailableSources: unavailableSources.build(),
             allocations: allocations.build(),
             canConfirmTransfer: BuiltValueNullFieldError.checkNotNull(
                 canConfirmTransfer, r'FundingSession', 'canConfirmTransfer'),
@@ -459,6 +476,8 @@ class FundingSessionBuilder
 
         _$failedField = 'positions';
         positions.build();
+        _$failedField = 'unavailableSources';
+        unavailableSources.build();
         _$failedField = 'allocations';
         allocations.build();
       } catch (e) {

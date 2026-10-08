@@ -6,6 +6,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_status.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_rail.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_nonce_mapping.dart';
 import 'package:rwa_api_client/src/model/hip3_collateral_risk_preview.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
@@ -19,11 +20,15 @@ part 'hip3_withdrawal.g.dart';
 /// * [withdrawalId] 
 /// * [ownerAddress] 
 /// * [destinationAddress] 
-/// * [amount] - 十进制字符串，避免浮点误差
+/// * [amount] - venue 实际扣款金额（USDC）。relay rail 为 solver quote 的输入额，可能大于请求的到账金额。
 /// * [fee] - 十进制字符串，避免浮点误差
-/// * [minimumReceived] - 十进制字符串，避免浮点误差
+/// * [minimumReceived] - 链上到账金额（amount - fee）。relay rail 为请求时的目标 BSC USDT 额。
 /// * [status] 
 /// * [rail] 
+/// * [payoutChainId] - 链上到账所在 chain id——bridge2/float 为 Arbitrum（42161/421614），relay 为 BSC（56）。
+/// * [payoutAsset] - 到账资产符号——bridge2/float 为 USDC（测试网 USDC2），relay 为 USDT。仅创建响应返回。
+/// * [relayRequestId] - relay rail 的 solver request id，用于 `/intents/status` 跟踪；其它 rail 为 null。
+/// * [nonceMapping] 
 /// * [nonce] - HL action nonce（创建时间毫秒），同时是 typed-data `time`。
 /// * [hyperliquidChain] - 仅在创建响应中返回。
 /// * [chainId] - EIP-712 签名链（421614 testnet / 42161 mainnet），仅创建响应返回。
@@ -32,7 +37,7 @@ part 'hip3_withdrawal.g.dart';
 /// * [payloadHash] - 冻结 action 的 EIP-712 digest，仅创建响应返回。
 /// * [failureReason] 
 /// * [observedLedgerTime] 
-/// * [payoutTxHash] - float rail 的平台 Arbitrum 垫付交易哈希（`payout`/`completed` 时返回）。
+/// * [payoutTxHash] - 链上垫付交易哈希——float rail 为平台 Arbitrum 垫付，relay rail 为 solver 的 BSC fill（`payout`/`completed` 时返回）。
 /// * [expiresAt] 
 /// * [createdAt] 
 /// * [updatedAt] 
@@ -53,7 +58,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   @BuiltValueField(wireName: r'destination_address')
   String get destinationAddress;
 
-  /// 十进制字符串，避免浮点误差
+  /// venue 实际扣款金额（USDC）。relay rail 为 solver quote 的输入额，可能大于请求的到账金额。
   @BuiltValueField(wireName: r'amount')
   String get amount;
 
@@ -61,7 +66,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   @BuiltValueField(wireName: r'fee')
   String get fee;
 
-  /// 十进制字符串，避免浮点误差
+  /// 链上到账金额（amount - fee）。relay rail 为请求时的目标 BSC USDT 额。
   @BuiltValueField(wireName: r'minimum_received')
   String get minimumReceived;
 
@@ -71,7 +76,22 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
 
   @BuiltValueField(wireName: r'rail')
   Hip3WithdrawalRail get rail;
-  // enum railEnum {  bridge2,  float,  };
+  // enum railEnum {  bridge2,  float,  relay,  };
+
+  /// 链上到账所在 chain id——bridge2/float 为 Arbitrum（42161/421614），relay 为 BSC（56）。
+  @BuiltValueField(wireName: r'payout_chain_id')
+  int? get payoutChainId;
+
+  /// 到账资产符号——bridge2/float 为 USDC（测试网 USDC2），relay 为 USDT。仅创建响应返回。
+  @BuiltValueField(wireName: r'payout_asset')
+  String? get payoutAsset;
+
+  /// relay rail 的 solver request id，用于 `/intents/status` 跟踪；其它 rail 为 null。
+  @BuiltValueField(wireName: r'relay_request_id')
+  String? get relayRequestId;
+
+  @BuiltValueField(wireName: r'nonce_mapping')
+  Hip3WithdrawalNonceMapping? get nonceMapping;
 
   /// HL action nonce（创建时间毫秒），同时是 typed-data `time`。
   @BuiltValueField(wireName: r'nonce')
@@ -104,7 +124,7 @@ abstract class Hip3Withdrawal implements Built<Hip3Withdrawal, Hip3WithdrawalBui
   @BuiltValueField(wireName: r'observed_ledger_time')
   int? get observedLedgerTime;
 
-  /// float rail 的平台 Arbitrum 垫付交易哈希（`payout`/`completed` 时返回）。
+  /// 链上垫付交易哈希——float rail 为平台 Arbitrum 垫付，relay rail 为 solver 的 BSC fill（`payout`/`completed` 时返回）。
   @BuiltValueField(wireName: r'payout_tx_hash')
   String? get payoutTxHash;
 
@@ -193,6 +213,34 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
       object.rail,
       specifiedType: const FullType(Hip3WithdrawalRail),
     );
+    if (object.payoutChainId != null) {
+      yield r'payout_chain_id';
+      yield serializers.serialize(
+        object.payoutChainId,
+        specifiedType: const FullType(int),
+      );
+    }
+    if (object.payoutAsset != null) {
+      yield r'payout_asset';
+      yield serializers.serialize(
+        object.payoutAsset,
+        specifiedType: const FullType(String),
+      );
+    }
+    if (object.relayRequestId != null) {
+      yield r'relay_request_id';
+      yield serializers.serialize(
+        object.relayRequestId,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.nonceMapping != null) {
+      yield r'nonce_mapping';
+      yield serializers.serialize(
+        object.nonceMapping,
+        specifiedType: const FullType.nullable(Hip3WithdrawalNonceMapping),
+      );
+    }
     yield r'nonce';
     yield serializers.serialize(
       object.nonce,
@@ -359,6 +407,38 @@ class _$Hip3WithdrawalSerializer implements PrimitiveSerializer<Hip3Withdrawal> 
             specifiedType: const FullType(Hip3WithdrawalRail),
           ) as Hip3WithdrawalRail;
           result.rail = valueDes;
+          break;
+        case r'payout_chain_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(int),
+          ) as int?;
+          if (valueDes == null) continue;
+          result.payoutChainId = valueDes;
+          break;
+        case r'payout_asset':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.payoutAsset = valueDes;
+          break;
+        case r'relay_request_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.relayRequestId = valueDes;
+          break;
+        case r'nonce_mapping':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3WithdrawalNonceMapping),
+          ) as Hip3WithdrawalNonceMapping?;
+          if (valueDes == null) continue;
+          result.nonceMapping.replace(valueDes);
           break;
         case r'nonce':
           final valueDes = serializers.deserialize(

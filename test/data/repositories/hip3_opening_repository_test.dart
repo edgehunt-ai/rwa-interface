@@ -22,6 +22,10 @@ void main() {
         TradingOrderType.limit,
       });
       expect(context.availableMargin.value, '20');
+      expect(context.orderCapacity?.long.availableMargin.value, '18');
+      expect(context.orderCapacity?.short.venueMaximumQuantity.value, '2');
+      expect(context.takerFeeRate?.value, '0.001');
+      expect(context.feeReserveMultiplier?.value, '1.2');
       expect(service.creates, 0);
       service.foreign = true;
       await expectLater(repository.context('TSLA'), throwsFormatException);
@@ -119,6 +123,23 @@ final class _Service extends Fake implements Hip3PositionActionService {
         'current_margin_mode': 'cross',
         'available_margin_usdc': '20',
         'withdrawable_usdc': '20',
+        'taker_fee_rate': '0.001',
+        'fee_reserve_multiplier': '1.2',
+        'order_capacity': {
+          'long': {
+            'available_margin_usdc': '18',
+            'venue_maximum_quantity': '3',
+          },
+          'short': {
+            'available_margin_usdc': '17',
+            'venue_maximum_quantity': '2',
+          },
+          'observed_at': '2026-09-10T00:00:00Z',
+          'valid_until': DateTime.now()
+              .toUtc()
+              .add(const Duration(minutes: 1))
+              .toIso8601String(),
+        },
         'supported_operations': ['place_order', 'set_leverage'],
         'observed_at': '2026-09-10T00:00:00Z',
         'valid_until': DateTime.now()

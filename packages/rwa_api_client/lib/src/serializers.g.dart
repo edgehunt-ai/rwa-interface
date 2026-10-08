@@ -313,6 +313,8 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(FundingSessionTransferSnapshot.serializer)
       ..add(FundingSessionTransferSnapshotDestinationEnum.serializer)
       ..add(FundingSessionTransferSnapshotKindEnum.serializer)
+      ..add(FundingSessionUnavailableSourcesInner.serializer)
+      ..add(FundingSessionUnavailableSourcesInnerFailureReasonEnum.serializer)
       ..add(FundingSourceAsset.serializer)
       ..add(FundingSourceAssetCatalog.serializer)
       ..add(FundingSourceAssetId.serializer)
@@ -430,6 +432,8 @@ Serializers _$serializers = (Serializers().toBuilder()
           .serializer)
       ..add(Hip3OpeningProtectionConfirmationLegsInnerRoleEnum.serializer)
       ..add(Hip3Operation.serializer)
+      ..add(Hip3OrderCapacity.serializer)
+      ..add(Hip3OrderCapacitySide.serializer)
       ..add(Hip3OrderProtectionSpec.serializer)
       ..add(Hip3PlaceOrderActionRequest.serializer)
       ..add(Hip3PlaceOrderActionRequestOperationEnum.serializer)
@@ -491,6 +495,7 @@ Serializers _$serializers = (Serializers().toBuilder()
       ..add(Hip3WithdrawalFeeDetailPayerEnum.serializer)
       ..add(Hip3WithdrawalFeeDetailTypeEnum.serializer)
       ..add(Hip3WithdrawalHyperliquidChainEnum.serializer)
+      ..add(Hip3WithdrawalNonceMapping.serializer)
       ..add(Hip3WithdrawalPreview.serializer)
       ..add(Hip3WithdrawalPreviewBlockersEnum.serializer)
       ..add(Hip3WithdrawalRail.serializer)
@@ -1253,6 +1258,10 @@ Serializers _$serializers = (Serializers().toBuilder()
           const FullType(
               BuiltList, const [const FullType(UnifiedFundingPosition)]),
           () => ListBuilder<UnifiedFundingPosition>())
+      ..addBuilderFactory(
+          const FullType(BuiltList,
+              const [const FullType(FundingSessionUnavailableSourcesInner)]),
+          () => ListBuilder<FundingSessionUnavailableSourcesInner>())
       ..addBuilderFactory(
           const FullType(BuiltList,
               const [const FullType(FundingSessionSourceAllocation)]),

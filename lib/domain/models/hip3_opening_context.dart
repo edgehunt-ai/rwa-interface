@@ -20,6 +20,9 @@ final class Hip3OpeningContext {
     required this.sizeDecimals,
     required this.validUntil,
     required this.operations,
+    this.orderCapacity,
+    this.takerFeeRate,
+    this.feeReserveMultiplier,
     this.blocker,
   });
   final String contextId;
@@ -39,6 +42,9 @@ final class Hip3OpeningContext {
   final int sizeDecimals;
   final DateTime validUntil;
   final Set<String> operations;
+  final Hip3OpeningOrderCapacity? orderCapacity;
+  final DecimalValue? takerFeeRate;
+  final DecimalValue? feeReserveMultiplier;
   final String? blocker;
 
   bool get tradingSettingsEnabled =>
@@ -48,4 +54,27 @@ final class Hip3OpeningContext {
       0;
 
   bool get isExpired => !validUntil.isAfter(DateTime.now().toUtc());
+}
+
+final class Hip3OpeningOrderCapacity {
+  const Hip3OpeningOrderCapacity({required this.long, required this.short});
+
+  final Hip3OpeningDirectionalCapacity long;
+  final Hip3OpeningDirectionalCapacity short;
+
+  Hip3OpeningDirectionalCapacity? forSide(TradingSide side) => switch (side) {
+    TradingSide.long => long,
+    TradingSide.short => short,
+    _ => null,
+  };
+}
+
+final class Hip3OpeningDirectionalCapacity {
+  const Hip3OpeningDirectionalCapacity({
+    required this.availableMargin,
+    required this.venueMaximumQuantity,
+  });
+
+  final DecimalValue availableMargin;
+  final DecimalValue venueMaximumQuantity;
 }

@@ -171,6 +171,7 @@ import 'package:rwa_api_client/src/model/funding_session_trade_intent_create_req
 import 'package:rwa_api_client/src/model/funding_session_transfer_create_request.dart';
 import 'package:rwa_api_client/src/model/funding_session_transfer_intent.dart';
 import 'package:rwa_api_client/src/model/funding_session_transfer_snapshot.dart';
+import 'package:rwa_api_client/src/model/funding_session_unavailable_sources_inner.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/funding_source_asset_id.dart';
@@ -233,6 +234,8 @@ import 'package:rwa_api_client/src/model/hip3_market_order_minimums.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation.dart';
 import 'package:rwa_api_client/src/model/hip3_opening_protection_confirmation_legs_inner.dart';
 import 'package:rwa_api_client/src/model/hip3_operation.dart';
+import 'package:rwa_api_client/src/model/hip3_order_capacity.dart';
+import 'package:rwa_api_client/src/model/hip3_order_capacity_side.dart';
 import 'package:rwa_api_client/src/model/hip3_order_protection_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_place_order_action_request.dart';
 import 'package:rwa_api_client/src/model/hip3_preview_execution.dart';
@@ -264,6 +267,7 @@ import 'package:rwa_api_client/src/model/hip3_trigger_spec.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_create_request.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_fee_detail.dart';
+import 'package:rwa_api_client/src/model/hip3_withdrawal_nonce_mapping.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_preview.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_rail.dart';
 import 'package:rwa_api_client/src/model/hip3_withdrawal_status.dart';
@@ -644,6 +648,7 @@ part 'serializers.g.dart';
   FundingSessionTransferCreateRequest,
   FundingSessionTransferIntent,
   FundingSessionTransferSnapshot,
+  FundingSessionUnavailableSourcesInner,
   FundingSourceAsset,
   FundingSourceAssetCatalog,
   FundingSourceAssetId,
@@ -706,6 +711,8 @@ part 'serializers.g.dart';
   Hip3OpeningProtectionConfirmation,
   Hip3OpeningProtectionConfirmationLegsInner,
   Hip3Operation,
+  Hip3OrderCapacity,
+  Hip3OrderCapacitySide,
   Hip3OrderProtectionSpec,
   Hip3PlaceOrderActionRequest,
   Hip3PreviewExecution,
@@ -737,6 +744,7 @@ part 'serializers.g.dart';
   Hip3Withdrawal,
   Hip3WithdrawalCreateRequest,
   Hip3WithdrawalFeeDetail,
+  Hip3WithdrawalNonceMapping,
   Hip3WithdrawalPreview,
   Hip3WithdrawalRail,
   Hip3WithdrawalStatus,
@@ -1057,6 +1065,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltSet, [FullType(UnifiedFundingBlocker)]),
         () => SetBuilder<UnifiedFundingBlocker>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(FundingSessionUnavailableSourcesInner)]),
+        () => ListBuilder<FundingSessionUnavailableSourcesInner>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(AppVersionInfo)]),

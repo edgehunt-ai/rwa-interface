@@ -11,6 +11,7 @@ import 'package:rwa_api_client/src/model/funding_fee_breakdown.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/funding_target_balance_snapshot.dart';
 import 'package:rwa_api_client/src/model/funding_session_status.dart';
+import 'package:rwa_api_client/src/model/funding_session_unavailable_sources_inner.dart';
 import 'package:rwa_api_client/src/model/unified_funding_position.dart';
 import 'package:rwa_api_client/src/model/hip3_collateral_risk_preview.dart';
 import 'package:built_value/built_value.dart';
@@ -40,6 +41,7 @@ part 'funding_session.g.dart';
 /// * [estimatedFees] 
 /// * [etaSeconds] 
 /// * [positions] 
+/// * [unavailableSources] - Sources whose balance read failed while building the current selection version. They are excluded from `positions` rather than silently dropped; clients should surface the reason so \"balance exists but is not selectable\" is explainable. 
 /// * [allocations] 
 /// * [canConfirmTransfer] 
 /// * [remainingMinimumTopUp] - 十进制字符串，避免浮点误差
@@ -117,6 +119,10 @@ abstract class FundingSession implements Built<FundingSession, FundingSessionBui
 
   @BuiltValueField(wireName: r'positions')
   BuiltList<UnifiedFundingPosition> get positions;
+
+  /// Sources whose balance read failed while building the current selection version. They are excluded from `positions` rather than silently dropped; clients should surface the reason so \"balance exists but is not selectable\" is explainable. 
+  @BuiltValueField(wireName: r'unavailable_sources')
+  BuiltList<FundingSessionUnavailableSourcesInner> get unavailableSources;
 
   @BuiltValueField(wireName: r'allocations')
   BuiltList<FundingSessionSourceAllocation> get allocations;
@@ -260,6 +266,11 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
     yield serializers.serialize(
       object.positions,
       specifiedType: const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
+    );
+    yield r'unavailable_sources';
+    yield serializers.serialize(
+      object.unavailableSources,
+      specifiedType: const FullType(BuiltList, [FullType(FundingSessionUnavailableSourcesInner)]),
     );
     yield r'allocations';
     yield serializers.serialize(
@@ -453,6 +464,13 @@ class _$FundingSessionSerializer implements PrimitiveSerializer<FundingSession> 
             specifiedType: const FullType(BuiltList, [FullType(UnifiedFundingPosition)]),
           ) as BuiltList<UnifiedFundingPosition>;
           result.positions.replace(valueDes);
+          break;
+        case r'unavailable_sources':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BuiltList, [FullType(FundingSessionUnavailableSourcesInner)]),
+          ) as BuiltList<FundingSessionUnavailableSourcesInner>;
+          result.unavailableSources.replace(valueDes);
           break;
         case r'allocations':
           final valueDes = serializers.deserialize(

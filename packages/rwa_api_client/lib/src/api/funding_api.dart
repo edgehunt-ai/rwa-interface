@@ -262,7 +262,7 @@ class FundingApi {
   }
 
   /// 创建可恢复的资金准备会话
-  /// 创建一个 24 小时可恢复的资金准备会话。请求体二选一：&#x60;trade&#x60; 按订单草稿推导补资需求； &#x60;transfer&#x60; 按账户划转意图（如现货补 HIP-3 保证金）推导补资需求。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 建议缓冲均由服务端推导；建议值不构成准入限制。 
+  /// 创建一个 24 小时可恢复的资金准备会话。请求体二选一：&#x60;trade&#x60; 按订单草稿推导补资需求； &#x60;transfer&#x60; 按账户划转意图（如现货补 HIP-3 保证金）推导补资需求。会话不冻结成交价格、 不创建订单、Transfer、钱包动作或 Activity。目标账户、目标资产、最低补资额和 建议缓冲均由服务端推导；建议值不构成准入限制。 bStocks 买单支持市价和限价 GTC/IOC（限价省略 time_in_force 默认 GTC）； 市价按 amount，限价按 quantity × limit_price 向上取整到目标结算 token 最小单位计算基础所需余额。 slippage_percent 不放大限价挂单预算；会话安全缓冲单独处理。卖单不走买入补资，返回422 funding_not_required。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.

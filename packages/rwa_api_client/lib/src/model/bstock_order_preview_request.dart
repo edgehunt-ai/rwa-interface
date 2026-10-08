@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_order_preview_request.g.dart';
 
-/// bStocks 现货订单。只接受 buy/sell：市价买入传 amount，市价卖出传 quantity， 限价买卖均传 limit_price 和 quantity；金额/价格以当前准入 quote token 计价，主网通常 USDT、测试网 TUSDT。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定等价。 市价只接受 ioc（省略也按 IOC）。tp_sl 仅兼容 disabled 的旧客户端输入，省略、空对象或 enabled=false 等价； enabled=true 在预览和下单均返回422 invalid_json，不会静默忽略保护。报价是参考值，确认时重新报价并校验冻结边界。 
+/// bStocks 现货订单。只接受 buy/sell：市价买入传 amount，市价卖出传 quantity， 限价买卖均传 limit_price 和 quantity；金额/价格以当前准入 quote token 计价，主网通常 USDT、测试网 TUSDT。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定等价。 限价不得传非空 amount；quantity 和 limit_price 必须为正的十进制字符串。 可解析的业务参数错误返回422及具体code：bstocks_limit_amount_not_allowed、bstocks_limit_quantity_invalid、 bstocks_limit_price_invalid、bstocks_slippage_invalid， user_action=update_order_parameters；错误类型、未知字段或超出Decimal精度仍为 invalid_json。 市价只接受 ioc（省略也按 IOC）。tp_sl 仅兼容 disabled 的旧客户端输入，省略、空对象或 enabled=false 等价； enabled=true 在预览和下单均返回422 invalid_json，不会静默忽略保护。报价是参考值，确认时重新报价并校验冻结边界。 配合 Bearer Token 和 Idempotency-Key，上述输入足以检查当前账户的 ERC20 allowance： owner 由认证账户唯一的 active BSC 钱包解析，链、token、精度和执行 spender 由准入配置决定。 前端不传 wallet/owner、token、spender 或 allowance；不得使用其他钱包的授权数量代替服务端观测。 买入检查 quote token，卖出检查对应 bStock；结果见 allowance_raw、required_funding_raw、 allowance_sufficient 和 approval_required。授权不足仍可返回 HTTP 200 的预览，不代表可以直接成交。 
 ///
 /// Properties:
 /// * [symbol] 
@@ -23,7 +23,7 @@ part 'bstock_order_preview_request.g.dart';
 /// * [amount] - 市价买入的当前准入 quote token 金额，通常主网 USDT / 测试网 TUSDT。
 /// * [quantity] - 市价卖出或限价单的基础资产数量
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
-/// * [slippagePercent] - 市价单和显式 time_in_force=ioc 的限价单可用；百分数（\"1\" 表示1%），省略/null 默认0，范围 0 <= slippage_percent < 100。 冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0；向上取整避免超过用户容忍损失。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。GTC（含省略 time_in_force 的限价单）不得传非null值（含\"0\"）。 
+/// * [slippagePercent] - bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 IOC口径不变：冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))； 约束preview到确认的新报价，当前IOC链上minAmountOut仍用新报价输出，不再额外降低。 GTC（含省略time_in_force的限价单）接受非零滑点，保存为平台Keeper每次成交的执行策略， 不把当前preview的estimated_receive锁定到未来；GTC confirmation_binding.minimum_output_raw保持null。 每次执行重新报价Q（最终签名RFQ输出加当次DEX报价），minAmountOut=max(ceil(Q×(1-p/100)),限价要求的最低输出)。 限价始终是硬边界，滑点绝不允许买入高于限价或卖出低于限价；部分成交后对剩余数量重新报价。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零小数字符串规范化但保留数值。 比例属于平台Keeper策略，不是Router链上订单字段；链上强制检查提交的最低输出及限价，不能保证第三方permissionless执行者采用同一报价策略。 
 /// * [tpSl] 
 @BuiltValue()
 abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequest, BstockOrderPreviewRequestBuilder> {
@@ -58,7 +58,7 @@ abstract class BstockOrderPreviewRequest implements Built<BstockOrderPreviewRequ
   @BuiltValueField(wireName: r'limit_price')
   String? get limitPrice;
 
-  /// 市价单和显式 time_in_force=ioc 的限价单可用；百分数（\"1\" 表示1%），省略/null 默认0，范围 0 <= slippage_percent < 100。 冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))，结果必须大于0；向上取整避免超过用户容忍损失。 控制预览到下单重新报价的经济量边界；当前链上 minAmountOut 使用新路由报价输出， 不再按该百分比降低，因此可能在用户容忍范围内仍回滚。GTC（含省略 time_in_force 的限价单）不得传非null值（含\"0\"）。 
+  /// bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 IOC口径不变：冻结最低输出=ceil(estimated_receive_raw × (1 - slippage_percent/100))； 约束preview到确认的新报价，当前IOC链上minAmountOut仍用新报价输出，不再额外降低。 GTC（含省略time_in_force的限价单）接受非零滑点，保存为平台Keeper每次成交的执行策略， 不把当前preview的estimated_receive锁定到未来；GTC confirmation_binding.minimum_output_raw保持null。 每次执行重新报价Q（最终签名RFQ输出加当次DEX报价），minAmountOut=max(ceil(Q×(1-p/100)),限价要求的最低输出)。 限价始终是硬边界，滑点绝不允许买入高于限价或卖出低于限价；部分成交后对剩余数量重新报价。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零小数字符串规范化但保留数值。 比例属于平台Keeper策略，不是Router链上订单字段；链上强制检查提交的最低输出及限价，不能保证第三方permissionless执行者采用同一报价策略。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
 

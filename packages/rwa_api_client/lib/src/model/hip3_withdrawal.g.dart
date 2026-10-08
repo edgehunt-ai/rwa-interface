@@ -86,6 +86,14 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
   @override
   final Hip3WithdrawalRail rail;
   @override
+  final int? payoutChainId;
+  @override
+  final String? payoutAsset;
+  @override
+  final String? relayRequestId;
+  @override
+  final Hip3WithdrawalNonceMapping? nonceMapping;
+  @override
   final int nonce;
   @override
   final Hip3WithdrawalHyperliquidChainEnum? hyperliquidChain;
@@ -127,6 +135,10 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
       required this.minimumReceived,
       required this.status,
       required this.rail,
+      this.payoutChainId,
+      this.payoutAsset,
+      this.relayRequestId,
+      this.nonceMapping,
       required this.nonce,
       this.hyperliquidChain,
       this.chainId,
@@ -162,6 +174,10 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
         minimumReceived == other.minimumReceived &&
         status == other.status &&
         rail == other.rail &&
+        payoutChainId == other.payoutChainId &&
+        payoutAsset == other.payoutAsset &&
+        relayRequestId == other.relayRequestId &&
+        nonceMapping == other.nonceMapping &&
         nonce == other.nonce &&
         hyperliquidChain == other.hyperliquidChain &&
         chainId == other.chainId &&
@@ -190,6 +206,10 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
     _$hash = $jc(_$hash, minimumReceived.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, rail.hashCode);
+    _$hash = $jc(_$hash, payoutChainId.hashCode);
+    _$hash = $jc(_$hash, payoutAsset.hashCode);
+    _$hash = $jc(_$hash, relayRequestId.hashCode);
+    _$hash = $jc(_$hash, nonceMapping.hashCode);
     _$hash = $jc(_$hash, nonce.hashCode);
     _$hash = $jc(_$hash, hyperliquidChain.hashCode);
     _$hash = $jc(_$hash, chainId.hashCode);
@@ -220,6 +240,10 @@ class _$Hip3Withdrawal extends Hip3Withdrawal {
           ..add('minimumReceived', minimumReceived)
           ..add('status', status)
           ..add('rail', rail)
+          ..add('payoutChainId', payoutChainId)
+          ..add('payoutAsset', payoutAsset)
+          ..add('relayRequestId', relayRequestId)
+          ..add('nonceMapping', nonceMapping)
           ..add('nonce', nonce)
           ..add('hyperliquidChain', hyperliquidChain)
           ..add('chainId', chainId)
@@ -281,6 +305,26 @@ class Hip3WithdrawalBuilder
   Hip3WithdrawalRail? _rail;
   Hip3WithdrawalRail? get rail => _$this._rail;
   set rail(Hip3WithdrawalRail? rail) => _$this._rail = rail;
+
+  int? _payoutChainId;
+  int? get payoutChainId => _$this._payoutChainId;
+  set payoutChainId(int? payoutChainId) =>
+      _$this._payoutChainId = payoutChainId;
+
+  String? _payoutAsset;
+  String? get payoutAsset => _$this._payoutAsset;
+  set payoutAsset(String? payoutAsset) => _$this._payoutAsset = payoutAsset;
+
+  String? _relayRequestId;
+  String? get relayRequestId => _$this._relayRequestId;
+  set relayRequestId(String? relayRequestId) =>
+      _$this._relayRequestId = relayRequestId;
+
+  Hip3WithdrawalNonceMappingBuilder? _nonceMapping;
+  Hip3WithdrawalNonceMappingBuilder get nonceMapping =>
+      _$this._nonceMapping ??= Hip3WithdrawalNonceMappingBuilder();
+  set nonceMapping(Hip3WithdrawalNonceMappingBuilder? nonceMapping) =>
+      _$this._nonceMapping = nonceMapping;
 
   int? _nonce;
   int? get nonce => _$this._nonce;
@@ -359,6 +403,10 @@ class Hip3WithdrawalBuilder
       _minimumReceived = $v.minimumReceived;
       _status = $v.status;
       _rail = $v.rail;
+      _payoutChainId = $v.payoutChainId;
+      _payoutAsset = $v.payoutAsset;
+      _relayRequestId = $v.relayRequestId;
+      _nonceMapping = $v.nonceMapping?.toBuilder();
       _nonce = $v.nonce;
       _hyperliquidChain = $v.hyperliquidChain;
       _chainId = $v.chainId;
@@ -413,6 +461,10 @@ class Hip3WithdrawalBuilder
                 status, r'Hip3Withdrawal', 'status'),
             rail: BuiltValueNullFieldError.checkNotNull(
                 rail, r'Hip3Withdrawal', 'rail'),
+            payoutChainId: payoutChainId,
+            payoutAsset: payoutAsset,
+            relayRequestId: relayRequestId,
+            nonceMapping: _nonceMapping?.build(),
             nonce: BuiltValueNullFieldError.checkNotNull(
                 nonce, r'Hip3Withdrawal', 'nonce'),
             hyperliquidChain: hyperliquidChain,
@@ -437,6 +489,9 @@ class Hip3WithdrawalBuilder
       try {
         _$failedField = 'riskPreview';
         _riskPreview?.build();
+
+        _$failedField = 'nonceMapping';
+        _nonceMapping?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
             r'Hip3Withdrawal', _$failedField, e.toString());

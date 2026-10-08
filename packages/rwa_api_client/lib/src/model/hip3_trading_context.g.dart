@@ -88,6 +88,10 @@ class _$Hip3TradingContext extends Hip3TradingContext {
   @override
   final String? takerFeeRate;
   @override
+  final String? feeReserveMultiplier;
+  @override
+  final Hip3OrderCapacity? orderCapacity;
+  @override
   final BuiltList<Hip3Operation> supportedOperations;
   @override
   final String? blocker;
@@ -114,6 +118,8 @@ class _$Hip3TradingContext extends Hip3TradingContext {
       required this.availableMarginUsdc,
       required this.withdrawableUsdc,
       this.takerFeeRate,
+      this.feeReserveMultiplier,
+      this.orderCapacity,
       required this.supportedOperations,
       this.blocker,
       required this.observedAt,
@@ -145,6 +151,8 @@ class _$Hip3TradingContext extends Hip3TradingContext {
         availableMarginUsdc == other.availableMarginUsdc &&
         withdrawableUsdc == other.withdrawableUsdc &&
         takerFeeRate == other.takerFeeRate &&
+        feeReserveMultiplier == other.feeReserveMultiplier &&
+        orderCapacity == other.orderCapacity &&
         supportedOperations == other.supportedOperations &&
         blocker == other.blocker &&
         observedAt == other.observedAt &&
@@ -167,6 +175,8 @@ class _$Hip3TradingContext extends Hip3TradingContext {
     _$hash = $jc(_$hash, availableMarginUsdc.hashCode);
     _$hash = $jc(_$hash, withdrawableUsdc.hashCode);
     _$hash = $jc(_$hash, takerFeeRate.hashCode);
+    _$hash = $jc(_$hash, feeReserveMultiplier.hashCode);
+    _$hash = $jc(_$hash, orderCapacity.hashCode);
     _$hash = $jc(_$hash, supportedOperations.hashCode);
     _$hash = $jc(_$hash, blocker.hashCode);
     _$hash = $jc(_$hash, observedAt.hashCode);
@@ -191,6 +201,8 @@ class _$Hip3TradingContext extends Hip3TradingContext {
           ..add('availableMarginUsdc', availableMarginUsdc)
           ..add('withdrawableUsdc', withdrawableUsdc)
           ..add('takerFeeRate', takerFeeRate)
+          ..add('feeReserveMultiplier', feeReserveMultiplier)
+          ..add('orderCapacity', orderCapacity)
           ..add('supportedOperations', supportedOperations)
           ..add('blocker', blocker)
           ..add('observedAt', observedAt)
@@ -266,6 +278,17 @@ class Hip3TradingContextBuilder
   String? get takerFeeRate => _$this._takerFeeRate;
   set takerFeeRate(String? takerFeeRate) => _$this._takerFeeRate = takerFeeRate;
 
+  String? _feeReserveMultiplier;
+  String? get feeReserveMultiplier => _$this._feeReserveMultiplier;
+  set feeReserveMultiplier(String? feeReserveMultiplier) =>
+      _$this._feeReserveMultiplier = feeReserveMultiplier;
+
+  Hip3OrderCapacityBuilder? _orderCapacity;
+  Hip3OrderCapacityBuilder get orderCapacity =>
+      _$this._orderCapacity ??= Hip3OrderCapacityBuilder();
+  set orderCapacity(Hip3OrderCapacityBuilder? orderCapacity) =>
+      _$this._orderCapacity = orderCapacity;
+
   ListBuilder<Hip3Operation>? _supportedOperations;
   ListBuilder<Hip3Operation> get supportedOperations =>
       _$this._supportedOperations ??= ListBuilder<Hip3Operation>();
@@ -304,6 +327,8 @@ class Hip3TradingContextBuilder
       _availableMarginUsdc = $v.availableMarginUsdc;
       _withdrawableUsdc = $v.withdrawableUsdc;
       _takerFeeRate = $v.takerFeeRate;
+      _feeReserveMultiplier = $v.feeReserveMultiplier;
+      _orderCapacity = $v.orderCapacity?.toBuilder();
       _supportedOperations = $v.supportedOperations.toBuilder();
       _blocker = $v.blocker;
       _observedAt = $v.observedAt;
@@ -354,6 +379,8 @@ class Hip3TradingContextBuilder
             withdrawableUsdc: BuiltValueNullFieldError.checkNotNull(
                 withdrawableUsdc, r'Hip3TradingContext', 'withdrawableUsdc'),
             takerFeeRate: takerFeeRate,
+            feeReserveMultiplier: feeReserveMultiplier,
+            orderCapacity: _orderCapacity?.build(),
             supportedOperations: supportedOperations.build(),
             blocker: blocker,
             observedAt: BuiltValueNullFieldError.checkNotNull(
@@ -369,6 +396,8 @@ class Hip3TradingContextBuilder
         _$failedField = 'marketOrderMinimums';
         _marketOrderMinimums?.build();
 
+        _$failedField = 'orderCapacity';
+        _orderCapacity?.build();
         _$failedField = 'supportedOperations';
         supportedOperations.build();
       } catch (e) {

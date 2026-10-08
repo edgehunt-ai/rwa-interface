@@ -269,6 +269,8 @@ class _$Order extends Order {
   @override
   final OrderWalletActionBlockerEnum? walletActionBlocker;
   @override
+  final String? slippagePercent;
+  @override
   final BstocksActionStatus? actionStatus;
   @override
   final String? submittedTransactionHash;
@@ -370,6 +372,7 @@ class _$Order extends Order {
       required this.kind,
       this.nextAction,
       this.walletActionBlocker,
+      this.slippagePercent,
       this.actionStatus,
       this.submittedTransactionHash,
       this.confirmedTransactionHash,
@@ -435,6 +438,7 @@ class _$Order extends Order {
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
+        slippagePercent == other.slippagePercent &&
         actionStatus == other.actionStatus &&
         submittedTransactionHash == other.submittedTransactionHash &&
         confirmedTransactionHash == other.confirmedTransactionHash &&
@@ -493,6 +497,7 @@ class _$Order extends Order {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
+    _$hash = $jc(_$hash, slippagePercent.hashCode);
     _$hash = $jc(_$hash, actionStatus.hashCode);
     _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
     _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
@@ -553,6 +558,7 @@ class _$Order extends Order {
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
+          ..add('slippagePercent', slippagePercent)
           ..add('actionStatus', actionStatus)
           ..add('submittedTransactionHash', submittedTransactionHash)
           ..add('confirmedTransactionHash', confirmedTransactionHash)
@@ -649,6 +655,11 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _$this._walletActionBlocker;
   set walletActionBlocker(OrderWalletActionBlockerEnum? walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
+
+  String? _slippagePercent;
+  String? get slippagePercent => _$this._slippagePercent;
+  set slippagePercent(String? slippagePercent) =>
+      _$this._slippagePercent = slippagePercent;
 
   BstocksActionStatus? _actionStatus;
   BstocksActionStatus? get actionStatus => _$this._actionStatus;
@@ -865,6 +876,7 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
       _kind = $v.kind;
       _nextAction = $v.nextAction;
       _walletActionBlocker = $v.walletActionBlocker;
+      _slippagePercent = $v.slippagePercent;
       _actionStatus = $v.actionStatus;
       _submittedTransactionHash = $v.submittedTransactionHash;
       _confirmedTransactionHash = $v.confirmedTransactionHash;
@@ -941,6 +953,7 @@ class OrderBuilder implements Builder<Order, OrderBuilder> {
             kind: BuiltValueNullFieldError.checkNotNull(kind, r'Order', 'kind'),
             nextAction: nextAction,
             walletActionBlocker: walletActionBlocker,
+            slippagePercent: slippagePercent,
             actionStatus: actionStatus,
             submittedTransactionHash: submittedTransactionHash,
             confirmedTransactionHash: confirmedTransactionHash,

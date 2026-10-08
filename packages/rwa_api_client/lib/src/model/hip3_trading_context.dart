@@ -8,13 +8,14 @@ import 'package:built_collection/built_collection.dart';
 import 'package:rwa_api_client/src/model/hip3_market_order_minimums.dart';
 import 'package:rwa_api_client/src/model/hip3_operation.dart';
 import 'package:rwa_api_client/src/model/hip3_environment.dart';
+import 'package:rwa_api_client/src/model/hip3_order_capacity.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_rules.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'hip3_trading_context.g.dart';
 
-/// 服务端从当前账户绑定及运行环境推导 context_id。无可靠账户余额返回 503。 supported_operations 只描述 client-signed 路径，不因 Agent 路径可用而开启。 available_margin_usdc 是扣除本地未结预留后的可交易保证金，与 withdrawable_usdc 分开； 均非账户总权益。market_order_minimums 供下单前展示币种、方向对应的最小市价单金额及 当前杠杆下最低保证金；最大可开量仍受方向、价格与杠杆影响，在订单 preview 中返回。 taker_fee_rate 为当前账户的 taker 费率（0–1），客户端可按 available_margin_usdc / (price × (1/leverage + taker_fee_rate)) 估算最大可开量， 使拉满下单预留手续费，与 preview 的 maximum_quantity 口径一致。 
+/// 服务端从当前账户绑定及运行环境推导 context_id。无可靠账户余额返回 503。 supported_operations 只描述 client-signed 路径，不因 Agent 路径可用而开启。 available_margin_usdc 是普通抵押资产额度扣除本地尚未被 HL 确认的预留后的余额，与 withdrawable_usdc 分开； 已被 HL 确认、且已反映在当前 HL 观测中的订单不再重复扣除本地预留； 包括部分成交或已成交、但本地成交结算尚未完成的订单。 均非账户总权益。market_order_minimums 供下单前展示币种、方向对应的最小市价单金额及 当前杠杆下最低保证金；最大可开量仍受方向、价格与杠杆影响，在订单 preview 中返回。 百分比下单应使用 order_capacity 对应方向，而不是顶层 available_margin_usdc。 给定当前设置下的数量上限 Q、方向可用额度 A、下单价格 P、杠杆 L、taker 费率 r、预留系数 k： Q0 = min(Q, A × L / P, rules.maximum_notional_usdc / P)； F = ceil(Q0 × P × r, 6)，R = ceil(F × k, 6)，B = floor(max(A - R, 0), 6)； 最大数量 = floor(min(Q, B × L / P, rules.maximum_notional_usdc / P), rules.size_decimals)。 P 使用限价单价格或市价单按方向和精度生成的滑点保护限价；全程使用十进制定点计算。 Q 是 HL 原始数量上限，不是平台最终最大量，也不承诺某一明确的手续费扣减方式。 配置/行情变化会改变可执行容量，最终以最新 preview 为准。调整杠杆或保证金模式后先完成设置并重新获取 context； 不得将旧设置下的 Q/A 按杠杆比例换算。补款后保留原订单参数重新 preview，不自动重新拉满。 
 ///
 /// Properties:
 /// * [contextId] 
@@ -29,7 +30,9 @@ part 'hip3_trading_context.g.dart';
 /// * [currentMarginMode] 
 /// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
 /// * [withdrawableUsdc] - 十进制字符串，避免浮点误差
-/// * [takerFeeRate] - 十进制字符串，避免浮点误差
+/// * [takerFeeRate] - 当前账户和 USDC 抵押 HIP-3 市场的预计 taker 费率（含账户费率、部署者倍率、growth mode 和有效推荐折扣），不含平台额外预留。只读场景无费率证据时为 null。
+/// * [feeReserveMultiplier] - 后端配置的手续费预留系数（1–10，初始默认 1.2），不是实际收费倍率。只读场景为 null。
+/// * [orderCapacity] - 当前账户设置下的双向交易额度。账户尚未就绪、只读场景或上游未提供方向额度时为 null；真实零额度返回字符串 0。
 /// * [supportedOperations] 
 /// * [blocker] 
 /// * [observedAt] 
@@ -79,9 +82,17 @@ abstract class Hip3TradingContext implements Built<Hip3TradingContext, Hip3Tradi
   @BuiltValueField(wireName: r'withdrawable_usdc')
   String get withdrawableUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 当前账户和 USDC 抵押 HIP-3 市场的预计 taker 费率（含账户费率、部署者倍率、growth mode 和有效推荐折扣），不含平台额外预留。只读场景无费率证据时为 null。
   @BuiltValueField(wireName: r'taker_fee_rate')
   String? get takerFeeRate;
+
+  /// 后端配置的手续费预留系数（1–10，初始默认 1.2），不是实际收费倍率。只读场景为 null。
+  @BuiltValueField(wireName: r'fee_reserve_multiplier')
+  String? get feeReserveMultiplier;
+
+  /// 当前账户设置下的双向交易额度。账户尚未就绪、只读场景或上游未提供方向额度时为 null；真实零额度返回字符串 0。
+  @BuiltValueField(wireName: r'order_capacity')
+  Hip3OrderCapacity? get orderCapacity;
 
   @BuiltValueField(wireName: r'supported_operations')
   BuiltList<Hip3Operation> get supportedOperations;
@@ -182,7 +193,21 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
       yield r'taker_fee_rate';
       yield serializers.serialize(
         object.takerFeeRate,
-        specifiedType: const FullType(String),
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.feeReserveMultiplier != null) {
+      yield r'fee_reserve_multiplier';
+      yield serializers.serialize(
+        object.feeReserveMultiplier,
+        specifiedType: const FullType.nullable(String),
+      );
+    }
+    if (object.orderCapacity != null) {
+      yield r'order_capacity';
+      yield serializers.serialize(
+        object.orderCapacity,
+        specifiedType: const FullType.nullable(Hip3OrderCapacity),
       );
     }
     yield r'supported_operations';
@@ -322,6 +347,22 @@ class _$Hip3TradingContextSerializer implements PrimitiveSerializer<Hip3TradingC
           ) as String?;
           if (valueDes == null) continue;
           result.takerFeeRate = valueDes;
+          break;
+        case r'fee_reserve_multiplier':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.feeReserveMultiplier = valueDes;
+          break;
+        case r'order_capacity':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3OrderCapacity),
+          ) as Hip3OrderCapacity?;
+          if (valueDes == null) continue;
+          result.orderCapacity.replace(valueDes);
           break;
         case r'supported_operations':
           final valueDes = serializers.deserialize(

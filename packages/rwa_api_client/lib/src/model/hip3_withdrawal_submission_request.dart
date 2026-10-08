@@ -13,6 +13,7 @@ part 'hip3_withdrawal_submission_request.g.dart';
 /// Properties:
 /// * [signature] - 65 字节 EIP-712 签名（r+s+v）。
 /// * [payloadHash] - 创建响应返回的冻结 action digest，绑定签名的 typed data。
+/// * [nonceMappingSignature] - 仅 relay rail 必填：owner 对创建响应 `nonce_mapping.typed_data`（RelayNonceMapping EIP-712，domain chainId=1）的签名。服务端先 POST Relay `/authorize` 再提交 venue `sendAsset`；其它 rail 不得提供此字段。 
 @BuiltValue()
 abstract class Hip3WithdrawalSubmissionRequest implements Built<Hip3WithdrawalSubmissionRequest, Hip3WithdrawalSubmissionRequestBuilder> {
   /// 65 字节 EIP-712 签名（r+s+v）。
@@ -22,6 +23,10 @@ abstract class Hip3WithdrawalSubmissionRequest implements Built<Hip3WithdrawalSu
   /// 创建响应返回的冻结 action digest，绑定签名的 typed data。
   @BuiltValueField(wireName: r'payload_hash')
   String get payloadHash;
+
+  /// 仅 relay rail 必填：owner 对创建响应 `nonce_mapping.typed_data`（RelayNonceMapping EIP-712，domain chainId=1）的签名。服务端先 POST Relay `/authorize` 再提交 venue `sendAsset`；其它 rail 不得提供此字段。 
+  @BuiltValueField(wireName: r'nonce_mapping_signature')
+  String? get nonceMappingSignature;
 
   Hip3WithdrawalSubmissionRequest._();
 
@@ -56,6 +61,13 @@ class _$Hip3WithdrawalSubmissionRequestSerializer implements PrimitiveSerializer
       object.payloadHash,
       specifiedType: const FullType(String),
     );
+    if (object.nonceMappingSignature != null) {
+      yield r'nonce_mapping_signature';
+      yield serializers.serialize(
+        object.nonceMappingSignature,
+        specifiedType: const FullType(String),
+      );
+    }
   }
 
   @override
@@ -92,6 +104,14 @@ class _$Hip3WithdrawalSubmissionRequestSerializer implements PrimitiveSerializer
             specifiedType: const FullType(String),
           ) as String;
           result.payloadHash = valueDes;
+          break;
+        case r'nonce_mapping_signature':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.nonceMappingSignature = valueDes;
           break;
         default:
           unhandled.add(key);

@@ -35,12 +35,12 @@ part 'position.g.dart';
 /// * [referenceCostUsd] - 十进制字符串，避免浮点误差
 /// * [unrealizedPnlReferenceUsd] - Binance 参考估值，不是测试币美元锚定或实际结算收益。
 /// * [valueUsd] - 现货为已知估值或null，合约为仓位权益；unknown 不是0。
-/// * [entryPrice] - 十进制字符串，避免浮点误差
+/// * [entryPrice] - bStocks 为当前剩余持仓的 FIFO 成本均价：cost_basis_quote / quantity，计价币种见 cost_basis_quote_asset。 不是最近一笔成交价，也不是全部历史买入的平均价；部分卖出后使用剩余批次成本。 沿用交易价格的18位小数截断精度；成本未知、零数量、越界或正成本均价小到截断为0时为null。 成本已知时不依赖当前价格，缺少估值仍可返回入场价；HIP-3 保持 venue entry price 口径。 
 /// * [markPrice] - 十进制字符串，避免浮点误差
-/// * [unrealizedPnl] - 十进制字符串，避免浮点误差
+/// * [unrealizedPnl] - bStocks 复用 Portfolio holding_return.amount_usd，等于 unrealized_pnl_reference_usd： 当前参考估值减 FIFO 剩余参考成本，配合 valuation_status=reference_only。 不是实际结算收益或测试网 TUSDT 美元锚定；成本未知、估值缺失或stale时为null，盈亏平衡为0。 HIP-3 保持交易场所的未实现盈亏口径。 
 /// * [unrealizedPnlPercent] - bStocks 在正FIFO成本已知且参考估值新鲜时返回 (参考估值 - FIFO参考成本)/FIFO参考成本×100， 18位小数half-even舍入，配合 valuation_status=reference_only；不是实际美元结算收益。 未知/零成本、估值缺失/stale或数值越界时省略字段，不返回null或伪造0；HIP3口径不变。 
 /// * [realizedPnl] - 十进制字符串，避免浮点误差
-/// * [costBasis] - 十进制字符串，避免浮点误差
+/// * [costBasis] - bStocks 为 cost_basis_quote 的同值字段，表示当前剩余持仓的 FIFO 总成本，计价币种见 cost_basis_quote_asset；成本未知为null，不依赖当前价格。HIP-3 口径不变。
 /// * [leverage] - Decimal string leverage; allowed range is 1 to 50.
 /// * [marginMode] 
 /// * [margin] - 十进制字符串，避免浮点误差
@@ -131,7 +131,7 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'value_usd')
   String? get valueUsd;
 
-  /// 十进制字符串，避免浮点误差
+  /// bStocks 为当前剩余持仓的 FIFO 成本均价：cost_basis_quote / quantity，计价币种见 cost_basis_quote_asset。 不是最近一笔成交价，也不是全部历史买入的平均价；部分卖出后使用剩余批次成本。 沿用交易价格的18位小数截断精度；成本未知、零数量、越界或正成本均价小到截断为0时为null。 成本已知时不依赖当前价格，缺少估值仍可返回入场价；HIP-3 保持 venue entry price 口径。 
   @BuiltValueField(wireName: r'entry_price')
   String? get entryPrice;
 
@@ -139,7 +139,7 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'mark_price')
   String? get markPrice;
 
-  /// 十进制字符串，避免浮点误差
+  /// bStocks 复用 Portfolio holding_return.amount_usd，等于 unrealized_pnl_reference_usd： 当前参考估值减 FIFO 剩余参考成本，配合 valuation_status=reference_only。 不是实际结算收益或测试网 TUSDT 美元锚定；成本未知、估值缺失或stale时为null，盈亏平衡为0。 HIP-3 保持交易场所的未实现盈亏口径。 
   @BuiltValueField(wireName: r'unrealized_pnl')
   String? get unrealizedPnl;
 
@@ -151,7 +151,7 @@ abstract class Position implements Built<Position, PositionBuilder> {
   @BuiltValueField(wireName: r'realized_pnl')
   String? get realizedPnl;
 
-  /// 十进制字符串，避免浮点误差
+  /// bStocks 为 cost_basis_quote 的同值字段，表示当前剩余持仓的 FIFO 总成本，计价币种见 cost_basis_quote_asset；成本未知为null，不依赖当前价格。HIP-3 口径不变。
   @BuiltValueField(wireName: r'cost_basis')
   String? get costBasis;
 

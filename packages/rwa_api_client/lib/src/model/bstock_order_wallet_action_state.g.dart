@@ -352,6 +352,8 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   final BstockOrderWalletActionStateWalletActionBlockerEnum?
       walletActionBlocker;
   @override
+  final String? slippagePercent;
+  @override
   final BstocksActionStatus? actionStatus;
   @override
   final String? submittedTransactionHash;
@@ -390,6 +392,7 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
       required this.kind,
       this.nextAction,
       this.walletActionBlocker,
+      this.slippagePercent,
       this.actionStatus,
       this.submittedTransactionHash,
       this.confirmedTransactionHash,
@@ -425,6 +428,7 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
         kind == other.kind &&
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
+        slippagePercent == other.slippagePercent &&
         actionStatus == other.actionStatus &&
         submittedTransactionHash == other.submittedTransactionHash &&
         confirmedTransactionHash == other.confirmedTransactionHash &&
@@ -451,6 +455,7 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
+    _$hash = $jc(_$hash, slippagePercent.hashCode);
     _$hash = $jc(_$hash, actionStatus.hashCode);
     _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
     _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
@@ -479,6 +484,7 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
           ..add('kind', kind)
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
+          ..add('slippagePercent', slippagePercent)
           ..add('actionStatus', actionStatus)
           ..add('submittedTransactionHash', submittedTransactionHash)
           ..add('confirmedTransactionHash', confirmedTransactionHash)
@@ -551,6 +557,11 @@ class BstockOrderWalletActionStateBuilder
           BstockOrderWalletActionStateWalletActionBlockerEnum?
               walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
+
+  String? _slippagePercent;
+  String? get slippagePercent => _$this._slippagePercent;
+  set slippagePercent(String? slippagePercent) =>
+      _$this._slippagePercent = slippagePercent;
 
   BstocksActionStatus? _actionStatus;
   BstocksActionStatus? get actionStatus => _$this._actionStatus;
@@ -628,6 +639,7 @@ class BstockOrderWalletActionStateBuilder
       _kind = $v.kind;
       _nextAction = $v.nextAction?.toBuilder();
       _walletActionBlocker = $v.walletActionBlocker;
+      _slippagePercent = $v.slippagePercent;
       _actionStatus = $v.actionStatus;
       _submittedTransactionHash = $v.submittedTransactionHash;
       _confirmedTransactionHash = $v.confirmedTransactionHash;
@@ -673,6 +685,7 @@ class BstockOrderWalletActionStateBuilder
                 kind, r'BstockOrderWalletActionState', 'kind'),
             nextAction: _nextAction?.build(),
             walletActionBlocker: walletActionBlocker,
+            slippagePercent: slippagePercent,
             actionStatus: actionStatus,
             submittedTransactionHash: submittedTransactionHash,
             confirmedTransactionHash: confirmedTransactionHash,

@@ -356,6 +356,98 @@ void main() {
     );
   });
 
+  testWidgets('HIP-3 100% slider reserves fees from directional capacity', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(orders),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('10', asset: 'USDC', unit: 'price'),
+            ),
+          ),
+        ],
+        child: _app(
+          const Hip3OrderPanel(),
+          opening: _Opening(
+            availableMargin: '100',
+            directionalAvailableMargin: '100',
+            venueMaximumQuantity: '100',
+            takerFeeRate: '0.001',
+            feeReserveMultiplier: '1',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(Slider), const Offset(1000, 0));
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      '990',
+    );
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 1);
+    expect(orders.intents.last.amount?.value, '990');
+  });
+
+  testWidgets('HIP-3 100% slider waits for price before applying capacity', (
+    tester,
+  ) async {
+    final snapshot = Completer<MarketSnapshot>();
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(orders),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) => snapshot.future,
+          ),
+        ],
+        child: _app(
+          const Hip3OrderPanel(),
+          opening: _Opening(
+            availableMargin: '100',
+            directionalAvailableMargin: '100',
+            venueMaximumQuantity: '100',
+            takerFeeRate: '0.001',
+            feeReserveMultiplier: '1',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(Slider), const Offset(1000, 0));
+    await tester.pump(const Duration(milliseconds: 301));
+
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 1);
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      isNot('1000'),
+    );
+
+    snapshot.complete(
+      MarketSnapshot(
+        price: DecimalValue('10', asset: 'USDC', unit: 'price'),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      '990',
+    );
+    expect(orders.intents.last.amount?.value, '990');
+  });
+
   testWidgets(
     'an unreachable trading context explains itself on submit and is reported',
     (tester) async {
@@ -1770,6 +1862,10 @@ final class _Opening implements Hip3OpeningRepository {
     this.maximumNotional = '1000',
     this.availableMargin = '1000',
     this.sizeDecimals = 3,
+    this.directionalAvailableMargin,
+    this.venueMaximumQuantity,
+    this.takerFeeRate,
+    this.feeReserveMultiplier,
     this.blockedContextCall,
     this.contextGate,
   });
@@ -1778,6 +1874,10 @@ final class _Opening implements Hip3OpeningRepository {
   final String maximumNotional;
   String availableMargin;
   final int sizeDecimals;
+  final String? directionalAvailableMargin;
+  final String? venueMaximumQuantity;
+  final String? takerFeeRate;
+  final String? feeReserveMultiplier;
   final int? blockedContextCall;
   final Completer<void>? contextGate;
   int contextCalls = 0;
@@ -1812,6 +1912,23 @@ final class _Opening implements Hip3OpeningRepository {
     sizeDecimals: sizeDecimals,
     validUntil: DateTime.now().toUtc().add(const Duration(minutes: 1)),
     operations: {'placeOrder', 'setLeverage'},
+    orderCapacity:
+        directionalAvailableMargin == null || venueMaximumQuantity == null
+        ? null
+        : Hip3OpeningOrderCapacity(
+            long: Hip3OpeningDirectionalCapacity(
+              availableMargin: DecimalValue(directionalAvailableMargin!),
+              venueMaximumQuantity: DecimalValue(venueMaximumQuantity!),
+            ),
+            short: Hip3OpeningDirectionalCapacity(
+              availableMargin: DecimalValue(directionalAvailableMargin!),
+              venueMaximumQuantity: DecimalValue(venueMaximumQuantity!),
+            ),
+          ),
+    takerFeeRate: takerFeeRate == null ? null : DecimalValue(takerFeeRate!),
+    feeReserveMultiplier: feeReserveMultiplier == null
+        ? null
+        : DecimalValue(feeReserveMultiplier!),
   );
   @override
   Future<Hip3OpeningContext> setLeverage(

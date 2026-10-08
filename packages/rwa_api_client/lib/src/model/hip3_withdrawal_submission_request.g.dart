@@ -12,13 +12,17 @@ class _$Hip3WithdrawalSubmissionRequest
   final String signature;
   @override
   final String payloadHash;
+  @override
+  final String? nonceMappingSignature;
 
   factory _$Hip3WithdrawalSubmissionRequest(
           [void Function(Hip3WithdrawalSubmissionRequestBuilder)? updates]) =>
       (Hip3WithdrawalSubmissionRequestBuilder()..update(updates))._build();
 
   _$Hip3WithdrawalSubmissionRequest._(
-      {required this.signature, required this.payloadHash})
+      {required this.signature,
+      required this.payloadHash,
+      this.nonceMappingSignature})
       : super._();
   @override
   Hip3WithdrawalSubmissionRequest rebuild(
@@ -34,7 +38,8 @@ class _$Hip3WithdrawalSubmissionRequest
     if (identical(other, this)) return true;
     return other is Hip3WithdrawalSubmissionRequest &&
         signature == other.signature &&
-        payloadHash == other.payloadHash;
+        payloadHash == other.payloadHash &&
+        nonceMappingSignature == other.nonceMappingSignature;
   }
 
   @override
@@ -42,6 +47,7 @@ class _$Hip3WithdrawalSubmissionRequest
     var _$hash = 0;
     _$hash = $jc(_$hash, signature.hashCode);
     _$hash = $jc(_$hash, payloadHash.hashCode);
+    _$hash = $jc(_$hash, nonceMappingSignature.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -50,7 +56,8 @@ class _$Hip3WithdrawalSubmissionRequest
   String toString() {
     return (newBuiltValueToStringHelper(r'Hip3WithdrawalSubmissionRequest')
           ..add('signature', signature)
-          ..add('payloadHash', payloadHash))
+          ..add('payloadHash', payloadHash)
+          ..add('nonceMappingSignature', nonceMappingSignature))
         .toString();
   }
 }
@@ -69,6 +76,11 @@ class Hip3WithdrawalSubmissionRequestBuilder
   String? get payloadHash => _$this._payloadHash;
   set payloadHash(String? payloadHash) => _$this._payloadHash = payloadHash;
 
+  String? _nonceMappingSignature;
+  String? get nonceMappingSignature => _$this._nonceMappingSignature;
+  set nonceMappingSignature(String? nonceMappingSignature) =>
+      _$this._nonceMappingSignature = nonceMappingSignature;
+
   Hip3WithdrawalSubmissionRequestBuilder() {
     Hip3WithdrawalSubmissionRequest._defaults(this);
   }
@@ -78,6 +90,7 @@ class Hip3WithdrawalSubmissionRequestBuilder
     if ($v != null) {
       _signature = $v.signature;
       _payloadHash = $v.payloadHash;
+      _nonceMappingSignature = $v.nonceMappingSignature;
       _$v = null;
     }
     return this;
@@ -103,6 +116,7 @@ class Hip3WithdrawalSubmissionRequestBuilder
               signature, r'Hip3WithdrawalSubmissionRequest', 'signature'),
           payloadHash: BuiltValueNullFieldError.checkNotNull(
               payloadHash, r'Hip3WithdrawalSubmissionRequest', 'payloadHash'),
+          nonceMappingSignature: nonceMappingSignature,
         );
     replace(_$result);
     return _$result;

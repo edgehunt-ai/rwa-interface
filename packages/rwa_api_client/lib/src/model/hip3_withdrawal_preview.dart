@@ -42,7 +42,7 @@ abstract class Hip3WithdrawalPreview implements Built<Hip3WithdrawalPreview, Hip
 
   @BuiltValueField(wireName: r'rail')
   Hip3WithdrawalRail get rail;
-  // enum railEnum {  bridge2,  float,  };
+  // enum railEnum {  bridge2,  float,  relay,  };
 
   @BuiltValueField(wireName: r'destination_address')
   String get destinationAddress;

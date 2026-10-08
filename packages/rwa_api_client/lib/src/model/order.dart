@@ -28,13 +28,14 @@ part 'order.g.dart';
 /// Properties:
 /// * [approvalRequired] - 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
 /// * [approvalMode] 
-/// * [approvalAmountRaw] - approve动作冻结的授权额度，原始单位字符串；与required_funding_raw交易输入预算区分。
+/// * [approvalAmountRaw] - approve动作冻结的授权额度，输入 token 最小单位字符串；与 required_funding_raw 交易输入预算区分。 slippage 模式按 BstocksApprovalMode 公式受创建时链上输入 token 余额限制，并必须匹配冻结 preview 的授权目标。 已生成 action 的幂等重放不重新计算该额度，也不会因余额变化而修改已冻结 calldata；unlimited 模式仍为 uint256.max。 
 /// * [fundingMode] 
 /// * [fundsReserved] 
 /// * [cancellationPolicy] 
 /// * [kind] 
 /// * [nextAction] - 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
 /// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
+/// * [slippagePercent] - bStocks限价action以及canonical GTC订单的执行滑点百分数字符串，范围[0,100)，不是价格或资金预算。 GTC从已确认挂单action的持久化快照恢复，平台Keeper逐次报价执行；历史/外部挂单默认\"0\"。 旧服务和市价历史响应可省略；该字段不是Router原生订单字段，链上强制的是每次call的最低输出与限价。 
 /// * [actionStatus] 
 /// * [submittedTransactionHash] 
 /// * [confirmedTransactionHash] 
@@ -89,7 +90,7 @@ abstract class Order implements Built<Order, OrderBuilder> {
   BstocksApprovalMode? get approvalMode;
   // enum approvalModeEnum {  unlimited,  slippage,  };
 
-  /// approve动作冻结的授权额度，原始单位字符串；与required_funding_raw交易输入预算区分。
+  /// approve动作冻结的授权额度，输入 token 最小单位字符串；与 required_funding_raw 交易输入预算区分。 slippage 模式按 BstocksApprovalMode 公式受创建时链上输入 token 余额限制，并必须匹配冻结 preview 的授权目标。 已生成 action 的幂等重放不重新计算该额度，也不会因余额变化而修改已冻结 calldata；unlimited 模式仍为 uint256.max。 
   @BuiltValueField(wireName: r'approval_amount_raw')
   String? get approvalAmountRaw;
 
@@ -115,6 +116,10 @@ abstract class Order implements Built<Order, OrderBuilder> {
   @BuiltValueField(wireName: r'wallet_action_blocker')
   OrderWalletActionBlockerEnum? get walletActionBlocker;
   // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  not_applicable,  };
+
+  /// bStocks限价action以及canonical GTC订单的执行滑点百分数字符串，范围[0,100)，不是价格或资金预算。 GTC从已确认挂单action的持久化快照恢复，平台Keeper逐次报价执行；历史/外部挂单默认\"0\"。 旧服务和市价历史响应可省略；该字段不是Router原生订单字段，链上强制的是每次call的最低输出与限价。 
+  @BuiltValueField(wireName: r'slippage_percent')
+  String? get slippagePercent;
 
   @BuiltValueField(wireName: r'action_status')
   BstocksActionStatus? get actionStatus;
@@ -355,6 +360,13 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
       object.walletActionBlocker,
       specifiedType: const FullType.nullable(OrderWalletActionBlockerEnum),
     );
+    if (object.slippagePercent != null) {
+      yield r'slippage_percent';
+      yield serializers.serialize(
+        object.slippagePercent,
+        specifiedType: const FullType(String),
+      );
+    }
     if (object.actionStatus != null) {
       yield r'action_status';
       yield serializers.serialize(
@@ -744,6 +756,14 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
           ) as OrderWalletActionBlockerEnum?;
           if (valueDes == null) continue;
           result.walletActionBlocker = valueDes;
+          break;
+        case r'slippage_percent':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.slippagePercent = valueDes;
           break;
         case r'action_status':
           final valueDes = serializers.deserialize(

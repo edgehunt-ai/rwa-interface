@@ -99,6 +99,8 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
   @override
   final String? maximumQuantityUnavailableReason;
   @override
+  final String? feeReserveUsdc;
+  @override
   final String estimatedFeeUsdc;
   @override
   final String? liquidationPrice;
@@ -131,6 +133,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
       required this.availableMarginUsdc,
       this.maximumQuantity,
       this.maximumQuantityUnavailableReason,
+      this.feeReserveUsdc,
       required this.estimatedFeeUsdc,
       this.liquidationPrice,
       this.liquidationPriceUnavailableReason,
@@ -168,6 +171,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
         maximumQuantity == other.maximumQuantity &&
         maximumQuantityUnavailableReason ==
             other.maximumQuantityUnavailableReason &&
+        feeReserveUsdc == other.feeReserveUsdc &&
         estimatedFeeUsdc == other.estimatedFeeUsdc &&
         liquidationPrice == other.liquidationPrice &&
         liquidationPriceUnavailableReason ==
@@ -196,6 +200,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
     _$hash = $jc(_$hash, availableMarginUsdc.hashCode);
     _$hash = $jc(_$hash, maximumQuantity.hashCode);
     _$hash = $jc(_$hash, maximumQuantityUnavailableReason.hashCode);
+    _$hash = $jc(_$hash, feeReserveUsdc.hashCode);
     _$hash = $jc(_$hash, estimatedFeeUsdc.hashCode);
     _$hash = $jc(_$hash, liquidationPrice.hashCode);
     _$hash = $jc(_$hash, liquidationPriceUnavailableReason.hashCode);
@@ -226,6 +231,7 @@ class _$Hip3PreviewExecution extends Hip3PreviewExecution {
           ..add('maximumQuantity', maximumQuantity)
           ..add('maximumQuantityUnavailableReason',
               maximumQuantityUnavailableReason)
+          ..add('feeReserveUsdc', feeReserveUsdc)
           ..add('estimatedFeeUsdc', estimatedFeeUsdc)
           ..add('liquidationPrice', liquidationPrice)
           ..add('liquidationPriceUnavailableReason',
@@ -320,6 +326,11 @@ class Hip3PreviewExecutionBuilder
       _$this._maximumQuantityUnavailableReason =
           maximumQuantityUnavailableReason;
 
+  String? _feeReserveUsdc;
+  String? get feeReserveUsdc => _$this._feeReserveUsdc;
+  set feeReserveUsdc(String? feeReserveUsdc) =>
+      _$this._feeReserveUsdc = feeReserveUsdc;
+
   String? _estimatedFeeUsdc;
   String? get estimatedFeeUsdc => _$this._estimatedFeeUsdc;
   set estimatedFeeUsdc(String? estimatedFeeUsdc) =>
@@ -375,6 +386,7 @@ class Hip3PreviewExecutionBuilder
       _availableMarginUsdc = $v.availableMarginUsdc;
       _maximumQuantity = $v.maximumQuantity;
       _maximumQuantityUnavailableReason = $v.maximumQuantityUnavailableReason;
+      _feeReserveUsdc = $v.feeReserveUsdc;
       _estimatedFeeUsdc = $v.estimatedFeeUsdc;
       _liquidationPrice = $v.liquidationPrice;
       _liquidationPriceUnavailableReason = $v.liquidationPriceUnavailableReason;
@@ -437,6 +449,7 @@ class Hip3PreviewExecutionBuilder
                 'availableMarginUsdc'),
             maximumQuantity: maximumQuantity,
             maximumQuantityUnavailableReason: maximumQuantityUnavailableReason,
+            feeReserveUsdc: feeReserveUsdc,
             estimatedFeeUsdc: BuiltValueNullFieldError.checkNotNull(
                 estimatedFeeUsdc, r'Hip3PreviewExecution', 'estimatedFeeUsdc'),
             liquidationPrice: liquidationPrice,

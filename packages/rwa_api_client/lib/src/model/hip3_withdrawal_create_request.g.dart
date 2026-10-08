@@ -15,6 +15,9 @@ const Hip3WithdrawalCreateRequestRailEnum
 const Hip3WithdrawalCreateRequestRailEnum
     _$hip3WithdrawalCreateRequestRailEnum_float =
     const Hip3WithdrawalCreateRequestRailEnum._('float');
+const Hip3WithdrawalCreateRequestRailEnum
+    _$hip3WithdrawalCreateRequestRailEnum_relay =
+    const Hip3WithdrawalCreateRequestRailEnum._('relay');
 
 Hip3WithdrawalCreateRequestRailEnum
     _$hip3WithdrawalCreateRequestRailEnumValueOf(String name) {
@@ -25,6 +28,8 @@ Hip3WithdrawalCreateRequestRailEnum
       return _$hip3WithdrawalCreateRequestRailEnum_bridge2;
     case 'float':
       return _$hip3WithdrawalCreateRequestRailEnum_float;
+    case 'relay':
+      return _$hip3WithdrawalCreateRequestRailEnum_relay;
     default:
       throw ArgumentError(name);
   }
@@ -36,6 +41,7 @@ final BuiltSet<Hip3WithdrawalCreateRequestRailEnum>
   _$hip3WithdrawalCreateRequestRailEnum_auto,
   _$hip3WithdrawalCreateRequestRailEnum_bridge2,
   _$hip3WithdrawalCreateRequestRailEnum_float,
+  _$hip3WithdrawalCreateRequestRailEnum_relay,
 ]);
 
 Serializer<Hip3WithdrawalCreateRequestRailEnum>
@@ -48,11 +54,13 @@ class _$Hip3WithdrawalCreateRequestRailEnumSerializer
     'auto': 'auto',
     'bridge2': 'bridge2',
     'float': 'float',
+    'relay': 'relay',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'auto': 'auto',
     'bridge2': 'bridge2',
     'float': 'float',
+    'relay': 'relay',
   };
 
   @override
