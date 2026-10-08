@@ -115,7 +115,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     ref.listenManual(marketSnapshotProvider(_marketProductRef), (_, _) {
       _protectionReferenceNotifier.value = _protectionReference();
       if (_percentageWaitingForPrice && _hasDirectionalCapacityForMaximum()) {
-        _percentageWaitingForPrice = !_applyMaximumPercentageAmount();
+        _percentageWaitingForPrice = !_applyPercentageAmount(_percentage);
       }
       if (mounted) setState(() {});
     });
@@ -231,6 +231,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
   void _onOrderValueChanged() {
     if (_type != TradingOrderType.limit) return;
+    _percentageWaitingForBalance = false;
+    _percentageWaitingForPrice = false;
     final price = double.tryParse(_limitPrice.text.trim());
     final value = double.tryParse(_orderValue.text.trim());
     if (price != null && price > 0 && value != null && value >= 0) {
@@ -569,11 +571,11 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
   }
 
   void _scheduleQuote() {
+    _syncPercentageFromAmount();
     _quoteDebounce?.cancel();
     final generation = ++_quoteGeneration;
     final intent = _intentFromFields();
     _protectionReferenceNotifier.value = _protectionReference();
-    _syncPercentageFromAmount();
     // Update the entered amount/unit immediately, even before a quote returns.
     setState(() {
       if (_quotePreview?.intent.fingerprint != intent?.fingerprint) {
@@ -638,12 +640,29 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     setState(() => _error = message);
   }
 
+  DecimalValue? get _minimumOrderNotional {
+    final rules = _context;
+    if (rules == null) return null;
+    if (_type == TradingOrderType.market && !_reduceOnly) {
+      final marketMinimum = _side == TradingSide.long
+          ? rules.marketOrderMinimumLong
+          : rules.marketOrderMinimumShort;
+      return marketMinimum ?? rules.minimumNotional;
+    }
+    return rules.minimumNotional;
+  }
+
   (double, double)? _amountBounds(DecimalValue? balance) {
     final rules = _context;
     if (rules == null || balance == null) return null;
-    final minimum = double.tryParse(rules.minimumNotional.value);
+    final minimum = double.tryParse(_minimumOrderNotional!.value);
+    if (minimum == null) return null;
+    if (_hasDirectionalCapacityForMaximum()) {
+      final maximum = _maximumPercentageAmount();
+      return (minimum, double.tryParse(maximum?.notional.value ?? '') ?? 0);
+    }
     final availableBalance = double.tryParse(balance.value);
-    if (minimum == null || availableBalance == null) return null;
+    if (availableBalance == null) return null;
     // HIP-3 order value is notional. The slider represents the notional
     // buying power available at the selected leverage, not the margin alone.
     final affordable = availableBalance * _leverage;
@@ -674,20 +693,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         reserveMultiplier == null) {
       return null;
     }
-    final priceText = _type == TradingOrderType.limit
-        ? _limitPrice.text.trim()
-        : ref
-                  .read(marketSnapshotProvider(_marketProductRef))
-                  .value
-                  ?.price
-                  .value ??
-              _quotePreview?.hip3Execution?.limitPrice.value;
-    if (priceText == null || priceText.isEmpty) return null;
+    final price = _percentagePrice();
+    if (price == null) return null;
     try {
       return hip3OpeningMaximum(
         availableMargin: capacity.availableMargin,
         venueMaximumQuantity: capacity.venueMaximumQuantity,
-        price: DecimalValue(priceText, asset: 'USDC', unit: 'price'),
+        price: price,
         takerFeeRate: feeRate,
         feeReserveMultiplier: reserveMultiplier,
         leverage: _leverage,
@@ -701,37 +713,71 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     }
   }
 
-  bool _applyMaximumPercentageAmount() {
+  DecimalValue? _percentagePrice() {
+    final priceText = _type == TradingOrderType.limit
+        ? _limitPrice.text.trim()
+        : ref
+                  .read(marketSnapshotProvider(_marketProductRef))
+                  .value
+                  ?.price
+                  .value ??
+              _quotePreview?.hip3Execution?.limitPrice.value;
+    if (priceText == null || priceText.isEmpty) return null;
+    try {
+      return DecimalValue(priceText, asset: 'USDC', unit: 'price');
+    } on FormatException {
+      return null;
+    }
+  }
+
+  bool _applyPercentageAmount(double percentage) {
     final maximum = _maximumPercentageAmount();
-    if (maximum == null) return false;
-    if (_type == TradingOrderType.limit) {
-      // Apply the pair atomically so the general text listeners cannot round
-      // the value back up after the size-decimal floor has been applied.
-      _amount.removeListener(_onAmountChanged);
-      _orderValue.removeListener(_onOrderValueChanged);
+    final price = _percentagePrice();
+    if (maximum == null || price == null) return false;
+    final minimum = _minimumOrderNotional!;
+    final minimumValue = double.parse(minimum.value);
+    final maximumValue = double.parse(maximum.notional.value);
+    // Keep the existing integer amount steps between the endpoints. Flooring
+    // every percentage to a quantity step can make the amount jump by several
+    // USDC when the product has a coarse size precision.
+    final notional = percentage >= 1 || maximumValue < minimumValue
+        ? maximum.notional.value
+        : _formatHip3SliderAmount(
+            minimumValue + (maximumValue - minimumValue) * percentage,
+            double.parse(_context!.availableMargin.value),
+            percentage,
+            minimumAmount: minimum.value,
+          );
+    final quantity = percentage >= 1
+        ? maximum.quantity.value
+        : _formatHip3Quantity(
+            double.parse(notional) / double.parse(price.value),
+            _context!.sizeDecimals,
+          );
+    // Apply the pair atomically so the general text listeners cannot round
+    // the quantity back up or replace a pending slider selection.
+    _amount.removeListener(_onAmountChanged);
+    _orderValue.removeListener(_onOrderValueChanged);
+    try {
+      final amount = _type == TradingOrderType.limit ? quantity : notional;
       _amount.value = TextEditingValue(
-        text: maximum.quantity.value,
-        selection: TextSelection.collapsed(
-          offset: maximum.quantity.value.length,
-        ),
+        text: amount,
+        selection: TextSelection.collapsed(offset: amount.length),
       );
-      _orderValue.value = TextEditingValue(
-        text: maximum.notional.value,
-        selection: TextSelection.collapsed(
-          offset: maximum.notional.value.length,
-        ),
-      );
+      if (_type == TradingOrderType.limit) {
+        _orderValue.value = TextEditingValue(
+          text: notional,
+          selection: TextSelection.collapsed(offset: notional.length),
+        );
+      }
+    } finally {
       _amount.addListener(_onAmountChanged);
       _orderValue.addListener(_onOrderValueChanged);
-      _scheduleQuote();
-    } else {
-      _amount.value = TextEditingValue(
-        text: maximum.notional.value,
-        selection: TextSelection.collapsed(
-          offset: maximum.notional.value.length,
-        ),
-      );
     }
+    _percentageWaitingForBalance = false;
+    _percentageWaitingForPrice = false;
+    _scheduleQuote();
+    setState(() => _percentage = percentage);
     return true;
   }
 
@@ -773,15 +819,20 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final amount = double.tryParse(notionalText);
     if (rules == null || amount == null) return null;
     if (_inputNotional && _type == TradingOrderType.market) {
-      final marketMinimum = _side == TradingSide.long
-          ? rules.marketOrderMinimumLong
-          : rules.marketOrderMinimumShort;
-      final minimum = marketMinimum ?? rules.minimumNotional;
-      final entered = DecimalValue(
-        notionalText,
-        asset: minimum.asset,
-        unit: minimum.unit,
-      );
+      final minimum = _minimumOrderNotional!;
+      final DecimalValue entered;
+      try {
+        entered = DecimalValue(
+          notionalText,
+          asset: minimum.asset,
+          unit: minimum.unit,
+        );
+      } on FormatException {
+        // Text editing may temporarily leave a trailing dot (e.g. "31.").
+        // Like intent construction, wait for a complete decimal before
+        // validating rather than throwing while the form rebuilds.
+        return null;
+      }
       if (entered.compareMagnitudeTo(minimum) < 0) {
         return AppLocalizations.of(context)
             .hip3NotionalBelowMinimum(minimum.value);
@@ -807,10 +858,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
 
     if (_percentageWaitingForBalance) {
       _percentageWaitingForBalance = false;
-      if (_percentage == 1 && _hasDirectionalCapacityForMaximum()) {
+      if (_hasDirectionalCapacityForMaximum()) {
         // Do not briefly populate the old balance-only maximum while the
         // market price needed to quantize the directional capacity is loading.
-        _percentageWaitingForPrice = !_applyMaximumPercentageAmount();
+        _percentageWaitingForPrice = !_applyPercentageAmount(_percentage);
         return;
       }
       final input = bounds.$1 + (bounds.$2 - bounds.$1) * _percentage;
@@ -821,28 +872,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           : _amount;
       controller.text = available == null
           ? input.toString()
-          : _formatHip3SliderAmount(input, available, _percentage);
+          : _formatHip3SliderAmount(
+              input,
+              available,
+              _percentage,
+              minimumAmount: _minimumOrderNotional?.value,
+            );
       return;
     }
 
+    if (_percentageWaitingForPrice) return;
     final controller = _type == TradingOrderType.limit ? _orderValue : _amount;
     final amount = double.tryParse(controller.text.trim());
-    final capacityMaximum = _maximumPercentageAmount();
-    if (capacityMaximum != null) {
-      try {
-        final entered = DecimalValue(
-          controller.text.trim(),
-          asset: 'USDC',
-          unit: 'notional',
-        );
-        if (entered.compareMagnitudeTo(capacityMaximum.notional) == 0) {
-          if (_percentage != 1 && mounted) setState(() => _percentage = 1);
-          return;
-        }
-      } on FormatException {
-        // Let the ordinary input validation report malformed amounts.
-      }
-    }
     final next = amount == null || amount <= bounds.$1 || bounds.$2 <= bounds.$1
         ? 0.0
         : ((amount - bounds.$1) / (bounds.$2 - bounds.$1)).clamp(0.0, 1.0);
@@ -1452,7 +1493,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   marginMode: _marginMode,
                   leverage: _leverage,
                   maximumLeverage: _context?.maximumLeverage,
-                  minimumAmount: _context?.minimumNotional.value,
+                  minimumAmount: _minimumOrderNotional?.value,
                   amountBounds: _amountBounds(availableBalance),
                   limitPrice: null,
                   controller: _type == TradingOrderType.limit
@@ -1515,8 +1556,8 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     // The sheet performs the update before it closes.
                   },
                   onPercentageChanged: (value) {
-                    // A percentage of spendable balance needs no quote, so the
-                    // slider works before an amount has been typed.
+                    // Use the fee-reserved directional maximum for every
+                    // percentage when the capacity contract is available.
                     final balance = availableBalance;
                     _percentageWaitingForPrice = false;
                     if (balance == null) {
@@ -1526,12 +1567,13 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       });
                       return;
                     }
-                    if (value == 1 && _hasDirectionalCapacityForMaximum()) {
+                    if (_hasDirectionalCapacityForMaximum()) {
                       // With the new capacity contract, the price is also
-                      // required to floor the quantity. Keep 100% selected
+                      // required to floor the quantity. Keep the percentage selected
                       // until the snapshot listener can apply that result.
-                      _percentageWaitingForPrice =
-                          !_applyMaximumPercentageAmount();
+                      _percentageWaitingForPrice = !_applyPercentageAmount(
+                        value,
+                      );
                       setState(() {
                         _percentage = value;
                         _percentageWaitingForBalance = false;
@@ -1550,7 +1592,12 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                           : _amount;
                       controller.text = available == null
                           ? input.toString()
-                          : _formatHip3SliderAmount(input, available, value);
+                          : _formatHip3SliderAmount(
+                              input,
+                              available,
+                              value,
+                              minimumAmount: _minimumOrderNotional?.value,
+                            );
                       _error = null;
                     });
                   },
@@ -2393,13 +2440,22 @@ class _Hip3TradingSettingsNotice extends StatelessWidget {
 String _formatHip3SliderAmount(
   double value,
   double availableBalance,
-  double percentage,
-) {
+  double percentage, {
+  String? minimumAmount,
+}) {
+  if (percentage <= 0 && minimumAmount != null) return minimumAmount;
+  final String formatted;
   if (availableBalance <= 2 || percentage >= 1) {
     final fixed = value.toStringAsFixed(8);
-    return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
+    formatted = fixed.replaceFirst(RegExp(r'\.?0+$'), '');
+  } else {
+    formatted = value.floor().toString();
   }
-  return value.floor().toString();
+  if (minimumAmount != null &&
+      double.parse(formatted) < double.parse(minimumAmount)) {
+    return minimumAmount;
+  }
+  return formatted;
 }
 
 class _Hip3ModeLeverageCard extends StatelessWidget {

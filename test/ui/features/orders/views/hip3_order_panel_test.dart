@@ -396,25 +396,157 @@ void main() {
     expect(orders.intents.last.amount?.value, '990');
   });
 
-  testWidgets('HIP-3 100% slider waits for price before applying capacity', (
+  for (final side in [TradingSide.long, TradingSide.short]) {
+    testWidgets('HIP-3 $side slider fractions use directional capacity', (
+      tester,
+    ) async {
+      final orders = _ExecutableHip3Orders();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(orders),
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async => MarketSnapshot(price: DecimalValue('10')),
+            ),
+          ],
+          child: _app(
+            Hip3OrderPanel(initialSide: side),
+            opening: _Opening(
+              availableMargin: '1000',
+              directionalAvailableMargin: '100',
+              shortAvailableMargin: '50',
+              venueMaximumQuantity: '100',
+              takerFeeRate: '0.001',
+              feeReserveMultiplier: '1',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final maximum = side == TradingSide.long ? 990 : 495;
+      for (final fraction in [0.25, 0.5, 0.75, 1.0]) {
+        tester.widget<Slider>(find.byType(Slider)).onChanged!(fraction);
+        await tester.pump(const Duration(milliseconds: 301));
+        await tester.pumpAndSettle();
+
+        final amount = DecimalValue(
+          '${(12 + (maximum - 12) * fraction).floor()}',
+        );
+        expect(
+          orders.intents.last.amount?.compareMagnitudeTo(
+            DecimalValue(amount.value, asset: 'USDC'),
+          ),
+          0,
+        );
+        expect(tester.widget<Slider>(find.byType(Slider)).value, fraction);
+      }
+
+      await tester.enterText(
+        find.byType(TextField).first,
+        '${12 + (maximum - 12) / 2}',
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 0.5);
+
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+        '12',
+      );
+    });
+  }
+
+  for (final (side, type, minimum) in [
+    (TradingSide.long, TradingOrderType.market, '17.25'),
+    (TradingSide.short, TradingOrderType.market, '23.75'),
+    (TradingSide.long, TradingOrderType.limit, '7.5'),
+    (TradingSide.short, TradingOrderType.limit, '7.5'),
+  ]) {
+    testWidgets('HIP-3 $side $type slider uses its API minimum', (
+      tester,
+    ) async {
+      final orders = _ExecutableHip3Orders();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(orders),
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async => MarketSnapshot(price: DecimalValue('10')),
+            ),
+          ],
+          child: _app(
+            Hip3OrderPanel(initialSide: side),
+            opening: _Opening(
+              minimumNotional: '7.5',
+              marketOrderMinimumLong: '17.25',
+              marketOrderMinimumShort: '23.75',
+              availableMargin: '100',
+              directionalAvailableMargin: '100',
+              venueMaximumQuantity: '100',
+              takerFeeRate: '0.001',
+              feeReserveMultiplier: '1',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      if (type == TradingOrderType.limit) {
+        await tester.tap(find.text('Limit').last);
+        await tester.pumpAndSettle();
+        Navigator.of(
+          tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+        ).pop('10');
+        await tester.pumpAndSettle();
+      }
+
+      final amount = find.byType(TextField).last;
+      expect(
+        tester.widget<TextField>(amount).decoration?.hintText,
+        'Min $minimum',
+      );
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      expect(tester.widget<TextField>(amount).controller?.text, minimum);
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 0);
+      if (type == TradingOrderType.market) {
+        expect(orders.intents.last.amount?.value, minimum);
+      } else {
+        expect(orders.intents.last.quantity?.value, '0.75');
+      }
+
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0.01);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<TextField>(amount).controller?.text,
+        '${(double.parse(minimum) + (990 - double.parse(minimum)) * 0.01).floor()}',
+      );
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 0.01);
+    });
+  }
+
+  testWidgets('HIP-3 minimum never raises an order above available capacity', (
     tester,
   ) async {
-    final snapshot = Completer<MarketSnapshot>();
     final orders = _ExecutableHip3Orders();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           ordersRepositoryProvider.overrideWithValue(orders),
           marketSnapshotProvider.overrideWith(
-            (ref, product) => snapshot.future,
+            (ref, product) async => MarketSnapshot(price: DecimalValue('10')),
           ),
         ],
         child: _app(
           const Hip3OrderPanel(),
           opening: _Opening(
+            minimumNotional: '17.25',
             availableMargin: '100',
-            directionalAvailableMargin: '100',
-            venueMaximumQuantity: '100',
+            directionalAvailableMargin: '0',
+            venueMaximumQuantity: '0',
             takerFeeRate: '0.001',
             feeReserveMultiplier: '1',
           ),
@@ -422,31 +554,247 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-
-    await tester.drag(find.byType(Slider), const Offset(1000, 0));
-    await tester.pump(const Duration(milliseconds: 301));
-
-    expect(tester.widget<Slider>(find.byType(Slider)).value, 1);
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(0);
+    await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(find.byType(TextField).first).controller?.text,
-      isNot('1000'),
+      '0',
     );
+    expect(orders.intents, isEmpty);
+    expect(
+      find.text('Order value is below the 17.25 USDC minimum.'),
+      findsOneWidget,
+    );
+  });
 
-    snapshot.complete(
-      MarketSnapshot(
-        price: DecimalValue('10', asset: 'USDC', unit: 'price'),
+  for (final type in [TradingOrderType.market, TradingOrderType.limit]) {
+    testWidgets('HIP-3 $type slider keeps integer amounts below maximum', (
+      tester,
+    ) async {
+      final orders = _ExecutableHip3Orders();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(orders),
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async =>
+                  MarketSnapshot(price: DecimalValue('7768.6')),
+            ),
+          ],
+          child: _app(
+            const Hip3OrderPanel(),
+            opening: _Opening(
+              availableMargin: '100',
+              directionalAvailableMargin: '100',
+              venueMaximumQuantity: '0.004',
+              takerFeeRate: '0.001',
+              feeReserveMultiplier: '1',
+              sizeDecimals: 3,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      if (type == TradingOrderType.limit) {
+        await tester.tap(find.text('Limit').last);
+        await tester.pumpAndSettle();
+        Navigator.of(
+          tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+        ).pop('7768.6');
+        await tester.pumpAndSettle();
+      }
+
+      expect(tester.widget<Slider>(find.byType(Slider)).divisions, 100);
+      for (final (fraction, expected, quantity) in [
+        (1.0, '31.0744', '0.004'),
+        (0.99, '30', '0.003'),
+        (0.9, '29', '0.003'),
+        (0.75, '26', '0.003'),
+      ]) {
+        tester.widget<Slider>(find.byType(Slider)).onChanged!(fraction);
+        await tester.pump(const Duration(milliseconds: 301));
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).last)
+              .controller
+              ?.text,
+          expected,
+        );
+        expect(tester.widget<Slider>(find.byType(Slider)).value, fraction);
+        if (type == TradingOrderType.market) {
+          expect(orders.intents.last.amount?.value, expected);
+        } else {
+          expect(orders.intents.last.quantity?.value, quantity);
+        }
+      }
+    });
+  }
+
+  testWidgets(
+    'HIP-3 limit slider floors quantity from the integer order amount',
+    (tester) async {
+      final orders = _ExecutableHip3Orders();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(orders),
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async => MarketSnapshot(price: DecimalValue('10')),
+            ),
+          ],
+          child: _app(
+            const Hip3OrderPanel(),
+            opening: _Opening(
+              availableMargin: '100',
+              directionalAvailableMargin: '100',
+              venueMaximumQuantity: '3.333',
+              takerFeeRate: '0.001',
+              feeReserveMultiplier: '1',
+              sizeDecimals: 2,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Limit').last);
+      await tester.pumpAndSettle();
+      Navigator.of(
+        tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+      ).pop('10');
+      await tester.pumpAndSettle();
+
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0.5);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('hip3-limit-quantity-input')),
+            )
+            .controller
+            ?.text,
+        '2.2',
+      );
+      expect(orders.intents.last.quantity?.value, '2.2');
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 0.5);
+    },
+  );
+
+  testWidgets('HIP-3 fractional slider waits for directional context', (
+    tester,
+  ) async {
+    final rules = Completer<Hip3OpeningContext>();
+    final orders = _ExecutableHip3Orders();
+    final opening = _Opening(
+      availableMargin: '1000',
+      directionalAvailableMargin: '100',
+      venueMaximumQuantity: '100',
+      takerFeeRate: '0.001',
+      feeReserveMultiplier: '1',
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(orders),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(price: DecimalValue('10')),
+          ),
+        ],
+        child: _app(
+          const Hip3OrderPanel(),
+          opening: _DelayedOpening(opening, rules.future),
+        ),
       ),
     );
-    await tester.pump();
+    // The context loading indicator keeps animating until rules arrive.
+    await tester.pump(const Duration(milliseconds: 100));
+
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(0.5);
     await tester.pump(const Duration(milliseconds: 301));
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 0.5);
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller?.text,
+      isEmpty,
+    );
+    expect(orders.intents, isEmpty);
+
+    rules.complete(opening._context('NVDA'));
     await tester.pumpAndSettle();
 
     expect(
       tester.widget<TextField>(find.byType(TextField).first).controller?.text,
-      '990',
+      '501',
     );
-    expect(orders.intents.last.amount?.value, '990');
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 0.5);
+    expect(orders.intents.last.amount?.value, '501');
   });
+
+  for (final fraction in [0.5, 1.0]) {
+    testWidgets(
+      'HIP-3 $fraction slider waits for price before applying capacity',
+      (tester) async {
+        final snapshot = Completer<MarketSnapshot>();
+        final orders = _ExecutableHip3Orders();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              ordersRepositoryProvider.overrideWithValue(orders),
+              marketSnapshotProvider.overrideWith(
+                (ref, product) => snapshot.future,
+              ),
+            ],
+            child: _app(
+              const Hip3OrderPanel(),
+              opening: _Opening(
+                availableMargin: '100',
+                directionalAvailableMargin: '100',
+                venueMaximumQuantity: '100',
+                takerFeeRate: '0.001',
+                feeReserveMultiplier: '1',
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        tester.widget<Slider>(find.byType(Slider)).onChanged!(fraction);
+        await tester.pump(const Duration(milliseconds: 301));
+
+        expect(tester.widget<Slider>(find.byType(Slider)).value, fraction);
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).first)
+              .controller
+              ?.text,
+          isEmpty,
+        );
+        expect(orders.intents, isEmpty);
+
+        snapshot.complete(
+          MarketSnapshot(
+            price: DecimalValue('10', asset: 'USDC', unit: 'price'),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 301));
+        await tester.pumpAndSettle();
+
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).first)
+              .controller
+              ?.text,
+          fraction == 1 ? '990' : '501',
+        );
+        expect(
+          orders.intents.last.amount?.value,
+          fraction == 1 ? '990' : '501',
+        );
+      },
+    );
+  }
 
   testWidgets(
     'an unreachable trading context explains itself on submit and is reported',
@@ -549,6 +897,46 @@ void main() {
           .onPressed,
       isNotNull,
     );
+  });
+
+  testWidgets('HIP-3 amount tolerates incomplete decimals while deleting', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final input = find.byType(TextField).first;
+    for (final text in [
+      '31.0744',
+      '31.074',
+      '31.07',
+      '31.0',
+      '31.',
+      '31',
+      '',
+      '.',
+      '0.',
+      '31.5',
+    ]) {
+      final previewsBefore = orders.intents.length;
+      await tester.enterText(input, text);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'Editing "$text"');
+      expect(tester.widget<TextField>(input).controller?.text, text);
+      if (text.isEmpty || text.endsWith('.')) {
+        expect(orders.intents.length, previewsBefore);
+        expect(find.byKey(const Key('hip3-form-error')), findsNothing);
+      } else {
+        expect(orders.intents.length, previewsBefore + 1);
+        expect(orders.intents.last.amount?.value, text);
+      }
+    }
   });
 
   testWidgets('an order value under the minimum is refused with a toast', (
@@ -1860,9 +2248,13 @@ final class _Opening implements Hip3OpeningRepository {
     this.maximum = 20,
     this.failing = false,
     this.maximumNotional = '1000',
+    this.minimumNotional = '12',
+    this.marketOrderMinimumLong,
+    this.marketOrderMinimumShort,
     this.availableMargin = '1000',
     this.sizeDecimals = 3,
     this.directionalAvailableMargin,
+    this.shortAvailableMargin,
     this.venueMaximumQuantity,
     this.takerFeeRate,
     this.feeReserveMultiplier,
@@ -1872,9 +2264,13 @@ final class _Opening implements Hip3OpeningRepository {
   final int maximum;
   final bool failing;
   final String maximumNotional;
+  final String minimumNotional;
+  final String? marketOrderMinimumLong;
+  final String? marketOrderMinimumShort;
   String availableMargin;
   final int sizeDecimals;
   final String? directionalAvailableMargin;
+  final String? shortAvailableMargin;
   final String? venueMaximumQuantity;
   final String? takerFeeRate;
   final String? feeReserveMultiplier;
@@ -1907,7 +2303,13 @@ final class _Opening implements Hip3OpeningRepository {
     orderTypes: {TradingOrderType.market, TradingOrderType.limit},
     timeInForce: {'gtc', 'ioc'},
     availableMargin: DecimalValue(availableMargin),
-    minimumNotional: DecimalValue('12'),
+    minimumNotional: DecimalValue(minimumNotional),
+    marketOrderMinimumLong: marketOrderMinimumLong == null
+        ? null
+        : DecimalValue(marketOrderMinimumLong!),
+    marketOrderMinimumShort: marketOrderMinimumShort == null
+        ? null
+        : DecimalValue(marketOrderMinimumShort!),
     maximumNotional: DecimalValue(maximumNotional),
     sizeDecimals: sizeDecimals,
     validUntil: DateTime.now().toUtc().add(const Duration(minutes: 1)),
@@ -1921,7 +2323,9 @@ final class _Opening implements Hip3OpeningRepository {
               venueMaximumQuantity: DecimalValue(venueMaximumQuantity!),
             ),
             short: Hip3OpeningDirectionalCapacity(
-              availableMargin: DecimalValue(directionalAvailableMargin!),
+              availableMargin: DecimalValue(
+                shortAvailableMargin ?? directionalAvailableMargin!,
+              ),
               venueMaximumQuantity: DecimalValue(venueMaximumQuantity!),
             ),
           ),
