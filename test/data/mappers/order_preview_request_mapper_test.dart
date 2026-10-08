@@ -74,15 +74,13 @@ void main() {
     // The provider rejects a non-null slippage tolerance on a GTC limit order.
     expect(previewWire(bstockIntent())['slippage_percent'], '0.12');
     expect(
-      previewWire(bstockIntent(type: TradingOrderType.limit)).containsKey(
-        'slippage_percent',
-      ),
+      previewWire(bstockIntent(type: TradingOrderType.limit))
+          .containsKey('slippage_percent'),
       isFalse,
     );
     expect(
-      previewWire(perpIntent(type: TradingOrderType.limit)).containsKey(
-        'slippage_percent',
-      ),
+      previewWire(perpIntent(type: TradingOrderType.limit))
+          .containsKey('slippage_percent'),
       isFalse,
     );
   });
