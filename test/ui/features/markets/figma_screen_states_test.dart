@@ -24,6 +24,22 @@ import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets('market asset mark prefers a remote logo', (tester) async {
+    const logoUrl =
+        'data:image/png;base64,'
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk'
+        'YAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+    await tester.pumpWidget(
+      buildTestApp(const MarketAssetMark(symbol: 'NVDA', logoUrl: logoUrl)),
+    );
+
+    final image = tester.widget<Image>(
+      find.byKey(const ValueKey('market-network-logo-$logoUrl')),
+    );
+    expect(image.image, isA<NetworkImage>());
+    expect((image.image as NetworkImage).url, logoUrl);
+  });
+
   testWidgets('market ranking tabs remain usable at 200% text scale', (
     tester,
   ) async {
@@ -272,8 +288,7 @@ void main() {
 
     Finder venue(String asset) => find.byWidgetPredicate(
       (widget) =>
-          widget is SvgPicture &&
-          widget.bytesLoader.toString().contains(asset),
+          widget is SvgPicture && widget.bytesLoader.toString().contains(asset),
     );
 
     // NVDA trades as a bStock and a HIP-3 perp, TSLA only as a HIP-3 perp.

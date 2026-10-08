@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
 import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 
 enum _ProductFilterChoice { all, bstock, perp }
 
@@ -210,7 +212,7 @@ class MarketProductFilter extends StatelessWidget {
   }
 }
 
-class MarketProductRow extends StatelessWidget {
+class MarketProductRow extends ConsumerWidget {
   const MarketProductRow({
     super.key,
     required this.product,
@@ -223,7 +225,7 @@ class MarketProductRow extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final l10n = AppLocalizations.of(context);
@@ -233,7 +235,10 @@ class MarketProductRow extends StatelessWidget {
       height: dense ? 70 : 72,
       child: Row(
         children: [
-          MarketAssetMark(symbol: product.symbol),
+          MarketAssetMark(
+            symbol: product.symbol,
+            logoUrl: ref.watch(marketStockLogoUrlProvider(product.symbol)),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -317,11 +322,13 @@ class MarketAssetMark extends StatelessWidget {
   const MarketAssetMark({
     super.key,
     required this.symbol,
+    this.logoUrl,
     this.size = 40,
     this.borderRadius,
   });
 
   final String symbol;
+  final String? logoUrl;
   final double size;
   final double? borderRadius;
 
@@ -341,6 +348,10 @@ class MarketAssetMark extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final asset = _assets[symbol];
+    final remoteUrl = logoUrl?.trim();
+    final fallback = asset == null
+        ? Text(symbol.characters.first)
+        : SvgPicture.asset(asset, width: 24, height: 24);
     return Container(
       width: size,
       height: size,
@@ -353,9 +364,46 @@ class MarketAssetMark extends StatelessWidget {
             : BorderRadius.circular(borderRadius!),
         border: Border.all(color: colors.border),
       ),
-      child: asset == null
-          ? Text(symbol.characters.first)
-          : SvgPicture.asset(asset, width: 24, height: 24),
+      child: remoteUrl == null || remoteUrl.isEmpty
+          ? fallback
+          : _MarketNetworkLogo(
+              url: remoteUrl,
+              size: size * 0.6,
+              fallback: fallback,
+            ),
+    );
+  }
+}
+
+class _MarketNetworkLogo extends StatelessWidget {
+  const _MarketNetworkLogo({
+    required this.url,
+    required this.size,
+    required this.fallback,
+  });
+
+  final String url;
+  final double size;
+  final Widget fallback;
+
+  @override
+  Widget build(BuildContext context) {
+    if (Uri.tryParse(url)?.path.toLowerCase().endsWith('.svg') ?? false) {
+      return SvgPicture.network(
+        url,
+        width: size,
+        height: size,
+        placeholderBuilder: (_) => fallback,
+        errorBuilder: (_, _, _) => fallback,
+      );
+    }
+    return Image.network(
+      url,
+      key: ValueKey('market-network-logo-$url'),
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (_, _, _) => fallback,
     );
   }
 }

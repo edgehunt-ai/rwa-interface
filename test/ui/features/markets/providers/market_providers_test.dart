@@ -5,6 +5,7 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/market_snapshot.dart';
+import 'package:rwa_interface/domain/models/stock.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/data/services/market_search_history_service.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
@@ -114,6 +115,21 @@ void main() {
     ]);
   });
 
+  test('resolves a stock logo for its product symbols', () async {
+    final container = ProviderContainer(
+      overrides: [
+        marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(marketStocksProvider.future);
+    expect(
+      container.read(marketStockLogoUrlProvider('NVDAB')),
+      'https://cdn.example.com/nvda.png',
+    );
+  });
+
   test('keeps chart requests isolated by selected range', () async {
     final repository = _MarketsRepository();
     final container = ProviderContainer(
@@ -161,6 +177,21 @@ final class _MarketSearchHistoryService implements MarketSearchHistoryService {
 final class _MarketsRepository implements MarketsRepository {
   final requestedRanges = <CandleChartRange>[];
   final requests = <MarketQuery>[];
+
+  @override
+  Future<DomainPage<Stock>> listStocks() async => const DomainPage(
+    items: [
+      Stock(
+        symbol: 'NVDA',
+        name: 'NVIDIA',
+        referencePrice: '120',
+        logoUrl: 'https://cdn.example.com/nvda.png',
+        products: [
+          MarketProductRef(symbol: 'NVDAB', kind: MarketProductKind.bstock),
+        ],
+      ),
+    ],
+  );
 
   @override
   Future<DomainPage<MarketProduct>> listProducts({

@@ -38,6 +38,7 @@ void main() {
     final page = await repository.listStocks();
     expect(page.nextCursor, 'next-page');
     expect(page.items.single.referencePrice, financial);
+    expect(page.items.single.logoUrl, 'https://cdn.example.com/nvda.png');
     expect(page.items.single.products, [
       const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.bstock),
       const MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.perp),
@@ -178,6 +179,7 @@ final class _Markets implements MarketsService {
               (stock) => stock
                 ..symbol = 'NVDA'
                 ..name = 'NVIDIA'
+                ..logoUrl = 'https://cdn.example.com/nvda.png'
                 ..referencePrice = financial,
             ),
         ),

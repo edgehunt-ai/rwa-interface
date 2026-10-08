@@ -25,6 +25,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
               symbol: group.stock.symbol,
               name: group.stock.name,
               referencePrice: group.stock.referencePrice,
+              logoUrl: group.stock.logoUrl,
               products: group.products
                   .map(
                     (product) => MarketProductRef(

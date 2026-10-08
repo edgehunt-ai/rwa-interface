@@ -503,7 +503,11 @@ class _StockBrowseRow extends StatelessWidget {
           height: 68,
           child: Row(
             children: [
-              MarketAssetMark(symbol: stock.symbol, borderRadius: 12),
+              MarketAssetMark(
+                symbol: stock.symbol,
+                logoUrl: stock.logoUrl,
+                borderRadius: 12,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

@@ -118,6 +118,20 @@ final marketStocksProvider = FutureProvider.autoDispose<DomainPage<Stock>>((
   return ref.watch(marketsRepositoryProvider).listStocks();
 });
 
+final marketStockLogoUrlProvider = Provider.autoDispose.family<String?, String>(
+  (ref, symbol) {
+    final stocks = ref.watch(marketStocksProvider).asData?.value.items;
+    if (stocks == null) return null;
+    for (final stock in stocks) {
+      if (stock.symbol == symbol ||
+          stock.products.any((product) => product.symbol == symbol)) {
+        return stock.logoUrl;
+      }
+    }
+    return null;
+  },
+);
+
 final marketProductProvider = FutureProvider.autoDispose
     .family<MarketProduct, MarketProductRef>((ref, product) {
       return ref.watch(marketsRepositoryProvider).getProduct(product);
