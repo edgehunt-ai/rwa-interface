@@ -881,7 +881,7 @@ final class AppReviewFundingRepository implements FundingRepository {
         tokenContract: '0x0000000000000000000000000000000000000000',
         tokenDecimals: 6,
         address: '0x0000000000000000000000000000000000000001',
-        qrPayload: 'app-review://deposit/arbitrum/usdc',
+        qrPayload: '0x0000000000000000000000000000000000000001',
         minimumAmount: _token('1.00', 'USDC'),
         confirmationsRequired: 1,
         estimatedArrivalSeconds: 5,
