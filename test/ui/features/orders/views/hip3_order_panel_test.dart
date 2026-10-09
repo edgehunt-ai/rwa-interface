@@ -1828,6 +1828,16 @@ void main() {
       await tester.tap(find.byKey(const Key('hip3-margin-mode-toggle')));
       await tester.pumpAndSettle();
       expect(find.text('Margin mode'), findsOneWidget);
+      final crossMarginIcon = find.byKey(const Key('hip3-cross-margin-icon'));
+      expect(crossMarginIcon, findsOneWidget);
+      expect(tester.getSize(crossMarginIcon), const Size.square(20));
+      final marginModeSheet = find.byType(Hip3MarginModeSheet);
+      for (final title in ['Cross', 'Isolated']) {
+        final text = tester.widget<Text>(
+          find.descendant(of: marginModeSheet, matching: find.text(title)),
+        );
+        expect(text.style?.fontWeight, FontWeight.w600);
+      }
       await tester.tap(find.text('Isolated'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm and sign'));

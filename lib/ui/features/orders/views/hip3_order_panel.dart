@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
@@ -2802,7 +2803,10 @@ class _Hip3MarginModeSheetState extends State<Hip3MarginModeSheet> {
                 ),
                 title: l10n.cross,
                 description: l10n.crossMarginDescription,
-                icon: Icons.account_tree_outlined,
+                icon: SvgPicture.asset(
+                  'assets/figma/trade/margin_mode_cross.svg',
+                  key: const Key('hip3-cross-margin-icon'),
+                ),
                 onTap: () => setState(() => _mode = TradingMarginMode.cross),
               ),
               const SizedBox(height: 12),
@@ -2814,7 +2818,7 @@ class _Hip3MarginModeSheetState extends State<Hip3MarginModeSheet> {
                 ),
                 title: l10n.isolated,
                 description: l10n.isolatedMarginDescription,
-                icon: Icons.view_agenda_outlined,
+                icon: const Icon(Icons.view_agenda_outlined),
                 onTap: () => setState(() => _mode = TradingMarginMode.isolated),
               ),
               const SizedBox(height: 20),
@@ -2857,7 +2861,7 @@ class _MarginModeOption extends StatelessWidget {
   final bool enabled;
   final String title;
   final String description;
-  final IconData icon;
+  final Widget icon;
   final VoidCallback onTap;
 
   @override
@@ -2887,14 +2891,18 @@ class _MarginModeOption extends StatelessWidget {
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: colors.primaryText),
+                child: icon,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: Theme.of(context).textTheme.bodyLarge),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
                     Text(
                       description,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
