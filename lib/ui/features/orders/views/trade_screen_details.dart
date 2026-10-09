@@ -856,7 +856,7 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
           _Hip3MetricRow(
             metrics: [
               _Hip3Metric(
-                l10n.cumulativeFunding,
+                l10n.activityFunding,
                 _formatSignedUsd(position.fundingPaid),
                 valueColor: _valueColor(
                   value: position.fundingPaid,
