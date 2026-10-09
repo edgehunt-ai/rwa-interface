@@ -119,7 +119,8 @@ class _Details extends ConsumerWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        // Open and Position cards already supply their own 8px top spacing.
+        if (activeTab == 'Details') const SizedBox(height: 8),
         if (activeTab == 'Open' && kind == MarketProductKind.perp)
           Hip3OpenOrdersPanel(
             key: ValueKey('hip3-open-$symbol'),

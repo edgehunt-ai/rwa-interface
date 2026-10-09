@@ -2126,11 +2126,16 @@ class _Hip3RiskSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final impacts = execution?.crossLiquidationImpacts ?? const [];
+    final liquidationPrice = execution?.liquidationPrice;
     return Column(
       children: [
         _Hip3RiskRow(
           AppLocalizations.of(context).liquidationPrice,
-          loading ? null : execution?.liquidationPrice?.value ?? '-',
+          loading
+              ? null
+              : liquidationPrice == null
+              ? '-'
+              : '${liquidationPrice.value} ${liquidationPrice.asset ?? settlementAsset}',
           key: const Key('hip3-liquidation-price-row'),
           loading: loading,
         ),

@@ -1524,7 +1524,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, '100');
     await tester.pump(const Duration(milliseconds: 301));
     await tester.pumpAndSettle();
-    expect(find.text('90'), findsOneWidget);
+    expect(find.text('90 USDC'), findsOneWidget);
     expect(find.text('Maximum quantity'), findsNothing);
 
     await tester.tap(find.text('Short').first);
@@ -1752,6 +1752,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('USDT'), findsOneWidget);
+    expect(find.text('90 USDT'), findsOneWidget);
   });
 
   testWidgets('HIP-3 amount input refreshes preview risk details', (
