@@ -56,6 +56,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.byKey(const Key('home-wordmark')), findsOneWidget);
+      expect(find.text('Logo'), findsNothing);
       final illustration = find.image(
         const AssetImage('assets/figma/home_markets/login_prompt.webp'),
       );

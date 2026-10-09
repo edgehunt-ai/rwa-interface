@@ -159,21 +159,15 @@ class _UtilityBar extends StatelessWidget {
                 ),
               ),
             ),
-          Container(
+          SizedBox(
             width: 100,
             height: 32,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: colors.subtleSurface,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(
-              'Logo',
-              style: TextStyle(
-                color: colors.tertiaryText,
-                fontSize: 13,
-                height: 18 / 13,
-                fontWeight: FontWeight.w500,
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/figma/home_markets/nobell-wordmark.svg',
+                key: const Key('home-wordmark'),
+                width: 100,
+                height: 26,
               ),
             ),
           ),
