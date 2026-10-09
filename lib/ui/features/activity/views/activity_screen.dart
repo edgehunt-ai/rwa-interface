@@ -1022,6 +1022,12 @@ class _ActivityDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final fields = [...record.fields];
+    if (record.category == ActivityCategory.orders) {
+      // The order-type badge already conveys buy/sell direction.
+      fields.removeWhere(
+        (field) => field.label.trim().toLowerCase() == 'side',
+      );
+    }
     if (record.txHash != null && !_hasField(fields, 'tx hash')) {
       fields.insert(0, ActivityField(label: 'Tx Hash', value: record.txHash!));
     }
@@ -1173,14 +1179,46 @@ String _activityTypeLabel(String type, AppLocalizations l10n) => switch (type) {
 };
 
 String _orderTypeLabel(ActivityRecord record, AppLocalizations l10n) {
-  final value = record.type.toLowerCase();
-  if (value == 'tpsl' || value == 'take_profit') return l10n.takeProfit;
-  if (value == 'close' || value == 'stop_loss') return l10n.stopLoss;
+  switch (record.businessType) {
+    case ActivityBusinessType.takeProfit:
+      return l10n.takeProfit;
+    case ActivityBusinessType.stopLoss:
+      return l10n.stopLoss;
+    case ActivityBusinessType.closing:
+      return l10n.close;
+    case ActivityBusinessType.opening:
+      break;
+    case ActivityBusinessType.unknown || null:
+      final value = record.type.toLowerCase();
+      if (value == 'stop_loss') return l10n.stopLoss;
+      if (value == 'take_profit') return l10n.takeProfit;
+      if (value == 'close') return l10n.close;
+      if (value == 'tpsl') {
+        final title = record.title.toLowerCase();
+        return title.contains('stop') ? l10n.stopLoss : l10n.takeProfit;
+      }
+  }
+  final side = _orderSideLabel(record, l10n);
+  if (side != null) return '$side / ${l10n.limitPrice}';
   final title = record.title.toLowerCase();
   if (title.contains('sell') || title.contains('short')) {
     return '${l10n.sell} / ${l10n.limitPrice}';
   }
   return '${l10n.buy} / ${l10n.limitPrice}';
+}
+
+String? _orderSideLabel(ActivityRecord record, AppLocalizations l10n) {
+  for (final field in record.fields) {
+    if (field.label.trim().toLowerCase() != 'side') continue;
+    return switch (field.value.trim().toLowerCase()) {
+      'buy' => l10n.buy,
+      'sell' => l10n.sell,
+      'long' => l10n.long,
+      'short' => l10n.short,
+      _ => null,
+    };
+  }
+  return null;
 }
 
 String _orderTitle(ActivityRecord record) {
