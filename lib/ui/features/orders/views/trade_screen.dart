@@ -28,6 +28,7 @@ import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
 import 'package:rwa_interface/ui/core/markets/market_session_presentation.dart';
+import 'package:rwa_interface/ui/core/markets/market_countdown_dot.dart';
 import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
@@ -379,8 +380,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       loading: snapshotState.isLoading,
                       isFavorite: isFavorite,
                       favoriteLoading: _favoriteBusy,
-                      onMarketHours: () =>
-                          setState(() => marketHoursOpen = true),
                       onFavoriteToggle: () =>
                           _toggleFavorite(productRef, isFavorite),
                     ),
@@ -783,7 +782,6 @@ class _ProductHeader extends StatelessWidget {
     required this.loading,
     required this.isFavorite,
     required this.favoriteLoading,
-    required this.onMarketHours,
     required this.onFavoriteToggle,
   });
   final String symbol;
@@ -796,7 +794,6 @@ class _ProductHeader extends StatelessWidget {
   final bool loading;
   final bool isFavorite;
   final bool favoriteLoading;
-  final VoidCallback onMarketHours;
   final VoidCallback onFavoriteToggle;
 
   @override
@@ -838,35 +835,6 @@ class _ProductHeader extends StatelessWidget {
                       ),
                     ),
                     const Icon(Icons.arrow_drop_down, size: 20),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              key: const Key('trade-market-status-header'),
-              onTap: onMarketHours,
-              child: Container(
-                height: 28,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .extension<AppRwaColors>()!
-                      .subtleSurface,
-                  border: Border.all(
-                    color: Theme.of(context).extension<AppRwaColors>()!.border,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.storefront,
-                      size: 15,
-                      color: Color(0xFFFF9654),
-                    ),
-                    const SizedBox(width: 4),
-                    Text('24/7', style: const TextStyle(fontSize: 13)),
                   ],
                 ),
               ),

@@ -114,7 +114,63 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('US market opens in'), findsNothing);
+    expect(find.byKey(const Key('market-countdown-dot')), findsNothing);
     await _dismiss(tester);
+  });
+
+  testWidgets('countdown dot breathes its outline from 0 to 10 percent', (
+    tester,
+  ) async {
+    final now = DateTime.now();
+    await _pumpSheet(
+      tester,
+      MarketHours(
+        timezone: 'America/New_York',
+        current: MarketSessionKind.overnight,
+        nextTransitionAt: now.add(const Duration(hours: 4)),
+        segments: [
+          MarketSessionSegment(
+            kind: MarketSessionKind.overnight,
+            start: now.subtract(const Duration(hours: 1)),
+            end: now.add(const Duration(hours: 4)),
+          ),
+        ],
+      ),
+    );
+    // Establish the repeating animation's first frame.
+    await tester.pump();
+    final dot = find.byKey(const Key('market-countdown-dot'));
+    BoxDecoration decoration() =>
+        tester.widget<Container>(dot).decoration! as BoxDecoration;
+    double alpha() => decoration().boxShadow!.single.color.a;
+    final solidColor = decoration().color;
+    final sessionBefore = tester.widget<Text>(find.text('Overnight'));
+    final countdownBefore = tester.widget<Text>(
+      find.textContaining('US market opens in'),
+    );
+
+    expect(alpha(), closeTo(0, 0.001));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(alpha(), inExclusiveRange(0, 0.1));
+    expect(decoration().color, solidColor);
+    expect(tester.widget<Text>(find.text('Overnight')), same(sessionBefore));
+    expect(
+      tester.widget<Text>(find.textContaining('US market opens in')),
+      same(countdownBefore),
+    );
+
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(alpha(), closeTo(0.1, 0.001));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(alpha(), inExclusiveRange(0, 0.1));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(alpha(), closeTo(0, 0.001));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(alpha(), inExclusiveRange(0, 0.1));
+    expect(decoration().color, solidColor);
+
+    await _dismiss(tester);
+    expect(tester.binding.transientCallbackCount, 0);
   });
 
   testWidgets(

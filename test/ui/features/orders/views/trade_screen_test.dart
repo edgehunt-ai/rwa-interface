@@ -180,7 +180,14 @@ void main() {
     await tester.tap(find.byTooltip('US stock reference price'));
     await tester.pump();
 
-    await tester.tap(find.byKey(const Key('trade-market-status-header')));
+    expect(find.text('24/7'), findsNothing);
+    expect(find.byKey(const Key('trade-market-status-header')), findsNothing);
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('trade-market-status-navigation')),
+        matching: find.text('Regular Market 09:30'),
+      ),
+    );
     await tester.pumpAndSettle();
     expectNodeVisible(
       nodeId: '513:17402',
@@ -201,7 +208,7 @@ void main() {
       find.byKey(const ValueKey('market-status-icon-regular')),
       findsOneWidget,
     );
-    expect(find.text('24/7'), findsOneWidget);
+    expect(find.text('24/7'), findsNothing);
     expect(find.text(_localSchedule(sessionStart, sessionEnd)), findsOneWidget);
 
     await tester.tap(find.byTooltip('Cancel'));
@@ -656,7 +663,7 @@ void main() {
     await tester.tap(find.text('HIP-3 Perp'));
     await tester.pumpAndSettle();
 
-    expect(find.text('24/7'), findsOneWidget);
+    expect(find.text('24/7'), findsNothing);
     expect(find.text('Perpetual'), findsNothing);
     expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
     expect(find.text('Price Exposure Only'), findsOneWidget);

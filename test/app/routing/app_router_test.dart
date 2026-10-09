@@ -60,7 +60,7 @@ void main() {
 
     expect(find.byType(TradeScreen), findsOneWidget);
     expect(find.text('TSLA'), findsWidgets);
-    expect(find.text('24/7'), findsOneWidget);
+    expect(find.text('24/7'), findsNothing);
   });
 
   testWidgets('trade deep link accepts an explicit perp kind', (tester) async {

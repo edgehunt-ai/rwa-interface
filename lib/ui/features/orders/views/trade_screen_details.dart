@@ -1595,17 +1595,7 @@ class _SessionCountdownState extends State<_SessionCountdown> {
           ),
         ),
         const SizedBox(width: 8),
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: colors.primaryAction,
-            boxShadow: const [
-              BoxShadow(color: Color(0x1A000000), spreadRadius: 3),
-            ],
-          ),
-        ),
+        const MarketCountdownDot(),
       ],
     );
   }
