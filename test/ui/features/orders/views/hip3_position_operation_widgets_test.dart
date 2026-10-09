@@ -25,6 +25,7 @@ import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.da
 import 'package:rwa_interface/ui/features/orders/views/hip3_position_settings_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
+import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -133,7 +134,7 @@ void main() {
     expect(find.text('Take Profit & stop loss'), findsOneWidget);
     expect(
       find.textContaining('Fixed quantity will not adjust automatically'),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.text('Order TP/SL'), findsNothing);
     final input = tester.widget<TextField>(
@@ -142,11 +143,9 @@ void main() {
     expect(input.controller!.text, '1');
     expect(
       tester
-          .widget<DropdownButton<bool>>(
-            find.byKey(const Key('protection-size-mode')),
-          )
+          .widget<Slider>(find.byKey(const Key('protection-percentage-slider')))
           .value,
-      isTrue,
+      100,
     );
     await tester.ensureVisible(
       find.widgetWithText(FilledButton, 'Sign and confirm'),
@@ -461,6 +460,519 @@ void main() {
     });
   }
 
+  for (final price in ['', '0', '0.00']) {
+    for (final scope in ProtectionClearScope.values) {
+      testWidgets('unset trigger "$price" cancels existing ${scope.name}', (
+        tester,
+      ) async {
+        final repo = _Positions();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+            child: buildTestApp(PositionTpSlSheet(position: _position())),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (scope != ProtectionClearScope.stopLoss) {
+          await tester.enterText(
+            find.byKey(const Key('position-protection-take-profit')),
+            price,
+          );
+        }
+        if (scope != ProtectionClearScope.takeProfit) {
+          await tester.enterText(
+            find.byKey(const Key('position-protection-stop-loss')),
+            price,
+          );
+        }
+        await tester.ensureVisible(
+          find.widgetWithText(FilledButton, 'Sign and confirm'),
+        );
+        await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+        await tester.pumpAndSettle();
+
+        expect(repo.protectionCalls, 1);
+        expect(repo.clearScope, scope);
+        expect(
+          repo.takeProfit,
+          scope == ProtectionClearScope.stopLoss ? '110' : null,
+        );
+        expect(
+          repo.stopLoss,
+          scope == ProtectionClearScope.takeProfit ? '90' : null,
+        );
+        expect(find.byType(TpSlInlineError), findsNothing);
+      });
+    }
+  }
+
+  for (final take in [false, true]) {
+    testWidgets('new protection permits setting only ${take ? 'TP' : 'SL'}', (
+      tester,
+    ) async {
+      final repo = _Positions();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(
+            PositionTpSlSheet(position: _position(withProtection: false)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        take ? '110' : '0',
+      );
+      await tester.enterText(
+        find.byKey(const Key('position-protection-stop-loss')),
+        take ? '0' : '90',
+      );
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+
+      expect(repo.protectionCalls, 1);
+      expect(repo.clearScope, isNull);
+      expect(repo.takeProfit, take ? '110' : null);
+      expect(repo.stopLoss, take ? null : '90');
+      expect(find.byType(TpSlInlineError), findsNothing);
+    });
+  }
+
+  for (final price in ['', '0']) {
+    testWidgets('both new triggers "$price" submit no protection action', (
+      tester,
+    ) async {
+      final repo = _Positions();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(
+            PositionTpSlSheet(position: _position(withProtection: false)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        price,
+      );
+      await tester.enterText(
+        find.byKey(const Key('position-protection-stop-loss')),
+        price,
+      );
+      tester
+          .widget<Slider>(find.byKey(const Key('protection-percentage-slider')))
+          .onChanged!(0);
+      await tester.pump();
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+
+      expect(repo.protectionCalls, 0);
+      expect(find.byType(TpSlInlineError), findsNothing);
+    });
+  }
+
+  testWidgets('zero trigger also omits its existing limit price', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    final position = _position(protectionIds: ['tp-1']);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          positionsRepositoryProvider.overrideWithValue(repo),
+          positionProtectionOrdersProvider(position).overrideWith(
+            (_) async => [
+              _order('tp-1', conditional: true, executionType: 'limit'),
+            ],
+          ),
+        ],
+        child: buildTestApp(PositionTpSlSheet(position: position)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('position-protection-take-profit')),
+      '0',
+    );
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Sign and confirm'),
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+    await tester.pumpAndSettle();
+
+    expect(repo.protectionCalls, 1);
+    expect(repo.clearScope, ProtectionClearScope.takeProfit);
+    expect(repo.takeProfit, isNull);
+    expect(repo.takeLimit, isNull);
+    expect(repo.stopLoss, isNull);
+    expect(repo.quantity, isNull);
+    expect(find.byType(TpSlInlineError), findsNothing);
+  });
+
+  for (final short in [false, true]) {
+    for (final take in [false, true]) {
+      for (final equal in [false, true]) {
+        testWidgets(
+          'direction error identifies leg, short=$short take=$take equal=$equal',
+          (tester) async {
+            final repo = _Positions();
+            final mustBeAbove = !short == take;
+            final price = equal
+                ? '100'
+                : mustBeAbove
+                ? '99.999999999999999999'
+                : '100.000000000000000001';
+            await tester.pumpWidget(
+              ProviderScope(
+                overrides: [
+                  positionsRepositoryProvider.overrideWithValue(repo),
+                ],
+                child: buildTestApp(
+                  PositionTpSlSheet(
+                    position: _position(short: short, withProtection: false),
+                  ),
+                  locale: const Locale('zh'),
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+            await tester.enterText(
+              find.byKey(
+                Key(
+                  take
+                      ? 'position-protection-take-profit'
+                      : 'position-protection-stop-loss',
+                ),
+              ),
+              price,
+            );
+            await tester.ensureVisible(
+              find.widgetWithText(FilledButton, '签名并确认'),
+            );
+            await tester.tap(find.widgetWithText(FilledButton, '签名并确认'));
+            await tester.pumpAndSettle();
+
+            expect(repo.protectionCalls, 0);
+            expect(
+              find.text(
+                '${short ? '空仓' : '多仓'}${take ? '止盈' : '止损'}价格必须${mustBeAbove ? '高于' : '低于'}当前标记价格（100）。',
+              ),
+              findsOneWidget,
+            );
+            expect(find.byType(TpSlInlineError), findsOneWidget);
+            expect(
+              find.text('Trigger price conflicts with mark and position side'),
+              findsNothing,
+            );
+          },
+        );
+      }
+    }
+  }
+
+  testWidgets(
+    'profitable stop validates against mark rather than entry price',
+    (tester) async {
+      final repo = _Positions();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(
+            PositionTpSlSheet(
+              position: _position(
+                withProtection: false,
+                mark: '120',
+                entry: '100',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('position-protection-stop-loss')),
+        '110',
+      );
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+
+      expect(repo.protectionCalls, 1);
+      expect(repo.stopLoss, '110');
+      expect(find.byType(TpSlInlineError), findsNothing);
+    },
+  );
+
+  testWidgets('direction failure after refresh preserves the actual reason', (
+    tester,
+  ) async {
+    final repo = _Positions()
+      ..protectionError = ArgumentError(
+        'Trigger price conflicts with mark and position side',
+      );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(
+          PositionTpSlSheet(position: _position()),
+          locale: const Locale('zh'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.widgetWithText(FilledButton, '签名并确认'));
+    await tester.tap(find.widgetWithText(FilledButton, '签名并确认'));
+    await tester.pumpAndSettle();
+
+    expect(repo.protectionCalls, 1);
+    expect(find.text('无法保存止盈/止损。请检查价格后重试。'), findsNothing);
+    expect(
+      find.text('Trigger price conflicts with mark and position side'),
+      findsOneWidget,
+    );
+  });
+
+  for (final price in ['abc', '-1', '1e2']) {
+    testWidgets('invalid protection price "$price" stays an input error', (
+      tester,
+    ) async {
+      final repo = _Positions();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(
+            PositionTpSlSheet(position: _position()),
+            locale: const Locale('zh'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('position-protection-take-profit')),
+        price,
+      );
+      await tester.ensureVisible(find.widgetWithText(FilledButton, '签名并确认'));
+      await tester.tap(find.widgetWithText(FilledButton, '签名并确认'));
+      await tester.pumpAndSettle();
+
+      expect(repo.protectionCalls, 0);
+      expect(find.text('止盈: 请输入有效的正数价格。'), findsOneWidget);
+      expect(find.text('无法完成保护更新，请刷新后重试。'), findsNothing);
+      final notice = find.byKey(const Key('tpsl-inline-error'));
+      final container = tester.widget<Container>(notice);
+      expect(
+        (container.decoration! as BoxDecoration).color,
+        const Color(0xFFFFEEF0),
+      );
+      final text = tester.widget<Text>(
+        find.descendant(of: notice, matching: find.byType(Text)),
+      );
+      final semantic = Theme.of(tester.element(notice))
+          .extension<AppSemanticColors>()!;
+      expect(text.style!.color, semantic.loss);
+    });
+  }
+
+  for (final quantity in ['', 'abc', '0', '2']) {
+    testWidgets('invalid fixed protection quantity "$quantity" blocks submit', (
+      tester,
+    ) async {
+      final repo = _Positions();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(PositionTpSlSheet(position: _position())),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('protection-quantity')));
+      if (quantity.isEmpty) {
+        await tester.enterText(
+          find.byKey(const Key('protection-quantity')),
+          '0.5',
+        );
+        await tester.pump();
+      }
+      await tester.enterText(
+        find.byKey(const Key('protection-quantity')),
+        quantity,
+      );
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+
+      expect(repo.protectionCalls, 0);
+      expect(
+        find.text(
+          'Enter a positive quantity no greater than the current position.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(TpSlInlineError), findsOneWidget);
+    });
+  }
+
+  testWidgets('protection load failure uses an inline notice and blocks save', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    final position = _position(protectionIds: ['tp-1']);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          positionsRepositoryProvider.overrideWithValue(repo),
+          positionProtectionOrdersProvider(position).overrideWith(
+            (_) async => throw const FormatException('Unsupported protection'),
+          ),
+        ],
+        child: buildTestApp(PositionTpSlSheet(position: position)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Could not read existing protection sizes. Close and refresh before editing.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byType(TpSlInlineError), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Sign and confirm'),
+          )
+          .onPressed,
+      isNull,
+    );
+    expect(repo.protectionCalls, 0);
+  });
+
+  for (final (name, error, message) in <(String, Object, String)>[
+    (
+      'API message',
+      const ServerFailure(
+        statusCode: 422,
+        code: 'protection_quantity_too_small',
+        message: '  Protection quantity is below the minimum.  ',
+        failureReason: 'A less specific reason',
+      ),
+      'Protection quantity is below the minimum.',
+    ),
+    (
+      'API failure reason',
+      const ServerFailure(
+        statusCode: 422,
+        code: 'protection_rejected',
+        message: ' ',
+        failureReason: '  Trigger price has invalid precision.  ',
+      ),
+      'Trigger price has invalid precision.',
+    ),
+    (
+      'API status, code and details',
+      const ServerFailure(
+        statusCode: 409,
+        code: 'position_version_conflict',
+        details: {'position_version': 'v2'},
+      ),
+      'HTTP 409 position_version_conflict (position_version: v2)',
+    ),
+    (
+      'network transport reason',
+      const NetworkFailure(userAction: '  Connection refused.  '),
+      'Connection refused.',
+    ),
+    (
+      'network unavailable',
+      const NetworkFailure(),
+      'Network unavailable. Check your connection and try again.',
+    ),
+    (
+      'request timeout',
+      const TimeoutFailure(),
+      'The TP/SL request timed out. Check protection orders before retrying.',
+    ),
+    (
+      'execution failure reason',
+      const Hip3SigningFailure(
+        Hip3SigningFailureCode.invalidPayload,
+        reason: '  Order size must be at least 10 USDC.  ',
+      ),
+      'Order size must be at least 10 USDC.',
+    ),
+    (
+      'signature rejection',
+      const Hip3SigningFailure(Hip3SigningFailureCode.rejected),
+      'Signature request was cancelled.',
+    ),
+    (
+      'expired signing request',
+      const Hip3SigningFailure(Hip3SigningFailureCode.actionExpired),
+      'This signing request expired. Prepare the order again.',
+    ),
+    (
+      'changed position',
+      const FormatException('Position changed'),
+      'Position changed',
+    ),
+    (
+      'unexpected error reason',
+      StateError('Update failed'),
+      'Bad state: Update failed',
+    ),
+    (
+      'empty format error fallback',
+      const FormatException(),
+      'Could not save TP/SL. Check the prices and try again.',
+    ),
+    (
+      'unknown error fallback',
+      const Object(),
+      'Could not save TP/SL. Check the prices and try again.',
+    ),
+  ]) {
+    testWidgets('protection displays $name in the inline error notice', (
+      tester,
+    ) async {
+      final repo = _Positions()..protectionError = error;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(PositionTpSlSheet(position: _position())),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Sign and confirm'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+      await tester.pumpAndSettle();
+
+      expect(repo.protectionCalls, 1);
+      expect(find.byType(TpSlInlineError), findsOneWidget);
+      expect(find.text(message), findsOneWidget);
+      expect(
+        find.text(
+          'Protection update was not completed. A cancellation may already have succeeded. Retry the same edit or check pending actions before changing it.',
+        ),
+        findsNothing,
+      );
+    });
+  }
+
   testWidgets('position TP/SL uses the opening-order price editors', (
     tester,
   ) async {
@@ -484,7 +996,66 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const Key('position-stop-loss-ruler')), findsOneWidget);
+    expect(find.byType(DropdownButton<bool>), findsNothing);
+    expect(find.byKey(const Key('tpsl-risk-checkbox')), findsOneWidget);
+    expect(find.byKey(const Key('tpsl-risk-details')), findsOneWidget);
+    expect(find.textContaining('position size at trigger time'), findsNothing);
+    expect(
+      find.textContaining('Trigger execution needs no new signature.'),
+      findsNothing,
+    );
   });
+
+  for (final short in [false, true]) {
+    for (final percentage in [20.0, 100.0]) {
+      testWidgets('protection slider submits $percentage%, short=$short', (
+        tester,
+      ) async {
+        await configureDisplay(tester, size: Size(short ? 320 : 393, 760));
+        final repo = _Positions();
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+            child: buildTestApp(
+              PositionTpSlSheet(position: _position(short: short)),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final slider = find.byKey(const Key('protection-percentage-slider'));
+        await tester.ensureVisible(slider);
+        final rect = tester.getRect(slider);
+        await tester.tapAt(
+          Offset(
+            (rect.left + rect.width * percentage / 100).clamp(
+              rect.left + 1,
+              rect.right - 1,
+            ),
+            rect.center.dy,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.widget<Slider>(slider).value, percentage);
+        expect(find.text('${percentage.round()}%'), findsOneWidget);
+
+        await tester.ensureVisible(
+          find.widgetWithText(FilledButton, 'Sign and confirm'),
+        );
+        await tester.tap(find.widgetWithText(FilledButton, 'Sign and confirm'));
+        await tester.pumpAndSettle();
+        expect(repo.protectionCalls, 1);
+        if (percentage == 100) {
+          expect(repo.quantity, isNull);
+        } else {
+          expect(
+            DecimalValue(repo.quantity!).compareTo(DecimalValue('0.2')),
+            0,
+          );
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 
   testWidgets(
     'fixed protection quantity is a real input with explicit semantics',
@@ -496,18 +1067,23 @@ void main() {
           child: buildTestApp(PositionTpSlSheet(position: _position())),
         ),
       );
-      await tester.ensureVisible(find.byKey(const Key('protection-size-mode')));
-      await tester.tap(find.byKey(const Key('protection-size-mode')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Fixed quantity').last);
-      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('protection-quantity')));
       await tester.enterText(
         find.byKey(const Key('protection-quantity')),
         '0.123',
       );
+      await tester.pump();
       expect(
         find.textContaining('will not adjust automatically'),
-        findsOneWidget,
+        findsNothing,
+      );
+      expect(
+        tester
+            .widget<Slider>(
+              find.byKey(const Key('protection-percentage-slider')),
+            )
+            .value,
+        closeTo(12.3, 0.001),
       );
       await tester.ensureVisible(
         find.widgetWithText(FilledButton, 'Sign and confirm'),
@@ -553,6 +1129,9 @@ void main() {
 
 Position _position({
   bool short = false,
+  bool withProtection = true,
+  String mark = '100',
+  String? entry,
   List<String> protectionIds = const [],
 }) => Position(
   positionId: 'p-tsla',
@@ -564,14 +1143,18 @@ Position _position({
   side: short ? PositionSide.short : PositionSide.long,
   quantity: DecimalValue(short ? '-1' : '1'),
   valueUsd: DecimalValue('100'),
-  markPrice: DecimalValue('100'),
-  takeProfitPrice: DecimalValue(short ? '90' : '110'),
-  stopLossPrice: DecimalValue(short ? '110' : '90'),
+  markPrice: DecimalValue(mark, asset: 'USD', unit: 'price'),
+  entryPrice: entry == null
+      ? null
+      : DecimalValue(entry, asset: 'USD', unit: 'price'),
+  takeProfitPrice: withProtection ? DecimalValue(short ? '90' : '110') : null,
+  stopLossPrice: withProtection ? DecimalValue(short ? '110' : '90') : null,
 );
 
 TradingOrder _order(
   String id, {
   bool conditional = false,
+  String executionType = 'market',
   String activationStatus = 'unknown',
   String? warningCode,
   TradingOrderStatus status = TradingOrderStatus.open,
@@ -586,6 +1169,7 @@ TradingOrder _order(
   status: status,
   createdAt: DateTime.utc(2026),
   quantity: DecimalValue('1'),
+  limitPrice: executionType == 'limit' ? DecimalValue('130') : null,
   filledQuantity: DecimalValue(conditional ? '0.25' : '0'),
   conditional: conditional
       ? ConditionalOrder(
@@ -593,7 +1177,7 @@ TradingOrder _order(
           triggerPrice: DecimalValue('130'),
           triggerReference: 'mark',
           triggerStatus: 'untriggered',
-          executionType: 'market',
+          executionType: executionType,
           sizeMode: 'quantity',
           quantity: '1',
           activationStatus: activationStatus,
@@ -609,12 +1193,14 @@ class _Positions implements PositionsRepository {
   int closeCalls = 0;
   Position? closePosition;
   TradingOrderType? type;
-  String? quantity, percent, limitPrice, takeProfit, stopLoss;
+  String? quantity, percent, limitPrice, takeProfit, takeLimit, stopLoss;
   String? leverage;
   bool? leverageConfirmBeforeSigning;
   Future<void>? leverageDelay;
   Object? leverageError;
   ProtectionClearScope? clearScope;
+  int protectionCalls = 0;
+  Object? protectionError;
   @override
   Future<TradingOrder> close(
     String positionId, {
@@ -649,7 +1235,10 @@ class _Positions implements PositionsRepository {
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
+    protectionCalls++;
+    if (protectionError case final error?) throw error;
     this.takeProfit = takeProfit;
+    this.takeLimit = takeLimit;
     this.stopLoss = stopLoss;
     this.quantity = quantity;
     this.clearScope = clearScope;

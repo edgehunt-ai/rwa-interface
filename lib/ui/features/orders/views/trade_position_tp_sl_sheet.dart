@@ -18,6 +18,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   bool _takeIsLimit = false;
   bool _stopIsLimit = false;
   bool _fixedQuantity = false;
+  double _quantityPercent = 100;
   bool _loadingProtection = false;
   bool _protectionLoadFailed = false;
   bool _sizeChoiceRequired = false;
@@ -122,6 +123,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
         if (sizes.length == 1 && sizes.single != 'entire') {
           _fixedQuantity = true;
           _quantity.text = sizes.single;
+          _syncQuantityPercent();
         }
         _loadingProtection = false;
       });
@@ -146,6 +148,120 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     super.dispose();
   }
 
+  void _syncQuantityPercent() {
+    final quantity = double.tryParse(_quantity.text.trim());
+    final available = double.tryParse(
+      absoluteQuantity(widget.position.quantity.value),
+    );
+    _quantityPercent = quantity == null || available == null || available <= 0
+        ? 0
+        : (quantity / available * 100).clamp(0, 100);
+  }
+
+  void _setQuantity(String value) {
+    setState(() {
+      _fixedQuantity = true;
+      _sizeChoiceRequired = false;
+      _syncQuantityPercent();
+      _error = null;
+    });
+  }
+
+  void _setQuantityPercent(double value) {
+    setState(() {
+      _quantityPercent = value.roundToDouble();
+      _fixedQuantity = _quantityPercent < 100;
+      _quantity.text = _fixedQuantity
+          ? percentageQuantity(
+              widget.position.quantity.value,
+              _quantityPercent.round().toString(),
+            )
+          : '';
+      _sizeChoiceRequired = false;
+      _error = null;
+    });
+  }
+
+  // Zero or an empty trigger means this protection leg is not set. Keep
+  // malformed and negative inputs for validation rather than omitting them.
+  String? _triggerPrice(String value, {required bool enabled}) {
+    final text = value.trim();
+    if (!enabled || text.isEmpty || RegExp(r'^-?0(?:\.0+)?$').hasMatch(text)) {
+      return null;
+    }
+    return text;
+  }
+
+  String? get _takeProfitTrigger =>
+      _triggerPrice(_takeProfit.text, enabled: _takeProfitEnabled);
+
+  String? get _stopLossTrigger =>
+      _triggerPrice(_stopLoss.text, enabled: _stopLossEnabled);
+
+  String? _directionError(String? takeProfit, String? stopLoss) {
+    final mark = widget.position.markPrice;
+    if (mark == null || widget.position.side == PositionSide.none) return null;
+    final l10n = AppLocalizations.of(context);
+    final isLong = widget.position.side == PositionSide.long;
+    final markDisplay = TokenAmountFormatter.formatValue(mark);
+    int compare(String price) =>
+        DecimalValue(price, asset: mark.asset, unit: mark.unit).compareTo(mark);
+    if (takeProfit != null) {
+      final comparison = compare(takeProfit);
+      if (isLong ? comparison <= 0 : comparison >= 0) {
+        return isLong
+            ? l10n.positionTakeProfitAboveMark(markDisplay)
+            : l10n.positionTakeProfitBelowMark(markDisplay);
+      }
+    }
+    if (stopLoss != null) {
+      final comparison = compare(stopLoss);
+      if (isLong ? comparison >= 0 : comparison <= 0) {
+        return isLong
+            ? l10n.positionStopLossBelowMark(markDisplay)
+            : l10n.positionStopLossAboveMark(markDisplay);
+      }
+    }
+    return null;
+  }
+
+  String? _inputError() {
+    final l10n = AppLocalizations.of(context);
+    final takeProfit = _takeProfitTrigger;
+    final stopLoss = _stopLossTrigger;
+    final prices = {
+      l10n.takeProfit: ?takeProfit,
+      l10n.stopLoss: ?stopLoss,
+      if (takeProfit != null && _takeIsLimit)
+        l10n.takeProfitLimitPrice: _takeLimit.text.trim(),
+      if (stopLoss != null && _stopIsLimit)
+        l10n.stopLimitPrice: _stopLimit.text.trim(),
+    };
+    for (final entry in prices.entries) {
+      try {
+        requirePositiveDecimal(entry.value);
+      } on FormatException {
+        return '${entry.key}: ${l10n.tpSlInvalidPrice}';
+      } on ArgumentError {
+        return '${entry.key}: ${l10n.tpSlInvalidPrice}';
+      }
+    }
+    if (_directionError(takeProfit, stopLoss) case final error?) return error;
+    if (prices.isNotEmpty && _fixedQuantity) {
+      try {
+        requireWithinPosition(
+          _quantity.text.trim(),
+          widget.position.quantity.value,
+        );
+      } on FormatException {
+        return l10n.protectionInvalidQuantity;
+      } on ArgumentError {
+        return l10n.protectionInvalidQuantity;
+      }
+    }
+    return null;
+  }
+
   Future<void> _save() async {
     if (_submitting ||
         _pending ||
@@ -168,31 +284,23 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
       setState(() => _riskAccepted = true);
       return;
     }
+    if (_inputError() case final error?) {
+      setState(() => _error = error);
+      return;
+    }
     setState(() {
       _error = null;
       _submitting = true;
     });
     try {
-      if (_takeProfitEnabled) requirePositiveDecimal(_takeProfit.text.trim());
-      if (_stopLossEnabled) requirePositiveDecimal(_stopLoss.text.trim());
-      if (_takeProfitEnabled && _takeIsLimit) {
-        requirePositiveDecimal(_takeLimit.text.trim());
-      }
-      if (_stopLossEnabled && _stopIsLimit) {
-        requirePositiveDecimal(_stopLimit.text.trim());
-      }
-      final hasSet = _takeProfitEnabled || _stopLossEnabled;
+      final takeProfit = _takeProfitTrigger;
+      final stopLoss = _stopLossTrigger;
+      final hasSet = takeProfit != null || stopLoss != null;
       if (hasSet && _sizeChoiceRequired) {
         throw ArgumentError(AppLocalizations.of(context).protectionSizesDiffer);
       }
-      if (hasSet && _fixedQuantity) {
-        requireWithinPosition(
-          _quantity.text.trim(),
-          widget.position.quantity.value,
-        );
-      }
-      final clearTake = _hadTakeProfit && !_takeProfitEnabled;
-      final clearStop = _hadStopLoss && !_stopLossEnabled;
+      final clearTake = _hadTakeProfit && takeProfit == null;
+      final clearStop = _hadStopLoss && stopLoss == null;
       final clearScope = clearTake && clearStop
           ? ProtectionClearScope.both
           : clearTake
@@ -208,19 +316,15 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
           .read(positionCommandProvider)
           .updateTpSl(
             widget.position,
-            takeProfit: !_takeProfitEnabled || _takeProfit.text.trim().isEmpty
-                ? null
-                : _takeProfit.text.trim(),
-            stopLoss: !_stopLossEnabled || _stopLoss.text.trim().isEmpty
-                ? null
-                : _stopLoss.text.trim(),
-            stopLimit: _stopLossEnabled && _stopLimit.text.trim().isNotEmpty
+            takeProfit: takeProfit,
+            stopLoss: stopLoss,
+            stopLimit: stopLoss != null && _stopIsLimit
                 ? _stopLimit.text.trim()
                 : null,
             quantity: hasSet && _fixedQuantity ? _quantity.text.trim() : null,
             clearScope: clearScope,
             confirmBeforeSigning: false,
-            takeLimit: _takeProfitEnabled && _takeIsLimit
+            takeLimit: takeProfit != null && _takeIsLimit
                 ? _takeLimit.text.trim()
                 : null,
           );
@@ -233,23 +337,43 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
               .positionProtectionActionPending(error.actionId);
         });
       }
-    } on ArgumentError catch (error) {
-      if (mounted) setState(() => _error = '${error.message}');
-    } on FormatException {
+    } on Object catch (error) {
       if (mounted) {
-        setState(
-          () => _error = AppLocalizations.of(context).protectionUpdateRetry,
-        );
-      }
-    } on Object {
-      if (mounted) {
-        setState(
-          () => _error = AppLocalizations.of(context).protectionUpdateFailed,
-        );
+        setState(() => _error = _specificErrorMessage(error));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  String _specificErrorMessage(Object error) {
+    final l10n = AppLocalizations.of(context);
+    final fallback = l10n.tpSlSaveFailed;
+    if (error is TimeoutFailure) return l10n.protectionRequestTimedOut;
+    if (error is NetworkFailure && (error.userAction?.trim().isEmpty ?? true)) {
+      return l10n.networkUnavailableRetry;
+    }
+    if (error is ApiFailure) {
+      return apiFailureMessage(error, fallback: fallback).trim();
+    }
+    if (error is Hip3SigningFailure) {
+      return hip3SigningError(context, error);
+    }
+    if (error is ArgumentError) {
+      final message = error.message?.toString().trim();
+      return message == null || message.isEmpty ? fallback : message;
+    }
+    if (error is FormatException) {
+      final message = error.message.trim();
+      return message.isEmpty ? fallback : message;
+    }
+    final message = error.toString().trim();
+    if (message.isNotEmpty &&
+        message != 'null' &&
+        !message.startsWith('Instance of ')) {
+      return message;
+    }
+    return fallback;
   }
 
   @override
@@ -284,13 +408,15 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      l10n.takeProfitStopLossTitle,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        height: 26 / 20,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
+                    Expanded(
+                      child: Text(
+                        l10n.takeProfitStopLossTitle,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          height: 26 / 20,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                        ),
                       ),
                     ),
                   ],
@@ -339,40 +465,13 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                       : (value) => setState(() => _stopLossEnabled = value),
                 ),
                 const SizedBox(height: 12),
-                Text(l10n.protectionSize),
-                DropdownButton<bool>(
-                  key: const Key('protection-size-mode'),
-                  value: _fixedQuantity,
-                  isExpanded: true,
-                  items: [
-                    DropdownMenuItem(
-                      value: false,
-                      child: Text(l10n.entirePositionDefault),
-                    ),
-                    DropdownMenuItem(
-                      value: true,
-                      child: Text(l10n.fixedQuantity),
-                    ),
-                  ],
-                  onChanged: locked
-                      ? null
-                      : (value) => setState(() {
-                          _fixedQuantity = value!;
-                          _sizeChoiceRequired = false;
-                        }),
+                PositionProtectionQuantityCard(
+                  controller: _quantity,
+                  symbol: widget.position.symbol,
+                  percentage: _quantityPercent,
+                  onQuantityChanged: locked ? null : _setQuantity,
+                  onPercentageChanged: locked ? null : _setQuantityPercent,
                 ),
-                if (_fixedQuantity)
-                  TextField(
-                    key: const Key('protection-quantity'),
-                    controller: _quantity,
-                    enabled: !locked,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: l10n.quantitySymbol(widget.position.symbol),
-                    ),
-                  ),
                 if (_takeProfitEnabled && _takeIsLimit)
                   TextField(
                     controller: _takeLimit,
@@ -393,17 +492,11 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     ),
                     decoration: InputDecoration(labelText: l10n.stopLimitPrice),
                   ),
-                if (_sizeChoiceRequired) Text(l10n.protectionSizesDiffer),
-                const SizedBox(height: 12),
-                Text(
-                  _fixedQuantity
-                      ? l10n.fixedQuantityNotice
-                      : l10n.entirePositionProtectionNotice,
-                ),
-                Text(l10n.protectionSignatureNotice),
+                if (_sizeChoiceRequired)
+                  TpSlInlineError(messages: [l10n.protectionSizesDiffer]),
                 if (_error case final error?) ...[
                   const SizedBox(height: 12),
-                  Text(error),
+                  TpSlInlineError(messages: [error]),
                 ],
                 const SizedBox(height: 12),
                 TpSlConsentRow(

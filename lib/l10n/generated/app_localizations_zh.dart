@@ -2209,6 +2209,32 @@ class AppLocalizationsZh extends AppLocalizations {
   String get protectionUpdateRetry => '无法完成保护更新，请刷新后重试。';
 
   @override
+  String get protectionInvalidQuantity => '请输入大于零且不超过当前仓位数量的数量。';
+
+  @override
+  String get protectionRequestTimedOut => '止盈止损请求超时。请检查保护单状态后重试。';
+
+  @override
+  String positionTakeProfitAboveMark(String price) {
+    return '多仓止盈价格必须高于当前标记价格（$price）。';
+  }
+
+  @override
+  String positionTakeProfitBelowMark(String price) {
+    return '空仓止盈价格必须低于当前标记价格（$price）。';
+  }
+
+  @override
+  String positionStopLossBelowMark(String price) {
+    return '多仓止损价格必须低于当前标记价格（$price）。';
+  }
+
+  @override
+  String positionStopLossAboveMark(String price) {
+    return '空仓止损价格必须高于当前标记价格（$price）。';
+  }
+
+  @override
   String get protectionSizesDiffer => '现有保护单的数量不同。请为本次编辑选择所需数量。';
 
   @override

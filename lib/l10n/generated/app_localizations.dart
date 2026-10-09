@@ -4212,6 +4212,42 @@ abstract class AppLocalizations {
   /// **'Protection update could not be completed. Refresh before retrying.'**
   String get protectionUpdateRetry;
 
+  /// No description provided for @protectionInvalidQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a positive quantity no greater than the current position.'**
+  String get protectionInvalidQuantity;
+
+  /// No description provided for @protectionRequestTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'The TP/SL request timed out. Check protection orders before retrying.'**
+  String get protectionRequestTimedOut;
+
+  /// No description provided for @positionTakeProfitAboveMark.
+  ///
+  /// In en, this message translates to:
+  /// **'For a long position, take-profit price must be above the current mark price ({price}).'**
+  String positionTakeProfitAboveMark(String price);
+
+  /// No description provided for @positionTakeProfitBelowMark.
+  ///
+  /// In en, this message translates to:
+  /// **'For a short position, take-profit price must be below the current mark price ({price}).'**
+  String positionTakeProfitBelowMark(String price);
+
+  /// No description provided for @positionStopLossBelowMark.
+  ///
+  /// In en, this message translates to:
+  /// **'For a long position, stop-loss price must be below the current mark price ({price}).'**
+  String positionStopLossBelowMark(String price);
+
+  /// No description provided for @positionStopLossAboveMark.
+  ///
+  /// In en, this message translates to:
+  /// **'For a short position, stop-loss price must be above the current mark price ({price}).'**
+  String positionStopLossAboveMark(String price);
+
   /// No description provided for @protectionSizesDiffer.
   ///
   /// In en, this message translates to:

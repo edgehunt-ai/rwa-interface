@@ -2335,6 +2335,34 @@ class AppLocalizationsEn extends AppLocalizations {
       'Protection update could not be completed. Refresh before retrying.';
 
   @override
+  String get protectionInvalidQuantity =>
+      'Enter a positive quantity no greater than the current position.';
+
+  @override
+  String get protectionRequestTimedOut =>
+      'The TP/SL request timed out. Check protection orders before retrying.';
+
+  @override
+  String positionTakeProfitAboveMark(String price) {
+    return 'For a long position, take-profit price must be above the current mark price ($price).';
+  }
+
+  @override
+  String positionTakeProfitBelowMark(String price) {
+    return 'For a short position, take-profit price must be below the current mark price ($price).';
+  }
+
+  @override
+  String positionStopLossBelowMark(String price) {
+    return 'For a long position, stop-loss price must be below the current mark price ($price).';
+  }
+
+  @override
+  String positionStopLossAboveMark(String price) {
+    return 'For a short position, stop-loss price must be above the current mark price ($price).';
+  }
+
+  @override
   String get protectionSizesDiffer =>
       'Existing protection legs have different sizes. Select the desired size for this edit.';
 
