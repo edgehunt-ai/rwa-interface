@@ -8,6 +8,18 @@ plugins {
     id("io.sentry.android.gradle")
 }
 
+// sentry_flutter 9.28.0 embeds Sentry Android 8.53.0. One transitive native
+// dependency requests 8.22.0's fragment integration; mixed SDK modules make
+// the Sentry Android SDK skip initialization entirely at runtime.
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "io.sentry" && requested.name != "sentry-native-ndk") {
+            useVersion("8.53.0")
+            because("all Sentry Android SDK integrations must match the core SDK version")
+        }
+    }
+}
+
 android {
     namespace = "global.nobell.app"
     // Current native plugins require API 36 compile metadata. This does not

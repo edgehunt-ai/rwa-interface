@@ -7,6 +7,7 @@ class ObservabilityConfig {
     required this.environment,
     required this.tracesSampleRate,
     required this.profilesSampleRate,
+    this.smokeTest = false,
     this.release,
   });
 
@@ -26,6 +27,7 @@ class ObservabilityConfig {
         'SENTRY_PROFILES_SAMPLE_RATE',
         defaultValue: '0.10',
       ),
+      smokeTest: const bool.fromEnvironment('SENTRY_SMOKE_TEST'),
     );
   }
 
@@ -35,6 +37,7 @@ class ObservabilityConfig {
     String? release,
     String tracesSampleRate = '0.10',
     String profilesSampleRate = '0.10',
+    bool smokeTest = false,
   }) {
     return ObservabilityConfig(
       dsn: dsn.trim(),
@@ -42,6 +45,7 @@ class ObservabilityConfig {
       release: release?.trim().isEmpty ?? true ? null : release!.trim(),
       tracesSampleRate: _sampleRate(tracesSampleRate, fallback: 0.10),
       profilesSampleRate: _sampleRate(profilesSampleRate, fallback: 0.10),
+      smokeTest: smokeTest,
     );
   }
 
@@ -50,6 +54,7 @@ class ObservabilityConfig {
   final String? release;
   final double tracesSampleRate;
   final double profilesSampleRate;
+  final bool smokeTest;
 
   bool get enabled => dsn.isNotEmpty;
 

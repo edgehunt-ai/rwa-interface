@@ -9,6 +9,7 @@ void main() {
       release: ' app@1.2.3 ',
       tracesSampleRate: '0.25',
       profilesSampleRate: '0.5',
+      smokeTest: true,
     );
 
     expect(config.dsn, 'https://public@example.invalid/1');
@@ -16,6 +17,7 @@ void main() {
     expect(config.release, 'app@1.2.3');
     expect(config.tracesSampleRate, 0.25);
     expect(config.profilesSampleRate, 0.5);
+    expect(config.smokeTest, isTrue);
   });
 
   test('empty DSN disables monitoring and invalid rates use defaults', () {

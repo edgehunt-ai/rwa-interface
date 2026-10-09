@@ -83,4 +83,24 @@ void main() {
     );
     expect(starts, 1);
   });
+
+  test('smoke test reports once before the app starts', () async {
+    var starts = 0;
+    var reports = 0;
+    await SentryBootstrap.run(
+      config: const ObservabilityConfig(
+        dsn: 'https://public@example.invalid/1',
+        environment: 'test',
+        tracesSampleRate: 0.1,
+        profilesSampleRate: 0.1,
+        smokeTest: true,
+      ),
+      appRunner: () => starts++,
+      initializer: (config, runner) => Future.sync(runner),
+      smokeTestReporter: () async => reports++,
+      isWeb: false,
+    );
+    expect(reports, 1);
+    expect(starts, 1);
+  });
 }
