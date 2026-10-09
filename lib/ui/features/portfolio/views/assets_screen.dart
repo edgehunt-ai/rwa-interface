@@ -1237,8 +1237,23 @@ class _SpotBalances extends ConsumerWidget {
     List<HoldingGroup> holdingGroups,
   ) {
     const bstockNetwork = 'BNB Smart Chain';
+    final allPositions = holdingGroups
+        .expand((group) => group.positions)
+        .where((position) => position.kind == MarketProductKind.bstock)
+        .toList(growable: false);
+    final bstockBalanceSymbols = allPositions
+        .map(
+          (position) => '${_underlyingSymbol(position.symbol)}B'.toUpperCase(),
+        )
+        .toSet();
     final allBalances = accountItems
-        .expand((account) => account.balances)
+        .expand(
+          (account) => account.balances.where(
+            (balance) =>
+                account.kind != TradingAccountKind.bstocks ||
+                !bstockBalanceSymbols.contains(balance.symbol.toUpperCase()),
+          ),
+        )
         .where(
           (balance) =>
               balance.balance.compareTo(
@@ -1250,10 +1265,6 @@ class _SpotBalances extends ConsumerWidget {
               ) !=
               0,
         )
-        .toList(growable: false);
-    final allPositions = holdingGroups
-        .expand((group) => group.positions)
-        .where((position) => position.kind == MarketProductKind.bstock)
         .toList(growable: false);
     final networks = <String>{
       ...allBalances.map((balance) => balance.chain).whereType<String>(),

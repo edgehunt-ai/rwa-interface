@@ -183,6 +183,35 @@ void main() {
     );
   });
 
+  testWidgets('Assets does not repeat bStock wallet tokens as cash', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          portfolioRepositoryProvider.overrideWithValue(
+            const _BstockHoldingsPortfolio(includeWalletBalances: true),
+          ),
+        ],
+        child: _assetsApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDAB'), findsOneWidget);
+    expect(find.text('USDC'), findsOneWidget);
+    expect(find.text(r'$552.00'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('spot-product-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cash').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('NVDAB'), findsNothing);
+    expect(find.text('USDC'), findsOneWidget);
+    expect(find.text(r'$2.00'), findsNWidgets(2));
+  });
+
   testWidgets('Assets localizes the bStocks unrealized PnL label', (
     tester,
   ) async {
@@ -482,9 +511,13 @@ final class _BalanceOnlyPortfolio implements PortfolioRepository {
 }
 
 final class _BstockHoldingsPortfolio implements PortfolioRepository {
-  const _BstockHoldingsPortfolio({this.includeReturn = true});
+  const _BstockHoldingsPortfolio({
+    this.includeReturn = true,
+    this.includeWalletBalances = false,
+  });
 
   final bool includeReturn;
+  final bool includeWalletBalances;
 
   @override
   Future<Portfolio> getSummary() async => Portfolio(
@@ -493,7 +526,27 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
   );
 
   @override
-  Future<List<TradingAccount>> listAccounts() async => const [];
+  Future<List<TradingAccount>> listAccounts() async => includeWalletBalances
+      ? [
+          TradingAccount(
+            kind: TradingAccountKind.bstocks,
+            balances: [
+              TokenBalance(
+                symbol: 'NVDAB',
+                chain: 'BNB Smart Chain',
+                balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
+                valueUsd: DecimalValue('550', asset: 'USD', unit: 'fiat'),
+              ),
+              TokenBalance(
+                symbol: 'USDC',
+                chain: 'BNB Smart Chain',
+                balance: DecimalValue('2', asset: 'USDC', unit: 'token'),
+                valueUsd: DecimalValue('2', asset: 'USD', unit: 'fiat'),
+              ),
+            ],
+          ),
+        ]
+      : const [];
 
   @override
   Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async =>
@@ -509,7 +562,11 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
                 kind: MarketProductKind.bstock,
                 side: PositionSide.long,
                 quantity: DecimalValue('3.0154', asset: 'NVDA', unit: 'token'),
-                valueUsd: DecimalValue('1', asset: 'USD', unit: 'fiat'),
+                valueUsd: DecimalValue(
+                  includeWalletBalances ? '550' : '1',
+                  asset: 'USD',
+                  unit: 'fiat',
+                ),
                 markPrice: DecimalValue('1000', asset: 'USD', unit: 'price'),
                 unrealizedPnl: includeReturn
                     ? DecimalValue('16', asset: 'USD', unit: 'fiat')
