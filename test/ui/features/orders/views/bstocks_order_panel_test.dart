@@ -15,8 +15,6 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
-import 'package:rwa_interface/domain/models/portfolio.dart';
-import 'package:rwa_interface/domain/models/position.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/models/withdrawal.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
@@ -27,6 +25,7 @@ import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
 import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
 
 import '../../../../helpers/test_app.dart';
 import '../../../../helpers/funded_repository.dart';
@@ -34,6 +33,63 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:rwa_interface/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
+  testWidgets('sell availability resolves after opening without a product ID', (
+    tester,
+  ) async {
+    final products = Completer<DomainPage<MarketProduct>>();
+    final requests = <String>[];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(
+            _CapturingOrdersRepository(),
+          ),
+          marketProductLookupProvider.overrideWith(
+            (ref, query) => products.future,
+          ),
+          bstocksSellAvailabilityProvider.overrideWith((ref, productId) async {
+            requests.add(productId);
+            return DecimalValue('12', asset: 'NVDAB');
+          }),
+        ],
+        child: buildTestApp(
+          const BstocksOrderPanel(initialSide: TradingSide.sell),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(requests, isEmpty);
+    final slider = find.byKey(const Key('bstocks-percentage-slider'));
+    tester.widget<Slider>(slider).onChanged!(50);
+    await tester.pump();
+    products.complete(
+      DomainPage(
+        items: [
+          MarketProduct(
+            symbol: 'NVDAB',
+            name: 'NVIDIA',
+            kind: MarketProductKind.bstock,
+            productId: 'bstocks:nvdab',
+            price: DecimalValue('100'),
+            settlementAsset: 'USDT',
+            network: 'BSC',
+            tradable: true,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(requests, ['bstocks:nvdab']);
+    expect(find.text('12 NVDAB'), findsOneWidget);
+    final input = tester.widget<TextField>(
+      find.byKey(const Key('bstocks-market-amount-input')),
+    );
+    expect(input.controller?.text, '6');
+    expect(tester.widget<Slider>(slider).value, 50);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
   for (final kind in [MarketProductKind.bstock, MarketProductKind.perp]) {
     testWidgets('$kind funding waits for arrival before allowing review', (
       tester,
@@ -1114,15 +1170,8 @@ void main() {
   }
 
   testWidgets(
-    'sell uses the matching position quantity without a dollar sign',
+    'sell uses product-scoped available quantity without a dollar sign',
     (tester) async {
-      final position = Position(
-        positionId: 'nvda-position',
-        symbol: 'NVDA',
-        kind: MarketProductKind.bstock,
-        quantity: DecimalValue('12.5', asset: 'NVDA', unit: 'token'),
-        valueUsd: DecimalValue('1000', asset: 'USD', unit: 'fiat'),
-      );
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -1130,21 +1179,15 @@ void main() {
             bstocksOrderAvailableBalanceProvider.overrideWith(
               (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
             ),
-            holdingsProvider(null).overrideWith(
-              (ref) async => DomainPage(
-                items: [
-                  HoldingGroup(
-                    symbol: 'NVDA',
-                    totalValueUsd: position.valueUsd,
-                    positions: [position],
-                  ),
-                ],
-              ),
+            bstocksSellAvailabilityProvider('bstocks:nvdab').overrideWith(
+              (ref) async =>
+                  DecimalValue('12.5', asset: 'NVDAB', unit: 'token'),
             ),
           ],
           child: buildTestApp(
             const BstocksOrderPanel(
               symbol: 'NVDAB',
+              productId: 'bstocks:nvdab',
               initialSide: TradingSide.sell,
             ),
           ),
@@ -1959,9 +2002,9 @@ final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
         createdAt: DateTime.utc(2026, 9, 30),
         nextAction: BstocksOrderAction(
           orderId: 'approval-order',
-          stepId: 'approval-step',
-          ordinal: 1,
+          actionId: 'approval-step',
           kind: BstocksOrderActionKind.erc20Approval,
+          status: BstocksOrderActionStatus.awaitingSignature,
           chainId: 56,
           from: '0x1111111111111111111111111111111111111111',
           to: '0x2222222222222222222222222222222222222222',
@@ -1987,6 +2030,12 @@ final class _ApprovalExecutionRepository
   void completeApproval() => _completion.complete();
 
   @override
+  Future<ResourceResult<TradingOrder>> cancelOrder(
+    String orderId, {
+    bool Function()? isCancelled,
+  }) => throw UnimplementedError();
+
+  @override
   Future<ResourceResult<TradingOrder>> execute({
     required OrderIntent intent,
     required ResourceResult<TradingOrder> created,
@@ -2009,11 +2058,25 @@ final class _ApprovalExecutionRepository
         side: intent.side,
         type: intent.type,
         status: TradingOrderStatus.open,
-        actionStatus: BstocksOrderActionStatus.confirmed,
         createdAt: created.resource.createdAt,
       ),
     );
   }
+
+  @override
+  Future<ResourceResult<TradingOrder>> continueOrder({
+    required OrderIntent intent,
+    required String orderId,
+    required String previewId,
+    bool Function()? isCancelled,
+    bool stopAfterApproval = false,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<ResourceResult<TradingOrder>> executeExisting({
+    required ResourceResult<TradingOrder> order,
+    bool Function()? isCancelled,
+  }) => throw UnimplementedError();
 }
 
 final class _SettlementFeeOrdersRepository extends _DelayedOrdersRepository {

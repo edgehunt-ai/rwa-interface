@@ -213,7 +213,7 @@ const _scenarios = <_ScenarioLink>[
   ),
   _ScenarioLink(
     'test/data/repositories/orders_repository_test.dart',
-    'pending signature is a non-retryable wait capability',
+    'bStocks pending status maps without a legacy signature capability',
     {'FR-012'},
   ),
   _ScenarioLink(

@@ -29,7 +29,27 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       _previewRequest(intent),
       idempotencyKey: idempotencyKey,
     );
-    final payload = response.value.oneOf.value as OrderPreviewPayload;
+    return _mapPreview(response.value, intent);
+  }
+
+  @override
+  Future<OrderPreview> previewContinuation(
+    String orderId,
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async {
+    final response = await _service.previewBstocksOrderContinuation(
+      orderId: orderId,
+      idempotencyKey: idempotencyKey,
+    );
+    if (response.boundOrderId != orderId) {
+      throw const FormatException('Continuation preview order mismatch');
+    }
+    return _mapPreview(response.preview, intent);
+  }
+
+  OrderPreview _mapPreview(api.OrderPreview value, OrderIntent intent) {
+    final payload = value.oneOf.value as OrderPreviewPayload;
     final common = payload.common;
     // Settlement identity is read as text: the generated enums fall back to
     // `unknown_default_open_api`, which would make testnet TUSDT and mainnet
@@ -414,14 +434,63 @@ final class OrdersRepositoryImpl implements OrdersRepository {
       value == null ? null : _value(value, unit, asset: asset);
 }
 
-TradingOrder mapOrder(api.Order value) => TradingOrder(
-  nextAction: _bstocksAction(value.nextAction),
-  walletActionBlocker: value.walletActionBlocker?.name,
-  actionStatus: value.actionStatus == null
+TradingOrder mapOrder(api.Order value) => switch (value.oneOf.value) {
+  final api.BstockOrder order => _mapBstockOrder(order),
+  final api.PerpOrder order => _mapPerpOrder(order),
+  _ => throw const FormatException('Unsupported order variant'),
+};
+
+TradingOrder _mapBstockOrder(api.BstockOrder value) => TradingOrder(
+  nextAction: value.nextAction == null
       ? null
-      : _bstocksActionStatus(value.actionStatus!),
-  submittedTransactionHash: value.submittedTransactionHash,
-  confirmedTransactionHash: value.confirmedTransactionHash,
+      : mapBstocksOrderAction(value.nextAction!),
+  walletActionBlocker: value.walletActionBlocker?.name,
+  currentActionId: value.currentActionId,
+  settlementAsset: value.settlementAsset,
+  requestedAmount: _orderValue(
+    value.requestedAmount,
+    'notional',
+    asset: value.settlementAsset,
+  ),
+  productId: value.productId,
+  orderId: value.orderId,
+  clientOrderId: value.clientOrderId,
+  symbol: value.symbol,
+  kind: MarketProductKind.bstock,
+  side: _side(value.side),
+  type: _orderType(value.type),
+  status: _bstockStatus(value.status),
+  quantity: _orderValue(value.quantity, 'quantity', asset: value.symbol),
+  filledQuantity: _orderValue(
+    value.filledQuantity,
+    'quantity',
+    asset: value.symbol,
+  ),
+  limitPrice: _orderValue(
+    value.limitPrice,
+    'price',
+    asset: value.settlementAsset,
+  ),
+  averageFillPrice: _orderValue(
+    value.averageFillPrice,
+    'price',
+    asset: value.settlementAsset,
+  ),
+  orderValue: _orderValue(
+    value.orderValue,
+    'notional',
+    asset: value.settlementAsset,
+  ),
+  fee: _orderValue(value.fee, 'fee', asset: value.settlementAsset),
+  positionId: value.positionId,
+  txHash: value.txHash,
+  failureReason: value.failureReason,
+  createdAt: value.createdAt.toUtc(),
+  updatedAt: value.updatedAt?.toUtc(),
+);
+
+TradingOrder _mapPerpOrder(api.PerpOrder value) => TradingOrder(
+  walletActionBlocker: value.walletActionBlocker.name,
   productId: value.productId,
   conditional: value.conditional == null
       ? null
@@ -445,19 +514,9 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
   orderId: value.orderId,
   clientOrderId: value.clientOrderId,
   symbol: value.symbol,
-  kind: value.kind == api.ProductKind.bstock
-      ? MarketProductKind.bstock
-      : MarketProductKind.perp,
-  side: switch (value.side) {
-    api.OrderSide.buy => TradingSide.buy,
-    api.OrderSide.sell => TradingSide.sell,
-    api.OrderSide.long => TradingSide.long,
-    api.OrderSide.short => TradingSide.short,
-    _ => throw const FormatException('Unknown order side'),
-  },
-  type: value.type == api.OrderType.market
-      ? TradingOrderType.market
-      : TradingOrderType.limit,
+  kind: MarketProductKind.perp,
+  side: _side(value.side),
+  type: _orderType(value.type),
   status: _status(value.status),
   quantity: _orderValue(value.quantity, 'quantity'),
   filledQuantity: _orderValue(value.filledQuantity, 'quantity'),
@@ -472,61 +531,42 @@ TradingOrder mapOrder(api.Order value) => TradingOrder(
   updatedAt: value.updatedAt?.toUtc(),
 );
 
-BstocksOrderAction? _bstocksAction(dynamic raw) {
-  if (raw == null) return null;
-  final value = raw.value;
-  if (value is! Map) throw const FormatException('Invalid bStocks action');
-
-  // `gas_payment` is not needed to construct or submit the frozen wallet
-  // transaction. The staging API currently returns it with a null decision,
-  // while the generated contract model declares that field as non-nullable.
-  // Parse only the authoritative transaction fields here so an unrelated gas
-  // quote cannot block approve/swap execution.
-  Object? field(String name) => value[name];
-  String stringField(String name) {
-    final fieldValue = field(name);
-    if (fieldValue is! String || fieldValue.isEmpty) {
-      throw FormatException('Invalid bStocks action field: $name');
-    }
-    return fieldValue;
-  }
-
-  final kind = switch (stringField('kind')) {
-    'erc20_approval' => BstocksOrderActionKind.erc20Approval,
-    'spot_swap' => BstocksOrderActionKind.spotSwap,
-    _ => BstocksOrderActionKind.unknown,
-  };
-  final chainId = field('chain_id');
-  final parsedChainId = chainId is int
-      ? chainId
-      : int.tryParse(chainId.toString());
-  if (parsedChainId == null || !const {56, 97, 31337}.contains(parsedChainId)) {
-    throw const FormatException('Unsupported bStocks action chain');
-  }
-  final valueHex = stringField('value');
-  if (valueHex != '0x0') {
-    throw const FormatException('Unsupported bStocks action value');
-  }
-  final validUntil = DateTime.tryParse(stringField('valid_until'));
-  if (validUntil == null) {
-    throw const FormatException('Invalid bStocks action expiry');
-  }
-  return BstocksOrderAction(
-    orderId: stringField('order_id'),
-    stepId: stringField('step_id'),
-    ordinal: field('ordinal') is int
-        ? field('ordinal') as int
-        : int.parse(field('ordinal').toString()),
-    kind: kind,
-    chainId: parsedChainId,
-    from: stringField('from'),
-    to: stringField('to'),
-    data: stringField('data'),
-    value: valueHex,
-    payloadHash: stringField('payload_hash'),
-    validUntil: validUntil.toUtc(),
-  );
-}
+BstocksOrderAction mapBstocksOrderAction(api.OrderAction value) =>
+    BstocksOrderAction(
+      orderId: value.orderId,
+      actionId: value.actionId,
+      kind: switch (value.kind) {
+        api.OrderActionKindEnum.erc20Approval =>
+          BstocksOrderActionKind.erc20Approval,
+        api.OrderActionKindEnum.placeGtcOrder =>
+          BstocksOrderActionKind.placeGtcOrder,
+        api.OrderActionKindEnum.executeIocOrder =>
+          BstocksOrderActionKind.executeIocOrder,
+        api.OrderActionKindEnum.cancelOrder =>
+          BstocksOrderActionKind.cancelOrder,
+        _ => BstocksOrderActionKind.unknown,
+      },
+      status: _bstocksActionStatus(value.status),
+      previewId: value.previewId,
+      submittedTransactionHash: value.submittedTransactionHash,
+      confirmedTransactionHash: value.confirmedTransactionHash,
+      failureReason: value.failureReason,
+      chainId: switch (value.chainId) {
+        api.OrderActionChainIdEnum.number56 => 56,
+        api.OrderActionChainIdEnum.number97 => 97,
+        api.OrderActionChainIdEnum.number31337 => 31337,
+        _ => throw const FormatException('Unsupported bStocks action chain'),
+      },
+      from: value.from,
+      to: value.to,
+      data: value.data,
+      value: switch (value.value) {
+        api.OrderActionValueEnum.n0x0 => '0x0',
+        _ => throw const FormatException('Unsupported bStocks action value'),
+      },
+      payloadHash: value.payloadHash,
+      validUntil: value.validUntil.toUtc(),
+    );
 
 BstocksOrderActionStatus _bstocksActionStatus(api.BstocksActionStatus value) =>
     switch (value) {
@@ -553,5 +593,38 @@ TradingOrderStatus _status(api.OrderStatus value) => switch (value) {
   _ => TradingOrderStatus.unknown,
 };
 
-DecimalValue? _orderValue(String? value, String unit) =>
-    value == null ? null : DecimalValue(value, asset: 'USDC', unit: unit);
+TradingOrderStatus _bstockStatus(api.BstockOrderStatus value) =>
+    switch (value) {
+      api.BstockOrderStatus.pending => TradingOrderStatus.pending,
+      api.BstockOrderStatus.awaitingConfirmation =>
+        TradingOrderStatus.awaitingConfirmation,
+      api.BstockOrderStatus.submitted => TradingOrderStatus.submitted,
+      api.BstockOrderStatus.open => TradingOrderStatus.open,
+      api.BstockOrderStatus.partiallyFilled =>
+        TradingOrderStatus.partiallyFilled,
+      api.BstockOrderStatus.filled => TradingOrderStatus.filled,
+      api.BstockOrderStatus.cancelled => TradingOrderStatus.cancelled,
+      api.BstockOrderStatus.failed => TradingOrderStatus.failed,
+      api.BstockOrderStatus.ambiguous => TradingOrderStatus.ambiguous,
+      api.BstockOrderStatus.manualReview => TradingOrderStatus.manualReview,
+      _ => TradingOrderStatus.unknown,
+    };
+
+TradingSide _side(api.OrderSide value) => switch (value) {
+  api.OrderSide.buy => TradingSide.buy,
+  api.OrderSide.sell => TradingSide.sell,
+  api.OrderSide.long => TradingSide.long,
+  api.OrderSide.short => TradingSide.short,
+  _ => throw const FormatException('Unknown order side'),
+};
+
+TradingOrderType _orderType(api.OrderType value) =>
+    value == api.OrderType.market
+    ? TradingOrderType.market
+    : TradingOrderType.limit;
+
+DecimalValue? _orderValue(
+  String? value,
+  String unit, {
+  String? asset = 'USDC',
+}) => value == null ? null : DecimalValue(value, asset: asset, unit: unit);

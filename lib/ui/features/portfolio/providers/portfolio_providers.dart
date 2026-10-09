@@ -231,3 +231,30 @@ final holdingsProvider = FutureProvider.autoDispose
           .watch(portfolioRepositoryProvider)
           .listHoldings(cursor: cursor);
     });
+
+final bstocksSellAvailabilityProvider = FutureProvider.autoDispose
+    .family<DecimalValue?, String>((ref, productId) async {
+      _cachePortfolioList(ref);
+      ref.watch(sessionGenerationProvider);
+      final repository = ref.watch(portfolioRepositoryProvider);
+      if (repository is! PortfolioAssetsRepository) return null;
+      final assetsRepository = repository as PortfolioAssetsRepository;
+      final accounts = await repository.listAccounts();
+      final walletIds = accounts
+          .where((account) => account.kind == TradingAccountKind.bstocks)
+          .map((account) => account.walletId)
+          .whereType<String>()
+          .toSet();
+      if (walletIds.length != 1) return null;
+      final assets = await assetsRepository.listAssets(productId: productId);
+      final matches = assets.where(
+        (asset) =>
+            asset.productId == productId &&
+            asset.walletId == walletIds.single &&
+            asset.freshness != 'stale' &&
+            asset.bstocksAvailabilityStatus == 'complete' &&
+            asset.bstocksAvailableQuantity != null,
+      );
+      if (matches.length != 1) return null;
+      return matches.single.bstocksAvailableQuantity;
+    });

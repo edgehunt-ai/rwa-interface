@@ -137,6 +137,29 @@ final marketProductProvider = FutureProvider.autoDispose
       return ref.watch(marketsRepositoryProvider).getProduct(product);
     });
 
+/// Resolve identity reactively when a trade sheet opens before list loading.
+final marketProductIdProvider = Provider.autoDispose
+    .family<String?, MarketProductRef>((ref, product) {
+      final products = ref
+          .watch(
+            marketProductLookupProvider((
+              query: product.symbol,
+              cursor: null,
+              group: null,
+              productType: product.kind,
+            )),
+          )
+          .value
+          ?.items;
+      return products
+          ?.where(
+            (item) =>
+                item.symbol == product.symbol && item.kind == product.kind,
+          )
+          .firstOrNull
+          ?.productId;
+    });
+
 final marketSnapshotProvider = FutureProvider.autoDispose
     .family<MarketSnapshot, MarketProductRef>((ref, product) {
       return ref.watch(marketsRepositoryProvider).getSnapshot(product);

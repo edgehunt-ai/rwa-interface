@@ -31,7 +31,7 @@ part 'hip3_trading_context.g.dart';
 /// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
 /// * [withdrawableUsdc] - 十进制字符串，避免浮点误差
 /// * [takerFeeRate] - 当前账户和 USDC 抵押 HIP-3 市场的预计 taker 费率（含账户费率、部署者倍率、growth mode 和有效推荐折扣），不含平台额外预留。只读场景无费率证据时为 null。
-/// * [feeReserveMultiplier] - 后端配置的手续费预留系数（1–10，初始默认 1.2），不是实际收费倍率。只读场景为 null。
+/// * [feeReserveMultiplier] - 用于 100% 滑杆最大数量计算及建议预留展示的手续费系数（1–10，初始默认 1.2），不是实际收费倍率或下单资金门槛。后端校验和资金占用仅要求保证金加预计手续费，允许消耗额外缓冲。只读场景为 null。
 /// * [orderCapacity] - 当前账户设置下的双向交易额度。账户尚未就绪、只读场景或上游未提供方向额度时为 null；真实零额度返回字符串 0。
 /// * [supportedOperations] 
 /// * [blocker] 
@@ -86,7 +86,7 @@ abstract class Hip3TradingContext implements Built<Hip3TradingContext, Hip3Tradi
   @BuiltValueField(wireName: r'taker_fee_rate')
   String? get takerFeeRate;
 
-  /// 后端配置的手续费预留系数（1–10，初始默认 1.2），不是实际收费倍率。只读场景为 null。
+  /// 用于 100% 滑杆最大数量计算及建议预留展示的手续费系数（1–10，初始默认 1.2），不是实际收费倍率或下单资金门槛。后端校验和资金占用仅要求保证金加预计手续费，允许消耗额外缓冲。只读场景为 null。
   @BuiltValueField(wireName: r'fee_reserve_multiplier')
   String? get feeReserveMultiplier;
 

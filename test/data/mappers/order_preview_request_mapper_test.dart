@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:rwa_interface/data/mappers/order_preview_request_mapper.dart';
 import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
@@ -146,16 +147,26 @@ final class _CapturingOrders implements OrdersService {
         request,
       ) as Map,
     );
-    return api.Order(
+    final value = api.BstockOrder(
       (b) => b
         ..orderId = 'order-1'
         ..symbol = 'NVDA'
-        ..kind = api.ProductKind.bstock
+        ..kind = api.BstockOrderWalletActionStateKindEnum.bstock
         ..side = api.OrderSide.buy
         ..type = api.OrderType.market
-        ..status = api.OrderStatus.pendingSignature
+        ..status = api.BstockOrderStatus.pending
+        ..walletActionBlocker = api
+            .BstockOrderWalletActionStateWalletActionBlockerEnum
+            .actionNotReady
         ..quantity = '1'
         ..createdAt = DateTime.utc(2026),
+    );
+    return api.Order(
+      (b) => b.oneOf = OneOfDynamic(
+        typeIndex: 0,
+        types: const [api.BstockOrder, api.PerpOrder],
+        value: value,
+      ),
     );
   }
 

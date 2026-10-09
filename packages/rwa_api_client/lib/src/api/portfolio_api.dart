@@ -448,9 +448,10 @@ class PortfolioApi {
   }
 
   /// 分页列出真实用户资产
-  /// 已验证身份下的只读资产列表，聚合 BSC、Arbitrum、Base、Ethereum 四条 allowlisted EVM 网络以及 Hyperliquid Mainnet Info 的余额事实。USDC/USDT 采用 &#x60;fixed_peg&#x3D;1&#x60;，其他资产使用 DODOEX 价格；价格不可用时保留真实余额并 返回未估值状态。  该接口不接受 wallet address、account ID 或 network 作为资产所有权输入。 用户没有已验证钱包时返回 &#x60;200 empty&#x60;；部分来源或价格失败时返回 &#x60;200 partial&#x60;，使用合格的 PostgreSQL last-good snapshot 时 freshness 为 &#x60;stale&#x60;。只有所有必要 balance source 均不可用且没有合格 last-good 时才 返回 &#x60;503&#x60;。禁止 Mock fallback，也不得把来源错误转换为零余额。 新资产页传 account&#x3D;spot：只读取 EVM 钱包余额，Cash 与 bStocks 混排，零余额不返回； 非零但未估值资产仍保留，asset_type/network 在统计与分页前过滤。 此模式不读取 HL、不读取或写入历史、不读取提现占用；不返回 withdrawable/bstocks 提现资格。 account 未传时保持原有全资产、提现字段与分页行为；asset_type/network 必须配合 account&#x3D;spot。 新模式游标失效返回422，user_action&#x3D;refresh_list；其他页面区域由独立接口加载。 
+  /// 已验证身份下的只读资产列表，聚合 BSC、Arbitrum、Base、Ethereum 四条 allowlisted EVM 网络以及 Hyperliquid Mainnet Info 的余额事实。USDC/USDT 采用 &#x60;fixed_peg&#x3D;1&#x60;，其他资产使用 DODOEX 价格；价格不可用时保留真实余额并 返回未估值状态。  该接口不接受 wallet address、account ID 或 network 作为资产所有权输入。 用户没有已验证钱包时返回 &#x60;200 empty&#x60;；部分来源或价格失败时返回 &#x60;200 partial&#x60;，使用合格的 PostgreSQL last-good snapshot 时 freshness 为 &#x60;stale&#x60;。只有所有必要 balance source 均不可用且没有合格 last-good 时才 返回 &#x60;503&#x60;。禁止 Mock fallback，也不得把来源错误转换为零余额。 新资产页传 account&#x3D;spot：只读取 EVM 钱包余额，Cash 与 bStocks 混排，零余额不返回； 非零但未估值资产仍保留，asset_type/network 在统计与分页前过滤。 此模式不读取 HL、不读取或写入历史、不读取提现占用；不返回 withdrawable/bstocks 提现资格。 account 未传时保持原有余额、提现字段与分页行为；asset_type/network 必须配合 account&#x3D;spot。 两种模式均可传 product_id，按完整 bStocks 产品 ID 精确过滤后再分页，不传保持原有列表。 卖出页使用 /v1/portfolio/assets?product_id&#x3D;bstocks%3Atslab（不要传 account&#x3D;spot），读取 items[].bstocks.available_quantity，而不是未扣减占用的 balance；同一产品可能有多个钱包行， 只使用实际交易钱包对应的可用数量，不将不同钱包额度合并为一个钱包可卖的数量。 可卖数量扣除已确认 GTC 卖单剩余量、已提交待确认 GTC 卖动作及待处理提现，下限为0。 数量为 null、availability_status 非 complete 或余额 stale 时，不得当作确定可卖或零余额；下单仍须实时校验。 未匹配产品返回空 items；产品配置或占用读取不可用返回503，不回退到全资产或未扣减余额。 account 未传时 valued_total_usd 和快照质量字段仍是全账户口径；account&#x3D;spot 的统计按筛选结果计算。 游标绑定 product_id；切换过滤条件需清除 cursor，否则返回422 cursor_snapshot_changed。 新模式游标失效返回422，user_action&#x3D;refresh_list；其他页面区域由独立接口加载。 
   ///
   /// Parameters:
+  /// * [productId] - 完整 bStocks 产品 ID，精确匹配，不按 ticker 或底层股票代码模糊匹配。 两种 account 模式均支持，与其他筛选条件取交集；在统计和分页前过滤。 不允许空值、首尾空白或超过128字节，非法值返回422 portfolio_asset_filters_invalid。 
   /// * [account] - 新资产页使用 spot；不传保持旧行为。
   /// * [assetType] - 仅 account=spot 支持；不传返回两类。
   /// * [network] - 仅 account=spot 支持；指定后只读取该链。
@@ -466,6 +467,7 @@ class PortfolioApi {
   /// Returns a [Future] containing a [Response] with a [PortfolioAssetPage] as data
   /// Throws [DioException] if API call or serialization fails
   Future<Response<PortfolioAssetPage>> listPortfolioAssets({ 
+    String? productId,
     String? account,
     String? assetType,
     String? network,
@@ -498,6 +500,7 @@ class PortfolioApi {
     );
 
     final _queryParameters = <String, dynamic>{
+      if (productId != null) r'product_id': encodeQueryParameter(_serializers, productId, const FullType(String)),
       if (account != null) r'account': encodeQueryParameter(_serializers, account, const FullType(String)),
       if (assetType != null) r'asset_type': encodeQueryParameter(_serializers, assetType, const FullType(String)),
       if (network != null) r'network': encodeQueryParameter(_serializers, network, const FullType(String)),

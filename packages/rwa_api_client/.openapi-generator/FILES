@@ -59,11 +59,14 @@ lib/src/model/bstock_funding_target_credit_observation.dart
 lib/src/model/bstock_funding_transfer_target.dart
 lib/src/model/bstock_limit_order_preview.dart
 lib/src/model/bstock_localnet_order_preview.dart
+lib/src/model/bstock_order.dart
 lib/src/model/bstock_order_asset.dart
 lib/src/model/bstock_order_assets.dart
 lib/src/model/bstock_order_preview.dart
 lib/src/model/bstock_order_preview_request.dart
+lib/src/model/bstock_order_status.dart
 lib/src/model/bstock_order_wallet_action_state.dart
+lib/src/model/bstock_order_wallet_action_state_not.dart
 lib/src/model/bstock_testnet_funding_plan.dart
 lib/src/model/bstock_testnet_funding_rail.dart
 lib/src/model/bstock_testnet_funding_target_asset.dart
@@ -82,7 +85,11 @@ lib/src/model/bstocks_depth_side_state.dart
 lib/src/model/bstocks_depth_sides.dart
 lib/src/model/bstocks_depth_status.dart
 lib/src/model/bstocks_fee_asset.dart
+lib/src/model/bstocks_order_action_create_request.dart
+lib/src/model/bstocks_order_action_page.dart
+lib/src/model/bstocks_order_continuation_preview.dart
 lib/src/model/bstocks_portfolio_availability.dart
+lib/src/model/bstocks_preview_continuation.dart
 lib/src/model/bstocks_preview_economics.dart
 lib/src/model/bstocks_preview_economics_quote_validity.dart
 lib/src/model/bstocks_preview_fee.dart
@@ -91,6 +98,7 @@ lib/src/model/bstocks_preview_route.dart
 lib/src/model/bstocks_preview_route_leg.dart
 lib/src/model/bstocks_reference_quotation.dart
 lib/src/model/bstocks_requote_validity.dart
+lib/src/model/bstocks_signature_continuation.dart
 lib/src/model/bstocks_supported_token.dart
 lib/src/model/bstocks_supported_token_page.dart
 lib/src/model/bstocks_time_in_force.dart
@@ -319,10 +327,11 @@ lib/src/model/no_executable_action_transfer_state.dart
 lib/src/model/non_completed_funding_transfer_state.dart
 lib/src/model/notification_queued_response.dart
 lib/src/model/order.dart
+lib/src/model/order_action.dart
 lib/src/model/order_action_gas_payment.dart
 lib/src/model/order_book.dart
 lib/src/model/order_book_level.dart
-lib/src/model/order_evm_action.dart
+lib/src/model/order_common.dart
 lib/src/model/order_fill.dart
 lib/src/model/order_page.dart
 lib/src/model/order_preview.dart
@@ -341,6 +350,7 @@ lib/src/model/perp_funding_target_asset.dart
 lib/src/model/perp_funding_target_balance_snapshot.dart
 lib/src/model/perp_funding_target_credit_observation.dart
 lib/src/model/perp_funding_transfer_target.dart
+lib/src/model/perp_order.dart
 lib/src/model/perp_order_preview.dart
 lib/src/model/perp_order_preview_request.dart
 lib/src/model/perp_order_wallet_action_state.dart
@@ -478,7 +488,6 @@ lib/src/model/user_settings.dart
 lib/src/model/user_settings_update.dart
 lib/src/model/wallet.dart
 lib/src/model/wallet_action_chain_observation.dart
-lib/src/model/wallet_action_complete_request.dart
 lib/src/model/wallet_action_execution.dart
 lib/src/model/wallet_action_execution_create_request.dart
 lib/src/model/wallet_action_execution_provider.dart

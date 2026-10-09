@@ -7,14 +7,14 @@ part of 'bstocks_activity_continuation.dart';
 // **************************************************************************
 
 const BstocksActivityContinuationActionEnum
-    _$bstocksActivityContinuationActionEnum_submitBstocksAction =
-    const BstocksActivityContinuationActionEnum._('submitBstocksAction');
+    _$bstocksActivityContinuationActionEnum_previewBstocksOrder =
+    const BstocksActivityContinuationActionEnum._('previewBstocksOrder');
 
 BstocksActivityContinuationActionEnum
     _$bstocksActivityContinuationActionEnumValueOf(String name) {
   switch (name) {
-    case 'submitBstocksAction':
-      return _$bstocksActivityContinuationActionEnum_submitBstocksAction;
+    case 'previewBstocksOrder':
+      return _$bstocksActivityContinuationActionEnum_previewBstocksOrder;
     default:
       throw ArgumentError(name);
   }
@@ -23,18 +23,18 @@ BstocksActivityContinuationActionEnum
 final BuiltSet<BstocksActivityContinuationActionEnum>
     _$bstocksActivityContinuationActionEnumValues = BuiltSet<
         BstocksActivityContinuationActionEnum>(const <BstocksActivityContinuationActionEnum>[
-  _$bstocksActivityContinuationActionEnum_submitBstocksAction,
+  _$bstocksActivityContinuationActionEnum_previewBstocksOrder,
 ]);
 
 const BstocksActivityContinuationStepEnum
-    _$bstocksActivityContinuationStepEnum_walletSignature =
-    const BstocksActivityContinuationStepEnum._('walletSignature');
+    _$bstocksActivityContinuationStepEnum_orderPreview =
+    const BstocksActivityContinuationStepEnum._('orderPreview');
 
 BstocksActivityContinuationStepEnum
     _$bstocksActivityContinuationStepEnumValueOf(String name) {
   switch (name) {
-    case 'walletSignature':
-      return _$bstocksActivityContinuationStepEnum_walletSignature;
+    case 'orderPreview':
+      return _$bstocksActivityContinuationStepEnum_orderPreview;
     default:
       throw ArgumentError(name);
   }
@@ -43,7 +43,7 @@ BstocksActivityContinuationStepEnum
 final BuiltSet<BstocksActivityContinuationStepEnum>
     _$bstocksActivityContinuationStepEnumValues = BuiltSet<
         BstocksActivityContinuationStepEnum>(const <BstocksActivityContinuationStepEnum>[
-  _$bstocksActivityContinuationStepEnum_walletSignature,
+  _$bstocksActivityContinuationStepEnum_orderPreview,
 ]);
 
 Serializer<BstocksActivityContinuationActionEnum>
@@ -56,10 +56,10 @@ Serializer<BstocksActivityContinuationStepEnum>
 class _$BstocksActivityContinuationActionEnumSerializer
     implements PrimitiveSerializer<BstocksActivityContinuationActionEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'submitBstocksAction': 'submit_bstocks_action',
+    'previewBstocksOrder': 'preview_bstocks_order',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'submit_bstocks_action': 'submitBstocksAction',
+    'preview_bstocks_order': 'previewBstocksOrder',
   };
 
   @override
@@ -86,10 +86,10 @@ class _$BstocksActivityContinuationActionEnumSerializer
 class _$BstocksActivityContinuationStepEnumSerializer
     implements PrimitiveSerializer<BstocksActivityContinuationStepEnum> {
   static const Map<String, Object> _toWire = const <String, Object>{
-    'walletSignature': 'wallet_signature',
+    'orderPreview': 'order_preview',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
-    'wallet_signature': 'walletSignature',
+    'order_preview': 'orderPreview',
   };
 
   @override
@@ -115,24 +115,13 @@ class _$BstocksActivityContinuationStepEnumSerializer
 
 class _$BstocksActivityContinuation extends BstocksActivityContinuation {
   @override
-  final BstocksActivityContinuationActionEnum action;
-  @override
-  final String actionId;
-  @override
-  final BstocksActivityContinuationStepEnum step;
-  @override
-  final bool requiresNewBusinessObject;
+  final OneOf oneOf;
 
   factory _$BstocksActivityContinuation(
           [void Function(BstocksActivityContinuationBuilder)? updates]) =>
       (BstocksActivityContinuationBuilder()..update(updates))._build();
 
-  _$BstocksActivityContinuation._(
-      {required this.action,
-      required this.actionId,
-      required this.step,
-      required this.requiresNewBusinessObject})
-      : super._();
+  _$BstocksActivityContinuation._({required this.oneOf}) : super._();
   @override
   BstocksActivityContinuation rebuild(
           void Function(BstocksActivityContinuationBuilder) updates) =>
@@ -145,20 +134,13 @@ class _$BstocksActivityContinuation extends BstocksActivityContinuation {
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is BstocksActivityContinuation &&
-        action == other.action &&
-        actionId == other.actionId &&
-        step == other.step &&
-        requiresNewBusinessObject == other.requiresNewBusinessObject;
+    return other is BstocksActivityContinuation && oneOf == other.oneOf;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, action.hashCode);
-    _$hash = $jc(_$hash, actionId.hashCode);
-    _$hash = $jc(_$hash, step.hashCode);
-    _$hash = $jc(_$hash, requiresNewBusinessObject.hashCode);
+    _$hash = $jc(_$hash, oneOf.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -166,10 +148,7 @@ class _$BstocksActivityContinuation extends BstocksActivityContinuation {
   @override
   String toString() {
     return (newBuiltValueToStringHelper(r'BstocksActivityContinuation')
-          ..add('action', action)
-          ..add('actionId', actionId)
-          ..add('step', step)
-          ..add('requiresNewBusinessObject', requiresNewBusinessObject))
+          ..add('oneOf', oneOf))
         .toString();
   }
 }
@@ -180,23 +159,9 @@ class BstocksActivityContinuationBuilder
             BstocksActivityContinuationBuilder> {
   _$BstocksActivityContinuation? _$v;
 
-  BstocksActivityContinuationActionEnum? _action;
-  BstocksActivityContinuationActionEnum? get action => _$this._action;
-  set action(BstocksActivityContinuationActionEnum? action) =>
-      _$this._action = action;
-
-  String? _actionId;
-  String? get actionId => _$this._actionId;
-  set actionId(String? actionId) => _$this._actionId = actionId;
-
-  BstocksActivityContinuationStepEnum? _step;
-  BstocksActivityContinuationStepEnum? get step => _$this._step;
-  set step(BstocksActivityContinuationStepEnum? step) => _$this._step = step;
-
-  bool? _requiresNewBusinessObject;
-  bool? get requiresNewBusinessObject => _$this._requiresNewBusinessObject;
-  set requiresNewBusinessObject(bool? requiresNewBusinessObject) =>
-      _$this._requiresNewBusinessObject = requiresNewBusinessObject;
+  OneOf? _oneOf;
+  OneOf? get oneOf => _$this._oneOf;
+  set oneOf(OneOf? oneOf) => _$this._oneOf = oneOf;
 
   BstocksActivityContinuationBuilder() {
     BstocksActivityContinuation._defaults(this);
@@ -205,10 +170,7 @@ class BstocksActivityContinuationBuilder
   BstocksActivityContinuationBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _action = $v.action;
-      _actionId = $v.actionId;
-      _step = $v.step;
-      _requiresNewBusinessObject = $v.requiresNewBusinessObject;
+      _oneOf = $v.oneOf;
       _$v = null;
     }
     return this;
@@ -230,16 +192,8 @@ class BstocksActivityContinuationBuilder
   _$BstocksActivityContinuation _build() {
     final _$result = _$v ??
         _$BstocksActivityContinuation._(
-          action: BuiltValueNullFieldError.checkNotNull(
-              action, r'BstocksActivityContinuation', 'action'),
-          actionId: BuiltValueNullFieldError.checkNotNull(
-              actionId, r'BstocksActivityContinuation', 'actionId'),
-          step: BuiltValueNullFieldError.checkNotNull(
-              step, r'BstocksActivityContinuation', 'step'),
-          requiresNewBusinessObject: BuiltValueNullFieldError.checkNotNull(
-              requiresNewBusinessObject,
-              r'BstocksActivityContinuation',
-              'requiresNewBusinessObject'),
+          oneOf: BuiltValueNullFieldError.checkNotNull(
+              oneOf, r'BstocksActivityContinuation', 'oneOf'),
         );
     replace(_$result);
     return _$result;

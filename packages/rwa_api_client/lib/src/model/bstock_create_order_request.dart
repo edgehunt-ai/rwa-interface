@@ -12,7 +12,7 @@ import 'package:built_value/serializer.dart';
 
 part 'bstock_create_order_request.g.dart';
 
-/// 当前非 localnet 实现要求有效 preview_id，并严格匹配账户/owner/输入/准入和经济量边界。 preview_id 字段可选保留旧 wire 兼容，不表示运行时允许省略；缺失/过期/变更需重新预览。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定及创建幂等语义等价。 与preview共用限价参数校验：不得传非空amount，quantity和limit_price须为正的十进制字符串。 可解析的业务参数错误返回422及具体code：bstocks_limit_amount_not_allowed、bstocks_limit_quantity_invalid、 bstocks_limit_price_invalid、bstocks_slippage_invalid， user_action=update_order_parameters；错误类型、未知字段或超出Decimal精度仍为 invalid_json。 市价单省略 time_in_force 时仍按 IOC，不受限价默认值影响。 返回 approval action 不代表已创建 swap，但已消费该 preview_id。授权后必须获取新 preview_id，并使用新的创建幂等键提交交易。 相同创建幂等键只重放原 action（包括 approval），不会升级成 swap。一个 preview 最多创建一个 action（approval 或交易），换 key 也不能再次消费。 不需要 approval 时，有效 preview_id 可直接创建交易 action。 tp_sl 仅兼容省略、空对象或 enabled=false；enabled=true 返回422 invalid_json，不会静默忽略保护。 
+/// 必须引用有效的初始 preview_id，严格匹配账户/owner/输入/准入和经济量边界。 continuation preview 已绑定既有订单，不能调用本接口创建另一订单；过期/变更需重新预览。 限价单省略 time_in_force 时默认 gtc；显式 ioc 仍按 IOC 执行。省略与显式 gtc 的预览确认绑定及创建幂等语义等价。 与preview共用限价参数校验：不得传非空amount，quantity和limit_price须为正的十进制字符串。 可解析的业务参数错误返回422及具体code：bstocks_limit_amount_not_allowed、bstocks_limit_quantity_invalid、 bstocks_limit_price_invalid、bstocks_slippage_invalid， user_action=update_order_parameters；错误类型、未知字段或超出Decimal精度仍为 invalid_json。 市价单省略 time_in_force 时仍按 IOC，不受限价默认值影响。 原子创建业务订单与首个动作；approval 不代表已创建 swap，但已消费该 preview_id。 授权后通过原订单的 preview/actions 接口继续同一订单，不能再用 POST /orders 完成第二阶段。 相同创建幂等键重放原订单，不会升级成 swap。一个 preview 最多创建一个 action（approval 或交易），换 key 也不能再次消费。 不需要 approval 时，有效 preview_id 可直接创建交易 action。 tp_sl 仅兼容省略、空对象或 enabled=false；enabled=true 返回422 invalid_json，不会静默忽略保护。 
 ///
 /// Properties:
 /// * [symbol] 
@@ -25,7 +25,7 @@ part 'bstock_create_order_request.g.dart';
 /// * [limitPrice] - 每单位基础资产的 quote token 限价，不默认 USDC 或 USD。
 /// * [slippagePercent] - bStocks市价、IOC限价和GTC限价均可用；百分数（\"1\"表示1%），省略/null默认0，范围 0 <= slippage_percent < 100。 必须匹配preview的规范化输入，不增加交易预算。IOC仍沿用preview冻结下限，链上minAmountOut使用新路由报价输出。 GTC（含省略time_in_force的限价单）接受非零滑点：与挂单action快照一起持久化，按账户/钱包/链/Router及规范挂单交易证据绑定。 平台Keeper每次成交重新取得最终签名RFQ及DEX报价Q，最低输出=max(ceil(Q×(1-p/100)),限价要求的最低输出)； Pancake分路也设置最低输出，必要时收紧以保证总路线满足限价；RFQ固定输出不因滑点放宽。 部分成交、重报价仍使用原比例但重新计算绝对下限；当前报价不满足限价时等待，不放宽限价强行成交。 GTC零滑点在预览绑定和创建幂等哈希前规范化为省略，非零值保留并参与绑定；变更比例须重新preview。 历史或外部挂单没有可绑定策略时按0%执行；已绑定的非法策略阻止执行，不静默替换为其他数值。 Router仍独立校验实际支付/净到账及硬限价；比例是平台Keeper策略，不是链上独立认证的报价偏离率，第三方permissionless执行者不受该策略约束。 
 /// * [tpSl] 
-/// * [previewId] - 引用账户绑定的有效预览和经济量边界，不锁定成交；审批消费后或过期后重新预览。
+/// * [previewId] - 引用账户绑定的有效初始预览；不锁定成交，也不能使用绑定了既有订单的 continuation preview。
 @BuiltValue()
 abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderRequest, BstockCreateOrderRequestBuilder> {
   @BuiltValueField(wireName: r'symbol')
@@ -66,9 +66,9 @@ abstract class BstockCreateOrderRequest implements Built<BstockCreateOrderReques
   @BuiltValueField(wireName: r'tp_sl')
   TpSlSpec? get tpSl;
 
-  /// 引用账户绑定的有效预览和经济量边界，不锁定成交；审批消费后或过期后重新预览。
+  /// 引用账户绑定的有效初始预览；不锁定成交，也不能使用绑定了既有订单的 continuation preview。
   @BuiltValueField(wireName: r'preview_id')
-  String? get previewId;
+  String get previewId;
 
   BstockCreateOrderRequest._();
 
@@ -155,13 +155,11 @@ class _$BstockCreateOrderRequestSerializer implements PrimitiveSerializer<Bstock
         specifiedType: const FullType(TpSlSpec),
       );
     }
-    if (object.previewId != null) {
-      yield r'preview_id';
-      yield serializers.serialize(
-        object.previewId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
+    yield r'preview_id';
+    yield serializers.serialize(
+      object.previewId,
+      specifiedType: const FullType(String),
+    );
   }
 
   @override
@@ -264,9 +262,8 @@ class _$BstockCreateOrderRequestSerializer implements PrimitiveSerializer<Bstock
         case r'preview_id':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
+            specifiedType: const FullType(String),
+          ) as String;
           result.previewId = valueDes;
           break;
         default:

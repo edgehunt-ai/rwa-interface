@@ -129,6 +129,19 @@ final class CancelledFailure extends ApiFailure {
   FailureKind get kind => FailureKind.cancelled;
 }
 
+/// The transaction sender proves that no broadcast request was issued, or that
+/// the wallet explicitly rejected it before broadcast. Transport/SDK errors
+/// after issuing the request must never use this failure.
+final class WalletTransactionNotBroadcastFailure extends ApiFailure {
+  const WalletTransactionNotBroadcastFailure({
+    super.retryable,
+    super.userAction,
+  });
+
+  @override
+  FailureKind get kind => FailureKind.unknown;
+}
+
 final class DecodingFailure extends ApiFailure {
   const DecodingFailure({super.requestId, super.userAction});
   @override

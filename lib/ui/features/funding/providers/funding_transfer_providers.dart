@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
 import '../../../../app/providers/observability_providers.dart';
+import '../../../../data/api/idempotency_key.dart';
 import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/funding_transfer.dart';
@@ -368,8 +369,9 @@ final class FundingTransferCommands {
             planId: plan.planId,
             asset: leg.asset,
             maximumAmount: leg.maximumAmount.value,
-            idempotencyKey:
-                'transfer-authorization-${plan.planId}-${leg.legId}',
+            idempotencyKey: scopedIdempotencyKey(
+              'transfer-authorization-${plan.planId}-${leg.legId}',
+            ),
           ),
     );
   }
@@ -412,8 +414,9 @@ final class FundingTransferCommands {
       transferId: transfer.transferId,
       actionId: actionId,
       mode: GasPaymentMode.appSponsored,
-      idempotencyKey:
-          'funding-transfer-execution-${transfer.transferId}-$actionId',
+      idempotencyKey: scopedIdempotencyKey(
+        'funding-transfer-execution-${transfer.transferId}-$actionId',
+      ),
     );
     if (execution.requiresUserPaidFallback) {
       throw StateError('Sponsored transfer execution is unavailable');
@@ -433,8 +436,9 @@ final class FundingTransferCommands {
     final submitted = await executions.submitAuthorization(
       executionId: execution.executionId,
       signature: signature,
-      idempotencyKey:
-          'funding-transfer-execution-submit-${execution.executionId}',
+      idempotencyKey: scopedIdempotencyKey(
+        'funding-transfer-execution-submit-${execution.executionId}',
+      ),
     );
     switch (submitted.status) {
       case WalletActionExecutionState.submitting ||

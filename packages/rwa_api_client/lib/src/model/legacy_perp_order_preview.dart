@@ -42,7 +42,7 @@ part 'legacy_perp_order_preview.g.dart';
 /// * [route] 
 /// * [cancellationPolicy] 
 /// * [hip3Execution] 
-/// * [previewId] - 服务端预览标识。bStocks 绑定账户、owner、输入、准入版本和经济量上限，不是锁价或成交承诺。 当前非 localnet 下单必须引用自己的有效预览；quote_expires_at 是最多120秒的服务端确认期限， 还必须满足独立的 Quoter 区块窗口。审批会消费预览，成功后必须重新 preview/create。 
+/// * [previewId] - 服务端预览标识。bStocks 绑定账户、owner、输入、准入版本和经济量上限，不是锁价或成交承诺。 当前非 localnet 下单必须引用自己的有效预览；quote_expires_at 是最多120秒的服务端确认期限， 还必须满足独立的 Quoter 区块窗口。审批会消费预览，成功后在同一业务订单的 preview/actions 接口重新预览并显式继续。 
 /// * [symbol] 
 /// * [side] 
 /// * [type] 

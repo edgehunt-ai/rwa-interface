@@ -1,8 +1,11 @@
 import 'decimal_value.dart';
+import 'api_failure.dart';
 import 'market_product.dart';
 import 'order_intent.dart';
 
 enum TradingOrderStatus {
+  pending,
+  awaitingConfirmation,
   pendingSignature,
   submitted,
   open,
@@ -15,14 +18,20 @@ enum TradingOrderStatus {
   unknown,
 }
 
-enum BstocksOrderActionKind { erc20Approval, spotSwap, unknown }
+enum BstocksOrderActionKind {
+  erc20Approval,
+  placeGtcOrder,
+  executeIocOrder,
+  cancelOrder,
+  unknown,
+}
 
 final class BstocksOrderAction {
   const BstocksOrderAction({
     required this.orderId,
-    required this.stepId,
-    required this.ordinal,
+    required this.actionId,
     required this.kind,
+    required this.status,
     required this.chainId,
     required this.from,
     required this.to,
@@ -30,12 +39,20 @@ final class BstocksOrderAction {
     required this.value,
     required this.payloadHash,
     required this.validUntil,
+    this.previewId,
+    this.submittedTransactionHash,
+    this.confirmedTransactionHash,
+    this.failureReason,
   });
 
   final String orderId;
-  final String stepId;
-  final int ordinal;
+  final String actionId;
   final BstocksOrderActionKind kind;
+  final BstocksOrderActionStatus status;
+  final String? previewId;
+  final String? submittedTransactionHash;
+  final String? confirmedTransactionHash;
+  final String? failureReason;
   final int chainId;
   final String from;
   final String to;
@@ -119,9 +136,9 @@ final class TradingOrder {
     this.updatedAt,
     this.nextAction,
     this.walletActionBlocker,
-    this.actionStatus,
-    this.submittedTransactionHash,
-    this.confirmedTransactionHash,
+    this.currentActionId,
+    this.requestedAmount,
+    this.settlementAsset,
   });
   final String orderId;
   final String? productId;
@@ -145,9 +162,33 @@ final class TradingOrder {
   final DateTime? updatedAt;
   final BstocksOrderAction? nextAction;
   final String? walletActionBlocker;
-  final BstocksOrderActionStatus? actionStatus;
-  final String? submittedTransactionHash;
-  final String? confirmedTransactionHash;
+  final String? currentActionId;
+  final DecimalValue? requestedAmount;
+  final String? settlementAsset;
+
+  bool get isOpen =>
+      status == TradingOrderStatus.open ||
+      status == TradingOrderStatus.partiallyFilled;
+
+  bool get isBstocksCancellable =>
+      kind == MarketProductKind.bstock &&
+      type == TradingOrderType.limit &&
+      isOpen;
+
+  BstocksOrderActionStatus? get actionStatus => nextAction?.status;
+  String? get submittedTransactionHash => nextAction?.submittedTransactionHash;
+  String? get confirmedTransactionHash => nextAction?.confirmedTransactionHash;
+
+  void checkBstocksExecutionFailure() {
+    if (kind == MarketProductKind.bstock &&
+        const {
+          TradingOrderStatus.failed,
+          TradingOrderStatus.ambiguous,
+          TradingOrderStatus.manualReview,
+        }.contains(status)) {
+      throw UnknownFailure(userAction: failureReason ?? 'Order ${status.name}');
+    }
+  }
 
   bool get isTerminal => const {
     TradingOrderStatus.filled,

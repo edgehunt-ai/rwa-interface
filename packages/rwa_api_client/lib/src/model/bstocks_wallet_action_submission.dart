@@ -12,13 +12,14 @@ part 'bstocks_wallet_action_submission.g.dart';
 /// BstocksWalletActionSubmission
 ///
 /// Properties:
-/// * [orderId] 
+/// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
 /// * [actionId] 
 /// * [status] 
 /// * [submittedTransactionHash] 
 /// * [updatedAt] 
 @BuiltValue()
 abstract class BstocksWalletActionSubmission implements Built<BstocksWalletActionSubmission, BstocksWalletActionSubmissionBuilder> {
+  /// 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
   @BuiltValueField(wireName: r'order_id')
   String get orderId;
 

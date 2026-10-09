@@ -3,54 +3,63 @@
 //
 
 // ignore_for_file: unused_element
-import 'package:rwa_api_client/src/model/bstocks_approval_mode.dart';
-import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
-import 'package:rwa_api_client/src/model/order_evm_action.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/bstocks_time_in_force.dart';
+import 'package:rwa_api_client/src/model/bstock_order_status.dart';
 import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
+import 'package:rwa_api_client/src/model/order_action.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
 part 'bstock_order_wallet_action_state.g.dart';
 
-/// action_status 是钱包动作状态，不等于最终订单成交。审批确认仍是 status=open、 action_status=confirmed、next_action=null；必须新建预览和交易动作，不能当作已买入。 
+/// bStocks 业务订单及其当前子动作引用。审批确认进入 awaiting_confirmation，不是 open 或 filled。 后续新预览/动作始终关联同一 order_id；订单列表不混入授权或撤单动作。 
 ///
 /// Properties:
-/// * [approvalRequired] - 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
-/// * [approvalMode] 
-/// * [approvalAmountRaw] - approve动作冻结的授权额度，输入 token 最小单位字符串；与 required_funding_raw 交易输入预算区分。 slippage 模式按 BstocksApprovalMode 公式受创建时链上输入 token 余额限制，并必须匹配冻结 preview 的授权目标。 已生成 action 的幂等重放不重新计算该额度，也不会因余额变化而修改已冻结 calldata；unlimited 模式仍为 uint256.max。 
+/// * [timeInForce] 
+/// * [quantity] - 预算买入在执行前可为 null，原始预算保存在 requested_amount，不能补造数量。
+/// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
+/// * [currentActionId] 
+/// * [status] 
+/// * [requestedAmount] - 用户原始预算，仅预算买入时有值；不从已执行数量反推。
 /// * [fundingMode] 
 /// * [fundsReserved] 
 /// * [cancellationPolicy] 
 /// * [kind] 
 /// * [nextAction] 
-/// * [walletActionBlocker] - Must be null when `next_action` is present; enforced by server validation.
-/// * [slippagePercent] - bStocks限价action以及canonical GTC订单的执行滑点百分数字符串，范围[0,100)，不是价格或资金预算。 GTC从已确认挂单action的持久化快照恢复，平台Keeper逐次报价执行；历史/外部挂单默认\"0\"。 旧服务和市价历史响应可省略；该字段不是Router原生订单字段，链上强制的是每次call的最低输出与限价。 
-/// * [actionStatus] 
-/// * [submittedTransactionHash] 
-/// * [confirmedTransactionHash] 
-/// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget. Cancellation actions omit this field; null is not a valid funding amount.
-/// * [previewId] - 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
+/// * [walletActionBlocker] - next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
+/// * [slippagePercent] - 不可变订单意图的滑点百分数字符串，范围[0,100)，不是价格或资金预算。 平台Keeper逐次报价执行，链上限价不被放宽；历史已验证省略值默认\"0\"。 
 /// * [chainId] 
 /// * [router] 
-/// * [placementTransactionHash] - canonical GTC 的挂单交易；不是本次撤单或成交交易。
-/// * [transactionHash] - canonical IOC 执行交易；与 log_index 一起定位事件。
+/// * [chainOrderId] - GTC 链上编号；未挂单和 IOC 为 null，不用于公共订单路由。
+/// * [placementTransactionHash] - canonical GTC 挂单交易，不是最近辅助动作的交易。
+/// * [transactionHash] - canonical IOC 执行交易，与 log_index 一起标识链证据。
 /// * [logIndex] 
 /// * [cancellationReason] 
-/// * [targetOrderId] - 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
-@BuiltValue()
-abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletActionState, BstockOrderWalletActionStateBuilder> {
-  /// 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
-  @BuiltValueField(wireName: r'approval_required')
-  bool? get approvalRequired;
+@BuiltValue(instantiable: false)
+abstract class BstockOrderWalletActionState  {
+  @BuiltValueField(wireName: r'time_in_force')
+  BstocksTimeInForce? get timeInForce;
+  // enum timeInForceEnum {  gtc,  ioc,  };
 
-  @BuiltValueField(wireName: r'approval_mode')
-  BstocksApprovalMode? get approvalMode;
-  // enum approvalModeEnum {  unlimited,  slippage,  };
+  /// 预算买入在执行前可为 null，原始预算保存在 requested_amount，不能补造数量。
+  @BuiltValueField(wireName: r'quantity')
+  String? get quantity;
 
-  /// approve动作冻结的授权额度，输入 token 最小单位字符串；与 required_funding_raw 交易输入预算区分。 slippage 模式按 BstocksApprovalMode 公式受创建时链上输入 token 余额限制，并必须匹配冻结 preview 的授权目标。 已生成 action 的幂等重放不重新计算该额度，也不会因余额变化而修改已冻结 calldata；unlimited 模式仍为 uint256.max。 
-  @BuiltValueField(wireName: r'approval_amount_raw')
-  String? get approvalAmountRaw;
+  /// 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
+  @BuiltValueField(wireName: r'order_id')
+  String get orderId;
+
+  @BuiltValueField(wireName: r'current_action_id')
+  String? get currentActionId;
+
+  @BuiltValueField(wireName: r'status')
+  BstockOrderStatus get status;
+  // enum statusEnum {  pending,  awaiting_confirmation,  submitted,  open,  partially_filled,  filled,  cancelled,  failed,  ambiguous,  manual_review,  };
+
+  /// 用户原始预算，仅预算买入时有值；不从已执行数量反推。
+  @BuiltValueField(wireName: r'requested_amount')
+  String? get requestedAmount;
 
   @BuiltValueField(wireName: r'funding_mode')
   BstockOrderWalletActionStateFundingModeEnum? get fundingMode;
@@ -67,34 +76,16 @@ abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletAc
   // enum kindEnum {  bstock,  };
 
   @BuiltValueField(wireName: r'next_action')
-  OrderEvmAction? get nextAction;
+  OrderAction? get nextAction;
 
-  /// Must be null when `next_action` is present; enforced by server validation.
+  /// next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
   @BuiltValueField(wireName: r'wallet_action_blocker')
   BstockOrderWalletActionStateWalletActionBlockerEnum? get walletActionBlocker;
-  // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  };
+  // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  preview_required,  order_in_flight,  manual_review,  };
 
-  /// bStocks限价action以及canonical GTC订单的执行滑点百分数字符串，范围[0,100)，不是价格或资金预算。 GTC从已确认挂单action的持久化快照恢复，平台Keeper逐次报价执行；历史/外部挂单默认\"0\"。 旧服务和市价历史响应可省略；该字段不是Router原生订单字段，链上强制的是每次call的最低输出与限价。 
+  /// 不可变订单意图的滑点百分数字符串，范围[0,100)，不是价格或资金预算。 平台Keeper逐次报价执行，链上限价不被放宽；历史已验证省略值默认\"0\"。 
   @BuiltValueField(wireName: r'slippage_percent')
   String? get slippagePercent;
-
-  @BuiltValueField(wireName: r'action_status')
-  BstocksActionStatus? get actionStatus;
-  // enum actionStatusEnum {  awaiting_signature,  submitted,  confirmed,  failed,  manual_review,  };
-
-  @BuiltValueField(wireName: r'submitted_transaction_hash')
-  String? get submittedTransactionHash;
-
-  @BuiltValueField(wireName: r'confirmed_transaction_hash')
-  String? get confirmedTransactionHash;
-
-  /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget. Cancellation actions omit this field; null is not a valid funding amount.
-  @BuiltValueField(wireName: r'required_funding_raw')
-  String? get requiredFundingRaw;
-
-  /// 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
-  @BuiltValueField(wireName: r'preview_id')
-  String? get previewId;
 
   @BuiltValueField(wireName: r'chain_id')
   BstockOrderWalletActionStateChainIdEnum? get chainId;
@@ -103,11 +94,15 @@ abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletAc
   @BuiltValueField(wireName: r'router')
   String? get router;
 
-  /// canonical GTC 的挂单交易；不是本次撤单或成交交易。
+  /// GTC 链上编号；未挂单和 IOC 为 null，不用于公共订单路由。
+  @BuiltValueField(wireName: r'chain_order_id')
+  String? get chainOrderId;
+
+  /// canonical GTC 挂单交易，不是最近辅助动作的交易。
   @BuiltValueField(wireName: r'placement_transaction_hash')
   String? get placementTransactionHash;
 
-  /// canonical IOC 执行交易；与 log_index 一起定位事件。
+  /// canonical IOC 执行交易，与 log_index 一起标识链证据。
   @BuiltValueField(wireName: r'transaction_hash')
   String? get transactionHash;
 
@@ -118,24 +113,13 @@ abstract class BstockOrderWalletActionState implements Built<BstockOrderWalletAc
   BstockOrderWalletActionStateCancellationReasonEnum? get cancellationReason;
   // enum cancellationReasonEnum {  user_cancelled,  insufficient_balance,  insufficient_allowance,  };
 
-  /// 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
-  @BuiltValueField(wireName: r'target_order_id')
-  String? get targetOrderId;
-
-  BstockOrderWalletActionState._();
-
-  factory BstockOrderWalletActionState([void updates(BstockOrderWalletActionStateBuilder b)]) = _$BstockOrderWalletActionState;
-
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(BstockOrderWalletActionStateBuilder b) => b;
-
   @BuiltValueSerializer(custom: true)
   static Serializer<BstockOrderWalletActionState> get serializer => _$BstockOrderWalletActionStateSerializer();
 }
 
 class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<BstockOrderWalletActionState> {
   @override
-  final Iterable<Type> types = const [BstockOrderWalletActionState, _$BstockOrderWalletActionState];
+  final Iterable<Type> types = const [BstockOrderWalletActionState];
 
   @override
   final String wireName = r'BstockOrderWalletActionState';
@@ -145,25 +129,40 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
     BstockOrderWalletActionState object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.approvalRequired != null) {
-      yield r'approval_required';
+    if (object.timeInForce != null) {
+      yield r'time_in_force';
       yield serializers.serialize(
-        object.approvalRequired,
-        specifiedType: const FullType(bool),
+        object.timeInForce,
+        specifiedType: const FullType(BstocksTimeInForce),
       );
     }
-    if (object.approvalMode != null) {
-      yield r'approval_mode';
+    if (object.quantity != null) {
+      yield r'quantity';
       yield serializers.serialize(
-        object.approvalMode,
-        specifiedType: const FullType(BstocksApprovalMode),
+        object.quantity,
+        specifiedType: const FullType.nullable(String),
       );
     }
-    if (object.approvalAmountRaw != null) {
-      yield r'approval_amount_raw';
+    yield r'order_id';
+    yield serializers.serialize(
+      object.orderId,
+      specifiedType: const FullType(String),
+    );
+    yield r'current_action_id';
+    yield object.currentActionId == null ? null : serializers.serialize(
+      object.currentActionId,
+      specifiedType: const FullType.nullable(String),
+    );
+    yield r'status';
+    yield serializers.serialize(
+      object.status,
+      specifiedType: const FullType(BstockOrderStatus),
+    );
+    if (object.requestedAmount != null) {
+      yield r'requested_amount';
       yield serializers.serialize(
-        object.approvalAmountRaw,
-        specifiedType: const FullType(String),
+        object.requestedAmount,
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.fundingMode != null) {
@@ -195,7 +194,7 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
     yield r'next_action';
     yield object.nextAction == null ? null : serializers.serialize(
       object.nextAction,
-      specifiedType: const FullType.nullable(OrderEvmAction),
+      specifiedType: const FullType.nullable(OrderAction),
     );
     yield r'wallet_action_blocker';
     yield object.walletActionBlocker == null ? null : serializers.serialize(
@@ -206,41 +205,6 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       yield r'slippage_percent';
       yield serializers.serialize(
         object.slippagePercent,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.actionStatus != null) {
-      yield r'action_status';
-      yield serializers.serialize(
-        object.actionStatus,
-        specifiedType: const FullType(BstocksActionStatus),
-      );
-    }
-    if (object.submittedTransactionHash != null) {
-      yield r'submitted_transaction_hash';
-      yield serializers.serialize(
-        object.submittedTransactionHash,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.confirmedTransactionHash != null) {
-      yield r'confirmed_transaction_hash';
-      yield serializers.serialize(
-        object.confirmedTransactionHash,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.requiredFundingRaw != null) {
-      yield r'required_funding_raw';
-      yield serializers.serialize(
-        object.requiredFundingRaw,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.previewId != null) {
-      yield r'preview_id';
-      yield serializers.serialize(
-        object.previewId,
         specifiedType: const FullType(String),
       );
     }
@@ -256,6 +220,13 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       yield serializers.serialize(
         object.router,
         specifiedType: const FullType(String),
+      );
+    }
+    if (object.chainOrderId != null) {
+      yield r'chain_order_id';
+      yield serializers.serialize(
+        object.chainOrderId,
+        specifiedType: const FullType.nullable(String),
       );
     }
     if (object.placementTransactionHash != null) {
@@ -286,13 +257,6 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
         specifiedType: const FullType.nullable(BstockOrderWalletActionStateCancellationReasonEnum),
       );
     }
-    if (object.targetOrderId != null) {
-      yield r'target_order_id';
-      yield serializers.serialize(
-        object.targetOrderId,
-        specifiedType: const FullType(String),
-      );
-    }
   }
 
   @override
@@ -302,6 +266,46 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+  }
+
+  @override
+  BstockOrderWalletActionState deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.deserialize(serialized, specifiedType: FullType($BstockOrderWalletActionState)) as $BstockOrderWalletActionState;
+  }
+}
+
+/// a concrete implementation of [BstockOrderWalletActionState], since [BstockOrderWalletActionState] is not instantiable
+@BuiltValue(instantiable: true)
+abstract class $BstockOrderWalletActionState implements BstockOrderWalletActionState, Built<$BstockOrderWalletActionState, $BstockOrderWalletActionStateBuilder> {
+  $BstockOrderWalletActionState._();
+
+  factory $BstockOrderWalletActionState([void Function($BstockOrderWalletActionStateBuilder)? updates]) = _$$BstockOrderWalletActionState;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults($BstockOrderWalletActionStateBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<$BstockOrderWalletActionState> get serializer => _$$BstockOrderWalletActionStateSerializer();
+}
+
+class _$$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<$BstockOrderWalletActionState> {
+  @override
+  final Iterable<Type> types = const [$BstockOrderWalletActionState, _$$BstockOrderWalletActionState];
+
+  @override
+  final String wireName = r'$BstockOrderWalletActionState';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    $BstockOrderWalletActionState object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.serialize(object, specifiedType: FullType(BstockOrderWalletActionState))!;
   }
 
   void _deserializeProperties(
@@ -316,29 +320,51 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'approval_required':
+        case r'time_in_force':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(bool),
-          ) as bool?;
+            specifiedType: const FullType.nullable(BstocksTimeInForce),
+          ) as BstocksTimeInForce?;
           if (valueDes == null) continue;
-          result.approvalRequired = valueDes;
+          result.timeInForce = valueDes;
           break;
-        case r'approval_mode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(BstocksApprovalMode),
-          ) as BstocksApprovalMode?;
-          if (valueDes == null) continue;
-          result.approvalMode = valueDes;
-          break;
-        case r'approval_amount_raw':
+        case r'quantity':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType.nullable(String),
           ) as String?;
           if (valueDes == null) continue;
-          result.approvalAmountRaw = valueDes;
+          result.quantity = valueDes;
+          break;
+        case r'order_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.orderId = valueDes;
+          break;
+        case r'current_action_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.currentActionId = valueDes;
+          break;
+        case r'status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(BstockOrderStatus),
+          ) as BstockOrderStatus;
+          result.status = valueDes;
+          break;
+        case r'requested_amount':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.requestedAmount = valueDes;
           break;
         case r'funding_mode':
           final valueDes = serializers.deserialize(
@@ -374,8 +400,8 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
         case r'next_action':
           final valueDes = serializers.deserialize(
             value,
-            specifiedType: const FullType.nullable(OrderEvmAction),
-          ) as OrderEvmAction?;
+            specifiedType: const FullType.nullable(OrderAction),
+          ) as OrderAction?;
           if (valueDes == null) continue;
           result.nextAction.replace(valueDes);
           break;
@@ -395,46 +421,6 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
           if (valueDes == null) continue;
           result.slippagePercent = valueDes;
           break;
-        case r'action_status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(BstocksActionStatus),
-          ) as BstocksActionStatus?;
-          if (valueDes == null) continue;
-          result.actionStatus = valueDes;
-          break;
-        case r'submitted_transaction_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.submittedTransactionHash = valueDes;
-          break;
-        case r'confirmed_transaction_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.confirmedTransactionHash = valueDes;
-          break;
-        case r'required_funding_raw':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.requiredFundingRaw = valueDes;
-          break;
-        case r'preview_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.previewId = valueDes;
-          break;
         case r'chain_id':
           final valueDes = serializers.deserialize(
             value,
@@ -450,6 +436,14 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
           ) as String?;
           if (valueDes == null) continue;
           result.router = valueDes;
+          break;
+        case r'chain_order_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(String),
+          ) as String?;
+          if (valueDes == null) continue;
+          result.chainOrderId = valueDes;
           break;
         case r'placement_transaction_hash':
           final valueDes = serializers.deserialize(
@@ -483,14 +477,6 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
           if (valueDes == null) continue;
           result.cancellationReason = valueDes;
           break;
-        case r'target_order_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.targetOrderId = valueDes;
-          break;
         default:
           unhandled.add(key);
           unhandled.add(value);
@@ -500,12 +486,12 @@ class _$BstockOrderWalletActionStateSerializer implements PrimitiveSerializer<Bs
   }
 
   @override
-  BstockOrderWalletActionState deserialize(
+  $BstockOrderWalletActionState deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = BstockOrderWalletActionStateBuilder();
+    final result = $BstockOrderWalletActionStateBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(
@@ -548,15 +534,24 @@ class BstockOrderWalletActionStateKindEnum extends EnumClass {
 
 class BstockOrderWalletActionStateWalletActionBlockerEnum extends EnumClass {
 
-  /// Must be null when `next_action` is present; enforced by server validation.
+  /// next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
   @BuiltValueEnumConst(wireName: r'provider_unavailable')
   static const BstockOrderWalletActionStateWalletActionBlockerEnum providerUnavailable = _$bstockOrderWalletActionStateWalletActionBlockerEnum_providerUnavailable;
-  /// Must be null when `next_action` is present; enforced by server validation.
+  /// next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
   @BuiltValueEnumConst(wireName: r'action_not_ready')
   static const BstockOrderWalletActionStateWalletActionBlockerEnum actionNotReady = _$bstockOrderWalletActionStateWalletActionBlockerEnum_actionNotReady;
-  /// Must be null when `next_action` is present; enforced by server validation.
+  /// next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
   @BuiltValueEnumConst(wireName: r'capability_disabled')
   static const BstockOrderWalletActionStateWalletActionBlockerEnum capabilityDisabled = _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled;
+  /// next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
+  @BuiltValueEnumConst(wireName: r'preview_required')
+  static const BstockOrderWalletActionStateWalletActionBlockerEnum previewRequired = _$bstockOrderWalletActionStateWalletActionBlockerEnum_previewRequired;
+  /// next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
+  @BuiltValueEnumConst(wireName: r'order_in_flight')
+  static const BstockOrderWalletActionStateWalletActionBlockerEnum orderInFlight = _$bstockOrderWalletActionStateWalletActionBlockerEnum_orderInFlight;
+  /// next_action 存在时必须为 null；等待用户接受新 preview 时为 preview_required。
+  @BuiltValueEnumConst(wireName: r'manual_review')
+  static const BstockOrderWalletActionStateWalletActionBlockerEnum manualReview = _$bstockOrderWalletActionStateWalletActionBlockerEnum_manualReview;
 
   static Serializer<BstockOrderWalletActionStateWalletActionBlockerEnum> get serializer => _$bstockOrderWalletActionStateWalletActionBlockerEnumSerializer;
 

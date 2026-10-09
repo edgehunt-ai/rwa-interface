@@ -2,6 +2,8 @@ import 'dart:async';
 
 import '../../domain/auth/authentication.dart';
 import '../api/idempotency_key.dart';
+import '../services/bstocks_broadcast_journal.dart';
+import '../services/bstocks_sponsored_execution_journal.dart';
 import '../../domain/models/api_failure.dart';
 import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
@@ -23,13 +25,131 @@ final class BstocksOrderExecutionRepositoryImpl
     this._sender, {
     this._sponsoredExecutions,
     this._authorizationSigner,
-  });
+    BstocksBroadcastJournal? broadcastJournal,
+    BstocksSponsoredExecutionJournal? sponsoredJournal,
+  }) : _broadcastJournal = broadcastJournal ?? BstocksBroadcastJournal(),
+       _sponsoredJournal =
+           sponsoredJournal ?? BstocksSponsoredExecutionJournal();
 
   final OrdersRepository _orders;
   final BstocksOrderActionRepository _actions;
   final EmbeddedWalletTransactionSender? _sender;
   final WalletActionExecutionRepository? _sponsoredExecutions;
   final WalletAuthorizationSigner? _authorizationSigner;
+  final BstocksBroadcastJournal _broadcastJournal;
+  final BstocksSponsoredExecutionJournal _sponsoredJournal;
+
+  @override
+  Future<ResourceResult<TradingOrder>> continueOrder({
+    required OrderIntent intent,
+    required String orderId,
+    required String previewId,
+    bool Function()? isCancelled,
+    bool stopAfterApproval = false,
+  }) async {
+    _checkCancellation(isCancelled);
+    final action = await _actions.create(
+      orderId: orderId,
+      previewId: previewId,
+      idempotencyKey: scopedIdempotencyKey(
+        'bstocks-action-create-$orderId-$previewId',
+      ),
+    );
+    _checkCancellation(isCancelled);
+    final current = await _orders.get(orderId);
+    return _execute(
+      created: current,
+      isCancelled: isCancelled,
+      expectedActionId: action.actionId,
+      stopAfterApproval: stopAfterApproval,
+      refreshBeforeExecution: false,
+    );
+  }
+
+  @override
+  Future<ResourceResult<TradingOrder>> cancelOrder(
+    String orderId, {
+    bool Function()? isCancelled,
+  }) async {
+    _checkCancellation(isCancelled);
+    final current = await _orders.get(orderId);
+    _checkCancellation(isCancelled);
+    if (current.resource.isTerminal) return current;
+    final action = await _currentCancellation(current.resource);
+    _checkCancellation(isCancelled);
+    if (action != null && action.status != BstocksOrderActionStatus.failed) {
+      return _execute(
+        created: current,
+        isCancelled: isCancelled,
+        waitForCancellation: true,
+        refreshBeforeExecution: false,
+      );
+    }
+    // One key per cancellation command, including across page/session reloads.
+    // A definitively failed action permits a new command with a distinct key.
+    final key = scopedIdempotencyKey(
+      'bstocks-cancel-$orderId${action == null ? '' : '-after-${action.actionId}'}',
+    );
+    ResourceResult<TradingOrder> result;
+    try {
+      result = await _orders.cancel(orderId, idempotencyKey: key);
+    } on ServerFailure catch (failure) {
+      _checkCancellation(isCancelled);
+      if (failure.code != 'cancellation_in_progress') rethrow;
+      // Recover commands created by older clients using random keys as well.
+      result = await _orders.get(orderId);
+      _checkCancellation(isCancelled);
+      if (result.resource.isTerminal) return result;
+      final existing = await _currentCancellation(result.resource);
+      _checkCancellation(isCancelled);
+      if (existing == null ||
+          existing.status == BstocksOrderActionStatus.failed) {
+        rethrow;
+      }
+    }
+    _checkCancellation(isCancelled);
+    if (result.resource.isTerminal) return result;
+    // DELETE may replay its original snapshot. It restores identity only.
+    result = await _orders.get(orderId);
+    _checkCancellation(isCancelled);
+    if (result.resource.isTerminal) return result;
+    final cancellation = await _currentCancellation(result.resource);
+    _checkCancellation(isCancelled);
+    if (cancellation == null) {
+      throw const CompatibilityFailure(
+        userAction: 'Cancellation did not return a cancellation action',
+      );
+    }
+    return _execute(
+      created: result,
+      isCancelled: isCancelled,
+      waitForCancellation: true,
+      refreshBeforeExecution: false,
+    );
+  }
+
+  Future<BstocksOrderAction?> _currentCancellation(TradingOrder order) async {
+    final action =
+        order.nextAction ??
+        (order.currentActionId == null
+            ? null
+            : await _actions.get(
+                orderId: order.orderId,
+                actionId: order.currentActionId!,
+              ));
+    return action?.kind == BstocksOrderActionKind.cancelOrder ? action : null;
+  }
+
+  @override
+  Future<ResourceResult<TradingOrder>> executeExisting({
+    required ResourceResult<TradingOrder> order,
+    bool Function()? isCancelled,
+  }) => _execute(
+    created: order,
+    isCancelled: isCancelled,
+    waitForCancellation:
+        order.resource.nextAction?.kind == BstocksOrderActionKind.cancelOrder,
+  );
 
   @override
   Future<ResourceResult<TradingOrder>> execute({
@@ -38,27 +158,101 @@ final class BstocksOrderExecutionRepositoryImpl
     required String previewId,
     bool Function()? isCancelled,
     bool stopAfterApproval = false,
+  }) => _execute(
+    created: created,
+    isCancelled: isCancelled,
+    stopAfterApproval: stopAfterApproval,
+  );
+
+  Future<ResourceResult<TradingOrder>> _execute({
+    required ResourceResult<TradingOrder> created,
+    bool Function()? isCancelled,
+    bool stopAfterApproval = false,
+    String? expectedActionId,
+    bool waitForCancellation = false,
+    bool refreshBeforeExecution = true,
   }) async {
-    var current = created;
+    _checkCancellation(isCancelled);
+    // POST replays carry frozen facts, not current permission to execute.
+    var current = refreshBeforeExecution
+        ? await _orders.get(created.resource.orderId)
+        : created;
     var awaitingApprovalConfirmation = false;
-    final submittedSteps = <String>{};
+    final submittedActions = <String>{};
     for (var attempt = 0; attempt < 60; attempt++) {
-      if (isCancelled?.call() ?? false) {
-        throw const CancelledFailure();
-      }
+      _checkCancellation(isCancelled);
       final order = current.resource;
+      order.checkBstocksExecutionFailure();
       if (order.isTerminal) return current;
-      // A confirmed GTC placement is accepted while its order remains open;
-      // waiting for `filled` would incorrectly time out a valid resting order.
-      if (!awaitingApprovalConfirmation && _isConfirmedPlacement(order)) {
+      var action = order.nextAction;
+      if (action != null && !submittedActions.contains(action.actionId)) {
+        action = await _actions.get(
+          orderId: order.orderId,
+          actionId: action.actionId,
+        );
+        _checkCancellation(isCancelled);
+      }
+      // The order may hide an action after submission or failure. Its economic
+      // status stays open during cancellation, so inspect the independent A.
+      if (action == null) {
+        final actionId = order.currentActionId ?? expectedActionId;
+        if (actionId != null) {
+          final hidden = await _actions.get(
+            orderId: order.orderId,
+            actionId: actionId,
+          );
+          _checkCancellation(isCancelled);
+          _checkActionStatus(hidden);
+          if (hidden.kind == BstocksOrderActionKind.cancelOrder) {
+            waitForCancellation = true;
+          }
+          if (hidden.status == BstocksOrderActionStatus.awaitingSignature) {
+            final hash =
+                hidden.submittedTransactionHash ??
+                await _broadcastJournal.transactionHash(hidden);
+            _checkCancellation(isCancelled);
+            if (hash != null && !submittedActions.contains(hidden.actionId)) {
+              await _reportTransaction(hidden, hash);
+              submittedActions.add(hidden.actionId);
+            }
+          }
+          // Once O hides the action, only observe the original E. A hidden
+          // action never authorizes a new signature or execution creation.
+          final executions = _sponsoredExecutions;
+          final executionId = await _sponsoredJournal.executionId(hidden);
+          _checkCancellation(isCancelled);
+          if (executions != null && executionId != null) {
+            final execution = await executions.get(executionId);
+            _checkCancellation(isCancelled);
+            _checkExecutionFailure(execution);
+            if (!_isSubmittedExecution(execution) &&
+                await _sponsoredJournal.submissionStarted(executionId)) {
+              throw const UnknownFailure(
+                retryable: true,
+                userAction: 'Wallet authorization submission outcome is uncertain; track the original execution before retrying',
+              );
+            }
+            _checkCancellation(isCancelled);
+          }
+          if (hidden.kind == BstocksOrderActionKind.erc20Approval &&
+              hidden.status == BstocksOrderActionStatus.confirmed &&
+              order.status == TradingOrderStatus.awaitingConfirmation &&
+              order.walletActionBlocker == 'previewRequired') {
+            if (stopAfterApproval) return current;
+            throw const CompatibilityFailure(
+              userAction: 'Approval confirmed; a refreshed preview must be accepted before execution',
+            );
+          }
+        }
+      }
+      // Inspect a hidden cancellation before accepting a resting GTC order.
+      if (!waitForCancellation &&
+          !awaitingApprovalConfirmation &&
+          _isConfirmedPlacement(order)) {
         return current;
       }
-      final action = order.nextAction;
       if (action != null) {
-        if (order.actionStatus == BstocksOrderActionStatus.failed ||
-            order.actionStatus == BstocksOrderActionStatus.manualReview) {
-          return current;
-        }
+        _checkActionStatus(action);
         if (stopAfterApproval &&
             action.kind != BstocksOrderActionKind.erc20Approval) {
           throw const CompatibilityFailure(
@@ -69,60 +263,76 @@ final class BstocksOrderExecutionRepositoryImpl
         awaitingApprovalConfirmation =
             action.kind == BstocksOrderActionKind.erc20Approval;
         final actionAlreadySubmitted =
-            submittedSteps.contains(action.stepId) ||
-            order.actionStatus == BstocksOrderActionStatus.submitted ||
-            order.actionStatus == BstocksOrderActionStatus.confirmed;
+            submittedActions.contains(action.actionId) ||
+            action.status == BstocksOrderActionStatus.submitted ||
+            action.status == BstocksOrderActionStatus.confirmed;
         if (!actionAlreadySubmitted) {
+          final knownHash =
+              action.submittedTransactionHash ??
+              await _broadcastJournal.transactionHash(action);
+          _checkCancellation(isCancelled);
+          final canAuthorize =
+              action.status == BstocksOrderActionStatus.awaitingSignature &&
+              order.walletActionBlocker == null;
+          final savedExecutionId = await _sponsoredJournal.executionId(action);
+          _checkCancellation(isCancelled);
+          if (knownHash == null &&
+              !canAuthorize &&
+              (savedExecutionId == null || _sponsoredExecutions == null)) {
+            throw const UnknownFailure(
+              userAction:
+                  'Wallet action is not currently available for execution',
+            );
+          }
           final sponsoredExecutions = _sponsoredExecutions;
           final authorizationSigner = _authorizationSigner;
-          if (sponsoredExecutions != null && authorizationSigner != null) {
+          if (knownHash == null &&
+              sponsoredExecutions != null &&
+              (authorizationSigner != null || savedExecutionId != null)) {
             await _sendSponsored(
               sponsoredExecutions,
               authorizationSigner,
               action,
+              isCancelled,
+              canAuthorize: canAuthorize,
             );
           } else {
             final sender = _sender;
-            if (sender == null) {
+            if (sender == null && knownHash == null) {
               throw const UnknownFailure(
                 userAction: 'bStocks wallet transaction signer unavailable',
               );
             }
-            final txHash = await _send(sender, action);
-            await _actions.submit(
-              orderId: action.orderId,
-              stepId: action.stepId,
-              transactionHash: txHash,
-              idempotencyKey:
-                  'bstocks-action-${action.orderId}-${action.stepId}',
-            );
+            final txHash =
+                knownHash ??
+                await _broadcastJournal.broadcast(action, () {
+                  _checkCancellation(isCancelled);
+                  return _send(sender!, action!);
+                });
+            // The journal preserves the hash even if cancellation happened
+            // while the wallet was broadcasting. Reporting can resume later.
+            _checkCancellation(isCancelled);
+            await _reportTransaction(action, txHash);
           }
-          submittedSteps.add(action.stepId);
+          submittedActions.add(action.actionId);
         }
       }
 
+      _checkCancellation(isCancelled);
       await Future<void>.delayed(const Duration(seconds: 1));
-      if (isCancelled?.call() ?? false) {
-        throw const CancelledFailure();
-      }
+      _checkCancellation(isCancelled);
       final refreshed = await _orders.get(order.orderId);
+      _checkCancellation(isCancelled);
       final approvalConfirmed =
           awaitingApprovalConfirmation &&
-          refreshed.resource.actionStatus ==
-              BstocksOrderActionStatus.confirmed &&
-          refreshed.resource.nextAction == null;
+          refreshed.resource.status ==
+              TradingOrderStatus.awaitingConfirmation &&
+          refreshed.resource.walletActionBlocker == 'previewRequired';
       if (approvalConfirmed) {
         if (stopAfterApproval) return refreshed;
-        // The approval action is a prerequisite, not the order itself. The
-        // backend creates the swap action when this same order request is
-        // replayed after allowance confirmation.
-        current = await _orders.create(
-          intent,
-          previewId: previewId,
-          idempotencyKey:
-              'bstocks-recreate-${order.orderId}-${DateTime.now().microsecondsSinceEpoch}',
+        throw const CompatibilityFailure(
+          userAction: 'Approval confirmed; a refreshed preview must be accepted before execution',
         );
-        awaitingApprovalConfirmation = false;
       } else {
         current = refreshed;
       }
@@ -133,9 +343,36 @@ final class BstocksOrderExecutionRepositoryImpl
     );
   }
 
+  void _checkCancellation(bool Function()? isCancelled) {
+    if (isCancelled?.call() ?? false) throw const CancelledFailure();
+  }
+
+  void _checkActionStatus(BstocksOrderAction action) {
+    if (action.status == BstocksOrderActionStatus.failed ||
+        action.status == BstocksOrderActionStatus.manualReview) {
+      throw UnknownFailure(
+        userAction:
+            action.failureReason ?? 'Wallet action ${action.status.name}',
+      );
+    }
+  }
+
+  Future<void> _reportTransaction(
+    BstocksOrderAction action,
+    String transactionHash,
+  ) async {
+    await _actions.submit(
+      orderId: action.orderId,
+      actionId: action.actionId,
+      transactionHash: transactionHash,
+      idempotencyKey: scopedIdempotencyKey(
+        'bstocks-action-${action.orderId}-${action.actionId}',
+      ),
+    );
+  }
+
   bool _isConfirmedPlacement(TradingOrder order) =>
       order.kind == MarketProductKind.bstock &&
-      order.actionStatus == BstocksOrderActionStatus.confirmed &&
       order.nextAction == null &&
       const {
         TradingOrderStatus.open,
@@ -144,17 +381,43 @@ final class BstocksOrderExecutionRepositoryImpl
 
   Future<void> _sendSponsored(
     WalletActionExecutionRepository executions,
-    WalletAuthorizationSigner signer,
+    WalletAuthorizationSigner? signer,
     BstocksOrderAction action,
-  ) async {
-    final execution = await executions.createOrderWalletActionExecution(
-      orderId: action.orderId,
-      stepId: action.stepId,
-      mode: GasPaymentMode.appSponsored,
-      idempotencyKey: scopedIdempotencyKey(
-        'bstocks-sponsored-${action.orderId}-${action.stepId}',
-      ),
-    );
+    bool Function()? isCancelled, {
+    required bool canAuthorize,
+  }) => _sponsoredJournal.run(action, () async {
+    _checkCancellation(isCancelled);
+    var executionId = await _sponsoredJournal.executionId(action);
+    _checkCancellation(isCancelled);
+    if (executionId == null) {
+      if (!canAuthorize) {
+        throw const UnknownFailure(
+          userAction: 'Wallet action is not currently available for execution',
+        );
+      }
+      final created = await executions.createOrderWalletActionExecution(
+        orderId: action.orderId,
+        actionId: action.actionId,
+        mode: GasPaymentMode.appSponsored,
+        idempotencyKey: scopedIdempotencyKey(
+          'bstocks-sponsored-${action.orderId}-${action.actionId}',
+        ),
+      );
+      executionId = created.executionId;
+      await _sponsoredJournal.saveExecutionId(action, executionId);
+    }
+    // Preserve an execution created before cancellation, but do not sign it.
+    _checkCancellation(isCancelled);
+    final execution = await executions.get(executionId);
+    _checkCancellation(isCancelled);
+    if (_isSubmittedExecution(execution)) return;
+    _checkExecutionFailure(execution);
+    if (!canAuthorize) {
+      throw const UnknownFailure(
+        userAction:
+            'Wallet action is not currently available for authorization',
+      );
+    }
     if (execution.requiresUserPaidFallback) {
       throw UnknownFailure(
         userAction:
@@ -168,6 +431,27 @@ final class BstocksOrderExecutionRepositoryImpl
             'bStocks sponsored execution is not awaiting authorization: ${execution.status.name}',
       );
     }
+    if (signer == null) {
+      throw const UnknownFailure(
+        userAction: 'bStocks wallet authorization signer unavailable',
+      );
+    }
+    if (await _sponsoredJournal.submissionStarted(executionId)) {
+      throw const UnknownFailure(
+        retryable: true,
+        userAction: 'Wallet authorization submission outcome is uncertain; track the original execution before retrying',
+      );
+    }
+    _checkCancellation(isCancelled);
+    if (!action.validUntil.isAfter(DateTime.now().toUtc()) ||
+        (execution.authorizationExpiresAt != null &&
+            !execution.authorizationExpiresAt!.isAfter(
+              DateTime.now().toUtc(),
+            ))) {
+      throw const UnknownFailure(
+        userAction: 'Wallet authorization expired; reconcile the original execution before retrying',
+      );
+    }
     try {
       final signature = await signer
           .signWalletAuthorization(
@@ -175,47 +459,25 @@ final class BstocksOrderExecutionRepositoryImpl
             request: authorization,
           )
           .timeout(const Duration(seconds: 55));
-      final submitted = await executions
-          .submitAuthorization(
-            executionId: execution.executionId,
-            signature: signature,
-            idempotencyKey: scopedIdempotencyKey(
-              'bstocks-sponsored-submit-${execution.executionId}',
-            ),
-          )
-          .timeout(const Duration(seconds: 20));
-      switch (submitted.status) {
-        case WalletActionExecutionState.providerSubmitted ||
-            WalletActionExecutionState.submitting ||
-            WalletActionExecutionState.chainConfirmed ||
-            WalletActionExecutionState.completed:
-          return;
-        case WalletActionExecutionState.ambiguous ||
-            WalletActionExecutionState.failed ||
-            WalletActionExecutionState.manualReview:
-          throw UnknownFailure(
-            retryable: submitted.status == WalletActionExecutionState.ambiguous,
-            userAction: [
-              'bStocks sponsored execution ${submitted.status.name}',
-              if (submitted.failureReason case final reason?
-                  when reason.trim().isNotEmpty)
-                reason,
-              'provider=${submitted.gasPayment.decision.name}',
-            ].join(' - '),
-          );
-        case WalletActionExecutionState.awaitingUserAuthorization:
-          throw const UnknownFailure(
-            retryable: true,
-            userAction: 'bStocks authorization was accepted but execution is still awaiting signature',
-          );
-        case WalletActionExecutionState.userGasConfirmationRequired ||
-            WalletActionExecutionState.unknown:
-          throw UnknownFailure(
-            retryable: true,
-            userAction:
-                'bStocks sponsored execution returned ${submitted.status.name}',
-          );
+      _checkCancellation(isCancelled);
+      await _sponsoredJournal.markSubmissionStarted(executionId);
+      if (isCancelled?.call() ?? false) {
+        // No POST has been issued, so this marker is provably unsent.
+        await _sponsoredJournal.clearSubmissionStarted(executionId);
+        throw const CancelledFailure();
       }
+      final submitted = await _submitSponsoredAuthorization(
+        executions,
+        executionId,
+        signature,
+      );
+      if (_isSubmittedExecution(submitted)) return;
+      _checkExecutionFailure(submitted);
+      throw UnknownFailure(
+        retryable: true,
+        userAction:
+            'bStocks sponsored execution returned ${submitted.status.name}',
+      );
     } on TimeoutException catch (error) {
       throw UnknownFailure(
         retryable: true,
@@ -232,12 +494,69 @@ final class BstocksOrderExecutionRepositoryImpl
         ].join(' - '),
       );
     }
+  });
+
+  Future<WalletActionExecution> _submitSponsoredAuthorization(
+    WalletActionExecutionRepository executions,
+    String executionId,
+    String signature,
+  ) async {
+    try {
+      return await executions
+          .submitAuthorization(
+            executionId: executionId,
+            signature: signature,
+            // A new signature after a proven rejection is a new command.
+            // Transport/auth retries of this request retain this key/body.
+            idempotencyKey: newIdempotencyKey(),
+          )
+          .timeout(const Duration(seconds: 20));
+    } on ApiFailure catch (failure) {
+      // These API admission failures prove this request was not relayed.
+      // A later user retry still GETs current O/A/E before any signature.
+      if (failure is AuthenticationFailure ||
+          failure is ServerFailure &&
+              const {401, 403, 429}.contains(failure.statusCode)) {
+        await _sponsoredJournal.clearSubmissionStarted(executionId);
+        rethrow;
+      }
+      return executions.get(executionId);
+    } on TimeoutException {
+      return executions.get(executionId);
+    }
+  }
+
+  bool _isSubmittedExecution(WalletActionExecution execution) => const {
+    WalletActionExecutionState.submitting,
+    WalletActionExecutionState.providerSubmitted,
+    WalletActionExecutionState.chainConfirmed,
+    WalletActionExecutionState.completed,
+  }.contains(execution.status);
+
+  void _checkExecutionFailure(WalletActionExecution execution) {
+    if (const {
+      WalletActionExecutionState.ambiguous,
+      WalletActionExecutionState.failed,
+      WalletActionExecutionState.manualReview,
+    }.contains(execution.status)) {
+      throw UnknownFailure(
+        retryable: execution.status == WalletActionExecutionState.ambiguous,
+        userAction:
+            execution.failureReason ??
+            'bStocks sponsored execution ${execution.status.name}',
+      );
+    }
   }
 
   Future<String> _send(
     EmbeddedWalletTransactionSender sender,
     BstocksOrderAction action,
   ) async {
+    if (!action.validUntil.isAfter(DateTime.now().toUtc())) {
+      throw const WalletTransactionNotBroadcastFailure(
+        userAction: 'Wallet action expired; reconcile the original action before retrying',
+      );
+    }
     try {
       return await sender.sendTransaction(
         expectedSigner: action.from,

@@ -33,6 +33,26 @@ void main() {
     );
   }
 
+  test('GET restores the current execution without creating another', () async {
+    final context = harness([
+      ControlledResponse.json(
+        method: 'GET',
+        path: '/v1/wallet-action-executions/execution-1',
+        statusCode: 200,
+        body: {
+          ..._sponsoredExecutionJson,
+          'status': 'submitting',
+          'privy_authorization_payload': null,
+          'authorization_expires_at': null,
+        },
+      ),
+    ]);
+    final execution = await context.repository.get('execution-1');
+    expect(execution.status, WalletActionExecutionState.submitting);
+    expect(execution.authorization, isNull);
+    expect(context.adapter.requests, hasLength(1));
+  });
+
   test('a sponsored execution exposes the request the wallet signs', () async {
     final context = harness([
       ControlledResponse.json(

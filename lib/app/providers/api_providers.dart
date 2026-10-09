@@ -41,6 +41,7 @@ import '../../data/services/generated_wallets_service.dart';
 import '../../data/services/hip3_order_action_service.dart';
 import '../../data/services/hip3_account_abstraction_service.dart';
 import '../../data/services/hip3_account_abstraction_cache.dart';
+import '../../data/services/bstocks_broadcast_journal.dart';
 import '../../data/services/dio_realtime_service.dart';
 import '../../data/services/generated_system_service.dart';
 import '../../data/services/package_info_service.dart';
@@ -63,6 +64,7 @@ import '../../domain/repositories/trade_intent_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/services/embedded_wallet_transaction_sender.dart';
 import '../../domain/services/wallet_authorization_signer.dart';
+import '../../data/services/bstocks_sponsored_execution_journal.dart';
 import '../../domain/repositories/wallet_action_execution_repository.dart';
 import '../../data/repositories/wallet_action_execution_repository_impl.dart';
 import '../../data/services/generated_wallet_action_execution_service.dart';
@@ -195,6 +197,14 @@ final ordersRepositoryProvider = Provider<OrdersRepository>((ref) {
   );
 });
 
+final _bstocksBroadcastJournalProvider = Provider<BstocksBroadcastJournal>(
+  (ref) => BstocksBroadcastJournal.persistent(),
+);
+final _bstocksSponsoredExecutionJournalProvider =
+    Provider<BstocksSponsoredExecutionJournal>(
+      (ref) => BstocksSponsoredExecutionJournal.persistent(),
+    );
+
 final bstocksOrderExecutionRepositoryProvider =
     Provider<BstocksOrderExecutionRepository>((ref) {
       final gateway = ref.watch(identityAuthGatewayProvider);
@@ -211,6 +221,8 @@ final bstocksOrderExecutionRepositoryProvider =
             : null,
         sponsoredExecutions: ref.watch(walletActionExecutionRepositoryProvider),
         authorizationSigner: ref.watch(walletAuthorizationSignerProvider),
+        broadcastJournal: ref.watch(_bstocksBroadcastJournalProvider),
+        sponsoredJournal: ref.watch(_bstocksSponsoredExecutionJournalProvider),
       );
     });
 final tradeIntentRepositoryProvider = Provider<TradeIntentRepository>((ref) {

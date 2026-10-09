@@ -1,6 +1,7 @@
 import '../../domain/models/order.dart';
 import '../../domain/repositories/bstocks_order_action_repository.dart';
 import '../services/orders_service.dart';
+import 'orders_repository_impl.dart';
 
 final class BstocksOrderActionRepositoryImpl
     implements BstocksOrderActionRepository {
@@ -9,15 +10,36 @@ final class BstocksOrderActionRepositoryImpl
   final OrdersService _service;
 
   @override
+  Future<BstocksOrderAction> create({
+    required String orderId,
+    required String previewId,
+    required String idempotencyKey,
+  }) async => mapBstocksOrderAction(
+    await _service.createBstocksOrderAction(
+      orderId: orderId,
+      previewId: previewId,
+      idempotencyKey: idempotencyKey,
+    ),
+  );
+
+  @override
+  Future<BstocksOrderAction> get({
+    required String orderId,
+    required String actionId,
+  }) async => mapBstocksOrderAction(
+    await _service.getBstocksOrderAction(orderId: orderId, actionId: actionId),
+  );
+
+  @override
   Future<BstocksWalletActionSubmission> submit({
     required String orderId,
-    required String stepId,
+    required String actionId,
     required String transactionHash,
     required String idempotencyKey,
   }) async {
     final value = await _service.submitBstocksWalletAction(
       orderId: orderId,
-      stepId: stepId,
+      actionId: actionId,
       transactionHash: transactionHash,
       idempotencyKey: idempotencyKey,
     );

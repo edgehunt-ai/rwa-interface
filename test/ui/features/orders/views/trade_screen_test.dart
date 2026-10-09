@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
+import 'package:rwa_interface/data/repositories/bstocks_order_execution_repository_impl.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
@@ -20,6 +21,7 @@ import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
 import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
+import 'package:rwa_interface/domain/repositories/bstocks_order_action_repository.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
@@ -95,7 +97,7 @@ void main() {
             positionLoads++;
             return const DomainPage<Position>(items: []);
           }),
-          bstocksOrdersProvider(null)
+          bstocksOpenOrdersProvider((symbol: 'NVDAB', productId: null))
               .overrideWith((_) async => const DomainPage(items: [])),
         ],
         child: buildTestApp(const TradeScreen()),
@@ -957,7 +959,16 @@ void main() {
       final repository = _OpenOrderRepository();
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(repository),
+            bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+              BstocksOrderExecutionRepositoryImpl(
+                repository,
+                _UnusedOrderActions(),
+                null,
+              ),
+            ),
+          ],
           child: buildTestApp(const TradeScreen()),
         ),
       );
@@ -969,12 +980,44 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Open (1)'), findsOneWidget);
       expect(find.text('Filled / Total'), findsOneWidget);
+      expect(find.text('NVDAB/TUSDT'), findsOneWidget);
+      expect(find.text('123.45 TUSDT'), findsOneWidget);
+      expect(repository.lastStatusGroup, 'open');
+      expect(repository.lastSymbol, 'NVDAB');
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
       await tester.pump();
       expect(repository.cancelledOrderId, 'open-order');
+      expect(tester.takeException(), isNull);
     },
   );
+
+  for (final asset in ['USDT', null]) {
+    testWidgets('Trade uses settlement $asset and disables IOC cancellation', (
+      tester,
+    ) async {
+      final repository = _OpenOrderRepository(
+        type: TradingOrderType.market,
+        settlementAsset: asset,
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+          child: buildTestApp(const TradeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _scrollToTradeTab(tester, 'Open');
+      await tester.tap(_tradeTab('Open'));
+      await tester.pumpAndSettle();
+      expect(find.text('NVDAB/${asset ?? '—'}'), findsOneWidget);
+      expect(find.text('NVDAB/USDC'), findsNothing);
+      final cancel = find.widgetWithText(OutlinedButton, 'Cancel');
+      expect(tester.widget<OutlinedButton>(cancel).onPressed, isNull);
+      expect(repository.cancelledOrderId, isNull);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
 Future<void> _scrollToTradeTab(WidgetTester tester, String label) async {
@@ -1418,15 +1461,27 @@ final class _PositionsRepository implements PositionsRepository {
 }
 
 final class _OpenOrderRepository implements OrdersRepository {
+  _OpenOrderRepository({
+    this.type = TradingOrderType.limit,
+    this.settlementAsset = 'TUSDT',
+  });
+  final TradingOrderType type;
+  final String? settlementAsset;
   String? cancelledOrderId;
+  String? lastStatusGroup;
+  String? lastSymbol;
 
-  final _order = TradingOrder(
+  TradingOrder get _order => TradingOrder(
     orderId: 'open-order',
     symbol: 'NVDAB',
     kind: MarketProductKind.bstock,
     side: TradingSide.buy,
-    type: TradingOrderType.market,
+    type: type,
     status: TradingOrderStatus.open,
+    settlementAsset: settlementAsset,
+    limitPrice: type == TradingOrderType.limit
+        ? DecimalValue('123.45', asset: settlementAsset, unit: 'price')
+        : null,
     createdAt: DateTime.utc(2026),
   );
 
@@ -1437,7 +1492,11 @@ final class _OpenOrderRepository implements OrdersRepository {
     String? symbol,
     String? productId,
     String? statusGroup,
-  }) => Future.value(DomainPage(items: [ResourceResult(resource: _order)]));
+  }) {
+    lastStatusGroup = statusGroup;
+    lastSymbol = symbol;
+    return Future.value(DomainPage(items: [ResourceResult(resource: _order)]));
+  }
 
   @override
   Future<ResourceResult<TradingOrder>> cancel(
@@ -1445,7 +1504,17 @@ final class _OpenOrderRepository implements OrdersRepository {
     required String idempotencyKey,
   }) async {
     cancelledOrderId = orderId;
-    return ResourceResult(resource: _order);
+    return ResourceResult(
+      resource: TradingOrder(
+        orderId: _order.orderId,
+        symbol: _order.symbol,
+        kind: _order.kind,
+        side: _order.side,
+        type: _order.type,
+        status: TradingOrderStatus.cancelled,
+        createdAt: _order.createdAt,
+      ),
+    );
   }
 
   @override
@@ -1466,7 +1535,14 @@ final class _OpenOrderRepository implements OrdersRepository {
 
   @override
   Future<ResourceResult<TradingOrder>> get(String orderId) =>
-      throw UnimplementedError();
+      Future.value(ResourceResult(resource: _order));
+}
+
+final class _UnusedOrderActions implements BstocksOrderActionRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw StateError(
+    'An immediate cancellation must not access wallet actions',
+  );
 }
 
 final class _ResultNavigationOrdersRepository implements OrdersRepository {

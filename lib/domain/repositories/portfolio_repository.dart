@@ -16,7 +16,7 @@ abstract interface class PortfolioAllocationRepository {
 }
 
 abstract interface class PortfolioAssetsRepository {
-  Future<List<PortfolioAsset>> listAssets({String? cursor});
+  Future<List<PortfolioAsset>> listAssets({String? cursor, String? productId});
 }
 
 abstract interface class PortfolioHistoryRepository {

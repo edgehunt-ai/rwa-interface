@@ -140,8 +140,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
     try {
       if (showOpenOrder) {
-        ref.invalidate(bstocksOrdersProvider(null));
-        await ref.read(bstocksOrdersProvider(null).future);
+        final query = (symbol: symbol, productId: _productId);
+        ref.invalidate(bstocksOpenOrdersProvider(query));
+        await ref.read(bstocksOpenOrdersProvider(query).future);
       } else {
         ref.invalidate(positionsProvider(positionFilter));
         await ref.read(positionsProvider(positionFilter).future);
@@ -286,6 +287,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       ref.invalidate(hip3OrdersProvider(null));
     } else {
       ref.invalidate(bstocksOrdersProvider(null));
+      ref.invalidate(bstocksOpenOrdersProvider);
     }
 
     if (!waitForResults) return;
@@ -301,7 +303,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       if (productKind == MarketProductKind.perp)
         ref.read(hip3OpenOrdersProvider(openOrderQuery).future)
       else
-        ref.read(bstocksOrdersProvider(null).future),
+        ref.read(
+          bstocksOpenOrdersProvider((symbol: symbol, productId: _productId))
+              .future,
+        ),
     ]);
   }
 
@@ -545,6 +550,7 @@ class _OrderPanelEntrySheetState extends ConsumerState<_OrderPanelEntrySheet> {
     return widget.productKind == MarketProductKind.bstock
         ? BstocksOrderPanel(
             symbol: widget.symbol,
+            productId: widget.productId,
             initialSide: widget.side,
             onViewPosition: widget.onBstocksViewPosition,
           )

@@ -11,6 +11,7 @@ import '../../../../domain/models/domain_page.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/withdrawal.dart';
 import '../../../../domain/repositories/portfolio_repository.dart';
+import '../../portfolio/providers/portfolio_providers.dart';
 
 final withdrawalAssetsProvider =
     FutureProvider.autoDispose<List<WithdrawableAsset>>((ref) async {
@@ -108,12 +109,14 @@ final class WithdrawalCommands {
             quote.intent,
             quoteId: quote.quoteId,
             authorizationId: authorization.authorizationId,
-            idempotencyKey:
-                'withdrawal-${quote.quoteId}-${authorization.authorizationId}',
+            idempotencyKey: scopedIdempotencyKey(
+              'withdrawal-${quote.quoteId}-${authorization.authorizationId}',
+            ),
           ),
     );
     _ref.invalidate(withdrawalsProvider);
     _ref.invalidate(withdrawalProvider(result.withdrawalId));
+    _ref.invalidate(bstocksSellAvailabilityProvider);
     return result;
   }
 

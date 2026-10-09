@@ -15,7 +15,7 @@ part 'hip3_market_order_minimum.g.dart';
 /// * [minimumQuantity] - minimum_amount_usdc 对应的最小可执行数量。
 /// * [referencePrice] - 计算时使用的买一或卖一价格。
 /// * [limitPrice] - 加上市价单滑点保护并按交易所精度取整后的 IOC 限价。
-/// * [minimumMarginRequiredUsdc] - 按当前用户杠杆计算的最低保证金与费用预留之和（USDC）。
+/// * [minimumMarginRequiredUsdc] - 按当前用户杠杆计算的最低保证金与预计手续费之和（USDC），向上取整到 6 位；不包含滑杆建议的额外手续费缓冲。
 @BuiltValue()
 abstract class Hip3MarketOrderMinimum implements Built<Hip3MarketOrderMinimum, Hip3MarketOrderMinimumBuilder> {
   /// 按当前盘口、市价保护价和数量步长计算后，前端可提交的最小 amount（USDC）。
@@ -34,7 +34,7 @@ abstract class Hip3MarketOrderMinimum implements Built<Hip3MarketOrderMinimum, H
   @BuiltValueField(wireName: r'limit_price')
   String get limitPrice;
 
-  /// 按当前用户杠杆计算的最低保证金与费用预留之和（USDC）。
+  /// 按当前用户杠杆计算的最低保证金与预计手续费之和（USDC），向上取整到 6 位；不包含滑杆建议的额外手续费缓冲。
   @BuiltValueField(wireName: r'minimum_margin_required_usdc')
   String get minimumMarginRequiredUsdc;
 

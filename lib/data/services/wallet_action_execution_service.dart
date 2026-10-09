@@ -1,9 +1,11 @@
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 
 abstract interface class WalletActionExecutionService {
+  Future<api.WalletActionExecution> getExecution(String executionId);
+
   Future<api.WalletActionExecution> createOrderExecution(
     String orderId,
-    String stepId,
+    String actionId,
     api.WalletActionExecutionCreateRequest request, {
     required String idempotencyKey,
   });

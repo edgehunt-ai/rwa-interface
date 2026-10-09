@@ -5,6 +5,7 @@ import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/portfolio.dart';
+import 'package:rwa_interface/domain/models/portfolio_asset.dart';
 import 'package:rwa_interface/domain/models/trading_account.dart';
 import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
 import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -54,6 +55,24 @@ void main() {
       '11.5',
     );
   });
+
+  test(
+    'bStocks sell availability uses one matching fresh trading wallet',
+    () async {
+      final repository = _BstocksAvailabilityRepository();
+      final container = ProviderContainer(
+        overrides: [portfolioRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      final value = await container.read(
+        bstocksSellAvailabilityProvider('product-1').future,
+      );
+
+      expect(repository.productId, 'product-1');
+      expect(value?.value, '1.25');
+    },
+  );
 }
 
 TradingAccount _account(TradingAccountKind kind, String availableUsd) =>
@@ -84,4 +103,71 @@ final class _PortfolioRepository implements PortfolioRepository {
   @override
   Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) async =>
       const DomainPage(items: []);
+}
+
+final class _BstocksAvailabilityRepository
+    implements PortfolioRepository, PortfolioAssetsRepository {
+  String? productId;
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async => const [
+    TradingAccount(
+      kind: TradingAccountKind.bstocks,
+      balances: [],
+      walletId: 'trading-wallet',
+    ),
+  ];
+
+  @override
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+  }) async {
+    this.productId = productId;
+    return [
+      PortfolioAsset(
+        assetId: 'valid',
+        network: 'BSC',
+        symbol: 'NVDAB',
+        decimals: 18,
+        balance: DecimalValue('2'),
+        walletId: 'trading-wallet',
+        productId: 'product-1',
+        bstocksAvailableQuantity: DecimalValue('1.25'),
+        bstocksAvailabilityStatus: 'complete',
+        freshness: 'live',
+      ),
+      PortfolioAsset(
+        assetId: 'other-wallet',
+        network: 'BSC',
+        symbol: 'NVDAB',
+        decimals: 18,
+        balance: DecimalValue('10'),
+        walletId: 'another-wallet',
+        productId: 'product-1',
+        bstocksAvailableQuantity: DecimalValue('9'),
+        bstocksAvailabilityStatus: 'complete',
+        freshness: 'live',
+      ),
+      PortfolioAsset(
+        assetId: 'stale',
+        network: 'BSC',
+        symbol: 'NVDAB',
+        decimals: 18,
+        balance: DecimalValue('10'),
+        walletId: 'trading-wallet',
+        productId: 'product-1',
+        bstocksAvailableQuantity: DecimalValue('8'),
+        bstocksAvailabilityStatus: 'complete',
+        freshness: 'stale',
+      ),
+    ];
+  }
+
+  @override
+  Future<Portfolio> getSummary() => throw UnimplementedError();
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      throw UnimplementedError();
 }

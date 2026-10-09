@@ -137,7 +137,7 @@ class _$BstockCreateOrderRequest extends BstockCreateOrderRequest {
   @override
   final TpSlSpec? tpSl;
   @override
-  final String? previewId;
+  final String previewId;
 
   factory _$BstockCreateOrderRequest(
           [void Function(BstockCreateOrderRequestBuilder)? updates]) =>
@@ -154,7 +154,7 @@ class _$BstockCreateOrderRequest extends BstockCreateOrderRequest {
       this.limitPrice,
       this.slippagePercent,
       this.tpSl,
-      this.previewId})
+      required this.previewId})
       : super._();
   @override
   BstockCreateOrderRequest rebuild(
@@ -324,7 +324,8 @@ class BstockCreateOrderRequestBuilder
             limitPrice: limitPrice,
             slippagePercent: slippagePercent,
             tpSl: _tpSl?.build(),
-            previewId: previewId,
+            previewId: BuiltValueNullFieldError.checkNotNull(
+                previewId, r'BstockCreateOrderRequest', 'previewId'),
           );
     } catch (_) {
       late String _$failedField;

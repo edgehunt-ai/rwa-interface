@@ -95,7 +95,7 @@ const Map<String, dynamic> _bscUsdtItem = {
     'token_decimals': 18,
   },
   'min_deposit': '1',
-  'qr_payload': 'ethereum:0x55d398326f99059ff775485246999027b3197955@56/transfer?address=0x09920a496942e7aa8c9adabf97cdf035524248c1',
+  'qr_payload': '0x09920a496942e7aa8c9adabf97cdf035524248c1',
   'warning': 'Only send USDT on BSC to this wallet.',
 };
 
@@ -115,7 +115,7 @@ const Map<String, dynamic> _bscUsdcItem = {
     'token_decimals': 18,
   },
   'min_deposit': '1',
-  'qr_payload': 'ethereum:0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d@56/transfer?address=0x09920a496942e7aa8c9adabf97cdf035524248c1',
+  'qr_payload': '0x09920a496942e7aa8c9adabf97cdf035524248c1',
   'warning': 'Only send USDC on BSC to this wallet.',
 };
 
@@ -135,6 +135,6 @@ const Map<String, dynamic> _arbitrumUsdcItem = {
     'token_decimals': 6,
   },
   'min_deposit': '1',
-  'qr_payload': 'ethereum:0xaf88d065e77c8cc2239327c5edb3a432268e5831@42161/transfer?address=0x09920a496942e7aa8c9adabf97cdf035524248c1',
+  'qr_payload': '0x09920a496942e7aa8c9adabf97cdf035524248c1',
   'warning': 'Only send USDC on Arbitrum to this wallet.',
 };

@@ -3,9 +3,12 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/bstocks_signature_continuation.dart';
 import 'package:built_collection/built_collection.dart';
+import 'package:rwa_api_client/src/model/bstocks_preview_continuation.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:one_of/one_of.dart';
 
 part 'bstocks_activity_continuation.g.dart';
 
@@ -13,25 +16,21 @@ part 'bstocks_activity_continuation.g.dart';
 ///
 /// Properties:
 /// * [action] 
-/// * [actionId] - 已存在的 durable bStocks action ID；继续操作不得创建新的业务对象。
+/// * [orderId] - 创建时分配、整个生命周期不变的业务订单标识；不是 action UUID、链上订单号或交易哈希。
+/// * [actionId] 
 /// * [step] 
 /// * [requiresNewBusinessObject] 
 @BuiltValue()
 abstract class BstocksActivityContinuation implements Built<BstocksActivityContinuation, BstocksActivityContinuationBuilder> {
-  @BuiltValueField(wireName: r'action')
-  BstocksActivityContinuationActionEnum get action;
-  // enum actionEnum {  submit_bstocks_action,  };
+  /// One Of [BstocksPreviewContinuation], [BstocksSignatureContinuation]
+  OneOf get oneOf;
 
-  /// 已存在的 durable bStocks action ID；继续操作不得创建新的业务对象。
-  @BuiltValueField(wireName: r'action_id')
-  String get actionId;
+  static const String discriminatorFieldName = r'action';
 
-  @BuiltValueField(wireName: r'step')
-  BstocksActivityContinuationStepEnum get step;
-  // enum stepEnum {  wallet_signature,  };
-
-  @BuiltValueField(wireName: r'requires_new_business_object')
-  bool get requiresNewBusinessObject;
+  static const Map<String, Type> discriminatorMapping = {
+    r'preview_bstocks_order': BstocksPreviewContinuation,
+    r'submit_bstocks_action': BstocksSignatureContinuation,
+  };
 
   BstocksActivityContinuation._();
 
@@ -42,6 +41,29 @@ abstract class BstocksActivityContinuation implements Built<BstocksActivityConti
 
   @BuiltValueSerializer(custom: true)
   static Serializer<BstocksActivityContinuation> get serializer => _$BstocksActivityContinuationSerializer();
+}
+
+extension BstocksActivityContinuationDiscriminatorExt on BstocksActivityContinuation {
+    String? get discriminatorValue {
+        if (this is BstocksPreviewContinuation) {
+            return r'preview_bstocks_order';
+        }
+        if (this is BstocksSignatureContinuation) {
+            return r'submit_bstocks_action';
+        }
+        return null;
+    }
+}
+extension BstocksActivityContinuationBuilderDiscriminatorExt on BstocksActivityContinuationBuilder {
+    String? get discriminatorValue {
+        if (this is BstocksPreviewContinuationBuilder) {
+            return r'preview_bstocks_order';
+        }
+        if (this is BstocksSignatureContinuationBuilder) {
+            return r'submit_bstocks_action';
+        }
+        return null;
+    }
 }
 
 class _$BstocksActivityContinuationSerializer implements PrimitiveSerializer<BstocksActivityContinuation> {
@@ -56,26 +78,6 @@ class _$BstocksActivityContinuationSerializer implements PrimitiveSerializer<Bst
     BstocksActivityContinuation object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'action';
-    yield serializers.serialize(
-      object.action,
-      specifiedType: const FullType(BstocksActivityContinuationActionEnum),
-    );
-    yield r'action_id';
-    yield serializers.serialize(
-      object.actionId,
-      specifiedType: const FullType(String),
-    );
-    yield r'step';
-    yield serializers.serialize(
-      object.step,
-      specifiedType: const FullType(BstocksActivityContinuationStepEnum),
-    );
-    yield r'requires_new_business_object';
-    yield serializers.serialize(
-      object.requiresNewBusinessObject,
-      specifiedType: const FullType(bool),
-    );
   }
 
   @override
@@ -84,55 +86,8 @@ class _$BstocksActivityContinuationSerializer implements PrimitiveSerializer<Bst
     BstocksActivityContinuation object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
-
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required BstocksActivityContinuationBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'action':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BstocksActivityContinuationActionEnum),
-          ) as BstocksActivityContinuationActionEnum;
-          result.action = valueDes;
-          break;
-        case r'action_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.actionId = valueDes;
-          break;
-        case r'step':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BstocksActivityContinuationStepEnum),
-          ) as BstocksActivityContinuationStepEnum;
-          result.step = valueDes;
-          break;
-        case r'requires_new_business_object':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
-          result.requiresNewBusinessObject = valueDes;
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
+    final oneOf = object.oneOf;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -142,24 +97,41 @@ class _$BstocksActivityContinuationSerializer implements PrimitiveSerializer<Bst
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = BstocksActivityContinuationBuilder();
+    Object? oneOfDataSrc;
     final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
+    final discIndex = serializedList.indexOf(BstocksActivityContinuation.discriminatorFieldName) + 1;
+    final discValue = serializers.deserialize(serializedList[discIndex], specifiedType: FullType(String)) as String;
+    oneOfDataSrc = serialized;
+    final oneOfTypes = [BstocksPreviewContinuation, BstocksSignatureContinuation, ];
+    Object oneOfResult;
+    Type oneOfType;
+    switch (discValue) {
+      case r'preview_bstocks_order':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(BstocksPreviewContinuation),
+        ) as BstocksPreviewContinuation;
+        oneOfType = BstocksPreviewContinuation;
+        break;
+      case r'submit_bstocks_action':
+        oneOfResult = serializers.deserialize(
+          oneOfDataSrc,
+          specifiedType: FullType(BstocksSignatureContinuation),
+        ) as BstocksSignatureContinuation;
+        oneOfType = BstocksSignatureContinuation;
+        break;
+      default:
+        throw UnsupportedError("Couldn't deserialize oneOf for the discriminator value: ${discValue}");
+    }
+    result.oneOf = OneOfDynamic(typeIndex: oneOfTypes.indexOf(oneOfType), types: oneOfTypes, value: oneOfResult);
     return result.build();
   }
 }
 
 class BstocksActivityContinuationActionEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'submit_bstocks_action')
-  static const BstocksActivityContinuationActionEnum submitBstocksAction = _$bstocksActivityContinuationActionEnum_submitBstocksAction;
+  @BuiltValueEnumConst(wireName: r'preview_bstocks_order')
+  static const BstocksActivityContinuationActionEnum previewBstocksOrder = _$bstocksActivityContinuationActionEnum_previewBstocksOrder;
 
   static Serializer<BstocksActivityContinuationActionEnum> get serializer => _$bstocksActivityContinuationActionEnumSerializer;
 
@@ -171,8 +143,8 @@ class BstocksActivityContinuationActionEnum extends EnumClass {
 
 class BstocksActivityContinuationStepEnum extends EnumClass {
 
-  @BuiltValueEnumConst(wireName: r'wallet_signature')
-  static const BstocksActivityContinuationStepEnum walletSignature = _$bstocksActivityContinuationStepEnum_walletSignature;
+  @BuiltValueEnumConst(wireName: r'order_preview')
+  static const BstocksActivityContinuationStepEnum orderPreview = _$bstocksActivityContinuationStepEnum_orderPreview;
 
   static Serializer<BstocksActivityContinuationStepEnum> get serializer => _$bstocksActivityContinuationStepEnumSerializer;
 

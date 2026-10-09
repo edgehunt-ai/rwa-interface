@@ -448,7 +448,7 @@ final class _Executions implements WalletActionExecutionRepository {
   @override
   Future<WalletActionExecution> createOrderWalletActionExecution({
     required String orderId,
-    required String stepId,
+    required String actionId,
     required GasPaymentMode mode,
     required String idempotencyKey,
   }) async => _result();
@@ -475,6 +475,9 @@ final class _Executions implements WalletActionExecutionRepository {
   }
 
   WalletActionExecution _result() => create ?? buildCreate!('withdrawal-1');
+
+  @override
+  Future<WalletActionExecution> get(String executionId) async => _result();
 
   @override
   Future<WalletActionExecution> submitAuthorization({

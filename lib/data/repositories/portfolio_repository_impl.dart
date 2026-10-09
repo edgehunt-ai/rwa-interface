@@ -78,11 +78,17 @@ final class PortfolioRepositoryImpl
       (await _service.listAccounts()).items.map(_account).toList();
 
   @override
-  Future<List<PortfolioAsset>> listAssets({String? cursor}) async {
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+  }) async {
     final values = <PortfolioAsset>[];
     var nextCursor = cursor;
     do {
-      final page = await _service.listAssets(cursor: nextCursor);
+      final page = await _service.listAssets(
+        cursor: nextCursor,
+        productId: productId,
+      );
       values.addAll(
         page.items.map(
           (asset) => PortfolioAsset(
@@ -99,6 +105,16 @@ final class PortfolioRepositoryImpl
             walletId: asset.walletId,
             contractAddress: asset.contractAddress,
             native: asset.native_,
+            productId: asset.productId ?? asset.bstocks?.productId,
+            bstocksAvailableQuantity: asset.bstocks?.availableQuantity == null
+                ? null
+                : DecimalValue(
+                    asset.bstocks!.availableQuantity!,
+                    asset: asset.symbol,
+                    unit: 'token',
+                  ),
+            bstocksAvailabilityStatus: asset.bstocks?.availabilityStatus.name,
+            freshness: asset.freshness.name,
           ),
         ),
       );

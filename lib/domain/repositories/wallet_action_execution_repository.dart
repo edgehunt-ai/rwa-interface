@@ -4,9 +4,14 @@ import '../models/wallet_action_execution.dart';
 /// mode. Clients choose only the mode; every transaction, provider and binding
 /// field stays server-owned.
 abstract interface class WalletActionExecutionRepository {
+  /// Reads the current authority for an existing execution, including recovery
+  /// after a lost create/submission response. A create replay is not permission
+  /// to sign again.
+  Future<WalletActionExecution> get(String executionId);
+
   Future<WalletActionExecution> createOrderWalletActionExecution({
     required String orderId,
-    required String stepId,
+    required String actionId,
     required GasPaymentMode mode,
     required String idempotencyKey,
   });

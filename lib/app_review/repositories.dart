@@ -744,6 +744,13 @@ final class AppReviewOrdersRepository implements OrdersRepository {
     }
   }
 
+  @override
+  Future<OrderPreview> previewContinuation(
+    String orderId,
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) => preview(intent, idempotencyKey: idempotencyKey);
+
   OrderPreview _completePreview(OrderPreview preview, DecimalValue price) {
     final intent = preview.intent;
     final calculatedQuantity = _divide(

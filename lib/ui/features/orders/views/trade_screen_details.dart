@@ -42,13 +42,15 @@ class _Details extends ConsumerWidget {
               cursor: null,
             )),
           )
-        : ref.watch(bstocksOrdersProvider(null));
+        : ref.watch(
+            bstocksOpenOrdersProvider((symbol: symbol, productId: productId)),
+          );
     final positionCount = positionState.value?.items.length;
     final openCount = openState.value?.items
         .map((item) => item.resource)
         .where(
           (order) =>
-              order.kind == kind && order.symbol == symbol && !order.isTerminal,
+              order.kind == kind && order.symbol == symbol && order.isOpen,
         )
         .length;
     const tabs = ['Open', 'Position', 'Details'];
@@ -129,9 +131,10 @@ class _Details extends ConsumerWidget {
           ),
         if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
-            orders: ref.watch(bstocksOrdersProvider(null)),
+            orders: openState,
             kind: kind,
             symbol: symbol,
+            productId: productId,
             openOrderCardKey: openOrderCardKey,
             targetOpenOrderId: targetOpenOrderId,
           ),
@@ -177,6 +180,7 @@ class _OpenOrdersTab extends ConsumerWidget {
     required this.orders,
     required this.kind,
     required this.symbol,
+    required this.productId,
     required this.openOrderCardKey,
     required this.targetOpenOrderId,
   });
@@ -184,6 +188,7 @@ class _OpenOrdersTab extends ConsumerWidget {
   final AsyncValue<DomainPage<ResourceResult<TradingOrder>>> orders;
   final MarketProductKind kind;
   final String symbol;
+  final String? productId;
   final GlobalKey openOrderCardKey;
   final String? targetOpenOrderId;
 
@@ -199,7 +204,10 @@ class _OpenOrdersTab extends ConsumerWidget {
         onRetry: () => ref.refresh(
           kind == MarketProductKind.perp
               ? hip3OrdersProvider(null).future
-              : bstocksOrdersProvider(null).future,
+              : bstocksOpenOrdersProvider((
+                  symbol: symbol,
+                  productId: productId,
+                )).future,
         ),
       ),
       data: (page) {
@@ -207,9 +215,7 @@ class _OpenOrdersTab extends ConsumerWidget {
             .map((item) => item.resource)
             .where(
               (order) =>
-                  order.kind == kind &&
-                  order.symbol == symbol &&
-                  !order.isTerminal,
+                  order.kind == kind && order.symbol == symbol && order.isOpen,
             )
             .toList(growable: false);
         if (openOrders.isEmpty) {
@@ -228,32 +234,36 @@ class _OpenOrdersTab extends ConsumerWidget {
                 child: _OpenOrderCard(
                   key: ValueKey('trade-open-order-card-${order.orderId}'),
                   order: order,
-                  onCancel: () async {
-                    if (order.kind != MarketProductKind.perp) {
-                      await ref
-                          .read(orderCommandProvider.notifier)
-                          .cancel(order);
-                      return;
-                    }
-                    String message;
-                    try {
-                      await ref
-                          .read(orderCommandProvider.notifier)
-                          .cancel(order);
-                      message = l10n.cancellationSubmitted;
-                    } on Hip3ExecutionPending {
-                      message = l10n.cancellationPendingRefreshOrder;
-                    } on Object {
-                      message = l10n.cancellationCompleteFailed;
-                    }
-                    if (context.mounted) {
-                      if (message == l10n.cancellationSubmitted) {
-                        AppToast.showSuccess(context, message);
-                      } else {
-                        AppToast.showFailure(context, message);
-                      }
-                    }
-                  },
+                  onCancel:
+                      order.kind == MarketProductKind.bstock &&
+                          !order.isBstocksCancellable
+                      ? null
+                      : () async {
+                          if (order.kind != MarketProductKind.perp) {
+                            await ref
+                                .read(orderCommandProvider.notifier)
+                                .cancel(order);
+                            return;
+                          }
+                          String message;
+                          try {
+                            await ref
+                                .read(orderCommandProvider.notifier)
+                                .cancel(order);
+                            message = l10n.cancellationSubmitted;
+                          } on Hip3ExecutionPending {
+                            message = l10n.cancellationPendingRefreshOrder;
+                          } on Object {
+                            message = l10n.cancellationCompleteFailed;
+                          }
+                          if (context.mounted) {
+                            if (message == l10n.cancellationSubmitted) {
+                              AppToast.showSuccess(context, message);
+                            } else {
+                              AppToast.showFailure(context, message);
+                            }
+                          }
+                        },
                 ),
               ),
           ],
@@ -271,7 +281,7 @@ class _OpenOrderCard extends StatelessWidget {
   });
 
   final TradingOrder order;
-  final VoidCallback onCancel;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -311,7 +321,7 @@ class _OpenOrderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${order.symbol}/USDC',
+                      '${order.symbol}/${order.settlementAsset ?? (order.kind == MarketProductKind.perp ? 'USDC' : '—')}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -394,6 +404,8 @@ class _OpenOrderCard extends StatelessWidget {
                   l10n.price,
                   order.limitPrice == null
                       ? l10n.market
+                      : order.kind == MarketProductKind.bstock
+                      ? '${TokenAmountFormatter.formatValue(order.limitPrice!)} ${order.settlementAsset ?? '—'}'
                       : TokenAmountFormatter.formatUsd(order.limitPrice!),
                 ),
               ),
@@ -692,6 +704,7 @@ class _BstocksPositionSummaryCard extends StatelessWidget {
                 isScrollControlled: true,
                 builder: (_) => BstocksOrderPanel(
                   symbol: position.symbol,
+                  productId: position.productId,
                   initialSide: TradingSide.sell,
                 ),
               ),

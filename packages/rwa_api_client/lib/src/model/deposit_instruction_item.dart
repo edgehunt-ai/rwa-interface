@@ -18,7 +18,7 @@ part 'deposit_instruction_item.g.dart';
 /// * [minDeposit] - 十进制字符串，避免浮点误差
 /// * [confirmationsRequired] 
 /// * [estimatedArrivalSeconds] 
-/// * [qrPayload] - Present only when availability.status is available.
+/// * [qrPayload] - Present only when availability.status is available. The content is the plain EVM wallet address (no `ethereum:` URI) equal to `wallet.address` case-insensitively, so that generic wallet scanners accept the scanned value without manual edits. 
 /// * [creditedTo] 
 /// * [availability] 
 /// * [warning] 
@@ -37,7 +37,7 @@ abstract class DepositInstructionItem implements Built<DepositInstructionItem, D
   @BuiltValueField(wireName: r'estimated_arrival_seconds')
   int get estimatedArrivalSeconds;
 
-  /// Present only when availability.status is available.
+  /// Present only when availability.status is available. The content is the plain EVM wallet address (no `ethereum:` URI) equal to `wallet.address` case-insensitively, so that generic wallet scanners accept the scanned value without manual edits. 
   @BuiltValueField(wireName: r'qr_payload')
   String? get qrPayload;
 

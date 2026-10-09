@@ -120,6 +120,19 @@ void main() {
     expect(history.points.single.timestamp, DateTime.utc(2026, 1, 1));
   });
 
+  test('requests and maps product-scoped bStocks sell availability', () async {
+    final service = _ProductPortfolio();
+    final assets = await PortfolioRepositoryImpl(service)
+        .listAssets(productId: 'bstocks:nvdab');
+
+    expect(service.productId, 'bstocks:nvdab');
+    expect(assets.single.productId, 'bstocks:nvdab');
+    expect(assets.single.walletId, 'wallet-1');
+    expect(assets.single.bstocksAvailableQuantity?.value, '1.25');
+    expect(assets.single.bstocksAvailabilityStatus, 'complete');
+    expect(assets.single.freshness, 'live');
+  });
+
   test('maps account allocation and expands known spot breakdowns', () {
     final allocation = mapRailPortfolioAllocation(
       _allocation(
@@ -261,6 +274,60 @@ final class _Portfolio implements PortfolioService {
           ),
         );
       });
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _ProductPortfolio implements PortfolioService {
+  String? productId;
+
+  @override
+  Future<api.PortfolioAssetPage> listAssets({
+    String? cursor,
+    String? productId,
+  }) async {
+    this.productId = productId;
+    return api.PortfolioAssetPage(
+      (page) => page
+        ..unvaluedAssetCount = 0
+        ..dataStatus = api.PortfolioDataStatus.complete
+        ..valuedTotalUsd = '100'
+        ..totalCount = 1
+        ..freshness = api.PortfolioFreshness.live
+        ..calculatedAt = DateTime.utc(2026)
+        ..hasMore = false
+        ..items.add(
+          api.PortfolioAsset(
+            (asset) => asset
+              ..bstocks.replace(
+                api.BstocksPortfolioAvailability(
+                  (availability) => availability
+                    ..rail = api.BstocksPortfolioAvailabilityRailEnum.bstocks
+                    ..productId = 'bstocks:nvdab'
+                    ..availableQuantity = '1.25'
+                    ..availabilityStatus = api
+                        .BstocksPortfolioAvailabilityAvailabilityStatusEnum
+                        .complete,
+                ),
+              )
+              ..assetId = 'asset-1'
+              ..source_ = api.PortfolioAssetSourceKind.evmRpc
+              ..network = api.PortfolioAssetNetwork.BSC
+              ..walletId = 'wallet-1'
+              ..native_ = false
+              ..withdrawable = true
+              ..symbol = 'NVDAB'
+              ..decimals = 18
+              ..balanceRaw = '2000000000000000000'
+              ..balance = '2'
+              ..pricingSource = api.PortfolioPriceSource.bstocksMarketData
+              ..observedAt = DateTime.utc(2026)
+              ..freshness = api.PortfolioFreshness.live,
+          ),
+        ),
+    );
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

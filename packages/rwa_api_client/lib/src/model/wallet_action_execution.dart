@@ -25,7 +25,7 @@ part 'wallet_action_execution.g.dart';
 /// * [executionId] 
 /// * [resourceType] 
 /// * [resourceId] - Bound order_id, transfer_id or self-custodial withdrawal_id; it is never accepted from the client. 
-/// * [actionId] - Bound transfer action_id, order step_id, or the self-custodial withdrawal_id for `erc20_transfer` executions; it is never accepted from the client. 
+/// * [actionId] - Bound independent transfer/order action_id, or the self-custodial withdrawal_id for `erc20_transfer` executions. For order executions this is distinct from the business resource_id and belongs to that order/account; never a duplicated order step identifier. 
 /// * [actionKind] 
 /// * [chainId] - 必须使用被冻结动作的精确环境；支持枚举不表示该环境已启用代付。
 /// * [walletAddress] 
@@ -62,7 +62,7 @@ abstract class WalletActionExecution implements Built<WalletActionExecution, Wal
   @BuiltValueField(wireName: r'resource_id')
   String get resourceId;
 
-  /// Bound transfer action_id, order step_id, or the self-custodial withdrawal_id for `erc20_transfer` executions; it is never accepted from the client. 
+  /// Bound independent transfer/order action_id, or the self-custodial withdrawal_id for `erc20_transfer` executions. For order executions this is distinct from the business resource_id and belongs to that order/account; never a duplicated order step identifier. 
   @BuiltValueField(wireName: r'action_id')
   String get actionId;
 

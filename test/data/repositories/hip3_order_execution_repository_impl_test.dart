@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
+import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/data/repositories/hip3_order_execution_repository_impl.dart';
 import 'package:rwa_interface/data/services/hip3_order_action_service.dart';
 import 'package:rwa_interface/domain/models/order.dart';
@@ -176,11 +177,17 @@ void main() {
 
       final result = await repository.awaitActionAndSubmit('order-1');
 
-      expect(service.createIdempotencyKey, 'hip3-action-create-order-1');
+      expect(
+        service.createIdempotencyKey,
+        scopedIdempotencyKey('hip3-action-create-order-1'),
+      );
       expect(signer.expectedSigner, _wallet);
       expect(signer.typedData?['primaryType'], 'Agent');
       expect(result.resource.status, TradingOrderStatus.open);
-      expect(service.idempotencyKey, 'hip3-action-action-1-step-1');
+      expect(
+        service.idempotencyKey,
+        scopedIdempotencyKey('hip3-action-action-1-step-1'),
+      );
       expect(service.request?.signature.r, '0x${List.filled(32, '11').join()}');
       expect(service.request?.signature.s, '0x${List.filled(32, '22').join()}');
       expect(

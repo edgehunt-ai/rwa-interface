@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
+import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/data/services/hip3_action_binding.dart';
 import 'package:rwa_interface/data/services/hip3_position_action_executor.dart';
 import 'package:rwa_interface/data/services/hip3_position_action_service.dart';
@@ -38,7 +39,7 @@ void main() {
     expect((await run()).status, api.Hip3ActionStatus.succeeded);
     expect(signer.calls, 1);
     expect(service.submits, 1);
-    expect(service.key, 'hip3-action-action-1-step-1');
+    expect(service.key, scopedIdempotencyKey('hip3-action-action-1-step-1'));
     expect(
       service.request!.signature.v,
       api.HyperliquidSignatureVEnum.number27,

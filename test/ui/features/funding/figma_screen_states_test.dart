@@ -670,7 +670,10 @@ final _withdrawalWallets = DomainPage<Wallet>(
 final class _WithdrawablePortfolio
     implements PortfolioRepository, PortfolioAssetsRepository {
   @override
-  Future<List<PortfolioAsset>> listAssets({String? cursor}) async => [
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+  }) async => [
     PortfolioAsset(
       // Opaque row id: the withdrawal endpoint must not receive this.
       assetId: 'portfolio-1',

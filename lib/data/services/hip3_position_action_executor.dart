@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import '../../domain/models/api_failure.dart';
 import '../../domain/models/hip3_action_pending.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
+import '../api/idempotency_key.dart';
 import 'hip3_action_binding.dart';
 import 'hip3_position_action_service.dart';
 
@@ -151,7 +152,7 @@ final class Hip3PositionActionExecutor {
                       ? api.HyperliquidSignatureVEnum.number27
                       : api.HyperliquidSignatureVEnum.number28,
               ),
-              'hip3-action-$actionId-${step.stepId}',
+              scopedIdempotencyKey('hip3-action-$actionId-${step.stepId}'),
             );
             continue;
           } on ApiFailure catch (failure) {

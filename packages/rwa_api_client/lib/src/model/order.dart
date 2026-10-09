@@ -5,56 +5,31 @@
 // ignore_for_file: unused_element
 import 'package:rwa_api_client/src/model/order_fill.dart';
 import 'package:rwa_api_client/src/model/tp_sl_spec.dart';
-import 'package:rwa_api_client/src/model/bstocks_approval_mode.dart';
 import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
 import 'package:rwa_api_client/src/model/bstocks_cancellation_policy.dart';
 import 'package:rwa_api_client/src/model/order_reconciliation_status.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
 import 'package:rwa_api_client/src/model/order_type.dart';
+import 'package:rwa_api_client/src/model/perp_order.dart';
 import 'package:rwa_api_client/src/model/order_status.dart';
-import 'package:rwa_api_client/src/model/bstocks_action_status.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/order_side.dart';
 import 'package:rwa_api_client/src/model/hip3_conditional_order.dart';
+import 'package:rwa_api_client/src/model/bstock_order.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+import 'package:one_of/one_of.dart';
 
 part 'order.g.dart';
 
-/// Order
+/// 按必填 kind 选择明确的业务订单；bStocks 专属动作字段不得变成 HIP3 的必填字段。
 ///
 /// Properties:
-/// * [approvalRequired] - 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
-/// * [approvalMode] 
-/// * [approvalAmountRaw] - approve动作冻结的授权额度，输入 token 最小单位字符串；与 required_funding_raw 交易输入预算区分。 slippage 模式按 BstocksApprovalMode 公式受创建时链上输入 token 余额限制，并必须匹配冻结 preview 的授权目标。 已生成 action 的幂等重放不重新计算该额度，也不会因余额变化而修改已冻结 calldata；unlimited 模式仍为 uint256.max。 
-/// * [fundingMode] 
-/// * [fundsReserved] 
-/// * [cancellationPolicy] 
-/// * [kind] 
-/// * [nextAction] - 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
-/// * [walletActionBlocker] - Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
-/// * [slippagePercent] - bStocks限价action以及canonical GTC订单的执行滑点百分数字符串，范围[0,100)，不是价格或资金预算。 GTC从已确认挂单action的持久化快照恢复，平台Keeper逐次报价执行；历史/外部挂单默认\"0\"。 旧服务和市价历史响应可省略；该字段不是Router原生订单字段，链上强制的是每次call的最低输出与限价。 
-/// * [actionStatus] 
-/// * [submittedTransactionHash] 
-/// * [confirmedTransactionHash] 
-/// * [requiredFundingRaw] - Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget. Cancellation actions omit this field; null is not a valid funding amount.
-/// * [previewId] - 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
-/// * [chainId] 
-/// * [router] 
-/// * [placementTransactionHash] - canonical GTC 的挂单交易；不是本次撤单或成交交易。
-/// * [transactionHash] - canonical IOC 执行交易；与 log_index 一起定位事件。
-/// * [logIndex] 
-/// * [cancellationReason] 
-/// * [targetOrderId] - 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
-/// * [quantity] - bStocks 市价approve动作尚无最终交易数量，返回null；不能据此认定已成交或补造数量。
 /// * [settlementAsset] - 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
 /// * [productId] - HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
 /// * [hip3ActionId] - 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
-/// * [timeInForce] 
 /// * [conditional] 
-/// * [orderId] 
 /// * [clientOrderId] 
 /// * [providerOrderId] 
 /// * [providerStatus] - Provider-native status retained for support and reconciliation.
@@ -64,7 +39,6 @@ part 'order.g.dart';
 /// * [symbol] 
 /// * [side] 
 /// * [type] 
-/// * [status] 
 /// * [limitPrice] - 十进制字符串，避免浮点误差
 /// * [filledQuantity] - 十进制字符串，避免浮点误差
 /// * [averageFillPrice] - 十进制字符串，避免浮点误差
@@ -80,212 +54,37 @@ part 'order.g.dart';
 /// * [failureReason] 
 /// * [createdAt] 
 /// * [updatedAt] 
+/// * [timeInForce] 
+/// * [quantity] - 十进制字符串，避免浮点误差
+/// * [orderId] 
+/// * [currentActionId] 
+/// * [status] 
+/// * [requestedAmount] - 用户原始预算，仅预算买入时有值；不从已执行数量反推。
+/// * [fundingMode] 
+/// * [fundsReserved] 
+/// * [cancellationPolicy] 
+/// * [kind] 
+/// * [nextAction] 
+/// * [walletActionBlocker] 
+/// * [slippagePercent] - 不可变订单意图的滑点百分数字符串，范围[0,100)，不是价格或资金预算。 平台Keeper逐次报价执行，链上限价不被放宽；历史已验证省略值默认\"0\"。 
+/// * [chainId] 
+/// * [router] 
+/// * [chainOrderId] - GTC 链上编号；未挂单和 IOC 为 null，不用于公共订单路由。
+/// * [placementTransactionHash] - canonical GTC 挂单交易，不是最近辅助动作的交易。
+/// * [transactionHash] - canonical IOC 执行交易，与 log_index 一起标识链证据。
+/// * [logIndex] 
+/// * [cancellationReason] 
 @BuiltValue()
 abstract class Order implements Built<Order, OrderBuilder> {
-  /// 创建该动作时的快照，approve确认后可仍为true，不代表当前链上allowance不足。
-  @BuiltValueField(wireName: r'approval_required')
-  bool? get approvalRequired;
-
-  @BuiltValueField(wireName: r'approval_mode')
-  BstocksApprovalMode? get approvalMode;
-  // enum approvalModeEnum {  unlimited,  slippage,  };
-
-  /// approve动作冻结的授权额度，输入 token 最小单位字符串；与 required_funding_raw 交易输入预算区分。 slippage 模式按 BstocksApprovalMode 公式受创建时链上输入 token 余额限制，并必须匹配冻结 preview 的授权目标。 已生成 action 的幂等重放不重新计算该额度，也不会因余额变化而修改已冻结 calldata；unlimited 模式仍为 uint256.max。 
-  @BuiltValueField(wireName: r'approval_amount_raw')
-  String? get approvalAmountRaw;
-
-  @BuiltValueField(wireName: r'funding_mode')
-  OrderFundingModeEnum? get fundingMode;
-  // enum fundingModeEnum {  unreserved_transfer_from,  };
-
-  @BuiltValueField(wireName: r'funds_reserved')
-  bool? get fundsReserved;
-
-  @BuiltValueField(wireName: r'cancellation_policy')
-  BstocksCancellationPolicy? get cancellationPolicy;
-
-  @BuiltValueField(wireName: r'kind')
-  ProductKind get kind;
-  // enum kindEnum {  bstock,  perp,  };
-
-  /// 仅 bStocks 的服务端冻结 EVM action 可在此返回。HIP-3 EIP-712 不属于该 action； 对应 Provider 尚未实现或当前无可执行动作时必须为 null，并保持 fail-closed。 
-  @BuiltValueField(wireName: r'next_action')
-  JsonObject? get nextAction;
-
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
-  @BuiltValueField(wireName: r'wallet_action_blocker')
-  OrderWalletActionBlockerEnum? get walletActionBlocker;
-  // enum walletActionBlockerEnum {  provider_unavailable,  action_not_ready,  capability_disabled,  not_applicable,  };
-
-  /// bStocks限价action以及canonical GTC订单的执行滑点百分数字符串，范围[0,100)，不是价格或资金预算。 GTC从已确认挂单action的持久化快照恢复，平台Keeper逐次报价执行；历史/外部挂单默认\"0\"。 旧服务和市价历史响应可省略；该字段不是Router原生订单字段，链上强制的是每次call的最低输出与限价。 
-  @BuiltValueField(wireName: r'slippage_percent')
-  String? get slippagePercent;
-
-  @BuiltValueField(wireName: r'action_status')
-  BstocksActionStatus? get actionStatus;
-  // enum actionStatusEnum {  awaiting_signature,  submitted,  confirmed,  failed,  manual_review,  };
-
-  @BuiltValueField(wireName: r'submitted_transaction_hash')
-  String? get submittedTransactionHash;
-
-  @BuiltValueField(wireName: r'confirmed_transaction_hash')
-  String? get confirmedTransactionHash;
-
-  /// Server-derived trade funding bound in input-token raw units; an approval may authorize a larger approval_amount_raw without increasing this trade budget. Cancellation actions omit this field; null is not a valid funding amount.
-  @BuiltValueField(wireName: r'required_funding_raw')
-  String? get requiredFundingRaw;
-
-  /// 创建该钱包动作时绑定的服务端预览标识；仅当动作由确认预览冻结产生时返回。
-  @BuiltValueField(wireName: r'preview_id')
-  String? get previewId;
-
-  @BuiltValueField(wireName: r'chain_id')
-  OrderChainIdEnum? get chainId;
-  // enum chainIdEnum {  56,  97,  31337,  };
-
-  @BuiltValueField(wireName: r'router')
-  String? get router;
-
-  /// canonical GTC 的挂单交易；不是本次撤单或成交交易。
-  @BuiltValueField(wireName: r'placement_transaction_hash')
-  String? get placementTransactionHash;
-
-  /// canonical IOC 执行交易；与 log_index 一起定位事件。
-  @BuiltValueField(wireName: r'transaction_hash')
-  String? get transactionHash;
-
-  @BuiltValueField(wireName: r'log_index')
-  int? get logIndex;
-
-  @BuiltValueField(wireName: r'cancellation_reason')
-  OrderCancellationReasonEnum? get cancellationReason;
-  // enum cancellationReasonEnum {  user_cancelled,  insufficient_balance,  insufficient_allowance,  };
-
-  /// 撤单钱包动作指向的原 canonical GTC 订单；不可将撤单动作当成新的挂单。
-  @BuiltValueField(wireName: r'target_order_id')
-  String? get targetOrderId;
-
-  /// bStocks 市价approve动作尚无最终交易数量，返回null；不能据此认定已成交或补造数量。
-  @BuiltValueField(wireName: r'quantity')
-  String? get quantity;
-
-  /// 服务端确认的订单产品结算币种。HIP3 线性合约的价格和订单盈亏以此计价；优先使用一致的逐笔资产快照，无逐笔资产快照时可使用订单绑定的可靠交易上下文，无法确认或逐笔快照不一致时为空。不从手续费币种推断，不在客户端默认 USDC，不自动回填历史记录。
-  @BuiltValueField(wireName: r'settlement_asset')
-  String? get settlementAsset;
-
-  /// HIP3 为完整 venue:coin，避免同 symbol 不同交易所混淆。
-  @BuiltValueField(wireName: r'product_id')
-  String? get productId;
-
-  /// 当前 HIP3 工作流 ID，通过 GET /v1/hip3/actions/{action_id} 恢复；签名数据只从 action 的当前步骤获取。
-  @BuiltValueField(wireName: r'hip3_action_id')
-  String? get hip3ActionId;
-
-  @BuiltValueField(wireName: r'time_in_force')
-  Hip3TimeInForce? get timeInForce;
-  // enum timeInForceEnum {  gtc,  ioc,  alo,  };
-
-  @BuiltValueField(wireName: r'conditional')
-  Hip3ConditionalOrder? get conditional;
-
-  @BuiltValueField(wireName: r'order_id')
-  String get orderId;
-
-  @BuiltValueField(wireName: r'client_order_id')
-  String? get clientOrderId;
-
-  @BuiltValueField(wireName: r'provider_order_id')
-  String? get providerOrderId;
-
-  /// Provider-native status retained for support and reconciliation.
-  @BuiltValueField(wireName: r'provider_status')
-  String? get providerStatus;
-
-  @BuiltValueField(wireName: r'provider_observed_at')
-  DateTime? get providerObservedAt;
-
-  @BuiltValueField(wireName: r'reconciliation_status')
-  OrderReconciliationStatus? get reconciliationStatus;
-  // enum reconciliationStatusEnum {  pending,  matched,  conflicting,  manual_review,  };
-
-  @BuiltValueField(wireName: r'fills')
-  BuiltList<OrderFill>? get fills;
-
-  @BuiltValueField(wireName: r'symbol')
-  String get symbol;
-
-  @BuiltValueField(wireName: r'side')
-  OrderSide get side;
-  // enum sideEnum {  buy,  sell,  long,  short,  };
-
-  @BuiltValueField(wireName: r'type')
-  OrderType get type;
-  // enum typeEnum {  market,  limit,  };
-
-  @BuiltValueField(wireName: r'status')
-  OrderStatus get status;
-  // enum statusEnum {  pending_signature,  submitted,  open,  partially_filled,  filled,  cancelled,  failed,  ambiguous,  manual_review,  };
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'limit_price')
-  String? get limitPrice;
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'filled_quantity')
-  String? get filledQuantity;
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'average_fill_price')
-  String? get averageFillPrice;
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'order_value')
-  String? get orderValue;
-
-  /// 十进制字符串，避免浮点误差
-  @BuiltValueField(wireName: r'fee')
-  String? get fee;
-
-  /// Decimal string leverage; allowed range is 1 to 50.
-  @BuiltValueField(wireName: r'leverage')
-  String? get leverage;
-
-  @BuiltValueField(wireName: r'margin_mode')
-  MarginMode? get marginMode;
-  // enum marginModeEnum {  isolated,  cross,  };
-
-  @BuiltValueField(wireName: r'reduce_only')
-  bool? get reduceOnly;
-
-  @BuiltValueField(wireName: r'tp_sl')
-  TpSlSpec? get tpSl;
-
-  @BuiltValueField(wireName: r'position_id')
-  String? get positionId;
-
-  /// 平仓单的已实现盈亏
-  @BuiltValueField(wireName: r'realized_pnl')
-  String? get realizedPnl;
-
-  @BuiltValueField(wireName: r'tx_hash')
-  String? get txHash;
-
-  @BuiltValueField(wireName: r'failure_reason')
-  String? get failureReason;
-
-  @BuiltValueField(wireName: r'created_at')
-  DateTime get createdAt;
-
-  @BuiltValueField(wireName: r'updated_at')
-  DateTime? get updatedAt;
+  /// One Of [BstockOrder], [PerpOrder]
+  OneOf get oneOf;
 
   Order._();
 
   factory Order([void updates(OrderBuilder b)]) = _$Order;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(OrderBuilder b) => b
-      ..reduceOnly = false;
+  static void _defaults(OrderBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
   static Serializer<Order> get serializer => _$OrderSerializer();
@@ -303,366 +102,6 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
     Order object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    if (object.approvalRequired != null) {
-      yield r'approval_required';
-      yield serializers.serialize(
-        object.approvalRequired,
-        specifiedType: const FullType(bool),
-      );
-    }
-    if (object.approvalMode != null) {
-      yield r'approval_mode';
-      yield serializers.serialize(
-        object.approvalMode,
-        specifiedType: const FullType(BstocksApprovalMode),
-      );
-    }
-    if (object.approvalAmountRaw != null) {
-      yield r'approval_amount_raw';
-      yield serializers.serialize(
-        object.approvalAmountRaw,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.fundingMode != null) {
-      yield r'funding_mode';
-      yield serializers.serialize(
-        object.fundingMode,
-        specifiedType: const FullType(OrderFundingModeEnum),
-      );
-    }
-    if (object.fundsReserved != null) {
-      yield r'funds_reserved';
-      yield serializers.serialize(
-        object.fundsReserved,
-        specifiedType: const FullType(bool),
-      );
-    }
-    if (object.cancellationPolicy != null) {
-      yield r'cancellation_policy';
-      yield serializers.serialize(
-        object.cancellationPolicy,
-        specifiedType: const FullType(BstocksCancellationPolicy),
-      );
-    }
-    yield r'kind';
-    yield serializers.serialize(
-      object.kind,
-      specifiedType: const FullType(ProductKind),
-    );
-    yield r'next_action';
-    yield object.nextAction == null ? null : serializers.serialize(
-      object.nextAction,
-      specifiedType: const FullType.nullable(JsonObject),
-    );
-    yield r'wallet_action_blocker';
-    yield object.walletActionBlocker == null ? null : serializers.serialize(
-      object.walletActionBlocker,
-      specifiedType: const FullType.nullable(OrderWalletActionBlockerEnum),
-    );
-    if (object.slippagePercent != null) {
-      yield r'slippage_percent';
-      yield serializers.serialize(
-        object.slippagePercent,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.actionStatus != null) {
-      yield r'action_status';
-      yield serializers.serialize(
-        object.actionStatus,
-        specifiedType: const FullType(BstocksActionStatus),
-      );
-    }
-    if (object.submittedTransactionHash != null) {
-      yield r'submitted_transaction_hash';
-      yield serializers.serialize(
-        object.submittedTransactionHash,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.confirmedTransactionHash != null) {
-      yield r'confirmed_transaction_hash';
-      yield serializers.serialize(
-        object.confirmedTransactionHash,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.requiredFundingRaw != null) {
-      yield r'required_funding_raw';
-      yield serializers.serialize(
-        object.requiredFundingRaw,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.previewId != null) {
-      yield r'preview_id';
-      yield serializers.serialize(
-        object.previewId,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.chainId != null) {
-      yield r'chain_id';
-      yield serializers.serialize(
-        object.chainId,
-        specifiedType: const FullType(OrderChainIdEnum),
-      );
-    }
-    if (object.router != null) {
-      yield r'router';
-      yield serializers.serialize(
-        object.router,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.placementTransactionHash != null) {
-      yield r'placement_transaction_hash';
-      yield serializers.serialize(
-        object.placementTransactionHash,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.transactionHash != null) {
-      yield r'transaction_hash';
-      yield serializers.serialize(
-        object.transactionHash,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.logIndex != null) {
-      yield r'log_index';
-      yield serializers.serialize(
-        object.logIndex,
-        specifiedType: const FullType(int),
-      );
-    }
-    if (object.cancellationReason != null) {
-      yield r'cancellation_reason';
-      yield serializers.serialize(
-        object.cancellationReason,
-        specifiedType: const FullType.nullable(OrderCancellationReasonEnum),
-      );
-    }
-    if (object.targetOrderId != null) {
-      yield r'target_order_id';
-      yield serializers.serialize(
-        object.targetOrderId,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.quantity != null) {
-      yield r'quantity';
-      yield serializers.serialize(
-        object.quantity,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.settlementAsset != null) {
-      yield r'settlement_asset';
-      yield serializers.serialize(
-        object.settlementAsset,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.productId != null) {
-      yield r'product_id';
-      yield serializers.serialize(
-        object.productId,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.hip3ActionId != null) {
-      yield r'hip3_action_id';
-      yield serializers.serialize(
-        object.hip3ActionId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.timeInForce != null) {
-      yield r'time_in_force';
-      yield serializers.serialize(
-        object.timeInForce,
-        specifiedType: const FullType(Hip3TimeInForce),
-      );
-    }
-    if (object.conditional != null) {
-      yield r'conditional';
-      yield serializers.serialize(
-        object.conditional,
-        specifiedType: const FullType(Hip3ConditionalOrder),
-      );
-    }
-    yield r'order_id';
-    yield serializers.serialize(
-      object.orderId,
-      specifiedType: const FullType(String),
-    );
-    if (object.clientOrderId != null) {
-      yield r'client_order_id';
-      yield serializers.serialize(
-        object.clientOrderId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.providerOrderId != null) {
-      yield r'provider_order_id';
-      yield serializers.serialize(
-        object.providerOrderId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.providerStatus != null) {
-      yield r'provider_status';
-      yield serializers.serialize(
-        object.providerStatus,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.providerObservedAt != null) {
-      yield r'provider_observed_at';
-      yield serializers.serialize(
-        object.providerObservedAt,
-        specifiedType: const FullType.nullable(DateTime),
-      );
-    }
-    if (object.reconciliationStatus != null) {
-      yield r'reconciliation_status';
-      yield serializers.serialize(
-        object.reconciliationStatus,
-        specifiedType: const FullType(OrderReconciliationStatus),
-      );
-    }
-    if (object.fills != null) {
-      yield r'fills';
-      yield serializers.serialize(
-        object.fills,
-        specifiedType: const FullType(BuiltList, [FullType(OrderFill)]),
-      );
-    }
-    yield r'symbol';
-    yield serializers.serialize(
-      object.symbol,
-      specifiedType: const FullType(String),
-    );
-    yield r'side';
-    yield serializers.serialize(
-      object.side,
-      specifiedType: const FullType(OrderSide),
-    );
-    yield r'type';
-    yield serializers.serialize(
-      object.type,
-      specifiedType: const FullType(OrderType),
-    );
-    yield r'status';
-    yield serializers.serialize(
-      object.status,
-      specifiedType: const FullType(OrderStatus),
-    );
-    if (object.limitPrice != null) {
-      yield r'limit_price';
-      yield serializers.serialize(
-        object.limitPrice,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.filledQuantity != null) {
-      yield r'filled_quantity';
-      yield serializers.serialize(
-        object.filledQuantity,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.averageFillPrice != null) {
-      yield r'average_fill_price';
-      yield serializers.serialize(
-        object.averageFillPrice,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.orderValue != null) {
-      yield r'order_value';
-      yield serializers.serialize(
-        object.orderValue,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.fee != null) {
-      yield r'fee';
-      yield serializers.serialize(
-        object.fee,
-        specifiedType: const FullType(String),
-      );
-    }
-    if (object.leverage != null) {
-      yield r'leverage';
-      yield serializers.serialize(
-        object.leverage,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.marginMode != null) {
-      yield r'margin_mode';
-      yield serializers.serialize(
-        object.marginMode,
-        specifiedType: const FullType(MarginMode),
-      );
-    }
-    if (object.reduceOnly != null) {
-      yield r'reduce_only';
-      yield serializers.serialize(
-        object.reduceOnly,
-        specifiedType: const FullType(bool),
-      );
-    }
-    if (object.tpSl != null) {
-      yield r'tp_sl';
-      yield serializers.serialize(
-        object.tpSl,
-        specifiedType: const FullType(TpSlSpec),
-      );
-    }
-    if (object.positionId != null) {
-      yield r'position_id';
-      yield serializers.serialize(
-        object.positionId,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.realizedPnl != null) {
-      yield r'realized_pnl';
-      yield serializers.serialize(
-        object.realizedPnl,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.txHash != null) {
-      yield r'tx_hash';
-      yield serializers.serialize(
-        object.txHash,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    if (object.failureReason != null) {
-      yield r'failure_reason';
-      yield serializers.serialize(
-        object.failureReason,
-        specifiedType: const FullType.nullable(String),
-      );
-    }
-    yield r'created_at';
-    yield serializers.serialize(
-      object.createdAt,
-      specifiedType: const FullType(DateTime),
-    );
-    if (object.updatedAt != null) {
-      yield r'updated_at';
-      yield serializers.serialize(
-        object.updatedAt,
-        specifiedType: const FullType(DateTime),
-      );
-    }
   }
 
   @override
@@ -671,452 +110,8 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
     Order object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
-  }
-
-  void _deserializeProperties(
-    Serializers serializers,
-    Object serialized, {
-    FullType specifiedType = FullType.unspecified,
-    required List<Object?> serializedList,
-    required OrderBuilder result,
-    required List<Object?> unhandled,
-  }) {
-    for (var i = 0; i < serializedList.length; i += 2) {
-      final key = serializedList[i] as String;
-      final value = serializedList[i + 1];
-      switch (key) {
-        case r'approval_required':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(bool),
-          ) as bool?;
-          if (valueDes == null) continue;
-          result.approvalRequired = valueDes;
-          break;
-        case r'approval_mode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(BstocksApprovalMode),
-          ) as BstocksApprovalMode?;
-          if (valueDes == null) continue;
-          result.approvalMode = valueDes;
-          break;
-        case r'approval_amount_raw':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.approvalAmountRaw = valueDes;
-          break;
-        case r'funding_mode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(OrderFundingModeEnum),
-          ) as OrderFundingModeEnum?;
-          if (valueDes == null) continue;
-          result.fundingMode = valueDes;
-          break;
-        case r'funds_reserved':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(bool),
-          ) as bool?;
-          if (valueDes == null) continue;
-          result.fundsReserved = valueDes;
-          break;
-        case r'cancellation_policy':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(BstocksCancellationPolicy),
-          ) as BstocksCancellationPolicy?;
-          if (valueDes == null) continue;
-          result.cancellationPolicy.replace(valueDes);
-          break;
-        case r'kind':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ProductKind),
-          ) as ProductKind;
-          result.kind = valueDes;
-          break;
-        case r'next_action':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(JsonObject),
-          ) as JsonObject?;
-          if (valueDes == null) continue;
-          result.nextAction = valueDes;
-          break;
-        case r'wallet_action_blocker':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(OrderWalletActionBlockerEnum),
-          ) as OrderWalletActionBlockerEnum?;
-          if (valueDes == null) continue;
-          result.walletActionBlocker = valueDes;
-          break;
-        case r'slippage_percent':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.slippagePercent = valueDes;
-          break;
-        case r'action_status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(BstocksActionStatus),
-          ) as BstocksActionStatus?;
-          if (valueDes == null) continue;
-          result.actionStatus = valueDes;
-          break;
-        case r'submitted_transaction_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.submittedTransactionHash = valueDes;
-          break;
-        case r'confirmed_transaction_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.confirmedTransactionHash = valueDes;
-          break;
-        case r'required_funding_raw':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.requiredFundingRaw = valueDes;
-          break;
-        case r'preview_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.previewId = valueDes;
-          break;
-        case r'chain_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(OrderChainIdEnum),
-          ) as OrderChainIdEnum?;
-          if (valueDes == null) continue;
-          result.chainId = valueDes;
-          break;
-        case r'router':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.router = valueDes;
-          break;
-        case r'placement_transaction_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.placementTransactionHash = valueDes;
-          break;
-        case r'transaction_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.transactionHash = valueDes;
-          break;
-        case r'log_index':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(int),
-          ) as int?;
-          if (valueDes == null) continue;
-          result.logIndex = valueDes;
-          break;
-        case r'cancellation_reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(OrderCancellationReasonEnum),
-          ) as OrderCancellationReasonEnum?;
-          if (valueDes == null) continue;
-          result.cancellationReason = valueDes;
-          break;
-        case r'target_order_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.targetOrderId = valueDes;
-          break;
-        case r'quantity':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.quantity = valueDes;
-          break;
-        case r'settlement_asset':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.settlementAsset = valueDes;
-          break;
-        case r'product_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.productId = valueDes;
-          break;
-        case r'hip3_action_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.hip3ActionId = valueDes;
-          break;
-        case r'time_in_force':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(Hip3TimeInForce),
-          ) as Hip3TimeInForce?;
-          if (valueDes == null) continue;
-          result.timeInForce = valueDes;
-          break;
-        case r'conditional':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(Hip3ConditionalOrder),
-          ) as Hip3ConditionalOrder?;
-          if (valueDes == null) continue;
-          result.conditional.replace(valueDes);
-          break;
-        case r'order_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.orderId = valueDes;
-          break;
-        case r'client_order_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.clientOrderId = valueDes;
-          break;
-        case r'provider_order_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.providerOrderId = valueDes;
-          break;
-        case r'provider_status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.providerStatus = valueDes;
-          break;
-        case r'provider_observed_at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
-          if (valueDes == null) continue;
-          result.providerObservedAt = valueDes;
-          break;
-        case r'reconciliation_status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(OrderReconciliationStatus),
-          ) as OrderReconciliationStatus?;
-          if (valueDes == null) continue;
-          result.reconciliationStatus = valueDes;
-          break;
-        case r'fills':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(BuiltList, [FullType(OrderFill)]),
-          ) as BuiltList<OrderFill>?;
-          if (valueDes == null) continue;
-          result.fills.replace(valueDes);
-          break;
-        case r'symbol':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
-          result.symbol = valueDes;
-          break;
-        case r'side':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(OrderSide),
-          ) as OrderSide;
-          result.side = valueDes;
-          break;
-        case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(OrderType),
-          ) as OrderType;
-          result.type = valueDes;
-          break;
-        case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(OrderStatus),
-          ) as OrderStatus;
-          result.status = valueDes;
-          break;
-        case r'limit_price':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.limitPrice = valueDes;
-          break;
-        case r'filled_quantity':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.filledQuantity = valueDes;
-          break;
-        case r'average_fill_price':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.averageFillPrice = valueDes;
-          break;
-        case r'order_value':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.orderValue = valueDes;
-          break;
-        case r'fee':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.fee = valueDes;
-          break;
-        case r'leverage':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.leverage = valueDes;
-          break;
-        case r'margin_mode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(MarginMode),
-          ) as MarginMode?;
-          if (valueDes == null) continue;
-          result.marginMode = valueDes;
-          break;
-        case r'reduce_only':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(bool),
-          ) as bool?;
-          if (valueDes == null) continue;
-          result.reduceOnly = valueDes;
-          break;
-        case r'tp_sl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(TpSlSpec),
-          ) as TpSlSpec?;
-          if (valueDes == null) continue;
-          result.tpSl.replace(valueDes);
-          break;
-        case r'position_id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.positionId = valueDes;
-          break;
-        case r'realized_pnl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.realizedPnl = valueDes;
-          break;
-        case r'tx_hash':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.txHash = valueDes;
-          break;
-        case r'failure_reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(String),
-          ) as String?;
-          if (valueDes == null) continue;
-          result.failureReason = valueDes;
-          break;
-        case r'created_at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
-          result.createdAt = valueDes;
-          break;
-        case r'updated_at':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType.nullable(DateTime),
-          ) as DateTime?;
-          if (valueDes == null) continue;
-          result.updatedAt = valueDes;
-          break;
-        default:
-          unhandled.add(key);
-          unhandled.add(value);
-          break;
-      }
-    }
+    final oneOf = object.oneOf;
+    return serializers.serialize(oneOf.value, specifiedType: FullType(oneOf.valueType))!;
   }
 
   @override
@@ -1126,16 +121,10 @@ class _$OrderSerializer implements PrimitiveSerializer<Order> {
     FullType specifiedType = FullType.unspecified,
   }) {
     final result = OrderBuilder();
-    final serializedList = (serialized as Iterable<Object?>).toList();
-    final unhandled = <Object?>[];
-    _deserializeProperties(
-      serializers,
-      serialized,
-      specifiedType: specifiedType,
-      serializedList: serializedList,
-      unhandled: unhandled,
-      result: result,
-    );
+    Object? oneOfDataSrc;
+    final targetType = const FullType(OneOf, [FullType(BstockOrder), FullType(PerpOrder), ]);
+    oneOfDataSrc = serialized;
+    result.oneOf = serializers.deserialize(oneOfDataSrc, specifiedType: targetType) as OneOf;
     return result.build();
   }
 }
@@ -1153,18 +142,21 @@ class OrderFundingModeEnum extends EnumClass {
   static OrderFundingModeEnum valueOf(String name) => _$orderFundingModeEnumValueOf(name);
 }
 
+class OrderKindEnum extends EnumClass {
+
+  @BuiltValueEnumConst(wireName: r'perp')
+  static const OrderKindEnum perp = _$orderKindEnum_perp;
+
+  static Serializer<OrderKindEnum> get serializer => _$orderKindEnumSerializer;
+
+  const OrderKindEnum._(String name): super(name);
+
+  static BuiltSet<OrderKindEnum> get values => _$orderKindEnumValues;
+  static OrderKindEnum valueOf(String name) => _$orderKindEnumValueOf(name);
+}
+
 class OrderWalletActionBlockerEnum extends EnumClass {
 
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
-  @BuiltValueEnumConst(wireName: r'provider_unavailable')
-  static const OrderWalletActionBlockerEnum providerUnavailable = _$orderWalletActionBlockerEnum_providerUnavailable;
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
-  @BuiltValueEnumConst(wireName: r'action_not_ready')
-  static const OrderWalletActionBlockerEnum actionNotReady = _$orderWalletActionBlockerEnum_actionNotReady;
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
-  @BuiltValueEnumConst(wireName: r'capability_disabled')
-  static const OrderWalletActionBlockerEnum capabilityDisabled = _$orderWalletActionBlockerEnum_capabilityDisabled;
-  /// Machine-readable reason why `next_action` is null. It must be null when an action is present. HIP-3 uses `not_applicable` because its EIP-712 signature is outside this EVM API. 
   @BuiltValueEnumConst(wireName: r'not_applicable')
   static const OrderWalletActionBlockerEnum notApplicable = _$orderWalletActionBlockerEnum_notApplicable;
 

@@ -27,6 +27,8 @@ void main() {
         'side': 'short',
         'type': 'market',
         'status': 'partially_filled',
+        'next_action': null,
+        'wallet_action_blocker': 'not_applicable',
         'quantity': '0.5',
         'filled_quantity': '0.1',
         'created_at': '2026-09-10T00:00:00Z',
@@ -524,6 +526,8 @@ class _Actions implements Hip3PositionActionService {
         'side': short ? 'long' : 'short',
         'type': request?.type?.name ?? 'market',
         'status': 'open',
+        'next_action': null,
+        'wallet_action_blocker': 'not_applicable',
         'created_at': '2026-09-10T00:00:00Z',
       })!;
   @override

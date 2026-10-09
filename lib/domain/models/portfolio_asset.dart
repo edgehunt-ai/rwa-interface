@@ -11,6 +11,10 @@ final class PortfolioAsset {
     this.walletId,
     this.contractAddress,
     this.native = false,
+    this.productId,
+    this.bstocksAvailableQuantity,
+    this.bstocksAvailabilityStatus,
+    this.freshness,
   });
 
   /// Server-issued opaque identifier (`portfolio-…`). It addresses this row and
@@ -26,6 +30,10 @@ final class PortfolioAsset {
   final String? walletId;
   final String? contractAddress;
   final bool native;
+  final String? productId;
+  final DecimalValue? bstocksAvailableQuantity;
+  final String? bstocksAvailabilityStatus;
+  final String? freshness;
 
   /// Canonical EVM asset identity, `eip155:<chain id>/erc20:<address>`,
   /// assembled from [network] and [contractAddress] — this is what the contract

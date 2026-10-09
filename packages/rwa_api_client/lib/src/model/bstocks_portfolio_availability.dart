@@ -16,7 +16,7 @@ part 'bstocks_portfolio_availability.g.dart';
 /// * [productId] 
 /// * [withdrawalAssetId] - 可用于自托管提现asset_id的服务端链/token身份，不等同于顶层内部asset_id。
 /// * [pendingWithdrawalQuantity] - 已提交、确认中、noncanonical或manual_review的bStock提现数量；身份/覆盖未知时null。未签名意图不计入。
-/// * [availableQuantity] - 十进制字符串，避免浮点误差
+/// * [availableQuantity] - 钱包余额减去已确认GTC卖单剩余量、已提交待确认GTC卖动作及待处理提现后的可卖数量，下限为0；不是美元金额或执行保证。未知时为null，需结合availability_status与资产freshness使用。
 /// * [unavailableQuantity] - 十进制字符串，避免浮点误差
 /// * [reservationQuantity] - 十进制字符串，避免浮点误差
 /// * [availabilityStatus] 
@@ -38,7 +38,7 @@ abstract class BstocksPortfolioAvailability implements Built<BstocksPortfolioAva
   @BuiltValueField(wireName: r'pending_withdrawal_quantity')
   String? get pendingWithdrawalQuantity;
 
-  /// 十进制字符串，避免浮点误差
+  /// 钱包余额减去已确认GTC卖单剩余量、已提交待确认GTC卖动作及待处理提现后的可卖数量，下限为0；不是美元金额或执行保证。未知时为null，需结合availability_status与资产freshness使用。
   @BuiltValueField(wireName: r'available_quantity')
   String? get availableQuantity;
 

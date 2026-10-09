@@ -23,9 +23,13 @@ final class GeneratedWalletActionExecutionService
   final ApiFailureMapper _mapper;
 
   @override
+  Future<api.WalletActionExecution> getExecution(String executionId) =>
+      _body(() => _wallets.getWalletActionExecution(executionId: executionId));
+
+  @override
   Future<api.WalletActionExecution> createOrderExecution(
     String orderId,
-    String stepId,
+    String actionId,
     api.WalletActionExecutionCreateRequest request, {
     required String idempotencyKey,
   }) {
@@ -34,7 +38,7 @@ final class GeneratedWalletActionExecutionService
     return _body(
       () => orders.createOrderWalletActionExecution(
         orderId: orderId,
-        stepId: stepId,
+        actionId: actionId,
         idempotencyKey: idempotencyKey,
         walletActionExecutionCreateRequest: request,
       ),

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:built_value/json_object.dart';
 import 'package:rwa_api_client/rwa_api_client.dart';
 
 import '../api/api_failure_mapper.dart';
@@ -97,15 +98,50 @@ final class GeneratedOrdersService implements OrdersService {
       );
 
   @override
+  Future<BstocksOrderContinuationPreview> previewBstocksOrderContinuation({
+    required String orderId,
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.previewBstocksOrderContinuation(
+      orderId: orderId,
+      idempotencyKey: idempotencyKey,
+      body: JsonObject(const <String, Object?>{}),
+    ),
+  );
+
+  @override
+  Future<OrderAction> createBstocksOrderAction({
+    required String orderId,
+    required String previewId,
+    required String idempotencyKey,
+  }) => _body(
+    () => _api.createBstocksOrderAction(
+      orderId: orderId,
+      idempotencyKey: idempotencyKey,
+      bstocksOrderActionCreateRequest: BstocksOrderActionCreateRequest(
+        (request) => request.previewId = previewId,
+      ),
+    ),
+  );
+
+  @override
+  Future<OrderAction> getBstocksOrderAction({
+    required String orderId,
+    required String actionId,
+  }) => _body(
+    () => _api.getBstocksOrderAction(orderId: orderId, actionId: actionId),
+  );
+
+  @override
   Future<BstocksWalletActionSubmission> submitBstocksWalletAction({
     required String orderId,
-    required String stepId,
+    required String actionId,
     required String transactionHash,
     required String idempotencyKey,
   }) => _body(
     () => _api.submitBstocksWalletAction(
       orderId: orderId,
-      stepId: stepId,
+      actionId: actionId,
       idempotencyKey: idempotencyKey,
       bstocksWalletActionSubmissionRequest:
           BstocksWalletActionSubmissionRequest(

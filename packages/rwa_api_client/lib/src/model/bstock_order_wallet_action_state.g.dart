@@ -59,6 +59,17 @@ const BstockOrderWalletActionStateWalletActionBlockerEnum
     _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled =
     const BstockOrderWalletActionStateWalletActionBlockerEnum._(
         'capabilityDisabled');
+const BstockOrderWalletActionStateWalletActionBlockerEnum
+    _$bstockOrderWalletActionStateWalletActionBlockerEnum_previewRequired =
+    const BstockOrderWalletActionStateWalletActionBlockerEnum._(
+        'previewRequired');
+const BstockOrderWalletActionStateWalletActionBlockerEnum
+    _$bstockOrderWalletActionStateWalletActionBlockerEnum_orderInFlight =
+    const BstockOrderWalletActionStateWalletActionBlockerEnum._(
+        'orderInFlight');
+const BstockOrderWalletActionStateWalletActionBlockerEnum
+    _$bstockOrderWalletActionStateWalletActionBlockerEnum_manualReview =
+    const BstockOrderWalletActionStateWalletActionBlockerEnum._('manualReview');
 
 BstockOrderWalletActionStateWalletActionBlockerEnum
     _$bstockOrderWalletActionStateWalletActionBlockerEnumValueOf(String name) {
@@ -69,6 +80,12 @@ BstockOrderWalletActionStateWalletActionBlockerEnum
       return _$bstockOrderWalletActionStateWalletActionBlockerEnum_actionNotReady;
     case 'capabilityDisabled':
       return _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled;
+    case 'previewRequired':
+      return _$bstockOrderWalletActionStateWalletActionBlockerEnum_previewRequired;
+    case 'orderInFlight':
+      return _$bstockOrderWalletActionStateWalletActionBlockerEnum_orderInFlight;
+    case 'manualReview':
+      return _$bstockOrderWalletActionStateWalletActionBlockerEnum_manualReview;
     default:
       throw ArgumentError(name);
   }
@@ -80,6 +97,9 @@ final BuiltSet<BstockOrderWalletActionStateWalletActionBlockerEnum>
   _$bstockOrderWalletActionStateWalletActionBlockerEnum_providerUnavailable,
   _$bstockOrderWalletActionStateWalletActionBlockerEnum_actionNotReady,
   _$bstockOrderWalletActionStateWalletActionBlockerEnum_capabilityDisabled,
+  _$bstockOrderWalletActionStateWalletActionBlockerEnum_previewRequired,
+  _$bstockOrderWalletActionStateWalletActionBlockerEnum_orderInFlight,
+  _$bstockOrderWalletActionStateWalletActionBlockerEnum_manualReview,
 ]);
 
 const BstockOrderWalletActionStateChainIdEnum
@@ -233,11 +253,17 @@ class _$BstockOrderWalletActionStateWalletActionBlockerEnumSerializer
     'providerUnavailable': 'provider_unavailable',
     'actionNotReady': 'action_not_ready',
     'capabilityDisabled': 'capability_disabled',
+    'previewRequired': 'preview_required',
+    'orderInFlight': 'order_in_flight',
+    'manualReview': 'manual_review',
   };
   static const Map<Object, String> _fromWire = const <Object, String>{
     'provider_unavailable': 'providerUnavailable',
     'action_not_ready': 'actionNotReady',
     'capability_disabled': 'capabilityDisabled',
+    'preview_required': 'previewRequired',
+    'order_in_flight': 'orderInFlight',
+    'manual_review': 'manualReview',
   };
 
   @override
@@ -331,13 +357,85 @@ class _$BstockOrderWalletActionStateCancellationReasonEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
+abstract class BstockOrderWalletActionStateBuilder {
+  void replace(BstockOrderWalletActionState other);
+  void update(void Function(BstockOrderWalletActionStateBuilder) updates);
+  BstocksTimeInForce? get timeInForce;
+  set timeInForce(BstocksTimeInForce? timeInForce);
+
+  String? get quantity;
+  set quantity(String? quantity);
+
+  String? get orderId;
+  set orderId(String? orderId);
+
+  String? get currentActionId;
+  set currentActionId(String? currentActionId);
+
+  BstockOrderStatus? get status;
+  set status(BstockOrderStatus? status);
+
+  String? get requestedAmount;
+  set requestedAmount(String? requestedAmount);
+
+  BstockOrderWalletActionStateFundingModeEnum? get fundingMode;
+  set fundingMode(BstockOrderWalletActionStateFundingModeEnum? fundingMode);
+
+  bool? get fundsReserved;
+  set fundsReserved(bool? fundsReserved);
+
+  BstocksCancellationPolicyBuilder get cancellationPolicy;
+  set cancellationPolicy(BstocksCancellationPolicyBuilder? cancellationPolicy);
+
+  BstockOrderWalletActionStateKindEnum? get kind;
+  set kind(BstockOrderWalletActionStateKindEnum? kind);
+
+  OrderActionBuilder get nextAction;
+  set nextAction(OrderActionBuilder? nextAction);
+
+  BstockOrderWalletActionStateWalletActionBlockerEnum? get walletActionBlocker;
+  set walletActionBlocker(
+      BstockOrderWalletActionStateWalletActionBlockerEnum? walletActionBlocker);
+
+  String? get slippagePercent;
+  set slippagePercent(String? slippagePercent);
+
+  BstockOrderWalletActionStateChainIdEnum? get chainId;
+  set chainId(BstockOrderWalletActionStateChainIdEnum? chainId);
+
+  String? get router;
+  set router(String? router);
+
+  String? get chainOrderId;
+  set chainOrderId(String? chainOrderId);
+
+  String? get placementTransactionHash;
+  set placementTransactionHash(String? placementTransactionHash);
+
+  String? get transactionHash;
+  set transactionHash(String? transactionHash);
+
+  int? get logIndex;
+  set logIndex(int? logIndex);
+
+  BstockOrderWalletActionStateCancellationReasonEnum? get cancellationReason;
+  set cancellationReason(
+      BstockOrderWalletActionStateCancellationReasonEnum? cancellationReason);
+}
+
+class _$$BstockOrderWalletActionState extends $BstockOrderWalletActionState {
   @override
-  final bool? approvalRequired;
+  final BstocksTimeInForce? timeInForce;
   @override
-  final BstocksApprovalMode? approvalMode;
+  final String? quantity;
   @override
-  final String? approvalAmountRaw;
+  final String orderId;
+  @override
+  final String? currentActionId;
+  @override
+  final BstockOrderStatus status;
+  @override
+  final String? requestedAmount;
   @override
   final BstockOrderWalletActionStateFundingModeEnum? fundingMode;
   @override
@@ -347,26 +445,18 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   @override
   final BstockOrderWalletActionStateKindEnum kind;
   @override
-  final OrderEvmAction? nextAction;
+  final OrderAction? nextAction;
   @override
   final BstockOrderWalletActionStateWalletActionBlockerEnum?
       walletActionBlocker;
   @override
   final String? slippagePercent;
   @override
-  final BstocksActionStatus? actionStatus;
-  @override
-  final String? submittedTransactionHash;
-  @override
-  final String? confirmedTransactionHash;
-  @override
-  final String? requiredFundingRaw;
-  @override
-  final String? previewId;
-  @override
   final BstockOrderWalletActionStateChainIdEnum? chainId;
   @override
   final String? router;
+  @override
+  final String? chainOrderId;
   @override
   final String? placementTransactionHash;
   @override
@@ -375,17 +465,18 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
   final int? logIndex;
   @override
   final BstockOrderWalletActionStateCancellationReasonEnum? cancellationReason;
-  @override
-  final String? targetOrderId;
 
-  factory _$BstockOrderWalletActionState(
-          [void Function(BstockOrderWalletActionStateBuilder)? updates]) =>
-      (BstockOrderWalletActionStateBuilder()..update(updates))._build();
+  factory _$$BstockOrderWalletActionState(
+          [void Function($BstockOrderWalletActionStateBuilder)? updates]) =>
+      ($BstockOrderWalletActionStateBuilder()..update(updates))._build();
 
-  _$BstockOrderWalletActionState._(
-      {this.approvalRequired,
-      this.approvalMode,
-      this.approvalAmountRaw,
+  _$$BstockOrderWalletActionState._(
+      {this.timeInForce,
+      this.quantity,
+      required this.orderId,
+      this.currentActionId,
+      required this.status,
+      this.requestedAmount,
       this.fundingMode,
       this.fundsReserved,
       this.cancellationPolicy,
@@ -393,35 +484,33 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
       this.nextAction,
       this.walletActionBlocker,
       this.slippagePercent,
-      this.actionStatus,
-      this.submittedTransactionHash,
-      this.confirmedTransactionHash,
-      this.requiredFundingRaw,
-      this.previewId,
       this.chainId,
       this.router,
+      this.chainOrderId,
       this.placementTransactionHash,
       this.transactionHash,
       this.logIndex,
-      this.cancellationReason,
-      this.targetOrderId})
+      this.cancellationReason})
       : super._();
   @override
-  BstockOrderWalletActionState rebuild(
-          void Function(BstockOrderWalletActionStateBuilder) updates) =>
+  $BstockOrderWalletActionState rebuild(
+          void Function($BstockOrderWalletActionStateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  BstockOrderWalletActionStateBuilder toBuilder() =>
-      BstockOrderWalletActionStateBuilder()..replace(this);
+  $BstockOrderWalletActionStateBuilder toBuilder() =>
+      $BstockOrderWalletActionStateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is BstockOrderWalletActionState &&
-        approvalRequired == other.approvalRequired &&
-        approvalMode == other.approvalMode &&
-        approvalAmountRaw == other.approvalAmountRaw &&
+    return other is $BstockOrderWalletActionState &&
+        timeInForce == other.timeInForce &&
+        quantity == other.quantity &&
+        orderId == other.orderId &&
+        currentActionId == other.currentActionId &&
+        status == other.status &&
+        requestedAmount == other.requestedAmount &&
         fundingMode == other.fundingMode &&
         fundsReserved == other.fundsReserved &&
         cancellationPolicy == other.cancellationPolicy &&
@@ -429,26 +518,24 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
         nextAction == other.nextAction &&
         walletActionBlocker == other.walletActionBlocker &&
         slippagePercent == other.slippagePercent &&
-        actionStatus == other.actionStatus &&
-        submittedTransactionHash == other.submittedTransactionHash &&
-        confirmedTransactionHash == other.confirmedTransactionHash &&
-        requiredFundingRaw == other.requiredFundingRaw &&
-        previewId == other.previewId &&
         chainId == other.chainId &&
         router == other.router &&
+        chainOrderId == other.chainOrderId &&
         placementTransactionHash == other.placementTransactionHash &&
         transactionHash == other.transactionHash &&
         logIndex == other.logIndex &&
-        cancellationReason == other.cancellationReason &&
-        targetOrderId == other.targetOrderId;
+        cancellationReason == other.cancellationReason;
   }
 
   @override
   int get hashCode {
     var _$hash = 0;
-    _$hash = $jc(_$hash, approvalRequired.hashCode);
-    _$hash = $jc(_$hash, approvalMode.hashCode);
-    _$hash = $jc(_$hash, approvalAmountRaw.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, quantity.hashCode);
+    _$hash = $jc(_$hash, orderId.hashCode);
+    _$hash = $jc(_$hash, currentActionId.hashCode);
+    _$hash = $jc(_$hash, status.hashCode);
+    _$hash = $jc(_$hash, requestedAmount.hashCode);
     _$hash = $jc(_$hash, fundingMode.hashCode);
     _$hash = $jc(_$hash, fundsReserved.hashCode);
     _$hash = $jc(_$hash, cancellationPolicy.hashCode);
@@ -456,28 +543,26 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
     _$hash = $jc(_$hash, nextAction.hashCode);
     _$hash = $jc(_$hash, walletActionBlocker.hashCode);
     _$hash = $jc(_$hash, slippagePercent.hashCode);
-    _$hash = $jc(_$hash, actionStatus.hashCode);
-    _$hash = $jc(_$hash, submittedTransactionHash.hashCode);
-    _$hash = $jc(_$hash, confirmedTransactionHash.hashCode);
-    _$hash = $jc(_$hash, requiredFundingRaw.hashCode);
-    _$hash = $jc(_$hash, previewId.hashCode);
     _$hash = $jc(_$hash, chainId.hashCode);
     _$hash = $jc(_$hash, router.hashCode);
+    _$hash = $jc(_$hash, chainOrderId.hashCode);
     _$hash = $jc(_$hash, placementTransactionHash.hashCode);
     _$hash = $jc(_$hash, transactionHash.hashCode);
     _$hash = $jc(_$hash, logIndex.hashCode);
     _$hash = $jc(_$hash, cancellationReason.hashCode);
-    _$hash = $jc(_$hash, targetOrderId.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'BstockOrderWalletActionState')
-          ..add('approvalRequired', approvalRequired)
-          ..add('approvalMode', approvalMode)
-          ..add('approvalAmountRaw', approvalAmountRaw)
+    return (newBuiltValueToStringHelper(r'$BstockOrderWalletActionState')
+          ..add('timeInForce', timeInForce)
+          ..add('quantity', quantity)
+          ..add('orderId', orderId)
+          ..add('currentActionId', currentActionId)
+          ..add('status', status)
+          ..add('requestedAmount', requestedAmount)
           ..add('fundingMode', fundingMode)
           ..add('fundsReserved', fundsReserved)
           ..add('cancellationPolicy', cancellationPolicy)
@@ -485,154 +570,143 @@ class _$BstockOrderWalletActionState extends BstockOrderWalletActionState {
           ..add('nextAction', nextAction)
           ..add('walletActionBlocker', walletActionBlocker)
           ..add('slippagePercent', slippagePercent)
-          ..add('actionStatus', actionStatus)
-          ..add('submittedTransactionHash', submittedTransactionHash)
-          ..add('confirmedTransactionHash', confirmedTransactionHash)
-          ..add('requiredFundingRaw', requiredFundingRaw)
-          ..add('previewId', previewId)
           ..add('chainId', chainId)
           ..add('router', router)
+          ..add('chainOrderId', chainOrderId)
           ..add('placementTransactionHash', placementTransactionHash)
           ..add('transactionHash', transactionHash)
           ..add('logIndex', logIndex)
-          ..add('cancellationReason', cancellationReason)
-          ..add('targetOrderId', targetOrderId))
+          ..add('cancellationReason', cancellationReason))
         .toString();
   }
 }
 
-class BstockOrderWalletActionStateBuilder
+class $BstockOrderWalletActionStateBuilder
     implements
-        Builder<BstockOrderWalletActionState,
-            BstockOrderWalletActionStateBuilder> {
-  _$BstockOrderWalletActionState? _$v;
+        Builder<$BstockOrderWalletActionState,
+            $BstockOrderWalletActionStateBuilder>,
+        BstockOrderWalletActionStateBuilder {
+  _$$BstockOrderWalletActionState? _$v;
 
-  bool? _approvalRequired;
-  bool? get approvalRequired => _$this._approvalRequired;
-  set approvalRequired(bool? approvalRequired) =>
-      _$this._approvalRequired = approvalRequired;
+  BstocksTimeInForce? _timeInForce;
+  BstocksTimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(covariant BstocksTimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
 
-  BstocksApprovalMode? _approvalMode;
-  BstocksApprovalMode? get approvalMode => _$this._approvalMode;
-  set approvalMode(BstocksApprovalMode? approvalMode) =>
-      _$this._approvalMode = approvalMode;
+  String? _quantity;
+  String? get quantity => _$this._quantity;
+  set quantity(covariant String? quantity) => _$this._quantity = quantity;
 
-  String? _approvalAmountRaw;
-  String? get approvalAmountRaw => _$this._approvalAmountRaw;
-  set approvalAmountRaw(String? approvalAmountRaw) =>
-      _$this._approvalAmountRaw = approvalAmountRaw;
+  String? _orderId;
+  String? get orderId => _$this._orderId;
+  set orderId(covariant String? orderId) => _$this._orderId = orderId;
+
+  String? _currentActionId;
+  String? get currentActionId => _$this._currentActionId;
+  set currentActionId(covariant String? currentActionId) =>
+      _$this._currentActionId = currentActionId;
+
+  BstockOrderStatus? _status;
+  BstockOrderStatus? get status => _$this._status;
+  set status(covariant BstockOrderStatus? status) => _$this._status = status;
+
+  String? _requestedAmount;
+  String? get requestedAmount => _$this._requestedAmount;
+  set requestedAmount(covariant String? requestedAmount) =>
+      _$this._requestedAmount = requestedAmount;
 
   BstockOrderWalletActionStateFundingModeEnum? _fundingMode;
   BstockOrderWalletActionStateFundingModeEnum? get fundingMode =>
       _$this._fundingMode;
-  set fundingMode(BstockOrderWalletActionStateFundingModeEnum? fundingMode) =>
+  set fundingMode(
+          covariant BstockOrderWalletActionStateFundingModeEnum? fundingMode) =>
       _$this._fundingMode = fundingMode;
 
   bool? _fundsReserved;
   bool? get fundsReserved => _$this._fundsReserved;
-  set fundsReserved(bool? fundsReserved) =>
+  set fundsReserved(covariant bool? fundsReserved) =>
       _$this._fundsReserved = fundsReserved;
 
   BstocksCancellationPolicyBuilder? _cancellationPolicy;
   BstocksCancellationPolicyBuilder get cancellationPolicy =>
       _$this._cancellationPolicy ??= BstocksCancellationPolicyBuilder();
   set cancellationPolicy(
-          BstocksCancellationPolicyBuilder? cancellationPolicy) =>
+          covariant BstocksCancellationPolicyBuilder? cancellationPolicy) =>
       _$this._cancellationPolicy = cancellationPolicy;
 
   BstockOrderWalletActionStateKindEnum? _kind;
   BstockOrderWalletActionStateKindEnum? get kind => _$this._kind;
-  set kind(BstockOrderWalletActionStateKindEnum? kind) => _$this._kind = kind;
+  set kind(covariant BstockOrderWalletActionStateKindEnum? kind) =>
+      _$this._kind = kind;
 
-  OrderEvmActionBuilder? _nextAction;
-  OrderEvmActionBuilder get nextAction =>
-      _$this._nextAction ??= OrderEvmActionBuilder();
-  set nextAction(OrderEvmActionBuilder? nextAction) =>
+  OrderActionBuilder? _nextAction;
+  OrderActionBuilder get nextAction =>
+      _$this._nextAction ??= OrderActionBuilder();
+  set nextAction(covariant OrderActionBuilder? nextAction) =>
       _$this._nextAction = nextAction;
 
   BstockOrderWalletActionStateWalletActionBlockerEnum? _walletActionBlocker;
   BstockOrderWalletActionStateWalletActionBlockerEnum?
       get walletActionBlocker => _$this._walletActionBlocker;
   set walletActionBlocker(
-          BstockOrderWalletActionStateWalletActionBlockerEnum?
+          covariant BstockOrderWalletActionStateWalletActionBlockerEnum?
               walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
 
   String? _slippagePercent;
   String? get slippagePercent => _$this._slippagePercent;
-  set slippagePercent(String? slippagePercent) =>
+  set slippagePercent(covariant String? slippagePercent) =>
       _$this._slippagePercent = slippagePercent;
-
-  BstocksActionStatus? _actionStatus;
-  BstocksActionStatus? get actionStatus => _$this._actionStatus;
-  set actionStatus(BstocksActionStatus? actionStatus) =>
-      _$this._actionStatus = actionStatus;
-
-  String? _submittedTransactionHash;
-  String? get submittedTransactionHash => _$this._submittedTransactionHash;
-  set submittedTransactionHash(String? submittedTransactionHash) =>
-      _$this._submittedTransactionHash = submittedTransactionHash;
-
-  String? _confirmedTransactionHash;
-  String? get confirmedTransactionHash => _$this._confirmedTransactionHash;
-  set confirmedTransactionHash(String? confirmedTransactionHash) =>
-      _$this._confirmedTransactionHash = confirmedTransactionHash;
-
-  String? _requiredFundingRaw;
-  String? get requiredFundingRaw => _$this._requiredFundingRaw;
-  set requiredFundingRaw(String? requiredFundingRaw) =>
-      _$this._requiredFundingRaw = requiredFundingRaw;
-
-  String? _previewId;
-  String? get previewId => _$this._previewId;
-  set previewId(String? previewId) => _$this._previewId = previewId;
 
   BstockOrderWalletActionStateChainIdEnum? _chainId;
   BstockOrderWalletActionStateChainIdEnum? get chainId => _$this._chainId;
-  set chainId(BstockOrderWalletActionStateChainIdEnum? chainId) =>
+  set chainId(covariant BstockOrderWalletActionStateChainIdEnum? chainId) =>
       _$this._chainId = chainId;
 
   String? _router;
   String? get router => _$this._router;
-  set router(String? router) => _$this._router = router;
+  set router(covariant String? router) => _$this._router = router;
+
+  String? _chainOrderId;
+  String? get chainOrderId => _$this._chainOrderId;
+  set chainOrderId(covariant String? chainOrderId) =>
+      _$this._chainOrderId = chainOrderId;
 
   String? _placementTransactionHash;
   String? get placementTransactionHash => _$this._placementTransactionHash;
-  set placementTransactionHash(String? placementTransactionHash) =>
+  set placementTransactionHash(covariant String? placementTransactionHash) =>
       _$this._placementTransactionHash = placementTransactionHash;
 
   String? _transactionHash;
   String? get transactionHash => _$this._transactionHash;
-  set transactionHash(String? transactionHash) =>
+  set transactionHash(covariant String? transactionHash) =>
       _$this._transactionHash = transactionHash;
 
   int? _logIndex;
   int? get logIndex => _$this._logIndex;
-  set logIndex(int? logIndex) => _$this._logIndex = logIndex;
+  set logIndex(covariant int? logIndex) => _$this._logIndex = logIndex;
 
   BstockOrderWalletActionStateCancellationReasonEnum? _cancellationReason;
   BstockOrderWalletActionStateCancellationReasonEnum? get cancellationReason =>
       _$this._cancellationReason;
   set cancellationReason(
-          BstockOrderWalletActionStateCancellationReasonEnum?
+          covariant BstockOrderWalletActionStateCancellationReasonEnum?
               cancellationReason) =>
       _$this._cancellationReason = cancellationReason;
 
-  String? _targetOrderId;
-  String? get targetOrderId => _$this._targetOrderId;
-  set targetOrderId(String? targetOrderId) =>
-      _$this._targetOrderId = targetOrderId;
-
-  BstockOrderWalletActionStateBuilder() {
-    BstockOrderWalletActionState._defaults(this);
+  $BstockOrderWalletActionStateBuilder() {
+    $BstockOrderWalletActionState._defaults(this);
   }
 
-  BstockOrderWalletActionStateBuilder get _$this {
+  $BstockOrderWalletActionStateBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
-      _approvalRequired = $v.approvalRequired;
-      _approvalMode = $v.approvalMode;
-      _approvalAmountRaw = $v.approvalAmountRaw;
+      _timeInForce = $v.timeInForce;
+      _quantity = $v.quantity;
+      _orderId = $v.orderId;
+      _currentActionId = $v.currentActionId;
+      _status = $v.status;
+      _requestedAmount = $v.requestedAmount;
       _fundingMode = $v.fundingMode;
       _fundsReserved = $v.fundsReserved;
       _cancellationPolicy = $v.cancellationPolicy?.toBuilder();
@@ -640,64 +714,59 @@ class BstockOrderWalletActionStateBuilder
       _nextAction = $v.nextAction?.toBuilder();
       _walletActionBlocker = $v.walletActionBlocker;
       _slippagePercent = $v.slippagePercent;
-      _actionStatus = $v.actionStatus;
-      _submittedTransactionHash = $v.submittedTransactionHash;
-      _confirmedTransactionHash = $v.confirmedTransactionHash;
-      _requiredFundingRaw = $v.requiredFundingRaw;
-      _previewId = $v.previewId;
       _chainId = $v.chainId;
       _router = $v.router;
+      _chainOrderId = $v.chainOrderId;
       _placementTransactionHash = $v.placementTransactionHash;
       _transactionHash = $v.transactionHash;
       _logIndex = $v.logIndex;
       _cancellationReason = $v.cancellationReason;
-      _targetOrderId = $v.targetOrderId;
       _$v = null;
     }
     return this;
   }
 
   @override
-  void replace(BstockOrderWalletActionState other) {
-    _$v = other as _$BstockOrderWalletActionState;
+  void replace(covariant $BstockOrderWalletActionState other) {
+    _$v = other as _$$BstockOrderWalletActionState;
   }
 
   @override
-  void update(void Function(BstockOrderWalletActionStateBuilder)? updates) {
+  void update(void Function($BstockOrderWalletActionStateBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  BstockOrderWalletActionState build() => _build();
+  $BstockOrderWalletActionState build() => _build();
 
-  _$BstockOrderWalletActionState _build() {
-    _$BstockOrderWalletActionState _$result;
+  _$$BstockOrderWalletActionState _build() {
+    _$$BstockOrderWalletActionState _$result;
     try {
       _$result = _$v ??
-          _$BstockOrderWalletActionState._(
-            approvalRequired: approvalRequired,
-            approvalMode: approvalMode,
-            approvalAmountRaw: approvalAmountRaw,
+          _$$BstockOrderWalletActionState._(
+            timeInForce: timeInForce,
+            quantity: quantity,
+            orderId: BuiltValueNullFieldError.checkNotNull(
+                orderId, r'$BstockOrderWalletActionState', 'orderId'),
+            currentActionId: currentActionId,
+            status: BuiltValueNullFieldError.checkNotNull(
+                status, r'$BstockOrderWalletActionState', 'status'),
+            requestedAmount: requestedAmount,
             fundingMode: fundingMode,
             fundsReserved: fundsReserved,
             cancellationPolicy: _cancellationPolicy?.build(),
             kind: BuiltValueNullFieldError.checkNotNull(
-                kind, r'BstockOrderWalletActionState', 'kind'),
+                kind, r'$BstockOrderWalletActionState', 'kind'),
             nextAction: _nextAction?.build(),
             walletActionBlocker: walletActionBlocker,
             slippagePercent: slippagePercent,
-            actionStatus: actionStatus,
-            submittedTransactionHash: submittedTransactionHash,
-            confirmedTransactionHash: confirmedTransactionHash,
-            requiredFundingRaw: requiredFundingRaw,
-            previewId: previewId,
             chainId: chainId,
             router: router,
+            chainOrderId: chainOrderId,
             placementTransactionHash: placementTransactionHash,
             transactionHash: transactionHash,
             logIndex: logIndex,
             cancellationReason: cancellationReason,
-            targetOrderId: targetOrderId,
           );
     } catch (_) {
       late String _$failedField;
@@ -709,7 +778,7 @@ class BstockOrderWalletActionStateBuilder
         _nextAction?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'BstockOrderWalletActionState', _$failedField, e.toString());
+            r'$BstockOrderWalletActionState', _$failedField, e.toString());
       }
       rethrow;
     }

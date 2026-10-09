@@ -6,44 +6,43 @@
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
 
-part 'wallet_action_complete_request.g.dart';
+part 'bstocks_order_action_create_request.g.dart';
 
-/// WalletActionCompleteRequest
+/// 显式接受原订单的新预览；服务端决定授权或执行动作，禁止客户端指定交易内容或动作类型。
 ///
 /// Properties:
-/// * [signature] - Privy-produced signature for the exact server-frozen legacy order action.
+/// * [previewId] 
 @BuiltValue()
-abstract class WalletActionCompleteRequest implements Built<WalletActionCompleteRequest, WalletActionCompleteRequestBuilder> {
-  /// Privy-produced signature for the exact server-frozen legacy order action.
-  @BuiltValueField(wireName: r'signature')
-  String get signature;
+abstract class BstocksOrderActionCreateRequest implements Built<BstocksOrderActionCreateRequest, BstocksOrderActionCreateRequestBuilder> {
+  @BuiltValueField(wireName: r'preview_id')
+  String get previewId;
 
-  WalletActionCompleteRequest._();
+  BstocksOrderActionCreateRequest._();
 
-  factory WalletActionCompleteRequest([void updates(WalletActionCompleteRequestBuilder b)]) = _$WalletActionCompleteRequest;
+  factory BstocksOrderActionCreateRequest([void updates(BstocksOrderActionCreateRequestBuilder b)]) = _$BstocksOrderActionCreateRequest;
 
   @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(WalletActionCompleteRequestBuilder b) => b;
+  static void _defaults(BstocksOrderActionCreateRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<WalletActionCompleteRequest> get serializer => _$WalletActionCompleteRequestSerializer();
+  static Serializer<BstocksOrderActionCreateRequest> get serializer => _$BstocksOrderActionCreateRequestSerializer();
 }
 
-class _$WalletActionCompleteRequestSerializer implements PrimitiveSerializer<WalletActionCompleteRequest> {
+class _$BstocksOrderActionCreateRequestSerializer implements PrimitiveSerializer<BstocksOrderActionCreateRequest> {
   @override
-  final Iterable<Type> types = const [WalletActionCompleteRequest, _$WalletActionCompleteRequest];
+  final Iterable<Type> types = const [BstocksOrderActionCreateRequest, _$BstocksOrderActionCreateRequest];
 
   @override
-  final String wireName = r'WalletActionCompleteRequest';
+  final String wireName = r'BstocksOrderActionCreateRequest';
 
   Iterable<Object?> _serializeProperties(
     Serializers serializers,
-    WalletActionCompleteRequest object, {
+    BstocksOrderActionCreateRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
-    yield r'signature';
+    yield r'preview_id';
     yield serializers.serialize(
-      object.signature,
+      object.previewId,
       specifiedType: const FullType(String),
     );
   }
@@ -51,7 +50,7 @@ class _$WalletActionCompleteRequestSerializer implements PrimitiveSerializer<Wal
   @override
   Object serialize(
     Serializers serializers,
-    WalletActionCompleteRequest object, {
+    BstocksOrderActionCreateRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
@@ -62,19 +61,19 @@ class _$WalletActionCompleteRequestSerializer implements PrimitiveSerializer<Wal
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
     required List<Object?> serializedList,
-    required WalletActionCompleteRequestBuilder result,
+    required BstocksOrderActionCreateRequestBuilder result,
     required List<Object?> unhandled,
   }) {
     for (var i = 0; i < serializedList.length; i += 2) {
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
-        case r'signature':
+        case r'preview_id':
           final valueDes = serializers.deserialize(
             value,
             specifiedType: const FullType(String),
           ) as String;
-          result.signature = valueDes;
+          result.previewId = valueDes;
           break;
         default:
           unhandled.add(key);
@@ -85,12 +84,12 @@ class _$WalletActionCompleteRequestSerializer implements PrimitiveSerializer<Wal
   }
 
   @override
-  WalletActionCompleteRequest deserialize(
+  BstocksOrderActionCreateRequest deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = WalletActionCompleteRequestBuilder();
+    final result = BstocksOrderActionCreateRequestBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

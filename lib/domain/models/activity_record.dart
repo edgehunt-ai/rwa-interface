@@ -22,13 +22,15 @@ final class ActivityField {
 final class ActivityContinuation {
   const ActivityContinuation({
     required this.action,
-    required this.actionId,
+    required this.orderId,
     required this.step,
     required this.requiresNewBusinessObject,
+    this.actionId,
   });
 
   final String action;
-  final String actionId;
+  final String orderId;
+  final String? actionId;
   final String step;
   final bool requiresNewBusinessObject;
 }

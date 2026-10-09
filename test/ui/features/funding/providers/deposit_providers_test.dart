@@ -118,7 +118,7 @@ final class _FundingRepository implements FundingRepository {
             tokenContract: '0x${route.$2.toLowerCase()}',
             tokenDecimals: 6,
             address: '0x123',
-            qrPayload: 'ethereum:0x${route.$2.toLowerCase()}',
+            qrPayload: '0x123',
             minimumAmount: DecimalValue(
               route.$3,
               asset: route.$2,

@@ -8,6 +8,23 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 
 void main() {
+  test('deposit directory accepts a plain address QR payload', () async {
+    final directory = await FundingRepositoryImpl(
+      _DepositFunding('0x1111111111111111111111111111111111111111'),
+    ).getDepositDirectory();
+
+    expect(directory.instructions.single.qrPayload, directory.walletAddress);
+  });
+
+  test('deposit directory rejects a QR payload for another address', () {
+    expect(
+      FundingRepositoryImpl(
+        _DepositFunding('0x2222222222222222222222222222222222222222'),
+      ).getDepositDirectory(),
+      throwsFormatException,
+    );
+  });
+
   test(
     'funding session maps transfer capability and target balances',
     () async {
@@ -206,6 +223,71 @@ void main() {
       });
     },
   );
+}
+
+final class _DepositFunding implements FundingService {
+  const _DepositFunding(this.qrPayload);
+
+  final String qrPayload;
+
+  @override
+  Future<api.DepositInstruction> getDepositDirectory() async {
+    const address = '0x1111111111111111111111111111111111111111';
+    final response = api.DepositInstructionsResponse(
+      (builder) => builder
+        ..catalogVersion = 'v1'
+        ..wallet.replace(
+          api.DepositInstructionWallet(
+            (wallet) => wallet
+              ..walletId = 'wallet-1'
+              ..address = address
+              ..custody =
+                  api.DepositInstructionWalletCustodyEnum.embeddedWallet,
+          ),
+        )
+        ..items.add(
+          api.DepositInstructionItem(
+            (item) => item
+              ..identity.replace(
+                api.FundingSourceAssetIdentity(
+                  (identity) => identity
+                    ..assetId = 'eip155:56/erc20:token'
+                    ..namespace = 'eip155'
+                    ..network = 'BSC'
+                    ..chainId = 56
+                    ..token = 'USDT'
+                    ..tokenContract =
+                        '0x3333333333333333333333333333333333333333'
+                    ..tokenDecimals = 18
+                    ..provenance = 'catalog',
+                ),
+              )
+              ..minDeposit = '1'
+              ..confirmationsRequired = 15
+              ..estimatedArrivalSeconds = 60
+              ..qrPayload = qrPayload
+              ..creditedTo = api.DepositCreditTarget.wallet
+              ..availability.replace(
+                api.DepositInstructionAvailability(
+                  (availability) => availability..status = 'available',
+                ),
+              )
+              ..warning = 'Send USDT only',
+          ),
+        )
+        ..updatedAt = DateTime.utc(2026),
+    );
+    return api.DepositInstruction(
+      (builder) => builder.oneOf = OneOfDynamic(
+        typeIndex: 0,
+        types: const [api.DepositInstructionsResponse],
+        value: response,
+      ),
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 final class _MappedSessionFunding implements FundingService {

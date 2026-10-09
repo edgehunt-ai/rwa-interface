@@ -55,6 +55,12 @@ final class FundingRepositoryImpl implements FundingRepository {
                 item.qrPayload != null,
           )
           .map((item) {
+            final qrPayload = item.qrPayload!;
+            if (qrPayload.toLowerCase() != address.toLowerCase()) {
+              throw const FormatException(
+                'Deposit QR payload does not match the wallet address',
+              );
+            }
             final identity = item.identity;
             return DepositInstruction(
               chain: identity.network,
@@ -62,7 +68,7 @@ final class FundingRepositoryImpl implements FundingRepository {
               tokenContract: identity.tokenContract,
               tokenDecimals: identity.tokenDecimals,
               address: address,
-              qrPayload: item.qrPayload!,
+              qrPayload: qrPayload,
               minimumAmount: _money(item.minDeposit)!,
               confirmationsRequired: item.confirmationsRequired,
               estimatedArrivalSeconds: item.estimatedArrivalSeconds,

@@ -1,5 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
+
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:privy_flutter/privy_flutter.dart';
+import 'package:privy_flutter/src/logging/logger_service.dart';
+import 'package:privy_flutter/src/logging/privy_logger.dart';
 import 'package:privy_flutter/src/modules/email/login_with_email.dart';
 import 'package:privy_flutter/src/modules/login_with_siwe/login_with_siwe.dart';
 import 'package:privy_flutter/src/modules/oauth/login_with_oauth.dart';
@@ -9,12 +16,263 @@ import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
 import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/domain/services/wallet_authorization_signer.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/models/order.dart';
+import 'package:rwa_interface/data/services/bstocks_broadcast_journal.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   const configuration = IdentityConfiguration(
     appId: 'app-id',
     clientId: 'client-id',
   );
+
+  group('direct wallet broadcast recovery', () {
+    final action = BstocksOrderAction(
+      orderId: 'order-1',
+      actionId: 'action-1',
+      kind: BstocksOrderActionKind.executeIocOrder,
+      status: BstocksOrderActionStatus.awaitingSignature,
+      chainId: 56,
+      from: '0x0000000000000000000000000000000000000002',
+      to: '0x0000000000000000000000000000000000000003',
+      data: '0xaa',
+      value: '0x0',
+      payloadHash: 'hash',
+      validUntil: DateTime.utc(2030),
+    );
+    final wallet = EmbeddedEthereumWallet(
+      address: action.from,
+      hdWalletIndex: 0,
+    );
+    Future<String> send(PrivyIdentityAuthGateway gateway) =>
+        gateway.sendTransaction(
+          expectedSigner: action.from,
+          chainId: action.chainId,
+          to: action.to,
+          data: action.data,
+          value: action.value,
+        );
+
+    setUp(() => SharedPreferences.setMockInitialValues({}));
+
+    const channel = MethodChannel('privy_flutter');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    tearDown(() => messenger.setMockMethodCallHandler(channel, null));
+
+    PrivyIdentityAuthGateway nativeGateway() => PrivyIdentityAuthGateway(
+      createPrivy: (_) => _FakePrivy(
+        authState: Authenticated(
+          _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet]),
+        ),
+      ),
+    );
+
+    test(
+      'native refusal survives transport and permits retry after restart',
+      () async {
+        var calls = 0;
+        messenger.setMockMethodCallHandler(channel, (call) async {
+          calls++;
+          expect(call.method, 'ethSendRpcRequest');
+          final args = call.arguments as Map;
+          expect(args['method'], 'eth_sendTransaction');
+          expect(args['walletAddress'], action.from);
+          expect(jsonDecode((args['params'] as List).single as String), {
+            'from': action.from,
+            'to': action.to,
+            'data': action.data,
+            'value': action.value,
+            'chainId': '0x38',
+          });
+          if (calls == 1) {
+            throw PlatformException(code: '4001', message: 'User declined');
+          }
+          return {'method': 'eth_sendTransaction', 'data': '0x${'ab' * 32}'};
+        });
+        final gateway = nativeGateway();
+        await gateway.initialize(configuration);
+        await expectLater(
+          BstocksBroadcastJournal.persistent().broadcast(
+            action,
+            () => send(gateway),
+          ),
+          throwsA(isA<WalletTransactionNotBroadcastFailure>()),
+        );
+        final restarted = nativeGateway();
+        await restarted.initialize(configuration);
+        expect(
+          await BstocksBroadcastJournal.persistent().broadcast(
+            action,
+            () => send(restarted),
+          ),
+          '0x${'ab' * 32}',
+        );
+        expect(calls, 2);
+      },
+    );
+
+    test(
+      'SDK wrapping loses refusal code but transaction transport preserves it',
+      () async {
+        LoggerService.initializeLogger(_SilentPrivyLogger());
+        messenger.setMockMethodCallHandler(
+          channel,
+          (_) async => throw PlatformException(code: '4001'),
+        );
+        final wrapped = await wallet.provider.request(
+          EthereumRpcRequest.ethSendTransaction('{}'),
+        );
+        expect(wrapped, isA<Failure<EthereumRpcResponse>>());
+        expect(
+          (wrapped as Failure<EthereumRpcResponse>).error,
+          isA<PrivyException>(),
+        );
+        final gateway = nativeGateway();
+        await gateway.initialize(configuration);
+        await expectLater(
+          send(gateway),
+          throwsA(isA<WalletTransactionNotBroadcastFailure>()),
+        );
+      },
+    );
+
+    for (final code in ['RPC_REQUEST_FAILED', 'timeout']) {
+      test(
+        'native $code with rejection text cannot unlock rebroadcast',
+        () async {
+          var calls = 0;
+          messenger.setMockMethodCallHandler(channel, (_) async {
+            calls++;
+            throw PlatformException(
+              code: code,
+              message: 'Rejected after request',
+            );
+          });
+          final gateway = nativeGateway();
+          await gateway.initialize(configuration);
+          await expectLater(
+            BstocksBroadcastJournal.persistent().broadcast(
+              action,
+              () => send(gateway),
+            ),
+            throwsA(isA<IdentityFailure>()),
+          );
+          await expectLater(
+            BstocksBroadcastJournal.persistent().broadcast(
+              action,
+              () => send(gateway),
+            ),
+            throwsA(isA<UnknownFailure>()),
+          );
+          expect(calls, 1);
+        },
+      );
+    }
+
+    test('malformed native success remains uncertain', () async {
+      messenger.setMockMethodCallHandler(
+        channel,
+        (_) async => {'method': 'eth_sendTransaction', 'data': 'invalid-hash'},
+      );
+      final gateway = nativeGateway();
+      await gateway.initialize(configuration);
+      await expectLater(
+        BstocksBroadcastJournal.persistent().broadcast(
+          action,
+          () => send(gateway),
+        ),
+        throwsA(isA<IdentityFailure>()),
+      );
+      await expectLater(
+        BstocksBroadcastJournal.persistent().broadcast(
+          action,
+          () => send(gateway),
+        ),
+        throwsA(isA<UnknownFailure>()),
+      );
+    });
+
+    test('session preflight failure does not lock retry after login', () async {
+      var calls = 0;
+      final gateway = PrivyIdentityAuthGateway(
+        createPrivy: (_) => _FakePrivy(
+          authState: Authenticated(
+            _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet]),
+          ),
+        ),
+        requestTransaction: (_, _) async {
+          calls++;
+          return Success(
+            EthereumRpcResponse(
+              method: 'eth_sendTransaction',
+              data: '0x${'ab' * 32}',
+            ),
+          );
+        },
+      );
+      await expectLater(
+        BstocksBroadcastJournal.persistent().broadcast(
+          action,
+          () => send(gateway),
+        ),
+        throwsA(isA<WalletTransactionNotBroadcastFailure>()),
+      );
+      expect(calls, 0);
+      await gateway.initialize(configuration);
+      expect(
+        await BstocksBroadcastJournal.persistent().broadcast(
+          action,
+          () => send(gateway),
+        ),
+        '0x${'ab' * 32}',
+      );
+      expect(calls, 1);
+    });
+
+    test(
+      'structured rejection permits retry but an SDK error stays locked',
+      () async {
+        var calls = 0;
+        final gateway = PrivyIdentityAuthGateway(
+          createPrivy: (_) => _FakePrivy(
+            authState: Authenticated(
+              _FakeUser(id: 'user', token: 'token', ethereumWallets: [wallet]),
+            ),
+          ),
+          requestTransaction: (_, _) async {
+            calls++;
+            if (calls == 1) throw PlatformException(code: '4001');
+            throw const PrivyException('RPC timeout after request');
+          },
+        );
+        await gateway.initialize(configuration);
+        await expectLater(
+          BstocksBroadcastJournal.persistent().broadcast(
+            action,
+            () => send(gateway),
+          ),
+          throwsA(isA<WalletTransactionNotBroadcastFailure>()),
+        );
+        await expectLater(
+          BstocksBroadcastJournal.persistent().broadcast(
+            action,
+            () => send(gateway),
+          ),
+          throwsA(isA<IdentityFailure>()),
+        );
+        await expectLater(
+          BstocksBroadcastJournal.persistent().broadcast(
+            action,
+            () => send(gateway),
+          ),
+          throwsA(isA<UnknownFailure>()),
+        );
+        expect(calls, 2);
+      },
+    );
+  });
 
   test('initializes with disabled SDK logging and restores user', () async {
     final user = _FakeUser(id: 'did:privy:1', token: 'token');
@@ -459,6 +717,19 @@ void main() {
       );
     });
   });
+}
+
+final class _SilentPrivyLogger implements PrivyLogger {
+  @override
+  void debug(String message) {}
+  @override
+  void info(String message) {}
+  @override
+  void warning(String message) {}
+  @override
+  void error(String message) {}
+  @override
+  void internal(String message) {}
 }
 
 final class _FakePrivy implements Privy {

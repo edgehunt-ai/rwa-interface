@@ -2,16 +2,19 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:privy_flutter/privy_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../domain/auth/authentication.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
 import '../../domain/models/wallet_action_execution.dart';
+import '../../domain/models/api_failure.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
 import '../../domain/services/wallet_authorization_signer.dart';
 import '../../domain/services/embedded_wallet_transaction_sender.dart';
 import '../../app/config/privy_configuration.dart';
+import 'privy_transaction_requester.dart';
 
 typedef PrivyFactory = Privy Function(PrivyConfig configuration);
 typedef PrivyDiagnosticReporter = void Function({
@@ -104,12 +107,14 @@ final class PrivyIdentityAuthGateway
     PrivyFactory? createPrivy,
     PrivyDiagnosticReporter? reportDiagnostic,
     PrivyTypedDataRequester? requestTypedData,
+    PrivyTypedDataRequester? requestTransaction,
     PrivyAuthorizationSigner? signAuthorization,
   }) : _createPrivy = createPrivy ?? ((config) => Privy.init(config: config)),
        _reportDiagnostic = reportDiagnostic ?? _reportToSentry,
        _requestTypedData =
            requestTypedData ??
            ((wallet, request) => wallet.provider.request(request)),
+       _requestTransaction = requestTransaction ?? requestPrivyTransaction,
        _signAuthorization =
            signAuthorization ??
            ((user, payload) => user.generateAuthorizationSignature(payload));
@@ -117,6 +122,7 @@ final class PrivyIdentityAuthGateway
   final PrivyFactory _createPrivy;
   final PrivyDiagnosticReporter _reportDiagnostic;
   final PrivyTypedDataRequester _requestTypedData;
+  final PrivyTypedDataRequester _requestTransaction;
   final PrivyAuthorizationSigner _signAuthorization;
   Privy? _privy;
   PrivyUser? _user;
@@ -393,23 +399,32 @@ final class PrivyIdentityAuthGateway
         !RegExp(r'^0x[0-9a-fA-F]*$').hasMatch(data) ||
         !RegExp(r'^0x[0-9a-fA-F]+$').hasMatch(value) ||
         chainId <= 0) {
-      throw const IdentityFailure(
-        AuthenticationFailureCode.provider,
+      throw const WalletTransactionNotBroadcastFailure(
         retryable: false,
+        userAction: 'Invalid wallet transaction payload',
       );
     }
     if (!_sessionUsable) {
-      throw const IdentityFailure(
-        AuthenticationFailureCode.provider,
+      throw const WalletTransactionNotBroadcastFailure(
         retryable: true,
+        userAction: 'Wallet session unavailable',
       );
     }
 
-    final user = _user ?? await _privy?.getUser();
-    if (user == null) {
-      throw const IdentityFailure(
-        AuthenticationFailureCode.provider,
+    PrivyUser? user;
+    try {
+      user = _user ?? await _privy?.getUser();
+    } catch (_) {
+      // Resolving the user has not issued a transaction request.
+      throw const WalletTransactionNotBroadcastFailure(
         retryable: true,
+        userAction: 'Wallet session unavailable',
+      );
+    }
+    if (user == null) {
+      throw const WalletTransactionNotBroadcastFailure(
+        retryable: true,
+        userAction: 'Wallet session unavailable',
       );
     }
     _user = user;
@@ -417,9 +432,9 @@ final class PrivyIdentityAuthGateway
         .where((wallet) => wallet.address.toLowerCase() == normalizedSigner)
         .toList(growable: false);
     if (matches.length != 1) {
-      throw const IdentityFailure(
-        AuthenticationFailureCode.provider,
+      throw const WalletTransactionNotBroadcastFailure(
         retryable: false,
+        userAction: 'Transaction wallet does not match the current account',
       );
     }
 
@@ -433,7 +448,7 @@ final class PrivyIdentityAuthGateway
       }),
     );
     try {
-      final result = await matches.single.provider.request(request);
+      final result = await _requestTransaction(matches.single, request);
       return switch (result) {
         Success<EthereumRpcResponse>(:final value)
             when RegExp(r'^0x[0-9a-fA-F]{64}$').hasMatch(value.data) =>
@@ -446,6 +461,20 @@ final class PrivyIdentityAuthGateway
       };
     } on IdentityFailure {
       rethrow;
+    } on PlatformException catch (error) {
+      // Use only the structured EIP-1193 rejection code. A generic SDK message
+      // mentioning rejection cannot prove that no broadcast occurred.
+      if (error.code == '4001') {
+        throw const WalletTransactionNotBroadcastFailure(
+          retryable: true,
+          userAction: 'Wallet transaction rejected before broadcast',
+        );
+      }
+      throw IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+        reason: _sanitizeDiagnosticMessage(error.message ?? error.code),
+      );
     } catch (error) {
       final reason = error is PrivyException
           ? _sanitizeDiagnosticMessage(error.message)

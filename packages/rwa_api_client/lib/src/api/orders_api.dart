@@ -8,8 +8,12 @@ import 'package:built_value/json_object.dart';
 import 'package:built_value/serializer.dart';
 import 'package:dio/dio.dart';
 
+import 'package:built_value/json_object.dart';
 import 'package:rwa_api_client/src/api_util.dart';
 import 'package:rwa_api_client/src/model/api_error.dart';
+import 'package:rwa_api_client/src/model/bstocks_order_action_create_request.dart';
+import 'package:rwa_api_client/src/model/bstocks_order_action_page.dart';
+import 'package:rwa_api_client/src/model/bstocks_order_continuation_preview.dart';
 import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission.dart';
 import 'package:rwa_api_client/src/model/bstocks_wallet_action_submission_request.dart';
 import 'package:rwa_api_client/src/model/create_order_request.dart';
@@ -31,13 +35,13 @@ import 'package:rwa_api_client/src/model/hip3_funding_payment_page.dart';
 import 'package:rwa_api_client/src/model/hip3_liquidation_page.dart';
 import 'package:rwa_api_client/src/model/hip3_trading_context.dart';
 import 'package:rwa_api_client/src/model/order.dart';
+import 'package:rwa_api_client/src/model/order_action.dart';
 import 'package:rwa_api_client/src/model/order_page.dart';
 import 'package:rwa_api_client/src/model/order_preview.dart';
 import 'package:rwa_api_client/src/model/order_preview_request.dart';
 import 'package:rwa_api_client/src/model/product_kind.dart';
 import 'package:rwa_api_client/src/model/trade_intent.dart';
 import 'package:rwa_api_client/src/model/trade_intent_create_request.dart';
-import 'package:rwa_api_client/src/model/wallet_action_complete_request.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution.dart';
 import 'package:rwa_api_client/src/model/wallet_action_execution_create_request.dart';
 
@@ -134,10 +138,10 @@ class OrdersApi {
   }
 
   /// 请求取消订单
-  /// 
+  /// 对真实业务 order_id 取消剩余 GTC 数量，返回同一订单；若需链上撤单则 next_action 为 cancel_order。 DELETE 成功不代表链上已取消。订单已 filled/cancelled 时返回当前状态，不创建动作；保留历史成交。 没有挂单证据返回 order_not_placed，不确定证据返回 order_reconciliation_required，IOC 返回 order_not_cancellable。 不同命令键已有未解决撤单返回 cancellation_in_progress；相同命令键重放，内容冲突返回 idempotency_conflict。 
   ///
   /// Parameters:
-  /// * [orderId] 
+  /// * [orderId] - 业务订单标识；bStocks 为 bstocks-order:<UUID>，HIP3 保持其现有业务订单 UUID。
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
@@ -407,14 +411,13 @@ class OrdersApi {
     );
   }
 
-  /// 提交指定钱包动作的签名结果（兼容窗口）
-  /// Deprecated compatibility operation for clients pinned to the legacy contract. The server resolves the exact order action from &#x60;order_id&#x60; and &#x60;step_id&#x60;; capability and execution gates remain authoritative and fail closed. New clients must use the execution resource. 
+  /// 接受新预览并继续同一张 bStocks 订单
+  /// 客户端仅提交 preview_id；服务端原子核验账户、订单、预览和不可变条款并生成下一授权或执行动作。 不接受 action kind 或交易内容，不能通过此端点创建撤单；未知广播禁止替代动作。 相同命令重放原 action_id，不更新冻结交易；不同内容使用相同键返回 idempotency_conflict。 
   ///
   /// Parameters:
   /// * [orderId] 
-  /// * [stepId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
-  /// * [walletActionCompleteRequest] 
+  /// * [bstocksOrderActionCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -422,14 +425,12 @@ class OrdersApi {
   /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
   /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
   ///
-  /// Returns a [Future] containing a [Response] with a [Order] as data
+  /// Returns a [Future] containing a [Response] with a [OrderAction] as data
   /// Throws [DioException] if API call or serialization fails
-  @Deprecated('This operation has been deprecated')
-  Future<Response<Order>> completeOrderWalletAction({ 
+  Future<Response<OrderAction>> createBstocksOrderAction({ 
     required String orderId,
-    required String stepId,
     required String idempotencyKey,
-    required WalletActionCompleteRequest walletActionCompleteRequest,
+    required BstocksOrderActionCreateRequest bstocksOrderActionCreateRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -437,7 +438,7 @@ class OrdersApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/orders/{order_id}/wallet-actions/{step_id}/complete'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString()).replaceAll('{' r'step_id' '}', encodeQueryParameter(_serializers, stepId, const FullType(String)).toString());
+    final _path = r'/v1/orders/{order_id}/actions'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -461,8 +462,8 @@ class OrdersApi {
     dynamic _bodyData;
 
     try {
-      const _type = FullType(WalletActionCompleteRequest);
-      _bodyData = _serializers.serialize(walletActionCompleteRequest, specifiedType: _type);
+      const _type = FullType(BstocksOrderActionCreateRequest);
+      _bodyData = _serializers.serialize(bstocksOrderActionCreateRequest, specifiedType: _type);
 
     } catch(error, stackTrace) {
       throw DioException(
@@ -485,14 +486,14 @@ class OrdersApi {
       onReceiveProgress: onReceiveProgress,
     );
 
-    Order? _responseData;
+    OrderAction? _responseData;
 
     try {
       final rawResponse = _response.data;
       _responseData = rawResponse == null ? null : _serializers.deserialize(
         rawResponse,
-        specifiedType: const FullType(Order),
-      ) as Order;
+        specifiedType: const FullType(OrderAction),
+      ) as OrderAction;
 
     } catch (error, stackTrace) {
       throw DioException(
@@ -504,7 +505,7 @@ class OrdersApi {
       );
     }
 
-    return Response<Order>(
+    return Response<OrderAction>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -725,7 +726,7 @@ class OrdersApi {
   }
 
   /// 创建订单
-  /// bStocks 响应可能只是 erc20_approval 钱包动作，不代表买卖已成交；顶层 kind 仍为 bstock。 非 localnet 新订单必须携带账户绑定的有效 preview_id；缺失、查无本账户记录、超过服务端期限 或报价区块期限返回409 preview_expired。输入/授权策略/经济量边界变化返回409 bstocks_preview_changed。 原预览被另一个创建请求消费则返回409 bstocks_preview_already_consumed；完全相同的创建幂等请求 重放原 action，不刷新其交易或有效期。approve 确认后用新 preview 和新创建键请求独立交易动作。 
+  /// bStocks 原子创建业务订单与首个钱包动作，返回稳定 order_id；首个动作可能是 approval，不代表挂单或成交。 新订单必须携带账户绑定的初始 preview_id；订单绑定的 continuation preview 不能创建另一订单。 预览缺失/过期返回409 preview_expired；输入/授权策略/经济边界变化返回409 bstocks_preview_changed。 一份 preview 最多创建一个 action。相同创建命令幂等重放原订单身份，不刷新冻结交易或有效期。 approve 确认后，对同一 order_id 获取新 preview，再显式创建下一动作；不再调用 POST /orders 创建另一订单。 
   ///
   /// Parameters:
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
@@ -829,11 +830,11 @@ class OrdersApi {
   }
 
   /// 创建订单钱包动作执行
-  /// 服务端按 &#x60;order_id&#x60; 与 &#x60;step_id&#x60; 解析已冻结的 EVM 动作，客户端只能选择 gas 支付模式， 不得提交或覆盖 chain、to、data、value、payload hash 或业务资源绑定。HIP-3 EIP-712 动作不通过本端点执行。当前 bStocks order_id 为 bstocks-action:&lt;action UUID&gt;，step_id 必须为同一个 action UUID，动作必须仍 awaiting_signature 且未过期。支持 approval、IOC、 GTC 下单与取消；代付受 Privy/TEE、执行开关、链开关、gas额度及熔断控制，不承诺默认启用。 mode&#x3D;user_paid_native 仅在已启用回退且原代付明确广播前拒绝后允许，不能用于未知结果重试。 
+  /// 服务端按独立 order_id 与 action_id 校验账户和父子归属，客户端只能选择 gas 支付模式， 不得提交或覆盖 chain、to、data、value、payload hash 或业务资源绑定。HIP-3 EIP-712 不通过本端点。 动作必须仍 awaiting_signature、未过期且未被替代；未知广播禁止另起执行。 支持 approval、IOC、GTC 下单与取消；代付受 Privy/TEE、执行开关、链开关、gas额度及熔断控制。 mode&#x3D;user_paid_native 仅在已启用回退且原代付明确广播前拒绝后允许，不能用于未知结果重试。 
   ///
   /// Parameters:
   /// * [orderId] 
-  /// * [stepId] 
+  /// * [actionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
   /// * [walletActionExecutionCreateRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -847,7 +848,7 @@ class OrdersApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<WalletActionExecution>> createOrderWalletActionExecution({ 
     required String orderId,
-    required String stepId,
+    required String actionId,
     required String idempotencyKey,
     required WalletActionExecutionCreateRequest walletActionExecutionCreateRequest,
     CancelToken? cancelToken,
@@ -857,7 +858,7 @@ class OrdersApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/orders/{order_id}/wallet-actions/{step_id}/executions'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString()).replaceAll('{' r'step_id' '}', encodeQueryParameter(_serializers, stepId, const FullType(String)).toString());
+    final _path = r'/v1/orders/{order_id}/actions/{action_id}/executions'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString()).replaceAll('{' r'action_id' '}', encodeQueryParameter(_serializers, actionId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{
@@ -1133,6 +1134,89 @@ class OrdersApi {
     }
 
     return Response<Hip3AccountAbstraction>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 查询指定业务订单下的冻结钱包动作
+  /// 校验 account、order、action 归属；同账户另一个订单的动作也返回404。只读，不触发确认或执行。
+  ///
+  /// Parameters:
+  /// * [orderId] 
+  /// * [actionId] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [OrderAction] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<OrderAction>> getBstocksOrderAction({ 
+    required String orderId,
+    required String actionId,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/orders/{order_id}/actions/{action_id}'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString()).replaceAll('{' r'action_id' '}', encodeQueryParameter(_serializers, actionId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    OrderAction? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(OrderAction),
+      ) as OrderAction;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<OrderAction>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -1544,10 +1628,10 @@ class OrdersApi {
   }
 
   /// 订单详情与权威状态
-  /// 对 bstocks-action:&lt;UUID&gt; 仅返回本账户数据库中已持久化的 action，不现场查询链、不触发确认。 客户端先通过 submissions 上报交易哈希，后台 Worker 独立核验回执并写入状态。 approve 完成应检查该动作 action_status&#x3D;confirmed；此时 status&#x3D;open、next_action&#x3D;null， 不是 filled，不自动生成下一笔交易。approval_required 是动作创建时快照，可能仍为 true。 必须结合 action_status 判断成功，不能只依据交易哈希存在或浏览器已显示打包。 
+  /// 读取本账户数据库中业务订单的权威投影，不现场查询链、不刷新报价、不创建动作。 bStocks order_id 为 bstocks-order:&lt;UUID&gt;；旧动作/链上复合 ID 不再接受为订单号。 approval 确认后 status&#x3D;awaiting_confirmation、next_action&#x3D;null，需要对原订单获取并接受新 preview。 current_action_id 可用于独立查询动作；open/filled/cancelled 必须有 canonical 订单证据，不能由动作状态替代。 
   ///
   /// Parameters:
-  /// * [orderId] 
+  /// * [orderId] - 业务订单标识；bStocks 为 bstocks-order:<UUID>，HIP3 保持其现有业务订单 UUID。
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -1694,6 +1778,97 @@ class OrdersApi {
     }
 
     return Response<TradeIntent>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 查询业务订单的独立钱包动作历史
+  /// 按 created_at、action_id 稳定倒序分页；包含已确认、失败和过期动作，不创建动作或刷新状态。
+  ///
+  /// Parameters:
+  /// * [orderId] 
+  /// * [cursor] - 上一页返回的 `next_cursor`
+  /// * [limit] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [BstocksOrderActionPage] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<BstocksOrderActionPage>> listBstocksOrderActions({ 
+    required String orderId,
+    String? cursor,
+    int? limit = 20,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/orders/{order_id}/actions'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'GET',
+      headers: <String, dynamic>{
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      validateStatus: validateStatus,
+    );
+
+    final _queryParameters = <String, dynamic>{
+      if (cursor != null) r'cursor': encodeQueryParameter(_serializers, cursor, const FullType(String)),
+      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+    };
+
+    final _response = await _dio.request<Object>(
+      _path,
+      options: _options,
+      queryParameters: _queryParameters,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    BstocksOrderActionPage? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(BstocksOrderActionPage),
+      ) as BstocksOrderActionPage;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<BstocksOrderActionPage>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -2009,7 +2184,7 @@ class OrdersApi {
   }
 
   /// 订单列表
-  /// 筛选在分页前应用；组合条件取交集。按 created_at、order_id 稳定倒序分页。 open 包括 open/partially_filled 和仍有效的未触发条件单（不含已终结的条件单）；pending 包括待签名、提交中、 ambiguous/manual_review；terminal 为 filled/cancelled/failed。all 返回全部。 HIP3 条件单作为独立 Order 返回，可按 order_id 单独撤销。 当前运行时要求显式 kind；省略返回422/order_kind_required，user_action&#x3D;select_order_kind，不可盲目重试。 kind&#x3D;bstock 查询持久化 action、canonical GTC/IOC 历史，支持 symbol、product_id、status_group， 筛选在各数据源分页前应用；status_group&#x3D;all 与省略等价。symbol 支持 token symbol 或唯一匹配的 underlying symbol。 bStocks 不支持条件单，conditional_role&#x3D;none 与省略等价，take_profit/stop_loss 返回空列表。 未确认 action ID 为 bstocks-action:&lt;UUID&gt;；链上订单/成交使用服务端返回的规范 ID，不要自行拼接。 
+  /// 筛选在分页前应用；组合条件取交集。按 created_at、order_id 稳定倒序分页。 open 包括 open/partially_filled 和仍有效的未触发条件单（不含已终结的条件单）；pending 包括待签名、提交中、 ambiguous/manual_review；terminal 为 filled/cancelled/failed。all 返回全部。 HIP3 条件单作为独立 Order 返回，可按 order_id 单独撤销。 当前运行时要求显式 kind；省略返回422/order_kind_required，user_action&#x3D;select_order_kind，不可盲目重试。 kind&#x3D;bstock 每张业务订单只返回一条记录，支持 symbol、product_id、status_group， 筛选在分页前应用；status_group&#x3D;all 与省略等价。symbol 支持 token symbol 或唯一匹配的 underlying symbol。 bStocks 不支持条件单，conditional_role&#x3D;none 与省略等价，take_profit/stop_loss 返回空列表。 order_id 固定为 bstocks-order:&lt;UUID&gt;，从创建到终态不变；approval/cancel 不另列为订单。 pending 包含 pending/awaiting_confirmation/submitted/ambiguous/manual_review。 撤单动作处理中，原 open/partially_filled 订单仍属于 open；使用 actions 接口查询动作历史。 
   ///
   /// Parameters:
   /// * [symbol] 
@@ -2205,6 +2380,111 @@ class OrdersApi {
     }
 
     return Response<Hip3AccountAbstractionPreparation>(
+      data: _responseData,
+      headers: _response.headers,
+      isRedirect: _response.isRedirect,
+      requestOptions: _response.requestOptions,
+      redirects: _response.redirects,
+      statusCode: _response.statusCode,
+      statusMessage: _response.statusMessage,
+      extra: _response.extra,
+    );
+  }
+
+  /// 为原 bStocks 订单获取新的继续预览
+  /// 仅接受空对象，从原订单的不可变条款生成新 preview；仍重新核验钱包、链、余额、allowance 和经济边界。 授权完成不自动交易。该预览只能用于同一订单的 actions 命令，一份 preview 最多创建一个 action。 已有未解决交易、legacy_review 或终态订单不可用本端点重新下单；不接受改单参数。 
+  ///
+  /// Parameters:
+  /// * [orderId] 
+  /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
+  /// * [body] 
+  /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
+  /// * [headers] - Can be used to add additional headers to the request
+  /// * [extras] - Can be used to add flags to the request
+  /// * [validateStatus] - A [ValidateStatus] callback that can be used to determine request success based on the HTTP status of the response
+  /// * [onSendProgress] - A [ProgressCallback] that can be used to get the send progress
+  /// * [onReceiveProgress] - A [ProgressCallback] that can be used to get the receive progress
+  ///
+  /// Returns a [Future] containing a [Response] with a [BstocksOrderContinuationPreview] as data
+  /// Throws [DioException] if API call or serialization fails
+  Future<Response<BstocksOrderContinuationPreview>> previewBstocksOrderContinuation({ 
+    required String orderId,
+    required String idempotencyKey,
+    required JsonObject body,
+    CancelToken? cancelToken,
+    Map<String, dynamic>? headers,
+    Map<String, dynamic>? extra,
+    ValidateStatus? validateStatus,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    final _path = r'/v1/orders/{order_id}/preview'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString());
+    final _options = Options(
+      method: r'POST',
+      headers: <String, dynamic>{
+        r'Idempotency-Key': idempotencyKey,
+        ...?headers,
+      },
+      extra: <String, dynamic>{
+        'secure': <Map<String, String>>[
+          {
+            'type': 'http',
+            'scheme': 'bearer',
+            'name': 'bearerAuth',
+          },
+        ],
+        ...?extra,
+      },
+      contentType: 'application/json',
+      validateStatus: validateStatus,
+    );
+
+    dynamic _bodyData;
+
+    try {
+      _bodyData = body;
+
+    } catch(error, stackTrace) {
+      throw DioException(
+         requestOptions: _options.compose(
+          _dio.options,
+          _path,
+        ),
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final _response = await _dio.request<Object>(
+      _path,
+      data: _bodyData,
+      options: _options,
+      cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
+    );
+
+    BstocksOrderContinuationPreview? _responseData;
+
+    try {
+      final rawResponse = _response.data;
+      _responseData = rawResponse == null ? null : _serializers.deserialize(
+        rawResponse,
+        specifiedType: const FullType(BstocksOrderContinuationPreview),
+      ) as BstocksOrderContinuationPreview;
+
+    } catch (error, stackTrace) {
+      throw DioException(
+        requestOptions: _response.requestOptions,
+        response: _response,
+        type: DioExceptionType.unknown,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return Response<BstocksOrderContinuationPreview>(
       data: _responseData,
       headers: _response.headers,
       isRedirect: _response.isRedirect,
@@ -2427,11 +2707,11 @@ class OrdersApi {
   }
 
   /// Record a submitted bStocks wallet transaction
-  /// Accepts only tx_hash for the exact durable action: erc20_approval targets the input token; order placement/execution/cancellation targets the Router. order_id is bstocks-action:&lt;UUID&gt; and step_id must be that same bare UUID. The server checks chain/from/to/calldata/value through RPC before first recording submitted; this is not proof of a successful receipt. Replacement calldata, receipt, block and client success claims are never accepted. The Worker confirms approvals from a canonical successful receipt after configured confirmations, with a matching Approval log or sufficient on-chain allowance. Router order evidence is handled by the Router observer/reconciliation path. GET polling does not accelerate either process. 
+  /// Accepts only tx_hash for the exact durable action: erc20_approval targets the input token; order placement/execution/cancellation targets the Router. order_id is the stable business ID; action_id identifies its independent child action. Both account and parent membership are checked. The server checks chain/from/to/calldata/value through RPC before first recording submitted; this is not proof of a successful receipt. Replacement calldata, receipt, block and client success claims are never accepted. The Worker confirms approvals from a canonical successful receipt after configured confirmations, with a matching Approval log or sufficient on-chain allowance. Router order evidence is handled by the Router observer/reconciliation path. GET polling does not accelerate either process. 
   ///
   /// Parameters:
   /// * [orderId] 
-  /// * [stepId] 
+  /// * [actionId] 
   /// * [idempotencyKey] - Client-generated unique command key. A replay returns the first resource; a different request with the same key returns 409.
   /// * [bstocksWalletActionSubmissionRequest] 
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -2445,7 +2725,7 @@ class OrdersApi {
   /// Throws [DioException] if API call or serialization fails
   Future<Response<BstocksWalletActionSubmission>> submitBstocksWalletAction({ 
     required String orderId,
-    required String stepId,
+    required String actionId,
     required String idempotencyKey,
     required BstocksWalletActionSubmissionRequest bstocksWalletActionSubmissionRequest,
     CancelToken? cancelToken,
@@ -2455,7 +2735,7 @@ class OrdersApi {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    final _path = r'/v1/orders/{order_id}/wallet-actions/{step_id}/submissions'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString()).replaceAll('{' r'step_id' '}', encodeQueryParameter(_serializers, stepId, const FullType(String)).toString());
+    final _path = r'/v1/orders/{order_id}/actions/{action_id}/submissions'.replaceAll('{' r'order_id' '}', encodeQueryParameter(_serializers, orderId, const FullType(String)).toString()).replaceAll('{' r'action_id' '}', encodeQueryParameter(_serializers, actionId, const FullType(String)).toString());
     final _options = Options(
       method: r'POST',
       headers: <String, dynamic>{

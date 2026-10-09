@@ -6,10 +6,51 @@ import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
 import 'package:rwa_interface/data/services/orders_service.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/hip3_opening_protection.dart';
 
 void main() {
+  for (final asset in ['USDT', 'TUSDT', 'LUSDT', null]) {
+    test(
+      'bStocks order preserves settlement asset $asset and base quantities',
+      () {
+        final source = api.BstockOrder(
+          (b) => b
+            ..orderId = 'order-asset'
+            ..symbol = 'NVDAB'
+            ..kind = api.BstockOrderWalletActionStateKindEnum.bstock
+            ..side = api.OrderSide.buy
+            ..type = api.OrderType.limit
+            ..status = api.BstockOrderStatus.open
+            ..settlementAsset = asset
+            ..requestedAmount = '10'
+            ..quantity = '0.1'
+            ..filledQuantity = '0.01'
+            ..limitPrice = '100'
+            ..averageFillPrice = '99'
+            ..orderValue = '10'
+            ..fee = '0.01'
+            ..createdAt = DateTime.utc(2026),
+        );
+        final mapped = mapOrder(_order(source, typeIndex: 0));
+        expect(mapped.settlementAsset, asset);
+        expect(mapped.quantity!.asset, 'NVDAB');
+        expect(mapped.filledQuantity!.asset, 'NVDAB');
+        expect(mapped.quantity!.value, '0.1');
+        for (final value in [
+          mapped.requestedAmount,
+          mapped.limitPrice,
+          mapped.averageFillPrice,
+          mapped.orderValue,
+          mapped.fee,
+        ]) {
+          expect(value!.asset, asset);
+        }
+      },
+    );
+  }
+
   test(
     'conditional mapping preserves native activation and parent warning',
     () {
@@ -32,17 +73,21 @@ void main() {
               .Hip3ConditionalOrderWarningCodeEnum
               .parentCancelledCheckRemainingPositionProtection,
       );
-      final order = api.Order(
+      final perp = api.PerpOrder(
         (b) => b
           ..orderId = 'child'
           ..symbol = 'TSLA'
-          ..kind = api.ProductKind.perp
+          ..kind = api.PerpOrderWalletActionStateKindEnum.perp
           ..side = api.OrderSide.short
           ..type = api.OrderType.market
           ..status = api.OrderStatus.open
+          ..walletActionBlocker = api
+              .PerpOrderWalletActionStateWalletActionBlockerEnum
+              .notApplicable
           ..createdAt = DateTime.utc(2026)
           ..conditional.replace(conditional),
       );
+      final order = _order(perp, typeIndex: 1);
       final mapped = mapOrder(order).conditional!;
       expect(mapped.activationStatus, 'waitingForParent');
       expect(mapped.parentOrderId, 'parent');
@@ -51,9 +96,12 @@ void main() {
         'parentCancelledCheckRemainingPositionProtection',
       );
       expect(
-        mapOrder(order.rebuild((b) => b.conditional.activationStatus = null))
-            .conditional!
-            .activationStatus,
+        mapOrder(
+          _order(
+            perp.rebuild((b) => b.conditional.activationStatus = null),
+            typeIndex: 1,
+          ),
+        ).conditional!.activationStatus,
         'unknown',
       );
     },
@@ -238,22 +286,25 @@ void main() {
       expect(execution.blockers, ['leverage_update_required']);
     },
   );
-  test('pending signature is a non-retryable wait capability', () async {
-    final result = await OrdersRepositoryImpl(_Orders()).create(
-      OrderIntent(
-        symbol: 'NVDA',
-        kind: MarketProductKind.bstock,
-        side: TradingSide.buy,
-        type: TradingOrderType.market,
-        quantity: DecimalValue('0.000000000000000001', unit: 'quantity'),
-      ),
-      idempotencyKey: 'key-1',
-    );
-    expect(result.resource.quantity?.value, '0.000000000000000001');
-    expect(result.capability?.code, 'order_signature_not_supported');
-    expect(result.capability?.userAction, 'wait_for_feature');
-    expect(result.capability?.retryable, isFalse);
-  });
+  test(
+    'bStocks pending status maps without a legacy signature capability',
+    () async {
+      final result = await OrdersRepositoryImpl(_Orders()).create(
+        OrderIntent(
+          symbol: 'NVDA',
+          kind: MarketProductKind.bstock,
+          side: TradingSide.buy,
+          type: TradingOrderType.market,
+          quantity: DecimalValue('0.000000000000000001', unit: 'quantity'),
+        ),
+        idempotencyKey: 'key-1',
+        previewId: 'preview-1',
+      );
+      expect(result.resource.quantity?.value, '0.000000000000000001');
+      expect(result.resource.status, TradingOrderStatus.pending);
+      expect(result.capability, isNull);
+    },
+  );
 }
 
 final class _PreviewOrders implements OrdersService {
@@ -419,15 +470,21 @@ final class _PreviewOrders implements OrdersService {
         request,
       ) as Map,
     );
-    return api.Order(
-      (b) => b
-        ..orderId = 'order-1'
-        ..symbol = 'TSLA'
-        ..kind = api.ProductKind.perp
-        ..side = api.OrderSide.long
-        ..type = api.OrderType.market
-        ..status = api.OrderStatus.pendingSignature
-        ..createdAt = DateTime.utc(2026),
+    return _order(
+      api.PerpOrder(
+        (b) => b
+          ..orderId = 'order-1'
+          ..symbol = 'TSLA'
+          ..kind = api.PerpOrderWalletActionStateKindEnum.perp
+          ..side = api.OrderSide.long
+          ..type = api.OrderType.market
+          ..status = api.OrderStatus.pendingSignature
+          ..walletActionBlocker = api
+              .PerpOrderWalletActionStateWalletActionBlockerEnum
+              .notApplicable
+          ..createdAt = DateTime.utc(2026),
+      ),
+      typeIndex: 1,
     );
   }
 
@@ -440,18 +497,32 @@ final class _Orders implements OrdersService {
   Future<api.Order> createOrder(
     api.CreateOrderRequest request, {
     required String idempotencyKey,
-  }) async => api.Order(
-    (order) => order
-      ..orderId = 'order-1'
-      ..symbol = 'NVDA'
-      ..kind = api.ProductKind.bstock
-      ..side = api.OrderSide.buy
-      ..type = api.OrderType.market
-      ..status = api.OrderStatus.pendingSignature
-      ..quantity = '0.000000000000000001'
-      ..createdAt = DateTime.utc(2026),
+  }) async => _order(
+    api.BstockOrder(
+      (order) => order
+        ..orderId = 'order-1'
+        ..symbol = 'NVDA'
+        ..kind = api.BstockOrderWalletActionStateKindEnum.bstock
+        ..side = api.OrderSide.buy
+        ..type = api.OrderType.market
+        ..status = api.BstockOrderStatus.pending
+        ..walletActionBlocker = api
+            .BstockOrderWalletActionStateWalletActionBlockerEnum
+            .actionNotReady
+        ..quantity = '0.000000000000000001'
+        ..createdAt = DateTime.utc(2026),
+    ),
+    typeIndex: 0,
   );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+api.Order _order(Object value, {required int typeIndex}) => api.Order(
+  (builder) => builder.oneOf = OneOfDynamic(
+    typeIndex: typeIndex,
+    types: const [api.BstockOrder, api.PerpOrder],
+    value: value,
+  ),
+);

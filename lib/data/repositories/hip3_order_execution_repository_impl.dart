@@ -8,6 +8,7 @@ import '../../domain/models/resource_result.dart';
 import '../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../domain/services/hip3_typed_data_signer.dart';
 import '../services/hip3_order_action_service.dart';
+import '../api/idempotency_key.dart';
 import 'orders_repository_impl.dart';
 
 final class Hip3OrderExecutionRepositoryImpl
@@ -29,7 +30,11 @@ final class Hip3OrderExecutionRepositoryImpl
 
   @override
   Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(String orderId) =>
-      _execute(orderId, cancel: false, key: 'hip3-action-create-$orderId');
+      _execute(
+        orderId,
+        cancel: false,
+        key: scopedIdempotencyKey('hip3-action-create-$orderId'),
+      );
 
   @override
   Future<ResourceResult<TradingOrder>> cancelOrder(
@@ -146,8 +151,9 @@ final class Hip3OrderExecutionRepositoryImpl
                 actionId: current.actionId,
                 stepId: step.stepId,
                 request: _request(signature),
-                idempotencyKey:
-                    'hip3-action-${current.actionId}-${step.stepId}',
+                idempotencyKey: scopedIdempotencyKey(
+                  'hip3-action-${current.actionId}-${step.stepId}',
+                ),
               );
               continue;
             } on ApiFailure catch (failure) {

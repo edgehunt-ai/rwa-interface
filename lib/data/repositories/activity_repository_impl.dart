@@ -76,15 +76,7 @@ final class ActivityRepositoryImpl implements ActivityRepository {
         const [],
     relatedId: value.relatedId,
     selfCustodialWithdrawalId: value.selfCustodialWithdrawalId,
-    continuation: value.continuation == null
-        ? null
-        : ActivityContinuation(
-            action: _continuationAction(value.continuation!.action),
-            actionId: value.continuation!.actionId,
-            step: _continuationStep(value.continuation!.step),
-            requiresNewBusinessObject:
-                value.continuation!.requiresNewBusinessObject,
-          ),
+    continuation: _continuation(value.continuation),
     chain: value.chain == null ? null : canonicalChainName(value.chain!.name),
     txHash: value.txHash,
     explorer: value.explorer == null
@@ -153,19 +145,25 @@ final class ActivityRepositoryImpl implements ActivityRepository {
         _ => value.name,
       };
 
-  String _continuationAction(api.BstocksActivityContinuationActionEnum value) =>
-      switch (value) {
-        api.BstocksActivityContinuationActionEnum.submitBstocksAction =>
-          'submit_bstocks_action',
-        _ => value.name,
-      };
-
-  String _continuationStep(api.BstocksActivityContinuationStepEnum value) =>
-      switch (value) {
-        api.BstocksActivityContinuationStepEnum.walletSignature =>
-          'wallet_signature',
-        _ => value.name,
-      };
+  ActivityContinuation? _continuation(
+    api.BstocksActivityContinuation? continuation,
+  ) => switch (continuation?.oneOf.value) {
+    final api.BstocksPreviewContinuation value => ActivityContinuation(
+      action: 'preview_bstocks_order',
+      orderId: value.orderId,
+      step: 'order_preview',
+      requiresNewBusinessObject: value.requiresNewBusinessObject,
+    ),
+    final api.BstocksSignatureContinuation value => ActivityContinuation(
+      action: 'submit_bstocks_action',
+      orderId: value.orderId,
+      actionId: value.actionId,
+      step: 'wallet_signature',
+      requiresNewBusinessObject: value.requiresNewBusinessObject,
+    ),
+    null => null,
+    _ => throw const FormatException('Unsupported activity continuation'),
+  };
 
   api.ActivityCategory? _category(ActivityCategory? value) => switch (value) {
     ActivityCategory.orders => api.ActivityCategory.orders,

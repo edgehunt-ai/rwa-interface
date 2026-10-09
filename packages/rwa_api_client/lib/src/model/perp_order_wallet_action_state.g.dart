@@ -112,7 +112,39 @@ class _$PerpOrderWalletActionStateWalletActionBlockerEnumSerializer
           _fromWire[serialized] ?? (serialized is String ? serialized : ''));
 }
 
-class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
+abstract class PerpOrderWalletActionStateBuilder {
+  void replace(PerpOrderWalletActionState other);
+  void update(void Function(PerpOrderWalletActionStateBuilder) updates);
+  String? get orderId;
+  set orderId(String? orderId);
+
+  Hip3TimeInForce? get timeInForce;
+  set timeInForce(Hip3TimeInForce? timeInForce);
+
+  OrderStatus? get status;
+  set status(OrderStatus? status);
+
+  String? get quantity;
+  set quantity(String? quantity);
+
+  PerpOrderWalletActionStateKindEnum? get kind;
+  set kind(PerpOrderWalletActionStateKindEnum? kind);
+
+  JsonObject? get nextAction;
+  set nextAction(JsonObject? nextAction);
+
+  PerpOrderWalletActionStateWalletActionBlockerEnum? get walletActionBlocker;
+  set walletActionBlocker(
+      PerpOrderWalletActionStateWalletActionBlockerEnum? walletActionBlocker);
+}
+
+class _$$PerpOrderWalletActionState extends $PerpOrderWalletActionState {
+  @override
+  final String orderId;
+  @override
+  final Hip3TimeInForce? timeInForce;
+  @override
+  final OrderStatus status;
   @override
   final String? quantity;
   @override
@@ -122,29 +154,35 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
   @override
   final PerpOrderWalletActionStateWalletActionBlockerEnum walletActionBlocker;
 
-  factory _$PerpOrderWalletActionState(
-          [void Function(PerpOrderWalletActionStateBuilder)? updates]) =>
-      (PerpOrderWalletActionStateBuilder()..update(updates))._build();
+  factory _$$PerpOrderWalletActionState(
+          [void Function($PerpOrderWalletActionStateBuilder)? updates]) =>
+      ($PerpOrderWalletActionStateBuilder()..update(updates))._build();
 
-  _$PerpOrderWalletActionState._(
-      {this.quantity,
+  _$$PerpOrderWalletActionState._(
+      {required this.orderId,
+      this.timeInForce,
+      required this.status,
+      this.quantity,
       required this.kind,
       this.nextAction,
       required this.walletActionBlocker})
       : super._();
   @override
-  PerpOrderWalletActionState rebuild(
-          void Function(PerpOrderWalletActionStateBuilder) updates) =>
+  $PerpOrderWalletActionState rebuild(
+          void Function($PerpOrderWalletActionStateBuilder) updates) =>
       (toBuilder()..update(updates)).build();
 
   @override
-  PerpOrderWalletActionStateBuilder toBuilder() =>
-      PerpOrderWalletActionStateBuilder()..replace(this);
+  $PerpOrderWalletActionStateBuilder toBuilder() =>
+      $PerpOrderWalletActionStateBuilder()..replace(this);
 
   @override
   bool operator ==(Object other) {
     if (identical(other, this)) return true;
-    return other is PerpOrderWalletActionState &&
+    return other is $PerpOrderWalletActionState &&
+        orderId == other.orderId &&
+        timeInForce == other.timeInForce &&
+        status == other.status &&
         quantity == other.quantity &&
         kind == other.kind &&
         nextAction == other.nextAction &&
@@ -154,6 +192,9 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
   @override
   int get hashCode {
     var _$hash = 0;
+    _$hash = $jc(_$hash, orderId.hashCode);
+    _$hash = $jc(_$hash, timeInForce.hashCode);
+    _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, quantity.hashCode);
     _$hash = $jc(_$hash, kind.hashCode);
     _$hash = $jc(_$hash, nextAction.hashCode);
@@ -164,7 +205,10 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'PerpOrderWalletActionState')
+    return (newBuiltValueToStringHelper(r'$PerpOrderWalletActionState')
+          ..add('orderId', orderId)
+          ..add('timeInForce', timeInForce)
+          ..add('status', status)
           ..add('quantity', quantity)
           ..add('kind', kind)
           ..add('nextAction', nextAction)
@@ -173,38 +217,58 @@ class _$PerpOrderWalletActionState extends PerpOrderWalletActionState {
   }
 }
 
-class PerpOrderWalletActionStateBuilder
+class $PerpOrderWalletActionStateBuilder
     implements
-        Builder<PerpOrderWalletActionState, PerpOrderWalletActionStateBuilder> {
-  _$PerpOrderWalletActionState? _$v;
+        Builder<$PerpOrderWalletActionState,
+            $PerpOrderWalletActionStateBuilder>,
+        PerpOrderWalletActionStateBuilder {
+  _$$PerpOrderWalletActionState? _$v;
+
+  String? _orderId;
+  String? get orderId => _$this._orderId;
+  set orderId(covariant String? orderId) => _$this._orderId = orderId;
+
+  Hip3TimeInForce? _timeInForce;
+  Hip3TimeInForce? get timeInForce => _$this._timeInForce;
+  set timeInForce(covariant Hip3TimeInForce? timeInForce) =>
+      _$this._timeInForce = timeInForce;
+
+  OrderStatus? _status;
+  OrderStatus? get status => _$this._status;
+  set status(covariant OrderStatus? status) => _$this._status = status;
 
   String? _quantity;
   String? get quantity => _$this._quantity;
-  set quantity(String? quantity) => _$this._quantity = quantity;
+  set quantity(covariant String? quantity) => _$this._quantity = quantity;
 
   PerpOrderWalletActionStateKindEnum? _kind;
   PerpOrderWalletActionStateKindEnum? get kind => _$this._kind;
-  set kind(PerpOrderWalletActionStateKindEnum? kind) => _$this._kind = kind;
+  set kind(covariant PerpOrderWalletActionStateKindEnum? kind) =>
+      _$this._kind = kind;
 
   JsonObject? _nextAction;
   JsonObject? get nextAction => _$this._nextAction;
-  set nextAction(JsonObject? nextAction) => _$this._nextAction = nextAction;
+  set nextAction(covariant JsonObject? nextAction) =>
+      _$this._nextAction = nextAction;
 
   PerpOrderWalletActionStateWalletActionBlockerEnum? _walletActionBlocker;
   PerpOrderWalletActionStateWalletActionBlockerEnum? get walletActionBlocker =>
       _$this._walletActionBlocker;
   set walletActionBlocker(
-          PerpOrderWalletActionStateWalletActionBlockerEnum?
+          covariant PerpOrderWalletActionStateWalletActionBlockerEnum?
               walletActionBlocker) =>
       _$this._walletActionBlocker = walletActionBlocker;
 
-  PerpOrderWalletActionStateBuilder() {
-    PerpOrderWalletActionState._defaults(this);
+  $PerpOrderWalletActionStateBuilder() {
+    $PerpOrderWalletActionState._defaults(this);
   }
 
-  PerpOrderWalletActionStateBuilder get _$this {
+  $PerpOrderWalletActionStateBuilder get _$this {
     final $v = _$v;
     if ($v != null) {
+      _orderId = $v.orderId;
+      _timeInForce = $v.timeInForce;
+      _status = $v.status;
       _quantity = $v.quantity;
       _kind = $v.kind;
       _nextAction = $v.nextAction;
@@ -215,28 +279,33 @@ class PerpOrderWalletActionStateBuilder
   }
 
   @override
-  void replace(PerpOrderWalletActionState other) {
-    _$v = other as _$PerpOrderWalletActionState;
+  void replace(covariant $PerpOrderWalletActionState other) {
+    _$v = other as _$$PerpOrderWalletActionState;
   }
 
   @override
-  void update(void Function(PerpOrderWalletActionStateBuilder)? updates) {
+  void update(void Function($PerpOrderWalletActionStateBuilder)? updates) {
     if (updates != null) updates(this);
   }
 
   @override
-  PerpOrderWalletActionState build() => _build();
+  $PerpOrderWalletActionState build() => _build();
 
-  _$PerpOrderWalletActionState _build() {
+  _$$PerpOrderWalletActionState _build() {
     final _$result = _$v ??
-        _$PerpOrderWalletActionState._(
+        _$$PerpOrderWalletActionState._(
+          orderId: BuiltValueNullFieldError.checkNotNull(
+              orderId, r'$PerpOrderWalletActionState', 'orderId'),
+          timeInForce: timeInForce,
+          status: BuiltValueNullFieldError.checkNotNull(
+              status, r'$PerpOrderWalletActionState', 'status'),
           quantity: quantity,
           kind: BuiltValueNullFieldError.checkNotNull(
-              kind, r'PerpOrderWalletActionState', 'kind'),
+              kind, r'$PerpOrderWalletActionState', 'kind'),
           nextAction: nextAction,
           walletActionBlocker: BuiltValueNullFieldError.checkNotNull(
               walletActionBlocker,
-              r'PerpOrderWalletActionState',
+              r'$PerpOrderWalletActionState',
               'walletActionBlocker'),
         );
     replace(_$result);

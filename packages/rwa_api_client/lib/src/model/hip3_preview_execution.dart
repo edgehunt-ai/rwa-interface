@@ -30,11 +30,11 @@ part 'hip3_preview_execution.g.dart';
 /// * [marginMode] 
 /// * [reduceOnly] 
 /// * [notionalUsdc] - 十进制字符串，避免浮点误差
-/// * [marginRequiredUsdc] - 十进制字符串，避免浮点误差
+/// * [marginRequiredUsdc] - 本次订单资金门槛，等于 ceil(notional_usdc / leverage + estimated_fee_usdc, 6)。开仓校验、资金预留和补款需求使用此口径，不包含 fee_reserve_usdc 中的额外缓冲。平仓预览沿用平仓语义。
 /// * [availableMarginUsdc] - 十进制字符串，避免浮点误差
-/// * [maximumQuantity] - 十进制字符串，避免浮点误差
+/// * [maximumQuantity] - 含 fee_reserve_multiplier 安全余量的保守滑杆最大数量，不是额外的硬性拒单上限。实际订单仍按保证金加预计手续费校验，并受 HL 数量上限、平台金额和精度等规则约束。
 /// * [maximumQuantityUnavailableReason] - 最大数量不可用的原因；设置尚未生效时为 account_settings_update_required，可用时为 null。旧服务可能不返回此字段。
-/// * [feeReserveUsdc] - 本次开仓的总手续费预留，等于 ceil(estimated_fee_usdc × fee_reserve_multiplier, 6)，包含预计手续费及安全余量；不是额外收费。margin_required_usdc 包括保证金与此预留并向上取整到 6 位。平仓预览不返回该字段。
+/// * [feeReserveUsdc] - 本次开仓建议预留的手续费预算，等于 ceil(estimated_fee_usdc × fee_reserve_multiplier, 6)，包含预计手续费及安全余量；用于展示，不是额外收费或实际冻结金额。margin_required_usdc 仅包括保证金与 estimated_fee_usdc，后端不会要求额外安全余量始终完整。平仓预览不返回该字段。
 /// * [estimatedFeeUsdc] - 十进制字符串，避免浮点误差
 /// * [liquidationPrice] - 十进制字符串，避免浮点误差
 /// * [liquidationPriceUnavailableReason] 
@@ -91,7 +91,7 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   @BuiltValueField(wireName: r'notional_usdc')
   String get notionalUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 本次订单资金门槛，等于 ceil(notional_usdc / leverage + estimated_fee_usdc, 6)。开仓校验、资金预留和补款需求使用此口径，不包含 fee_reserve_usdc 中的额外缓冲。平仓预览沿用平仓语义。
   @BuiltValueField(wireName: r'margin_required_usdc')
   String get marginRequiredUsdc;
 
@@ -99,7 +99,7 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   @BuiltValueField(wireName: r'available_margin_usdc')
   String get availableMarginUsdc;
 
-  /// 十进制字符串，避免浮点误差
+  /// 含 fee_reserve_multiplier 安全余量的保守滑杆最大数量，不是额外的硬性拒单上限。实际订单仍按保证金加预计手续费校验，并受 HL 数量上限、平台金额和精度等规则约束。
   @BuiltValueField(wireName: r'maximum_quantity')
   String? get maximumQuantity;
 
@@ -107,7 +107,7 @@ abstract class Hip3PreviewExecution implements Built<Hip3PreviewExecution, Hip3P
   @BuiltValueField(wireName: r'maximum_quantity_unavailable_reason')
   String? get maximumQuantityUnavailableReason;
 
-  /// 本次开仓的总手续费预留，等于 ceil(estimated_fee_usdc × fee_reserve_multiplier, 6)，包含预计手续费及安全余量；不是额外收费。margin_required_usdc 包括保证金与此预留并向上取整到 6 位。平仓预览不返回该字段。
+  /// 本次开仓建议预留的手续费预算，等于 ceil(estimated_fee_usdc × fee_reserve_multiplier, 6)，包含预计手续费及安全余量；用于展示，不是额外收费或实际冻结金额。margin_required_usdc 仅包括保证金与 estimated_fee_usdc，后端不会要求额外安全余量始终完整。平仓预览不返回该字段。
   @BuiltValueField(wireName: r'fee_reserve_usdc')
   String? get feeReserveUsdc;
 

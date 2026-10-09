@@ -11,6 +11,11 @@ abstract interface class OrdersRepository {
     OrderIntent intent, {
     required String idempotencyKey,
   });
+  Future<OrderPreview> previewContinuation(
+    String orderId,
+    OrderIntent intent, {
+    required String idempotencyKey,
+  });
   Future<ResourceResult<TradingOrder>> create(
     OrderIntent intent, {
     required String idempotencyKey,

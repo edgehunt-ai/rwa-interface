@@ -50,7 +50,7 @@ final class _ControlledFundingRepository implements FundingRepository {
           tokenContract: '0xusdt',
           tokenDecimals: 6,
           address: '0x123',
-          qrPayload: 'ethereum:0xusdt',
+          qrPayload: '0x123',
           minimumAmount: DecimalValue('1', asset: 'USDT', unit: 'token'),
           confirmationsRequired: 15,
           estimatedArrivalSeconds: 60,

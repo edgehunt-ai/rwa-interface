@@ -13,15 +13,19 @@ final class WalletActionExecutionRepositoryImpl
   final WalletActionExecutionService _service;
 
   @override
+  Future<WalletActionExecution> get(String executionId) async =>
+      _execution(await _service.getExecution(executionId));
+
+  @override
   Future<WalletActionExecution> createOrderWalletActionExecution({
     required String orderId,
-    required String stepId,
+    required String actionId,
     required GasPaymentMode mode,
     required String idempotencyKey,
   }) async => _execution(
     await _service.createOrderExecution(
       orderId,
-      stepId,
+      actionId,
       api.WalletActionExecutionCreateRequest(
         (request) => request
           ..mode = switch (mode) {

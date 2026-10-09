@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'dart:math';
-
 import '../../../../app/providers/observability_providers.dart';
 import '../../../../domain/models/hip3_opening_context.dart';
 
@@ -40,6 +38,52 @@ final bstocksOrdersProvider = FutureProvider.autoDispose
           .watch(ordersRepositoryProvider)
           .list(cursor: cursor, kind: MarketProductKind.bstock);
     });
+
+typedef BstocksOpenOrderQuery = ({String symbol, String? productId});
+
+/// Fetch every server-filtered page so the existing Open tab needs no new flow.
+final bstocksOpenOrdersProvider = FutureProvider.autoDispose
+    .family<DomainPage<ResourceResult<TradingOrder>>, BstocksOpenOrderQuery>(
+      (ref, query) async {
+        ref.watch(sessionGenerationProvider);
+        final repository = ref.watch(ordersRepositoryProvider);
+        final orders = <String, ResourceResult<TradingOrder>>{};
+        final cursors = <String>{};
+        String? cursor;
+        do {
+          final page = await repository.list(
+            kind: MarketProductKind.bstock,
+            symbol: query.symbol,
+            productId: query.productId,
+            statusGroup: 'open',
+            cursor: cursor,
+          );
+          if (!ref.mounted) throw const CancelledFailure();
+          for (final item in page.items) {
+            final order = item.resource;
+            if (order.kind == MarketProductKind.bstock &&
+                order.symbol == query.symbol &&
+                (query.productId == null ||
+                    order.productId == null ||
+                    order.productId == query.productId) &&
+                order.isOpen) {
+              orders[order.orderId] = item;
+            }
+          }
+          if (!page.hasMore) break;
+          cursor = page.nextCursor;
+          if (cursor == null || cursor.isEmpty || !cursors.add(cursor)) {
+            throw const CompatibilityFailure(
+              userAction: 'Open orders pagination is incomplete',
+            );
+          }
+        } while (true);
+        return DomainPage(items: List.unmodifiable(orders.values));
+      },
+      retry: (count, error) => error is CompatibilityFailure
+          ? null
+          : ProviderContainer.defaultRetry(count, error),
+    );
 
 final hip3OrdersProvider = FutureProvider.autoDispose
     .family<DomainPage<ResourceResult<TradingOrder>>, String?>((ref, cursor) {
@@ -82,14 +126,37 @@ final orderProvider = FutureProvider.autoDispose
 final orderPreviewProvider = FutureProvider.autoDispose
     .family<OrderPreview, OrderIntent>((ref, intent) {
       ref.watch(sessionGenerationProvider);
-      return ref
-          .watch(ordersRepositoryProvider)
-          .preview(
-            intent,
-            // A new quote must not reuse an expired immutable server preview.
-            idempotencyKey:
-                'preview-${List.generate(16, (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0')).join()}',
-          );
+      final repository = ref.watch(ordersRepositoryProvider);
+      final command = ref.watch(orderCommandProvider);
+      final acceptedOrderId = switch (command) {
+        CommandAccepted<OrderIntent, ResourceResult<TradingOrder>>(
+          intent: final acceptedIntent,
+          result: final result,
+        )
+            when acceptedIntent.fingerprint == intent.fingerprint &&
+                result.resource.kind == MarketProductKind.bstock &&
+                result.resource.status ==
+                    TradingOrderStatus.awaitingConfirmation =>
+          result.resource.orderId,
+        _ => null,
+      };
+      final continuationOrderId =
+          acceptedOrderId ??
+          ref
+              .read(orderCommandProvider.notifier)
+              .continuationOrderIdFor(intent);
+      if (continuationOrderId != null) {
+        return repository.previewContinuation(
+          continuationOrderId,
+          intent,
+          idempotencyKey: newIdempotencyKey(),
+        );
+      }
+      return repository.preview(
+        intent,
+        // A new quote must not reuse an expired immutable server preview.
+        idempotencyKey: newIdempotencyKey(),
+      );
     });
 
 final hip3ActionsProvider = FutureProvider.autoDispose
@@ -160,8 +227,11 @@ final class OrderCommandNotifier
     extends Notifier<CommandState<OrderIntent, ResourceResult<TradingOrder>>> {
   String? _fingerprint;
   String? _idempotencyKey;
-  String? _approvalPreviewId;
+  String? _requestPreviewId;
+  String? _continuationOrderId;
+  String? _continuationIntentFingerprint;
   Future<ResourceResult<TradingOrder>>? _inFlight;
+  IdempotentCommandGuard _cancellations = IdempotentCommandGuard();
   var _submissionGeneration = 0;
 
   @override
@@ -169,11 +239,19 @@ final class OrderCommandNotifier
     ref.watch(sessionGenerationProvider);
     _fingerprint = null;
     _idempotencyKey = null;
-    _approvalPreviewId = null;
+    _requestPreviewId = null;
+    _continuationOrderId = null;
+    _continuationIntentFingerprint = null;
     _inFlight = null;
+    _cancellations = IdempotentCommandGuard();
     _submissionGeneration = 0;
     return const CommandIdle();
   }
+
+  String? continuationOrderIdFor(OrderIntent intent) =>
+      _continuationIntentFingerprint == intent.fingerprint
+      ? _continuationOrderId
+      : null;
 
   Future<ResourceResult<TradingOrder>?> submit(
     OrderIntent intent, {
@@ -216,12 +294,27 @@ final class OrderCommandNotifier
     if (_fingerprint != commandFingerprint) {
       _fingerprint = commandFingerprint;
       _idempotencyKey = newIdempotencyKey();
-      _approvalPreviewId = approvalOnly ? previewId : null;
+      _requestPreviewId = previewId;
     }
     final key = _idempotencyKey!;
-    // Replaying an uncertain approval must preserve the entire create request,
+    final continuationOrderId =
+        _continuationIntentFingerprint == intent.fingerprint
+        ? _continuationOrderId
+        : switch (state) {
+            CommandAccepted<OrderIntent, ResourceResult<TradingOrder>>(
+              intent: final acceptedIntent,
+              result: final result,
+            )
+                when acceptedIntent.fingerprint == intent.fingerprint &&
+                    result.resource.kind == MarketProductKind.bstock &&
+                    result.resource.status ==
+                        TradingOrderStatus.awaitingConfirmation =>
+              result.resource.orderId,
+            _ => null,
+          };
+    // Replaying an uncertain command must preserve the entire create request,
     // even if the confirmation view has fetched a newer display quote.
-    final requestPreviewId = approvalOnly ? _approvalPreviewId : previewId;
+    final requestPreviewId = _requestPreviewId;
     debugPrint(
       'bStocks/order submit: creating order '
       'preview=$requestPreviewId key=$key kind=${intent.kind.name}',
@@ -234,8 +327,9 @@ final class OrderCommandNotifier
       intent,
       idempotencyKey: key,
       previewId: requestPreviewId,
-      submissionGeneration: submissionGeneration,
+      isCancelled: () => !isCurrent(),
       stopAfterApproval: approvalOnly,
+      continuationOrderId: continuationOrderId,
     );
     _inFlight = request;
     ref
@@ -244,6 +338,21 @@ final class OrderCommandNotifier
     try {
       final result = await request;
       if (!isCurrent()) return null;
+      result.resource.checkBstocksExecutionFailure();
+      if (approvalOnly &&
+          result.resource.kind == MarketProductKind.bstock &&
+          result.resource.status == TradingOrderStatus.awaitingConfirmation) {
+        _continuationOrderId = result.resource.orderId;
+        _continuationIntentFingerprint = intent.fingerprint;
+      } else if (continuationOrderId != null) {
+        _continuationOrderId = null;
+        _continuationIntentFingerprint = null;
+      }
+      // A successful command is complete. A later trade or continuation uses
+      // fresh consent and a new key; uncertain failures retain their request.
+      _fingerprint = null;
+      _idempotencyKey = null;
+      _requestPreviewId = null;
       state = CommandAccepted(
         intent: intent,
         idempotencyKey: key,
@@ -251,6 +360,7 @@ final class OrderCommandNotifier
       );
       ref.invalidate(ordersProvider);
       ref.invalidate(bstocksOrdersProvider);
+      ref.invalidate(bstocksOpenOrdersProvider);
       ref.invalidate(hip3OrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
       // Order acceptance can change reserved/available balances and holdings
@@ -259,6 +369,7 @@ final class OrderCommandNotifier
       ref.invalidate(portfolioSummaryProvider);
       ref.invalidate(tradingAccountsProvider);
       ref.invalidate(holdingsProvider);
+      ref.invalidate(bstocksSellAvailabilityProvider);
       ref
           .read(observabilityReporterProvider)
           .recordOperation(operation, outcome: 'succeeded');
@@ -267,6 +378,7 @@ final class OrderCommandNotifier
       if (isCurrent()) state = const CommandIdle();
       return null;
     } on ApiFailure catch (failure, stackTrace) {
+      if (!isCurrent()) return null;
       ref
           .read(observabilityReporterProvider)
           .recordApiFailure(
@@ -274,11 +386,9 @@ final class OrderCommandNotifier
             failure: failure,
             stackTrace: stackTrace,
           );
-      if (!isCurrent()) return null;
       // A rejected preview created no wallet action. A replacement quote
       // needs a new create key; ambiguous failures must keep their original key.
-      if (approvalOnly &&
-          failure is ServerFailure &&
+      if (failure is ServerFailure &&
           const {
             'preview_expired',
             'bstocks_preview_changed',
@@ -286,7 +396,7 @@ final class OrderCommandNotifier
           }.contains(failure.code)) {
         _fingerprint = null;
         _idempotencyKey = null;
-        _approvalPreviewId = null;
+        _requestPreviewId = null;
       }
       state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
         intent: intent,
@@ -308,6 +418,7 @@ final class OrderCommandNotifier
       );
       return null;
     } catch (error, stackTrace) {
+      if (!isCurrent()) return null;
       // SDK/plugin exceptions are not always ApiFailure instances. Convert
       // them here so the order sheet can show the provider's actual reason.
       final message = error.toString().trim();
@@ -329,7 +440,6 @@ final class OrderCommandNotifier
             failure: failure,
             stackTrace: stackTrace,
           );
-      if (!isCurrent()) return null;
       state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
         intent: intent,
         idempotencyKey: key,
@@ -345,12 +455,26 @@ final class OrderCommandNotifier
     OrderIntent intent, {
     required String idempotencyKey,
     String? previewId,
-    required int submissionGeneration,
+    required bool Function() isCancelled,
     required bool stopAfterApproval,
+    String? continuationOrderId,
   }) async {
+    if (isCancelled()) throw const CancelledFailure();
+    if (continuationOrderId != null) {
+      return ref
+          .read(bstocksOrderExecutionRepositoryProvider)
+          .continueOrder(
+            intent: intent,
+            orderId: continuationOrderId,
+            previewId: previewId!,
+            isCancelled: isCancelled,
+            stopAfterApproval: stopAfterApproval,
+          );
+    }
     final created = await ref
         .read(ordersRepositoryProvider)
         .create(intent, idempotencyKey: idempotencyKey, previewId: previewId);
+    if (isCancelled()) throw const CancelledFailure();
     debugPrint(
       'bStocks/order submit: order created '
       'order=${created.resource.orderId} '
@@ -363,13 +487,17 @@ final class OrderCommandNotifier
     // client keeps polling. Only skip the executor for terminal/review orders
     // or clearly unrelated legacy/app-review results.
     final order = created.resource;
+    order.checkBstocksExecutionFailure();
     final shouldExecuteBstocks =
         intent.kind == MarketProductKind.bstock &&
         !order.isTerminal &&
         order.status != TradingOrderStatus.manualReview &&
         (order.nextAction != null ||
-            order.actionStatus != null ||
-            order.walletActionBlocker == 'action_not_ready');
+            order.currentActionId != null ||
+            const {
+              'actionNotReady',
+              'action_not_ready',
+            }.contains(order.walletActionBlocker));
     if (!shouldExecuteBstocks) {
       return created;
     }
@@ -379,7 +507,7 @@ final class OrderCommandNotifier
           intent: intent,
           created: created,
           previewId: previewId!,
-          isCancelled: () => _submissionGeneration != submissionGeneration,
+          isCancelled: isCancelled,
           stopAfterApproval: stopAfterApproval,
         );
   }
@@ -394,15 +522,25 @@ final class OrderCommandNotifier
 
   Future<void> cancel(TradingOrder order) async {
     const operation = 'cancel_order';
+    final generation = ref.read(sessionGenerationProvider);
+    bool isCurrent() =>
+        ref.mounted && ref.read(sessionGenerationProvider) == generation;
     final key = newIdempotencyKey();
     ref
         .read(observabilityReporterProvider)
         .recordOperation(operation, outcome: 'started');
     try {
-      final result =
-          order.kind == MarketProductKind.perp &&
-              (order.status == TradingOrderStatus.open ||
-                  order.status == TradingOrderStatus.partiallyFilled)
+      final result = order.kind == MarketProductKind.bstock
+          ? await _cancellations.run(
+              operation: 'cancel-bstocks',
+              fingerprint: order.orderId,
+              command: (_) => ref
+                  .read(bstocksOrderExecutionRepositoryProvider)
+                  .cancelOrder(order.orderId, isCancelled: () => !isCurrent()),
+            )
+          : order.kind == MarketProductKind.perp &&
+                (order.status == TradingOrderStatus.open ||
+                    order.status == TradingOrderStatus.partiallyFilled)
           ? await ref
                 .read(hip3OrderExecutionRepositoryProvider)
                 .cancelOrder(
@@ -414,13 +552,17 @@ final class OrderCommandNotifier
           : await ref
                 .read(ordersRepositoryProvider)
                 .cancel(order.orderId, idempotencyKey: key);
+      if (!isCurrent()) return;
       ref.invalidate(ordersProvider);
       ref.invalidate(bstocksOrdersProvider);
+      ref.invalidate(bstocksOpenOrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
+      ref.invalidate(bstocksSellAvailabilityProvider);
       ref
           .read(observabilityReporterProvider)
           .recordOperation(operation, outcome: 'succeeded');
     } on ApiFailure catch (failure, stackTrace) {
+      if (!isCurrent()) return;
       ref
           .read(observabilityReporterProvider)
           .recordApiFailure(
@@ -429,10 +571,15 @@ final class OrderCommandNotifier
             stackTrace: stackTrace,
           );
       rethrow;
+    } catch (_) {
+      if (!isCurrent()) return;
+      rethrow;
     } finally {
-      ref.invalidate(hip3OrdersProvider);
-      ref.invalidate(hip3OpenOrdersProvider);
-      ref.invalidate(orderProvider(order.orderId));
+      if (isCurrent()) {
+        ref.invalidate(hip3OrdersProvider);
+        ref.invalidate(hip3OpenOrdersProvider);
+        ref.invalidate(orderProvider(order.orderId));
+      }
     }
   }
 }

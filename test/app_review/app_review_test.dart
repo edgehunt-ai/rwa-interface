@@ -321,6 +321,13 @@ final class _PreviewDelegate implements OrdersRepository {
   }
 
   @override
+  Future<OrderPreview> previewContinuation(
+    String orderId,
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) => preview(intent, idempotencyKey: idempotencyKey);
+
+  @override
   Future<ResourceResult<TradingOrder>> create(
     OrderIntent intent, {
     required String idempotencyKey,

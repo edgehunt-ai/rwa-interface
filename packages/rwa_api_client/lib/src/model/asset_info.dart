@@ -10,25 +10,26 @@ import 'package:built_value/serializer.dart';
 
 part 'asset_info.g.dart';
 
-/// 资产详情与权益。bStocks 披露由运营配置并精确绑定 product_id、chain_id、token contract 及有效期；configured 仅表示配置当前有效，不代表平台已独立核实发行人主张。 
+/// 详情页 Asset & Rights 卡片；产品详情的 asset_info 与独立 asset-info 接口使用同一投影。 标题、简介与权益行按设计稿返回，简介中的标的名称取当前产品，不固定为 NVIDIA。 bStocks 默认值为产品设计文案，不是实时链上核验结果；运营配置的有效披露可覆盖对应权益值， 仍须精确匹配 product_id、chain_id、token contract 及有效期。此卡片不展示技术诊断或披露状态行。 
 ///
 /// Properties:
 /// * [title] 
-/// * [badge] 
+/// * [badge] - 当前设计无副标题，返回空字符串；前端为空时不渲染角标或占位行。
 /// * [description] 
-/// * [rows] - 权益明细。当前 bStocks 披露项为 Issuer、Asset backing、Custody、Dividends、 Corporate actions、Voting rights；缺失、未生效或过期字段展示 unavailable，不能推断为无投票权。 Disclosure status 为 not_provided、not_yet_current、expired 或 configured；有配置记录时 还返回 Disclosure source、Disclosure as of、Disclosure expires 字符串行。不要依赖固定数组下标。 HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
+/// * [rows] - 按返回顺序展示，不要硬编码数组下标。 HIP-3：Product Type / Underlying Exposure / Share Ownership / Dividend Rights / Voting Rights / Position Type。 bStocks：Issuer / Backing / Corporate Actions / Dividend Treatment / Voting Rights / Asset Location。 不返回 Venue、Environment、Execution、Decimals、Admission status 等技术说明行。 
 @BuiltValue()
 abstract class AssetInfo implements Built<AssetInfo, AssetInfoBuilder> {
   @BuiltValueField(wireName: r'title')
   String get title;
 
+  /// 当前设计无副标题，返回空字符串；前端为空时不渲染角标或占位行。
   @BuiltValueField(wireName: r'badge')
   String get badge;
 
   @BuiltValueField(wireName: r'description')
   String get description;
 
-  /// 权益明细。当前 bStocks 披露项为 Issuer、Asset backing、Custody、Dividends、 Corporate actions、Voting rights；缺失、未生效或过期字段展示 unavailable，不能推断为无投票权。 Disclosure status 为 not_provided、not_yet_current、expired 或 configured；有配置记录时 还返回 Disclosure source、Disclosure as of、Disclosure expires 字符串行。不要依赖固定数组下标。 HIP-3 典型项：产品形态 / 底层权益 / 保证金模式 / 股息再投资 / 资金费率 / 费率方向 / 资产结果。 
+  /// 按返回顺序展示，不要硬编码数组下标。 HIP-3：Product Type / Underlying Exposure / Share Ownership / Dividend Rights / Voting Rights / Position Type。 bStocks：Issuer / Backing / Corporate Actions / Dividend Treatment / Voting Rights / Asset Location。 不返回 Venue、Environment、Execution、Decimals、Admission status 等技术说明行。 
   @BuiltValueField(wireName: r'rows')
   BuiltList<KeyValue> get rows;
 

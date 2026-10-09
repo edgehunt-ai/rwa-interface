@@ -21,9 +21,22 @@ abstract interface class OrdersService {
     String orderId, {
     required String idempotencyKey,
   });
+  Future<api.BstocksOrderContinuationPreview> previewBstocksOrderContinuation({
+    required String orderId,
+    required String idempotencyKey,
+  });
+  Future<api.OrderAction> createBstocksOrderAction({
+    required String orderId,
+    required String previewId,
+    required String idempotencyKey,
+  });
+  Future<api.OrderAction> getBstocksOrderAction({
+    required String orderId,
+    required String actionId,
+  });
   Future<api.BstocksWalletActionSubmission> submitBstocksWalletAction({
     required String orderId,
-    required String stepId,
+    required String actionId,
     required String transactionHash,
     required String idempotencyKey,
   });

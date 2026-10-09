@@ -3,6 +3,8 @@
 //
 
 // ignore_for_file: unused_element
+import 'package:rwa_api_client/src/model/hip3_time_in_force.dart';
+import 'package:rwa_api_client/src/model/order_status.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/json_object.dart';
 import 'package:built_value/built_value.dart';
@@ -13,12 +15,26 @@ part 'perp_order_wallet_action_state.g.dart';
 /// PerpOrderWalletActionState
 ///
 /// Properties:
+/// * [orderId] 
+/// * [timeInForce] 
+/// * [status] 
 /// * [quantity] - 十进制字符串，避免浮点误差
 /// * [kind] 
 /// * [nextAction] 
 /// * [walletActionBlocker] 
-@BuiltValue()
-abstract class PerpOrderWalletActionState implements Built<PerpOrderWalletActionState, PerpOrderWalletActionStateBuilder> {
+@BuiltValue(instantiable: false)
+abstract class PerpOrderWalletActionState  {
+  @BuiltValueField(wireName: r'order_id')
+  String get orderId;
+
+  @BuiltValueField(wireName: r'time_in_force')
+  Hip3TimeInForce? get timeInForce;
+  // enum timeInForceEnum {  gtc,  ioc,  alo,  };
+
+  @BuiltValueField(wireName: r'status')
+  OrderStatus get status;
+  // enum statusEnum {  pending_signature,  submitted,  open,  partially_filled,  filled,  cancelled,  failed,  ambiguous,  manual_review,  };
+
   /// 十进制字符串，避免浮点误差
   @BuiltValueField(wireName: r'quantity')
   String? get quantity;
@@ -34,20 +50,13 @@ abstract class PerpOrderWalletActionState implements Built<PerpOrderWalletAction
   PerpOrderWalletActionStateWalletActionBlockerEnum get walletActionBlocker;
   // enum walletActionBlockerEnum {  not_applicable,  };
 
-  PerpOrderWalletActionState._();
-
-  factory PerpOrderWalletActionState([void updates(PerpOrderWalletActionStateBuilder b)]) = _$PerpOrderWalletActionState;
-
-  @BuiltValueHook(initializeBuilder: true)
-  static void _defaults(PerpOrderWalletActionStateBuilder b) => b;
-
   @BuiltValueSerializer(custom: true)
   static Serializer<PerpOrderWalletActionState> get serializer => _$PerpOrderWalletActionStateSerializer();
 }
 
 class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<PerpOrderWalletActionState> {
   @override
-  final Iterable<Type> types = const [PerpOrderWalletActionState, _$PerpOrderWalletActionState];
+  final Iterable<Type> types = const [PerpOrderWalletActionState];
 
   @override
   final String wireName = r'PerpOrderWalletActionState';
@@ -57,6 +66,23 @@ class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<Perp
     PerpOrderWalletActionState object, {
     FullType specifiedType = FullType.unspecified,
   }) sync* {
+    yield r'order_id';
+    yield serializers.serialize(
+      object.orderId,
+      specifiedType: const FullType(String),
+    );
+    if (object.timeInForce != null) {
+      yield r'time_in_force';
+      yield serializers.serialize(
+        object.timeInForce,
+        specifiedType: const FullType(Hip3TimeInForce),
+      );
+    }
+    yield r'status';
+    yield serializers.serialize(
+      object.status,
+      specifiedType: const FullType(OrderStatus),
+    );
     if (object.quantity != null) {
       yield r'quantity';
       yield serializers.serialize(
@@ -90,6 +116,46 @@ class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<Perp
     return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
   }
 
+  @override
+  PerpOrderWalletActionState deserialize(
+    Serializers serializers,
+    Object serialized, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.deserialize(serialized, specifiedType: FullType($PerpOrderWalletActionState)) as $PerpOrderWalletActionState;
+  }
+}
+
+/// a concrete implementation of [PerpOrderWalletActionState], since [PerpOrderWalletActionState] is not instantiable
+@BuiltValue(instantiable: true)
+abstract class $PerpOrderWalletActionState implements PerpOrderWalletActionState, Built<$PerpOrderWalletActionState, $PerpOrderWalletActionStateBuilder> {
+  $PerpOrderWalletActionState._();
+
+  factory $PerpOrderWalletActionState([void Function($PerpOrderWalletActionStateBuilder)? updates]) = _$$PerpOrderWalletActionState;
+
+  @BuiltValueHook(initializeBuilder: true)
+  static void _defaults($PerpOrderWalletActionStateBuilder b) => b;
+
+  @BuiltValueSerializer(custom: true)
+  static Serializer<$PerpOrderWalletActionState> get serializer => _$$PerpOrderWalletActionStateSerializer();
+}
+
+class _$$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<$PerpOrderWalletActionState> {
+  @override
+  final Iterable<Type> types = const [$PerpOrderWalletActionState, _$$PerpOrderWalletActionState];
+
+  @override
+  final String wireName = r'$PerpOrderWalletActionState';
+
+  @override
+  Object serialize(
+    Serializers serializers,
+    $PerpOrderWalletActionState object, {
+    FullType specifiedType = FullType.unspecified,
+  }) {
+    return serializers.serialize(object, specifiedType: FullType(PerpOrderWalletActionState))!;
+  }
+
   void _deserializeProperties(
     Serializers serializers,
     Object serialized, {
@@ -102,6 +168,28 @@ class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<Perp
       final key = serializedList[i] as String;
       final value = serializedList[i + 1];
       switch (key) {
+        case r'order_id':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(String),
+          ) as String;
+          result.orderId = valueDes;
+          break;
+        case r'time_in_force':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType.nullable(Hip3TimeInForce),
+          ) as Hip3TimeInForce?;
+          if (valueDes == null) continue;
+          result.timeInForce = valueDes;
+          break;
+        case r'status':
+          final valueDes = serializers.deserialize(
+            value,
+            specifiedType: const FullType(OrderStatus),
+          ) as OrderStatus;
+          result.status = valueDes;
+          break;
         case r'quantity':
           final valueDes = serializers.deserialize(
             value,
@@ -141,12 +229,12 @@ class _$PerpOrderWalletActionStateSerializer implements PrimitiveSerializer<Perp
   }
 
   @override
-  PerpOrderWalletActionState deserialize(
+  $PerpOrderWalletActionState deserialize(
     Serializers serializers,
     Object serialized, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    final result = PerpOrderWalletActionStateBuilder();
+    final result = $PerpOrderWalletActionStateBuilder();
     final serializedList = (serialized as Iterable<Object?>).toList();
     final unhandled = <Object?>[];
     _deserializeProperties(

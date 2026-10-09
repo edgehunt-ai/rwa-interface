@@ -9,6 +9,8 @@ import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/data/api/api_environment.dart';
 import 'package:rwa_interface/data/api/rwa_api_data_source.dart';
 import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
+import 'package:rwa_interface/data/repositories/bstocks_order_action_repository_impl.dart';
+import 'package:rwa_interface/data/repositories/bstocks_order_execution_repository_impl.dart';
 import 'package:rwa_interface/data/repositories/positions_repository_impl.dart';
 import 'package:rwa_interface/data/services/generated_orders_service.dart';
 import 'package:rwa_interface/data/services/generated_positions_service.dart';
@@ -29,12 +31,8 @@ void main() {
     () async {
       final adapter = ControlledApiAdapter([
         _json('POST', '/v1/orders/preview', 200, _previewJson),
-        _json(
-          'POST',
-          '/v1/orders',
-          201,
-          _orderJson(status: 'pending_signature'),
-        ),
+        _json('POST', '/v1/orders', 201, _orderJson(status: 'pending')),
+        _json('GET', '/v1/orders/order-1', 200, _orderJson(status: 'open')),
         _json('GET', '/v1/orders/order-1', 200, _orderJson(status: 'open')),
         _json(
           'DELETE',
@@ -74,10 +72,15 @@ void main() {
           'preview_id': 'cp1',
         }),
         _json('GET', '/v1/orders/close-1', 200, {
-          ..._orderJson(status: 'submitted'),
           'order_id': 'close-1',
+          'symbol': 'NVDA',
           'kind': 'perp',
           'side': 'short',
+          'type': 'market',
+          'status': 'submitted',
+          'next_action': null,
+          'wallet_action_blocker': 'not_applicable',
+          'created_at': '2026-01-01T00:00:00Z',
         }),
       ]);
       final source = _source(adapter);
@@ -86,11 +89,19 @@ void main() {
       );
       final signer = _Signer();
       final confirmations = <String>[];
+      final orders = OrdersRepositoryImpl(
+        GeneratedOrdersService(source.client.getOrdersApi()),
+      );
       final container = ProviderContainer(
         overrides: [
-          ordersRepositoryProvider.overrideWithValue(
-            OrdersRepositoryImpl(
-              GeneratedOrdersService(source.client.getOrdersApi()),
+          ordersRepositoryProvider.overrideWithValue(orders),
+          bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+            BstocksOrderExecutionRepositoryImpl(
+              orders,
+              BstocksOrderActionRepositoryImpl(
+                GeneratedOrdersService(source.client.getOrdersApi()),
+              ),
+              null,
             ),
           ),
           positionsRepositoryProvider.overrideWithValue(
@@ -136,9 +147,8 @@ void main() {
         notifier.submit(intent, previewId: preview.previewId),
       ]);
       final created = submitted.first as ResourceResult<TradingOrder>;
-      expect(created.resource.status, TradingOrderStatus.pendingSignature);
-      expect(created.capability?.code, 'order_signature_not_supported');
-      expect(created.capability?.retryable, isFalse);
+      expect(created.resource.status, TradingOrderStatus.pending);
+      expect(created.capability, isNull);
 
       final authoritative = await container.read(
         orderProvider('order-1').future,
@@ -254,6 +264,8 @@ Map<String, Object?> _orderJson({required String status}) => {
   'side': 'buy',
   'type': 'market',
   'status': status,
+  'next_action': null,
+  'wallet_action_blocker': 'provider_unavailable',
   'quantity': '1',
   'order_value': '100.1',
   'fee': '0.1',

@@ -27,7 +27,7 @@ part 'product_detail.g.dart';
 /// * [kind] 
 /// * [title] - 产品标题，如 `BSC bStocks Token` / `HIP-3 Perpetual`
 /// * [badge] - 角标，如 `Spot · BSC` / `Isolated margin`
-/// * [description] - 产品说明长文案
+/// * [description] - 产品说明长文案，与 asset_info.description 保持一致。
 /// * [quote] 
 /// * [stats] 
 /// * [assetInfo] 
@@ -65,7 +65,7 @@ abstract class ProductDetail implements Built<ProductDetail, ProductDetailBuilde
   @BuiltValueField(wireName: r'badge')
   String? get badge;
 
-  /// 产品说明长文案
+  /// 产品说明长文案，与 asset_info.description 保持一致。
   @BuiltValueField(wireName: r'description')
   String? get description;
 
