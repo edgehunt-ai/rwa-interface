@@ -30,6 +30,7 @@ import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
 import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
 
 import 'hip3_confirm_sheet.dart';
+import 'hip3_segmented_control.dart';
 import 'hip3_cross_liquidation_impacts_card.dart';
 import 'order_funding_sheet.dart';
 import '../../../../domain/models/funding_transfer.dart';
@@ -1418,7 +1419,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     children: [
                       SizedBox(
                         width: 123,
-                        child: _Hip3SegmentedControl<TradingSide>(
+                        child: Hip3SegmentedControl<TradingSide>(
                           width: 123,
                           values: const [TradingSide.long, TradingSide.short],
                           selected: _side,
@@ -1434,7 +1435,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       ),
                       SizedBox(
                         width: 151,
-                        child: _Hip3SegmentedControl<TradingOrderType>(
+                        child: Hip3SegmentedControl<TradingOrderType>(
                           width: 151,
                           values: const [
                             TradingOrderType.market,
@@ -1743,107 +1744,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       ),
     ),
   );
-}
-
-class _Hip3SegmentedControl<T> extends StatelessWidget {
-  const _Hip3SegmentedControl({
-    required this.width,
-    required this.values,
-    required this.selected,
-    required this.selectedColor,
-    required this.label,
-    required this.onChanged,
-    this.selectedForeground,
-  });
-
-  final double width;
-  final List<T> values;
-  final T selected;
-  final Color selectedColor;
-  final Color? selectedForeground;
-  final String Function(T value) label;
-  final ValueChanged<T> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final widths = width < 140 ? const [56.0, 55.0] : const [77.0, 63.0];
-    final selectedIndex = values.indexOf(selected);
-    final selectionLeft = selectedIndex == 0 ? 0.0 : widths.first + 4.0;
-    return Semantics(
-      container: true,
-      explicitChildNodes: true,
-      child: Container(
-        width: width,
-        height: 44,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: colors.subtleSurface,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Stack(
-          children: [
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOutCubic,
-              left: selectionLeft,
-              top: 0,
-              width: widths[selectedIndex],
-              height: 36,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: selectedColor,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                for (var index = 0; index < values.length; index++)
-                  SizedBox(
-                    width: widths[index],
-                    height: 36,
-                    child: Semantics(
-                      button: true,
-                      inMutuallyExclusiveGroup: true,
-                      selected: selected == values[index],
-                      label: label(values[index]),
-                      child: Material(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => onChanged(values[index]),
-                          child: Center(
-                            child: AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 180),
-                              curve: Curves.easeOutCubic,
-                              style: Theme.of(context).textTheme.labelMedium!
-                                  .copyWith(
-                                    color: selected == values[index]
-                                        ? selectedForeground ??
-                                              colors.onPrimaryAction
-                                        : colors.secondaryText,
-                                    fontWeight: selected == values[index]
-                                        ? FontWeight.w600
-                                        : FontWeight.w500,
-                                  ),
-                              child: Text(label(values[index])),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _Hip3TpSlSelection {

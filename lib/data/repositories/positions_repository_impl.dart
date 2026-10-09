@@ -17,6 +17,7 @@ import '../../domain/models/market_product.dart';
 import '../../domain/models/order.dart';
 import '../../domain/models/position.dart';
 import '../../domain/models/position_leverage_context.dart';
+import '../../domain/models/position_close_preview.dart';
 import '../../domain/models/position_operation.dart';
 import '../../domain/models/decimal_value.dart';
 import '../../domain/models/order_intent.dart';
@@ -337,6 +338,55 @@ final class PositionsRepositoryImpl implements PositionsRepository {
   }
 
   @override
+  Future<PositionClosePreview> previewClose(
+    Position position, {
+    required String quantity,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    required String idempotencyKey,
+  }) async {
+    _requireProduct(position);
+    if (position.side == PositionSide.none) {
+      throw ArgumentError('No open position');
+    }
+    requireWithinPosition(quantity, position.quantity.value);
+    if (type == TradingOrderType.limit) {
+      if (limitPrice == null) throw ArgumentError('Limit price is required');
+      requirePositiveDecimal(limitPrice);
+    } else if (limitPrice != null) {
+      throw ArgumentError('Market close must not include a limit price');
+    }
+    final preview = await _actions.previewClose(
+      position.positionId,
+      api.Hip3ClosePreviewRequest(
+        (b) => b
+          ..type = type == TradingOrderType.limit
+              ? api.Hip3ClosePreviewRequestTypeEnum.limit
+              : api.Hip3ClosePreviewRequestTypeEnum.market
+          ..quantity = quantity
+          ..limitPrice = limitPrice,
+      ),
+      idempotencyKey,
+    );
+    _validateClosePreview(preview, position, type, quantity, limitPrice);
+    return PositionClosePreview(
+      previewId: preview.previewId,
+      quantity: DecimalValue(preview.quantity),
+      notional: DecimalValue(preview.notionalUsdc),
+      entryPrice: DecimalValue(preview.entryPrice),
+      markPrice: DecimalValue(preview.markPrice),
+      estimatedPrice: DecimalValue(preview.estimatedPrice),
+      estimatedFee: DecimalValue(preview.estimatedFeeUsdc),
+      estimatedRealizedPnl: DecimalValue(preview.estimatedRealizedPnlUsdc),
+      liquidationPrice: preview.liquidationPrice == null
+          ? null
+          : DecimalValue(preview.liquidationPrice!),
+      expiresAt: preview.quoteExpiresAt.toUtc(),
+      observedAt: preview.observedAt.toUtc(),
+    );
+  }
+
+  @override
   Future<TradingOrder> close(
     String positionId, {
     String? quantity,
@@ -407,30 +457,13 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         return (position, preview);
       },
     );
-    if (preview.positionId != positionId ||
-        preview.productId != position.productId ||
-        preview.positionVersion != position.positionVersion ||
-        preview.type.name != type.name ||
-        preview.side.name !=
-            (position.side == PositionSide.long ? 'short' : 'long') ||
-        (type == TradingOrderType.limit && preview.limitPrice == null)) {
-      throw const FormatException('Close preview binding mismatch');
-    }
-    requireWithinPosition(
-      preview.quantity,
+    _validateClosePreview(
+      preview,
+      position,
+      type,
       quantity ?? percentageQuantity(position.quantity.value, percent ?? '100'),
+      limitPrice,
     );
-    if (limitPrice != null) {
-      requirePositiveDecimal(preview.limitPrice!);
-      final comparison = DecimalValue(preview.limitPrice!)
-          .compareTo(DecimalValue(limitPrice));
-      if ((position.side == PositionSide.long && comparison < 0) ||
-          (position.side == PositionSide.short && comparison > 0)) {
-        throw const FormatException(
-          'Close preview exceeds the requested limit',
-        );
-      }
-    }
     final completed = await _run(
       position,
       Hip3PositionIntents.close(preview.previewId),
@@ -444,6 +477,36 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       throw const FormatException('Close action missing order');
     }
     return mapOrder(await _actions.order(orderId));
+  }
+
+  void _validateClosePreview(
+    api.Hip3ClosePreview preview,
+    Position position,
+    TradingOrderType type,
+    String maximumQuantity,
+    String? limitPrice,
+  ) {
+    if (preview.positionId != position.positionId ||
+        preview.productId != position.productId ||
+        preview.positionVersion != position.positionVersion ||
+        preview.type.name != type.name ||
+        preview.side.name !=
+            (position.side == PositionSide.long ? 'short' : 'long') ||
+        (type == TradingOrderType.limit && preview.limitPrice == null)) {
+      throw const FormatException('Close preview binding mismatch');
+    }
+    requireWithinPosition(preview.quantity, maximumQuantity);
+    if (limitPrice != null) {
+      requirePositiveDecimal(preview.limitPrice!);
+      final comparison = DecimalValue(preview.limitPrice!)
+          .compareTo(DecimalValue(limitPrice));
+      if ((position.side == PositionSide.long && comparison < 0) ||
+          (position.side == PositionSide.short && comparison > 0)) {
+        throw const FormatException(
+          'Close preview exceeds the requested limit',
+        );
+      }
+    }
   }
 
   Future<api.Hip3Action> _run(

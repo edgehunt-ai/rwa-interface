@@ -7,15 +7,18 @@ import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/hip3_action_pending.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/position.dart';
+import '../../../../domain/models/position_close_preview.dart';
 import '../../../../domain/models/position_operation.dart';
 import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/app_toast.dart';
+import '../../../core/feedback/loading_skeleton.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../positions/providers/position_providers.dart';
+import 'hip3_segmented_control.dart';
 
-/// Closes only the selected HIP-3 position using a market order.
+/// Closes only the selected HIP-3 position using a reduce-only order.
 class Hip3ClosePositionSheet extends ConsumerStatefulWidget {
   const Hip3ClosePositionSheet({super.key, required this.position});
 
@@ -26,20 +29,71 @@ class Hip3ClosePositionSheet extends ConsumerStatefulWidget {
 }
 
 class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
-  final _quantity = TextEditingController(text: '0');
+  final _quantity = TextEditingController();
+  final _limitPrice = TextEditingController();
+  TradingOrderType _type = TradingOrderType.market;
   double _percent = 0;
   bool _busy = false;
   bool _pending = false;
   String? _error;
 
+  bool get _hasValidInputs {
+    try {
+      requireWithinPosition(
+        _quantity.text.trim(),
+        widget.position.quantity.value,
+      );
+      if (_type == TradingOrderType.limit) {
+        requirePositiveDecimal(_limitPrice.text.trim());
+      }
+      return true;
+    } on FormatException {
+      return false;
+    } on ArgumentError {
+      return false;
+    }
+  }
+
+  PositionClosePreviewRequest? get _previewRequest {
+    if (!_hasValidInputs ||
+        widget.position.productId == null ||
+        widget.position.side == PositionSide.none) {
+      return null;
+    }
+    return (
+      position: widget.position,
+      quantity: _quantity.text.trim(),
+      type: _type,
+      limitPrice: _type == TradingOrderType.limit
+          ? _limitPrice.text.trim()
+          : null,
+    );
+  }
+
+  PositionClosePreview? _usablePreview(
+    AsyncValue<PositionClosePreview>? state,
+  ) {
+    if (state == null || state.isLoading || state.hasError) return null;
+    final preview = state.value;
+    return preview == null || preview.isExpired ? null : preview;
+  }
+
   @override
   void dispose() {
     _quantity.dispose();
+    _limitPrice.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    if (_busy || _pending) return;
+    final request = _previewRequest;
+    if (_busy ||
+        _pending ||
+        request == null ||
+        _usablePreview(ref.read(positionClosePreviewProvider(request))) ==
+            null) {
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;
@@ -47,12 +101,25 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     try {
       final quantity = _quantity.text.trim();
       requireWithinPosition(quantity, widget.position.quantity.value);
+      final limitPrice = _type == TradingOrderType.limit
+          ? _limitPrice.text.trim()
+          : null;
+      if (limitPrice != null) {
+        try {
+          requirePositiveDecimal(limitPrice);
+        } on FormatException {
+          throw ArgumentError(AppLocalizations.of(context).validLimitPrice);
+        } on ArgumentError {
+          throw ArgumentError(AppLocalizations.of(context).validLimitPrice);
+        }
+      }
       await ref
           .read(positionCommandProvider)
           .close(
             widget.position.positionId,
             expectedPosition: widget.position,
-            type: TradingOrderType.market,
+            type: _type,
+            limitPrice: limitPrice,
             quantity: quantity,
             percent: null,
             confirmBeforeSigning: false,
@@ -119,6 +186,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
 
   void _setPercent(double value) {
     setState(() {
+      _error = null;
       _percent = value;
       _quantity.text = _trimDecimal(
         percentageQuantity(
@@ -135,6 +203,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
       absoluteQuantity(widget.position.quantity.value),
     );
     setState(() {
+      _error = null;
       _percent = quantity == null || available == null || available <= 0
           ? 0
           : (quantity / available * 100).clamp(0, 100);
@@ -147,6 +216,25 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     final position = widget.position;
     final locked = _busy || _pending;
     final l10n = AppLocalizations.of(context);
+    final previewRequest = _previewRequest;
+    final previewState = previewRequest == null
+        ? null
+        : ref.watch(positionClosePreviewProvider(previewRequest));
+    final preview = _usablePreview(previewState);
+    final previewLoading = previewState?.isLoading == true;
+    final previewError = previewState?.hasError == true
+        ? previewState!.error
+        : null;
+    final errorMessage =
+        _error ??
+        (previewError == null
+            ? null
+            : previewError is ApiFailure
+            ? apiFailureMessage(
+                previewError,
+                fallback: l10n.closePreviewUnavailable,
+              )
+            : l10n.closePreviewUnavailable);
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final side = switch (position.side) {
@@ -154,7 +242,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
       PositionSide.short => l10n.short,
       PositionSide.none => '—',
     };
-    final pnl = position.unrealizedPnl;
+    final pnl = preview?.estimatedRealizedPnl;
     final pnlColor = pnl == null
         ? colors.primaryText
         : pnl.value.startsWith('-')
@@ -250,20 +338,95 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                       ],
                     ),
                   ),
-                  Text(
-                    l10n.market,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 18 / 13,
-                      fontWeight: FontWeight.w600,
-                      color: colors.secondaryText,
-                    ),
+                  const SizedBox(width: 8),
+                  Hip3SegmentedControl<TradingOrderType>(
+                    key: const Key('close-order-type-tabs'),
+                    width: 151,
+                    values: const [
+                      TradingOrderType.market,
+                      TradingOrderType.limit,
+                    ],
+                    selected: _type,
+                    selectedColor: colors.surface,
+                    selectedForeground: colors.primaryText,
+                    label: (value) => value == TradingOrderType.market
+                        ? l10n.market
+                        : l10n.limit,
+                    onChanged: locked
+                        ? null
+                        : (value) => setState(() {
+                            _type = value;
+                            _error = null;
+                          }),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
+              if (_type == TradingOrderType.limit) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.subtleSurface,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.price,
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 14 / 11,
+                          color: colors.secondaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        key: const Key('close-limit-price'),
+                        controller: _limitPrice,
+                        enabled: !locked,
+                        onChanged: (_) => setState(() => _error = null),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 22 / 15,
+                          fontWeight: FontWeight.w600,
+                          color: colors.primaryText,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: '0.0',
+                          hintStyle: TextStyle(color: colors.tertiaryText),
+                          suffixText: 'USDC',
+                          suffixStyle: TextStyle(
+                            fontSize: 15,
+                            height: 22 / 15,
+                            fontWeight: FontWeight.w600,
+                            color: colors.primaryText,
+                          ),
+                          isDense: true,
+                          filled: false,
+                          contentPadding: EdgeInsets.zero,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               Container(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: colors.subtleSurface,
                   borderRadius: BorderRadius.circular(14),
@@ -318,24 +481,13 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                           fontWeight: FontWeight.w600,
                           color: colors.primaryText,
                         ),
-                        filled: true,
-                        fillColor: colors.surface,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(4)),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(4)),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(4)),
-                          borderSide: BorderSide.none,
-                        ),
+                        isDense: true,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -352,32 +504,37 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
               const SizedBox(height: 12),
               _CloseSummaryRow(
                 label: l10n.value,
-                value: _formatUsd(position.markNotional),
+                value: _formatUsd(preview?.notional),
+                loading: previewLoading,
               ),
               _CloseSummaryRow(
                 label: l10n.entryPrice,
-                value: _formatUsd(position.entryPrice),
+                value: _formatUsd(preview?.entryPrice),
+                loading: previewLoading,
               ),
               _CloseSummaryRow(
                 label: l10n.marketPrice,
-                value: _formatUsd(position.markPrice),
+                value: _formatUsd(preview?.markPrice),
+                loading: previewLoading,
               ),
               _CloseSummaryRow(
-                label: 'Liq Price',
-                value: _formatUsd(position.liquidationPrice),
+                label: l10n.liquidationPrice,
+                value: _formatUsd(preview?.liquidationPrice),
+                loading: previewLoading,
               ),
               _CloseSummaryRow(
-                label: l10n.unrealizedPnl,
+                label: l10n.estimatedClosePnl,
                 value: _formatSignedUsd(pnl),
                 valueColor: pnlColor,
+                loading: previewLoading,
               ),
               const SizedBox(height: 8),
-              if (_error != null)
+              if (errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Semantics(
                     liveRegion: true,
-                    label: _error!,
+                    label: errorMessage,
                     child: Container(
                       width: double.infinity,
                       constraints: const BoxConstraints(minHeight: 40),
@@ -390,7 +547,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        _error!,
+                        errorMessage,
                         style: TextStyle(color: semantic.loss, fontSize: 12),
                       ),
                     ),
@@ -418,6 +575,8 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                       key: const Key('close-review'),
                       onPressed:
                           locked ||
+                              !_hasValidInputs ||
+                              preview == null ||
                               position.productId == null ||
                               position.side == PositionSide.none
                           ? null
@@ -567,11 +726,13 @@ class _CloseSummaryRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.valueColor,
+    this.loading = false,
   });
 
   final String label;
   final String value;
   final Color? valueColor;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -591,16 +752,32 @@ class _CloseSummaryRow extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            value,
-            textAlign: TextAlign.end,
-            style: TextStyle(
-              fontSize: 13,
-              height: 18 / 13,
-              fontWeight: FontWeight.w600,
-              color: valueColor,
+          if (loading)
+            Semantics(
+              label: AppLocalizations.of(context).loadingLabel,
+              child: const SizedBox(
+                height: 18,
+                child: Center(
+                  child: SkeletonBlock(
+                    key: Key('close-preview-loading'),
+                    width: 72,
+                    height: 14,
+                    radius: 4,
+                  ),
+                ),
+              ),
+            )
+          else
+            Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 13,
+                height: 18 / 13,
+                fontWeight: FontWeight.w600,
+                color: valueColor,
+              ),
             ),
-          ),
         ],
       ),
     );

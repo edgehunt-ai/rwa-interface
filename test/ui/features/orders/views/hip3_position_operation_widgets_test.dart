@@ -12,6 +12,7 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_close_preview.dart';
 import 'package:rwa_interface/domain/models/position_leverage_context.dart';
 import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
@@ -21,12 +22,14 @@ import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_close_position_sheet.dart';
+import 'package:rwa_interface/ui/features/orders/views/hip3_segmented_control.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.dart';
 import 'package:rwa_interface/ui/features/orders/views/hip3_position_settings_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:rwa_interface/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../helpers/display_config.dart';
@@ -312,7 +315,9 @@ void main() {
         ),
       );
       await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+      await tester.pump();
       await tester.ensureVisible(find.byKey(const Key('close-review')));
+      await _settleClosePreview(tester);
       await tester.tap(find.byKey(const Key('close-review')));
       await tester.pumpAndSettle();
 
@@ -338,6 +343,8 @@ void main() {
     );
     await tester.ensureVisible(find.byKey(const Key('close-review')));
     await tester.enterText(find.byKey(const Key('close-quantity')), '1');
+    await tester.pump();
+    await _settleClosePreview(tester);
     await tester.tap(find.byKey(const Key('close-review')));
     await tester.pumpAndSettle();
     expect(
@@ -371,6 +378,7 @@ void main() {
       );
       expect(quantity.controller!.text, '0.5');
       await tester.ensureVisible(find.byKey(const Key('close-review')));
+      await _settleClosePreview(tester);
       await tester.tap(find.byKey(const Key('close-review')));
       await tester.pumpAndSettle();
       expect(repo.closePosition, same(position));
@@ -379,6 +387,68 @@ void main() {
       expect(repo.type, TradingOrderType.market);
     },
   );
+
+  testWidgets('close starts empty and enables only for valid required inputs', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+      ),
+    );
+    final quantityFinder = find.byKey(const Key('close-quantity'));
+    final priceFinder = find.byKey(const Key('close-limit-price'));
+    final buttonFinder = find.byKey(const Key('close-review'));
+    void expectEnabled(bool enabled) => expect(
+      tester.widget<FilledButton>(buttonFinder).onPressed,
+      enabled ? isNotNull : isNull,
+    );
+    final quantity = tester.widget<TextField>(quantityFinder);
+    expect(quantity.controller!.text, isEmpty);
+    expect(quantity.decoration!.hintText, '0.0');
+    expectEnabled(false);
+    for (final value in ['0', '-1', 'abc', '2', '']) {
+      await tester.enterText(quantityFinder, value);
+      await tester.pump();
+      expectEnabled(false);
+    }
+    await tester.enterText(quantityFinder, '0.5');
+    await tester.pump();
+    expectEnabled(false);
+    await _settleClosePreview(tester);
+    expectEnabled(true);
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    expectEnabled(false);
+    await tester.enterText(priceFinder, '120');
+    await tester.pump();
+    expectEnabled(false);
+    await _settleClosePreview(tester);
+    expectEnabled(true);
+    await tester.enterText(priceFinder, '');
+    await tester.pump();
+    expectEnabled(false);
+    await tester.tap(find.text('Market'));
+    await tester.pumpAndSettle();
+    await _settleClosePreview(tester);
+    expectEnabled(true);
+    await tester.enterText(quantityFinder, '');
+    await tester.pump();
+    expectEnabled(false);
+    final slider = tester.widget<Slider>(
+      find.byKey(const Key('close-percentage-slider')),
+    );
+    slider.onChanged!(50);
+    await tester.pump();
+    await _settleClosePreview(tester);
+    expectEnabled(true);
+    slider.onChanged!(0);
+    await tester.pump();
+    expectEnabled(false);
+    expect(repo.closeCalls, 0);
+  });
 
   testWidgets('custom market close validates then sends exact quantity', (
     tester,
@@ -391,6 +461,7 @@ void main() {
       ),
     );
     expect(find.byType(SegmentedButton<TradingOrderType>), findsNothing);
+    expect(find.byKey(const Key('close-order-type-tabs')), findsOneWidget);
     expect(find.byKey(const Key('close-limit-price')), findsNothing);
     expect(find.text('Amount'), findsOneWidget);
     expect(
@@ -400,11 +471,18 @@ void main() {
       0,
     );
     await tester.enterText(find.byKey(const Key('close-quantity')), '2');
+    await tester.pump();
     await tester.ensureVisible(find.byKey(const Key('close-review')));
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('close-review')))
+          .onPressed,
+      isNull,
+    );
+    await _settleClosePreview(tester);
     await tester.tap(find.byKey(const Key('close-review')));
     await tester.pumpAndSettle();
     expect(repo.closeCalls, 0);
-    expect(find.text('Quantity exceeds the current position'), findsOneWidget);
     await tester.enterText(find.byKey(const Key('close-quantity')), '0.125');
     await tester.pump();
     expect(
@@ -414,6 +492,7 @@ void main() {
       12.5,
     );
     await tester.ensureVisible(find.byKey(const Key('close-review')));
+    await _settleClosePreview(tester);
     await tester.tap(find.byKey(const Key('close-review')));
     await tester.pump();
     await tester.pump();
@@ -427,6 +506,363 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('close preview debounces edits and displays only this close', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+      ),
+    );
+    addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
+    expect(repo.previewRequests, isEmpty);
+    expect(find.text('Estimated close PnL'), findsOneWidget);
+    expect(find.text('Unrealized PnL'), findsNothing);
+    await tester.enterText(find.byKey(const Key('close-quantity')), '0.2');
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.byKey(const Key('close-preview-loading')), findsNWidgets(5));
+    expect(find.byType(SkeletonBlock), findsNWidgets(5));
+    expect(find.text('Loading'), findsNothing);
+    expect(find.text('Value'), findsOneWidget);
+    expect(find.text('Entry'), findsOneWidget);
+    expect(repo.previewRequests, isEmpty);
+    await tester.enterText(find.byKey(const Key('close-quantity')), '0.25');
+    await _settleClosePreview(tester);
+    expect(repo.previewRequests, hasLength(1));
+    expect(repo.previewRequests.single.quantity, '0.25');
+    expect(repo.previewRequests.single.type, TradingOrderType.market);
+    expect(find.byType(SkeletonBlock), findsNothing);
+    expect(find.text(r'$25'), findsOneWidget);
+    expect(find.text(r'$99'), findsOneWidget);
+    expect(find.text(r'$100'), findsOneWidget);
+    expect(find.text(r'$70'), findsOneWidget);
+    expect(find.text(r'+$0.24'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('close-review')))
+          .onPressed,
+      isNotNull,
+    );
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    expect(find.text(r'$25'), findsNothing);
+    await tester.enterText(find.byKey(const Key('close-limit-price')), '110');
+    await _settleClosePreview(tester);
+    expect(repo.previewRequests.last.type, TradingOrderType.limit);
+    expect(repo.previewRequests.last.limitPrice, '110');
+    expect(repo.closeCalls, 0);
+  });
+
+  testWidgets(
+    'late close preview cannot replace a newer edit or cleared inputs',
+    (tester) async {
+      final first = Completer<PositionClosePreview>();
+      final second = Completer<PositionClosePreview>();
+      final repo = _Positions()
+        ..previewCompletions['0.25'] = first
+        ..previewCompletions['0.5'] = second;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+        ),
+      );
+      addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.25');
+      await _settleClosePreview(tester);
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+      await _settleClosePreview(tester);
+      expect(repo.previewRequests, hasLength(2));
+      second.complete(_closePreview('0.5', value: '50'));
+      await tester.pumpAndSettle();
+      expect(find.text(r'$50'), findsOneWidget);
+      first.complete(_closePreview('0.25'));
+      await tester.pumpAndSettle();
+      expect(find.text(r'$50'), findsOneWidget);
+      expect(find.text(r'$25'), findsNothing);
+      await tester.enterText(find.byKey(const Key('close-quantity')), '');
+      await tester.pumpAndSettle();
+      expect(find.text(r'$50'), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('close-review')))
+            .onPressed,
+        isNull,
+      );
+      expect(repo.closeCalls, 0);
+    },
+  );
+
+  testWidgets(
+    'close preview errors block submission without retry and edits re-preview',
+    (tester) async {
+      final repo = _Positions()
+        ..previewError = const ServerFailure(
+          statusCode: 422,
+          code: 'close_below_minimum',
+          message:
+              'Increase the quantity or close the entire remaining position.',
+        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+        ),
+      );
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.25');
+      await _settleClosePreview(tester);
+      expect(
+        find.text(
+          'Increase the quantity or close the entire remaining position.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(r'$25'), findsNothing);
+      expect(find.byKey(const Key('close-preview-retry')), findsNothing);
+      expect(find.text('Retry'), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('close-review')))
+            .onPressed,
+        isNull,
+      );
+      repo.previewError = null;
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+      await _settleClosePreview(tester);
+      expect(repo.previewKeys.toSet(), hasLength(2));
+      expect(repo.previewRequests.last.quantity, '0.5');
+      expect(find.text(r'$25'), findsOneWidget);
+      expect(find.byKey(const Key('close-preview-retry')), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('close-review')))
+            .onPressed,
+        isNotNull,
+      );
+      expect(repo.closeCalls, 0);
+    },
+  );
+
+  testWidgets('close preview timeout has no retry and ignores the late quote', (
+    tester,
+  ) async {
+    final delayed = Completer<PositionClosePreview>();
+    final repo = _Positions()..previewCompletions['0.25'] = delayed;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+      ),
+    );
+    await tester.enterText(find.byKey(const Key('close-quantity')), '0.25');
+    await _settleClosePreview(tester);
+    expect(find.byKey(const Key('close-preview-loading')), findsNWidgets(5));
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('close-preview-retry')), findsNothing);
+    expect(find.text('Retry'), findsNothing);
+    expect(find.byKey(const Key('close-preview-loading')), findsNothing);
+    delayed.complete(_closePreview('0.25'));
+    await tester.pumpAndSettle();
+    expect(find.text(r'$25'), findsNothing);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('close-review')))
+          .onPressed,
+      isNull,
+    );
+    expect(repo.previewRequests, hasLength(1));
+    expect(repo.closeCalls, 0);
+  });
+
+  testWidgets(
+    'expired close preview refreshes and blocks submission while loading',
+    (tester) async {
+      final repo = _Positions()..previewLifetime = const Duration(seconds: 1);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+        ),
+      );
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.25');
+      await _settleClosePreview(tester);
+      expect(find.text(r'$25'), findsOneWidget);
+      final refreshed = Completer<PositionClosePreview>();
+      repo.previewCompletions['0.25'] = refreshed;
+      await tester.pump(const Duration(seconds: 1));
+      await _settleClosePreview(tester);
+      expect(find.text(r'$25'), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('close-review')))
+            .onPressed,
+        isNull,
+      );
+      expect(repo.previewRequests, hasLength(2));
+      expect(repo.previewKeys.toSet(), hasLength(2));
+      refreshed.complete(_closePreview('0.25'));
+      await tester.pumpAndSettle();
+      expect(find.text(r'$25'), findsOneWidget);
+    },
+  );
+
+  for (final short in [false, true]) {
+    testWidgets('limit close sends exact price and quantity, short=$short', (
+      tester,
+    ) async {
+      final repo = _Positions();
+      final position = _position(short: short);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: position)),
+        ),
+      );
+      await tester.tap(find.text('Limit'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('close-limit-price')),
+        '123.4567890123456789',
+      );
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.125');
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const Key('close-review')));
+      await _settleClosePreview(tester);
+      await tester.tap(find.byKey(const Key('close-review')));
+      await tester.pumpAndSettle();
+      expect(repo.closeCalls, 1);
+      expect(repo.closePosition, same(position));
+      expect(repo.type, TradingOrderType.limit);
+      expect(repo.limitPrice, '123.4567890123456789');
+      expect(repo.quantity, '0.125');
+      expect(repo.percent, isNull);
+    });
+  }
+
+  for (final price in ['', '0', '-1', 'abc']) {
+    testWidgets('limit close stays disabled with invalid price "$price"', (
+      tester,
+    ) async {
+      final repo = _Positions();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+        ),
+      );
+      await tester.tap(find.text('Limit'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('close-limit-price')), price);
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const Key('close-review')));
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('close-review')))
+            .onPressed,
+        isNull,
+      );
+      await _settleClosePreview(tester);
+      await tester.tap(find.byKey(const Key('close-review')));
+      await tester.pumpAndSettle();
+      expect(repo.closeCalls, 0);
+    });
+  }
+
+  testWidgets('switching back to market keeps quantity and omits limit price', (
+    tester,
+  ) async {
+    final repo = _Positions();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+        child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+      ),
+    );
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('close-limit-price')), '120');
+    await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+    await tester.tap(find.text('Market'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('close-limit-price')), findsNothing);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('close-quantity')))
+          .controller!
+          .text,
+      '0.5',
+    );
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('close-limit-price')))
+          .controller!
+          .text,
+      '120',
+    );
+    await tester.tap(find.text('Market'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('close-review')));
+    await _settleClosePreview(tester);
+    await tester.tap(find.byKey(const Key('close-review')));
+    await tester.pumpAndSettle();
+    expect(repo.type, TradingOrderType.market);
+    expect(repo.limitPrice, isNull);
+    expect(repo.quantity, '0.5');
+  });
+
+  testWidgets(
+    'limit close locks tabs and inputs during submission and pending',
+    (tester) async {
+      final delay = Completer<void>();
+      final repo = _Positions()
+        ..closeDelay = delay.future
+        ..pending = true;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+        ),
+      );
+      await tester.tap(find.text('Limit'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('close-limit-price')), '120');
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const Key('close-review')));
+      await _settleClosePreview(tester);
+      await tester.tap(find.byKey(const Key('close-review')));
+      await tester.pump();
+      void expectLocked() {
+        expect(
+          tester
+              .widget<Hip3SegmentedControl<TradingOrderType>>(
+                find.byKey(const Key('close-order-type-tabs')),
+              )
+              .onChanged,
+          isNull,
+        );
+        for (final key in ['close-limit-price', 'close-quantity']) {
+          expect(
+            tester.widget<TextField>(find.byKey(Key(key))).enabled,
+            isFalse,
+          );
+        }
+      }
+
+      expectLocked();
+      delay.complete();
+      await tester.pumpAndSettle();
+      expectLocked();
+      expect(repo.closeCalls, 1);
+    },
+  );
 
   for (final both in [false, true]) {
     testWidgets('protection switches send explicit cancellation, both=$both', (
@@ -1127,6 +1563,31 @@ void main() {
   );
 }
 
+Future<void> _settleClosePreview(WidgetTester tester) async {
+  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 301));
+  await tester.pumpAndSettle();
+}
+
+PositionClosePreview _closePreview(
+  String quantity, {
+  String value = '25',
+  Duration lifetime = const Duration(minutes: 1),
+}) => PositionClosePreview(
+  previewId: 'preview-$quantity',
+  quantity: DecimalValue(quantity),
+  notional: DecimalValue(value),
+  entryPrice: DecimalValue('99'),
+  markPrice: DecimalValue('100'),
+  estimatedPrice: DecimalValue('101'),
+  estimatedFee: DecimalValue('0.01'),
+  estimatedRealizedPnl: DecimalValue('0.24'),
+  liquidationPrice: DecimalValue('70'),
+  expiresAt: DateTime.now().toUtc().add(lifetime),
+  observedAt: DateTime.now().toUtc(),
+);
+
 Position _position({
   bool short = false,
   bool withProtection = true,
@@ -1188,8 +1649,35 @@ TradingOrder _order(
 );
 
 class _Positions implements PositionsRepository {
+  Object? previewError;
+  final previewRequests = <PositionClosePreviewRequest>[];
+  final previewKeys = <String>[];
+  final previewCompletions = <String, Completer<PositionClosePreview>>{};
+  Duration previewLifetime = const Duration(minutes: 1);
+  @override
+  Future<PositionClosePreview> previewClose(
+    Position position, {
+    required String quantity,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    required String idempotencyKey,
+  }) async {
+    previewRequests.add((
+      position: position,
+      quantity: quantity,
+      type: type,
+      limitPrice: limitPrice,
+    ));
+    previewKeys.add(idempotencyKey);
+    if (previewError case final error?) throw error;
+    final completion = previewCompletions[quantity];
+    if (completion != null) return completion.future;
+    return _closePreview(quantity, lifetime: previewLifetime);
+  }
+
   bool pending = false;
   Object? closeError;
+  Future<void>? closeDelay;
   int closeCalls = 0;
   Position? closePosition;
   TradingOrderType? type;
@@ -1213,6 +1701,7 @@ class _Positions implements PositionsRepository {
     required String idempotencyKey,
   }) async {
     closeCalls++;
+    await closeDelay;
     if (pending) throw const Hip3ActionPending('pending-close');
     if (closeError case final error?) throw error;
     closePosition = expectedPosition;

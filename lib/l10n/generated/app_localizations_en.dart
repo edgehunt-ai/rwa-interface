@@ -1928,6 +1928,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Reduce-only. Review the server-normalized quantity, estimated PnL and fees before signing. A limit order may remain open.';
 
   @override
+  String get estimatedClosePnl => 'Estimated close PnL';
+
+  @override
+  String get closePreviewUnavailable =>
+      'Close preview is unavailable. Refresh the position or retry.';
+
+  @override
   String get preparing => 'Preparing…';
 
   @override

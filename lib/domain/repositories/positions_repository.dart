@@ -6,6 +6,7 @@ import '../models/position_operation.dart';
 import '../models/order_intent.dart';
 import '../models/hip3_action_summary.dart';
 import '../models/position_leverage_context.dart';
+import '../models/position_close_preview.dart';
 
 abstract interface class PositionsRepository {
   Future<PositionLeverageContext> leverageContext(String productId);
@@ -19,6 +20,15 @@ abstract interface class PositionsRepository {
     String? cursor,
   });
   Future<Position> get(String positionId);
+
+  /// Read-only close estimate; never creates an action or signs an order.
+  Future<PositionClosePreview> previewClose(
+    Position position, {
+    required String quantity,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    required String idempotencyKey,
+  });
   Future<Position> updateTpSl(
     Position position, {
     String? takeProfit,

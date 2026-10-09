@@ -20,6 +20,7 @@ import '../domain/models/portfolio.dart';
 import '../domain/models/portfolio_history.dart';
 import '../domain/models/portfolio_allocation.dart';
 import '../domain/models/position.dart';
+import '../domain/models/position_close_preview.dart';
 import '../domain/models/registered_device.dart';
 import '../domain/models/realtime_replay_page.dart';
 import '../domain/models/resource_result.dart';
@@ -545,6 +546,46 @@ final class AppReviewActivityRepository implements ActivityRepository {
 }
 
 final class AppReviewPositionsRepository implements PositionsRepository {
+  @override
+  Future<PositionClosePreview> previewClose(
+    Position position, {
+    required String quantity,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    required String idempotencyKey,
+  }) async {
+    // Review-only simulation: no API request, action creation or signing.
+    requireWithinPosition(quantity, position.quantity.value);
+    final mark =
+        position.markPrice ?? position.entryPrice ?? DecimalValue('180.11');
+    final entry = position.entryPrice ?? mark;
+    final price = type == TradingOrderType.limit
+        ? DecimalValue(limitPrice ?? '')
+        : mark;
+    requirePositiveDecimal(price.value);
+    final size = double.parse(quantity);
+    final notional = size * double.parse(price.value);
+    final fee = notional * 0.00045;
+    final pnl =
+        size *
+            (double.parse(price.value) - double.parse(entry.value)) *
+            (position.side == PositionSide.short ? -1 : 1) -
+        fee;
+    return PositionClosePreview(
+      previewId: 'review-close-preview-$idempotencyKey',
+      quantity: DecimalValue(quantity),
+      notional: DecimalValue(notional.toStringAsFixed(8)),
+      entryPrice: entry,
+      markPrice: mark,
+      estimatedPrice: price,
+      estimatedFee: DecimalValue(fee.toStringAsFixed(8)),
+      estimatedRealizedPnl: DecimalValue(pnl.toStringAsFixed(8)),
+      liquidationPrice: position.liquidationPrice,
+      expiresAt: _now.add(const Duration(minutes: 1)),
+      observedAt: _now,
+    );
+  }
+
   @override
   Future<PositionLeverageContext> leverageContext(String productId) async =>
       PositionLeverageContext(

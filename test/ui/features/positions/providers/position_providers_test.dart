@@ -13,11 +13,91 @@ import 'package:rwa_interface/domain/models/market_product.dart';
 import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_close_preview.dart';
 import 'package:rwa_interface/domain/models/position_leverage_context.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
 void main() {
+  test(
+    'closing the preview subscription during debounce makes no request',
+    () async {
+      final repository = _PositionsRepository();
+      final container = ProviderContainer(
+        overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final request = (
+        position: _position(),
+        quantity: '0.25',
+        type: TradingOrderType.market,
+        limitPrice: null as String?,
+      );
+      final subscription = container.listen(
+        positionClosePreviewProvider(request),
+        (_, _) {},
+      );
+      subscription.close();
+      await container.pump();
+      await Future<void>.delayed(const Duration(milliseconds: 320));
+      expect(repository.previewKeys, isEmpty);
+    },
+  );
+
+  test('preview refresh and session replacement use new keys and ignore late results', () async {
+    final repository = _PositionsRepository();
+    final old = Completer<PositionClosePreview>();
+    repository.previewCompletions[1] = old;
+    final container = ProviderContainer(
+      overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final request = (
+      position: _position(),
+      quantity: '0.25',
+      type: TradingOrderType.limit,
+      limitPrice: '110',
+    );
+    final provider = positionClosePreviewProvider(request);
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+    await Future<void>.delayed(const Duration(milliseconds: 320));
+    expect(repository.previewKeys, hasLength(1));
+    container.read(sessionGenerationProvider.notifier).clearUserScope();
+    await container.pump();
+    old.complete(_preview('old'));
+    await container.pump();
+    expect(container.read(provider).isLoading, isTrue);
+    final replacement = await container.read(provider.future);
+    expect(replacement.previewId, repository.previewKeys.last);
+    expect(replacement.previewId, isNot('old'));
+    expect(repository.previewRequests.last, request);
+    container.invalidate(provider);
+    await container.read(provider.future);
+    expect(repository.previewKeys.toSet(), hasLength(3));
+  });
+
+  test('expired previews are rejected without automatic retry', () async {
+    final repository = _PositionsRepository();
+    repository.previewCompletions[1] = Completer<PositionClosePreview>()
+      ..complete(_preview('expired', expiresAt: DateTime.utc(2020)));
+    final container = ProviderContainer(
+      overrides: [positionsRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final provider = positionClosePreviewProvider((
+      position: _position(),
+      quantity: '0.25',
+      type: TradingOrderType.market,
+      limitPrice: null,
+    ));
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+    await expectLater(container.read(provider.future), throwsFormatException);
+    await container.pump();
+    expect(repository.previewKeys, hasLength(1));
+  });
+
   test(
     'late success cannot refresh a replacement session or reuse its guard',
     () async {
@@ -266,6 +346,28 @@ Position _position() => Position(
 );
 
 final class _PositionsRepository implements PositionsRepository {
+  final previewKeys = <String>[];
+  final previewRequests = <PositionClosePreviewRequest>[];
+  final previewCompletions = <int, Completer<PositionClosePreview>>{};
+  @override
+  Future<PositionClosePreview> previewClose(
+    Position position, {
+    required String quantity,
+    TradingOrderType type = TradingOrderType.market,
+    String? limitPrice,
+    required String idempotencyKey,
+  }) async {
+    previewKeys.add(idempotencyKey);
+    previewRequests.add((
+      position: position,
+      quantity: quantity,
+      type: type,
+      limitPrice: limitPrice,
+    ));
+    return previewCompletions[previewKeys.length]?.future ??
+        _preview(idempotencyKey);
+  }
+
   PositionFilter? filter;
   final List<String> leverageKeys = [];
   final List<String> closeKeys = [];
@@ -363,3 +465,18 @@ final class _PositionsRepository implements PositionsRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+PositionClosePreview _preview(String id, {DateTime? expiresAt}) =>
+    PositionClosePreview(
+      previewId: id,
+      quantity: DecimalValue('0.25'),
+      notional: DecimalValue('25'),
+      entryPrice: DecimalValue('99'),
+      markPrice: DecimalValue('100'),
+      estimatedPrice: DecimalValue('100'),
+      estimatedFee: DecimalValue('0.01'),
+      estimatedRealizedPnl: DecimalValue('0.24'),
+      expiresAt:
+          expiresAt ?? DateTime.now().toUtc().add(const Duration(minutes: 1)),
+      observedAt: DateTime.now().toUtc(),
+    );

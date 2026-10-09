@@ -14,6 +14,7 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/product_session.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/models/stock.dart';
@@ -149,6 +150,41 @@ void main() {
       isTrue,
     );
   });
+
+  test(
+    'review close previews simulate partial notional and net PnL locally',
+    () async {
+      final repository = AppReviewPositionsRepository();
+      final positions = (await repository.list(kind: MarketProductKind.perp))
+          .items;
+      for (final position in positions) {
+        final quantity = percentageQuantity(position.quantity.value, '50');
+        final preview = await repository.previewClose(
+          position,
+          quantity: quantity,
+          type: TradingOrderType.limit,
+          limitPrice: '200',
+          idempotencyKey: 'review-preview',
+        );
+        expect(preview.quantity.value, quantity);
+        expect(preview.estimatedPrice.value, '200');
+        expect(
+          double.parse(preview.notional.value),
+          closeTo(double.parse(quantity) * 200, 0.00000001),
+        );
+        final gross =
+            double.parse(quantity) *
+            (200 - double.parse(position.entryPrice!.value)) *
+            (position.side == PositionSide.short ? -1 : 1);
+        expect(
+          double.parse(preview.estimatedRealizedPnl.value),
+          closeTo(gross - double.parse(preview.estimatedFee.value), 0.00000001),
+        );
+        expect(preview.liquidationPrice, position.liquidationPrice);
+        expect(preview.isExpired, isFalse);
+      }
+    },
+  );
 
   test('review account seeds open bStocks and HIP-3 orders', () async {
     final repository = AppReviewOrdersRepository(

@@ -659,6 +659,8 @@
   "liquidationValue": "Liquidation: {price}",
   "@liquidationValue": {"placeholders": {"price": {}}},
   "closeReviewNotice": "Reduce-only. Review the server-normalized quantity, estimated PnL and fees before signing. A limit order may remain open.",
+  "estimatedClosePnl": "Estimated close PnL",
+  "closePreviewUnavailable": "Close preview is unavailable. Refresh the position or retry.",
   "preparing": "Preparing…",
   "reviewClose": "Review close",
   "buySymbol": "Buy {symbol}",

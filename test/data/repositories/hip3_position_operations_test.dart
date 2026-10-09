@@ -63,6 +63,97 @@ void main() {
     );
   });
 
+  test(
+    'close display preview maps estimates without creating any action',
+    () async {
+      final position = await repo.get('p-tsla');
+      final preview = await repo.previewClose(
+        position,
+        quantity: '0.25',
+        type: TradingOrderType.limit,
+        limitPrice: '110',
+        idempotencyKey: 'display-preview',
+      );
+      expect(actions.positionId, position.positionId);
+      expect(actions.request!.quantity, '0.25');
+      expect(actions.request!.percent, isNull);
+      expect(actions.request!.type!.name, 'limit');
+      expect(actions.request!.limitPrice, '110');
+      expect(preview.previewId, 'preview-display-preview');
+      expect(preview.quantity.value, '0.25');
+      expect(preview.notional.value, '25');
+      expect(preview.entryPrice.value, '99');
+      expect(preview.markPrice.value, '100');
+      expect(preview.estimatedPrice.value, '100');
+      expect(preview.estimatedFee.value, '0.01');
+      expect(preview.estimatedRealizedPnl.value, '0.24');
+      expect(preview.liquidationPrice, isNull);
+      expect(preview.expiresAt, DateTime.utc(2099));
+      expect(preview.observedAt, DateTime.utc(2026, 9, 10));
+      expect(actions.created, isEmpty);
+      expect(actions.keys, isEmpty);
+    },
+  );
+
+  test(
+    'display preview rejects invalid inputs and mismatched response',
+    () async {
+      final position = await repo.get('p-tsla');
+      for (final quantity in ['0', '-1', '1.000000000000000001']) {
+        await expectLater(
+          repo.previewClose(
+            position,
+            quantity: quantity,
+            idempotencyKey: 'invalid',
+          ),
+          throwsArgumentError,
+        );
+      }
+      await expectLater(
+        repo.previewClose(
+          position,
+          quantity: '0.25',
+          type: TradingOrderType.limit,
+          idempotencyKey: 'no-price',
+        ),
+        throwsArgumentError,
+      );
+      expect(actions.previewCalls, 0);
+      actions.wrongProduct = true;
+      await expectLater(
+        repo.previewClose(
+          position,
+          quantity: '0.25',
+          idempotencyKey: 'wrong-product',
+        ),
+        throwsFormatException,
+      );
+      actions.wrongProduct = false;
+      actions.previewQuantity = '0.5';
+      await expectLater(
+        repo.previewClose(
+          position,
+          quantity: '0.25',
+          idempotencyKey: 'wrong-size',
+        ),
+        throwsArgumentError,
+      );
+      actions.previewQuantity = null;
+      actions.previewLimit = '109';
+      await expectLater(
+        repo.previewClose(
+          position,
+          quantity: '0.25',
+          type: TradingOrderType.limit,
+          limitPrice: '110',
+          idempotencyKey: 'wrong-limit',
+        ),
+        throwsFormatException,
+      );
+      expect(actions.created, isEmpty);
+    },
+  );
+
   for (final type in TradingOrderType.values) {
     for (final short in [false, true]) {
       test(

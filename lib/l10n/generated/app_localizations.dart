@@ -3548,6 +3548,18 @@ abstract class AppLocalizations {
   /// **'Reduce-only. Review the server-normalized quantity, estimated PnL and fees before signing. A limit order may remain open.'**
   String get closeReviewNotice;
 
+  /// No description provided for @estimatedClosePnl.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated close PnL'**
+  String get estimatedClosePnl;
+
+  /// No description provided for @closePreviewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Close preview is unavailable. Refresh the position or retry.'**
+  String get closePreviewUnavailable;
+
   /// No description provided for @preparing.
   ///
   /// In en, this message translates to:

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -10,6 +12,8 @@ import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order.dart';
 import '../../../../domain/models/position.dart';
 import '../../../../domain/models/position_leverage_context.dart';
+import '../../../../domain/models/position_close_preview.dart';
+import '../../../../data/api/idempotency_key.dart';
 import '../../../../domain/models/position_operation.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../orders/providers/order_providers.dart';
@@ -53,6 +57,61 @@ final positionCommandProvider = Provider.autoDispose((ref) {
   ref.watch(sessionGenerationProvider);
   return PositionCommands(ref);
 });
+
+typedef PositionClosePreviewRequest = ({
+  Position position,
+  String quantity,
+  TradingOrderType type,
+  String? limitPrice,
+});
+
+/// Separate provider instances prevent older responses replacing edited inputs.
+final positionClosePreviewProvider = FutureProvider.autoDispose
+    .family<PositionClosePreview, PositionClosePreviewRequest>((
+      ref,
+      request,
+    ) async {
+      ref.watch(sessionGenerationProvider);
+      final repository = ref.watch(positionsRepositoryProvider);
+      final debounce = Completer<void>();
+      final delay = Timer(const Duration(milliseconds: 300), debounce.complete);
+      ref.onDispose(delay.cancel);
+      await debounce.future;
+      if (!ref.mounted) throw const CancelledFailure();
+      final timeout = Completer<PositionClosePreview>();
+      final timeoutTimer = Timer(
+        const Duration(seconds: 10),
+        () => timeout.completeError(const TimeoutFailure()),
+      );
+      ref.onDispose(timeoutTimer.cancel);
+      final PositionClosePreview preview;
+      try {
+        preview = await Future.any([
+          repository.previewClose(
+            request.position,
+            quantity: request.quantity,
+            type: request.type,
+            limitPrice: request.limitPrice,
+            idempotencyKey: newIdempotencyKey(),
+          ),
+          timeout.future,
+        ]);
+      } finally {
+        timeoutTimer.cancel();
+      }
+      if (!ref.mounted) throw const CancelledFailure();
+      if (preview.isExpired) {
+        throw const FormatException(
+          'Close preview expired; request a new quote',
+        );
+      }
+      final expiry = Timer(
+        preview.expiresAt.difference(DateTime.now().toUtc()),
+        ref.invalidateSelf,
+      );
+      ref.onDispose(expiry.cancel);
+      return preview;
+    }, retry: (_, _) => null);
 
 final positionLeverageContextProvider = FutureProvider.autoDispose
     .family<PositionLeverageContext, String>((ref, productId) {

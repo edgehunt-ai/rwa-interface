@@ -1832,6 +1832,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get closeReviewNotice => '仅减仓。签名前请核对服务端规范化后的数量、预估盈亏和费用。限价订单可能保持未完成状态。';
 
   @override
+  String get estimatedClosePnl => '预计平仓盈亏';
+
+  @override
+  String get closePreviewUnavailable => '暂时无法获取平仓预览，请刷新仓位或重试。';
+
+  @override
   String get preparing => '正在准备…';
 
   @override
