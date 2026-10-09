@@ -494,7 +494,7 @@ class _DepositInstructions extends StatelessWidget {
             ),
             child: QrImageView(
               key: const ValueKey('deposit-qr'),
-              data: instruction.qrPayload,
+              data: instruction.address,
               size: 160,
               backgroundColor: colors.subtleSurface,
               semanticsLabel: l10n.depositQrCode,

@@ -80,18 +80,17 @@ void main() {
     expect(find.text('USDC'), findsOneWidget);
   });
 
-  testWidgets('deposit instructions render the API QR payload', (tester) async {
+  testWidgets('deposit instructions render the wallet address QR', (
+    tester,
+  ) async {
     await configureDisplay(tester, size: const Size(320, 900));
-    const payload =
-        'ethereum:0xaf88d065e77c8cc2239327c5edb3a432268e5831@42161/'
-        'transfer?address=0x1111111111111111111111111111111111111111';
     final instruction = DepositInstruction(
       chain: 'Arbitrum',
       token: 'USDC',
       tokenContract: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
       tokenDecimals: 6,
       address: '0x1111111111111111111111111111111111111111',
-      qrPayload: payload,
+      qrPayload: '0x1111111111111111111111111111111111111111',
       minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
       confirmationsRequired: 20,
       estimatedArrivalSeconds: 60,
@@ -119,6 +118,10 @@ void main() {
 
     expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
     expect(find.byType(QrImageView), findsOneWidget);
+    expect(
+      tester.widget<QrImageView>(find.byType(QrImageView)).data,
+      instruction.address,
+    );
     final address = find.widgetWithText(SelectableText, instruction.address);
     await tester.ensureVisible(address);
     final editable = find.descendant(
@@ -536,9 +539,7 @@ DepositInstruction _depositInstruction(DepositBalanceMonitorKey route) =>
       tokenContract: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
       tokenDecimals: 6,
       address: '0x1111111111111111111111111111111111111111',
-      qrPayload:
-          'ethereum:0xaf88d065e77c8cc2239327c5edb3a432268e5831@42161/'
-          'transfer?address=0x1111111111111111111111111111111111111111',
+      qrPayload: '0x1111111111111111111111111111111111111111',
       minimumAmount: DecimalValue('1', asset: route.token, unit: 'token'),
       confirmationsRequired: 20,
       estimatedArrivalSeconds: 60,
