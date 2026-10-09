@@ -1443,6 +1443,31 @@ void main() {
     );
   });
 
+  for (final (side, label) in [
+    (PositionSide.long, 'Long'),
+    (PositionSide.short, 'Short'),
+    (PositionSide.none, '—'),
+  ]) {
+    testWidgets('position TP/SL labels the ${side.name} position as $label', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            positionsRepositoryProvider.overrideWithValue(_Positions()),
+          ],
+          child: buildTestApp(
+            PositionTpSlSheet(position: _position(side: side)),
+          ),
+        ),
+      );
+
+      expect(find.text(label), findsOneWidget);
+      expect(find.text('Buy'), findsNothing);
+      expect(find.text('Sell'), findsNothing);
+    });
+  }
+
   for (final short in [false, true]) {
     for (final percentage in [20.0, 100.0]) {
       testWidgets('protection slider submits $percentage%, short=$short', (
@@ -1601,6 +1626,7 @@ PositionClosePreview _closePreview(
 
 Position _position({
   bool short = false,
+  PositionSide? side,
   bool withProtection = true,
   String mark = '100',
   String? entry,
@@ -1612,8 +1638,13 @@ Position _position({
   protectionOrderIds: protectionIds,
   symbol: 'TSLA',
   kind: MarketProductKind.perp,
-  side: short ? PositionSide.short : PositionSide.long,
-  quantity: DecimalValue(short ? '-1' : '1'),
+  side: side ?? (short ? PositionSide.short : PositionSide.long),
+  quantity: DecimalValue(
+    (side ?? (short ? PositionSide.short : PositionSide.long)) ==
+            PositionSide.short
+        ? '-1'
+        : '1',
+  ),
   valueUsd: DecimalValue('100'),
   markPrice: DecimalValue(mark, asset: 'USD', unit: 'price'),
   entryPrice: entry == null

@@ -73,6 +73,17 @@ void main() {
     expect(textOf(tester, changeKey), '-5');
   });
 
+  testWidgets('editing change trims a single trailing decimal zero', (
+    tester,
+  ) async {
+    final price = await pumpCard(tester);
+
+    await tester.enterText(find.byKey(changeKey), '5.1');
+    await tester.pump();
+
+    expect(price.text, '105.1');
+  });
+
   testWidgets('tp/sl switch matches the 44x24 design control', (tester) async {
     await pumpCard(tester);
 
@@ -89,6 +100,93 @@ void main() {
 
     expect(double.parse(price.text), lessThan(100));
     expect(double.parse(textOf(tester, changeKey)), lessThan(0));
+  });
+
+  testWidgets('dragging the ruler to its lower bound reaches zero', (
+    tester,
+  ) async {
+    final price = await pumpCard(tester);
+    final ruler = find.byKey(rulerKey);
+
+    await tester.drag(ruler, Offset(tester.getSize(ruler).width, 0));
+    await tester.pump();
+
+    expect(price.text, '0');
+    expect(textOf(tester, changeKey), '-100');
+  });
+
+  testWidgets('dragging left can raise a price from zero', (tester) async {
+    final price = await pumpCard(tester, initial: '0', referencePrice: 100);
+
+    await tester.drag(find.byKey(rulerKey), const Offset(-60, 0));
+    await tester.pump();
+
+    expect(double.parse(price.text), greaterThan(0));
+  });
+
+  testWidgets('unbounded drag distance scales from the current price', (
+    tester,
+  ) async {
+    double? priceFrom100;
+    double? priceFrom50;
+    await tester.pumpWidget(
+      buildTestApp(
+        Column(
+          children: [
+            TpSlTickRuler(
+              key: const Key('price-100-ruler'),
+              semanticLabel: 'Price 100',
+              value: 100,
+              minimum: 0,
+              maximum: 110,
+              divisions: 20,
+              unbounded: true,
+              onChanged: (value) => priceFrom100 = value,
+            ),
+            TpSlTickRuler(
+              key: const Key('price-50-ruler'),
+              semanticLabel: 'Price 50',
+              value: 50,
+              minimum: 0,
+              maximum: 110,
+              divisions: 20,
+              unbounded: true,
+              onChanged: (value) => priceFrom50 = value,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    await tester.drag(
+      find.byKey(const Key('price-100-ruler')),
+      const Offset(60, 0),
+    );
+    await tester.drag(
+      find.byKey(const Key('price-50-ruler')),
+      const Offset(60, 0),
+    );
+
+    expect(priceFrom100, isNotNull);
+    expect(priceFrom50, isNotNull);
+    expect(priceFrom100! / 100, closeTo(priceFrom50! / 50, 0.000001));
+  });
+
+  testWidgets('a new drag continues from the previously dragged price', (
+    tester,
+  ) async {
+    final price = await pumpCard(tester);
+    final ruler = find.byKey(rulerKey);
+
+    await tester.drag(ruler, const Offset(-300, 0));
+    await tester.pump();
+    final firstDragPrice = double.parse(price.text);
+    expect(firstDragPrice, greaterThan(110));
+
+    await tester.drag(ruler, const Offset(-30, 0));
+    await tester.pump();
+
+    expect(double.parse(price.text), greaterThan(firstDragPrice));
   });
 
   testWidgets('change is measured against the reference price, not the field', (

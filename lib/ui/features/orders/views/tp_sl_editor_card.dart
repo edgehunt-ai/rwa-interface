@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -98,7 +96,7 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
   String _formatPrice(double value) => value
       .toStringAsFixed(2)
       .replaceFirst(RegExp(r'\.00$'), '')
-      .replaceFirst(RegExp(r'(\.\d)0$'), r'$1');
+      .replaceFirstMapped(RegExp(r'(\.\d)0$'), (match) => match.group(1)!);
 
   @override
   Widget build(BuildContext context) {
@@ -106,10 +104,10 @@ class _TpSlEditorCardState extends State<TpSlEditorCard> {
     final l10n = AppLocalizations.of(context);
     final referencePrice =
         widget.referencePriceListenable?.value ?? _referencePrice;
-    final minimum = referencePrice * .9;
+    const minimum = 0.0;
     final maximum = referencePrice * 1.1;
     final price = double.tryParse(widget.controller.text) ?? _referencePrice;
-    final value = price.clamp(minimum, maximum);
+    final value = price.clamp(minimum, double.infinity);
     final editable = widget.enabled && widget.onEnabledChanged != null;
     return Semantics(
       container: true,
@@ -335,6 +333,7 @@ class TpSlTickRuler extends StatefulWidget {
 
 class _TpSlTickRulerState extends State<TpSlTickRuler> {
   double? _dragValue;
+  double? _dragRange;
   var _dragging = false;
 
   double get _currentValue {
@@ -358,12 +357,11 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   void _startDrag() {
     _dragging = true;
     _dragValue = _currentValue;
+    _dragRange = _rangeFor(_currentValue);
   }
 
   void _updateDrag(DragUpdateDetails details, double width) {
-    final range = widget.unbounded
-        ? math.max(widget.maximum - widget.minimum, _currentValue.abs())
-        : widget.maximum - widget.minimum;
+    final range = _dragRange ?? _rangeFor(_currentValue);
     if (range <= 0 || width <= 0) return;
     // The ruler ticks move with the finger, so dragging right lowers the
     // value while dragging left raises it.
@@ -385,15 +383,20 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   void _endDrag() {
     _dragging = false;
     _dragValue = null;
+    _dragRange = null;
+  }
+
+  double _rangeFor(double value) {
+    final configuredRange = widget.maximum - widget.minimum;
+    if (!widget.unbounded || value <= widget.minimum) return configuredRange;
+    return value - widget.minimum;
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final current = _currentValue;
-    final visualRange = widget.unbounded
-        ? math.max(widget.maximum - widget.minimum, current.abs())
-        : widget.maximum - widget.minimum;
+    final visualRange = _rangeFor(current);
     final visualMinimum = widget.unbounded
         ? (current - visualRange / 2).clamp(0.0, double.infinity)
         : widget.minimum;

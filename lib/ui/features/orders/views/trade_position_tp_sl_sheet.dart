@@ -566,7 +566,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
   }
 }
 
-/// Soft-tinted Buy/Sell tag that follows the position side.
+/// Soft-tinted Long/Short tag that follows the position side.
 class _SideBadge extends StatelessWidget {
   const _SideBadge({required this.side});
 
@@ -575,9 +575,13 @@ class _SideBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    final short = side == PositionSide.short;
-    final tone = short ? kShortTradeColor : semantic.success;
+    final (label, tone) = switch (side) {
+      PositionSide.long => (l10n.long, semantic.success),
+      PositionSide.short => (l10n.short, kShortTradeColor),
+      PositionSide.none => ('—', colors.secondaryText),
+    };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -585,7 +589,7 @@ class _SideBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        short ? l10n.sell : l10n.buy,
+        label,
         style: TextStyle(color: tone, fontSize: 11, height: 14 / 11),
       ),
     );
