@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -201,6 +203,49 @@ void main() {
     expect(router.routeInformationProvider.value.uri.path, '/');
   });
 
+  testWidgets('logout confirmation disables actions while logout is pending', (
+    tester,
+  ) async {
+    final logoutStarted = Completer<void>();
+    final releaseLogout = Completer<void>();
+    final identity = FakeIdentityAuthGateway();
+    final session = _SessionRepository()
+      ..logoutStarted = logoutStarted
+      ..logoutBarrier = releaseLogout.future;
+    await tester.pumpWidget(_settingsApp(identity, session));
+    await tester.pump();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log Out'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-logout-confirm')));
+    await logoutStarted.future;
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.byKey(const Key('settings-logout-confirm')),
+          )
+          .onPressed,
+      isNull,
+    );
+    expect(find.byKey(const Key('settings-logout-progress')), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Cancel'), findsOneWidget);
+    expect(
+      tester
+          .widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Cancel'))
+          .onPressed,
+      isNull,
+    );
+    expect(session.endCalls, 1);
+
+    releaseLogout.complete();
+    await tester.pumpAndSettle();
+    expect(identity.logoutCalls, 1);
+  });
+
   testWidgets('requests account deletion after confirmation', (tester) async {
     final identity = FakeIdentityAuthGateway();
     final session = _SessionRepository();
@@ -291,6 +336,8 @@ final class _DeletionAccountRepository implements AccountRepository {
 
 final class _SessionRepository implements SessionRepository {
   var endCalls = 0;
+  Completer<void>? logoutStarted;
+  Future<void>? logoutBarrier;
 
   @override
   Future<ProductSession> createOrRestore({
@@ -301,6 +348,8 @@ final class _SessionRepository implements SessionRepository {
   @override
   Future<void> endSession() async {
     endCalls++;
+    logoutStarted?.complete();
+    await logoutBarrier;
   }
 }
 

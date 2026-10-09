@@ -214,30 +214,60 @@ class SettingsScreen extends ConsumerWidget {
 
   void _showLogOutConfirmation(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    var loggingOut = false;
     showModalBottomSheet<void>(
       context: context,
-      builder: (sheetContext) => _NoticeSheet(
-        title: l10n.settingsLogOut,
-        message: l10n.settingsLogOutQuestion,
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(sheetContext).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () async {
-              await ref.read(authenticationProvider.notifier).logout();
-              if (sheetContext.mounted) {
-                Navigator.of(sheetContext).pop();
-              }
-              final router = context.mounted ? GoRouter.maybeOf(context) : null;
-              if (router != null) {
-                router.goNamed(AppRoutes.homeName);
-              }
-            },
-            child: Text(l10n.settingsLogOut),
-          ),
-        ],
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => _NoticeSheet(
+          title: l10n.settingsLogOut,
+          message: l10n.settingsLogOutQuestion,
+          actions: [
+            OutlinedButton(
+              onPressed: loggingOut
+                  ? null
+                  : () => Navigator.of(sheetContext).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              key: const Key('settings-logout-confirm'),
+              onPressed: loggingOut
+                  ? null
+                  : () async {
+                      if (loggingOut) return;
+                      loggingOut = true;
+                      setSheetState(() {});
+                      try {
+                        await ref
+                            .read(authenticationProvider.notifier)
+                            .logout();
+                        if (sheetContext.mounted) {
+                          Navigator.of(sheetContext).pop();
+                        }
+                        final router = context.mounted
+                            ? GoRouter.maybeOf(context)
+                            : null;
+                        if (router != null) {
+                          router.goNamed(AppRoutes.homeName);
+                        }
+                      } finally {
+                        if (sheetContext.mounted) {
+                          loggingOut = false;
+                          setSheetState(() {});
+                        }
+                      }
+                    },
+              child: loggingOut
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(
+                        key: Key('settings-logout-progress'),
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(l10n.settingsLogOut),
+            ),
+          ],
+        ),
       ),
     );
   }

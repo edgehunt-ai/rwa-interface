@@ -953,6 +953,28 @@ void main() {
     expect(repository.createCalls, 0);
   });
 
+  test('concurrent logout calls share one operation', () async {
+    final logoutStarted = Completer<void>();
+    final releaseLogout = Completer<void>();
+    final gateway = FakeIdentityAuthGateway();
+    final repository = _SessionRepository()
+      ..logoutStarted = logoutStarted
+      ..logoutBarrier = releaseLogout.future;
+    final container = _container(gateway, repository);
+    final notifier = container.read(authenticationProvider.notifier);
+
+    final first = notifier.logout();
+    await logoutStarted.future;
+    final second = notifier.logout();
+
+    expect(identical(first, second), isTrue);
+    expect(repository.logoutCalls, 1);
+    releaseLogout.complete();
+    await Future.wait([first, second]);
+    expect(repository.logoutCalls, 1);
+    expect(gateway.logoutCalls, 1);
+  });
+
   test('unsupported platform does not initialize Privy', () async {
     final repository = _SessionRepository();
     final container = _container(
@@ -999,6 +1021,8 @@ final class _SessionRepository implements SessionRepository {
   int logoutCalls = 0;
   ApiFailure? createFailure;
   final createFailures = <ApiFailure>[];
+  Completer<void>? logoutStarted;
+  Future<void>? logoutBarrier;
 
   @override
   Future<ProductSession> createOrRestore({
@@ -1032,6 +1056,8 @@ final class _SessionRepository implements SessionRepository {
   @override
   Future<void> endSession() async {
     logoutCalls++;
+    logoutStarted?.complete();
+    await logoutBarrier;
   }
 }
 

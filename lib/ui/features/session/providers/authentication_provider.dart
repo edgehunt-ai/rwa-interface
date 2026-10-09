@@ -32,6 +32,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
   String? _activeEmail;
   WalletConnection? _walletConnection;
   Future<void>? _walletDisconnectInFlight;
+  Future<void>? _logoutInFlight;
   _PendingWalletSync? _pendingWalletSync;
 
   IdentityAuthGateway get _gateway => ref.read(identityAuthGatewayProvider);
@@ -312,7 +313,19 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout() {
+    final active = _logoutInFlight;
+    if (active != null) return active;
+
+    late final Future<void> tracked;
+    tracked = _performLogout().whenComplete(() {
+      if (identical(_logoutInFlight, tracked)) _logoutInFlight = null;
+    });
+    _logoutInFlight = tracked;
+    return tracked;
+  }
+
+  Future<void> _performLogout() async {
     ++_epoch;
     _pendingWalletSync = null;
     IdentityFailure? failure;
