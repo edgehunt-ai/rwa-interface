@@ -22,6 +22,33 @@ abstract interface class ObservabilityReporter {
   });
 }
 
+final class NoopObservabilityReporter implements ObservabilityReporter {
+  const NoopObservabilityReporter();
+
+  @override
+  Future<void> clearUser() async {}
+
+  @override
+  void recordApiFailure({
+    required String operation,
+    required ApiFailure failure,
+    StackTrace? stackTrace,
+  }) {}
+
+  @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+  }) {}
+
+  @override
+  void recordOperation(String operation, {required String outcome}) {}
+
+  @override
+  Future<void> setUserId(String userId) async {}
+}
+
 final class SentryObservabilityReporter implements ObservabilityReporter {
   @override
   Future<void> setUserId(String userId) async {

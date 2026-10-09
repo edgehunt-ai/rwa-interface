@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/observability/observability_config.dart';
 import 'package:rwa_interface/app/observability/sentry_bootstrap.dart';
@@ -22,9 +23,38 @@ void main() {
       ),
       appRunner: () => starts++,
       initializer: (config, runner) async => initializes++,
+      isWeb: false,
     );
     expect(starts, 1);
     expect(initializes, 0);
+  });
+
+  test('web starts app without initializing SDK', () async {
+    var starts = 0;
+    var initializes = 0;
+    await SentryBootstrap.run(
+      config: enabled,
+      appRunner: () => starts++,
+      initializer: (config, runner) async => initializes++,
+      isWeb: true,
+    );
+    expect(starts, 1);
+    expect(initializes, 0);
+  });
+
+  test('default monitoring behavior follows the current platform', () async {
+    var starts = 0;
+    var initializes = 0;
+    await SentryBootstrap.run(
+      config: enabled,
+      appRunner: () => starts++,
+      initializer: (config, runner) async {
+        initializes++;
+        await runner();
+      },
+    );
+    expect(starts, 1);
+    expect(initializes, kIsWeb ? 0 : 1);
   });
 
   test('initializer receives config and starts app once', () async {
@@ -37,6 +67,7 @@ void main() {
         received = config;
         await runner();
       },
+      isWeb: false,
     );
     expect(received, same(enabled));
     expect(starts, 1);
@@ -48,6 +79,7 @@ void main() {
       config: enabled,
       appRunner: () => starts++,
       initializer: (config, runner) => throw StateError('unavailable'),
+      isWeb: false,
     );
     expect(starts, 1);
   });

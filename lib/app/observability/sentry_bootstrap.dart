@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:rwa_interface/app/observability/observability_config.dart';
 import 'package:rwa_interface/app/observability/sentry_event_sanitizer.dart';
@@ -15,8 +16,9 @@ abstract final class SentryBootstrap {
     required ObservabilityConfig config,
     required ApplicationRunner appRunner,
     MonitoringInitializer initializer = _initialize,
+    bool isWeb = kIsWeb,
   }) async {
-    if (!config.enabled) {
+    if (isWeb || !config.enabled) {
       await appRunner();
       return;
     }
