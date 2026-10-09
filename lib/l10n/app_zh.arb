@@ -151,6 +151,7 @@
   "editSlippage": "编辑滑点",
   "priceChangedReview": "价格已变化，请确认更新后的预估值再提交。",
   "viewHistory": "查看历史",
+  "viewPosition": "查看仓位",
   "chooseMarginLeverage": "请选择支持的保证金模式和杠杆后再请求签名。",
   "settingsNotConfirmed": "设置尚未确认。请继续相同请求后再开仓。",
   "enterOrderValue": "请输入订单金额。",

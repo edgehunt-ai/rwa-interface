@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/api_failure.dart';
@@ -1656,30 +1654,19 @@ void main() {
     },
   );
 
-  testWidgets('filled bStocks order opens Activity from View History', (
+  testWidgets('filled bStocks order exposes View Position with its order', (
     tester,
   ) async {
-    final router = GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (_, _) => const Scaffold(body: BstocksOrderPanel()),
-        ),
-        GoRoute(
-          name: AppRoutes.activityName,
-          path: AppRoutes.activityPath,
-          builder: (_, _) => const Scaffold(body: Text('Activity destination')),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
+    TradingOrder? viewedOrder;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(_FilledOrdersRepository()),
         ],
-        child: buildRouterTestApp(router),
+        child: buildTestApp(
+          BstocksOrderPanel(onViewPosition: (order) => viewedOrder = order),
+        ),
       ),
     );
 
@@ -1707,9 +1694,8 @@ void main() {
       find.text('You can check the order status on the activities page.'),
       findsOneWidget,
     );
-    await tester.tap(find.widgetWithText(FilledButton, 'View History'));
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Activity destination'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'View Position'));
+    expect(viewedOrder?.orderId, 'filled-order-1');
   });
 
   testWidgets(

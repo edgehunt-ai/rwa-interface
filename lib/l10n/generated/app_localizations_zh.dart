@@ -461,6 +461,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewHistory => '查看历史';
 
   @override
+  String get viewPosition => '查看仓位';
+
+  @override
   String get chooseMarginLeverage => '请选择支持的保证金模式和杠杆后再请求签名。';
 
   @override

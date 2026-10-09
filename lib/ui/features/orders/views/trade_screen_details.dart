@@ -8,14 +8,20 @@ class _Details extends ConsumerWidget {
     required this.kind,
     required this.symbol,
     required this.productId,
+    required this.openOrderCardKey,
     required this.positionCardKey,
+    required this.targetOpenOrderId,
+    required this.targetPositionId,
   });
   final String activeTab;
   final ValueChanged<String> onChanged;
   final MarketProductKind kind;
   final String symbol;
   final String? productId;
+  final GlobalKey openOrderCardKey;
   final GlobalKey positionCardKey;
+  final String? targetOpenOrderId;
+  final String? targetPositionId;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
@@ -125,6 +131,8 @@ class _Details extends ConsumerWidget {
             orders: ref.watch(bstocksOrdersProvider(null)),
             kind: kind,
             symbol: symbol,
+            openOrderCardKey: openOrderCardKey,
+            targetOpenOrderId: targetOpenOrderId,
           ),
         if (activeTab == 'Position')
           _PositionTab(
@@ -132,6 +140,7 @@ class _Details extends ConsumerWidget {
             kind: kind,
             symbol: symbol,
             positionCardKey: positionCardKey,
+            targetPositionId: targetPositionId,
           ),
         if (activeTab == 'Details') _DetailsCard(kind: kind, symbol: symbol),
       ],
@@ -167,11 +176,15 @@ class _OpenOrdersTab extends ConsumerWidget {
     required this.orders,
     required this.kind,
     required this.symbol,
+    required this.openOrderCardKey,
+    required this.targetOpenOrderId,
   });
 
   final AsyncValue<DomainPage<ResourceResult<TradingOrder>>> orders;
   final MarketProductKind kind;
   final String symbol;
+  final GlobalKey openOrderCardKey;
+  final String? targetOpenOrderId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -207,30 +220,40 @@ class _OpenOrdersTab extends ConsumerWidget {
         return Column(
           children: [
             for (final order in openOrders)
-              _OpenOrderCard(
-                order: order,
-                onCancel: () async {
-                  if (order.kind != MarketProductKind.perp) {
-                    await ref.read(orderCommandProvider.notifier).cancel(order);
-                    return;
-                  }
-                  String message;
-                  try {
-                    await ref.read(orderCommandProvider.notifier).cancel(order);
-                    message = l10n.cancellationSubmitted;
-                  } on Hip3ExecutionPending {
-                    message = l10n.cancellationPendingRefreshOrder;
-                  } on Object {
-                    message = l10n.cancellationCompleteFailed;
-                  }
-                  if (context.mounted) {
-                    if (message == l10n.cancellationSubmitted) {
-                      AppToast.showSuccess(context, message);
-                    } else {
-                      AppToast.showFailure(context, message);
+              KeyedSubtree(
+                key: order.orderId == targetOpenOrderId
+                    ? openOrderCardKey
+                    : null,
+                child: _OpenOrderCard(
+                  key: ValueKey('trade-open-order-card-${order.orderId}'),
+                  order: order,
+                  onCancel: () async {
+                    if (order.kind != MarketProductKind.perp) {
+                      await ref
+                          .read(orderCommandProvider.notifier)
+                          .cancel(order);
+                      return;
                     }
-                  }
-                },
+                    String message;
+                    try {
+                      await ref
+                          .read(orderCommandProvider.notifier)
+                          .cancel(order);
+                      message = l10n.cancellationSubmitted;
+                    } on Hip3ExecutionPending {
+                      message = l10n.cancellationPendingRefreshOrder;
+                    } on Object {
+                      message = l10n.cancellationCompleteFailed;
+                    }
+                    if (context.mounted) {
+                      if (message == l10n.cancellationSubmitted) {
+                        AppToast.showSuccess(context, message);
+                      } else {
+                        AppToast.showFailure(context, message);
+                      }
+                    }
+                  },
+                ),
               ),
           ],
         );
@@ -240,7 +263,11 @@ class _OpenOrdersTab extends ConsumerWidget {
 }
 
 class _OpenOrderCard extends StatelessWidget {
-  const _OpenOrderCard({required this.order, required this.onCancel});
+  const _OpenOrderCard({
+    super.key,
+    required this.order,
+    required this.onCancel,
+  });
 
   final TradingOrder order;
   final VoidCallback onCancel;
@@ -470,11 +497,13 @@ class _PositionTab extends ConsumerWidget {
     required this.kind,
     required this.symbol,
     required this.positionCardKey,
+    required this.targetPositionId,
   });
   final AsyncValue<DomainPage<Position>> positions;
   final MarketProductKind kind;
   final String symbol;
   final GlobalKey positionCardKey;
+  final String? targetPositionId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -496,12 +525,21 @@ class _PositionTab extends ConsumerWidget {
             description: l10n.openPositionDescription,
           );
         }
+        final targetIndex = targetPositionId == null
+            ? 0
+            : page.items.indexWhere(
+                (position) => position.positionId == targetPositionId,
+              );
         return Column(
           children: [
             for (final (index, position) in page.items.indexed)
               KeyedSubtree(
-                key: index == 0 ? positionCardKey : null,
-                child: _PositionCard(position, kind: kind),
+                key: index == targetIndex ? positionCardKey : null,
+                child: _PositionCard(
+                  position,
+                  key: ValueKey('trade-position-card-${position.positionId}'),
+                  kind: kind,
+                ),
               ),
           ],
         );
@@ -511,7 +549,7 @@ class _PositionTab extends ConsumerWidget {
 }
 
 class _PositionCard extends StatelessWidget {
-  const _PositionCard(this.position, {required this.kind});
+  const _PositionCard(this.position, {super.key, required this.kind});
   final Position position;
   final MarketProductKind kind;
 

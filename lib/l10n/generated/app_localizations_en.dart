@@ -469,6 +469,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewHistory => 'View History';
 
   @override
+  String get viewPosition => 'View Position';
+
+  @override
   String get chooseMarginLeverage =>
       'Choose a supported margin mode and leverage before requesting a signature.';
 

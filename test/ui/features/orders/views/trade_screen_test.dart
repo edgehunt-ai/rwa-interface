@@ -18,6 +18,7 @@ import 'package:rwa_interface/domain/models/position_close_preview.dart';
 import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
+import 'package:rwa_interface/domain/repositories/funding_repository.dart';
 import 'package:rwa_interface/domain/repositories/orders_repository.dart';
 import 'package:rwa_interface/domain/repositories/positions_repository.dart';
 import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
@@ -28,6 +29,7 @@ import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
 import '../../../../helpers/test_app.dart';
+import '../../../../helpers/funded_repository.dart';
 
 /// Makes a failed journey assertion identify the Figma child node, its parent
 /// route/state, and the expected dismissal target.
@@ -654,6 +656,80 @@ void main() {
     expect(find.text('Sell NVDAB'), findsWidgets);
   });
 
+  for (final orderType in TradingOrderType.values) {
+    testWidgets(
+      'View Position reveals the ${orderType.name} bStocks result card',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(800, 900);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetPhysicalSize);
+        final orders = _ResultNavigationOrdersRepository(orderType);
+        await tester.pumpWidget(
+          _tradeWithMarkets(
+            fundingRepository: FundedRepository(),
+            ordersRepository: orders,
+            positionsRepository: _PositionsRepository(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.widgetWithText(FilledButton, 'Buy'));
+        await tester.pump();
+        await tester.pumpAndSettle();
+        if (orderType == TradingOrderType.limit) {
+          final limitTab = find.text('Limit').last;
+          await tester.ensureVisible(limitTab);
+          await tester.tap(limitTab);
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const Key('bstocks-limit-price-sheet-input')),
+            '100',
+          );
+          await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const Key('bstocks-limit-quantity-input')),
+            '1',
+          );
+        } else {
+          await tester.enterText(
+            find.byKey(const Key('bstocks-market-amount-input')),
+            '100',
+          );
+        }
+        await tester.pump();
+        final primaryAction = find.byKey(
+          const Key('bstocks-primary-order-action'),
+        );
+        await tester.ensureVisible(primaryAction);
+        await tester.tap(primaryAction);
+        final confirmBuy = find.widgetWithText(FilledButton, 'Confirm Buy');
+        await _pumpUntilVisible(tester, confirmBuy);
+        await tester.ensureVisible(confirmBuy);
+        await tester.tap(confirmBuy);
+        final viewPosition = find.widgetWithText(FilledButton, 'View Position');
+        await _pumpUntilVisible(tester, viewPosition);
+        await tester.ensureVisible(viewPosition);
+
+        await tester.tap(find.byKey(const Key('bstocks-order-result-action')));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(TradeScreen), findsOneWidget);
+        final target = orderType == TradingOrderType.limit
+            ? find.byKey(const ValueKey('trade-open-order-card-result-order'))
+            : find.byKey(const ValueKey('trade-position-card-position-1'));
+        expect(target, findsOneWidget);
+        final viewport = tester.getRect(
+          find.byKey(const Key('trade-screen-scroll-view')),
+        );
+        final card = tester.getRect(target);
+        expect(card.top, greaterThanOrEqualTo(viewport.top));
+        expect(card.bottom, lessThanOrEqualTo(viewport.bottom));
+      },
+    );
+  }
+
   testWidgets('Trade renders HIP-3-specific price and rights disclosures', (
     tester,
   ) async {
@@ -876,6 +952,13 @@ Future<void> _scrollToTradeTab(WidgetTester tester, String label) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _pumpUntilVisible(WidgetTester tester, Finder finder) async {
+  for (var attempt = 0; attempt < 30 && finder.evaluate().isEmpty; attempt++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(finder, findsOneWidget);
+}
+
 Finder _tradeTab(String label) =>
     find.byKey(Key('trade-details-tab-${label.toLowerCase()}'));
 
@@ -976,6 +1059,8 @@ Finder _headerPrice(String value) => find.byWidgetPredicate(
 Widget _tradeWithMarkets({
   List<MarketProduct>? products,
   PositionsRepository? positionsRepository,
+  OrdersRepository? ordersRepository,
+  FundingRepository? fundingRepository,
   Locale? locale,
   MarketHours? marketHours,
   MarketSnapshot? bstockSnapshot,
@@ -995,6 +1080,10 @@ Widget _tradeWithMarkets({
     ),
     if (positionsRepository != null)
       positionsRepositoryProvider.overrideWithValue(positionsRepository),
+    if (ordersRepository != null)
+      ordersRepositoryProvider.overrideWithValue(ordersRepository),
+    if (fundingRepository != null)
+      fundingRepositoryProvider.overrideWithValue(fundingRepository),
     marketProductLookupProvider((
       query: 'NVDA',
       cursor: null,
@@ -1011,6 +1100,12 @@ Widget _tradeWithMarkets({
         hasMore: false,
       ),
     ),
+    marketProductProvider(_bstockProduct).overrideWith(
+      (_) async => _marketProduct('NVDAB', MarketProductKind.bstock),
+    ),
+    marketProductProvider(
+      _perpProduct,
+    ).overrideWith((_) async => _marketProduct('NVDA', MarketProductKind.perp)),
     if (bstockSnapshot != null)
       marketSnapshotProvider(_bstockProduct)
           .overrideWith((_) async => bstockSnapshot),
@@ -1306,4 +1401,77 @@ final class _OpenOrderRepository implements OrdersRepository {
   @override
   Future<ResourceResult<TradingOrder>> get(String orderId) =>
       throw UnimplementedError();
+}
+
+final class _ResultNavigationOrdersRepository implements OrdersRepository {
+  _ResultNavigationOrdersRepository(this.type);
+
+  final TradingOrderType type;
+
+  TradingOrder get _result => TradingOrder(
+    orderId: 'result-order',
+    positionId: 'position-1',
+    symbol: 'NVDAB',
+    kind: MarketProductKind.bstock,
+    side: TradingSide.buy,
+    type: type,
+    status: TradingOrderStatus.filled,
+    quantity: DecimalValue('1', asset: 'NVDAB', unit: 'token'),
+    filledQuantity: DecimalValue('0', asset: 'NVDAB', unit: 'token'),
+    limitPrice: type == TradingOrderType.limit
+        ? DecimalValue('100', asset: 'USDT', unit: 'price')
+        : null,
+    createdAt: DateTime.utc(2026),
+  );
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async => OrderPreview(
+    previewId: 'result-preview',
+    intent: intent,
+    orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+    estimatedQuantity: DecimalValue('1', asset: 'NVDAB', unit: 'token'),
+    marketPrice: DecimalValue('100', asset: 'USDT', unit: 'price'),
+    settlementAsset: 'USDT',
+  );
+
+  @override
+  Future<ResourceResult<TradingOrder>> create(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) async => ResourceResult(resource: _result);
+
+  @override
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) async => DomainPage(
+    items: type == TradingOrderType.limit
+        ? [
+            ResourceResult(
+              resource: TradingOrder(
+                orderId: _result.orderId,
+                symbol: _result.symbol,
+                kind: _result.kind,
+                side: _result.side,
+                type: _result.type,
+                status: TradingOrderStatus.open,
+                quantity: _result.quantity,
+                filledQuantity: _result.filledQuantity,
+                limitPrice: _result.limitPrice,
+                createdAt: _result.createdAt,
+              ),
+            ),
+          ]
+        : const [],
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

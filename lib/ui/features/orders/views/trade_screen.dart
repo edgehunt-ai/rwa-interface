@@ -54,6 +54,28 @@ part 'trade_position_tp_sl_sheet.dart';
 
 enum TradeChartStyle { line, candle, reference }
 
+enum _OrderPanelTarget { openOrder, position }
+
+final class _OrderPanelResult {
+  const _OrderPanelResult({
+    required this.target,
+    this.orderId,
+    this.positionId,
+  });
+
+  factory _OrderPanelResult.forBstocks(TradingOrder order) => _OrderPanelResult(
+    target: order.type == TradingOrderType.limit
+        ? _OrderPanelTarget.openOrder
+        : _OrderPanelTarget.position,
+    orderId: order.orderId,
+    positionId: order.positionId,
+  );
+
+  final _OrderPanelTarget target;
+  final String? orderId;
+  final String? positionId;
+}
+
 class TradeScreen extends ConsumerStatefulWidget {
   const TradeScreen({
     super.key,
@@ -79,8 +101,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   String? _productId;
   var _orderPanelOpen = false;
   final _detailsKey = GlobalKey();
+  final _openOrderCardKey = GlobalKey();
   final _positionCardKey = GlobalKey();
   final _pageScrollController = ScrollController();
+  String? _targetOpenOrderId;
+  String? _targetPositionId;
 
   /// Product the user selected from the switch that this underlying does not
   /// offer; the tab stays selectable and the body shows an empty state.
@@ -103,13 +128,33 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     super.dispose();
   }
 
-  Future<void> _showPositionDetailsAfterClosingOrder() async {
+  Future<void> _showOrderResult(_OrderPanelResult result) async {
     if (!mounted) return;
-    setState(() => detailTab = 'Position');
-    for (var attempt = 0; attempt < 6; attempt++) {
+    final showOpenOrder = result.target == _OrderPanelTarget.openOrder;
+    setState(() {
+      detailTab = showOpenOrder ? 'Open' : 'Position';
+      _targetOpenOrderId = showOpenOrder ? result.orderId : null;
+      _targetPositionId = showOpenOrder ? null : result.positionId;
+    });
+
+    try {
+      if (showOpenOrder) {
+        await ref.read(bstocksOrdersProvider(null).future);
+      } else {
+        await ref.read(
+          positionsProvider((symbol: symbol, kind: productKind, cursor: null))
+              .future,
+        );
+      }
+    } on Object {
+      // The selected tab already exposes its normal retry state.
+    }
+
+    final targetKey = showOpenOrder ? _openOrderCardKey : _positionCardKey;
+    for (var attempt = 0; attempt < 20; attempt++) {
       await WidgetsBinding.instance.endOfFrame;
       if (!mounted) return;
-      final target = _positionCardKey.currentContext;
+      final target = targetKey.currentContext;
       if (target != null && target.mounted) {
         await Scrollable.ensureVisible(
           target,
@@ -185,7 +230,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
   Future<void> _openOrderPanel(TradingSide side) async {
     setState(() => _orderPanelOpen = true);
-    final showPosition = await showModalBottomSheet<bool>(
+    final result = await showModalBottomSheet<_OrderPanelResult>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) => _OrderPanelEntrySheet(
@@ -193,13 +238,16 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         productId: _productId,
         productKind: productKind,
         side: side,
-        onYourPositionTap: () => Navigator.of(sheetContext).pop(true),
+        onYourPositionTap: () => Navigator.of(sheetContext)
+            .pop(const _OrderPanelResult(target: _OrderPanelTarget.position)),
+        onBstocksViewPosition: (order) =>
+            Navigator.of(sheetContext).pop(_OrderPanelResult.forBstocks(order)),
       ),
     );
     if (!mounted) return;
     setState(() => _orderPanelOpen = false);
-    if (showPosition == true) {
-      await _showPositionDetailsAfterClosingOrder();
+    if (result != null) {
+      await _showOrderResult(result);
     }
   }
 
@@ -410,7 +458,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     const SizedBox(height: 16),
                     _Details(
                       key: _detailsKey,
+                      openOrderCardKey: _openOrderCardKey,
                       positionCardKey: _positionCardKey,
+                      targetOpenOrderId: _targetOpenOrderId,
+                      targetPositionId: _targetPositionId,
                       activeTab: detailTab,
                       onChanged: (tab) => setState(() => detailTab = tab),
                       kind: productKind,
@@ -450,6 +501,7 @@ class _OrderPanelEntrySheet extends ConsumerStatefulWidget {
     required this.productKind,
     required this.side,
     required this.onYourPositionTap,
+    required this.onBstocksViewPosition,
   });
 
   final String symbol;
@@ -457,6 +509,7 @@ class _OrderPanelEntrySheet extends ConsumerStatefulWidget {
   final MarketProductKind productKind;
   final TradingSide side;
   final VoidCallback onYourPositionTap;
+  final ValueChanged<TradingOrder> onBstocksViewPosition;
 
   @override
   ConsumerState<_OrderPanelEntrySheet> createState() =>
@@ -490,7 +543,11 @@ class _OrderPanelEntrySheetState extends ConsumerState<_OrderPanelEntrySheet> {
   Widget build(BuildContext context) {
     if (!_ready) return const _OrderPanelLoading();
     return widget.productKind == MarketProductKind.bstock
-        ? BstocksOrderPanel(symbol: widget.symbol, initialSide: widget.side)
+        ? BstocksOrderPanel(
+            symbol: widget.symbol,
+            initialSide: widget.side,
+            onViewPosition: widget.onBstocksViewPosition,
+          )
         : Hip3OrderPanel(
             symbol: widget.symbol,
             productId: widget.productId,

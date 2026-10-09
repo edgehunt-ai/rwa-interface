@@ -187,6 +187,7 @@
   "editSlippage": "Edit slippage",
   "priceChangedReview": "Price changed. Review the updated estimate before submitting.",
   "viewHistory": "View History",
+  "viewPosition": "View Position",
   "chooseMarginLeverage": "Choose a supported margin mode and leverage before requesting a signature.",
   "settingsNotConfirmed": "Settings are not confirmed. Resume the same request before opening an order.",
   "enterOrderValue": "Enter an order value.",

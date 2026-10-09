@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
-import 'package:rwa_interface/app/routing/routes.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/funding_transfer.dart';
@@ -40,9 +38,11 @@ class BstocksOrderPanel extends ConsumerStatefulWidget {
     super.key,
     this.symbol = 'NVDAB',
     this.initialSide = TradingSide.buy,
+    this.onViewPosition,
   });
   final String symbol;
   final TradingSide initialSide;
+  final ValueChanged<TradingOrder>? onViewPosition;
 
   @override
   ConsumerState<BstocksOrderPanel> createState() => _BstocksOrderPanelState();
@@ -323,7 +323,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   @override
   void dispose() {
-    _orderCommands.cancelSubmission();
+    // Modal route removal unmounts this widget while Flutter is finalizing a
+    // frame. Reset the shared command state immediately after that frame so
+    // Riverpod is not mutated during widget-tree teardown.
+    scheduleMicrotask(_orderCommands.cancelSubmission);
     _quoteDebounce?.cancel();
     _previewPollingTimer?.cancel();
     amount.removeListener(_refreshAmount);
@@ -1280,6 +1283,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   Widget _submitted(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final current = submittedOrder!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1307,12 +1311,20 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ),
         const SizedBox(height: 16),
         FilledButton(
-          onPressed: submittedOrder!.status == TradingOrderStatus.filled
-              ? () => context.goNamed(AppRoutes.activityName)
+          key: const Key('bstocks-order-result-action'),
+          onPressed: current.status == TradingOrderStatus.filled
+              ? () {
+                  final onViewPosition = widget.onViewPosition;
+                  if (onViewPosition != null) {
+                    onViewPosition(current);
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                }
               : () => Navigator.of(context).pop(),
           child: Text(
-            submittedOrder!.status == TradingOrderStatus.filled
-                ? l10n.viewHistory
+            current.status == TradingOrderStatus.filled
+                ? l10n.viewPosition
                 : AppLocalizations.of(context).closeViewLater,
           ),
         ),

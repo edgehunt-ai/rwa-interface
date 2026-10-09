@@ -992,6 +992,12 @@ abstract class AppLocalizations {
   /// **'View History'**
   String get viewHistory;
 
+  /// No description provided for @viewPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'View Position'**
+  String get viewPosition;
+
   /// No description provided for @chooseMarginLeverage.
   ///
   /// In en, this message translates to:
