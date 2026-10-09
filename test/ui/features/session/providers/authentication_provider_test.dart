@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/config/privy_configuration.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
+import 'package:rwa_interface/app/providers/locale_provider.dart';
 import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
@@ -22,6 +24,53 @@ import 'package:rwa_interface/ui/features/session/providers/authentication_provi
 import '../../../../helpers/fake_identity_auth_gateway.dart';
 
 void main() {
+  for (final (language, locale) in [
+    ('zh-CN', const Locale('zh')),
+    ('en', const Locale('en')),
+  ]) {
+    test(
+      'bootstrap applies saved $language without opening settings',
+      () async {
+        final container = _container(
+          FakeIdentityAuthGateway(
+            restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+          ),
+          _SessionRepository()..savedLanguage = language,
+        );
+        final subscription = container.listen(appLocaleProvider, (_, _) {});
+        addTearDown(subscription.close);
+        expect(container.read(appLocaleProvider), isNull);
+
+        await container.read(authenticationProvider.notifier).bootstrap();
+
+        expect(container.read(appLocaleProvider), locale);
+      },
+    );
+  }
+
+  test('logout clears language before restoring another account', () async {
+    final repository = _SessionRepository()..savedLanguage = 'zh-CN';
+    final container = _container(
+      FakeIdentityAuthGateway(
+        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+      ),
+      repository,
+    );
+    final subscription = container.listen(appLocaleProvider, (_, _) {});
+    addTearDown(subscription.close);
+    final notifier = container.read(authenticationProvider.notifier);
+    await notifier.bootstrap();
+    expect(container.read(appLocaleProvider), const Locale('zh'));
+
+    await notifier.logout();
+    await container.pump();
+    expect(container.read(appLocaleProvider), isNull);
+
+    repository.savedLanguage = 'en';
+    await notifier.bootstrap();
+    expect(container.read(appLocaleProvider), const Locale('en'));
+  });
+
   test('bootstrap restores identity and establishes product session', () async {
     final gateway = FakeIdentityAuthGateway(
       restoredPrincipal: const IdentityPrincipal('did:privy:1'),
@@ -1015,6 +1064,7 @@ ProviderContainer _container(
 }
 
 final class _SessionRepository implements SessionRepository {
+  String savedLanguage = 'en';
   DateTime expiresAt = DateTime.utc(2030);
   String sessionId = 'session-1';
   int createCalls = 0;
@@ -1040,10 +1090,10 @@ final class _SessionRepository implements SessionRepository {
       expiresAt: expiresAt,
       generation: generation,
       accountCreated: true,
-      account: const UserAccount(
+      account: UserAccount(
         userId: 'user-1',
         settings: UserPreferences(
-          language: 'en',
+          language: savedLanguage,
           pushEnabled: true,
           notifyOrderFilled: true,
           notifyOrderFailed: true,

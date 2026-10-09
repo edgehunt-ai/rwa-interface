@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'session_scope.dart';
+
 /// The server-owned language preference for the signed-in account.
 ///
 /// This is intentionally in-memory only. The account response is the source
@@ -11,7 +13,10 @@ final appLocaleProvider = NotifierProvider<AppLocaleNotifier, Locale?>(
 
 final class AppLocaleNotifier extends Notifier<Locale?> {
   @override
-  Locale? build() => null;
+  Locale? build() {
+    ref.watch(sessionGenerationProvider);
+    return null;
+  }
 
   void setLanguage(String language) {
     state = localeFromLanguageCode(language);

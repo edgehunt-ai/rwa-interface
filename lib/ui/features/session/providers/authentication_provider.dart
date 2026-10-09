@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../data/api/idempotency_key.dart';
 import '../../../../app/providers/auth_providers.dart';
+import '../../../../app/providers/locale_provider.dart';
 import '../../../../app_review/app_review.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../app/providers/push_notification_providers.dart';
@@ -407,6 +408,9 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     }
     // The session can expire while synchronization or optional setup is pending.
     _requireUsableSession(session);
+    ref
+        .read(appLocaleProvider.notifier)
+        .setLanguage(session.account.settings.language);
     _pendingWalletSync = null;
     _activeEmail = null;
     state = AuthenticationAuthenticated(session, principal: principal);
