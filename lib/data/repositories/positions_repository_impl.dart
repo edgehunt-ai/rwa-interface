@@ -368,9 +368,24 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       ),
       idempotencyKey,
     );
-    _validateClosePreview(preview, position, type, quantity, limitPrice);
+    final mapped = _mapClosePreview(preview);
+    _validateClosePreview(mapped, position, type, quantity, limitPrice);
+    return mapped;
+  }
+
+  PositionClosePreview _mapClosePreview(api.Hip3ClosePreview preview) {
     return PositionClosePreview(
       previewId: preview.previewId,
+      positionId: preview.positionId,
+      productId: preview.productId,
+      positionVersion: preview.positionVersion,
+      environment: preview.environment.name,
+      side: preview.side.name == 'long'
+          ? PositionSide.long
+          : PositionSide.short,
+      type: preview.type.name == 'limit'
+          ? TradingOrderType.limit
+          : TradingOrderType.market,
       quantity: DecimalValue(preview.quantity),
       notional: DecimalValue(preview.notionalUsdc),
       entryPrice: DecimalValue(preview.entryPrice),
@@ -378,6 +393,9 @@ final class PositionsRepositoryImpl implements PositionsRepository {
       estimatedPrice: DecimalValue(preview.estimatedPrice),
       estimatedFee: DecimalValue(preview.estimatedFeeUsdc),
       estimatedRealizedPnl: DecimalValue(preview.estimatedRealizedPnlUsdc),
+      limitPrice: preview.limitPrice == null
+          ? null
+          : DecimalValue(preview.limitPrice!),
       liquidationPrice: preview.liquidationPrice == null
           ? null
           : DecimalValue(preview.liquidationPrice!),
@@ -394,6 +412,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    PositionClosePreview? preview,
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
@@ -408,7 +427,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     }
     if (percent != null) requireWithinPosition(percent, '100');
     if (quantity != null) requirePositiveDecimal(quantity);
-    final (position, preview) = await _preparations.get(
+    final (position, preparedPreview) = await _preparations.get(
       idempotencyKey,
       jsonEncode([
         'close_position',
@@ -421,6 +440,7 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         expectedPosition?.positionVersion,
         expectedPosition?.side.name,
         expectedPosition?.quantity.value,
+        preview?.previewId,
       ]),
       () async {
         final position = await get(positionId);
@@ -441,7 +461,9 @@ final class PositionsRepositoryImpl implements PositionsRepository {
         if (quantity != null) {
           requireWithinPosition(quantity, position.quantity.value);
         }
-        final preview = await _actions.previewClose(
+        final acceptedPreview = preview;
+        if (acceptedPreview != null) return (position, acceptedPreview);
+        final generatedPreview = await _actions.previewClose(
           positionId,
           api.Hip3ClosePreviewRequest(
             (b) => b
@@ -454,11 +476,11 @@ final class PositionsRepositoryImpl implements PositionsRepository {
           ),
           scopedIdempotencyKey('$idempotencyKey-preview'),
         );
-        return (position, preview);
+        return (position, _mapClosePreview(generatedPreview));
       },
     );
     _validateClosePreview(
-      preview,
+      preparedPreview,
       position,
       type,
       quantity ?? percentageQuantity(position.quantity.value, percent ?? '100'),
@@ -466,10 +488,10 @@ final class PositionsRepositoryImpl implements PositionsRepository {
     );
     final completed = await _run(
       position,
-      Hip3PositionIntents.close(preview.previewId),
+      Hip3PositionIntents.close(preparedPreview.previewId),
       api.Hip3Operation.closePosition,
       idempotencyKey,
-      environment: preview.environment,
+      environment: _closePreviewEnvironment(preparedPreview.environment),
       confirmBeforeSigning: confirmBeforeSigning,
     );
     final orderId = completed.orderId;
@@ -480,32 +502,44 @@ final class PositionsRepositoryImpl implements PositionsRepository {
   }
 
   void _validateClosePreview(
-    api.Hip3ClosePreview preview,
+    PositionClosePreview preview,
     Position position,
     TradingOrderType type,
     String maximumQuantity,
     String? limitPrice,
   ) {
-    if (preview.positionId != position.positionId ||
+    if (preview.isExpired ||
+        preview.positionId != position.positionId ||
         preview.productId != position.productId ||
         preview.positionVersion != position.positionVersion ||
-        preview.type.name != type.name ||
-        preview.side.name !=
-            (position.side == PositionSide.long ? 'short' : 'long') ||
+        preview.type != type ||
+        preview.side !=
+            (position.side == PositionSide.long
+                ? PositionSide.short
+                : PositionSide.long) ||
         (type == TradingOrderType.limit && preview.limitPrice == null)) {
       throw const FormatException('Close preview binding mismatch');
     }
-    requireWithinPosition(preview.quantity, maximumQuantity);
+    requireWithinPosition(preview.quantity.value, maximumQuantity);
     if (limitPrice != null) {
-      requirePositiveDecimal(preview.limitPrice!);
-      final comparison = DecimalValue(preview.limitPrice!)
-          .compareTo(DecimalValue(limitPrice));
+      requirePositiveDecimal(preview.limitPrice!.value);
+      final comparison = preview.limitPrice!.compareTo(
+        DecimalValue(limitPrice),
+      );
       if ((position.side == PositionSide.long && comparison < 0) ||
           (position.side == PositionSide.short && comparison > 0)) {
         throw const FormatException(
           'Close preview exceeds the requested limit',
         );
       }
+    }
+  }
+
+  api.Hip3Environment _closePreviewEnvironment(String environment) {
+    try {
+      return api.Hip3Environment.valueOf(environment);
+    } on ArgumentError {
+      throw const FormatException('Close preview binding mismatch');
     }
   }
 

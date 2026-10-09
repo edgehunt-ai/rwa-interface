@@ -61,8 +61,9 @@ void main() {
     expect(find.text('Fee'), findsOneWidget);
     expect(find.text('0.011862 USDC'), findsOneWidget);
     expect(find.text('Filled'), findsOneWidget);
-    // The badge already conveys direction; no redundant Side detail row.
-    expect(find.text('Side'), findsNothing);
+    // Close does not include direction, so the detail row remains visible.
+    expect(find.text('Side'), findsOneWidget);
+    expect(find.text('Long'), findsOneWidget);
   });
 
   testWidgets('stop-loss legs still show Stop loss and bStocks orders show '
@@ -128,6 +129,58 @@ void main() {
     expect(find.text('0.5 TUSDT'), findsOneWidget);
     expect(find.text('Filled'), findsWidgets);
     expect(find.text('Side'), findsNothing);
+  });
+
+  testWidgets('market and liquidation orders use accurate badges and keep '
+      'Side when the badge has no direction', (tester) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          activityRepositoryProvider.overrideWithValue(
+            _OrderActivityRepository([
+              ActivityRecord(
+                id: 'market-1',
+                category: ActivityCategory.orders,
+                type: 'market',
+                status: ActivityState.success,
+                title: 'Sell BTC',
+                kind: 'perp',
+                symbol: 'BTC',
+                asset: 'BTC',
+                fields: const [ActivityField(label: 'Side', value: 'Sell')],
+                reference: const ActivityReference(type: 'order', id: 'o-4'),
+                createdAt: DateTime.utc(2026, 1, 2),
+              ),
+              ActivityRecord(
+                id: 'liquidation-1',
+                category: ActivityCategory.orders,
+                type: 'liquidation',
+                status: ActivityState.success,
+                title: 'Liquidation ETH',
+                kind: 'perp',
+                symbol: 'ETH',
+                asset: 'ETH',
+                fields: const [ActivityField(label: 'Side', value: 'Long')],
+                reference: const ActivityReference(type: 'order', id: 'o-5'),
+                createdAt: DateTime.utc(2026),
+              ),
+            ]),
+          ),
+        ],
+        child: buildTestApp(const ActivityScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sell / Market'), findsOneWidget);
+    expect(find.text('Liquidation'), findsOneWidget);
+
+    await tester.tap(find.text('ETH/ETH'));
+    await tester.pumpAndSettle();
+    expect(find.text('Side'), findsOneWidget);
+    expect(find.text('Long'), findsOneWidget);
   });
 }
 

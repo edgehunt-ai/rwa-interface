@@ -42,6 +42,29 @@ void main() {
     },
   );
 
+  test('token rotation remains active after repeated activation', () async {
+    final messaging = _Messaging(token: 'token-1');
+    final account = _AccountRepository();
+    final coordinator = PushNotificationCoordinator(
+      messaging,
+      const _DeviceIds(),
+      account,
+      platform: () => 'android',
+    );
+    addTearDown(coordinator.dispose);
+
+    await coordinator.activate(_settings);
+    await coordinator.activate(_settings);
+    messaging.tokens.add('token-2');
+    await Future<void>.delayed(Duration.zero);
+
+    expect(account.registrations.map((item) => item.pushToken), [
+      'token-1',
+      'token-1',
+      'token-2',
+    ]);
+  });
+
   test(
     'does not request a token when server preferences disable push',
     () async {
@@ -84,6 +107,34 @@ void main() {
 
     expect(account.deletedDeviceIds, ['device-1']);
   });
+
+  test(
+    'logout remains the final device mutation when registration is late',
+    () async {
+      final registerStarted = Completer<void>();
+      final releaseRegister = Completer<void>();
+      final account = _AccountRepository(
+        registerStarted: registerStarted,
+        releaseRegister: releaseRegister,
+      );
+      final coordinator = PushNotificationCoordinator(
+        _Messaging(token: 'old-session-token'),
+        const _DeviceIds(),
+        account,
+        platform: () => 'android',
+      );
+      addTearDown(coordinator.dispose);
+
+      final activation = coordinator.activate(_settings);
+      await registerStarted.future;
+      final logout = coordinator.deactivate();
+      releaseRegister.complete();
+      await Future.wait([activation, logout]);
+
+      expect(account.mutations, ['register:old-session-token', 'delete']);
+      expect(account.deletedDeviceIds, ['device-1']);
+    },
+  );
 
   test('only emits approved in-app notification routes', () async {
     final messaging = _Messaging(token: 'token');
@@ -150,11 +201,19 @@ final class _DeviceIds implements DeviceIdentityStore {
 }
 
 final class _AccountRepository implements AccountRepository {
+  _AccountRepository({this.registerStarted, this.releaseRegister});
+
+  final Completer<void>? registerStarted;
+  final Completer<void>? releaseRegister;
   final registrations = <DeviceRegistration>[];
   final deletedDeviceIds = <String>[];
+  final mutations = <String>[];
   @override
-  Future<void> deleteDevice(String deviceId) async =>
-      deletedDeviceIds.add(deviceId);
+  Future<void> deleteDevice(String deviceId) async {
+    deletedDeviceIds.add(deviceId);
+    mutations.add('delete');
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   @override
@@ -166,7 +225,10 @@ final class _AccountRepository implements AccountRepository {
   Future<RegisteredDevice> registerDevice(
     DeviceRegistration registration,
   ) async {
+    registerStarted?.complete();
+    await releaseRegister?.future;
     registrations.add(registration);
+    mutations.add('register:${registration.pushToken}');
     return RegisteredDevice(
       deviceId: registration.deviceId,
       platform: registration.platform,

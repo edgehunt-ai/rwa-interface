@@ -447,6 +447,7 @@ final class _PositionsRepository implements PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    PositionClosePreview? preview,
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
@@ -469,6 +470,12 @@ final class _PositionsRepository implements PositionsRepository {
 PositionClosePreview _preview(String id, {DateTime? expiresAt}) =>
     PositionClosePreview(
       previewId: id,
+      positionId: 'position-1',
+      productId: 'xyz:NVDA',
+      positionVersion: '',
+      environment: 'testnet',
+      side: PositionSide.short,
+      type: TradingOrderType.market,
       quantity: DecimalValue('0.25'),
       notional: DecimalValue('25'),
       entryPrice: DecimalValue('99'),

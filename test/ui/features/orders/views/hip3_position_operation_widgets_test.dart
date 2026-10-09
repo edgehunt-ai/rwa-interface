@@ -385,6 +385,7 @@ void main() {
       expect(repo.percent, isNull);
       expect(repo.quantity, '0.5');
       expect(repo.type, TradingOrderType.market);
+      expect(repo.closePreview?.previewId, 'preview-0.5');
     },
   );
 
@@ -1574,8 +1575,17 @@ PositionClosePreview _closePreview(
   String quantity, {
   String value = '25',
   Duration lifetime = const Duration(minutes: 1),
+  PositionSide side = PositionSide.short,
+  TradingOrderType type = TradingOrderType.market,
+  String? limitPrice,
 }) => PositionClosePreview(
   previewId: 'preview-$quantity',
+  positionId: 'p-tsla',
+  productId: 'xyz:TSLA',
+  positionVersion: 'v1',
+  environment: 'testnet',
+  side: side,
+  type: type,
   quantity: DecimalValue(quantity),
   notional: DecimalValue(value),
   entryPrice: DecimalValue('99'),
@@ -1583,6 +1593,7 @@ PositionClosePreview _closePreview(
   estimatedPrice: DecimalValue('101'),
   estimatedFee: DecimalValue('0.01'),
   estimatedRealizedPnl: DecimalValue('0.24'),
+  limitPrice: limitPrice == null ? null : DecimalValue(limitPrice),
   liquidationPrice: DecimalValue('70'),
   expiresAt: DateTime.now().toUtc().add(lifetime),
   observedAt: DateTime.now().toUtc(),
@@ -1672,13 +1683,22 @@ class _Positions implements PositionsRepository {
     if (previewError case final error?) throw error;
     final completion = previewCompletions[quantity];
     if (completion != null) return completion.future;
-    return _closePreview(quantity, lifetime: previewLifetime);
+    return _closePreview(
+      quantity,
+      lifetime: previewLifetime,
+      side: position.side == PositionSide.long
+          ? PositionSide.short
+          : PositionSide.long,
+      type: type,
+      limitPrice: limitPrice,
+    );
   }
 
   bool pending = false;
   Object? closeError;
   Future<void>? closeDelay;
   int closeCalls = 0;
+  PositionClosePreview? closePreview;
   Position? closePosition;
   TradingOrderType? type;
   String? quantity, percent, limitPrice, takeProfit, takeLimit, stopLoss;
@@ -1697,6 +1717,7 @@ class _Positions implements PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    PositionClosePreview? preview,
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {
@@ -1705,6 +1726,7 @@ class _Positions implements PositionsRepository {
     if (pending) throw const Hip3ActionPending('pending-close');
     if (closeError case final error?) throw error;
     closePosition = expectedPosition;
+    closePreview = preview;
     this.quantity = quantity;
     this.percent = percent;
     this.type = type;

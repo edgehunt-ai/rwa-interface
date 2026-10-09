@@ -87,11 +87,10 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
 
   Future<void> _submit() async {
     final request = _previewRequest;
-    if (_busy ||
-        _pending ||
-        request == null ||
-        _usablePreview(ref.read(positionClosePreviewProvider(request))) ==
-            null) {
+    final preview = request == null
+        ? null
+        : _usablePreview(ref.read(positionClosePreviewProvider(request)));
+    if (_busy || _pending || request == null || preview == null) {
       return;
     }
     setState(() {
@@ -122,6 +121,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
             limitPrice: limitPrice,
             quantity: quantity,
             percent: null,
+            preview: preview,
             confirmBeforeSigning: false,
           );
       if (mounted) {

@@ -1026,8 +1026,8 @@ class _ActivityDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final fields = [...record.fields];
-    if (record.category == ActivityCategory.orders) {
-      // The order-type badge already conveys buy/sell direction.
+    if (record.category == ActivityCategory.orders &&
+        _orderTypeConveysDirection(record, AppLocalizations.of(context))) {
       fields.removeWhere((field) => field.label.trim().toLowerCase() == 'side');
     }
     if (record.txHash != null && !_hasField(fields, 'tx hash')) {
@@ -1195,18 +1195,33 @@ String _orderTypeLabel(ActivityRecord record, AppLocalizations l10n) {
       if (value == 'stop_loss') return l10n.stopLoss;
       if (value == 'take_profit') return l10n.takeProfit;
       if (value == 'close') return l10n.close;
+      if (value == 'liquidation') return l10n.liquidation;
       if (value == 'tpsl') {
         final title = record.title.toLowerCase();
         return title.contains('stop') ? l10n.stopLoss : l10n.takeProfit;
       }
   }
+  if (record.type.toLowerCase() == 'liquidation') return l10n.liquidation;
+  final execution = record.type.toLowerCase() == 'market'
+      ? l10n.market
+      : l10n.limitPrice;
   final side = _orderSideLabel(record, l10n);
-  if (side != null) return '$side / ${l10n.limitPrice}';
+  if (side != null) return '$side / $execution';
   final title = record.title.toLowerCase();
   if (title.contains('sell') || title.contains('short')) {
-    return '${l10n.sell} / ${l10n.limitPrice}';
+    return '${l10n.sell} / $execution';
   }
-  return '${l10n.buy} / ${l10n.limitPrice}';
+  return '${l10n.buy} / $execution';
+}
+
+bool _orderTypeConveysDirection(ActivityRecord record, AppLocalizations l10n) {
+  final label = _orderTypeLabel(record, l10n);
+  return [
+    l10n.buy,
+    l10n.sell,
+    l10n.long,
+    l10n.short,
+  ].any((direction) => label == direction || label.startsWith('$direction /'));
 }
 
 String? _orderSideLabel(ActivityRecord record, AppLocalizations l10n) {

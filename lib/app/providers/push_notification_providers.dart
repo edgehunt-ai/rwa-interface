@@ -50,10 +50,15 @@ final class PushNotificationCoordinator {
   final _routes = StreamController<String>.broadcast();
   StreamSubscription<String>? _tokenRefreshSubscription;
   StreamSubscription<PushMessage>? _openedMessageSubscription;
+  Future<void> _deviceMutation = Future<void>.value();
+  int _activationGeneration = 0;
+  int? _activeActivationGeneration;
 
   Stream<String> get routes => _routes.stream;
 
   Future<void> activate(UserPreferences preferences) async {
+    final generation = ++_activationGeneration;
+    _activeActivationGeneration = null;
     if (!_messaging.isSupported || !preferences.pushEnabled) return;
 
     try {
@@ -61,50 +66,82 @@ final class PushNotificationCoordinator {
         _handleMessage,
       );
       final initial = await _messaging.getInitialMessage();
+      if (generation != _activationGeneration) return;
       if (initial != null) _handleMessage(initial);
 
       final permission = await _messaging.requestPermission();
-      if (permission != PushPermission.granted) return;
+      if (generation != _activationGeneration ||
+          permission != PushPermission.granted) {
+        return;
+      }
 
-      _tokenRefreshSubscription ??= _messaging.tokenRefreshes.listen(
-        _registerToken,
-      );
-      await _registerToken(await _messaging.getToken());
+      _activeActivationGeneration = generation;
+      _tokenRefreshSubscription ??= _messaging.tokenRefreshes.listen((token) {
+        final activeGeneration = _activeActivationGeneration;
+        if (activeGeneration != null) {
+          unawaited(_registerToken(token, activeGeneration));
+        }
+      });
+      final token = await _messaging.getToken();
+      if (generation != _activationGeneration) return;
+      await _registerToken(token, generation);
     } catch (_) {
       // Firebase configuration and network failures must not block login.
     }
   }
 
   Future<void> deactivate() async {
-    try {
-      final deviceId = await _devices.getOrCreate();
-      await _accountRepository.deleteDevice(deviceId);
-    } catch (_) {
-      // The server expires stale tokens; local logout must remain available.
-    }
+    _activationGeneration++;
+    _activeActivationGeneration = null;
     await _tokenRefreshSubscription?.cancel();
     await _openedMessageSubscription?.cancel();
     _tokenRefreshSubscription = null;
     _openedMessageSubscription = null;
+    await _enqueueDeviceMutation(() async {
+      try {
+        final deviceId = await _devices.getOrCreate();
+        await _accountRepository.deleteDevice(deviceId);
+      } catch (_) {
+        // The server expires stale tokens; local logout must remain available.
+      }
+    });
   }
 
   Future<void> dispose() async {
+    _activationGeneration++;
+    _activeActivationGeneration = null;
     await _tokenRefreshSubscription?.cancel();
     await _openedMessageSubscription?.cancel();
     await _routes.close();
   }
 
-  Future<void> _registerToken(String? token) async {
+  Future<void> _registerToken(String? token, int generation) async {
     final platform = _platform();
-    if (token == null || token.isEmpty || platform == null) return;
-    await _accountRepository.registerDevice(
-      DeviceRegistration(
-        deviceId: await _devices.getOrCreate(),
-        platform: platform,
-        pushToken: token,
-        pushProvider: 'fcm',
-      ),
-    );
+    if (generation != _activationGeneration ||
+        token == null ||
+        token.isEmpty ||
+        platform == null) {
+      return;
+    }
+    await _enqueueDeviceMutation(() async {
+      if (generation != _activationGeneration) return;
+      final deviceId = await _devices.getOrCreate();
+      if (generation != _activationGeneration) return;
+      await _accountRepository.registerDevice(
+        DeviceRegistration(
+          deviceId: deviceId,
+          platform: platform,
+          pushToken: token,
+          pushProvider: 'fcm',
+        ),
+      );
+    });
+  }
+
+  Future<void> _enqueueDeviceMutation(Future<void> Function() operation) {
+    final result = _deviceMutation.then((_) => operation());
+    _deviceMutation = result.catchError((_) {});
+    return result;
   }
 
   void _handleMessage(PushMessage message) {

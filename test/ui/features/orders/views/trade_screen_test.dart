@@ -14,6 +14,7 @@ import 'package:rwa_interface/domain/models/order.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/order_preview.dart';
 import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_close_preview.dart';
 import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/resource_result.dart';
 import 'package:rwa_interface/domain/repositories/markets_repository.dart';
@@ -1250,6 +1251,7 @@ final class _PositionsRepository implements PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    PositionClosePreview? preview,
     required String idempotencyKey,
   }) => throw UnimplementedError();
 }

@@ -573,6 +573,14 @@ final class AppReviewPositionsRepository implements PositionsRepository {
         fee;
     return PositionClosePreview(
       previewId: 'review-close-preview-$idempotencyKey',
+      positionId: position.positionId,
+      productId: position.productId!,
+      positionVersion: position.positionVersion ?? 'review',
+      environment: 'testnet',
+      side: position.side == PositionSide.long
+          ? PositionSide.short
+          : PositionSide.long,
+      type: type,
       quantity: DecimalValue(quantity),
       notional: DecimalValue(notional.toStringAsFixed(8)),
       entryPrice: entry,
@@ -580,6 +588,7 @@ final class AppReviewPositionsRepository implements PositionsRepository {
       estimatedPrice: price,
       estimatedFee: DecimalValue(fee.toStringAsFixed(8)),
       estimatedRealizedPnl: DecimalValue(pnl.toStringAsFixed(8)),
+      limitPrice: type == TradingOrderType.limit ? price : null,
       liquidationPrice: position.liquidationPrice,
       expiresAt: _now.add(const Duration(minutes: 1)),
       observedAt: _now,
@@ -659,6 +668,7 @@ final class AppReviewPositionsRepository implements PositionsRepository {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    PositionClosePreview? preview,
     bool confirmBeforeSigning = true,
     required String idempotencyKey,
   }) async {

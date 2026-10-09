@@ -10,6 +10,9 @@ import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
 import 'package:rwa_interface/domain/models/position_operation.dart';
 import 'package:rwa_interface/domain/models/order_intent.dart';
 import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
+import 'package:rwa_interface/domain/models/decimal_value.dart';
+import 'package:rwa_interface/domain/models/position.dart';
+import 'package:rwa_interface/domain/models/position_close_preview.dart';
 
 void main() {
   test('wire conditional details survive repository mapping', () {
@@ -199,6 +202,51 @@ void main() {
     }
   }
 
+  test(
+    'accepted visible preview is executed without requesting another',
+    () async {
+      final position = await repo.get('p-tsla');
+      final preview = _acceptedPreview(position, previewId: 'visible-preview');
+
+      await repo.close(
+        position.positionId,
+        expectedPosition: position,
+        quantity: '0.25',
+        preview: preview,
+        idempotencyKey: 'accepted',
+      );
+
+      expect(actions.previewCalls, 0);
+      final intent = actions.created.single.intent.oneOf.value;
+      expect(intent, isA<api.Hip3CloseActionRequest>());
+      expect(
+        (intent as api.Hip3CloseActionRequest).previewId,
+        'visible-preview',
+      );
+    },
+  );
+
+  test('expired or mismatched accepted preview is rejected', () async {
+    final position = await repo.get('p-tsla');
+    for (final preview in [
+      _acceptedPreview(position, expiresAt: DateTime.utc(2020)),
+      _acceptedPreview(position, productId: 'xyz:NVDA'),
+    ]) {
+      await expectLater(
+        repo.close(
+          position.positionId,
+          expectedPosition: position,
+          quantity: '0.25',
+          preview: preview,
+          idempotencyKey: 'rejected-${preview.productId}-${preview.expiresAt}',
+        ),
+        throwsFormatException,
+      );
+    }
+    expect(actions.previewCalls, 0);
+    expect(actions.created, isEmpty);
+  });
+
   test('all and partial percentages travel unchanged; invalid inputs never call provider', () async {
     await repo.close('p-tsla', percent: '50', idempotencyKey: 'half');
     expect(actions.request!.percent, '50');
@@ -338,6 +386,30 @@ void main() {
   );
 }
 
+PositionClosePreview _acceptedPreview(
+  Position position, {
+  String previewId = 'accepted-preview',
+  String? productId,
+  DateTime? expiresAt,
+}) => PositionClosePreview(
+  previewId: previewId,
+  positionId: position.positionId,
+  productId: productId ?? position.productId!,
+  positionVersion: position.positionVersion!,
+  environment: 'testnet',
+  side: PositionSide.short,
+  type: TradingOrderType.market,
+  quantity: DecimalValue('0.25'),
+  notional: DecimalValue('25'),
+  entryPrice: DecimalValue('99'),
+  markPrice: DecimalValue('100'),
+  estimatedPrice: DecimalValue('100'),
+  estimatedFee: DecimalValue('0.01'),
+  estimatedRealizedPnl: DecimalValue('0.24'),
+  expiresAt: expiresAt ?? DateTime.utc(2099),
+  observedAt: DateTime.utc(2026, 9, 10),
+);
+
 class _Positions implements PositionsService {
   bool short = false;
   @override
@@ -450,7 +522,7 @@ class _Actions implements Hip3PositionActionService {
         'symbol': 'TSLA',
         'kind': 'perp',
         'side': short ? 'long' : 'short',
-        'type': request!.type!.name,
+        'type': request?.type?.name ?? 'market',
         'status': 'open',
         'created_at': '2026-09-10T00:00:00Z',
       })!;

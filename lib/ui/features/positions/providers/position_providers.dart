@@ -286,12 +286,13 @@ final class PositionCommands {
     TradingOrderType type = TradingOrderType.market,
     String? limitPrice,
     Position? expectedPosition,
+    PositionClosePreview? preview,
     bool confirmBeforeSigning = true,
   }) async {
     final result = await _run(
       operation: 'close-position',
       fingerprint:
-          '$positionId|$quantity|$percent|$type|$limitPrice|${expectedPosition?.productId}|${expectedPosition?.positionVersion}',
+          '$positionId|$quantity|$percent|$type|$limitPrice|${expectedPosition?.productId}|${expectedPosition?.positionVersion}|${preview?.previewId}',
       command: (key) => _ref
           .read(positionsRepositoryProvider)
           .close(
@@ -301,6 +302,7 @@ final class PositionCommands {
             type: type,
             limitPrice: limitPrice,
             expectedPosition: expectedPosition,
+            preview: preview,
             confirmBeforeSigning: confirmBeforeSigning,
             idempotencyKey: key,
           ),
