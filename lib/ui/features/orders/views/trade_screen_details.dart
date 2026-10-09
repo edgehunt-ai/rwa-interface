@@ -718,6 +718,11 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
       colors: colors,
       semantic: semantic,
     );
+    final sideColor = switch (position.side) {
+      PositionSide.long => semantic.success,
+      PositionSide.short => kShortTradeColor,
+      PositionSide.none => colors.secondaryText,
+    };
     final source = position.productId?.split(':').first.trim().toUpperCase();
     final marginMode = switch (position.marginMode) {
       PositionMarginMode.cross => l10n.cross,
@@ -768,7 +773,7 @@ class _Hip3PositionSummaryCard extends StatelessWidget {
                         fontSize: 11,
                         height: 14 / 11,
                         fontWeight: FontWeight.w500,
-                        color: pnlColor,
+                        color: sideColor,
                       ),
                     ),
                   ],

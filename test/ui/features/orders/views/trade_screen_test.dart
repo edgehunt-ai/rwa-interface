@@ -25,6 +25,7 @@ import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repos
 import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
 import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
+import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/positions/providers/position_providers.dart';
 
@@ -795,6 +796,39 @@ void main() {
     );
   });
 
+  for (final (side, pnl, label) in [
+    (PositionSide.long, '-16', 'Long · 10x'),
+    (PositionSide.short, '16', 'Short · 10x'),
+  ]) {
+    testWidgets('Trade HIP-3 ${side.name} label color ignores PnL sign', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          locale: const Locale('en'),
+          positionsRepository: _PositionsRepository(
+            perpSide: side,
+            perpPnl: pnl,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('HIP-3 Perp'));
+      await tester.pumpAndSettle();
+      await _scrollToTradeTab(tester, 'Position');
+      await tester.tap(_tradeTab('Position'));
+      await tester.pumpAndSettle();
+
+      final labelFinder = find.text(label);
+      final semantic = Theme.of(tester.element(labelFinder))
+          .extension<AppSemanticColors>()!;
+      expect(
+        tester.widget<Text>(labelFinder).style?.color,
+        side == PositionSide.long ? semantic.success : kShortTradeColor,
+      );
+    });
+  }
+
   testWidgets('Trade bStocks position card uses the summary-card layout', (
     tester,
   ) async {
@@ -980,19 +1014,26 @@ String _localSchedule(DateTime start, DateTime end) {
       '${(absoluteOffset.inMinutes % 60).toString().padLeft(2, '0')}';
 }
 
-Position _position(MarketProductKind kind) => switch (kind) {
+Position _position(
+  MarketProductKind kind, {
+  PositionSide side = PositionSide.long,
+  String unrealizedPnl = '16',
+}) => switch (kind) {
   MarketProductKind.perp => Position(
     positionId: 'position-1',
     productId: 'xyz:NVDA',
     symbol: 'NVDA',
     kind: kind,
-    side: PositionSide.long,
-    quantity: DecimalValue('3.0154', unit: 'quantity'),
+    side: side,
+    quantity: DecimalValue(
+      side == PositionSide.short ? '-3.0154' : '3.0154',
+      unit: 'quantity',
+    ),
     valueUsd: DecimalValue('700', asset: 'USDC', unit: 'token'),
     leverage: DecimalValue('10'),
     entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
     markPrice: DecimalValue('182.4', asset: 'USDC', unit: 'price'),
-    unrealizedPnl: DecimalValue('16', asset: 'USDC', unit: 'token'),
+    unrealizedPnl: DecimalValue(unrealizedPnl, asset: 'USDC', unit: 'token'),
     unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
     fundingPaid: DecimalValue('1.05', asset: 'USDC', unit: 'token'),
     liquidationPrice: DecimalValue('120.33', asset: 'USDC', unit: 'price'),
@@ -1291,6 +1332,13 @@ final class _OrderOutcomeRepository implements OrdersRepository {
 }
 
 final class _PositionsRepository implements PositionsRepository {
+  _PositionsRepository({
+    this.perpSide = PositionSide.long,
+    this.perpPnl = '16',
+  });
+
+  final PositionSide perpSide;
+  final String perpPnl;
   var listCalls = 0;
 
   @override
@@ -1318,8 +1366,21 @@ final class _PositionsRepository implements PositionsRepository {
     String? cursor,
   }) {
     listCalls++;
+    final resolvedKind = kind ?? MarketProductKind.bstock;
     return Future.value(
-      DomainPage(items: [_position(kind ?? MarketProductKind.bstock)]),
+      DomainPage(
+        items: [
+          _position(
+            resolvedKind,
+            side: resolvedKind == MarketProductKind.perp
+                ? perpSide
+                : PositionSide.long,
+            unrealizedPnl: resolvedKind == MarketProductKind.perp
+                ? perpPnl
+                : '16',
+          ),
+        ],
+      ),
     );
   }
 
