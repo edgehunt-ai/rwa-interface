@@ -506,7 +506,7 @@ class _DepositInstructions extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           constraints: const BoxConstraints(minHeight: 64),
-          padding: const EdgeInsets.only(left: 16, right: 8),
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
           decoration: BoxDecoration(
             color: colors.subtleSurface,
             border: Border.all(color: colors.border),
@@ -517,6 +517,8 @@ class _DepositInstructions extends StatelessWidget {
             child: CopyableText(
               value: instruction.address,
               shorten: false,
+              wrap: true,
+              selectable: true,
               semanticLabel: l10n.depositAddress,
             ),
           ),

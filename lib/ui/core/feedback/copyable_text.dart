@@ -12,12 +12,16 @@ class CopyableText extends StatelessWidget {
     required this.semanticLabel,
     this.sensitivity = CopySensitivity.safe,
     this.shorten = true,
+    this.wrap = false,
+    this.selectable = false,
   });
 
   final String value;
   final String semanticLabel;
   final CopySensitivity sensitivity;
   final bool shorten;
+  final bool wrap;
+  final bool selectable;
 
   String get displayValue {
     if (!shorten || value.length <= 18) return value;
@@ -62,14 +66,19 @@ class CopyableText extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Flexible(
-            child: InkWell(
-              onTap: () => _showFullValue(context),
-              child: Text(
-                displayValue,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+            child: selectable
+                ? SelectableText(displayValue, maxLines: wrap ? null : 1)
+                : InkWell(
+                    onTap: () => _showFullValue(context),
+                    child: Text(
+                      displayValue,
+                      maxLines: wrap ? null : 1,
+                      softWrap: wrap,
+                      overflow: wrap
+                          ? TextOverflow.clip
+                          : TextOverflow.ellipsis,
+                    ),
+                  ),
           ),
           IconButton(
             tooltip: AppLocalizations.of(context).copyLabel,

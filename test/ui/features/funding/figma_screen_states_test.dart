@@ -81,6 +81,7 @@ void main() {
   });
 
   testWidgets('deposit instructions render the API QR payload', (tester) async {
+    await configureDisplay(tester, size: const Size(320, 900));
     const payload =
         'ethereum:0xaf88d065e77c8cc2239327c5edb3a432268e5831@42161/'
         'transfer?address=0x1111111111111111111111111111111111111111';
@@ -118,6 +119,33 @@ void main() {
 
     expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
     expect(find.byType(QrImageView), findsOneWidget);
+    final address = find.widgetWithText(SelectableText, instruction.address);
+    await tester.ensureVisible(address);
+    final editable = find.descendant(
+      of: address,
+      matching: find.byType(EditableText),
+    );
+    final paragraph = tester.state<EditableTextState>(editable).renderEditable;
+    expect(tester.widget<SelectableText>(address).maxLines, isNull);
+    expect(
+      paragraph
+          .getBoxesForSelection(
+            TextSelection(
+              baseOffset: 0,
+              extentOffset: instruction.address.length,
+            ),
+          )
+          .length,
+      greaterThan(1),
+    );
+    expect(tester.takeException(), isNull);
+    await tester.longPressAt(tester.getTopLeft(address) + const Offset(8, 8));
+    await tester.pumpAndSettle();
+    final selected = tester.widget<EditableText>(editable).controller;
+    expect(selected.text, instruction.address);
+    expect(selected.selection.isCollapsed, isFalse);
+    tester.widget<EditableText>(editable).focusNode.unfocus();
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('12.5 USDC'));
     expect(
       tester.getTopLeft(find.text('12.5 USDC')).dy,
