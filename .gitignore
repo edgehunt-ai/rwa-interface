@@ -139,3 +139,5 @@ dist/
 
 # Standalone private-key export bundle is built by CI before deployment.
 private-key-export/dist/
+# Widget Preview related
+.widget_preview/

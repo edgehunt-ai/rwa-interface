@@ -826,12 +826,16 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                         Row(
                           children: [
                             if (!isFunding) ...[
-                              Text(
-                                _statusLabel(context, record.status),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  height: 16 / 12,
-                                  color: widget.statusColor,
+                              Flexible(
+                                child: Text(
+                                  _statusLabel(context, record.status),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 16 / 12,
+                                    color: widget.statusColor,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -1024,9 +1028,7 @@ class _ActivityDetails extends StatelessWidget {
     final fields = [...record.fields];
     if (record.category == ActivityCategory.orders) {
       // The order-type badge already conveys buy/sell direction.
-      fields.removeWhere(
-        (field) => field.label.trim().toLowerCase() == 'side',
-      );
+      fields.removeWhere((field) => field.label.trim().toLowerCase() == 'side');
     }
     if (record.txHash != null && !_hasField(fields, 'tx hash')) {
       fields.insert(0, ActivityField(label: 'Tx Hash', value: record.txHash!));

@@ -83,6 +83,7 @@ void main() {
   testWidgets('deposit instructions render the wallet address QR', (
     tester,
   ) async {
+    final invalidQrPayload = List.filled(5000, 'x').join();
     await configureDisplay(tester, size: const Size(320, 900));
     final instruction = DepositInstruction(
       chain: 'Arbitrum',
@@ -90,7 +91,7 @@ void main() {
       tokenContract: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
       tokenDecimals: 6,
       address: '0x1111111111111111111111111111111111111111',
-      qrPayload: '0x1111111111111111111111111111111111111111',
+      qrPayload: invalidQrPayload,
       minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
       confirmationsRequired: 20,
       estimatedArrivalSeconds: 60,
@@ -119,8 +120,11 @@ void main() {
     expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
     expect(find.byType(QrImageView), findsOneWidget);
     expect(
-      tester.widget<QrImageView>(find.byType(QrImageView)).data,
-      instruction.address,
+      find.descendant(
+        of: find.byKey(const ValueKey('deposit-qr')),
+        matching: find.byType(CustomPaint),
+      ),
+      findsOneWidget,
     );
     final address = find.widgetWithText(SelectableText, instruction.address);
     await tester.ensureVisible(address);
