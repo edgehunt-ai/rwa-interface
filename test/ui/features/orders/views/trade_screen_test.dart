@@ -664,12 +664,13 @@ void main() {
         tester.view.physicalSize = const Size(800, 900);
         addTearDown(tester.view.resetDevicePixelRatio);
         addTearDown(tester.view.resetPhysicalSize);
-        final orders = _ResultNavigationOrdersRepository(orderType);
+        final positions = _ResultNavigationPositionsRepository();
+        final orders = _ResultNavigationOrdersRepository(orderType, positions);
         await tester.pumpWidget(
           _tradeWithMarkets(
             fundingRepository: FundedRepository(),
             ordersRepository: orders,
-            positionsRepository: _PositionsRepository(),
+            positionsRepository: positions,
           ),
         );
         await tester.pumpAndSettle();
@@ -726,6 +727,9 @@ void main() {
         final card = tester.getRect(target);
         expect(card.top, greaterThanOrEqualTo(viewport.top));
         expect(card.bottom, lessThanOrEqualTo(viewport.bottom));
+        if (orderType == TradingOrderType.market) {
+          expect(positions.listCalls, greaterThanOrEqualTo(2));
+        }
       },
     );
   }
@@ -1404,20 +1408,27 @@ final class _OpenOrderRepository implements OrdersRepository {
 }
 
 final class _ResultNavigationOrdersRepository implements OrdersRepository {
-  _ResultNavigationOrdersRepository(this.type);
+  _ResultNavigationOrdersRepository(this.type, this.positions);
 
   final TradingOrderType type;
+  final _ResultNavigationPositionsRepository positions;
 
   TradingOrder get _result => TradingOrder(
     orderId: 'result-order',
-    positionId: 'position-1',
+    positionId: type == TradingOrderType.market ? 'position-1' : null,
     symbol: 'NVDAB',
     kind: MarketProductKind.bstock,
     side: TradingSide.buy,
     type: type,
-    status: TradingOrderStatus.filled,
+    status: type == TradingOrderType.limit
+        ? TradingOrderStatus.open
+        : TradingOrderStatus.filled,
     quantity: DecimalValue('1', asset: 'NVDAB', unit: 'token'),
-    filledQuantity: DecimalValue('0', asset: 'NVDAB', unit: 'token'),
+    filledQuantity: DecimalValue(
+      type == TradingOrderType.limit ? '0' : '1',
+      asset: 'NVDAB',
+      unit: 'token',
+    ),
     limitPrice: type == TradingOrderType.limit
         ? DecimalValue('100', asset: 'USDT', unit: 'price')
         : null,
@@ -1442,7 +1453,10 @@ final class _ResultNavigationOrdersRepository implements OrdersRepository {
     OrderIntent intent, {
     required String idempotencyKey,
     String? previewId,
-  }) async => ResourceResult(resource: _result);
+  }) async {
+    if (type == TradingOrderType.market) positions.revealPosition();
+    return ResourceResult(resource: _result);
+  }
 
   @override
   Future<DomainPage<ResourceResult<TradingOrder>>> list({
@@ -1453,24 +1467,34 @@ final class _ResultNavigationOrdersRepository implements OrdersRepository {
     String? statusGroup,
   }) async => DomainPage(
     items: type == TradingOrderType.limit
-        ? [
-            ResourceResult(
-              resource: TradingOrder(
-                orderId: _result.orderId,
-                symbol: _result.symbol,
-                kind: _result.kind,
-                side: _result.side,
-                type: _result.type,
-                status: TradingOrderStatus.open,
-                quantity: _result.quantity,
-                filledQuantity: _result.filledQuantity,
-                limitPrice: _result.limitPrice,
-                createdAt: _result.createdAt,
-              ),
-            ),
-          ]
+        ? [ResourceResult(resource: _result)]
         : const [],
   );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _ResultNavigationPositionsRepository
+    implements PositionsRepository {
+  var _positionVisible = false;
+  var listCalls = 0;
+
+  void revealPosition() => _positionVisible = true;
+
+  @override
+  Future<DomainPage<Position>> list({
+    String? symbol,
+    MarketProductKind? kind,
+    String? cursor,
+  }) async {
+    listCalls++;
+    return DomainPage(
+      items: _positionVisible
+          ? [_position(kind ?? MarketProductKind.bstock)]
+          : const [],
+    );
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

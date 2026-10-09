@@ -131,6 +131,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   Future<void> _showOrderResult(_OrderPanelResult result) async {
     if (!mounted) return;
     final showOpenOrder = result.target == _OrderPanelTarget.openOrder;
+    final positionFilter = (symbol: symbol, kind: productKind, cursor: null);
     setState(() {
       detailTab = showOpenOrder ? 'Open' : 'Position';
       _targetOpenOrderId = showOpenOrder ? result.orderId : null;
@@ -139,12 +140,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
     try {
       if (showOpenOrder) {
+        ref.invalidate(bstocksOrdersProvider(null));
         await ref.read(bstocksOrdersProvider(null).future);
       } else {
-        await ref.read(
-          positionsProvider((symbol: symbol, kind: productKind, cursor: null))
-              .future,
-        );
+        ref.invalidate(positionsProvider(positionFilter));
+        await ref.read(positionsProvider(positionFilter).future);
       }
     } on Object {
       // The selected tab already exposes its normal retry state.
