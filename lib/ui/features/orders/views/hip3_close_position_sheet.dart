@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/hip3_action_pending.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/position.dart';
 import '../../../../domain/models/position_operation.dart';
+import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/app_toast.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
@@ -71,19 +73,48 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                   .closeActionPending(error.actionId),
         );
       }
-    } on ArgumentError catch (error) {
-      if (mounted) setState(() => _error = '${error.message}');
-    } on FormatException {
+    } on Object catch (error) {
       if (mounted) {
-        setState(() => _error = AppLocalizations.of(context).closeRetry);
-      }
-    } on Object {
-      if (mounted) {
-        setState(() => _error = AppLocalizations.of(context).closeFailed);
+        setState(() => _error = _specificErrorMessage(error));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String _specificErrorMessage(Object error) {
+    final l10n = AppLocalizations.of(context);
+    if (error is ApiFailure) {
+      return apiFailureMessage(error, fallback: l10n.closeFailed);
+    }
+    if (error is Hip3SigningFailure) {
+      final reason = error.reason?.trim();
+      if (reason != null && reason.isNotEmpty) return reason;
+      return switch (error.code) {
+        Hip3SigningFailureCode.walletMismatch => l10n.walletConnectRequired,
+        Hip3SigningFailureCode.actionExpired => l10n.hip3SigningRequestExpired,
+        Hip3SigningFailureCode.rejected => l10n.signatureCancelled,
+        Hip3SigningFailureCode.actionNotReady => l10n.hip3OrderStillPreparing,
+        Hip3SigningFailureCode.walletUnavailable =>
+          l10n.hip3SigningWalletUnavailable,
+        Hip3SigningFailureCode.invalidPayload => l10n.hip3SigningRequestInvalid,
+      };
+    }
+    if (error is ArgumentError) {
+      final message = error.message?.toString().trim();
+      return message == null || message.isEmpty ? l10n.closeFailed : message;
+    }
+    if (error is FormatException) {
+      final message = error.message.trim();
+      return message.isEmpty ? l10n.closeRetry : message;
+    }
+    final message = error.toString().trim();
+    if (message.isNotEmpty &&
+        message != 'null' &&
+        !message.startsWith('Instance of ')) {
+      return message;
+    }
+    return l10n.closeFailed;
   }
 
   void _setPercent(double value) {
@@ -344,7 +375,26 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: Semantics(liveRegion: true, child: Text(_error!)),
+                  child: Semantics(
+                    liveRegion: true,
+                    label: _error!,
+                    child: Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(minHeight: 40),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFEEF0),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(color: semantic.loss, fontSize: 12),
+                      ),
+                    ),
+                  ),
                 ),
               Row(
                 children: [

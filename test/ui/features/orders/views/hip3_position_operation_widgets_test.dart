@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/data/services/tpsl_risk_consent_service.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
 import 'package:rwa_interface/domain/models/decimal_value.dart';
 import 'package:rwa_interface/domain/models/domain_page.dart';
 import 'package:rwa_interface/domain/models/market_product.dart';
@@ -24,6 +25,7 @@ import 'package:rwa_interface/ui/features/orders/views/hip3_open_orders_panel.da
 import 'package:rwa_interface/ui/features/orders/views/hip3_position_settings_sheet.dart';
 import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
 import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
+import 'package:rwa_interface/ui/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../helpers/display_config.dart';
@@ -246,6 +248,84 @@ void main() {
       expect(find.text("Instance of 'Hip3SigningFailure'"), findsNothing);
     },
   );
+
+  for (final (name, error, message) in <(String, Object, String)>[
+    (
+      'API message',
+      const ServerFailure(
+        statusCode: 422,
+        code: 'close_quantity_too_small',
+        message: '  Close quantity is below the minimum.  ',
+        failureReason: 'A less specific reason',
+      ),
+      'Close quantity is below the minimum.',
+    ),
+    (
+      'API failure reason',
+      const ServerFailure(
+        statusCode: 422,
+        code: 'close_rejected',
+        message: ' ',
+        failureReason: '  Reduce-only order rejected.  ',
+      ),
+      'Reduce-only order rejected.',
+    ),
+    (
+      'execution failure reason',
+      const Hip3SigningFailure(
+        Hip3SigningFailureCode.invalidPayload,
+        reason: '  Order size must be at least 10 USDC.  ',
+      ),
+      'Order size must be at least 10 USDC.',
+    ),
+    (
+      'signature rejection',
+      const Hip3SigningFailure(Hip3SigningFailureCode.rejected),
+      'Signature request was cancelled.',
+    ),
+    (
+      'changed position',
+      const FormatException('Position changed; refresh before closing'),
+      'Position changed; refresh before closing',
+    ),
+    (
+      'empty format error',
+      const FormatException(),
+      'Close could not be completed. Refresh the position and retry.',
+    ),
+    (
+      'unexpected error reason',
+      StateError('Close execution failed'),
+      'Bad state: Close execution failed',
+    ),
+    (
+      'unknown error fallback',
+      const Object(),
+      'Close was not completed. Check pending actions and refresh the position before changing this request.',
+    ),
+  ]) {
+    testWidgets('close displays $name in the error notice', (tester) async {
+      final repo = _Positions()..closeError = error;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+        ),
+      );
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+      await tester.ensureVisible(find.byKey(const Key('close-review')));
+      await tester.tap(find.byKey(const Key('close-review')));
+      await tester.pumpAndSettle();
+
+      expect(repo.closeCalls, 1);
+      expect(find.text(message), findsOneWidget);
+      final text = tester.widget<Text>(find.text(message));
+      final semantic = Theme.of(tester.element(find.text(message)))
+          .extension<AppSemanticColors>()!;
+      expect(text.style!.color, semantic.loss);
+      expect(find.text("Instance of 'Hip3SigningFailure'"), findsNothing);
+    });
+  }
 
   testWidgets('pending close cannot be submitted again from the form', (
     tester,
@@ -525,6 +605,7 @@ TradingOrder _order(
 
 class _Positions implements PositionsRepository {
   bool pending = false;
+  Object? closeError;
   int closeCalls = 0;
   Position? closePosition;
   TradingOrderType? type;
@@ -547,6 +628,7 @@ class _Positions implements PositionsRepository {
   }) async {
     closeCalls++;
     if (pending) throw const Hip3ActionPending('pending-close');
+    if (closeError case final error?) throw error;
     closePosition = expectedPosition;
     this.quantity = quantity;
     this.percent = percent;
