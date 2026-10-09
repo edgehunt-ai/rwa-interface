@@ -1,6 +1,6 @@
-# RWA Interface
+# Nobell
 
-跨平台 RWA 交易界面，基于 Flutter 构建，支持 Android、iOS 和 Web。
+Nobell 是基于 Flutter 构建的跨平台数字资产交易应用，支持 Android、iOS 和 Web。
 
 ## 技术栈
 

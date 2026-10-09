@@ -23,10 +23,10 @@ final class ReownWalletConnector implements WalletConnector {
       context: context,
       projectId: _configuration.validate(),
       metadata: const PairingMetadata(
-        name: 'RWA Interface',
-        description: 'RWA Interface wallet sign-in',
+        name: 'Nobell',
+        description: 'Nobell wallet sign-in',
         url: 'https://rwa.dxd.ink',
-        redirect: Redirect(native: 'rwa://'),
+        redirect: Redirect(native: PrivyConfiguration.nativeAppRedirect),
       ),
       optionalNamespaces: const {
         'eip155': RequiredNamespace(

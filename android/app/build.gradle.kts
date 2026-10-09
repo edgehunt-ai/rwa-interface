@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.orbit.rwa_interface"
+    namespace = "global.nobell.app"
     // Current native plugins require API 36 compile metadata. This does not
     // change targetSdk or the minimum install version.
     compileSdk = 36
@@ -21,8 +21,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.orbit.rwa_interface"
+        applicationId = "global.nobell.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 28

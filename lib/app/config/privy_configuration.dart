@@ -14,7 +14,11 @@ final class PrivyConfiguration {
   static const loginMethods = <String>{'email', 'google', 'passkey'};
 
   /// Must match the Android/iOS deep-link configuration in the host app.
-  static const appUrlScheme = String.fromEnvironment('PRIVY_APP_URL_SCHEME');
+  static const appUrlScheme = String.fromEnvironment(
+    'PRIVY_APP_URL_SCHEME',
+    defaultValue: 'nobell',
+  );
+  static const nativeAppRedirect = '$appUrlScheme://';
 
   /// The WebAuthn relying-party identifier configured in Privy.
   static const relyingParty = String.fromEnvironment(

@@ -204,7 +204,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hip3PendingEffects => '此前的步骤已生效。';
 
   @override
-  String get appTitle => 'RWA 交易界面';
+  String get appTitle => 'Nobell';
 
   @override
   String get homeTitle => '应用首页';

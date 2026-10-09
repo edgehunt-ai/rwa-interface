@@ -65,7 +65,7 @@
   "hip3PendingClose": "Close position",
   "hip3PendingEffects": "Earlier steps have already taken effect.",
   "@@locale": "en",
-  "appTitle": "RWA Interface",
+  "appTitle": "Nobell",
   "@appTitle": {
     "description": "Application title"
   },

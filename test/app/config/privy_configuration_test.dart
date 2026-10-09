@@ -37,6 +37,14 @@ void main() {
     test('keeps login methods as an explicit code constant', () {
       expect(PrivyConfiguration.loginMethods, {'email', 'google', 'passkey'});
     });
+
+    test('derives the native redirect from the configured URL scheme', () {
+      expect(
+        PrivyConfiguration.nativeAppRedirect,
+        '${PrivyConfiguration.appUrlScheme}://',
+      );
+      expect(PrivyConfiguration.appUrlScheme, 'nobell');
+    });
   });
 
   group('ReownConfiguration', () {

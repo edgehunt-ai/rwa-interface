@@ -209,7 +209,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hip3PendingEffects => 'Earlier steps have already taken effect.';
 
   @override
-  String get appTitle => 'RWA Interface';
+  String get appTitle => 'Nobell';
 
   @override
   String get homeTitle => 'Application foundation';

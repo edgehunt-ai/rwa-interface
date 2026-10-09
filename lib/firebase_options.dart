@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDxyu7C5cjm-nwKYBnHqg-N-_nSRFYQR6E',
-    appId: '1:61814072625:android:207cc50429af2282b77c10',
+    appId: '1:61814072625:android:5a16ffe351fcfa02b77c10',
     messagingSenderId: '61814072625',
     projectId: 'rwa-trade-f6f60',
     storageBucket: 'rwa-trade-f6f60.firebasestorage.app',
@@ -59,10 +59,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBUrEoJ-ZqbfVQokcfckG4_zyVqWC6Mk40',
-    appId: '1:61814072625:ios:1ceeb86fef47717fb77c10',
+    appId: '1:61814072625:ios:25a270d36827a9cab77c10',
     messagingSenderId: '61814072625',
     projectId: 'rwa-trade-f6f60',
     storageBucket: 'rwa-trade-f6f60.firebasestorage.app',
-    iosBundleId: 'com.orbit.rwaInterface',
+    iosBundleId: 'global.nobell.app',
   );
 }

@@ -1,11 +1,11 @@
 {
-    "name": "rwa_interface",
-    "short_name": "rwa_interface",
+    "name": "Nobell",
+    "short_name": "Nobell",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FF7BE5",
     "theme_color": "#FF7BE5",
-    "description": "Cross-platform RWA trading interface.",
+    "description": "Nobell digital asset trading platform.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

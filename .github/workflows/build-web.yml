@@ -90,7 +90,7 @@ jobs:
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
           --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
           --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
-          --dart-define=SENTRY_RELEASE="rwa_interface@${{ github.sha }}"
+          --dart-define=SENTRY_RELEASE="nobell@${{ github.sha }}"
 
       - name: Verify Web output
         shell: bash
@@ -104,7 +104,7 @@ jobs:
       - name: Upload Web artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rwa-interface-web
+          name: nobell-web
           path: build/web/
           if-no-files-found: error
           retention-days: 7
@@ -138,7 +138,7 @@ jobs:
       - name: Download Web artifact
         uses: actions/download-artifact@v4
         with:
-          name: rwa-interface-web
+          name: nobell-web
           path: .vercel/output/static
 
       - name: Prepare Vercel prebuilt output

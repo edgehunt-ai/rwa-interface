@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:61814072625:android:207cc50429af2282b77c10",
+        "mobilesdk_app_id": "1:61814072625:android:5a16ffe351fcfa02b77c10",
         "android_client_info": {
-          "package_name": "com.orbit.rwa_interface"
+          "package_name": "global.nobell.app"
         }
       },
       "oauth_client": [],

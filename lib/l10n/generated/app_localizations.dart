@@ -485,7 +485,7 @@ abstract class AppLocalizations {
   /// Application title
   ///
   /// In en, this message translates to:
-  /// **'RWA Interface'**
+  /// **'Nobell'**
   String get appTitle;
 
   /// Foundation home screen title

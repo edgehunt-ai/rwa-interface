@@ -171,7 +171,7 @@ jobs:
               exit 1
             fi
           done
-          keystore_path="$RUNNER_TEMP/rwa-interface-release.jks"
+          keystore_path="$RUNNER_TEMP/nobell-release.jks"
           printf '%s' "$ANDROID_KEYSTORE_BASE64" |
             tr -d '[:space:]' |
             base64 --decode > "$keystore_path"
@@ -214,14 +214,14 @@ jobs:
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
           --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
           --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
-          --dart-define=SENTRY_RELEASE="rwa_interface@${{ needs.detect-release.outputs.version }}"
+          --dart-define=SENTRY_RELEASE="nobell@${{ needs.detect-release.outputs.version }}"
       - name: Collect split APKs
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p build/release-assets
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/release-assets/rwa-interface-android-arm64-v8a.apk
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk build/release-assets/rwa-interface-android-x86_64.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/release-assets/nobell-android-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk build/release-assets/nobell-android-x86_64.apk
       - name: Record Android artifact sizes
         shell: bash
         run: |
@@ -233,12 +233,12 @@ jobs:
       - name: Upload Android Dart symbols to Sentry
         if: env.SENTRY_AUTH_TOKEN != ''
         env:
-          SENTRY_RELEASE: rwa_interface@${{ needs.detect-release.outputs.version }}
+          SENTRY_RELEASE: nobell@${{ needs.detect-release.outputs.version }}
         run: dart run sentry_dart_plugin
       - name: Upload Android artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rwa-interface-android
+          name: nobell-android
           path: |
             build/release-assets/*.apk
           if-no-files-found: error
@@ -294,28 +294,28 @@ jobs:
           --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT"
           --dart-define=SENTRY_TRACES_SAMPLE_RATE="$SENTRY_TRACES_SAMPLE_RATE"
           --dart-define=SENTRY_PROFILES_SAMPLE_RATE="$SENTRY_PROFILES_SAMPLE_RATE"
-          --dart-define=SENTRY_RELEASE="rwa_interface@${{ needs.detect-release.outputs.version }}"
+          --dart-define=SENTRY_RELEASE="nobell@${{ needs.detect-release.outputs.version }}"
       - name: Upload iOS symbols to Sentry
         if: env.SENTRY_AUTH_TOKEN != ''
         env:
-          SENTRY_RELEASE: rwa_interface@${{ needs.detect-release.outputs.version }}
+          SENTRY_RELEASE: nobell@${{ needs.detect-release.outputs.version }}
         run: dart run sentry_dart_plugin
       - name: Package unsigned iOS app
-        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/rwa-interface-ios-unsigned.zip
+        run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/nobell-ios-unsigned.zip
       - name: Record iOS artifact size
         shell: bash
         run: |
           set -euo pipefail
           {
             echo "## iOS artifact size"
-            du -h build/ios/rwa-interface-ios-unsigned.zip
+            du -h build/ios/nobell-ios-unsigned.zip
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload iOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rwa-interface-ios-unsigned
+          name: nobell-ios-unsigned
           path: |
-            build/ios/rwa-interface-ios-unsigned.zip
+            build/ios/nobell-ios-unsigned.zip
           if-no-files-found: error
           retention-days: 7
 
@@ -336,7 +336,7 @@ jobs:
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: rwa-interface-*
+          pattern: nobell-*
           path: release-assets
           merge-multiple: true
       - name: Build release notes from commits
@@ -377,9 +377,9 @@ jobs:
             release_args+=(--prerelease)
           fi
           gh release create "$TAG" \
-            release-assets/rwa-interface-android-arm64-v8a.apk \
-            release-assets/rwa-interface-android-x86_64.apk \
-            release-assets/rwa-interface-ios-unsigned.zip \
+            release-assets/nobell-android-arm64-v8a.apk \
+            release-assets/nobell-android-x86_64.apk \
+            release-assets/nobell-ios-unsigned.zip \
             --title "$TAG" \
             --notes-file release-notes.md \
             --target "${{ env.TARGET_SHA }}" \
