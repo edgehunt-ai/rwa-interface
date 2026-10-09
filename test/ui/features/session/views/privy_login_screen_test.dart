@@ -4,13 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:rwa_interface/app/config/privy_configuration.dart';
+import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
 import 'package:rwa_interface/data/auth/reown_wallet_connector.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
+import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:rwa_interface/domain/models/product_session.dart';
+import 'package:rwa_interface/domain/models/user_account.dart';
+import 'package:rwa_interface/domain/models/wallet.dart';
+import 'package:rwa_interface/domain/repositories/session_repository.dart';
+import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
 import 'package:rwa_interface/l10n/generated/app_localizations.dart';
 import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
 import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
 import 'package:rwa_interface/ui/features/session/views/privy_login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +27,136 @@ import '../../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  for (final method in [
+    'startup',
+    'OAuth login',
+    'email verification',
+    'expired session',
+  ]) {
+    testWidgets('wallet sync failure after $method retries and closes login', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final retryBarrier = Completer<void>();
+      final gateway = FakeIdentityAuthGateway(
+        restoredPrincipal: method == 'startup'
+            ? const IdentityPrincipal('privy-user')
+            : null,
+      );
+      final sessions = _LoginSessions();
+      final expired = method == 'expired session';
+      if (expired) sessions.expiresAt = DateTime.utc(2020);
+      final wallets = _LoginWallets();
+      final container = ProviderContainer(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(gateway),
+          privyConfigurationProvider.overrideWithValue(
+            const PrivyConfiguration(appId: 'app-id', clientId: 'client-id'),
+          ),
+          sessionRepositoryProvider.overrideWithValue(sessions),
+          walletsRepositoryProvider.overrideWithValue(wallets),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(authenticationProvider, (_, _) {});
+      final notifier = container.read(authenticationProvider.notifier);
+      await tester.runAsync(() async {
+        await notifier.bootstrap();
+        if (method == 'OAuth login' || expired) {
+          await notifier.loginWithOAuth('google');
+        } else if (method == 'email verification') {
+          await notifier.requestEmailCode('user@example.com');
+          await notifier.verifyEmailCode('123456');
+        }
+      });
+      expect(sessions.createCalls, 1);
+      expect(wallets.syncCalls, expired ? 0 : 1);
+      gateway.initializeFailure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: false,
+      );
+      gateway.verifyFailure = gateway.initializeFailure;
+      gateway.oauthFailure = gateway.initializeFailure;
+      wallets.failure = null;
+      wallets.barrier = retryBarrier.future;
+      sessions.expiresAt = DateTime.utc(2030);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: _buildLoginApp(
+            Builder(
+              builder: (context) => TextButton(
+                onPressed: () => pushLoginScreen(context),
+                child: const Text('Open login'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open login'));
+      await tester.pumpAndSettle();
+
+      if (!expired) {
+        expect(
+          find.text(
+            'You are signed in, but your wallet could not be synchronized. '
+            'Try again later.',
+          ),
+          findsOneWidget,
+        );
+      }
+      final retry = find.widgetWithText(OutlinedButton, 'Retry');
+      expect(retry, findsOneWidget);
+      await tester.ensureVisible(retry);
+      await tester.tap(retry);
+      await tester.pump();
+
+      expect(wallets.syncCalls, expired ? 1 : 2);
+      expect(sessions.createCalls, expired ? 2 : 1);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(retry, findsNothing);
+      retryBarrier.complete();
+      await tester.pumpAndSettle();
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticated>(),
+      );
+      expect(wallets.keys.toSet(), hasLength(1));
+      expect(find.byType(PrivyLoginScreen), findsNothing);
+      expect(find.text('Open login'), findsOneWidget);
+    });
+  }
+
+  testWidgets('invalid code does not offer session restoration', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(),
+          ),
+        ],
+        child: _buildLoginApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationAwaitingCode(
+              'user@example.com',
+              failure: IdentityFailure(
+                AuthenticationFailureCode.invalidCode,
+                retryable: true,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.widgetWithText(OutlinedButton, 'Retry'), findsNothing);
+    expect(find.text('Resend code'), findsOneWidget);
+  });
+
   testWidgets('invalid email is rejected before requesting a code', (
     tester,
   ) async {
@@ -219,6 +358,64 @@ void main() {
     expect(gateway.requestedEmail, 'user@example.com');
     expect(find.text('Code resent'), findsOneWidget);
   });
+}
+
+final class _LoginSessions implements SessionRepository {
+  var createCalls = 0;
+  DateTime expiresAt = DateTime.utc(2030);
+
+  @override
+  Future<ProductSession> createOrRestore({
+    String? language,
+    required int generation,
+  }) async {
+    createCalls++;
+    return ProductSession(
+      sessionId: 'login-session',
+      createdAt: DateTime.utc(2026),
+      expiresAt: expiresAt,
+      generation: generation,
+      accountCreated: false,
+      account: const UserAccount(
+        userId: 'login-user',
+        settings: UserPreferences(
+          language: 'en',
+          pushEnabled: false,
+          notifyOrderFilled: false,
+          notifyOrderFailed: false,
+          notifyLiquidationWarning: false,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> endSession() async {}
+}
+
+final class _LoginWallets implements WalletsRepository {
+  var syncCalls = 0;
+  final keys = <String>[];
+  ApiFailure? failure = const DecodingFailure(requestId: 'wallet-request-id');
+  Future<void>? barrier;
+
+  @override
+  Future<Wallet> syncWallet({required String idempotencyKey}) async {
+    syncCalls++;
+    keys.add(idempotencyKey);
+    await barrier;
+    if (failure case final value?) throw value;
+    return Wallet(
+      walletId: 'login-wallet',
+      address: '0x1',
+      chain: 'ethereum',
+      status: WalletState.active,
+      createdAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 Widget _buildLoginApp(Widget child) => MaterialApp(

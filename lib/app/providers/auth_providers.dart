@@ -5,6 +5,7 @@ import '../../data/api/privy_access_token_provider.dart';
 import '../../data/auth/identity_auth_gateway_factory.dart';
 import '../../data/auth/reown_wallet_connector.dart';
 import '../../domain/auth/identity_auth_gateway.dart';
+import '../../domain/auth/wallet_login_coordinator.dart';
 import 'observability_providers.dart';
 import 'session_scope.dart';
 
@@ -22,6 +23,12 @@ final reownConfigurationProvider = Provider<ReownConfiguration>(
 
 final reownWalletConnectorProvider = Provider<WalletConnector>(
   (ref) => ReownWalletConnector(ref.watch(reownConfigurationProvider)),
+);
+
+// Keep the queue independent of session generation and notifier recreation:
+// a late connection result still owns the shared modal until cleanup finishes.
+final walletLoginCoordinatorProvider = Provider<WalletLoginCoordinator>(
+  (ref) => WalletLoginCoordinator(),
 );
 
 final identityAccessTokenProvider = Provider<PrivyAccessTokenProvider>((ref) {

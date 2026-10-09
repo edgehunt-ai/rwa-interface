@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -19,20 +21,28 @@ final authenticationProvider =
       AuthenticationNotifier.new,
     );
 
+typedef _PendingWalletSync = ({
+  ProductSession session,
+  IdentityPrincipal principal,
+});
+
 final class AuthenticationNotifier extends Notifier<AuthenticationState> {
   var _epoch = 0;
   var _hasBuilt = false;
   String? _activeEmail;
   WalletConnection? _walletConnection;
+  Future<void>? _walletDisconnectInFlight;
+  _PendingWalletSync? _pendingWalletSync;
 
   IdentityAuthGateway get _gateway => ref.read(identityAuthGatewayProvider);
 
   @override
   AuthenticationState build() {
     ref.watch(sessionGenerationProvider);
+    ref.onDispose(() => unawaited(_disconnectWallet()));
     _epoch++;
     _activeEmail = null;
-    _walletConnection = null;
+    _pendingWalletSync = null;
     if (_hasBuilt) return const AuthenticationUnauthenticated();
     _hasBuilt = true;
     return const AuthenticationInitializing();
@@ -42,6 +52,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     _clearAppReviewMode();
     final operation = ++_epoch;
     _activeEmail = null;
+    _pendingWalletSync = null;
     state = const AuthenticationInitializing();
     if (!_gateway.isSupported) {
       if (_isCurrent(operation)) state = const AuthenticationUnsupported();
@@ -49,6 +60,8 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     }
 
     try {
+      await _disconnectWallet();
+      if (!_isCurrent(operation)) return;
       final identityConfiguration = ref
           .read(privyConfigurationProvider)
           .validate();
@@ -73,6 +86,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
 
   Future<void> requestEmailCode(String value) async {
     _clearAppReviewMode();
+    _pendingWalletSync = null;
     final email = _normalizeEmail(value);
     if (email == null) {
       state = const AuthenticationUnauthenticated(
@@ -96,6 +110,8 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     final operation = ++_epoch;
     state = const AuthenticationAuthenticating();
     try {
+      await _disconnectWallet();
+      if (!_isCurrent(operation)) return;
       await _gateway.requestEmailCode(email);
       if (_isCurrent(operation)) {
         _activeEmail = email;
@@ -155,6 +171,8 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
   void cancelEmailCode() {
     ++_epoch;
     _activeEmail = null;
+    _pendingWalletSync = null;
+    unawaited(_disconnectWallet());
     state = const AuthenticationUnauthenticated();
   }
 
@@ -178,32 +196,49 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     String? language,
   }) async {
     _clearAppReviewMode();
+    _pendingWalletSync = null;
     final operation = ++_epoch;
     state = const AuthenticationAuthenticating();
-    try {
-      final connection = await connect();
-      _walletConnection = connection;
-      final principal = await _gateway.loginWithWallet(connection);
-      if (_isCurrent(operation)) {
-        _updateAppReviewMode(principal);
-        await _establishSession(operation, principal, language: language);
-      }
-    } on IdentityFailure catch (failure) {
-      if (_isCurrent(operation)) {
+    await ref.read(walletLoginCoordinatorProvider).run(() async {
+      if (!_isCurrent(operation)) return;
+      try {
         await _disconnectWallet();
-        state = AuthenticationUnauthenticated(failure: failure);
+        if (!_isCurrent(operation)) return;
+        final connection = await connect();
+        if (!_isCurrent(operation)) {
+          await _disconnectConnection(connection);
+          return;
+        }
+        _walletConnection = connection;
+        final principal = await _gateway.loginWithWallet(connection);
+        if (_isCurrent(operation)) {
+          _updateAppReviewMode(principal);
+          await _establishSession(operation, principal, language: language);
+        }
+      } on IdentityFailure catch (failure) {
+        if (_isCurrent(operation)) {
+          // A pending session still needs the wallet for sync or renewal.
+          if (_pendingWalletSync == null) {
+            await _disconnectWallet();
+          }
+          if (_isCurrent(operation)) {
+            state = AuthenticationUnauthenticated(failure: failure);
+          }
+        }
+      } catch (_) {
+        if (_isCurrent(operation)) {
+          await _disconnectWallet();
+          if (_isCurrent(operation)) {
+            state = const AuthenticationUnauthenticated(
+              failure: IdentityFailure(
+                AuthenticationFailureCode.provider,
+                retryable: true,
+              ),
+            );
+          }
+        }
       }
-    } catch (_) {
-      if (_isCurrent(operation)) {
-        await _disconnectWallet();
-        state = const AuthenticationUnauthenticated(
-          failure: IdentityFailure(
-            AuthenticationFailureCode.provider,
-            retryable: true,
-          ),
-        );
-      }
-    }
+    });
   }
 
   Future<void> _loginWithProvider(
@@ -211,9 +246,12 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     String? language,
   }) async {
     _clearAppReviewMode();
+    _pendingWalletSync = null;
     final operation = ++_epoch;
     state = const AuthenticationAuthenticating();
     try {
+      await _disconnectWallet();
+      if (!_isCurrent(operation)) return;
       final principal = await login();
       if (_isCurrent(operation)) {
         _updateAppReviewMode(principal);
@@ -235,8 +273,48 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     }
   }
 
+  Future<void> retry({String? language}) async {
+    if (state is AuthenticationInitializing ||
+        state is AuthenticationAuthenticating ||
+        state is AuthenticationAuthenticated) {
+      return;
+    }
+    final pending = _pendingWalletSync;
+    if (pending == null ||
+        pending.session.generation !=
+            ref.read(sessionGenerationProvider).value) {
+      await bootstrap(language: language);
+      return;
+    }
+
+    // Identity and the product session already succeeded. Resume the failed
+    // sync without reinitializing Privy or asking for another OTP/signature.
+    final operation = ++_epoch;
+    state = const AuthenticationAuthenticating();
+    try {
+      if (pending.session.isExpired) {
+        await _establishSession(
+          operation,
+          pending.principal,
+          language: language ?? pending.session.account.settings.language,
+        );
+      } else {
+        await _completeSession(operation, pending.session, pending.principal);
+      }
+    } on IdentityFailure catch (failure) {
+      if (_isCurrent(operation)) state = AuthenticationFailed(failure);
+    } catch (_) {
+      if (_isCurrent(operation)) {
+        state = const AuthenticationFailed(
+          IdentityFailure(AuthenticationFailureCode.provider, retryable: true),
+        );
+      }
+    }
+  }
+
   Future<void> logout() async {
     ++_epoch;
+    _pendingWalletSync = null;
     IdentityFailure? failure;
     await _deactivateNotifications();
     try {
@@ -273,6 +351,10 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       language: language,
       generation: generation,
     );
+    if (!_isCurrent(operation) ||
+        ref.read(sessionGenerationProvider).value != generation) {
+      return;
+    }
     if (AppReviewConfiguration.buildEnabled) {
       final reviewConfiguration = ref.read(appReviewConfigurationProvider);
       if (reviewConfiguration.matchesSession(session)) {
@@ -280,7 +362,23 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       }
     }
     await _gateway.ensureEmbeddedWallet();
-    await _syncWallet(session);
+    if (!_isCurrent(operation) ||
+        ref.read(sessionGenerationProvider).value != generation) {
+      return;
+    }
+    _pendingWalletSync = (session: session, principal: principal);
+    await _completeSession(operation, session, principal);
+  }
+
+  Future<void> _completeSession(
+    int operation,
+    ProductSession session,
+    IdentityPrincipal principal,
+  ) async {
+    final generation = session.generation;
+    _requireUsableSession(session);
+    if (!await _syncWallet(session, operation: operation)) return;
+    _requireUsableSession(session);
     await _activateNotifications(session.account.settings);
     if (!_isCurrent(operation) ||
         ref.read(sessionGenerationProvider).value != generation) {
@@ -294,6 +392,10 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
       await ref.read(observabilityReporterProvider).clearUser();
       return;
     }
+    // The session can expire while synchronization or optional setup is pending.
+    _requireUsableSession(session);
+    _pendingWalletSync = null;
+    _activeEmail = null;
     state = AuthenticationAuthenticated(session, principal: principal);
   }
 
@@ -318,12 +420,36 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     return valid ? email : null;
   }
 
-  bool _isCurrent(int operation) => operation == _epoch;
+  bool _isCurrent(int operation) => ref.mounted && operation == _epoch;
 
-  Future<void> _disconnectWallet() async {
+  void _requireUsableSession(ProductSession session) {
+    if (session.isExpired) {
+      throw const IdentityFailure(
+        AuthenticationFailureCode.expired,
+        retryable: true,
+      );
+    }
+  }
+
+  Future<void> _disconnectWallet() {
     final connection = _walletConnection;
     _walletConnection = null;
-    if (connection == null) return;
+    if (connection == null) {
+      return _walletDisconnectInFlight ?? Future<void>.value();
+    }
+    final disconnect = _disconnectConnection(
+      connection,
+      after: _walletDisconnectInFlight,
+    );
+    _walletDisconnectInFlight = disconnect;
+    return disconnect;
+  }
+
+  Future<void> _disconnectConnection(
+    WalletConnection connection, {
+    Future<void>? after,
+  }) async {
+    if (after != null) await after;
     try {
       await connection.disconnect();
     } catch (_) {
@@ -359,22 +485,40 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     throw StateError('Backend session creation exhausted its retry budget');
   }
 
-  Future<void> _syncWallet(ProductSession session) async {
-    try {
-      await ref
-          .read(walletsRepositoryProvider)
-          .syncWallet(
-            idempotencyKey: scopedIdempotencyKey(
-              'wallet-sync-${session.sessionId}',
-            ),
+  Future<bool> _syncWallet(
+    ProductSession session, {
+    required int operation,
+  }) async {
+    final repository = ref.read(walletsRepositoryProvider);
+    // A lost response must replay the same logical sync, even if the backend
+    // already completed it. Keep the key stable across all attempts.
+    final idempotencyKey = scopedIdempotencyKey(
+      'wallet-sync-${session.sessionId}',
+    );
+    for (var attempt = 0; attempt < 3; attempt++) {
+      if (!_isCurrent(operation) ||
+          ref.read(sessionGenerationProvider).value != session.generation) {
+        return false;
+      }
+      try {
+        await repository.syncWallet(idempotencyKey: idempotencyKey);
+        return _isCurrent(operation) &&
+            ref.read(sessionGenerationProvider).value == session.generation;
+      } on ApiFailure catch (failure) {
+        if (attempt < 2 && failure.retryable) {
+          await Future<void>.delayed(
+            Duration(milliseconds: 250 * (1 << attempt)),
           );
-    } on ApiFailure catch (failure) {
-      throw IdentityFailure(
-        AuthenticationFailureCode.walletSync,
-        retryable: failure.retryable,
-        requestId: failure.requestId,
-      );
+          continue;
+        }
+        throw IdentityFailure(
+          AuthenticationFailureCode.walletSync,
+          retryable: failure.retryable,
+          requestId: failure.requestId,
+        );
+      }
     }
+    throw StateError('Wallet synchronization exhausted its retry budget');
   }
 
   Future<void> _activateNotifications(UserPreferences preferences) async {

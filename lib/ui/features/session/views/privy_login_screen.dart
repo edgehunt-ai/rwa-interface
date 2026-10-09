@@ -418,14 +418,18 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                           _LoginFailure(failure: failure),
                         ],
                         if (state is AuthenticationFailed ||
-                            state is AuthenticationUnsupported) ...[
+                            state is AuthenticationUnsupported ||
+                            failure?.code ==
+                                AuthenticationFailureCode.walletSync ||
+                            failure?.code ==
+                                AuthenticationFailureCode.expired) ...[
                           const SizedBox(height: 12),
                           OutlinedButton(
                             onPressed: busy
                                 ? null
                                 : () => ref
                                       .read(authenticationProvider.notifier)
-                                      .bootstrap(),
+                                      .retry(),
                             child: Text(l10n.retry),
                           ),
                         ],

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_interface/app/config/privy_configuration.dart';
 import 'package:rwa_interface/app/providers/api_providers.dart';
 import 'package:rwa_interface/app/providers/auth_providers.dart';
+import 'package:rwa_interface/app/providers/session_scope.dart';
 import 'package:rwa_interface/data/api/idempotency_key.dart';
 import 'package:rwa_interface/domain/auth/authentication.dart';
 import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
@@ -128,14 +129,623 @@ void main() {
 
       await container.read(authenticationProvider.notifier).bootstrap();
 
-      expect(wallets.syncCalls, 1);
+      expect(wallets.syncCalls, 3);
       final state = container.read(authenticationProvider);
       expect(state, isA<AuthenticationFailed>());
       final failure = (state as AuthenticationFailed).failure;
       expect(failure.code, AuthenticationFailureCode.walletSync);
       expect(failure.requestId, 'wallet-request-id');
+      expect(failure.retryable, isTrue);
+      expect(wallets.idempotencyKeys.toSet(), hasLength(1));
     },
   );
+
+  group('wallet sync retries', () {
+    test(
+      'expired pending session is renewed without losing wallet identity',
+      () async {
+        final gateway = FakeIdentityAuthGateway();
+        final repository = _SessionRepository()..expiresAt = DateTime.utc(2020);
+        final wallets = _WalletsRepository();
+        final container = _container(gateway, repository, wallets: wallets);
+        final notifier = container.read(authenticationProvider.notifier);
+        final connection = _WalletConnection();
+        await notifier.loginWithWallet(() async => connection);
+        expect(
+          (container.read(
+            authenticationProvider,
+          ) as AuthenticationUnauthenticated).failure?.code,
+          AuthenticationFailureCode.expired,
+        );
+        expect(wallets.syncCalls, 0);
+
+        gateway.initializeFailure = const IdentityFailure(
+          AuthenticationFailureCode.provider,
+          retryable: false,
+        );
+        gateway.walletLoginFailure = gateway.initializeFailure;
+        repository.expiresAt = DateTime.utc(2030);
+        repository.sessionId = 'renewed-session';
+        await notifier.retry();
+
+        final state = container.read(
+          authenticationProvider,
+        ) as AuthenticationAuthenticated;
+        expect(state.session.isExpired, isFalse);
+        expect(state.session.sessionId, 'renewed-session');
+        expect(repository.createCalls, 2);
+        expect(
+          wallets.lastIdempotencyKey,
+          scopedIdempotencyKey('wallet-sync-renewed-session'),
+        );
+        expect(connection.disconnectCalls, 0);
+        await notifier.logout();
+        expect(connection.disconnectCalls, 1);
+      },
+    );
+
+    test(
+      'session expiring during sync is never published as authenticated',
+      () async {
+        final repository = _SessionRepository()
+          ..expiresAt = DateTime.now().toUtc().add(
+            const Duration(milliseconds: 100),
+          );
+        final barrier = Completer<void>();
+        final firstSync = Completer<void>();
+        final wallets = _WalletsRepository()
+          ..syncBarrier = barrier.future
+          ..onSync = () => firstSync.complete();
+        final container = _container(
+          FakeIdentityAuthGateway(),
+          repository,
+          wallets: wallets,
+        );
+        final notifier = container.read(authenticationProvider.notifier);
+        final login = notifier.loginWithOAuth('google');
+        await firstSync.future;
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        barrier.complete();
+        await login;
+
+        expect(
+          (container.read(
+            authenticationProvider,
+          ) as AuthenticationUnauthenticated).failure?.code,
+          AuthenticationFailureCode.expired,
+        );
+        repository.expiresAt = DateTime.utc(2030);
+        wallets.onSync = null;
+        await notifier.retry();
+        expect(repository.createCalls, 2);
+        expect(
+          (container.read(
+            authenticationProvider,
+          ) as AuthenticationAuthenticated).session.isExpired,
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'scope invalidation disconnects the retained wallet exactly once',
+      () async {
+        final wallets = _WalletsRepository()
+          ..syncFailure = const DecodingFailure();
+        final container = _container(
+          FakeIdentityAuthGateway(),
+          _SessionRepository(),
+          wallets: wallets,
+        );
+        final notifier = container.read(authenticationProvider.notifier);
+        final connection = _WalletConnection();
+        await notifier.loginWithWallet(() async => connection);
+
+        container.read(sessionGenerationProvider.notifier).clearUserScope();
+        expect(
+          container.read(authenticationProvider),
+          isA<AuthenticationUnauthenticated>(),
+        );
+        await notifier.logout();
+        expect(connection.disconnectCalls, 1);
+      },
+    );
+
+    test(
+      'new wallet login waits until the old connection is disconnected',
+      () async {
+        final wallets = _WalletsRepository()
+          ..syncFailure = const DecodingFailure();
+        final container = _container(
+          FakeIdentityAuthGateway(),
+          _SessionRepository(),
+          wallets: wallets,
+        );
+        final notifier = container.read(authenticationProvider.notifier);
+        final disconnectBarrier = Completer<void>();
+        final disconnectStarted = Completer<void>();
+        final first = _WalletConnection()
+          ..disconnectBarrier = disconnectBarrier.future
+          ..onDisconnect = () => disconnectStarted.complete();
+        final second = _WalletConnection();
+        await notifier.loginWithWallet(() async => first);
+        wallets.syncFailure = null;
+        var connectCalls = 0;
+        final login = notifier.loginWithWallet(() async {
+          connectCalls++;
+          return second;
+        });
+        await disconnectStarted.future;
+        expect(connectCalls, 0);
+        disconnectBarrier.complete();
+        await login;
+        expect(first.disconnectCalls, 1);
+        expect(connectCalls, 1);
+        await notifier.logout();
+        expect(first.disconnectCalls, 1);
+        expect(second.disconnectCalls, 1);
+      },
+    );
+
+    test('provider invalidation releases the retained wallet', () async {
+      final wallets = _WalletsRepository()
+        ..syncFailure = const DecodingFailure();
+      final container = _container(
+        FakeIdentityAuthGateway(),
+        _SessionRepository(),
+        wallets: wallets,
+      );
+      final notifier = container.read(authenticationProvider.notifier);
+      final connection = _WalletConnection();
+      await notifier.loginWithWallet(() async => connection);
+      container.invalidate(authenticationProvider);
+      expect(connection.disconnectCalls, 1);
+    });
+
+    for (final method in ['oauth', 'email', 'bootstrap', 'cancel']) {
+      test(
+        'abandoning wallet retry via $method releases the connection',
+        () async {
+          final wallets = _WalletsRepository()
+            ..syncFailure = const DecodingFailure();
+          final container = _container(
+            FakeIdentityAuthGateway(),
+            _SessionRepository(),
+            wallets: wallets,
+          );
+          final notifier = container.read(authenticationProvider.notifier);
+          final connection = _WalletConnection();
+          await notifier.loginWithWallet(() async => connection);
+          wallets.syncFailure = null;
+          switch (method) {
+            case 'oauth':
+              await notifier.loginWithOAuth('google');
+            case 'email':
+              await notifier.requestEmailCode('user@example.com');
+            case 'bootstrap':
+              await notifier.bootstrap();
+            case 'cancel':
+              notifier.cancelEmailCode();
+          }
+          expect(connection.disconnectCalls, 1);
+        },
+      );
+    }
+
+    test(
+      'connection returned after logout is disconnected without signing',
+      () async {
+        final gateway = FakeIdentityAuthGateway();
+        final repository = _SessionRepository();
+        final container = _container(gateway, repository);
+        final notifier = container.read(authenticationProvider.notifier);
+        final connectBarrier = Completer<WalletConnection>();
+        final connectStarted = Completer<void>();
+        final login = notifier.loginWithWallet(() {
+          connectStarted.complete();
+          return connectBarrier.future;
+        });
+        await connectStarted.future;
+        await notifier.logout();
+        final connection = _WalletConnection();
+        connectBarrier.complete(connection);
+        await login;
+        expect(connection.disconnectCalls, 1);
+        expect(gateway.walletConnection, isNull);
+        expect(repository.createCalls, 0);
+      },
+    );
+
+    for (final abandon in ['logout', 'scope change', 'notifier invalidation']) {
+      test('shared wallet waits for stale cleanup after $abandon', () async {
+        final gateway = FakeIdentityAuthGateway();
+        final repository = _SessionRepository();
+        final container = _container(gateway, repository);
+        final original = container.read(authenticationProvider.notifier);
+        final oldConnectStarted = Completer<void>();
+        final oldConnect = Completer<WalletConnection>();
+        final session = _SharedWalletSession();
+        final cleanupStarted = Completer<void>();
+        final cleanupBarrier = Completer<void>();
+        final oldConnection = _WalletConnection(sharedSession: session)
+          ..disconnectBarrier = cleanupBarrier.future
+          ..onDisconnect = () => cleanupStarted.complete();
+        final oldLogin = original.loginWithWallet(() {
+          oldConnectStarted.complete();
+          return oldConnect.future;
+        });
+        await oldConnectStarted.future;
+        switch (abandon) {
+          case 'logout':
+            await original.logout();
+          case 'scope change':
+            container.read(sessionGenerationProvider.notifier).clearUserScope();
+          case 'notifier invalidation':
+            container.invalidate(authenticationProvider);
+        }
+        // Flush notifier rebuilding as the UI would before another login.
+        container.read(authenticationProvider);
+        final current = container.read(authenticationProvider.notifier);
+        final newConnection = _WalletConnection(sharedSession: session);
+        var newConnectCalls = 0;
+        final newLogin = current.loginWithWallet(() async {
+          newConnectCalls++;
+          session.connected = true;
+          return newConnection;
+        });
+        await Future<void>.delayed(Duration.zero);
+        expect(newConnectCalls, 0);
+
+        session.connected = true;
+        oldConnect.complete(oldConnection);
+        await cleanupStarted.future;
+        expect(newConnectCalls, 0);
+        expect(gateway.walletConnection, isNull);
+        cleanupBarrier.complete();
+        await Future.wait([oldLogin, newLogin]);
+
+        expect(newConnectCalls, 1);
+        expect(oldConnection.disconnectCalls, 1);
+        expect(newConnection.disconnectCalls, 0);
+        expect(session.connected, isTrue);
+        expect(gateway.walletConnection, same(newConnection));
+        expect(repository.createCalls, 1);
+        expect(
+          container.read(authenticationProvider),
+          isA<AuthenticationAuthenticated>(),
+        );
+        expect(await newConnection.signTypedDataV4({}), '0xsignature');
+        await current.logout();
+        expect(newConnection.disconnectCalls, 1);
+        expect(session.connected, isFalse);
+      });
+    }
+
+    test(
+      'a failed stale connect does not block the next wallet login',
+      () async {
+        final gateway = FakeIdentityAuthGateway();
+        final container = _container(gateway, _SessionRepository());
+        final notifier = container.read(authenticationProvider.notifier);
+        final firstStarted = Completer<void>();
+        final firstConnect = Completer<WalletConnection>();
+        final firstLogin = notifier.loginWithWallet(() {
+          firstStarted.complete();
+          return firstConnect.future;
+        });
+        await firstStarted.future;
+        final connection = _WalletConnection();
+        final secondLogin = notifier.loginWithWallet(() async => connection);
+        firstConnect.completeError(
+          const IdentityFailure(
+            AuthenticationFailureCode.provider,
+            retryable: true,
+          ),
+        );
+        await Future.wait([firstLogin, secondLogin]);
+        expect(gateway.walletConnection, same(connection));
+        expect(
+          container.read(authenticationProvider),
+          isA<AuthenticationAuthenticated>(),
+        );
+      },
+    );
+
+    test('superseded queued wallet login never opens the connector', () async {
+      final gateway = FakeIdentityAuthGateway();
+      final container = _container(gateway, _SessionRepository());
+      final notifier = container.read(authenticationProvider.notifier);
+      final firstStarted = Completer<void>();
+      final firstConnect = Completer<WalletConnection>();
+      final firstLogin = notifier.loginWithWallet(() {
+        firstStarted.complete();
+        return firstConnect.future;
+      });
+      await firstStarted.future;
+      var supersededCalls = 0;
+      final superseded = notifier.loginWithWallet(() async {
+        supersededCalls++;
+        return _WalletConnection();
+      });
+      final lastConnection = _WalletConnection();
+      final lastLogin = notifier.loginWithWallet(() async => lastConnection);
+      firstConnect.complete(_WalletConnection());
+      await Future.wait([firstLogin, superseded, lastLogin]);
+      expect(supersededCalls, 0);
+      expect(gateway.walletConnection, same(lastConnection));
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticated>(),
+      );
+    });
+
+    for (final failure in <ApiFailure>[
+      const NetworkFailure(),
+      const TimeoutFailure(),
+      const ServerFailure(
+        statusCode: 503,
+        code: 'temporarily_unavailable',
+        retryable: true,
+      ),
+    ]) {
+      test('recovers from ${failure.runtimeType} with the same key', () async {
+        final repository = _SessionRepository();
+        final gateway = FakeIdentityAuthGateway(
+          restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+        );
+        final wallets = _WalletsRepository()
+          ..syncFailures.addAll([failure, failure]);
+        final container = _container(gateway, repository, wallets: wallets);
+
+        await container.read(authenticationProvider.notifier).bootstrap();
+
+        expect(wallets.syncCalls, 3);
+        expect(
+          wallets.idempotencyKeys,
+          List.filled(3, scopedIdempotencyKey('wallet-sync-session-1')),
+        );
+        expect(repository.createCalls, 1);
+        expect(gateway.ensureEmbeddedWalletCalls, 1);
+        expect(
+          container.read(authenticationProvider),
+          isA<AuthenticationAuthenticated>(),
+        );
+      });
+    }
+
+    for (final failure in <ApiFailure>[
+      const AuthenticationFailure(),
+      const ServerFailure(statusCode: 403, code: 'forbidden'),
+      const ServerFailure(statusCode: 409, code: 'conflict'),
+      const ServerFailure(statusCode: 422, code: 'invalid_wallet'),
+      const ServerFailure(statusCode: 503, code: 'service_unconfigured'),
+      const DecodingFailure(),
+      const CancelledFailure(),
+    ]) {
+      test('does not retry ${failure.kind.name} when not retryable', () async {
+        final wallets = _WalletsRepository()..syncFailure = failure;
+        final container = _container(
+          FakeIdentityAuthGateway(
+            restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+          ),
+          _SessionRepository(),
+          wallets: wallets,
+        );
+
+        await container.read(authenticationProvider.notifier).bootstrap();
+
+        expect(wallets.syncCalls, 1);
+        final state =
+            container.read(authenticationProvider) as AuthenticationFailed;
+        expect(state.failure.code, AuthenticationFailureCode.walletSync);
+        expect(state.failure.retryable, isFalse);
+      });
+    }
+
+    test('preserves the final request ID when retries are exhausted', () async {
+      final wallets = _WalletsRepository()
+        ..syncFailures.addAll([
+          const TimeoutFailure(requestId: 'attempt-1'),
+          const NetworkFailure(requestId: 'attempt-2'),
+          const ServerFailure(
+            statusCode: 503,
+            code: 'temporarily_unavailable',
+            retryable: true,
+            requestId: 'attempt-3',
+          ),
+        ]);
+      final container = _container(
+        FakeIdentityAuthGateway(
+          restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+        ),
+        _SessionRepository(),
+        wallets: wallets,
+      );
+
+      await container.read(authenticationProvider.notifier).bootstrap();
+
+      expect(wallets.syncCalls, 3);
+      final state =
+          container.read(authenticationProvider) as AuthenticationFailed;
+      expect(state.failure.code, AuthenticationFailureCode.walletSync);
+      expect(state.failure.requestId, 'attempt-3');
+    });
+
+    test('logout during backoff prevents further sync attempts', () async {
+      final firstSync = Completer<void>();
+      final wallets = _WalletsRepository()
+        ..syncFailure = const NetworkFailure()
+        ..onSync = () => firstSync.complete();
+      final container = _container(
+        FakeIdentityAuthGateway(
+          restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+        ),
+        _SessionRepository(),
+        wallets: wallets,
+      );
+      final notifier = container.read(authenticationProvider.notifier);
+
+      final bootstrap = notifier.bootstrap();
+      await firstSync.future;
+      await notifier.logout();
+      await bootstrap;
+
+      expect(wallets.syncCalls, 1);
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationUnauthenticated>(),
+      );
+    });
+
+    test(
+      'manual retry resumes the session without resubmitting the OTP',
+      () async {
+        final gateway = FakeIdentityAuthGateway();
+        final repository = _SessionRepository();
+        final wallets = _WalletsRepository()
+          ..syncFailure = const NetworkFailure();
+        final container = _container(gateway, repository, wallets: wallets);
+        final notifier = container.read(authenticationProvider.notifier);
+        await notifier.bootstrap();
+        await notifier.requestEmailCode('user@example.com');
+        await notifier.verifyEmailCode('123456');
+        final state = container.read(
+          authenticationProvider,
+        ) as AuthenticationAwaitingCode;
+        expect(state.failure?.code, AuthenticationFailureCode.walletSync);
+
+        gateway.initializeFailure = const IdentityFailure(
+          AuthenticationFailureCode.provider,
+          retryable: false,
+        );
+        gateway.verifyFailure = const IdentityFailure(
+          AuthenticationFailureCode.invalidCode,
+          retryable: false,
+        );
+        wallets.syncFailure = null;
+        await notifier.retry();
+
+        expect(wallets.syncCalls, 4);
+        expect(wallets.idempotencyKeys.toSet(), hasLength(1));
+        expect(repository.createCalls, 1);
+        expect(gateway.ensureEmbeddedWalletCalls, 1);
+        expect(
+          container.read(authenticationProvider),
+          isA<AuthenticationAuthenticated>(),
+        );
+      },
+    );
+
+    test('manual wallet retry preserves the connected wallet', () async {
+      final gateway = FakeIdentityAuthGateway();
+      final repository = _SessionRepository();
+      final wallets = _WalletsRepository()
+        ..syncFailure = const ServerFailure(
+          statusCode: 503,
+          code: 'service_unconfigured',
+        );
+      final container = _container(gateway, repository, wallets: wallets);
+      final notifier = container.read(authenticationProvider.notifier);
+      final connection = _WalletConnection();
+      await notifier.loginWithWallet(() async => connection);
+      expect(
+        (container.read(
+          authenticationProvider,
+        ) as AuthenticationUnauthenticated).failure?.code,
+        AuthenticationFailureCode.walletSync,
+      );
+
+      gateway.initializeFailure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: false,
+      );
+      gateway.walletLoginFailure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: false,
+      );
+      wallets.syncFailure = null;
+      await notifier.retry();
+
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticated>(),
+      );
+      expect(repository.createCalls, 1);
+      expect(wallets.idempotencyKeys.toSet(), hasLength(1));
+      expect(connection.disconnectCalls, 0);
+      await notifier.logout();
+      expect(connection.disconnectCalls, 1);
+    });
+
+    test('repeated manual taps do not start concurrent syncs', () async {
+      final repository = _SessionRepository();
+      final wallets = _WalletsRepository()
+        ..syncFailure = const DecodingFailure();
+      final container = _container(
+        FakeIdentityAuthGateway(),
+        repository,
+        wallets: wallets,
+      );
+      final notifier = container.read(authenticationProvider.notifier);
+      await notifier.loginWithOAuth('google');
+      final barrier = Completer<void>();
+      wallets.syncFailure = null;
+      wallets.syncBarrier = barrier.future;
+
+      final retry = notifier.retry();
+      await notifier.retry();
+      expect(wallets.syncCalls, 2);
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticating>(),
+      );
+      barrier.complete();
+      await retry;
+
+      expect(repository.createCalls, 1);
+      expect(
+        container.read(authenticationProvider),
+        isA<AuthenticationAuthenticated>(),
+      );
+    });
+
+    test(
+      'changing session scope cancels backoff and clears pending sync',
+      () async {
+        final firstSync = Completer<void>();
+        final wallets = _WalletsRepository()
+          ..syncFailure = const NetworkFailure()
+          ..onSync = () => firstSync.complete();
+        final gateway = FakeIdentityAuthGateway(
+          restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+        );
+        final container = _container(
+          gateway,
+          _SessionRepository(),
+          wallets: wallets,
+        );
+        final notifier = container.read(authenticationProvider.notifier);
+
+        final bootstrap = notifier.bootstrap();
+        await firstSync.future;
+        container.read(sessionGenerationProvider.notifier).clearUserScope();
+        await bootstrap;
+        expect(wallets.syncCalls, 1);
+        expect(
+          container.read(authenticationProvider),
+          isA<AuthenticationUnauthenticated>(),
+        );
+
+        gateway.restoredPrincipal = null;
+        await notifier.retry();
+        expect(wallets.syncCalls, 1);
+        expect(
+          container.read(authenticationProvider),
+          isA<AuthenticationUnauthenticated>(),
+        );
+      },
+    );
+  });
 
   test(
     'backend session failure is reported separately from Privy authentication',
@@ -383,6 +993,8 @@ ProviderContainer _container(
 }
 
 final class _SessionRepository implements SessionRepository {
+  DateTime expiresAt = DateTime.utc(2030);
+  String sessionId = 'session-1';
   int createCalls = 0;
   int logoutCalls = 0;
   ApiFailure? createFailure;
@@ -399,9 +1011,9 @@ final class _SessionRepository implements SessionRepository {
     }
     if (createFailure case final failure?) throw failure;
     return ProductSession(
-      sessionId: 'session-1',
+      sessionId: sessionId,
       createdAt: DateTime.utc(2026),
-      expiresAt: DateTime.utc(2027),
+      expiresAt: expiresAt,
       generation: generation,
       accountCreated: true,
       account: const UserAccount(
@@ -427,11 +1039,19 @@ final class _WalletsRepository implements WalletsRepository {
   int syncCalls = 0;
   String? lastIdempotencyKey;
   ApiFailure? syncFailure;
+  final syncFailures = <ApiFailure>[];
+  final idempotencyKeys = <String>[];
+  void Function()? onSync;
+  Future<void>? syncBarrier;
 
   @override
   Future<Wallet> syncWallet({required String idempotencyKey}) async {
     syncCalls++;
     lastIdempotencyKey = idempotencyKey;
+    idempotencyKeys.add(idempotencyKey);
+    onSync?.call();
+    await syncBarrier;
+    if (syncFailures.isNotEmpty) throw syncFailures.removeAt(0);
     if (syncFailure case final failure?) throw failure;
     return Wallet(
       walletId: 'wallet-1',
@@ -464,8 +1084,17 @@ final class _WalletsRepository implements WalletsRepository {
   }) => throw UnimplementedError();
 }
 
+final class _SharedWalletSession {
+  var connected = false;
+}
+
 final class _WalletConnection implements WalletConnection {
+  _WalletConnection({this.sharedSession});
+
+  final _SharedWalletSession? sharedSession;
   int disconnectCalls = 0;
+  Future<void>? disconnectBarrier;
+  void Function()? onDisconnect;
 
   @override
   String get address => '0x0000000000000000000000000000000000000001';
@@ -479,12 +1108,19 @@ final class _WalletConnection implements WalletConnection {
   @override
   Future<void> disconnect() async {
     disconnectCalls++;
+    onDisconnect?.call();
+    await disconnectBarrier;
+    if (sharedSession case final session?) session.connected = false;
   }
 
   @override
   Future<String> signPersonalMessage(String message) async => '0xsignature';
 
   @override
-  Future<String> signTypedDataV4(Map<String, Object?> typedData) async =>
-      '0xsignature';
+  Future<String> signTypedDataV4(Map<String, Object?> typedData) async {
+    if (sharedSession?.connected == false) {
+      throw StateError('Wallet disconnected');
+    }
+    return '0xsignature';
+  }
 }
