@@ -27,6 +27,61 @@ import '../../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets('renders the refreshed login artwork and legal footer', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identityAuthGatewayProvider.overrideWithValue(
+            FakeIdentityAuthGateway(),
+          ),
+        ],
+        child: buildTestApp(
+          const PrivyLoginScreen(
+            authentication: AuthenticationUnauthenticated(),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('login-wordmark')), findsOneWidget);
+    expect(find.text('Welcome to nobell'), findsOneWidget);
+    expect(find.text('Sign up or log in to start trading'), findsOneWidget);
+
+    final backdrop = tester.widget<DecoratedBox>(
+      find.byKey(const Key('login-backdrop')),
+    );
+    final decoration = backdrop.decoration as BoxDecoration;
+    expect(
+      decoration.gradient,
+      const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFFF9D6E8),
+          Color(0xFFF6DFEC),
+          Color(0xFFF2E5EF),
+          Color(0xFFF7F0F6),
+        ],
+        stops: [0, .36, .72, 1],
+      ),
+    );
+
+    final footer = tester.widget<Padding>(
+      find.byKey(const Key('login-legal-footer')),
+    );
+    expect(footer.padding, const EdgeInsets.fromLTRB(28, 0, 28, 28));
+    final terms = tester.widget<Text>(
+      find.text('By using this app, you agree to the Terms & Conditions.'),
+    );
+    expect(terms.style?.color, const Color(0xFF616370));
+    final termsSpan = terms.textSpan! as TextSpan;
+    expect(termsSpan.children?[1].style?.fontWeight, FontWeight.w600);
+  });
+
   for (final method in [
     'startup',
     'OAuth login',

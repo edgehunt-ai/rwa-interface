@@ -244,35 +244,18 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
           children: [
             const Positioned.fill(
               child: DecoratedBox(
+                key: Key('login-backdrop'),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFFF7F7FA),
-                      Color(0xFFF7F7FA),
-                      Color(0xFFFFB5F2),
+                      Color(0xFFF9D6E8),
+                      Color(0xFFF6DFEC),
+                      Color(0xFFF2E5EF),
+                      Color(0xFFF7F0F6),
                     ],
-                    stops: [0, .53, 1],
-                  ),
-                ),
-              ),
-            ),
-            // The reference uses a saturated pink glow behind the legal copy.
-            // Keeping it in the background preserves the white text contrast
-            // while allowing the form itself to scroll on smaller devices.
-            const Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 300,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment(0, .9),
-                    radius: 1.05,
-                    colors: [Color(0xFFE96BD5), Color(0x00FFE0FA)],
-                    stops: [0, .9],
+                    stops: [0, .36, .72, 1],
                   ),
                 ),
               ),
@@ -282,49 +265,50 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                 child: SingleChildScrollView(
                   padding: EdgeInsets.fromLTRB(
                     28,
-                    48,
+                    100,
                     28,
-                    132 + MediaQuery.viewInsetsOf(context).bottom,
+                    104 + MediaQuery.viewInsetsOf(context).bottom,
                   ),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 393),
+                    constraints: const BoxConstraints(maxWidth: 337),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Center(
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFF6FDB),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                          child: SvgPicture.asset(
+                            'assets/figma/session/nobell_wordmark.svg',
+                            key: const Key('login-wordmark'),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 44),
                         Text(
                           waitingForCode
                               ? l10n.enterConfirmationCode
-                              : l10n.signUpOrLogIn,
+                              : l10n.loginWelcome,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
                                 color: Colors.black,
-                                fontSize: 20,
-                                height: 27 / 20,
+                                fontSize: 22,
+                                height: 27 / 22,
                                 fontWeight: FontWeight.w500,
                               ),
                         ),
-                        if (waitingForCode) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.emailCodeSent(state.email),
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(color: colors.secondaryText),
+                        const SizedBox(height: 15),
+                        Text(
+                          waitingForCode
+                              ? l10n.emailCodeSent(state.email)
+                              : l10n.loginSubtitle,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: waitingForCode
+                                ? colors.secondaryText
+                                : const Color(0xFF636673),
+                            fontSize: 13,
+                            height: 18 / 13,
                           ),
-                        ],
-                        const SizedBox(height: 48),
+                        ),
+                        const SizedBox(height: 42),
                         if (busy) ...[
                           const SizedBox(height: 120),
                           const Center(
@@ -482,7 +466,8 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                 child: SafeArea(
                   top: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 48),
+                    key: const Key('login-legal-footer'),
+                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -490,25 +475,24 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
                           'assets/figma/session/protected_by_privy.svg',
                           width: 150,
                           height: 13,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
-                            BlendMode.srcIn,
-                          ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          l10n.termsAgreement,
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: l10n.termsAgreementPrefix),
+                              TextSpan(
+                                text: l10n.termsAgreementLink,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              TextSpan(text: l10n.termsAgreementSuffix),
+                            ],
+                          ),
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                shadows: const [
-                                  Shadow(
-                                    color: Color(0x33000000),
-                                    blurRadius: 2,
-                                  ),
-                                ],
-                              ),
+                              ?.copyWith(color: const Color(0xFF616370)),
                         ),
                       ],
                     ),

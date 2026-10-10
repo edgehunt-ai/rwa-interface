@@ -1564,6 +1564,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signUpOrLogIn => 'Sign up or log in to start exploring';
 
   @override
+  String get loginWelcome => 'Welcome to nobell';
+
+  @override
+  String get loginSubtitle => 'Sign up or log in to start trading';
+
+  @override
   String emailCodeSent(Object email) {
     return 'Please check $email for an email from privy.io and enter your code below.';
   }
@@ -1598,6 +1604,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get termsAgreement =>
       'By using this app, you agree to the Terms & Conditions.';
+
+  @override
+  String get termsAgreementPrefix => 'By using this app, you agree to the ';
+
+  @override
+  String get termsAgreementLink => 'Terms & Conditions';
+
+  @override
+  String get termsAgreementSuffix => '.';
 
   @override
   String get tpSlRiskAgreementPrefix => 'I have read and agree to the ';

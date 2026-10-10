@@ -1500,6 +1500,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signUpOrLogIn => '注册或登录以开始探索';
 
   @override
+  String get loginWelcome => '欢迎来到 nobell';
+
+  @override
+  String get loginSubtitle => '注册或登录即可开始交易';
+
+  @override
   String emailCodeSent(Object email) {
     return '请检查发送至 $email 的 privy.io 邮件，然后输入下方验证码。';
   }
@@ -1533,6 +1539,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get termsAgreement => '使用本应用即表示你同意条款与条件。';
+
+  @override
+  String get termsAgreementPrefix => '使用本应用即表示你同意';
+
+  @override
+  String get termsAgreementLink => '条款与条件';
+
+  @override
+  String get termsAgreementSuffix => '。';
 
   @override
   String get tpSlRiskAgreementPrefix => '我已阅读并同意';

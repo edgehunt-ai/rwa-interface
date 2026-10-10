@@ -2966,6 +2966,18 @@ abstract class AppLocalizations {
   /// **'Sign up or log in to start exploring'**
   String get signUpOrLogIn;
 
+  /// No description provided for @loginWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to nobell'**
+  String get loginWelcome;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up or log in to start trading'**
+  String get loginSubtitle;
+
   /// No description provided for @emailCodeSent.
   ///
   /// In en, this message translates to:
@@ -3031,6 +3043,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By using this app, you agree to the Terms & Conditions.'**
   String get termsAgreement;
+
+  /// No description provided for @termsAgreementPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'By using this app, you agree to the '**
+  String get termsAgreementPrefix;
+
+  /// No description provided for @termsAgreementLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms & Conditions'**
+  String get termsAgreementLink;
+
+  /// No description provided for @termsAgreementSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'.'**
+  String get termsAgreementSuffix;
 
   /// No description provided for @tpSlRiskAgreementPrefix.
   ///
