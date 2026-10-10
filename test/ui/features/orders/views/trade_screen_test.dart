@@ -981,7 +981,42 @@ void main() {
       expect(find.text('Open (1)'), findsOneWidget);
       expect(find.text('Filled / Total'), findsOneWidget);
       expect(find.text('NVDAB/TUSDT'), findsOneWidget);
-      expect(find.text('123.45 TUSDT'), findsOneWidget);
+      expect(find.text('Buy / Limit'), findsOneWidget);
+      expect(find.text('40 / 200'), findsOneWidget);
+      expect(find.text('123.45'), findsOneWidget);
+      expect(find.text('1/5'), findsOneWidget);
+      expect(find.text('123.45 TUSDT'), findsNothing);
+
+      final semantic = AppTheme.light.extension<AppSemanticColors>()!;
+      final colors = AppTheme.light.extension<AppRwaColors>()!;
+      final typeChip = tester.widget<Container>(
+        find.byKey(const ValueKey('trade-open-order-type-chip-open-order')),
+      );
+      expect(
+        (typeChip.decoration! as BoxDecoration).color,
+        semantic.successSoft,
+      );
+      expect(
+        tester.widget<Text>(find.text('Buy / Limit')).style?.color,
+        semantic.success,
+      );
+      final indicator = tester.widget<LinearProgressIndicator>(
+        find.descendant(
+          of: find.byKey(
+            const ValueKey('trade-open-order-progress-open-order'),
+          ),
+          matching: find.byType(LinearProgressIndicator),
+        ),
+      );
+      expect(indicator.value, 0.2);
+      expect(indicator.backgroundColor, colors.subtleSurface);
+      expect(indicator.valueColor?.value, colors.selected);
+      expect(
+        tester.getSize(
+          find.byKey(const ValueKey('trade-open-order-progress-open-order')),
+        ),
+        const Size(40, 8),
+      );
       expect(repository.lastStatusGroup, 'open');
       expect(repository.lastSymbol, 'NVDAB');
 
@@ -1010,8 +1045,12 @@ void main() {
       await _scrollToTradeTab(tester, 'Open');
       await tester.tap(_tradeTab('Open'));
       await tester.pumpAndSettle();
-      expect(find.text('NVDAB/${asset ?? '—'}'), findsOneWidget);
+      expect(
+        find.text(asset == null ? 'NVDAB' : 'NVDAB/$asset'),
+        findsOneWidget,
+      );
       expect(find.text('NVDAB/USDC'), findsNothing);
+      expect(find.text('NVDAB/—'), findsNothing);
       final cancel = find.widgetWithText(OutlinedButton, 'Cancel');
       expect(tester.widget<OutlinedButton>(cancel).onPressed, isNull);
       expect(repository.cancelledOrderId, isNull);
@@ -1482,6 +1521,8 @@ final class _OpenOrderRepository implements OrdersRepository {
     limitPrice: type == TradingOrderType.limit
         ? DecimalValue('123.45', asset: settlementAsset, unit: 'price')
         : null,
+    quantity: DecimalValue('200', asset: 'NVDAB', unit: 'token'),
+    filledQuantity: DecimalValue('40', asset: 'NVDAB', unit: 'token'),
     createdAt: DateTime.utc(2026),
   );
 

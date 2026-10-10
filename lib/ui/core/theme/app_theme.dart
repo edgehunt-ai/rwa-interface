@@ -6,18 +6,26 @@ const kShortTradeColor = Color(0xFFDE596E);
 class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   const AppSemanticColors({
     required this.success,
+    required this.successSoft,
     required this.warning,
     required this.loss,
   });
 
   final Color success;
+  final Color successSoft;
   final Color warning;
   final Color loss;
 
   @override
-  AppSemanticColors copyWith({Color? success, Color? warning, Color? loss}) {
+  AppSemanticColors copyWith({
+    Color? success,
+    Color? successSoft,
+    Color? warning,
+    Color? loss,
+  }) {
     return AppSemanticColors(
       success: success ?? this.success,
+      successSoft: successSoft ?? this.successSoft,
       warning: warning ?? this.warning,
       loss: loss ?? this.loss,
     );
@@ -28,6 +36,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     if (other == null) return this;
     return AppSemanticColors(
       success: Color.lerp(success, other.success, t)!,
+      successSoft: Color.lerp(successSoft, other.successSoft, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       loss: Color.lerp(loss, other.loss, t)!,
     );
@@ -268,6 +277,9 @@ abstract final class AppTheme {
       extensions: [
         AppSemanticColors(
           success: isDark ? const Color(0xFF6DDB8A) : const Color(0xFF04A08B),
+          successSoft: isDark
+              ? const Color(0xFF173D37)
+              : const Color(0xFFE9F8F4),
           warning: isDark ? const Color(0xFFFFCB66) : const Color(0xFF8A5700),
           loss: isDark ? const Color(0xFFFF8A8A) : const Color(0xFFB3261E),
         ),

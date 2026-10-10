@@ -299,10 +299,17 @@ class _OpenOrderCard extends StatelessWidget {
         ? (filledValue / total).clamp(0.0, 1.0)
         : null;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final side = order.side == TradingSide.buy ? l10n.buy : l10n.sell;
     final type = order.type == TradingOrderType.limit
         ? l10n.limit
         : l10n.market;
+    final settlementAsset =
+        order.settlementAsset ??
+        (order.kind == MarketProductKind.perp ? 'USDC' : null);
+    final pair = settlementAsset == null || settlementAsset.isEmpty
+        ? order.symbol
+        : '${order.symbol}/$settlementAsset';
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(16),
@@ -321,7 +328,7 @@ class _OpenOrderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${order.symbol}/${order.settlementAsset ?? (order.kind == MarketProductKind.perp ? 'USDC' : '—')}',
+                      pair,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -335,17 +342,23 @@ class _OpenOrderCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          height: 18,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          key: ValueKey(
+                            'trade-open-order-type-chip-${order.orderId}',
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: colors.border,
+                            color: semantic.successSoft,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '$side · $type',
-                            style: const TextStyle(
+                            '$side / $type',
+                            style: TextStyle(
                               fontSize: 11,
                               height: 14 / 11,
+                              color: semantic.success,
                             ),
                           ),
                         ),
@@ -404,9 +417,7 @@ class _OpenOrderCard extends StatelessWidget {
                   l10n.price,
                   order.limitPrice == null
                       ? l10n.market
-                      : order.kind == MarketProductKind.bstock
-                      ? '${TokenAmountFormatter.formatValue(order.limitPrice!)} ${order.settlementAsset ?? '—'}'
-                      : TokenAmountFormatter.formatUsd(order.limitPrice!),
+                      : TokenAmountFormatter.formatValue(order.limitPrice!),
                 ),
               ),
               Expanded(
@@ -428,6 +439,9 @@ class _OpenOrderCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           SizedBox(
+                            key: ValueKey(
+                              'trade-open-order-progress-${order.orderId}',
+                            ),
                             width: 40,
                             height: 8,
                             child: ClipRRect(
@@ -437,7 +451,7 @@ class _OpenOrderCard extends StatelessWidget {
                                 minHeight: 8,
                                 backgroundColor: colors.subtleSurface,
                                 valueColor: AlwaysStoppedAnimation(
-                                  colors.primaryAction,
+                                  colors.selected,
                                 ),
                                 semanticsLabel: l10n.filled,
                                 semanticsValue: progress == null
@@ -448,9 +462,7 @@ class _OpenOrderCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            progress == null
-                                ? '—'
-                                : '${(progress * 100).round()}%',
+                            _formatProgressFraction(filled, quantity),
                             style: const TextStyle(
                               fontSize: 12,
                               height: 16 / 12,
@@ -469,6 +481,23 @@ class _OpenOrderCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatProgressFraction(DecimalValue? filled, DecimalValue? total) {
+  if (filled == null || total == null) return '—';
+  final scale = max(filled.scale, total.scale);
+  var numerator = _scaledDecimalInteger(filled, scale);
+  final denominator = _scaledDecimalInteger(total, scale);
+  if (numerator.isNegative || denominator <= BigInt.zero) return '—';
+  if (numerator > denominator) numerator = denominator;
+  if (numerator == BigInt.zero) return '0/1';
+  final divisor = numerator.gcd(denominator);
+  return '${numerator ~/ divisor}/${denominator ~/ divisor}';
+}
+
+BigInt _scaledDecimalInteger(DecimalValue value, int scale) {
+  final digits = value.value.replaceAll('.', '');
+  return BigInt.parse(digits) * BigInt.from(10).pow(scale - value.scale);
 }
 
 class _TradeMetric extends StatelessWidget {
