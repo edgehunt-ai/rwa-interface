@@ -269,6 +269,16 @@ class _PortfolioCard extends StatelessWidget {
                 height: 22 / 15,
                 fontWeight: FontWeight.w500,
               ),
+            )
+          else
+            Text(
+              'No performance yet',
+              style: TextStyle(
+                color: colors.secondaryText,
+                fontSize: 15,
+                height: 22 / 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
         ],
       ),

@@ -153,8 +153,11 @@ void main() {
           find.text('—'),
           scenario.total == '0' ? findsOneWidget : findsNothing,
         );
+        expect(
+          find.text('No performance yet'),
+          scenario.total == '0' ? findsNothing : findsOneWidget,
+        );
       }
-      expect(find.text('No performance yet'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }
