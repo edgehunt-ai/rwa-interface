@@ -177,24 +177,32 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthenticationState>(authenticationProvider, (previous, next) {
-      if (next is AuthenticationAuthenticated && mounted) {
-        if (widget.returnToHomeOnSuccess) {
-          context.goNamed(AppRoutes.homeName);
-        } else {
-          Navigator.of(context).maybePop();
-        }
+      if (next is! AuthenticationAuthenticated ||
+          next.setupStatus != AuthenticationSetupStatus.ready ||
+          !mounted) {
+        return;
+      }
+      if (widget.returnToHomeOnSuccess) {
+        context.goNamed(AppRoutes.homeName);
+      } else {
+        Navigator.of(context).maybePop();
       }
     });
     final state = widget.authentication;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     final waitingForCode = state is AuthenticationAwaitingCode;
+    final setupStatus = state is AuthenticationAuthenticated
+        ? state.setupStatus
+        : null;
     final busy =
         state is AuthenticationInitializing ||
-        state is AuthenticationAuthenticating;
+        state is AuthenticationAuthenticating ||
+        setupStatus == AuthenticationSetupStatus.initializing;
     final failure = switch (state) {
       AuthenticationUnauthenticated(:final failure) => failure,
       AuthenticationAwaitingCode(:final failure) => failure,
+      AuthenticationAuthenticated(:final setupFailure) => setupFailure,
       AuthenticationFailed(:final failure) => failure,
       AuthenticationUnsupported(:final failure) => failure,
       _ => null,

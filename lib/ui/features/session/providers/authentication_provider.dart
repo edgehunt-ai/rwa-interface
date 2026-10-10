@@ -25,6 +25,7 @@ final authenticationProvider =
 typedef _PendingWalletSync = ({
   ProductSession session,
   IdentityPrincipal principal,
+  bool walletReady,
 });
 
 final class AuthenticationNotifier extends Notifier<AuthenticationState> {
@@ -277,8 +278,14 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
 
   Future<void> retry({String? language}) async {
     if (state is AuthenticationInitializing ||
-        state is AuthenticationAuthenticating ||
-        state is AuthenticationAuthenticated) {
+        state is AuthenticationAuthenticating) {
+      return;
+    }
+    final authenticated = state is AuthenticationAuthenticated
+        ? state as AuthenticationAuthenticated
+        : null;
+    if (authenticated != null &&
+        authenticated.setupStatus != AuthenticationSetupStatus.failed) {
       return;
     }
     final pending = _pendingWalletSync;
@@ -292,7 +299,14 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
     // Identity and the product session already succeeded. Resume the failed
     // sync without reinitializing Privy or asking for another OTP/signature.
     final operation = ++_epoch;
-    state = const AuthenticationAuthenticating();
+    if (authenticated == null) {
+      state = const AuthenticationAuthenticating();
+    } else {
+      _setAuthenticatedState(
+        pending,
+        setupStatus: AuthenticationSetupStatus.initializing,
+      );
+    }
     try {
       if (pending.session.isExpired) {
         await _establishSession(
@@ -301,7 +315,7 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
           language: language ?? pending.session.account.settings.language,
         );
       } else {
-        await _completeSession(operation, pending.session, pending.principal);
+        await _completeSessionSetup(operation, pending);
       }
     } on IdentityFailure catch (failure) {
       if (_isCurrent(operation)) state = AuthenticationFailed(failure);
@@ -375,45 +389,98 @@ final class AuthenticationNotifier extends Notifier<AuthenticationState> {
         ref.read(appReviewModeProvider.notifier).setEnabled(true);
       }
     }
-    await _gateway.ensureEmbeddedWallet();
-    if (!_isCurrent(operation) ||
-        ref.read(sessionGenerationProvider).value != generation) {
-      return;
-    }
-    _pendingWalletSync = (session: session, principal: principal);
-    await _completeSession(operation, session, principal);
-  }
-
-  Future<void> _completeSession(
-    int operation,
-    ProductSession session,
-    IdentityPrincipal principal,
-  ) async {
-    final generation = session.generation;
-    _requireUsableSession(session);
-    if (!await _syncWallet(session, operation: operation)) return;
-    _requireUsableSession(session);
-    await _activateNotifications(session.account.settings);
-    if (!_isCurrent(operation) ||
-        ref.read(sessionGenerationProvider).value != generation) {
-      return;
-    }
-    await ref
-        .read(observabilityReporterProvider)
-        .setUserId(session.account.userId);
-    if (!_isCurrent(operation) ||
-        ref.read(sessionGenerationProvider).value != generation) {
-      await ref.read(observabilityReporterProvider).clearUser();
-      return;
-    }
-    // The session can expire while synchronization or optional setup is pending.
+    final pending = (
+      session: session,
+      principal: principal,
+      walletReady: false,
+    );
+    _pendingWalletSync = pending;
     _requireUsableSession(session);
     ref
         .read(appLocaleProvider.notifier)
         .setLanguage(session.account.settings.language);
-    _pendingWalletSync = null;
     _activeEmail = null;
-    state = AuthenticationAuthenticated(session, principal: principal);
+    _setAuthenticatedState(
+      pending,
+      setupStatus: AuthenticationSetupStatus.initializing,
+    );
+    await _completeSessionSetup(operation, pending);
+  }
+
+  Future<void> _completeSessionSetup(
+    int operation,
+    _PendingWalletSync pending,
+  ) async {
+    var current = pending;
+    final (:session, :principal, :walletReady) = current;
+    final generation = session.generation;
+    try {
+      if (!walletReady) {
+        await _gateway.ensureEmbeddedWallet();
+        if (!_isCurrent(operation) ||
+            ref.read(sessionGenerationProvider).value != generation) {
+          return;
+        }
+        current = (session: session, principal: principal, walletReady: true);
+        _pendingWalletSync = current;
+      }
+      if (!await _syncWallet(session, operation: operation)) return;
+      _requireUsableSession(session);
+      _pendingWalletSync = null;
+      _setAuthenticatedState(
+        current,
+        setupStatus: AuthenticationSetupStatus.ready,
+      );
+
+      await _activateNotifications(session.account.settings);
+      if (!_isCurrent(operation) ||
+          ref.read(sessionGenerationProvider).value != generation) {
+        return;
+      }
+      try {
+        await ref
+            .read(observabilityReporterProvider)
+            .setUserId(session.account.userId);
+      } catch (_) {
+        // Observability setup is best-effort and must not delay authentication.
+      }
+      if (!_isCurrent(operation) ||
+          ref.read(sessionGenerationProvider).value != generation) {
+        await ref.read(observabilityReporterProvider).clearUser();
+      }
+    } on IdentityFailure catch (failure) {
+      if (_isCurrent(operation)) {
+        _setAuthenticatedState(
+          current,
+          setupStatus: AuthenticationSetupStatus.failed,
+          setupFailure: failure,
+        );
+      }
+    } catch (_) {
+      if (_isCurrent(operation)) {
+        _setAuthenticatedState(
+          current,
+          setupStatus: AuthenticationSetupStatus.failed,
+          setupFailure: const IdentityFailure(
+            AuthenticationFailureCode.provider,
+            retryable: true,
+          ),
+        );
+      }
+    }
+  }
+
+  void _setAuthenticatedState(
+    _PendingWalletSync pending, {
+    required AuthenticationSetupStatus setupStatus,
+    IdentityFailure? setupFailure,
+  }) {
+    state = AuthenticationAuthenticated(
+      pending.session,
+      principal: pending.principal,
+      setupStatus: setupStatus,
+      setupFailure: setupFailure,
+    );
   }
 
   bool get _emailEnabled => PrivyConfiguration.loginMethods.contains('email');

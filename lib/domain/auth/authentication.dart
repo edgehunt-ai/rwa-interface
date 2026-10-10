@@ -69,11 +69,24 @@ final class AuthenticationAuthenticating extends AuthenticationState {
   final String? email;
 }
 
+enum AuthenticationSetupStatus { initializing, ready, failed }
+
 final class AuthenticationAuthenticated extends AuthenticationState {
-  const AuthenticationAuthenticated(this.session, {required this.principal});
+  const AuthenticationAuthenticated(
+    this.session, {
+    required this.principal,
+    this.setupStatus = AuthenticationSetupStatus.ready,
+    this.setupFailure,
+  }) : assert(
+         setupStatus == AuthenticationSetupStatus.failed
+             ? setupFailure != null
+             : setupFailure == null,
+       );
 
   final ProductSession session;
   final IdentityPrincipal principal;
+  final AuthenticationSetupStatus setupStatus;
+  final IdentityFailure? setupFailure;
 }
 
 final class AuthenticationFailed extends AuthenticationState {

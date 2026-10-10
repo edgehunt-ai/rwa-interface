@@ -95,6 +95,37 @@ void main() {
     );
   });
 
+  test('publishes authenticated state before wallet sync completes', () async {
+    final syncStarted = Completer<void>();
+    final syncBarrier = Completer<void>();
+    final wallets = _WalletsRepository()
+      ..onSync = syncStarted.complete
+      ..syncBarrier = syncBarrier.future;
+    final container = _container(
+      FakeIdentityAuthGateway(
+        restoredPrincipal: const IdentityPrincipal('did:privy:1'),
+      ),
+      _SessionRepository(),
+      wallets: wallets,
+    );
+
+    final bootstrap = container
+        .read(authenticationProvider.notifier)
+        .bootstrap();
+    await syncStarted.future;
+
+    var state =
+        container.read(authenticationProvider) as AuthenticationAuthenticated;
+    expect(state.setupStatus, AuthenticationSetupStatus.initializing);
+
+    syncBarrier.complete();
+    await bootstrap;
+
+    state =
+        container.read(authenticationProvider) as AuthenticationAuthenticated;
+    expect(state.setupStatus, AuthenticationSetupStatus.ready);
+  });
+
   test(
     'embedded wallet is provisioned before syncing a wallet-less new signup',
     () async {
@@ -141,12 +172,10 @@ void main() {
 
       expect(gateway.ensureEmbeddedWalletCalls, 1);
       expect(wallets.syncCalls, 0);
-      final state = container.read(authenticationProvider);
-      expect(state, isA<AuthenticationFailed>());
-      expect(
-        (state as AuthenticationFailed).failure.code,
-        AuthenticationFailureCode.provider,
-      );
+      final state =
+          container.read(authenticationProvider) as AuthenticationAuthenticated;
+      expect(state.setupStatus, AuthenticationSetupStatus.failed);
+      expect(state.setupFailure?.code, AuthenticationFailureCode.provider);
     },
   );
 
@@ -179,9 +208,10 @@ void main() {
       await container.read(authenticationProvider.notifier).bootstrap();
 
       expect(wallets.syncCalls, 3);
-      final state = container.read(authenticationProvider);
-      expect(state, isA<AuthenticationFailed>());
-      final failure = (state as AuthenticationFailed).failure;
+      final state =
+          container.read(authenticationProvider) as AuthenticationAuthenticated;
+      expect(state.setupStatus, AuthenticationSetupStatus.failed);
+      final failure = state.setupFailure!;
       expect(failure.code, AuthenticationFailureCode.walletSync);
       expect(failure.requestId, 'wallet-request-id');
       expect(failure.retryable, isTrue);
@@ -234,7 +264,7 @@ void main() {
     );
 
     test(
-      'session expiring during sync is never published as authenticated',
+      'session expiring during sync keeps identity and renews on retry',
       () async {
         final repository = _SessionRepository()
           ..expiresAt = DateTime.now().toUtc().add(
@@ -257,10 +287,12 @@ void main() {
         barrier.complete();
         await login;
 
+        final expiredState = container.read(
+          authenticationProvider,
+        ) as AuthenticationAuthenticated;
+        expect(expiredState.setupStatus, AuthenticationSetupStatus.failed);
         expect(
-          (container.read(
-            authenticationProvider,
-          ) as AuthenticationUnauthenticated).failure?.code,
+          expiredState.setupFailure?.code,
           AuthenticationFailureCode.expired,
         );
         repository.expiresAt = DateTime.utc(2030);
@@ -584,10 +616,12 @@ void main() {
         await container.read(authenticationProvider.notifier).bootstrap();
 
         expect(wallets.syncCalls, 1);
-        final state =
-            container.read(authenticationProvider) as AuthenticationFailed;
-        expect(state.failure.code, AuthenticationFailureCode.walletSync);
-        expect(state.failure.retryable, isFalse);
+        final state = container.read(
+          authenticationProvider,
+        ) as AuthenticationAuthenticated;
+        expect(state.setupStatus, AuthenticationSetupStatus.failed);
+        expect(state.setupFailure?.code, AuthenticationFailureCode.walletSync);
+        expect(state.setupFailure?.retryable, isFalse);
       });
     }
 
@@ -615,9 +649,10 @@ void main() {
 
       expect(wallets.syncCalls, 3);
       final state =
-          container.read(authenticationProvider) as AuthenticationFailed;
-      expect(state.failure.code, AuthenticationFailureCode.walletSync);
-      expect(state.failure.requestId, 'attempt-3');
+          container.read(authenticationProvider) as AuthenticationAuthenticated;
+      expect(state.setupStatus, AuthenticationSetupStatus.failed);
+      expect(state.setupFailure?.code, AuthenticationFailureCode.walletSync);
+      expect(state.setupFailure?.requestId, 'attempt-3');
     });
 
     test('logout during backoff prevents further sync attempts', () async {
@@ -660,8 +695,9 @@ void main() {
         await notifier.verifyEmailCode('123456');
         final state = container.read(
           authenticationProvider,
-        ) as AuthenticationAwaitingCode;
-        expect(state.failure?.code, AuthenticationFailureCode.walletSync);
+        ) as AuthenticationAuthenticated;
+        expect(state.setupStatus, AuthenticationSetupStatus.failed);
+        expect(state.setupFailure?.code, AuthenticationFailureCode.walletSync);
 
         gateway.initializeFailure = const IdentityFailure(
           AuthenticationFailureCode.provider,
@@ -697,10 +733,11 @@ void main() {
       final notifier = container.read(authenticationProvider.notifier);
       final connection = _WalletConnection();
       await notifier.loginWithWallet(() async => connection);
+      final failedState =
+          container.read(authenticationProvider) as AuthenticationAuthenticated;
+      expect(failedState.setupStatus, AuthenticationSetupStatus.failed);
       expect(
-        (container.read(
-          authenticationProvider,
-        ) as AuthenticationUnauthenticated).failure?.code,
+        failedState.setupFailure?.code,
         AuthenticationFailureCode.walletSync,
       );
 
@@ -745,8 +782,10 @@ void main() {
       await notifier.retry();
       expect(wallets.syncCalls, 2);
       expect(
-        container.read(authenticationProvider),
-        isA<AuthenticationAuthenticating>(),
+        (container.read(
+          authenticationProvider,
+        ) as AuthenticationAuthenticated).setupStatus,
+        AuthenticationSetupStatus.initializing,
       );
       barrier.complete();
       await retry;
