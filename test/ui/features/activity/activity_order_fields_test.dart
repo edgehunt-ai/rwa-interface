@@ -182,6 +182,54 @@ void main() {
     expect(find.text('Side'), findsOneWidget);
     expect(find.text('Long'), findsOneWidget);
   });
+
+  testWidgets('long order amounts do not collapse the order summary', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    const exactAmount = '0.001599537496322869';
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authenticatedStateOverride,
+          activityRepositoryProvider.overrideWithValue(
+            _OrderActivityRepository([
+              ActivityRecord(
+                id: 'long-amount-1',
+                category: ActivityCategory.orders,
+                type: 'market',
+                status: ActivityState.success,
+                title: 'Buy NVDAB',
+                kind: 'bstock',
+                symbol: 'NVDAB',
+                asset: 'NVDAB',
+                amount: DecimalValue(
+                  exactAmount,
+                  asset: 'NVDAB',
+                  unit: 'token',
+                ),
+                fields: const [ActivityField(label: 'Side', value: 'Buy')],
+                reference: const ActivityReference(type: 'order', id: 'o-long'),
+                createdAt: DateTime.utc(2026),
+              ),
+            ]),
+          ),
+        ],
+        child: buildTestApp(const ActivityScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('NVDAB/NVDAB'), findsOneWidget);
+    expect(find.text('Buy / Market'), findsOneWidget);
+    expect(find.text('Completed'), findsOneWidget);
+    expect(find.text('0.00159954 NVDAB'), findsOneWidget);
+    expect(
+      tester.getRect(find.text('Buy / Market')).right,
+      lessThanOrEqualTo(tester.getRect(find.text('0.00159954 NVDAB')).left),
+    );
+  });
 }
 
 final class _OrderActivityRepository implements ActivityRepository {

@@ -737,7 +737,7 @@ class _ActivityRow extends StatelessWidget {
     if (asset == null || asset.trim().isEmpty) {
       return TokenAmountFormatter.formatUsd(amount);
     }
-    return TokenAmountFormatter.format(amount, symbol: asset);
+    return '${TokenAmountFormatter.formatDecimal(amount)} ${asset.trim()}';
   }
 }
 
@@ -780,9 +780,9 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
             SizedBox(
               height: 72,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
+                    flex: 6,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -802,24 +802,30 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                             ),
                             const SizedBox(width: 4),
                             if (isFunding) ...[
-                              _TypeBadge(
-                                label: _fundingSide(
-                                  record,
-                                  AppLocalizations.of(context),
+                              Flexible(
+                                child: _TypeBadge(
+                                  label: _fundingSide(
+                                    record,
+                                    AppLocalizations.of(context),
+                                  ),
+                                  order: true,
                                 ),
-                                order: true,
                               ),
                               const SizedBox(width: 4),
-                              _TypeBadge(
-                                label: _fundingDirection(
-                                  record,
-                                  AppLocalizations.of(context),
+                              Flexible(
+                                child: _TypeBadge(
+                                  label: _fundingDirection(
+                                    record,
+                                    AppLocalizations.of(context),
+                                  ),
+                                  order: true,
+                                  positive: true,
                                 ),
-                                order: true,
-                                positive: true,
                               ),
                             ] else
-                              _TypeBadge(label: type, order: isOrder),
+                              Flexible(
+                                child: _TypeBadge(label: type, order: isOrder),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -855,27 +861,34 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        widget.amount,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          height: 22 / 15,
-                          fontWeight: FontWeight.w600,
+                  Flexible(
+                    flex: 4,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          widget.amount,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 22 / 15,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Text(
-                        DateFormat('HH:mm').format(record.createdAt.toLocal()),
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 16 / 12,
-                          color: colors.secondaryText,
+                        Text(
+                          DateFormat('HH:mm')
+                              .format(record.createdAt.toLocal()),
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 16 / 12,
+                            color: colors.secondaryText,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -914,6 +927,8 @@ class _TypeBadge extends StatelessWidget {
       ),
       child: Text(
         label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(fontSize: 12, height: 16 / 12, color: badgeColor),
       ),
     );
