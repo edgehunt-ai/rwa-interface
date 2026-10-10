@@ -57,6 +57,32 @@ import 'package:nobell/domain/repositories/wallets_repository.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  testWidgets('HIP-3 amount rail has only 6px intermediate reference marks', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+
+    final colors = AppTheme.light.extension<AppRwaColors>()!;
+    for (final stop in const [0.25, 0.5, 0.75]) {
+      final marker = find.byKey(ValueKey('hip3-amount-rail-stop-$stop'));
+      expect(marker, findsOneWidget);
+      expect(tester.getSize(marker), const Size(6, 6));
+      final decoration =
+          tester.widget<Container>(marker).decoration! as BoxDecoration;
+      expect(decoration.color, colors.subtleSurface);
+    }
+
+    expect(
+      find.byKey(const ValueKey('hip3-amount-rail-stop-0.0')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('hip3-amount-rail-stop-1.0')),
+      findsNothing,
+    );
+  });
+
   testWidgets(
     'HIP-3 checks Hyperliquid funding despite a high display balance',
     (tester) async {

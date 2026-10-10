@@ -2659,7 +2659,7 @@ class _Hip3AmountRail extends StatelessWidget {
   final ValueChanged<double> onChanged;
 
   /// Quarter marks are a visual reference only; the slider itself steps by 1%.
-  static const _referenceStops = [0.0, 0.25, 0.5, 0.75, 1.0];
+  static const _referenceStops = [0.25, 0.5, 0.75];
 
   @override
   Widget build(BuildContext context) {
@@ -2687,7 +2687,8 @@ class _Hip3AmountRail extends StatelessWidget {
             ),
           ),
           // Drawn above the track, inset by the thumb radius so the marks line
-          // up with the positions the thumb can actually reach.
+          // up with the positions the thumb can actually reach. Endpoints are
+          // intentionally omitted because the rail itself already defines them.
           Positioned.fill(
             child: IgnorePointer(
               child: Padding(
@@ -2697,15 +2698,14 @@ class _Hip3AmountRail extends StatelessWidget {
                     children: [
                       for (final stop in _referenceStops)
                         Positioned(
-                          left: (constraints.maxWidth - 4) * stop,
-                          top: (constraints.maxHeight - 4) / 2,
+                          left: (constraints.maxWidth - 6) * stop,
+                          top: (constraints.maxHeight - 6) / 2,
                           child: Container(
-                            width: 4,
-                            height: 4,
+                            key: ValueKey('hip3-amount-rail-stop-$stop'),
+                            width: 6,
+                            height: 6,
                             decoration: BoxDecoration(
-                              color: stop <= value
-                                  ? colors.onPrimaryAction
-                                  : colors.secondaryText,
+                              color: colors.subtleSurface,
                               shape: BoxShape.circle,
                             ),
                           ),
