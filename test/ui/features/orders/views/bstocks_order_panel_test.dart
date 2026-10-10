@@ -671,7 +671,7 @@ void main() {
     expect(find.text('0.01 NVDAB'), findsOneWidget);
   });
 
-  testWidgets('review summary formats fee with its settlement asset', (
+  testWidgets('review summary uses consistent labels, spacing, and fee asset', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -700,6 +700,52 @@ void main() {
     expect(find.text('Order Type'), findsOneWidget);
     expect(find.text('Back'), findsOneWidget);
     expect(find.text('0.02 USDC'), findsWidgets);
+
+    const labelColor = Color(0xFF676776);
+    for (final label in [
+      'Order Type',
+      'Market price',
+      'Slippage',
+      'Estimated Fee',
+    ]) {
+      expect(tester.widget<Text>(find.text(label)).style?.color, labelColor);
+    }
+    for (final labels in [
+      ('Order Type', 'Market price'),
+      ('Market price', 'Slippage'),
+      ('Slippage', 'Estimated Fee'),
+    ]) {
+      expect(
+        tester.getRect(find.text(labels.$2)).top -
+            tester.getRect(find.text(labels.$1)).bottom,
+        8,
+      );
+    }
+  });
+
+  testWidgets('review summary keeps estimated fee visible when omitted', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(
+            _DelayedOrdersRepository(),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    await _pumpUntilFound(tester, find.text('Order Type'));
+
+    expect(find.text('Estimated Fee'), findsOneWidget);
+    expect(find.text('0 USDT'), findsOneWidget);
   });
 
   testWidgets('completed funding opens bStocks confirmation as step 3', (
@@ -2467,6 +2513,7 @@ final class _SettlementFeeOrdersRepository extends _DelayedOrdersRepository {
     previewId: 'settlement-fee-quote',
     intent: intent,
     orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+    marketPrice: DecimalValue('230.5', asset: 'USD', unit: 'fiat'),
     estimatedQuantity: DecimalValue('0.54', asset: 'TSLA', unit: 'token'),
     fee: DecimalValue('0.02', asset: 'USDC', unit: 'token'),
     settlementAsset: 'USDC',

@@ -1271,6 +1271,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final settlementAsset =
         current.orderValue.asset ?? current.settlementAsset ?? 'USDT';
     final quantity = current.estimatedQuantity ?? current.intent.quantity;
+    final fee = current.fee;
     final marketPrice = current.marketPrice;
     final liveMarketPrice = _liveMarketPrice;
     final marketPriceChanged =
@@ -1334,26 +1335,31 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           value: current.intent.type == TradingOrderType.market
               ? l10n.market
               : l10n.limit,
+          padding: const EdgeInsets.symmetric(vertical: 4),
         ),
         if (marketPrice case final price?)
           _MarketPriceSummaryRow(
             label: AppLocalizations.of(context).marketPrice,
             original: price,
             current: marketPriceChanged ? liveMarketPrice : null,
+            padding: const EdgeInsets.symmetric(vertical: 4),
           ),
         if (current.intent.type == TradingOrderType.market)
           _SummaryRow(
             label: l10n.slippage,
             value: '${current.intent.slippage?.value ?? slippage}%',
+            padding: const EdgeInsets.symmetric(vertical: 4),
           ),
-        if (current.fee case final fee?)
-          _SummaryRow(
-            label: l10n.estimatedFee,
-            value: TokenAmountFormatter.format(
-              fee,
-              symbol: fee.asset ?? widget.symbol,
-            ),
-          ),
+        _SummaryRow(
+          label: l10n.estimatedFee,
+          value: fee == null
+              ? '0 $settlementAsset'
+              : TokenAmountFormatter.format(
+                  fee,
+                  symbol: fee.asset ?? settlementAsset,
+                ),
+          padding: const EdgeInsets.symmetric(vertical: 4),
+        ),
         if (current.priceUpdated || marketPriceChanged) ...[
           const SizedBox(height: 8),
           Text(AppLocalizations.of(context).priceChangedReview),
@@ -1841,21 +1847,28 @@ class _MarketPriceSummaryRow extends StatelessWidget {
     required this.label,
     required this.original,
     this.current,
+    this.padding = const EdgeInsets.symmetric(vertical: 6),
   });
 
   final String label;
   final DecimalValue original;
   final DecimalValue? current;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: padding,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(label)),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(color: Color(0xFF676776)),
+            ),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Text.rich(
