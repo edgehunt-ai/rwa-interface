@@ -1351,7 +1351,18 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final quantity = current.estimatedQuantity ?? current.intent.quantity;
     final fee = current.fee;
     final showFee = _hasNonZeroValue(fee);
-    final marketPrice = current.marketPrice;
+    final marketSnapshot = ref.watch(
+      marketSnapshotProvider(
+        MarketProductRef(symbol: widget.symbol, kind: MarketProductKind.bstock),
+      ),
+    );
+    final cachedMarketPrice = _currentMarketPrice;
+    final marketPrice =
+        current.marketPrice ??
+        marketSnapshot.value?.price ??
+        (cachedMarketPrice == null
+            ? null
+            : DecimalValue(cachedMarketPrice, asset: 'USD', unit: 'price'));
     final liveMarketPrice = _liveMarketPrice;
     final marketPriceChanged =
         marketPrice != null &&
@@ -1429,6 +1440,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             key: const Key('bstocks-confirmation-market-price'),
             label: l10n.marketPrice,
             value: '—',
+            padding: const EdgeInsets.symmetric(vertical: 4),
+          ),
+        if (current.intent.type == TradingOrderType.limit)
+          _SummaryRow(
+            key: const Key('bstocks-confirmation-limit-price'),
+            label: l10n.limitPrice,
+            value: current.intent.limitPrice == null
+                ? '—'
+                : TokenAmountFormatter.formatUsd(current.intent.limitPrice!),
             padding: const EdgeInsets.symmetric(vertical: 4),
           ),
         if (current.intent.type == TradingOrderType.market)

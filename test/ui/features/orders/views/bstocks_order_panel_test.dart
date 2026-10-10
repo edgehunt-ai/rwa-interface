@@ -920,6 +920,104 @@ void main() {
     expect(find.byKey(const Key('bstocks-confirmation-fee')), findsNothing);
   });
 
+  testWidgets('market confirmation falls back to the live market price', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(
+            _DelayedOrdersRepository(),
+          ),
+          marketSnapshotProvider.overrideWith(
+            (_, _) async => MarketSnapshot(
+              price: DecimalValue('123.45', asset: 'USD', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('bstocks-market-amount-input')),
+      '100',
+    );
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    await _pumpUntilFound(tester, find.text('Order Type'));
+
+    final marketPrice = find.byKey(
+      const Key('bstocks-confirmation-market-price'),
+    );
+    expect(
+      find.descendant(of: marketPrice, matching: find.text(r'$123.45')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('bstocks-confirmation-limit-price')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('limit confirmation shows market and limit prices', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(
+            _CapturingOrdersRepository(),
+          ),
+          marketSnapshotProvider.overrideWith(
+            (_, _) async => MarketSnapshot(
+              price: DecimalValue('230.5', asset: 'USD', unit: 'price'),
+            ),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-price-sheet-input')),
+      '225',
+    );
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('bstocks-limit-quantity-input')),
+      '1',
+    );
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    await _pumpUntilFound(tester, find.text('Order Type'));
+
+    final marketPrice = find.byKey(
+      const Key('bstocks-confirmation-market-price'),
+    );
+    expect(
+      find.descendant(of: marketPrice, matching: find.text(r'$230.5')),
+      findsOneWidget,
+    );
+    final limitPrice = find.byKey(
+      const Key('bstocks-confirmation-limit-price'),
+    );
+    expect(
+      find.descendant(of: limitPrice, matching: find.text(r'$225')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'review summary keeps old results then animates refreshed values',
     (tester) async {
