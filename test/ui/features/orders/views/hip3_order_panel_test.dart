@@ -126,6 +126,44 @@ void main() {
     },
   );
 
+  testWidgets('limit-order input layout uses the specified compact spacing', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(const Hip3OrderPanel()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit').last);
+    await tester.pumpAndSettle();
+    final limitPriceInput = find.byKey(
+      const Key('hip3-limit-price-sheet-input'),
+    );
+    Navigator.of(tester.element(limitPriceInput)).pop('100');
+    await tester.pumpAndSettle();
+
+    final priceCard = find.byKey(const Key('hip3-limit-price-card'));
+    final quantityCard = find.byKey(const Key('hip3-limit-quantity-card'));
+    final modeCard = find.byKey(const Key('hip3-mode-leverage-card'));
+    final priceInput = find.byKey(const Key('hip3-limit-price-input'));
+    final priceLabel = find.descendant(
+      of: priceCard,
+      matching: find.text('Limit Price'),
+    );
+
+    expect(tester.getSize(priceCard).height, 88);
+    expect(tester.getSize(quantityCard).height, 88);
+    expect(
+      tester.getRect(quantityCard).left - tester.getRect(priceCard).right,
+      12,
+    );
+    expect(
+      tester.getRect(modeCard).top - tester.getRect(quantityCard).bottom,
+      12,
+    );
+    expect(
+      tester.getRect(priceInput).top - tester.getRect(priceLabel).bottom,
+      6,
+    );
+  });
+
   testWidgets(
     'a completed transfer re-reads the balance without resetting the leverage',
     (tester) async {

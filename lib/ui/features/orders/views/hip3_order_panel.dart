@@ -1469,6 +1469,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     children: [
                       Expanded(
                         child: _Hip3LimitInput(
+                          cardKey: const Key('hip3-limit-price-card'),
                           controller: _limitPrice,
                           label: l10n.limitPrice,
                           suffix: 'USDC',
@@ -1479,6 +1480,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _Hip3LimitInput(
+                          cardKey: const Key('hip3-limit-quantity-card'),
                           controller: _amount,
                           label: l10n.quantity,
                           suffix: widget.symbol,
@@ -1491,6 +1493,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                   const SizedBox(height: 12),
                 ],
                 _Hip3ModeLeverageCard(
+                  cardKey: const Key('hip3-mode-leverage-card'),
                   showSettings: currentPosition == null,
                   marginMode: _marginMode,
                   leverage: _leverage,
@@ -2373,6 +2376,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
     this.minimumAmount,
     this.amountBounds,
     this.limitPrice,
+    this.cardKey,
     required this.controller,
     this.showAmountInput = true,
     required this.settlementAsset,
@@ -2397,6 +2401,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
 
   /// Non-null only for a limit order, which cannot be submitted without it.
   final TextEditingController? limitPrice;
+  final Key? cardKey;
   final TextEditingController controller;
   final bool showAmountInput;
   final String settlementAsset;
@@ -2415,6 +2420,7 @@ class _Hip3ModeLeverageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Container(
+      key: cardKey,
       decoration: BoxDecoration(
         color: colors.subtleSurface,
         borderRadius: BorderRadius.circular(14),
@@ -3311,6 +3317,7 @@ class _Hip3RiskRow extends StatelessWidget {
 
 class _Hip3LimitInput extends StatefulWidget {
   const _Hip3LimitInput({
+    required this.cardKey,
     required this.controller,
     required this.label,
     required this.suffix,
@@ -3318,6 +3325,7 @@ class _Hip3LimitInput extends StatefulWidget {
     required this.inputKey,
     this.maxFractionDigits,
   });
+  final Key cardKey;
   final TextEditingController controller;
   final String label;
   final String suffix;
@@ -3340,6 +3348,7 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
+      key: widget.cardKey,
       color: colors.subtleSurface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
@@ -3348,7 +3357,7 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
           child: SizedBox(
-            height: 69,
+            height: 66,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -3357,49 +3366,47 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
                   style: Theme.of(context).textTheme.labelSmall
                       ?.copyWith(color: colors.secondaryText),
                 ),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          key: widget.inputKey,
-                          controller: widget.controller,
-                          focusNode: _focusNode,
-                          readOnly: widget.onTap != null,
-                          showCursor: widget.onTap == null,
-                          onTap: widget.onTap ?? _focusNode.requestFocus,
-                          keyboardType: widget.onTap == null
-                              ? const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                )
-                              : TextInputType.text,
-                          inputFormatters: widget.onTap == null
-                              ? [
-                                  _decimalTruncatingFormatter(
-                                    widget.maxFractionDigits ?? 8,
-                                  ),
-                                ]
-                              : null,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            filled: false,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        key: widget.inputKey,
+                        controller: widget.controller,
+                        focusNode: _focusNode,
+                        readOnly: widget.onTap != null,
+                        showCursor: widget.onTap == null,
+                        onTap: widget.onTap ?? _focusNode.requestFocus,
+                        keyboardType: widget.onTap == null
+                            ? const TextInputType.numberWithOptions(
+                                decimal: true,
+                              )
+                            : TextInputType.text,
+                        inputFormatters: widget.onTap == null
+                            ? [
+                                _decimalTruncatingFormatter(
+                                  widget.maxFractionDigits ?? 8,
+                                ),
+                              ]
+                            : null,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
                         ),
-                      ),
-                      Text(
-                        widget.suffix,
                         style: Theme.of(context).textTheme.bodyLarge
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                    ],
-                  ),
+                    ),
+                    Text(
+                      widget.suffix,
+                      style: Theme.of(context).textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
               ],
             ),
