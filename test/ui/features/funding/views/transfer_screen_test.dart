@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/hip3_withdrawal.dart';
 import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
 import 'package:nobell/domain/repositories/hip3_withdrawal_repository.dart';
@@ -13,6 +14,7 @@ import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/funding_catalog.dart';
 import 'package:nobell/domain/models/funding_catalog_summary.dart';
 import 'package:nobell/domain/models/funding_session.dart';
+import 'package:nobell/domain/models/funding_transfer.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
@@ -409,6 +411,109 @@ void main() {
     );
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets('transfer error sits eight pixels above its action', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(
+            _RejectedTransferRepository(),
+          ),
+          transferOptionsProvider.overrideWith(
+            (ref) async => TransferOptions(
+              account: UnifiedFundingAccountSummary(
+                totalUsd: DecimalValue('100', asset: 'USD'),
+                availableToFundUsd: DecimalValue('100', asset: 'USD'),
+                reservedUsd: DecimalValue('0', asset: 'USD'),
+                inTransitUsd: DecimalValue('0', asset: 'USD'),
+                dataStatus: 'complete',
+                calculatedAt: DateTime.utc(2026),
+                positions: [
+                  FundingSourcePosition(
+                    positionId: 'usdc',
+                    token: 'USDC',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('100', asset: 'USDC'),
+                    eligible: true,
+                  ),
+                ],
+              ),
+              catalog: FundingCatalogSummary(
+                catalogVersion: 'test',
+                depositRailCount: 0,
+                updatedAt: DateTime.utc(2026),
+                transferTarget: const FundingTransferTarget(
+                  token: 'USDC',
+                  network: 'Hyperliquid',
+                ),
+              ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), '10');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign & Transfer'));
+    await tester.pumpAndSettle();
+
+    final error = find.byKey(const Key('transfer-error'));
+    final action = find.widgetWithText(FilledButton, 'Sign & Transfer');
+    expect(error, findsOneWidget);
+    expect(tester.getRect(action).top - tester.getRect(error).bottom, 8);
+  });
+}
+
+final class _RejectedTransferRepository implements FundingRepository {
+  FundingSessionSummary get _quote => FundingSessionSummary(
+    sessionId: 'rejected-transfer-session',
+    status: 'ready_to_confirm',
+    version: 1,
+    canConfirmTransfer: true,
+    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    minimumReceived: '9.8',
+    targetToken: 'USDC',
+    targetNetwork: 'Hyperliquid',
+    allocations: const {'usdc': '10'},
+  );
+
+  @override
+  Future<FundingSessionSummary> createTransferFundingSession({
+    required String destination,
+    required String amount,
+    required String idempotencyKey,
+  }) async => _quote;
+
+  @override
+  Future<FundingSessionSummary> updateFundingSessionSelection({
+    required String fundingSessionId,
+    required int version,
+    required Map<String, String> allocations,
+    required String idempotencyKey,
+  }) async => _quote;
+
+  @override
+  Future<FundingSessionSummary> getFundingSession(String id) async => _quote;
+
+  @override
+  Future<FundingPlan> createFundingSessionPlan({
+    required String fundingSessionId,
+    required int selectionVersion,
+    required String idempotencyKey,
+  }) => throw const UnknownFailure(userAction: 'Transfer failed');
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 final class _RefreshingTransferQuoteRepository implements FundingRepository {

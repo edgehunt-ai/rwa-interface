@@ -499,6 +499,43 @@ void main() {
     expect(find.text('Transfer amount'), findsNothing);
   });
 
+  testWidgets('order funding error sits eight pixels above its actions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(
+            _RejectedFundingTransferRepository(),
+          ),
+          walletsRepositoryProvider.overrideWithValue(
+            _FundingWalletsRepository(),
+          ),
+          transferOptionsProvider.overrideWith(
+            (ref) async => _transferOptions('1000'),
+          ),
+        ],
+        child: buildTestApp(
+          OrderFundingSheet(
+            plan: _readyFundingPlan,
+            kind: MarketProductKind.bstock,
+            canConfirmTransfer: true,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('order-funding-spot-option')));
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+
+    final error = find.byKey(const Key('order-funding-error'));
+    final action = find.widgetWithText(FilledButton, 'Confirm');
+    expect(error, findsOneWidget);
+    expect(tester.getRect(action).top - tester.getRect(error).bottom, 8);
+  });
+
   testWidgets('order funding scrolls when more than four tokens are shown', (
     tester,
   ) async {
@@ -2340,6 +2377,18 @@ void main() {
       expect(find.textContaining('network:'), findsOneWidget);
       expect(find.widgetWithText(FilledButton, 'Confirm Buy'), findsOneWidget);
       expect(find.text('Trade Successful'), findsNothing);
+      final error = find.byKey(const Key('bstocks-order-error'));
+      final confirm = find.widgetWithText(FilledButton, 'Confirm Buy');
+      expect(error, findsOneWidget);
+      expect(tester.getRect(confirm).top - tester.getRect(error).bottom, 8);
+      final semantic = AppTheme.light.extension<AppSemanticColors>()!;
+      final errorContainer = tester.widget<Container>(
+        find.descendant(of: error, matching: find.byType(Container)),
+      );
+      expect(
+        (errorContainer.decoration! as BoxDecoration).color,
+        semantic.loss.withValues(alpha: 0.1),
+      );
     },
   );
 }
@@ -3054,6 +3103,19 @@ final class _CompletedFundingRepository implements FundingRepository {
     shortfall: DecimalValue('0', asset: 'USDT', unit: 'token'),
     status: FundingPlanState.alreadyFunded,
   );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _RejectedFundingTransferRepository implements FundingRepository {
+  @override
+  Future<FundingTransfer> createFundingTransfer({
+    required String planId,
+    required String legId,
+    required String authorizationId,
+    required String idempotencyKey,
+  }) => throw const UnknownFailure(userAction: 'Transfer failed');
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

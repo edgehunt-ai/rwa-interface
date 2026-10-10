@@ -12,6 +12,7 @@ import '../../../../domain/models/funding_catalog.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../core/feedback/inline_error_notice.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
@@ -837,16 +838,14 @@ class _TransferContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         _RouteRows(leg: leg, slippage: slippage),
-        if (error != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            error!,
-            style: TextStyle(
-              color: Theme.of(context).extension<AppSemanticColors>()!.loss,
-            ),
-          ),
-        ],
         const SizedBox(height: 28),
+        if (error != null) ...[
+          InlineErrorNotice(
+            key: const Key('order-funding-error'),
+            message: error!,
+          ),
+          const SizedBox(height: 8),
+        ],
         Row(
           children: [
             SizedBox(

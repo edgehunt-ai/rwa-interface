@@ -13,6 +13,7 @@ import '../../../../domain/models/order_preview.dart';
 import '../../../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../core/feedback/inline_error_notice.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/motion/animated_number_text.dart';
@@ -336,14 +337,14 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
                   ),
                 ),
               ],
+              const SizedBox(height: 28),
               if (message != null) ...[
-                const SizedBox(height: 16),
-                _FailureNotice(
+                InlineErrorNotice(
                   key: const Key('hip3-confirm-error'),
                   message: message,
                 ),
+                const SizedBox(height: 8),
               ],
-              const SizedBox(height: 28),
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -697,33 +698,5 @@ class _TermRow extends StatelessWidget {
       ),
     );
     return onTap == null ? row : InkWell(onTap: onTap, child: row);
-  }
-}
-
-class _FailureNotice extends StatelessWidget {
-  const _FailureNotice({super.key, required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    return Semantics(
-      liveRegion: true,
-      label: message,
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 40),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFEEF0),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          message,
-          style: TextStyle(color: semantic.loss, fontSize: 12),
-        ),
-      ),
-    );
   }
 }

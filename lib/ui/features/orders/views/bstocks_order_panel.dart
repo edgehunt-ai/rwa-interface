@@ -15,6 +15,7 @@ import 'package:nobell/domain/models/application_state.dart';
 import 'package:nobell/domain/models/resource_result.dart';
 import 'package:nobell/domain/models/order_preview.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
@@ -1302,11 +1303,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               ),
             ],
           ],
-          if (error case final error?) ...[
-            const SizedBox(height: 8),
-            _OrderFailureNotice(message: error),
-          ],
           const Spacer(),
+          if (error case final error?) ...[
+            InlineErrorNotice(
+              key: const Key('bstocks-order-error'),
+              message: error,
+            ),
+            const SizedBox(height: 8),
+          ],
           SizedBox(
             width: double.infinity,
             child: FilledButton(
@@ -1448,10 +1452,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           Text(AppLocalizations.of(context).priceChangedReview),
         ],
         if (error case final message?) ...[
+          const SizedBox(height: 20),
+          InlineErrorNotice(
+            key: const Key('bstocks-order-error'),
+            message: message,
+          ),
           const SizedBox(height: 8),
-          _OrderFailureNotice(message: message),
-        ],
-        const SizedBox(height: 20),
+        ] else
+          const SizedBox(height: 20),
         Row(
           children: [
             Expanded(
@@ -2224,55 +2232,6 @@ class _BstocksConfirmationAssetMark extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(color: colors.surface, shape: BoxShape.circle),
       child: Text(asset.substring(0, 1), style: const TextStyle(fontSize: 10)),
-    );
-  }
-}
-
-class _OrderFailureNotice extends StatelessWidget {
-  const _OrderFailureNotice({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    return Semantics(
-      liveRegion: true,
-      label: message,
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          border: Border.all(color: semantic.loss),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            SvgPicture.asset(
-              'assets/figma/trade/order_failed.svg',
-              width: 20,
-              height: 20,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 160),
-                child: Scrollbar(
-                  child: SingleChildScrollView(
-                    child: Text(
-                      message,
-                      style: TextStyle(color: colors.primaryText),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

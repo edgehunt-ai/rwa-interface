@@ -17,6 +17,7 @@ import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
+import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
@@ -783,17 +784,6 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           ),
                         ],
                       ],
-                      if (_error case final error?) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          error,
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .extension<AppSemanticColors>()!
-                                .loss,
-                          ),
-                        ),
-                      ],
                       if (_statusMessage case final message?) ...[
                         const SizedBox(height: 8),
                         Text(
@@ -815,7 +805,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         ),
                       ],
                       const Spacer(),
-                      const SizedBox(height: 28),
+                      if (_error case final error?) ...[
+                        const SizedBox(height: 28),
+                        InlineErrorNotice(
+                          key: const Key('transfer-error'),
+                          message: error,
+                        ),
+                        const SizedBox(height: 8),
+                      ] else
+                        const SizedBox(height: 28),
                       SizedBox(
                         height: 48,
                         child: FilledButton(

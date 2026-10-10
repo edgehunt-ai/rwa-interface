@@ -1494,6 +1494,32 @@ void main() {
     expect(find.text('3'), findsOneWidget);
   });
 
+  testWidgets('confirmation error sits eight pixels above its action', (
+    tester,
+  ) async {
+    final intent = OrderIntent(
+      symbol: 'NVDA',
+      kind: MarketProductKind.perp,
+      side: TradingSide.long,
+      type: TradingOrderType.market,
+      amount: DecimalValue('100'),
+    );
+    final preview = OrderPreview(
+      previewId: 'missing-execution-preview',
+      intent: intent,
+      orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+      expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    );
+
+    await tester.pumpWidget(_app(Hip3ConfirmSheet(preview: preview)));
+    await tester.pump();
+
+    final error = find.byKey(const Key('hip3-confirm-error'));
+    final action = find.byKey(const Key('hip3-confirm-button'));
+    expect(error, findsOneWidget);
+    expect(tester.getRect(action).top - tester.getRect(error).bottom, 8);
+  });
+
   testWidgets('slippage is edited on the confirmation and re-quoted', (
     tester,
   ) async {
