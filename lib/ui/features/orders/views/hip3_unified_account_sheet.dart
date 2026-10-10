@@ -126,10 +126,10 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
                 child: Column(
                   children: [
                     SizedBox(
-                      width: 320,
-                      height: 160,
+                      width: 120,
+                      height: 120,
                       child: Image.asset(
-                        'assets/figma/trade/unified_trading_illustration.png',
+                        'assets/figma/trade/unified_trading_illustration.webp',
                         fit: BoxFit.contain,
                       ),
                     ),
