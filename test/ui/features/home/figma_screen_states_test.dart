@@ -31,6 +31,146 @@ import '../../../helpers/fake_identity_auth_gateway.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final scenario in [
+    (
+      name: 'whole amounts',
+      total: '10',
+      pnl: '1',
+      percent: '1.2',
+      valueText: r'$10.00',
+      performanceText: r'+$1.00 (+1.20%) Today',
+      loss: false,
+    ),
+    (
+      name: 'sub-dollar rounding',
+      total: '0.12345',
+      pnl: '0.125',
+      percent: '1.235',
+      valueText: r'$0.12',
+      performanceText: r'+$0.13 (+1.24%) Today',
+      loss: false,
+    ),
+    (
+      name: 'losses',
+      total: '12580.4',
+      pnl: '-248.325',
+      percent: '-2.015',
+      valueText: r'$12,580.40',
+      performanceText: r'$-248.33 (-2.02%) Today',
+      loss: true,
+    ),
+    (
+      name: 'percentage only',
+      total: '10',
+      pnl: null,
+      percent: '-1.2',
+      valueText: r'$10.00',
+      performanceText: '(-1.20%) Today',
+      loss: true,
+    ),
+    (
+      name: 'amount only',
+      total: '10',
+      pnl: '1.2',
+      percent: null,
+      valueText: r'$10.00',
+      performanceText: r'+$1.20 Today',
+      loss: false,
+    ),
+    (
+      name: 'zero performance',
+      total: '10',
+      pnl: '0',
+      percent: null,
+      valueText: r'$10.00',
+      performanceText: r'$0.00 Today',
+      loss: false,
+    ),
+    (
+      name: 'empty portfolio',
+      total: '0',
+      pnl: '0',
+      percent: '0',
+      valueText: r'$0.00',
+      performanceText: null,
+      loss: false,
+    ),
+    (
+      name: 'missing performance',
+      total: '10',
+      pnl: null,
+      percent: null,
+      valueText: r'$10.00',
+      performanceText: null,
+      loss: false,
+    ),
+  ]) {
+    testWidgets('Home matches asset summary for ${scenario.name}', (
+      tester,
+    ) async {
+      await configureDisplay(tester, size: const Size(320, 852));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authenticatedStateOverride,
+            portfolioRepositoryProvider.overrideWithValue(
+              _Portfolio(
+                summary: Portfolio(
+                  totalValueUsd: DecimalValue(
+                    scenario.total,
+                    asset: 'USD',
+                    unit: 'fiat',
+                  ),
+                  availableToTradeUsd: DecimalValue('0'),
+                  todayPnl: scenario.pnl == null
+                      ? null
+                      : DecimalValue(scenario.pnl!, asset: 'USD', unit: 'fiat'),
+                  todayPnlPercent: scenario.percent == null
+                      ? null
+                      : DecimalValue(scenario.percent!, unit: 'percent'),
+                ),
+              ),
+            ),
+            marketsRepositoryProvider.overrideWithValue(_Markets()),
+          ],
+          child: buildTestApp(const HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(scenario.valueText), findsOneWidget);
+      if (scenario.performanceText case final text?) {
+        final performance = find.text(text);
+        expect(performance, findsOneWidget);
+        final semantic = AppTheme.light.extension<AppSemanticColors>()!;
+        expect(
+          tester.widget<Text>(performance).style?.color,
+          scenario.loss ? semantic.loss : semantic.success,
+        );
+      } else {
+        expect(find.textContaining('Today'), findsNothing);
+        expect(
+          find.text('—'),
+          scenario.total == '0' ? findsOneWidget : findsNothing,
+        );
+      }
+      expect(find.text('No performance yet'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final width in [320.0, 393.0]) {
+    testWidgets('portfolio preview fits ${width.toInt()}px', (tester) async {
+      await configureDisplay(tester, size: Size(width, 182));
+      await tester.pumpWidget(homePortfolioPerformancePreview());
+      await tester.pumpAndSettle();
+
+      expect(find.text(r'$12,580.40'), findsOneWidget);
+      expect(find.text(r'+$248.30 (+2.01%) Today'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final width in [320.0, 393.0]) {
     testWidgets('logged-out banner fits ${width.toInt()}px and opens login', (
       tester,
@@ -105,7 +245,7 @@ void main() {
 
     expect(find.text('Portfolio'), findsOneWidget);
     expect(find.text(r'$12,580.42'), findsOneWidget);
-    expect(find.text(r'+$248.32 today'), findsOneWidget);
+    expect(find.text(r'+$248.32 (+2.01%) Today'), findsOneWidget);
     expect(find.text('Deposit'), findsOneWidget);
     expect(find.text('Withdraw'), findsOneWidget);
     expect(find.text('Markets'), findsWidgets);
@@ -241,12 +381,18 @@ Future<ProviderContainer> _authenticatedContainer({
 }
 
 final class _Portfolio implements PortfolioRepository {
+  _Portfolio({this.summary});
+  final Portfolio? summary;
+
   @override
-  Future<Portfolio> getSummary() async => Portfolio(
-    totalValueUsd: DecimalValue('12580.42', asset: 'USD', unit: 'fiat'),
-    availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
-    todayPnl: DecimalValue('248.32', asset: 'USD', unit: 'fiat'),
-  );
+  Future<Portfolio> getSummary() async =>
+      summary ??
+      Portfolio(
+        totalValueUsd: DecimalValue('12580.42', asset: 'USD', unit: 'fiat'),
+        availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+        todayPnl: DecimalValue('248.32', asset: 'USD', unit: 'fiat'),
+        todayPnlPercent: DecimalValue('2.01', unit: 'percent'),
+      );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

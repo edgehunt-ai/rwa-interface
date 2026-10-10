@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -204,7 +205,14 @@ class _PortfolioCard extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final pnl = portfolio.todayPnl;
-    final positive = !(pnl?.value.startsWith('-') ?? false);
+    final pnlPercent = portfolio.todayPnlPercent;
+    final isEmpty =
+        portfolio.totalValueUsd.compareTo(
+          DecimalValue('0', asset: 'USD', unit: 'fiat'),
+        ) ==
+        0;
+    final positive =
+        !((pnl?.value ?? pnlPercent?.value)?.startsWith('-') ?? false);
     return Container(
       height: 142,
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
@@ -225,41 +233,80 @@ class _PortfolioCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          AnimatedNumberText(
-            TokenAmountFormatter.formatUsd(portfolio.totalValueUsd),
-            style: TextStyle(
-              color: colors.primaryText,
-              fontSize: 32,
-              height: 38 / 32,
-              fontWeight: FontWeight.w700,
+          SizedBox(
+            height: 38,
+            width: double.infinity,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: AnimatedNumberText(
+                TokenAmountFormatter.formatUsdFixed(portfolio.totalValueUsd),
+                style: TextStyle(
+                  color: colors.primaryText,
+                  fontSize: 32,
+                  height: 38 / 32,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
           const Spacer(),
-          Text(
-            pnl == null ? 'No performance yet' : '${_formatPnl(pnl)} today',
-            style: TextStyle(
-              color: pnl == null
-                  ? colors.secondaryText
-                  : positive
-                  ? semantic.success
-                  : semantic.loss,
-              fontSize: 15,
-              height: 22 / 15,
-              fontWeight: FontWeight.w500,
+          if (isEmpty)
+            Text('—', style: TextStyle(color: colors.secondaryText))
+          else if (pnl != null || pnlPercent != null)
+            Text(
+              [
+                if (pnl != null) _formatPnl(pnl),
+                if (pnlPercent != null)
+                  '(${TokenAmountFormatter.formatPercent(pnlPercent, maxFractionDigits: 2, trimInsignificantZeros: false)})',
+                'Today',
+              ].join(' '),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: positive ? semantic.success : semantic.loss,
+                fontSize: 15,
+                height: 22 / 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
   String _formatPnl(DecimalValue value) {
-    final formatted = TokenAmountFormatter.formatUsd(value);
+    final formatted = TokenAmountFormatter.formatUsdFixed(value);
     return value.value.startsWith('-') || value.value == '0'
         ? formatted
         : '+$formatted';
   }
 }
+
+@Preview(name: 'Portfolio performance', group: 'Home', size: Size(393, 182))
+@Preview(
+  name: 'Portfolio performance narrow',
+  group: 'Home',
+  size: Size(320, 182),
+)
+Widget homePortfolioPerformancePreview() => MaterialApp(
+  theme: AppTheme.light,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(
+    body: Padding(
+      padding: const EdgeInsets.all(20),
+      child: _PortfolioCard(
+        portfolio: Portfolio(
+          totalValueUsd: DecimalValue('12580.4', asset: 'USD', unit: 'fiat'),
+          availableToTradeUsd: DecimalValue('0', asset: 'USD', unit: 'fiat'),
+          todayPnl: DecimalValue('248.3', asset: 'USD', unit: 'fiat'),
+          todayPnlPercent: DecimalValue('2.01', unit: 'percent'),
+        ),
+      ),
+    ),
+  ),
+);
 
 class _QuickActions extends StatelessWidget {
   const _QuickActions({required this.showWithdraw});
