@@ -17,6 +17,7 @@ import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
+import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
@@ -366,9 +367,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${l10n.sendAmount}: ${prepared.amount} USDC'),
-              Text('${l10n.totalFee}: ${prepared.fee} USDC'),
-              Text('${l10n.receiveAmount}: ${prepared.minimumReceived} USDC'),
+              Text(
+                '${l10n.sendAmount}: ${TokenAmountFormatter.formatText(prepared.amount)} USDC',
+              ),
+              Text(
+                '${l10n.totalFee}: ${TokenAmountFormatter.formatText(prepared.fee)} USDC',
+              ),
+              Text(
+                '${l10n.receiveAmount}: ${TokenAmountFormatter.formatText(prepared.minimumReceived)} USDC',
+              ),
               Text(l10n.hip3TransferDestination),
               SelectableText(prepared.destinationAddress),
             ],
@@ -1097,7 +1104,9 @@ class _AssetAmountRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    AppLocalizations.of(context).availableAmount(available),
+                    AppLocalizations.of(context).availableAmount(
+                      TokenAmountFormatter.formatText(available),
+                    ),
                     style: TextStyle(
                       fontSize: 11,
                       height: 14 / 11,
@@ -1195,7 +1204,11 @@ class _Hip3SendAmountCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context).availableAmount(balance ?? '-'),
+                  AppLocalizations.of(context).availableAmount(
+                    balance == null
+                        ? '-'
+                        : TokenAmountFormatter.formatText(balance!),
+                  ),
                   style: TextStyle(fontSize: 11, color: colors.secondaryText),
                 ),
               ],
@@ -1243,7 +1256,9 @@ class _Hip3FeeSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final feeValue = preview?.fee ?? withdrawal?.fee;
-    final fee = feeValue == null ? '-' : '$feeValue USDC';
+    final fee = feeValue == null
+        ? '-'
+        : '${TokenAmountFormatter.formatText(feeValue)} USDC';
     final details = preview?.feeDetails ?? const <Hip3WithdrawalFeeDetail>[];
     final withdrawalFee = _formatDetail(
       details,
@@ -1289,7 +1304,7 @@ class _Hip3FeeSummary extends StatelessWidget {
       if (detail.type == type && detail.payer == payer) {
         final amount = detail.amount;
         if (amount == null) return '-';
-        return '$amount ${detail.currency}';
+        return '${TokenAmountFormatter.formatText(amount)} ${detail.currency}';
       }
     }
     return '-';
@@ -1353,7 +1368,7 @@ class _ReceiveAmountCard extends StatelessWidget {
             ),
           ),
           AnimatedNumberText(
-            value,
+            TokenAmountFormatter.formatText(value),
             key: const Key('transfer-receive-amount-value'),
             style: const TextStyle(
               fontSize: 15,
@@ -1425,7 +1440,7 @@ class _FeeSummary extends StatelessWidget {
 
   static String _formatFee(String? amount, String? asset) {
     if (amount == null || asset == null) return '-';
-    return '$amount $asset';
+    return '${TokenAmountFormatter.formatText(amount)} $asset';
   }
 }
 

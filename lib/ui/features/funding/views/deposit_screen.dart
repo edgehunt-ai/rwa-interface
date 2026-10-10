@@ -649,7 +649,7 @@ class _RouteDetails extends ConsumerWidget {
           label: l10n.balance,
           value: balance == null
               ? null
-              : '${balance.value} ${instruction.token}',
+              : '${TokenAmountFormatter.formatValue(balance)} ${instruction.token}',
           trailing: balance == null
               ? const SkeletonBlock(
                   key: ValueKey('deposit-balance-skeleton'),
@@ -662,7 +662,8 @@ class _RouteDetails extends ConsumerWidget {
         const SizedBox(height: 8),
         _DetailRow(
           label: l10n.minimumDeposit,
-          value: '${instruction.minimumAmount.value} ${instruction.token}',
+          value:
+              '${TokenAmountFormatter.formatValue(instruction.minimumAmount)} ${instruction.token}',
         ),
         const SizedBox(height: 8),
         _DetailRow(

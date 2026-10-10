@@ -836,16 +836,18 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         return null;
       }
       if (entered.compareMagnitudeTo(minimum) < 0) {
-        return AppLocalizations.of(context)
-            .hip3NotionalBelowMinimum(minimum.value);
+        return AppLocalizations.of(
+          context,
+        ).hip3NotionalBelowMinimum(TokenAmountFormatter.formatValue(minimum));
       }
     }
     final maximum = rules.maximumNotional == null
         ? null
         : double.tryParse(rules.maximumNotional!.value);
     if (maximum != null && amount > maximum) {
-      return AppLocalizations.of(context)
-          .hip3NotionalAboveMaximum(rules.maximumNotional!.value);
+      return AppLocalizations.of(context).hip3NotionalAboveMaximum(
+        TokenAmountFormatter.formatValue(rules.maximumNotional!),
+      );
     }
     return null;
   }
@@ -932,11 +934,15 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       return null; // Malformed input is reported by the existing intent check.
     }
     if (notional.compareMagnitudeTo(rules.minimumNotional) < 0) {
-      return l10n.hip3NotionalBelowMinimum(rules.minimumNotional.value);
+      return l10n.hip3NotionalBelowMinimum(
+        TokenAmountFormatter.formatValue(rules.minimumNotional),
+      );
     }
     if (rules.maximumNotional case final maximum?) {
       if (notional.compareMagnitudeTo(maximum) > 0) {
-        return l10n.hip3NotionalAboveMaximum(maximum.value);
+        return l10n.hip3NotionalAboveMaximum(
+          TokenAmountFormatter.formatValue(maximum),
+        );
       }
     }
     return null;
@@ -2138,7 +2144,7 @@ class _Hip3RiskSummary extends StatelessWidget {
               ? null
               : liquidationPrice == null
               ? '-'
-              : '${liquidationPrice.value} ${liquidationPrice.asset ?? settlementAsset}',
+              : '${TokenAmountFormatter.formatValue(liquidationPrice)} ${liquidationPrice.asset ?? settlementAsset}',
           key: const Key('hip3-liquidation-price-row'),
           loading: loading,
         ),
@@ -2147,7 +2153,9 @@ class _Hip3RiskSummary extends StatelessWidget {
           AppLocalizations.of(context).marginRequired,
           loading
               ? null
-              : '${execution?.marginRequired.value ?? '—'} $settlementAsset',
+              : execution?.marginRequired == null
+              ? '—'
+              : '${TokenAmountFormatter.formatValue(execution!.marginRequired)} $settlementAsset',
           key: const Key('hip3-margin-required-row'),
           loading: loading,
         ),

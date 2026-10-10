@@ -910,13 +910,13 @@ void main() {
         const Key('bstocks-confirmation-receive-value'),
       );
       final receiveNumber = tester.widget<AnimatedNumberText>(receiveValue);
-      expect(receiveNumber.value, '0.000138772857908247');
+      expect(receiveNumber.value, '0.000138773');
       expect(receiveNumber.style?.fontSize, 17);
       expect(receiveNumber.textAlign, TextAlign.end);
       expect(receiveNumber.softWrap, isTrue);
       final receiveText = find.descendant(
         of: receiveValue,
-        matching: find.text('0.000138772857908247'),
+        matching: find.text('0.000138773'),
       );
       expect(receiveText, findsOneWidget);
       expect(tester.widget<Text>(receiveText).textAlign, TextAlign.end);
@@ -948,7 +948,7 @@ void main() {
       }
 
       await tester.pumpAndSettle();
-      expect(find.text('0.00014396923020264'), findsOneWidget);
+      expect(find.text('0.000143969'), findsOneWidget);
       expect(find.text(r'$231'), findsOneWidget);
       expect(find.text('0.03'), findsOneWidget);
     },

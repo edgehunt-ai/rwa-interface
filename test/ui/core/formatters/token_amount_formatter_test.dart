@@ -36,11 +36,7 @@ void main() {
     });
 
     test('applies adaptive precision to numeric and token display helpers', () {
-      final token = DecimalValue(
-        '12.123456789',
-        asset: 'ETH',
-        unit: 'token',
-      );
+      final token = DecimalValue('12.123456789', asset: 'ETH', unit: 'token');
       final smallToken = DecimalValue(
         '0.0000123456789',
         asset: 'ETH',
@@ -57,6 +53,8 @@ void main() {
         TokenAmountFormatter.format(smallToken, symbol: 'ETH', decimals: 18),
         '0.0000123457 ETH',
       );
+      expect(TokenAmountFormatter.formatText('12.123456789'), '12.123457');
+      expect(TokenAmountFormatter.formatText('—'), '—');
     });
 
     test('preserves an 18-decimal non-zero amount exactly', () {

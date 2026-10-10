@@ -12,6 +12,7 @@ import '../../../../domain/models/funding_catalog.dart';
 import '../../../../domain/models/funding_transfer.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
 
@@ -360,14 +361,19 @@ class _PrepareContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final required = plan.requiredTargetAmount?.value ?? plan.shortfall.value;
-    final available = plan.targetAvailableAmount?.value ?? '0';
+    final required = TokenAmountFormatter.formatValue(
+      plan.requiredTargetAmount ?? plan.shortfall,
+    );
+    final available = plan.targetAvailableAmount == null
+        ? '0'
+        : TokenAmountFormatter.formatValue(plan.targetAvailableAmount!);
+    final shortfall = TokenAmountFormatter.formatValue(plan.shortfall);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           l10n.addFundingOnNetworkToContinue(
-            plan.shortfall.value,
+            shortfall,
             targetAsset,
             targetNetwork,
           ),
@@ -392,16 +398,18 @@ class _PrepareContent extends StatelessWidget {
         _Breakdown(
           required: required,
           available: available,
-          shortfall: plan.shortfall.value,
+          shortfall: shortfall,
           asset: targetAsset,
           network: targetNetwork,
-          otherAssetsUsd: spotBalance?.value,
+          otherAssetsUsd: spotBalance == null
+              ? null
+              : TokenAmountFormatter.formatValue(spotBalance!),
           otherAssetsLoading: spotBalanceLoading,
           sourcePositions: sourcePositions,
         ),
         const SizedBox(height: 16),
         Text(
-          l10n.addFundingAmountFrom(plan.shortfall.value, targetAsset),
+          l10n.addFundingAmountFrom(shortfall, targetAsset),
           style: Theme.of(context).textTheme.labelMedium,
         ),
         const SizedBox(height: 8),
@@ -1068,6 +1076,7 @@ class _AssetRow extends StatelessWidget {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final l10n = AppLocalizations.of(context);
     final network = leg.network;
+    final availableAmount = available;
     return Container(
       height: 63,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -1112,7 +1121,11 @@ class _AssetRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  l10n.availableAmount(available?.value ?? '-'),
+                  l10n.availableAmount(
+                    availableAmount == null
+                        ? '-'
+                        : TokenAmountFormatter.formatValue(availableAmount),
+                  ),
                   style: TextStyle(
                     fontSize: 11,
                     height: 14 / 11,
@@ -1133,7 +1146,7 @@ class _AssetRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              leg.maximumAmount.value,
+              TokenAmountFormatter.formatValue(leg.maximumAmount),
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.fade,
@@ -1346,7 +1359,7 @@ class _RouteRows extends StatelessWidget {
           _InfoRow(
             label: l10n.slippage,
             labelIcon: 'assets/figma/trade/order_slippage_edit.svg',
-            value: '${slippage!.value}%',
+            value: '${TokenAmountFormatter.formatValue(slippage!)}%',
           ),
         ],
       ],
@@ -1362,8 +1375,8 @@ class _RouteRows extends StatelessWidget {
   static String _fee(DecimalValue? fee, String? asset) {
     if (fee == null) return '--';
     return asset == 'USD'
-        ? '\$${fee.value}'
-        : '${fee.value} ${asset ?? ''}'.trim();
+        ? '\$${TokenAmountFormatter.formatValue(fee)}'
+        : '${TokenAmountFormatter.formatValue(fee)} ${asset ?? ''}'.trim();
   }
 }
 

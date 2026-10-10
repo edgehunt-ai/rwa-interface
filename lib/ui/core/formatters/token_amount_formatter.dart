@@ -22,6 +22,16 @@ abstract final class TokenAmountFormatter {
     );
   }
 
+  /// Formats a server-provided decimal string for a display label. Non-decimal
+  /// placeholders are returned unchanged so this is safe for optional labels.
+  static String formatText(String value) {
+    try {
+      return formatDecimal(DecimalValue(value));
+    } on FormatException {
+      return value;
+    }
+  }
+
   /// Formats USD values with at most two fractional digits, while preserving
   /// sub-dollar precision so small balances do not collapse to `$0`.
   static String formatUsd(DecimalValue amount) {

@@ -1430,7 +1430,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         if (current.intent.type == TradingOrderType.market)
           _SummaryRow(
             label: l10n.slippage,
-            value: '${current.intent.slippage?.value ?? slippage}%',
+            value:
+                '${current.intent.slippage == null ? TokenAmountFormatter.formatValue(DecimalValue(slippage.toString())) : TokenAmountFormatter.formatValue(current.intent.slippage!)}%',
             padding: const EdgeInsets.symmetric(vertical: 4),
           ),
         if (showFee)

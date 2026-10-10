@@ -1,5 +1,6 @@
 import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 
 /// Converts server-provided withdrawal blockers into safe, actionable UI text.
 ///
@@ -19,7 +20,7 @@ String? hip3WithdrawalBlockerMessage(
       case 'insufficientWithdrawableBalance':
       case 'insufficient_withdrawable_balance':
         return l10n.transferInsufficientWithdrawableBalance(
-          preview.maximumTransferable,
+          TokenAmountFormatter.formatText(preview.maximumTransferable),
         );
     }
   }

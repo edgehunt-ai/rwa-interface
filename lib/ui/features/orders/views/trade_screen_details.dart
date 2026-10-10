@@ -409,7 +409,8 @@ class _OpenOrderCard extends StatelessWidget {
               Expanded(
                 child: _TradeMetric(
                   'Filled / Total',
-                  '${filled?.value ?? '0'} / ${quantity?.value ?? '—'}',
+                  '${filled == null ? '0' : TokenAmountFormatter.formatValue(filled)} / '
+                      '${quantity == null ? '—' : TokenAmountFormatter.formatValue(quantity)}',
                 ),
               ),
               Expanded(

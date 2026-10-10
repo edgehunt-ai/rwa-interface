@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
 enum LiquidationRiskLevel { safe, caution, high, unknown }
@@ -459,5 +460,6 @@ double? _liquidationDistance(
 String _percent(double? value) =>
     value == null ? '—' : '${(value * 100).toStringAsFixed(1)}%';
 
-String _price(DecimalValue? value, String unavailable) =>
-    value == null ? unavailable : '\$${value.value}';
+String _price(DecimalValue? value, String unavailable) => value == null
+    ? unavailable
+    : '\$${TokenAmountFormatter.formatValue(value)}';

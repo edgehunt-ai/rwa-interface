@@ -20,6 +20,18 @@ void main() {
     );
   });
 
+  test('limits precision in the server limit shown to the user', () {
+    final preview = _preview(
+      blockers: const ['insufficientWithdrawableBalance'],
+      maximumTransferable: '0.0000123456789',
+    );
+
+    expect(
+      hip3WithdrawalBlockerMessage(preview, l10n),
+      '可提现余额不足，当前最多可转出 0.0000123457 USDC。',
+    );
+  });
+
   test('keeps unknown future blockers safe and generic', () {
     final preview = _preview(blockers: const ['future_blocker']);
 
