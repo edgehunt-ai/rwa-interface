@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app_review/repositories.dart';
 import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
@@ -17,11 +18,110 @@ import 'package:nobell/domain/repositories/portfolio_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/portfolio/views/assets_screen.dart';
 
 import '../../../helpers/test_app.dart';
 
 void main() {
+  for (final kind in MarketProductKind.values) {
+    testWidgets(
+      'Assets opens the ${kind.name} holding with its product tab selected',
+      (tester) async {
+        final router = AppRouter.create(initialLocation: '/assets');
+        addTearDown(router.dispose);
+        final products = [
+          for (final productKind in MarketProductKind.values)
+            MarketProduct(
+              symbol: productKind == MarketProductKind.bstock
+                  ? 'NVDAB'
+                  : 'NVDA',
+              name: 'NVIDIA',
+              kind: productKind,
+              price: DecimalValue('100', asset: 'USD', unit: 'price'),
+              settlementAsset: productKind == MarketProductKind.bstock
+                  ? 'USDT'
+                  : 'USDC',
+              network: productKind == MarketProductKind.bstock
+                  ? 'BSC'
+                  : 'Hyperliquid',
+              tradable: true,
+            ),
+        ];
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              authenticatedStateOverride,
+              portfolioRepositoryProvider.overrideWithValue(
+                _HoldingNavigationPortfolio(kind),
+              ),
+              marketProductLookupProvider((
+                query: 'NVDA',
+                cursor: null,
+                group: 'hot',
+                productType: null,
+              )).overrideWith(
+                (_) async => DomainPage(
+                  items: [
+                    // The opposite product comes first to catch fallback mistakes.
+                    ...products.where((product) => product.kind != kind),
+                    ...products.where((product) => product.kind == kind),
+                  ],
+                ),
+              ),
+              for (final product in products)
+                marketProductProvider(
+                  MarketProductRef(symbol: product.symbol, kind: product.kind),
+                ).overrideWith((_) async => product),
+            ],
+            child: buildRouterTestApp(router),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (kind == MarketProductKind.perp) {
+          await tester.tap(find.text('Perps').last);
+          await tester.pumpAndSettle();
+        }
+        final holding = find.text(
+          kind == MarketProductKind.bstock ? 'NVDAB' : 'NVDA',
+        );
+        await tester.ensureVisible(holding);
+        await tester.pumpAndSettle();
+        await tester.tap(holding);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(TradeScreen), findsOneWidget);
+        expect(
+          tester.widget<TradeScreen>(find.byType(TradeScreen)).initialKind,
+          kind,
+        );
+        final selectedTab = kind == MarketProductKind.bstock
+            ? 'bStocks'
+            : 'HIP-3 Perp';
+        final otherTab = kind == MarketProductKind.bstock
+            ? 'HIP-3 Perp'
+            : 'bStocks';
+        expect(
+          tester.widget<Text>(find.text(selectedTab)).style?.fontWeight,
+          FontWeight.w600,
+        );
+        expect(
+          tester.widget<Text>(find.text(otherTab)).style?.fontWeight,
+          FontWeight.w500,
+        );
+        expect(
+          find.widgetWithText(
+            FilledButton,
+            kind == MarketProductKind.bstock ? 'Buy' : 'Long',
+          ),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   testWidgets(
     'Assets limits high-precision quantities in rows and cash details',
     (tester) async {
@@ -559,11 +659,13 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
     this.includeReturn = true,
     this.includeWalletBalances = false,
     this.quantity = '3.0154',
+    this.kind = MarketProductKind.bstock,
   });
 
   final bool includeReturn;
   final bool includeWalletBalances;
   final String quantity;
+  final MarketProductKind kind;
 
   @override
   Future<Portfolio> getSummary() async => Portfolio(
@@ -605,7 +707,7 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
               Position(
                 positionId: 'nvda-bstock',
                 symbol: 'NVDA',
-                kind: MarketProductKind.bstock,
+                kind: kind,
                 side: PositionSide.long,
                 quantity: DecimalValue(quantity, asset: 'NVDA', unit: 'token'),
                 valueUsd: DecimalValue(
@@ -625,6 +727,18 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
           ),
         ],
       );
+}
+
+final class _HoldingNavigationPortfolio extends _Portfolio {
+  _HoldingNavigationPortfolio(this.kind);
+  final MarketProductKind kind;
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async => const [];
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      _BstockHoldingsPortfolio(kind: kind).listHoldings(cursor: cursor);
 }
 
 final class _PrecisionPortfolio extends _Portfolio {

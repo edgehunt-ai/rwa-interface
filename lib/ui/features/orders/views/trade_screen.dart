@@ -325,7 +325,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         (product) => product.kind == productKind && product.symbol == symbol,
       );
       if (matchingProducts.isEmpty) {
-        final fallback = products.first;
+        final fallback =
+            products
+                .where((product) => product.kind == productKind)
+                .firstOrNull ??
+            products.first;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _changeProduct(fallback);
         });
