@@ -6,7 +6,9 @@ import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/app/providers/locale_provider.dart';
 import 'package:nobell/app/providers/push_notification_providers.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/domain/auth/authentication.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/motion/launch_animation.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/positions/views/hip3_confirmation_host.dart';
 
@@ -42,6 +44,8 @@ final class _AppViewState extends ConsumerState<_AppView> {
   @override
   Widget build(BuildContext context) {
     final locale = ref.watch<Locale?>(appLocaleProvider);
+    final authentication = ref.watch(authenticationProvider);
+    final appReady = authentication is! AuthenticationInitializing;
     ref.listen<AsyncValue<String>>(pushNotificationRouteProvider, (_, next) {
       next.whenData((route) => widget.router.go(route));
     });
@@ -54,8 +58,10 @@ final class _AppViewState extends ConsumerState<_AppView> {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.light,
       routerConfig: widget.router,
-      builder: (context, child) =>
-          Hip3ConfirmationHost(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => LaunchAnimationGate(
+        ready: appReady,
+        child: Hip3ConfirmationHost(child: child ?? const SizedBox.shrink()),
+      ),
       locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
