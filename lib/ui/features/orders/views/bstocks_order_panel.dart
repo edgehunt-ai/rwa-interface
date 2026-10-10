@@ -32,6 +32,8 @@ import 'tp_sl_editor_card.dart';
 part 'bstocks_funding_required.dart';
 part 'bstocks_transfer_flow.dart';
 
+enum _BstocksErrorSource { quote, operation }
+
 class BstocksOrderPanel extends ConsumerStatefulWidget {
   const BstocksOrderPanel({
     super.key,
@@ -64,6 +66,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   OrderPreview? quotePreview;
   TradingOrder? submittedOrder;
   String? error;
+  _BstocksErrorSource? _errorSource;
   bool reviewing = false;
   bool _approving = false;
   bool _approvalNeedsPreviewRefresh = false;
@@ -78,6 +81,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   var _syncingLimitFields = false;
   double? _percentageAvailable;
   double? _lastPercentageAvailable;
+  int? _settlementDecimals;
+  int? _bstockDecimals;
   String? _sellAvailabilityRefreshCheckedFor;
   DecimalValue? _liveMarketPrice;
   String? _currentMarketPrice;
@@ -141,7 +146,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       final q = double.tryParse(quantity.text.trim());
       final p = double.tryParse(limitPrice.text.trim());
       if (q != null && p != null && q >= 0 && p > 0) {
-        _setControllerText(orderValue, _formatDecimal(q * p));
+        _setControllerText(
+          orderValue,
+          _formatDecimalForToken(q * p, _settlementDecimals),
+        );
       }
     });
     _scheduleQuote();
@@ -154,7 +162,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       final value = double.tryParse(orderValue.text.trim());
       final p = double.tryParse(limitPrice.text.trim());
       if (value != null && p != null && p > 0 && value >= 0) {
-        _setControllerText(quantity, _formatDecimal(value / p));
+        _setControllerText(
+          quantity,
+          _formatDecimalForToken(value / p, _bstockDecimals),
+        );
       }
     });
     _scheduleQuote();
@@ -194,7 +205,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   void _refreshCachedSellAvailability(
     String productId,
-    AsyncValue<DecimalValue?> availability,
+    AsyncValue<BstocksSellAvailability?> availability,
   ) {
     if (_sellAvailabilityRefreshCheckedFor == productId) return;
     _sellAvailabilityRefreshCheckedFor = productId;
@@ -213,11 +224,17 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final value = double.tryParse(orderValue.text.trim());
     if (q != null && q >= 0) {
       _syncLimitFields(
-        () => _setControllerText(orderValue, _formatDecimal(q * p)),
+        () => _setControllerText(
+          orderValue,
+          _formatDecimalForToken(q * p, _settlementDecimals),
+        ),
       );
     } else if (value != null && value >= 0) {
       _syncLimitFields(
-        () => _setControllerText(quantity, _formatDecimal(value / p)),
+        () => _setControllerText(
+          quantity,
+          _formatDecimalForToken(value / p, _bstockDecimals),
+        ),
       );
     }
   }
@@ -239,6 +256,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   void _updateAmountFromPercentage(
     double value,
     DecimalValue? availableAmount,
+    int? decimals,
   ) {
     final available = double.tryParse(availableAmount?.value ?? '');
     if (available == null) {
@@ -256,7 +274,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       return;
     }
 
-    final nextText = _formatInputAmount(availableAmount!, percentage: value);
+    final nextText = _formatInputAmount(
+      availableAmount!,
+      percentage: value,
+      decimals: decimals,
+    );
     _percentageWaitingForAmount = false;
     if (mounted) setState(() => percentage = value);
     final controller = type == TradingOrderType.limit
@@ -268,7 +290,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     );
   }
 
-  void _schedulePendingPercentageSync(DecimalValue? availableAmount) {
+  void _schedulePendingPercentageSync(
+    DecimalValue? availableAmount,
+    int? decimals,
+  ) {
     if (!_percentageWaitingForAmount || _percentageSyncScheduled) return;
     final available = double.tryParse(availableAmount?.value ?? '');
     if (available == null || available <= 0) return;
@@ -276,8 +301,41 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _percentageSyncScheduled = false;
       if (!mounted || !_percentageWaitingForAmount) return;
-      _updateAmountFromPercentage(percentage, availableAmount);
+      _updateAmountFromPercentage(percentage, availableAmount, decimals);
     });
+  }
+
+  void _schedulePrecisionSync({
+    required int? settlementDecimals,
+    required int? bstockDecimals,
+  }) {
+    if (_settlementDecimals == settlementDecimals &&
+        _bstockDecimals == bstockDecimals) {
+      return;
+    }
+    _settlementDecimals = settlementDecimals;
+    _bstockDecimals = bstockDecimals;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (settlementDecimals != null) {
+        _truncateController(orderValue, settlementDecimals);
+        if (type == TradingOrderType.market && side == TradingSide.buy) {
+          _truncateController(amount, settlementDecimals);
+        }
+      }
+      if (bstockDecimals != null) {
+        _truncateController(quantity, bstockDecimals);
+        if (type == TradingOrderType.market && side == TradingSide.sell) {
+          _truncateController(amount, bstockDecimals);
+        }
+      }
+    });
+  }
+
+  void _truncateController(TextEditingController controller, int decimals) {
+    final text = _truncateDecimal(controller.text, decimals);
+    if (text == controller.text) return;
+    _setControllerText(controller, text);
   }
 
   void _scheduleQuote() {
@@ -301,6 +359,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           setState(() {
             quotePreview = quote;
             _quoting = false;
+            _clearError(source: _BstocksErrorSource.quote);
           });
         }
       } on Object catch (quoteError) {
@@ -308,9 +367,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
           setState(() {
             quotePreview = null;
             _quoting = false;
-            error = _errorMessage(
-              error: quoteError,
-              fallback: AppLocalizations.of(context).prepareOrderFailed,
+            _setError(
+              _errorMessage(
+                error: quoteError,
+                fallback: AppLocalizations.of(context).prepareOrderFailed,
+              ),
+              source: _BstocksErrorSource.quote,
             );
           });
         }
@@ -342,19 +404,29 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ? quantity.text.trim()
         : amount.text.trim();
     if (!_isPositiveDecimal(inputValue)) {
-      setState(() => error = AppLocalizations.of(context).validOrderValue);
+      setState(
+        () => _setError(
+          AppLocalizations.of(context).validOrderValue,
+          source: _BstocksErrorSource.operation,
+        ),
+      );
       return;
     }
     if (type == TradingOrderType.limit &&
         !_isPositiveDecimal(limitPrice.text.trim())) {
-      setState(() => error = AppLocalizations.of(context).validLimitPrice);
+      setState(
+        () => _setError(
+          AppLocalizations.of(context).validLimitPrice,
+          source: _BstocksErrorSource.operation,
+        ),
+      );
       return;
     }
     final intent = _intentFromFields()!;
     if (reviewing) return;
     final cachedQuote = quotePreview;
     setState(() {
-      error = null;
+      _clearError();
       reviewing = true;
       _confirmationFromFunding = false;
     });
@@ -399,9 +471,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     } on Object catch (error) {
       if (mounted) {
         setState(
-          () => this.error = _errorMessage(
-            error: error,
-            fallback: AppLocalizations.of(context).prepareOrderFailed,
+          () => _setError(
+            _errorMessage(
+              error: error,
+              fallback: AppLocalizations.of(context).prepareOrderFailed,
+            ),
+            source: _BstocksErrorSource.operation,
           ),
         );
       }
@@ -423,6 +498,17 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     return message.isEmpty ? fallback : message;
   }
 
+  void _setError(String message, {required _BstocksErrorSource source}) {
+    error = message;
+    _errorSource = source;
+  }
+
+  void _clearError({_BstocksErrorSource? source}) {
+    if (source != null && _errorSource != source) return;
+    error = null;
+    _errorSource = null;
+  }
+
   Future<void> _approveConfirmation() async {
     final initial = preview;
     if (initial == null ||
@@ -435,7 +521,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     var approvalCompleted = false;
     _stopPreviewPolling();
     setState(() {
-      error = null;
+      _clearError();
       _approving = true;
     });
     try {
@@ -505,9 +591,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               : l10n.orderSubmissionFailed,
         );
         setState(() {
-          error = approvalCompleted
-              ? '${l10n.approvalCompletedQuoteRefreshFailed} $reason'
-              : reason;
+          _setError(
+            approvalCompleted
+                ? '${l10n.approvalCompletedQuoteRefreshFailed} $reason'
+                : reason,
+            source: _BstocksErrorSource.operation,
+          );
         });
       }
     } finally {
@@ -526,7 +615,10 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       setState(() {
         quotePreview = next;
         preview = null;
-        error = '预览费用和预估数量可用，但缺少下单所需的确认绑定，暂时不能提交订单。';
+        _setError(
+          '预览费用和预估数量可用，但缺少下单所需的确认绑定，暂时不能提交订单。',
+          source: _BstocksErrorSource.operation,
+        );
       });
       return;
     }
@@ -534,7 +626,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _previewPollingGeneration++;
     _liveMarketPrice = next.marketPrice;
     setState(() {
-      error = null;
+      _clearError();
       preview = next;
       _confirmationFromFunding = fromFunding;
     });
@@ -659,7 +751,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     );
     _stopPreviewPolling();
     setState(() {
-      error = null;
+      _clearError();
       reviewing = true;
     });
     final result = await ref
@@ -678,9 +770,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             state is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>
             ? state.failure
             : const CompatibilityFailure();
-        error = apiFailureMessage(
-          failure,
-          fallback: AppLocalizations.of(context).orderSubmissionFailed,
+        _setError(
+          apiFailureMessage(
+            failure,
+            fallback: AppLocalizations.of(context).orderSubmissionFailed,
+          ),
+          source: _BstocksErrorSource.operation,
         );
       } else {
         submittedOrder = result.resource;
@@ -814,6 +909,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final settlementBalance = ref.watch(
       bstocksSettlementBalanceProvider(settlementAsset),
     );
+    final settlementDecimals = ref.watch(
+      bstocksSettlementTokenDecimalsProvider(settlementAsset),
+    );
+    final catalogBstockDecimals = ref
+        .watch(bstocksTokenDecimalsProvider(widget.symbol))
+        .value;
     final amountAsset = type == TradingOrderType.market
         ? (isBuy ? settlementAsset : widget.symbol)
         : settlementAsset;
@@ -836,7 +937,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                   ),
                 ),
               );
-    final AsyncValue<DecimalValue?> sellAvailability;
+    final AsyncValue<BstocksSellAvailability?> sellAvailability;
     if (isBuy || sellProductId == null) {
       sellAvailability = const AsyncData(null);
     } else {
@@ -847,8 +948,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     }
     final availableAmount = isBuy
         ? availableBalance.value
-        : sellAvailability.value;
-    _schedulePendingPercentageSync(availableAmount);
+        : sellAvailability.value?.quantity;
+    final bstockDecimals =
+        sellAvailability.value?.decimals ?? catalogBstockDecimals;
+    final amountDecimals = isBuy ? settlementDecimals : bstockDecimals;
+    _schedulePrecisionSync(
+      settlementDecimals: settlementDecimals,
+      bstockDecimals: bstockDecimals,
+    );
+    _schedulePendingPercentageSync(availableAmount, amountDecimals);
     _percentageAvailable = double.tryParse(availableAmount?.value ?? '');
     _scheduleLimitPercentageSync(_percentageAvailable);
     final balance = availableAmount == null
@@ -956,7 +1064,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                     controller: quantity,
                     label: l10n.quantity,
                     suffix: widget.symbol,
-                    inputFormatters: [_decimalTruncatingFormatter(18)],
+                    inputFormatters: bstockDecimals == null
+                        ? null
+                        : [_decimalTruncatingFormatter(bstockDecimals)],
                     inputKey: const Key('bstocks-limit-quantity-input'),
                   ),
                 ),
@@ -1027,10 +1137,9 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          inputFormatters:
-                              type == TradingOrderType.market && !isBuy
-                              ? [_decimalTruncatingFormatter(18)]
-                              : null,
+                          inputFormatters: amountDecimals == null
+                              ? null
+                              : [_decimalTruncatingFormatter(amountDecimals)],
                           style: Theme.of(context).textTheme.titleLarge,
                           decoration: const InputDecoration(
                             hintText: '0.0',
@@ -1052,8 +1161,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 ),
                 _PercentageSlider(
                   value: percentage,
-                  onChanged: (value) =>
-                      _updateAmountFromPercentage(value, availableAmount),
+                  onChanged: (value) => _updateAmountFromPercentage(
+                    value,
+                    availableAmount,
+                    amountDecimals,
+                  ),
                 ),
               ],
             ),
@@ -1405,6 +1517,7 @@ bool _isPositiveDecimal(String value) {
 String _formatInputAmount(
   DecimalValue available, {
   required double percentage,
+  int? decimals,
 }) {
   final numericAvailable = double.parse(available.value);
   final value = numericAvailable * percentage / 100;
@@ -1412,7 +1525,13 @@ String _formatInputAmount(
   if (!shouldKeepDecimals) {
     return value.floor().toString();
   }
-  return _scaleDecimalByPercentage(available.value, percentage);
+  final truncated = _truncateDecimal(
+    _scaleDecimalByPercentage(available.value, percentage),
+    decimals,
+  );
+  return truncated.contains('.')
+      ? truncated.replaceFirst(RegExp(r'\.?0+$'), '')
+      : truncated;
 }
 
 String _scaleDecimalByPercentage(String amount, double percentage) {
@@ -2405,6 +2524,9 @@ String _formatDecimal(double value) {
   return text.replaceFirst(RegExp(r'\.?0+$'), '');
 }
 
+String _formatDecimalForToken(double value, int? decimals) =>
+    _truncateDecimal(_formatDecimal(value), decimals);
+
 TextInputFormatter _decimalTruncatingFormatter(int decimals) =>
     TextInputFormatter.withFunction((oldValue, newValue) {
       if (!RegExp(r'^\d*\.?\d*$').hasMatch(newValue.text)) return oldValue;
@@ -2420,6 +2542,15 @@ TextInputFormatter _decimalTruncatingFormatter(int decimals) =>
         ),
       );
     });
+
+String _truncateDecimal(String value, int? decimals) {
+  if (decimals == null || decimals < 0) return value;
+  final separator = value.indexOf('.');
+  if (separator == -1) return value;
+  if (decimals == 0) return value.substring(0, separator);
+  final end = separator + 1 + decimals;
+  return value.length <= end ? value : value.substring(0, end);
+}
 
 String _formatDraggedLimitPrice(double value) {
   if (value.abs() >= 1) return value.round().toString();

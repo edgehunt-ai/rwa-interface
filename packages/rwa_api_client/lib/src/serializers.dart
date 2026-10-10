@@ -135,6 +135,7 @@ import 'package:rwa_api_client/src/model/device_register_request.dart';
 import 'package:rwa_api_client/src/model/disclosures.dart';
 import 'package:rwa_api_client/src/model/disclosures_always_on.dart';
 import 'package:rwa_api_client/src/model/disclosures_sessions_inner.dart';
+import 'package:rwa_api_client/src/model/ended_session_info.dart';
 import 'package:rwa_api_client/src/model/erc20_approval_action.dart';
 import 'package:rwa_api_client/src/model/frozen_evm_transaction.dart';
 import 'package:rwa_api_client/src/model/funding_asset_identity.dart';
@@ -298,6 +299,7 @@ import 'package:rwa_api_client/src/model/legacy_perp_order_preview.dart';
 import 'package:rwa_api_client/src/model/legacy_transfer.dart';
 import 'package:rwa_api_client/src/model/legacy_transfer_status.dart';
 import 'package:rwa_api_client/src/model/list_app_versions200_response.dart';
+import 'package:rwa_api_client/src/model/list_sessions200_response.dart';
 import 'package:rwa_api_client/src/model/locked_executable_action_transfer_state.dart';
 import 'package:rwa_api_client/src/model/mainnet_funding_source_asset_catalog.dart';
 import 'package:rwa_api_client/src/model/margin_mode.dart';
@@ -417,6 +419,7 @@ import 'package:rwa_api_client/src/model/realtime_transfer_event.dart';
 import 'package:rwa_api_client/src/model/realtime_withdrawal_event.dart';
 import 'package:rwa_api_client/src/model/reference_price.dart';
 import 'package:rwa_api_client/src/model/replace_favorites_request.dart';
+import 'package:rwa_api_client/src/model/revoke_other_sessions200_response.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain.dart';
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_chain_id.dart';
@@ -427,6 +430,7 @@ import 'package:rwa_api_client/src/model/self_custodial_withdrawal_submission_re
 import 'package:rwa_api_client/src/model/self_custodial_withdrawal_transaction.dart';
 import 'package:rwa_api_client/src/model/service_environment.dart';
 import 'package:rwa_api_client/src/model/session.dart';
+import 'package:rwa_api_client/src/model/session_info.dart';
 import 'package:rwa_api_client/src/model/session_kind.dart';
 import 'package:rwa_api_client/src/model/session_request.dart';
 import 'package:rwa_api_client/src/model/session_response.dart';
@@ -621,6 +625,7 @@ part 'serializers.g.dart';
   Disclosures,
   DisclosuresAlwaysOn,
   DisclosuresSessionsInner,
+  EndedSessionInfo,
   Erc20ApprovalAction,
   FrozenEvmTransaction,
   FundingAssetIdentity,
@@ -784,6 +789,7 @@ part 'serializers.g.dart';
   LegacyTransfer,
   LegacyTransferStatus,
   ListAppVersions200Response,
+  ListSessions200Response,
   LockedExecutableActionTransferState,
   MainnetFundingSourceAssetCatalog,
   MarginMode,
@@ -903,6 +909,7 @@ part 'serializers.g.dart';
   RealtimeWithdrawalEvent,
   ReferencePrice,
   ReplaceFavoritesRequest,
+  RevokeOtherSessions200Response,
   SelfCustodialWithdrawal,
   SelfCustodialWithdrawalChain,
   SelfCustodialWithdrawalChainId,
@@ -913,6 +920,7 @@ part 'serializers.g.dart';
   SelfCustodialWithdrawalTransaction,
   ServiceEnvironment,
   Session,
+  SessionInfo,
   SessionKind,
   SessionRequest,
   SessionResponse,
@@ -1161,6 +1169,10 @@ Serializers serializers = (_$serializers.toBuilder()
         () => ListBuilder<PortfolioWarningCode>(),
       )
       ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(SessionInfo)]),
+        () => ListBuilder<SessionInfo>(),
+      )
+      ..addBuilderFactory(
         const FullType(BuiltList, [FullType(BstocksPreviewRouteLeg)]),
         () => ListBuilder<BstocksPreviewRouteLeg>(),
       )
@@ -1171,6 +1183,10 @@ Serializers serializers = (_$serializers.toBuilder()
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(FundingWalletActionSummary)]),
         () => ListBuilder<FundingWalletActionSummary>(),
+      )
+      ..addBuilderFactory(
+        const FullType(BuiltList, [FullType(EndedSessionInfo)]),
+        () => ListBuilder<EndedSessionInfo>(),
       )
       ..addBuilderFactory(
         const FullType(BuiltList, [FullType(Hip3TimeInForce)]),

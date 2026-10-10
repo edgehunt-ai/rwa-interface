@@ -137,6 +137,19 @@ final marketProductProvider = FutureProvider.autoDispose
       return ref.watch(marketsRepositoryProvider).getProduct(product);
     });
 
+final bstocksTokenDecimalsProvider = FutureProvider.autoDispose
+    .family<int?, String>((ref, symbol) async {
+      final normalized = symbol.toLowerCase();
+      final tokens = await ref
+          .watch(marketsRepositoryProvider)
+          .listBstocksSupportedTokens();
+      final decimals = tokens
+          .where((token) => token.symbol.toLowerCase() == normalized)
+          .map((token) => token.decimals)
+          .toSet();
+      return decimals.length == 1 ? decimals.single : null;
+    });
+
 /// Resolve identity reactively when a trade sheet opens before list loading.
 final marketProductIdProvider = Provider.autoDispose
     .family<String?, MarketProductRef>((ref, product) {

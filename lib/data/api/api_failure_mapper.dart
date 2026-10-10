@@ -16,7 +16,10 @@ final class ApiFailureMapper {
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.sendTimeout ||
         error.type == DioExceptionType.receiveTimeout) {
-      return TimeoutFailure(requestId: requestId);
+      return TimeoutFailure(
+        requestId: requestId,
+        userAction: _transportReason(error),
+      );
     }
     if (error.type == DioExceptionType.connectionError) {
       return NetworkFailure(
@@ -55,14 +58,14 @@ final class ApiFailureMapper {
         details: _safeDetails(json['details']),
       );
     }
-    return const UnknownFailure();
+    return UnknownFailure(retryable: true, userAction: _transportReason(error));
   }
 
   String? _transportReason(DioException error) {
-    final message = error.message?.trim();
-    if (message != null && message.isNotEmpty) return message;
     final cause = error.error?.toString().trim();
     if (cause != null && cause.isNotEmpty && cause != 'null') return cause;
+    final message = error.message?.trim();
+    if (message != null && message.isNotEmpty) return message;
     return null;
   }
 

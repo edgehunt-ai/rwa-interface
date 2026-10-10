@@ -60,6 +60,34 @@ void main() {
   });
 
   test(
+    'bStocks settlement decimals follow the matching account token',
+    () async {
+      final container = ProviderContainer(
+        overrides: [
+          tradingAccountsProvider.overrideWith(
+            (_) async => [
+              TradingAccount(
+                kind: TradingAccountKind.bstocks,
+                balances: [
+                  TokenBalance(
+                    symbol: 'TUSDT',
+                    balance: DecimalValue('0'),
+                    decimals: 6,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(tradingAccountsProvider.future);
+
+      expect(container.read(bstocksSettlementTokenDecimalsProvider('USDT')), 6);
+    },
+  );
+
+  test(
     'bStocks sell availability uses one matching fresh trading wallet',
     () async {
       final repository = _BstocksAvailabilityRepository();
@@ -73,7 +101,8 @@ void main() {
       );
 
       expect(repository.productId, 'product-1');
-      expect(value?.value, '1.25');
+      expect(value?.quantity.value, '1.25');
+      expect(value?.decimals, 18);
     },
   );
 
@@ -116,7 +145,8 @@ void main() {
     );
 
     expect(repository.assetCalls, 2);
-    expect(value?.value, '1.25');
+    expect(value?.quantity.value, '1.25');
+    expect(value?.decimals, 18);
   });
 }
 

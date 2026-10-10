@@ -109,6 +109,24 @@ void main() {
     expect(signer.calls, 0);
     expect(service.submits, 0);
   });
+  test('polls 50 times at one-second intervals before pending', () async {
+    final delays = <Duration>[];
+    service.stayPending = true;
+    executor = Hip3PositionActionExecutor(
+      service,
+      signer,
+      now: () => DateTime.utc(2026, 9, 9),
+      delay: (duration) async => delays.add(duration),
+      isActive: () => active,
+    );
+
+    await expectLater(run(), throwsA(isA<Hip3ActionPending>()));
+
+    expect(service.reads, 51);
+    expect(delays, List.filled(50, const Duration(seconds: 1)));
+    expect(signer.calls, 0);
+    expect(service.submits, 0);
+  });
   test(
     'each released step requires its own confirmation and signature',
     () async {
@@ -215,13 +233,25 @@ final class _Service implements Hip3PositionActionService {
   bool failRecovery = false;
   bool wrongProduct = false;
   bool multiStep = false;
+  bool stayPending = false;
   String? key;
   api.Hip3ActionSubmissionRequest? request;
   @override
   Future<api.Hip3Action> get(String actionId) async {
     reads++;
     if (reads > 1 && failRecovery) throw const TimeoutFailure();
-    final result = _action(done: submits > 0);
+    final result = stayPending
+        ? _action().rebuild(
+            (b) => b
+              ..status = api.Hip3ActionStatus.reconciling
+              ..currentStepId = null
+              ..steps[0] = b.steps[0].rebuild(
+                (step) => step
+                  ..status = api.Hip3ActionStepStatusEnum.reconciling
+                  ..signing = null,
+              ),
+          )
+        : _action(done: submits > 0);
     return wrongProduct
         ? result.rebuild((b) => b.productId = 'xyz:NVDA')
         : result;

@@ -195,6 +195,26 @@ final bstocksSettlementBalanceProvider = FutureProvider.autoDispose
       return DecimalValue(raw, asset: settlementAsset, unit: 'token');
     });
 
+final bstocksSettlementTokenDecimalsProvider = Provider.autoDispose
+    .family<int?, String>((ref, settlementAsset) {
+      final accounts = ref.watch(tradingAccountsProvider).value;
+      if (accounts == null) return null;
+      final normalized = settlementAsset.toLowerCase();
+      final decimals = accounts
+          .where((account) => account.kind == TradingAccountKind.bstocks)
+          .expand((account) => account.balances)
+          .where((balance) {
+            final symbol = balance.symbol.toLowerCase();
+            return symbol == normalized ||
+                (normalized == 'usdt' && symbol == 'tusdt') ||
+                (normalized == 'tusdt' && symbol == 'usdt');
+          })
+          .map((balance) => balance.decimals)
+          .whereType<int>()
+          .toSet();
+      return decimals.length == 1 ? decimals.single : null;
+    });
+
 DecimalValue _sumAvailableUsd(Iterable<TradingAccount> accounts) {
   final amounts = accounts
       .map((account) => account.availableUsd)
@@ -234,8 +254,18 @@ final holdingsProvider = FutureProvider.autoDispose
           .listHoldings(cursor: cursor);
     });
 
+final class BstocksSellAvailability {
+  const BstocksSellAvailability({
+    required this.quantity,
+    required this.decimals,
+  });
+
+  final DecimalValue quantity;
+  final int decimals;
+}
+
 final bstocksSellAvailabilityProvider = FutureProvider.autoDispose
-    .family<DecimalValue?, String>((ref, productId) async {
+    .family<BstocksSellAvailability?, String>((ref, productId) async {
       _cachePortfolioList(ref);
       ref.watch(sessionGenerationProvider);
       final repository = ref.watch(portfolioRepositoryProvider);
@@ -262,7 +292,11 @@ final bstocksSellAvailabilityProvider = FutureProvider.autoDispose
             asset.bstocksAvailableQuantity != null,
       );
       if (matches.length != 1) return null;
-      return matches.single.bstocksAvailableQuantity;
+      final asset = matches.single;
+      return BstocksSellAvailability(
+        quantity: asset.bstocksAvailableQuantity!,
+        decimals: asset.decimals,
+      );
     }, retry: _retryBstocksSellAvailability);
 
 Duration? _retryBstocksSellAvailability(int count, Object error) {

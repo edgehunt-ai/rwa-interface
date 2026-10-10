@@ -109,7 +109,10 @@ void main() {
           ),
           bstocksSellAvailabilityProvider.overrideWith((ref, productId) async {
             requests.add(productId);
-            return DecimalValue('12', asset: 'NVDAB');
+            return BstocksSellAvailability(
+              quantity: DecimalValue('12', asset: 'NVDAB'),
+              decimals: 18,
+            );
           }),
         ],
         child: buildTestApp(
@@ -606,6 +609,66 @@ void main() {
           tester.getRect(find.text('Slippage')).bottom,
       8,
     );
+  });
+
+  testWidgets('a successful quote clears the previous quote error', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        retry: (_, _) => null,
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(
+            _RecoveringQuoteOrdersRepository(),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final amount = find.byKey(const Key('bstocks-market-amount-input'));
+    await tester.enterText(amount, '1');
+    await tester.pump(const Duration(milliseconds: 301));
+    await _pumpUntilFound(tester, find.text('trading provider is unavailable'));
+
+    await tester.enterText(amount, '2');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(find.text('trading provider is unavailable'), findsNothing);
+    expect(find.text('0.02 NVDAB'), findsOneWidget);
+  });
+
+  testWidgets('a successful quote does not clear a funding error', (
+    tester,
+  ) async {
+    final orders = _PendingQuoteOrdersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(
+            _FailingFundingRepository(),
+          ),
+          ordersRepositoryProvider.overrideWithValue(orders),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final amount = find.byKey(const Key('bstocks-market-amount-input'));
+    await tester.enterText(amount, '1');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    await _pumpUntilFound(tester, find.text('Funding check failed'));
+
+    orders.completeQuote();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Funding check failed'), findsOneWidget);
+    expect(find.text('0.01 NVDAB'), findsOneWidget);
   });
 
   testWidgets('review summary formats fee with its settlement asset', (
@@ -1271,8 +1334,10 @@ void main() {
               (ref) async => DecimalValue('456.78', asset: 'USD', unit: 'fiat'),
             ),
             bstocksSellAvailabilityProvider('bstocks:nvdab').overrideWith(
-              (ref) async =>
-                  DecimalValue('12.5', asset: 'NVDAB', unit: 'token'),
+              (ref) async => BstocksSellAvailability(
+                quantity: DecimalValue('12.5', asset: 'NVDAB', unit: 'token'),
+                decimals: 18,
+              ),
             ),
           ],
           child: buildTestApp(
@@ -1349,26 +1414,48 @@ void main() {
     expect(find.text('10.25 NVDAB'), findsOneWidget);
   });
 
-  testWidgets('manual bStocks quantities are limited to 18 decimals', (
+  testWidgets('bStock quantity input and slider use the asset decimals', (
     tester,
   ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          bstocksSellAvailabilityProvider('bstocks:nvdab').overrideWith(
+            (ref) async => BstocksSellAvailability(
+              quantity: DecimalValue(
+                '1.123456789',
+                asset: 'NVDAB',
+                unit: 'token',
+              ),
+              decimals: 8,
+            ),
+          ),
         ],
         child: buildTestApp(
-          const BstocksOrderPanel(initialSide: TradingSide.sell),
+          const BstocksOrderPanel(
+            productId: 'bstocks:nvdab',
+            initialSide: TradingSide.sell,
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    const entered = '0.1234567890123456789';
-    const expected = '0.123456789012345678';
     final marketQuantity = find.byKey(const Key('bstocks-market-amount-input'));
-    await tester.enterText(marketQuantity, entered);
-    expect(tester.widget<TextField>(marketQuantity).controller?.text, expected);
+    final slider = find.byKey(const Key('bstocks-percentage-slider'));
+    tester.widget<Slider>(slider).onChanged!(33.333333);
+    await tester.pump();
+    expect(
+      tester.widget<TextField>(marketQuantity).controller?.text,
+      '0.37448559',
+    );
+
+    await tester.enterText(marketQuantity, '0.123456789');
+    expect(
+      tester.widget<TextField>(marketQuantity).controller?.text,
+      '0.12345678',
+    );
 
     await tester.tap(find.text('Limit'));
     await tester.pumpAndSettle();
@@ -1378,8 +1465,60 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
     await tester.pumpAndSettle();
     final limitQuantity = find.byKey(const Key('bstocks-limit-quantity-input'));
-    await tester.enterText(limitQuantity, entered);
-    expect(tester.widget<TextField>(limitQuantity).controller?.text, expected);
+    await tester.enterText(limitQuantity, '0.123456789');
+    expect(
+      tester.widget<TextField>(limitQuantity).controller?.text,
+      '0.12345678',
+    );
+  });
+
+  testWidgets('buy amount input and slider use settlement token decimals', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          bstocksSettlementBalanceProvider('USDT').overrideWith(
+            (ref) async =>
+                DecimalValue('1.123456789', asset: 'USDT', unit: 'token'),
+          ),
+          bstocksSettlementTokenDecimalsProvider('USDT')
+              .overrideWith((ref) => 6),
+          bstocksTokenDecimalsProvider('NVDAB').overrideWith((ref) async => 8),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final marketAmount = find.byKey(const Key('bstocks-market-amount-input'));
+    final slider = find.byKey(const Key('bstocks-percentage-slider'));
+    tester.widget<Slider>(slider).onChanged!(33.333333);
+    await tester.pump();
+    expect(tester.widget<TextField>(marketAmount).controller?.text, '0.374485');
+
+    await tester.enterText(marketAmount, '0.1234567');
+    expect(tester.widget<TextField>(marketAmount).controller?.text, '0.123456');
+
+    tester.widget<Slider>(slider).onChanged!(100);
+    await tester.pump();
+    expect(tester.widget<TextField>(marketAmount).controller?.text, '1.123456');
+
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    final priceInput = find.byKey(const Key('bstocks-limit-price-sheet-input'));
+    await tester.enterText(priceInput, '100');
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+    await tester.pumpAndSettle();
+    final orderValue = find.byKey(const Key('bstocks-limit-order-value-input'));
+    await tester.enterText(orderValue, '0.1234567');
+    expect(tester.widget<TextField>(orderValue).controller?.text, '0.123456');
+    final quantity = find.byKey(const Key('bstocks-limit-quantity-input'));
+    await tester.enterText(quantity, '0.123456789');
+    expect(tester.widget<TextField>(quantity).controller?.text, '0.12345678');
+    expect(tester.widget<TextField>(orderValue).controller?.text, '12.345678');
   });
 
   testWidgets('bStocks order form shows a skeleton while the balance loads', (
@@ -2107,6 +2246,53 @@ final class _QuotedOrdersRepository extends _DelayedOrdersRepository {
   );
 }
 
+final class _RecoveringQuoteOrdersRepository extends _DelayedOrdersRepository {
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async {
+    if (intent.amount?.value == '1') {
+      throw const ServerFailure(
+        statusCode: 503,
+        code: 'provider_unavailable',
+        message: 'trading provider is unavailable',
+      );
+    }
+    return OrderPreview(
+      previewId: 'recovered-quote',
+      intent: intent,
+      orderValue: DecimalValue('2', asset: 'USDT', unit: 'token'),
+      estimatedQuantity: DecimalValue('0.02', asset: 'NVDAB', unit: 'token'),
+    );
+  }
+}
+
+final class _PendingQuoteOrdersRepository extends _DelayedOrdersRepository {
+  final _quote = Completer<OrderPreview>();
+  late OrderIntent _intent;
+
+  void completeQuote() {
+    _quote.complete(
+      OrderPreview(
+        previewId: 'pending-quote',
+        intent: _intent,
+        orderValue: DecimalValue('1', asset: 'USDT', unit: 'token'),
+        estimatedQuantity: DecimalValue('0.01', asset: 'NVDAB', unit: 'token'),
+      ),
+    );
+  }
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) {
+    _intent = intent;
+    return _quote.future;
+  }
+}
+
 final class _CountingOrdersRepository extends _DelayedOrdersRepository {
   var previewCalls = 0;
 
@@ -2474,6 +2660,17 @@ final class _CompletedFundingRepository implements FundingRepository {
     shortfall: DecimalValue('0', asset: 'USDT', unit: 'token'),
     status: FundingPlanState.alreadyFunded,
   );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _FailingFundingRepository implements FundingRepository {
+  @override
+  Future<FundingSessionSummary> createFundingSession({
+    required OrderIntent intent,
+    required String idempotencyKey,
+  }) => throw const UnknownFailure(userAction: 'Funding check failed');
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

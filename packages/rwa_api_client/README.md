@@ -97,8 +97,11 @@ Class | Method | HTTP request | Description
 [*AccountApi*](doc/AccountApi.md) | [**getAccountDeletionRequest**](doc/AccountApi.md#getaccountdeletionrequest) | **GET** /v1/me/deletion | 获取账户删除请求状态
 [*AccountApi*](doc/AccountApi.md) | [**getMe**](doc/AccountApi.md#getme) | **GET** /v1/me | 当前登录账户
 [*AccountApi*](doc/AccountApi.md) | [**listDevices**](doc/AccountApi.md#listdevices) | **GET** /v1/me/devices | 已注册的推送设备
+[*AccountApi*](doc/AccountApi.md) | [**listSessions**](doc/AccountApi.md#listsessions) | **GET** /v1/me/sessions | 列出当前账户的登录会话
 [*AccountApi*](doc/AccountApi.md) | [**registerDevice**](doc/AccountApi.md#registerdevice) | **POST** /v1/me/devices | 注册 / 更新当前设备的推送令牌
 [*AccountApi*](doc/AccountApi.md) | [**requestAccountDeletion**](doc/AccountApi.md#requestaccountdeletion) | **DELETE** /v1/me | 请求删除当前产品账户
+[*AccountApi*](doc/AccountApi.md) | [**revokeOtherSessions**](doc/AccountApi.md#revokeothersessions) | **POST** /v1/me/sessions/revoke-others | 登出除当前会话外的全部会话
+[*AccountApi*](doc/AccountApi.md) | [**revokeSession**](doc/AccountApi.md#revokesession) | **DELETE** /v1/me/sessions/{session_id} | 登出指定登录会话
 [*AccountApi*](doc/AccountApi.md) | [**testDeviceNotification**](doc/AccountApi.md#testdevicenotification) | **POST** /v1/me/devices/{device_id}/test-notification | 向当前设备发送 Staging 自测通知
 [*AccountApi*](doc/AccountApi.md) | [**updateSettings**](doc/AccountApi.md#updatesettings) | **PATCH** /v1/me/settings | 更新当前用户的设置
 [*ActivityApi*](doc/ActivityApi.md) | [**listActivity**](doc/ActivityApi.md#listactivity) | **GET** /v1/activity | 交易与资金活动列表
@@ -320,6 +323,7 @@ Class | Method | HTTP request | Description
  - [Disclosures](doc/Disclosures.md)
  - [DisclosuresAlwaysOn](doc/DisclosuresAlwaysOn.md)
  - [DisclosuresSessionsInner](doc/DisclosuresSessionsInner.md)
+ - [EndedSessionInfo](doc/EndedSessionInfo.md)
  - [Erc20ApprovalAction](doc/Erc20ApprovalAction.md)
  - [FrozenEvmTransaction](doc/FrozenEvmTransaction.md)
  - [FundingAssetIdentity](doc/FundingAssetIdentity.md)
@@ -483,6 +487,7 @@ Class | Method | HTTP request | Description
  - [LegacyTransfer](doc/LegacyTransfer.md)
  - [LegacyTransferStatus](doc/LegacyTransferStatus.md)
  - [ListAppVersions200Response](doc/ListAppVersions200Response.md)
+ - [ListSessions200Response](doc/ListSessions200Response.md)
  - [LockedExecutableActionTransferState](doc/LockedExecutableActionTransferState.md)
  - [MainnetFundingSourceAssetCatalog](doc/MainnetFundingSourceAssetCatalog.md)
  - [MarginMode](doc/MarginMode.md)
@@ -602,6 +607,7 @@ Class | Method | HTTP request | Description
  - [RealtimeWithdrawalEvent](doc/RealtimeWithdrawalEvent.md)
  - [ReferencePrice](doc/ReferencePrice.md)
  - [ReplaceFavoritesRequest](doc/ReplaceFavoritesRequest.md)
+ - [RevokeOtherSessions200Response](doc/RevokeOtherSessions200Response.md)
  - [SelfCustodialWithdrawal](doc/SelfCustodialWithdrawal.md)
  - [SelfCustodialWithdrawalChain](doc/SelfCustodialWithdrawalChain.md)
  - [SelfCustodialWithdrawalChainId](doc/SelfCustodialWithdrawalChainId.md)
@@ -612,6 +618,7 @@ Class | Method | HTTP request | Description
  - [SelfCustodialWithdrawalTransaction](doc/SelfCustodialWithdrawalTransaction.md)
  - [ServiceEnvironment](doc/ServiceEnvironment.md)
  - [Session](doc/Session.md)
+ - [SessionInfo](doc/SessionInfo.md)
  - [SessionKind](doc/SessionKind.md)
  - [SessionRequest](doc/SessionRequest.md)
  - [SessionResponse](doc/SessionResponse.md)

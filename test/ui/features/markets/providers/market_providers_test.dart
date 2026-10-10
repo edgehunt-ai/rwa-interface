@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/bstocks_support.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
@@ -130,6 +131,20 @@ void main() {
     );
   });
 
+  test('resolves bStock decimals from the supported token catalog', () async {
+    final container = ProviderContainer(
+      overrides: [
+        marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    expect(
+      await container.read(bstocksTokenDecimalsProvider('nvdab').future),
+      8,
+    );
+  });
+
   test('keeps chart requests isolated by selected range', () async {
     final repository = _MarketsRepository();
     final container = ProviderContainer(
@@ -177,6 +192,18 @@ final class _MarketSearchHistoryService implements MarketSearchHistoryService {
 final class _MarketsRepository implements MarketsRepository {
   final requestedRanges = <CandleChartRange>[];
   final requests = <MarketQuery>[];
+
+  @override
+  Future<List<BstocksSupportedToken>> listBstocksSupportedTokens() async =>
+      const [
+        BstocksSupportedToken(
+          symbol: 'NVDAB',
+          contractAddress: '0x0000000000000000000000000000000000000001',
+          decimals: 8,
+          executionStatus: BstocksExecutionStatus.admitted,
+          executionEnabled: true,
+        ),
+      ];
 
   @override
   Future<DomainPage<Stock>> listStocks() async => const DomainPage(

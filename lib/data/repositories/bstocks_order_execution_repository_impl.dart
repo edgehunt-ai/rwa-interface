@@ -27,6 +27,8 @@ final class BstocksOrderExecutionRepositoryImpl
     this._authorizationSigner,
     BstocksBroadcastJournal? broadcastJournal,
     BstocksSponsoredExecutionJournal? sponsoredJournal,
+    this._sponsoredReconciliationAttempts = 30,
+    this._sponsoredReconciliationDelay = const Duration(seconds: 1),
   }) : _broadcastJournal = broadcastJournal ?? BstocksBroadcastJournal(),
        _sponsoredJournal =
            sponsoredJournal ?? BstocksSponsoredExecutionJournal();
@@ -38,6 +40,8 @@ final class BstocksOrderExecutionRepositoryImpl
   final WalletAuthorizationSigner? _authorizationSigner;
   final BstocksBroadcastJournal _broadcastJournal;
   final BstocksSponsoredExecutionJournal _sponsoredJournal;
+  final int _sponsoredReconciliationAttempts;
+  final Duration _sponsoredReconciliationDelay;
 
   @override
   Future<ResourceResult<TradingOrder>> continueOrder({
@@ -222,16 +226,12 @@ final class BstocksOrderExecutionRepositoryImpl
           final executionId = await _sponsoredJournal.executionId(hidden);
           _checkCancellation(isCancelled);
           if (executions != null && executionId != null) {
-            final execution = await executions.get(executionId);
+            final execution =
+                await _sponsoredJournal.submissionStarted(executionId)
+                ? await _reconcileSponsoredSubmission(executions, executionId)
+                : await executions.get(executionId);
             _checkCancellation(isCancelled);
             _checkExecutionFailure(execution);
-            if (!_isSubmittedExecution(execution) &&
-                await _sponsoredJournal.submissionStarted(executionId)) {
-              throw const UnknownFailure(
-                retryable: true,
-                userAction: 'Wallet authorization submission outcome is uncertain; track the original execution before retrying',
-              );
-            }
             _checkCancellation(isCancelled);
           }
           if (hidden.kind == BstocksOrderActionKind.erc20Approval &&
@@ -406,6 +406,10 @@ final class BstocksOrderExecutionRepositoryImpl
       executionId = created.executionId;
       await _sponsoredJournal.saveExecutionId(action, executionId);
     }
+    if (await _sponsoredJournal.submissionStarted(executionId)) {
+      await _reconcileSponsoredSubmission(executions, executionId);
+      return;
+    }
     // Preserve an execution created before cancellation, but do not sign it.
     _checkCancellation(isCancelled);
     final execution = await executions.get(executionId);
@@ -434,12 +438,6 @@ final class BstocksOrderExecutionRepositoryImpl
     if (signer == null) {
       throw const UnknownFailure(
         userAction: 'bStocks wallet authorization signer unavailable',
-      );
-    }
-    if (await _sponsoredJournal.submissionStarted(executionId)) {
-      throw const UnknownFailure(
-        retryable: true,
-        userAction: 'Wallet authorization submission outcome is uncertain; track the original execution before retrying',
       );
     }
     _checkCancellation(isCancelled);
@@ -520,10 +518,72 @@ final class BstocksOrderExecutionRepositoryImpl
         await _sponsoredJournal.clearSubmissionStarted(executionId);
         rethrow;
       }
-      return executions.get(executionId);
+      return _reconcileSponsoredSubmission(
+        executions,
+        executionId,
+        submissionFailure: failure,
+      );
     } on TimeoutException {
-      return executions.get(executionId);
+      return _reconcileSponsoredSubmission(
+        executions,
+        executionId,
+        submissionFailure: const TimeoutFailure(
+          userAction: 'Wallet authorization submission timed out',
+        ),
+      );
     }
+  }
+
+  Future<WalletActionExecution> _reconcileSponsoredSubmission(
+    WalletActionExecutionRepository executions,
+    String executionId, {
+    ApiFailure? submissionFailure,
+  }) async {
+    ApiFailure? lastReadFailure;
+    WalletActionExecution? lastExecution;
+    for (
+      var attempt = 0;
+      attempt < _sponsoredReconciliationAttempts;
+      attempt++
+    ) {
+      WalletActionExecution? execution;
+      try {
+        execution = await executions.get(executionId);
+      } on ApiFailure catch (failure) {
+        lastReadFailure = failure;
+      }
+      if (execution != null) {
+        lastExecution = execution;
+        if (_isSubmittedExecution(execution)) return execution;
+        _checkExecutionFailure(execution);
+      }
+      if (attempt + 1 < _sponsoredReconciliationAttempts) {
+        await Future<void>.delayed(_sponsoredReconciliationDelay);
+      }
+    }
+
+    final detail = switch ((
+      lastReadFailure,
+      submissionFailure,
+      lastExecution,
+    )) {
+      (final ApiFailure failure, _, _) => apiFailureMessage(
+        failure,
+        fallback: 'Execution status request failed',
+      ),
+      (_, final ApiFailure failure, _) => apiFailureMessage(
+        failure,
+        fallback: 'Authorization submission failed',
+      ),
+      (_, _, final WalletActionExecution execution) =>
+        'execution remained ${execution.status.name}',
+      _ => 'execution status is unavailable',
+    };
+    throw UnknownFailure(
+      retryable: true,
+      userAction:
+          'Authorization was signed, but its execution status could not be confirmed: $detail',
+    );
   }
 
   bool _isSubmittedExecution(WalletActionExecution execution) => const {

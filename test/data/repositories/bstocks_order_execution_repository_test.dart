@@ -182,12 +182,13 @@ void main() {
     );
     final started = Completer<void>();
     final finish = Completer<void>();
-    final executions = _Executions(action, [awaiting, awaiting, awaiting])
-      ..submitFailure = const NetworkFailure()
-      ..beforeSubmit = () {
-        started.complete();
-        return finish.future;
-      };
+    final executions =
+        _Executions(action, [awaiting, awaiting, awaiting, awaiting, awaiting])
+          ..submitFailure = const NetworkFailure()
+          ..beforeSubmit = () {
+            started.complete();
+            return finish.future;
+          };
     final signer = _Signer();
     BstocksOrderExecutionRepositoryImpl repository() =>
         BstocksOrderExecutionRepositoryImpl(
@@ -197,6 +198,8 @@ void main() {
           sponsoredExecutions: executions,
           authorizationSigner: signer,
           sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+          sponsoredReconciliationAttempts: 2,
+          sponsoredReconciliationDelay: Duration.zero,
         );
     final assertion = expectLater(
       repository().executeExisting(
@@ -457,6 +460,8 @@ void main() {
               sponsoredExecutions: executions,
               authorizationSigner: signer,
               sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+              sponsoredReconciliationAttempts: 1,
+              sponsoredReconciliationDelay: Duration.zero,
             );
         await expectLater(
           repository().executeExisting(
@@ -635,7 +640,7 @@ void main() {
   }
 
   test(
-    'lost sponsored submission recovers original E after reconstruction',
+    'lost sponsored submission is reconciled without reconstruction',
     () async {
       final action = _action(
         orderId: 'order-1',
@@ -668,17 +673,13 @@ void main() {
             sponsoredExecutions: executions,
             authorizationSigner: signer,
             sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+            sponsoredReconciliationAttempts: 2,
+            sponsoredReconciliationDelay: Duration.zero,
           );
-      await expectLater(
-        repository().executeExisting(order: ResourceResult(resource: current)),
-        throwsA(isA<NetworkFailure>()),
+      final result = await repository().executeExisting(
+        order: ResourceResult(resource: current),
       );
-      expect(
-        (await repository().executeExisting(
-          order: ResourceResult(resource: current),
-        )).resource.status,
-        TradingOrderStatus.filled,
-      );
+      expect(result.resource.status, TradingOrderStatus.filled);
       expect(executions.createKeys, hasLength(1));
       expect(executions.submitCalls, 1);
       expect(signer.requests, hasLength(1));
@@ -713,6 +714,8 @@ void main() {
           sponsoredExecutions: executions,
           authorizationSigner: signer,
           sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+          sponsoredReconciliationAttempts: 1,
+          sponsoredReconciliationDelay: Duration.zero,
         ).executeExisting(order: ResourceResult(resource: current)),
         throwsA(isA<UnknownFailure>()),
       );
@@ -800,6 +803,57 @@ void main() {
       },
     );
   }
+
+  test(
+    'a lost authorization response is reconciled without re-signing',
+    () async {
+      final approval = _action(
+        orderId: 'order-1',
+        stepId: 'approval-1',
+        kind: BstocksOrderActionKind.erc20Approval,
+      );
+      final current = _order('order-1', action: approval);
+      final approved = _order(
+        'order-1',
+        status: TradingOrderStatus.awaitingConfirmation,
+        walletActionBlocker: 'previewRequired',
+        currentActionId: approval.actionId,
+      );
+      final executions =
+          _Executions(approval, [
+              _execution(
+                approval,
+                WalletActionExecutionState.awaitingUserAuthorization,
+              ),
+              const NetworkFailure(userAction: 'Connection reset after POST'),
+              _execution(approval, WalletActionExecutionState.completed),
+            ])
+            ..submitFailure = const NetworkFailure(
+              userAction: 'Connection reset after POST',
+            );
+      final signer = _Signer();
+      final result =
+          await BstocksOrderExecutionRepositoryImpl(
+            _ScriptedOrders(initial: current, refreshes: [current, approved]),
+            _Actions()..currentAction = approval,
+            null,
+            sponsoredExecutions: executions,
+            authorizationSigner: signer,
+            sponsoredJournal: BstocksSponsoredExecutionJournal.persistent(),
+            sponsoredReconciliationDelay: Duration.zero,
+          ).execute(
+            intent: _intent(),
+            created: ResourceResult(resource: current),
+            previewId: 'preview-1',
+            stopAfterApproval: true,
+          );
+
+      expect(result.resource.status, TradingOrderStatus.awaitingConfirmation);
+      expect(executions.submitCalls, 1);
+      expect(signer.requests, hasLength(1));
+      expect(executions.getIds, ['execution-1', 'execution-1', 'execution-1']);
+    },
+  );
 
   test('restoring E never falls back to a direct sender when authorization signer is unavailable', () async {
     final action = _action(

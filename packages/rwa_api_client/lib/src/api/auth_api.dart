@@ -22,7 +22,7 @@ class AuthApi {
   const AuthApi(this._dio, this._serializers);
 
   /// 创建或恢复产品会话
-  /// 客户端在 Privy SDK 登录后，把 Privy access token 直接放入 Authorization Bearer header。请求体仅包含可选语言和设备信息；响应不签发 access token。
+  /// 客户端在 Privy SDK 登录后，把 Privy access token 直接放入 Authorization Bearer header。 请求体仅包含可选语言、设备信息和用于展示的 &#x60;login_method&#x60;；响应不签发 access token。 &#x60;login_method&#x60; 不是认证证据，未传、null 或 &#x60;other&#x60; 均不展示登录方式； 不支持的值返回 &#x60;422 login_method_invalid&#x60;。 
   ///
   /// Parameters:
   /// * [sessionRequest] 

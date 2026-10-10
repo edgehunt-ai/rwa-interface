@@ -10,6 +10,9 @@ import 'hip3_position_action_service.dart';
 /// Session-scoped executor. The repository maps each frozen step to a domain
 /// confirmation before invoking [confirm]; generated types stay in data code.
 final class Hip3PositionActionExecutor {
+  static const _pollAttempts = 50;
+  static const _pollInterval = Duration(seconds: 1);
+
   Hip3PositionActionExecutor(
     this._service,
     this._signer, {
@@ -39,7 +42,7 @@ final class Hip3PositionActionExecutor {
     try {
       // Always fetch on entry: a prior signature may already have been submitted.
       var current = await _read(actionId);
-      for (var attempt = 0; attempt < 30; attempt++) {
+      for (var attempt = 0; attempt < _pollAttempts; attempt++) {
         _checkSession(actionId);
         final failureReason = _failureReason(current);
         final hasFailedStep = current.steps.any(
@@ -160,7 +163,7 @@ final class Hip3PositionActionExecutor {
             // Never retry from a stale prepared snapshot after a lost response.
           }
         }
-        await _delay(const Duration(milliseconds: 500));
+        await _delay(_pollInterval);
         current = await _read(actionId);
       }
       throw Hip3ActionPending(actionId);

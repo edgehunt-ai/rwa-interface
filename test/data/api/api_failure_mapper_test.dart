@@ -115,17 +115,16 @@ void main() {
           .kind,
       FailureKind.network,
     );
-    expect(
-      mapper
-          .fromDio(
-            DioException(
-              requestOptions: request,
-              type: DioExceptionType.unknown,
-            ),
-          )
-          .kind,
-      FailureKind.unknown,
+    final unknown = mapper.fromDio(
+      DioException(
+        requestOptions: request,
+        type: DioExceptionType.unknown,
+        message: 'Dio wrapped the request failure',
+        error: Exception('TLS connection closed unexpectedly'),
+      ),
     );
+    expect(unknown.kind, FailureKind.unknown);
+    expect(unknown.userAction, 'Exception: TLS connection closed unexpectedly');
   });
 
   test(

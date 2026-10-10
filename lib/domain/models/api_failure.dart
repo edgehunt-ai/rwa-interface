@@ -118,7 +118,11 @@ final class NetworkFailure extends ApiFailure {
 }
 
 final class TimeoutFailure extends ApiFailure {
-  const TimeoutFailure({super.requestId, super.retryable = true});
+  const TimeoutFailure({
+    super.requestId,
+    super.retryable = true,
+    super.userAction,
+  });
   @override
   FailureKind get kind => FailureKind.network;
 }
