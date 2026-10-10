@@ -955,28 +955,35 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   }
 
   @override
-  Widget build(BuildContext context) => Material(
-    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-    child: SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-        child: SingleChildScrollView(
-          child: submittedOrder != null
-              ? _submitted(context)
-              : _fundingRechecking
-              ? OrderFundingPendingContent(
-                  onClose: () => Navigator.of(context).pop(),
-                )
-              : reviewing && preview != null
-              ? _submitting(context)
-              : preview == null
-              ? _form(context)
-              : _preview(context),
+  Widget build(BuildContext context) {
+    final submittingOrder = reviewing && preview != null;
+    return PopScope(
+      canPop: !submittingOrder,
+      child: Material(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: SingleChildScrollView(
+              child: submittedOrder != null
+                  ? _submitted(context)
+                  : _fundingRechecking
+                  ? OrderFundingPendingContent(
+                      transferSubmitted: true,
+                      onClose: () => Navigator.of(context).pop(),
+                    )
+                  : submittingOrder
+                  ? _submitting(context)
+                  : preview == null
+                  ? _form(context)
+                  : _preview(context),
+            ),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _form(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -1602,11 +1609,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         style: TextStyle(
           color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
         ),
-      ),
-      const SizedBox(height: 16),
-      OutlinedButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: Text(AppLocalizations.of(context).closeViewLater),
       ),
     ],
   );

@@ -247,6 +247,54 @@ void main() {
     },
   );
 
+  testWidgets(
+    'order funding hides Close & View Later until transfer submission',
+    (tester) async {
+      final funding = _DelayedFundingSubmissionRepository();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(funding),
+            walletsRepositoryProvider.overrideWithValue(
+              _FundingWalletsRepository(),
+            ),
+            transferOptionsProvider.overrideWith(
+              (ref) async => _transferOptions('1000'),
+            ),
+          ],
+          child: buildTestApp(
+            OrderFundingSheet(
+              plan: _readyFundingPlan,
+              kind: MarketProductKind.bstock,
+              canConfirmTransfer: true,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('order-funding-spot-option')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.pump();
+
+      expect(find.text('Preparing trading funds…'), findsOneWidget);
+      expect(find.text('Close & View Later'), findsNothing);
+      expect(
+        tester.widget<PopScope>(find.byType(PopScope).last).canPop,
+        isFalse,
+      );
+
+      funding.submit();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Close & View Later'), findsOneWidget);
+      expect(
+        tester.widget<PopScope>(find.byType(PopScope).last).canPop,
+        isTrue,
+      );
+    },
+  );
+
   testWidgets('order funding hides Spot when its available balance is short', (
     tester,
   ) async {
@@ -2177,7 +2225,8 @@ void main() {
     await tester.pump();
 
     expect(find.text('Submitting Order…'), findsOneWidget);
-    expect(find.text('Close & View Later'), findsOneWidget);
+    expect(find.text('Close & View Later'), findsNothing);
+    expect(tester.widget<PopScope>(find.byType(PopScope).last).canPop, isFalse);
 
     final illustration = find.image(
       const AssetImage('assets/figma/trade/order_submitting.webp'),
@@ -2332,16 +2381,37 @@ void main() {
     );
 
     expect(find.text('Preparing trading funds…'), findsOneWidget);
+    expect(find.text('Close & View Later'), findsNothing);
+  });
+
+  testWidgets('submitted funding pending state can close and view later', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: buildTestApp(
+          BstocksTransferFlowSheet(
+            amountNeeded: DecimalValue('100', asset: 'USDT', unit: 'token'),
+            initialStage: BstocksTransferFlowStage.fundingPending,
+            initialFundingSubmitted: true,
+            plan: _readyFundingPlan,
+            orderPreview: _fundedPreview,
+            symbol: 'NVDAB',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Preparing trading funds…'), findsOneWidget);
     expect(find.text('Close & View Later'), findsOneWidget);
   });
 
   testWidgets(
-    'completed funding submits the original preview ID once and can close pending',
+    'completed funding submits the original preview ID and keeps submitting locked',
     (tester) async {
       final orders = _PreviewCapturingOrdersRepository();
       final funding = _CompletedFundingRepository();
       final wallets = _FundingWalletsRepository();
-      var closed = false;
       final preview = OrderPreview(
         previewId: 'funded-preview',
         intent: OrderIntent(
@@ -2366,7 +2436,6 @@ void main() {
               plan: _readyFundingPlan,
               orderPreview: preview,
               symbol: 'NVDAB',
-              onClose: () => closed = true,
             ),
           ),
         ),
@@ -2399,10 +2468,14 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(
+      expect(
         find.widgetWithText(OutlinedButton, 'Close & View Later'),
+        findsNothing,
       );
-      expect(closed, isTrue);
+      expect(
+        tester.widget<PopScope>(find.byType(PopScope).last).canPop,
+        isFalse,
+      );
     },
   );
 
@@ -3246,6 +3319,58 @@ final class _CompletedFundingRepository implements FundingRepository {
     shortfall: DecimalValue('0', asset: 'USDT', unit: 'token'),
     status: FundingPlanState.alreadyFunded,
   );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _DelayedFundingSubmissionRepository implements FundingRepository {
+  final _submission = Completer<FundingTransfer>();
+
+  void submit() => _submission.complete(
+    FundingTransfer(
+      transferId: 'pending-transfer',
+      planId: _readyFundingPlan.planId,
+      amount: DecimalValue('100'),
+      status: FundingTransferState.filling,
+    ),
+  );
+
+  @override
+  Future<FundingTransfer> createFundingTransfer({
+    required String planId,
+    required String legId,
+    required String authorizationId,
+    required String idempotencyKey,
+  }) => _submission.future;
+
+  @override
+  Future<FundingPlan> getFundingPlan(String id) async => FundingPlan(
+    planId: id,
+    tradePreviewId: 'preview-1',
+    shortfall: DecimalValue('100'),
+    status: FundingPlanState.executing,
+    legs: [
+      FundingLeg(
+        legId: 'leg-1',
+        walletId: 'wallet-1',
+        asset: 'USDC',
+        maximumAmount: DecimalValue('100'),
+        outputAmount: DecimalValue('100'),
+        status: FundingLegState.actionReleased,
+        transferId: 'pending-transfer',
+      ),
+    ],
+  );
+
+  @override
+  Future<FundingTransfer> getFundingTransfer(String id) async =>
+      FundingTransfer(
+        transferId: id,
+        planId: _readyFundingPlan.planId,
+        amount: DecimalValue('100'),
+        status: FundingTransferState.filling,
+      );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

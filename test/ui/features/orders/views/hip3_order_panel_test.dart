@@ -2248,6 +2248,8 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(execution.orderId, 'order-1');
+    expect(find.text('Close & View Later'), findsNothing);
+    expect(tester.widget<PopScope>(find.byType(PopScope).last).canPop, isFalse);
     final illustration = find.image(
       const AssetImage('assets/figma/trade/order_submitting.webp'),
     );

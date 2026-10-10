@@ -1043,6 +1043,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
     final submitted = await showModalBottomSheet<TradingOrder>(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
       builder: (_) => Hip3ConfirmSheet(
         preview: preview,
         showFundingStep: _confirmationFromFunding,
@@ -1319,6 +1320,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             child: OrderFundingPendingContent(
+              transferSubmitted: true,
               onClose: () => Navigator.of(context).pop(),
             ),
           ),

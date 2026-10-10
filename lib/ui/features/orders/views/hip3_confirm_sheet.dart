@@ -385,45 +385,43 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
 
   Widget _submittingView(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Material(
-      color: Theme.of(context).extension<AppRwaColors>()!.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Image.asset(
-                'assets/figma/trade/order_submitting.webp',
-                width: 120,
-                height: 120,
-                fit: BoxFit.contain,
-              ),
-              Text(
-                l10n.submittingOrder,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.submittingOrderDescription,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(context)
-                      .extension<AppRwaColors>()!
-                      .secondaryText,
-                  fontSize: 12,
+    return PopScope(
+      canPop: false,
+      child: Material(
+        color: Theme.of(context).extension<AppRwaColors>()!.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Image.asset(
+                  'assets/figma/trade/order_submitting.webp',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.closeViewLater),
-              ),
-            ],
+                Text(
+                  l10n.submittingOrder,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.submittingOrderDescription,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .extension<AppRwaColors>()!
+                        .secondaryText,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

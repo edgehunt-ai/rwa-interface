@@ -6,6 +6,7 @@ class BstocksTransferFlowSheet extends ConsumerStatefulWidget {
     super.key,
     required this.amountNeeded,
     this.initialStage = BstocksTransferFlowStage.source,
+    this.initialFundingSubmitted = false,
     this.onClose,
     this.onViewPosition,
     required this.plan,
@@ -15,6 +16,7 @@ class BstocksTransferFlowSheet extends ConsumerStatefulWidget {
 
   final DecimalValue amountNeeded;
   final BstocksTransferFlowStage initialStage;
+  final bool initialFundingSubmitted;
   final VoidCallback? onClose;
   final ValueChanged<TradingOrder>? onViewPosition;
   final FundingPlan plan;
@@ -39,27 +41,35 @@ class _BstocksTransferFlowState
   late BstocksTransferFlowStage _stage;
   String? error;
   TradingOrder? _submittedOrder;
+  late bool _fundingSubmitted;
 
   @override
   void initState() {
     super.initState();
     _stage = widget.initialStage;
+    _fundingSubmitted = widget.initialFundingSubmitted;
   }
 
   @override
-  Widget build(BuildContext context) => Material(
-    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-    child: SafeArea(
-      top: false,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: switch (_stage) {
-          BstocksTransferFlowStage.source => _source(context),
-          BstocksTransferFlowStage.review => _review(context),
-          BstocksTransferFlowStage.fundingPending => _fundingPending(context),
-          BstocksTransferFlowStage.submitting => _submitting(context),
-          BstocksTransferFlowStage.tradeSuccess => _tradeSuccess(context),
-        },
+  Widget build(BuildContext context) => PopScope(
+    canPop:
+        _stage != BstocksTransferFlowStage.submitting &&
+        (_stage != BstocksTransferFlowStage.fundingPending ||
+            _fundingSubmitted),
+    child: Material(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: switch (_stage) {
+            BstocksTransferFlowStage.source => _source(context),
+            BstocksTransferFlowStage.review => _review(context),
+            BstocksTransferFlowStage.fundingPending => _fundingPending(context),
+            BstocksTransferFlowStage.submitting => _submitting(context),
+            BstocksTransferFlowStage.tradeSuccess => _tradeSuccess(context),
+          },
+        ),
       ),
     ),
   );
@@ -134,6 +144,7 @@ class _BstocksTransferFlowState
           authorization: authorization,
         );
         if (!mounted) return;
+        setState(() => _fundingSubmitted = true);
         if (transfer.status != FundingTransferState.completed) {
           setState(() {
             _stage = switch (transfer.status) {
@@ -223,11 +234,13 @@ class _BstocksTransferFlowState
             fontSize: 12,
           ),
         ),
-        const SizedBox(height: 16),
-        OutlinedButton(
-          onPressed: widget.onClose,
-          child: Text(l10n.closeViewLater),
-        ),
+        if (_fundingSubmitted) ...[
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: widget.onClose,
+            child: Text(l10n.closeViewLater),
+          ),
+        ],
       ],
     );
   }
@@ -259,11 +272,6 @@ class _BstocksTransferFlowState
             color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
             fontSize: 12,
           ),
-        ),
-        const SizedBox(height: 16),
-        OutlinedButton(
-          onPressed: widget.onClose,
-          child: Text(l10n.closeViewLater),
         ),
       ],
     );

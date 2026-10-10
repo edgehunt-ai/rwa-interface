@@ -245,6 +245,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     final result = await showModalBottomSheet<_OrderPanelResult>(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
       builder: (sheetContext) => _OrderPanelEntrySheet(
         symbol: symbol,
         productId: _productId,

@@ -38,6 +38,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
   late FundingPlan _plan = widget.plan;
   bool _busy = false;
   bool _pending = false;
+  bool _transferSubmitted = false;
   bool _polling = false;
   Timer? _pollTimer;
   bool _transferStep = false;
@@ -76,7 +77,10 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
           authorization: authorization,
         );
         if (!mounted) return;
-        _error = transfer.failureReason;
+        setState(() {
+          _transferSubmitted = true;
+          _error = transfer.failureReason;
+        });
         _plan = await commands.refresh(_plan.planId);
       }
       if (!mounted) return;
@@ -94,7 +98,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                 fallback: AppLocalizations.of(context).transferStartFailed,
               )
             : error.toString();
-        _pending = false;
+        _pending = _transferSubmitted;
       }
     } finally {
       if (mounted) {
@@ -171,7 +175,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
           _ => false,
         };
     return PopScope(
-      canPop: !_busy,
+      canPop: !_busy || _transferSubmitted,
       child: Material(
         color: colors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -192,6 +196,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                 const SizedBox(height: 16),
                 if (_transferStep && _pending)
                   OrderFundingPendingContent(
+                    transferSubmitted: _transferSubmitted,
                     onClose: () => Navigator.of(context).pop(false),
                   )
                 else if (_transferStep)
@@ -901,9 +906,14 @@ String _displayTargetAsset(String asset) =>
     asset.toUpperCase().replaceFirst(RegExp(r'-PERPS$'), '');
 
 class OrderFundingPendingContent extends StatelessWidget {
-  const OrderFundingPendingContent({super.key, required this.onClose});
+  const OrderFundingPendingContent({
+    super.key,
+    required this.transferSubmitted,
+    this.onClose,
+  });
 
-  final VoidCallback onClose;
+  final bool transferSubmitted;
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -939,22 +949,24 @@ class OrderFundingPendingContent extends StatelessWidget {
             height: 16 / 12,
           ),
         ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 48,
-          child: OutlinedButton(
-            key: const Key('order-funding-close-view-later'),
-            onPressed: onClose,
-            style: OutlinedButton.styleFrom(
-              backgroundColor: colors.subtleSurface,
-              side: BorderSide(color: colors.border),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+        if (transferSubmitted && onClose != null) ...[
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 48,
+            child: OutlinedButton(
+              key: const Key('order-funding-close-view-later'),
+              onPressed: onClose,
+              style: OutlinedButton.styleFrom(
+                backgroundColor: colors.subtleSurface,
+                side: BorderSide(color: colors.border),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
+              child: Text(l10n.closeViewLater),
             ),
-            child: Text(l10n.closeViewLater),
           ),
-        ),
+        ],
       ],
     );
   }
