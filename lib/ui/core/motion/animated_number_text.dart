@@ -109,6 +109,9 @@ class AnimatedNumberText extends StatefulWidget {
     this.value, {
     super.key,
     this.style,
+    this.textAlign,
+    this.softWrap = false,
+    this.comparisonValue,
     this.trend,
     this.duration,
   });
@@ -121,6 +124,13 @@ class AnimatedNumberText extends StatefulWidget {
 
   final String value;
   final TextStyle? style;
+  final TextAlign? textAlign;
+  final bool softWrap;
+
+  /// Numeric text used only to determine the roll direction when [value]
+  /// contains a non-numeric label or asset suffix, such as `0.12 USDC`.
+  /// The full [value] is still rendered and its changed digits still roll.
+  final String? comparisonValue;
 
   /// Overrides the direction derived from the previous and next strings.
   final NumberTrend? trend;
@@ -139,6 +149,7 @@ class _AnimatedNumberTextState extends State<AnimatedNumberText>
     duration: _duration,
   );
   late String _shown = widget.value;
+  late String _shownComparison = widget.comparisonValue ?? widget.value;
   String? _outgoing;
   var _trend = NumberTrend.flat;
 
@@ -160,9 +171,13 @@ class _AnimatedNumberTextState extends State<AnimatedNumberText>
     _controller.duration = _duration;
     if (widget.value == _shown) return;
     final previous = _shown;
+    final previousComparison = _shownComparison;
+    final nextComparison = widget.comparisonValue ?? widget.value;
     final trend =
-        widget.trend ?? compareFormattedAmounts(previous, widget.value);
+        widget.trend ??
+        compareFormattedAmounts(previousComparison, nextComparison);
     _shown = widget.value;
+    _shownComparison = nextComparison;
     if (trend == null || !_animationsAllowed) {
       setState(() => _outgoing = null);
       _controller.stop();
@@ -200,27 +215,39 @@ class _AnimatedNumberTextState extends State<AnimatedNumberText>
     );
     final outgoing = _outgoing;
     if (outgoing == null || !_controller.isAnimating) {
-      return Text(_shown, style: style);
+      return Text(
+        _shown,
+        style: style,
+        textAlign: widget.textAlign,
+        softWrap: widget.softWrap,
+      );
     }
     final previous = _alignRight(outgoing, _shown.length);
     final rise = _trend == NumberTrend.up ? 1.0 : -1.0;
+    final characters = <Widget>[
+      for (var index = 0; index < _shown.length; index++)
+        if (previous[index] == _shown[index])
+          Text(_shown[index], style: style, maxLines: 1, softWrap: false)
+        else
+          _Wheel(
+            from: previous[index],
+            to: _shown[index],
+            progress: _controller,
+            rise: rise,
+            style: style,
+          ),
+    ];
     return RepaintBoundary(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var index = 0; index < _shown.length; index++)
-            if (previous[index] == _shown[index])
-              Text(_shown[index], style: style, maxLines: 1, softWrap: false)
-            else
-              _Wheel(
-                from: previous[index],
-                to: _shown[index],
-                progress: _controller,
-                rise: rise,
-                style: style,
-              ),
-        ],
-      ),
+      child: widget.softWrap
+          ? Wrap(
+              alignment: switch (widget.textAlign) {
+                TextAlign.center => WrapAlignment.center,
+                TextAlign.end || TextAlign.right => WrapAlignment.end,
+                _ => WrapAlignment.start,
+              },
+              children: characters,
+            )
+          : Row(mainAxisSize: MainAxisSize.min, children: characters),
     );
   }
 }

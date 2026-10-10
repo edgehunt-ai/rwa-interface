@@ -25,6 +25,8 @@ import 'package:nobell/domain/repositories/bstocks_order_execution_repository.da
 import 'package:nobell/domain/repositories/orders_repository.dart';
 import 'package:nobell/domain/repositories/portfolio_repository.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
+import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/views/bstocks_order_panel.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
@@ -601,9 +603,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 301));
     await tester.pumpAndSettle();
 
-    expect(find.text('0.54 NVDAB'), findsOneWidget);
-    expect(find.text('0.02 NVDAB'), findsOneWidget);
-    expect(find.text('USDC'), findsOneWidget);
+    final receive = find.byKey(const Key('bstocks-order-form-receive-value'));
+    final fee = find.byKey(const Key('bstocks-order-form-fee-value'));
+    expect(tester.widget<AnimatedNumberText>(receive).value, '0.54');
+    expect(tester.widget<AnimatedNumberText>(fee).value, '0.02');
+    expect(find.text('NVDAB'), findsOneWidget);
+    expect(find.text('USDC'), findsWidgets);
     expect(
       tester.getRect(find.text('Estimated Fee')).top -
           tester.getRect(find.text('Slippage')).bottom,
@@ -638,7 +643,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('trading provider is unavailable'), findsNothing);
-    expect(find.text('0.02 NVDAB'), findsOneWidget);
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('bstocks-order-form-receive-value')),
+          )
+          .value,
+      '0.02',
+    );
   });
 
   testWidgets('a successful quote does not clear a funding error', (
@@ -668,10 +680,89 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Funding check failed'), findsOneWidget);
-    expect(find.text('0.01 NVDAB'), findsOneWidget);
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('bstocks-order-form-receive-value')),
+          )
+          .value,
+      '0.01',
+    );
   });
 
-  testWidgets('review summary uses consistent labels, spacing, and fee asset', (
+  testWidgets('order form keeps then animates refreshed quote values', (
+    tester,
+  ) async {
+    final orders = _RefreshingFormQuoteOrdersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final amount = find.byKey(const Key('bstocks-market-amount-input'));
+    final receive = find.byKey(const Key('bstocks-order-form-receive-value'));
+    final fee = find.byKey(const Key('bstocks-order-form-fee-value'));
+
+    await tester.enterText(amount, '100');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+    expect(tester.widget<AnimatedNumberText>(receive).value, '0.54');
+    expect(tester.widget<AnimatedNumberText>(fee).value, '0.02');
+
+    await tester.enterText(amount, '101');
+    await tester.pump(const Duration(milliseconds: 301));
+    expect(orders.previewCalls, 2);
+    expect(tester.widget<AnimatedNumberText>(receive).value, '0.54');
+    expect(tester.widget<AnimatedNumberText>(fee).value, '0.02');
+    expect(
+      find.descendant(of: receive, matching: find.byType(SkeletonBlock)),
+      findsNothing,
+    );
+
+    orders.completeRefresh();
+    await tester.pump(const Duration(milliseconds: 40));
+    for (final animated in [receive, fee]) {
+      expect(
+        find.descendant(
+          of: animated,
+          matching: find.byType(FractionalTranslation),
+        ),
+        findsWidgets,
+      );
+    }
+
+    await tester.pumpAndSettle();
+    expect(tester.widget<AnimatedNumberText>(receive).value, '0.55');
+    expect(tester.widget<AnimatedNumberText>(fee).value, '0.03');
+  });
+
+  testWidgets('order form hides estimated fee when omitted', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(
+            _DelayedOrdersRepository(),
+          ),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('bstocks-market-amount-input')),
+      '100',
+    );
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Estimated Fee'), findsNothing);
+    expect(find.byKey(const Key('bstocks-order-form-fee-value')), findsNothing);
+  });
+
+  testWidgets('order form and confirmation hide an explicit zero fee', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -679,53 +770,89 @@ void main() {
         overrides: [
           fundingRepositoryProvider.overrideWithValue(FundedRepository()),
           ordersRepositoryProvider.overrideWithValue(
-            _SettlementFeeOrdersRepository(),
+            _ZeroFeeOrdersRepository(),
           ),
         ],
-        child: buildTestApp(const BstocksOrderPanel(symbol: 'TSLA')),
+        child: buildTestApp(const BstocksOrderPanel()),
       ),
     );
 
-    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.enterText(
+      find.byKey(const Key('bstocks-market-amount-input')),
+      '100',
+    );
     await tester.pump(const Duration(milliseconds: 301));
     await tester.pumpAndSettle();
+
+    expect(find.text('Estimated Fee'), findsNothing);
     await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
     await _pumpUntilFound(tester, find.text('Order Type'));
-
-    expect(tester.takeException(), isNull);
-    expect(
-      find.byKey(const Key('bstocks-funding-confirmation-step-3')),
-      findsNothing,
-    );
-    expect(find.text('Order Type'), findsOneWidget);
-    expect(find.text('Back'), findsOneWidget);
-    expect(find.text('0.02 USDC'), findsWidgets);
-
-    const labelColor = Color(0xFF676776);
-    for (final label in [
-      'Order Type',
-      'Market price',
-      'Slippage',
-      'Estimated Fee',
-    ]) {
-      expect(tester.widget<Text>(find.text(label)).style?.color, labelColor);
-    }
-    for (final labels in [
-      ('Order Type', 'Market price'),
-      ('Market price', 'Slippage'),
-      ('Slippage', 'Estimated Fee'),
-    ]) {
-      expect(
-        tester.getRect(find.text(labels.$2)).top -
-            tester.getRect(find.text(labels.$1)).bottom,
-        8,
-      );
-    }
+    expect(find.text('Estimated Fee'), findsNothing);
+    expect(find.byKey(const Key('bstocks-confirmation-fee')), findsNothing);
   });
 
-  testWidgets('review summary keeps estimated fee visible when omitted', (
-    tester,
-  ) async {
+  testWidgets(
+    'review summary uses consistent labels, spacing, and settlement asset',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+            ordersRepositoryProvider.overrideWithValue(
+              _SettlementFeeOrdersRepository(),
+            ),
+          ],
+          child: buildTestApp(const BstocksOrderPanel(symbol: 'TSLA')),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField).first, '100');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+      await _pumpUntilFound(tester, find.text('Order Type'));
+
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byKey(const Key('bstocks-funding-confirmation-step-3')),
+        findsNothing,
+      );
+      expect(find.text('Order Type'), findsOneWidget);
+      expect(find.text('Back'), findsOneWidget);
+      final fee = find.byKey(const Key('bstocks-confirmation-fee'));
+      expect(
+        find.descendant(of: fee, matching: find.text('0.02')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: fee, matching: find.text('USDC')),
+        findsOneWidget,
+      );
+
+      const labelColor = Color(0xFF676776);
+      for (final label in [
+        'Order Type',
+        'Market price',
+        'Slippage',
+        'Estimated Fee',
+      ]) {
+        expect(tester.widget<Text>(find.text(label)).style?.color, labelColor);
+      }
+      for (final labels in [
+        ('Order Type', 'Market price'),
+        ('Market price', 'Slippage'),
+        ('Slippage', 'Estimated Fee'),
+      ]) {
+        expect(
+          tester.getRect(find.text(labels.$2)).top -
+              tester.getRect(find.text(labels.$1)).bottom,
+          8,
+        );
+      }
+    },
+  );
+
+  testWidgets('review summary hides omitted fee', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -744,9 +871,88 @@ void main() {
     await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
     await _pumpUntilFound(tester, find.text('Order Type'));
 
-    expect(find.text('Estimated Fee'), findsOneWidget);
-    expect(find.text('0 USDT'), findsOneWidget);
+    final marketPrice = find.byKey(
+      const Key('bstocks-confirmation-market-price'),
+    );
+    expect(marketPrice, findsOneWidget);
+    expect(
+      find.descendant(of: marketPrice, matching: find.text('—')),
+      findsOneWidget,
+    );
+    expect(find.text('Estimated Fee'), findsNothing);
+    expect(find.byKey(const Key('bstocks-confirmation-fee')), findsNothing);
   });
+
+  testWidgets(
+    'review summary keeps old results then animates refreshed values',
+    (tester) async {
+      final orders = _RefreshingSummaryOrdersRepository();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+            ordersRepositoryProvider.overrideWithValue(orders),
+          ],
+          child: buildTestApp(const BstocksOrderPanel()),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextField).first, '100');
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+      await _pumpUntilFound(tester, find.text('Order Type'));
+
+      expect(orders.previewCalls, 2);
+      expect(find.text('Market price'), findsOneWidget);
+      expect(find.text('Estimated Fee'), findsOneWidget);
+      final receiveValue = find.byKey(
+        const Key('bstocks-confirmation-receive-value'),
+      );
+      final receiveNumber = tester.widget<AnimatedNumberText>(receiveValue);
+      expect(receiveNumber.value, '0.000138772857908247');
+      expect(receiveNumber.style?.fontSize, 17);
+      expect(receiveNumber.textAlign, TextAlign.end);
+      expect(receiveNumber.softWrap, isTrue);
+      final receiveText = find.descendant(
+        of: receiveValue,
+        matching: find.text('0.000138772857908247'),
+      );
+      expect(receiveText, findsOneWidget);
+      expect(tester.widget<Text>(receiveText).textAlign, TextAlign.end);
+      expect(
+        find.descendant(of: receiveValue, matching: find.byType(FittedBox)),
+        findsNothing,
+      );
+      expect(find.text(r'$230.5'), findsOneWidget);
+      expect(find.text('0.02'), findsOneWidget);
+      expect(find.text('USDT'), findsWidgets);
+
+      orders.completeRefresh();
+      await tester.pump(const Duration(milliseconds: 40));
+
+      for (final key in const [
+        Key('bstocks-confirmation-receive-value'),
+        Key('bstocks-confirmation-market-price-value'),
+        Key('bstocks-confirmation-fee-value'),
+      ]) {
+        final animated = find.byKey(key);
+        expect(animated, findsOneWidget);
+        expect(
+          find.descendant(
+            of: animated,
+            matching: find.byType(FractionalTranslation),
+          ),
+          findsWidgets,
+        );
+      }
+
+      await tester.pumpAndSettle();
+      expect(find.text('0.00014396923020264'), findsOneWidget);
+      expect(find.text(r'$231'), findsOneWidget);
+      expect(find.text('0.03'), findsOneWidget);
+    },
+  );
 
   testWidgets('completed funding opens bStocks confirmation as step 3', (
     tester,
@@ -1215,6 +1421,48 @@ void main() {
     expect(orders.createKeys.last, orders.createKeys.first);
     expect(find.text('Order submitted'), findsNothing);
     expect(find.text('Approval rejected'), findsNothing);
+  });
+
+  testWidgets('rejected order preview is replaced before submit can retry', (
+    tester,
+  ) async {
+    final orders = _ApprovalOrdersRepository(uniquePreviewIds: true)
+      ..approved = true
+      ..rejectNextCreate = true;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          ordersRepositoryProvider.overrideWithValue(orders),
+        ],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '10');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+    final confirm = find.widgetWithText(FilledButton, 'Confirm Buy');
+    await _pumpUntilFound(tester, confirm);
+
+    final previewCallsBeforeSubmit = orders.previewCalls;
+    await tester.tap(confirm);
+    await _pumpUntilFound(tester, find.text('Preview expired'));
+
+    expect(orders.createCalls, 1);
+    expect(orders.previewCalls, greaterThan(previewCallsBeforeSubmit));
+    expect(tester.widget<FilledButton>(confirm).onPressed, isNotNull);
+
+    orders.complete();
+    await tester.tap(confirm);
+    await _pumpUntilFound(tester, find.text('Order submitted'));
+
+    expect(orders.createCalls, 2);
+    expect(
+      orders.createdPreviewIds.last,
+      isNot(orders.createdPreviewIds.first),
+    );
+    expect(orders.createKeys.last, isNot(orders.createKeys.first));
   });
 
   testWidgets(
@@ -2292,6 +2540,59 @@ final class _QuotedOrdersRepository extends _DelayedOrdersRepository {
   );
 }
 
+final class _ZeroFeeOrdersRepository extends _DelayedOrdersRepository {
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async => OrderPreview(
+    previewId: 'zero-fee-quote',
+    intent: intent,
+    orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+    estimatedQuantity: DecimalValue('0.54', asset: 'NVDAB', unit: 'token'),
+    fee: DecimalValue('0.0000', asset: 'BNB', unit: 'token'),
+    settlementAsset: 'USDT',
+  );
+}
+
+final class _RefreshingFormQuoteOrdersRepository
+    extends _DelayedOrdersRepository {
+  final _refresh = Completer<OrderPreview>();
+  var previewCalls = 0;
+  late OrderIntent _intent;
+
+  void completeRefresh() => _refresh.complete(
+    OrderPreview(
+      previewId: 'refreshed-form-quote',
+      intent: _intent,
+      orderValue: DecimalValue('101', asset: 'USDC', unit: 'token'),
+      estimatedQuantity: DecimalValue('0.55', asset: 'NVDAB', unit: 'token'),
+      fee: DecimalValue('0.03', asset: 'BNB', unit: 'token'),
+      settlementAsset: 'USDC',
+    ),
+  );
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) {
+    _intent = intent;
+    previewCalls++;
+    if (previewCalls > 1) return _refresh.future;
+    return Future.value(
+      OrderPreview(
+        previewId: 'initial-form-quote',
+        intent: intent,
+        orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+        estimatedQuantity: DecimalValue('0.54', asset: 'NVDAB', unit: 'token'),
+        fee: DecimalValue('0.02', asset: 'BNB', unit: 'token'),
+        settlementAsset: 'USDC',
+      ),
+    );
+  }
+}
+
 final class _RecoveringQuoteOrdersRepository extends _DelayedOrdersRepository {
   @override
   Future<OrderPreview> preview(
@@ -2515,9 +2816,55 @@ final class _SettlementFeeOrdersRepository extends _DelayedOrdersRepository {
     orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
     marketPrice: DecimalValue('230.5', asset: 'USD', unit: 'fiat'),
     estimatedQuantity: DecimalValue('0.54', asset: 'TSLA', unit: 'token'),
-    fee: DecimalValue('0.02', asset: 'USDC', unit: 'token'),
+    fee: DecimalValue('0.02', asset: 'BNB', unit: 'token'),
     settlementAsset: 'USDC',
   );
+}
+
+final class _RefreshingSummaryOrdersRepository
+    extends _DelayedOrdersRepository {
+  final _refresh = Completer<OrderPreview>();
+  var previewCalls = 0;
+  late OrderIntent _intent;
+
+  void completeRefresh() => _refresh.complete(
+    OrderPreview(
+      previewId: 'refreshed-summary',
+      intent: _intent,
+      orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+      estimatedQuantity: DecimalValue(
+        '0.00014396923020264',
+        asset: 'NVDAB',
+        unit: 'token',
+      ),
+      marketPrice: DecimalValue('231', asset: 'USD', unit: 'fiat'),
+      fee: DecimalValue('0.03', asset: 'USDT', unit: 'token'),
+    ),
+  );
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) {
+    _intent = intent;
+    previewCalls++;
+    if (previewCalls > 1) return _refresh.future;
+    return Future.value(
+      OrderPreview(
+        previewId: 'initial-summary',
+        intent: intent,
+        orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+        estimatedQuantity: DecimalValue(
+          '0.000138772857908247',
+          asset: 'NVDAB',
+          unit: 'token',
+        ),
+        marketPrice: DecimalValue('230.5', asset: 'USD', unit: 'fiat'),
+        fee: DecimalValue('0.02', asset: 'USDT', unit: 'token'),
+      ),
+    );
+  }
 }
 
 final class _CapturingOrdersRepository extends _DelayedOrdersRepository {

@@ -100,6 +100,26 @@ void main() {
     expect(find.text(r'$110'), findsOneWidget);
   });
 
+  testWidgets('animates a number while preserving its asset suffix', (
+    tester,
+  ) async {
+    Widget app(String amount) => buildTestApp(
+      AnimatedNumberText(
+        '$amount USDC',
+        key: const Key('n'),
+        comparisonValue: amount,
+      ),
+    );
+
+    await tester.pumpWidget(app('0.12'));
+    await tester.pumpWidget(app('0.15'));
+    await tester.pump(const Duration(milliseconds: 40));
+
+    expect(rolling, findsWidgets);
+    await tester.pumpAndSettle();
+    expect(find.text('0.15 USDC'), findsOneWidget);
+  });
+
   testWidgets('swaps without motion when the value is not a number', (
     tester,
   ) async {

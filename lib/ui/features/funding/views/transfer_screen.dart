@@ -17,6 +17,7 @@ import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
+import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
@@ -1351,8 +1352,9 @@ class _ReceiveAmountCard extends StatelessWidget {
               ),
             ),
           ),
-          Text(
+          AnimatedNumberText(
             value,
+            key: const Key('transfer-receive-amount-value'),
             style: const TextStyle(
               fontSize: 15,
               height: 22 / 15,
@@ -1392,16 +1394,22 @@ class _FeeSummary extends StatelessWidget {
           _FeeRow(
             AppLocalizations.of(context).bridgeFee,
             _formatFee(fees?.bridgeFee, fees?.asset),
+            valueKey: const Key('transfer-bridge-fee-value'),
+            comparisonValue: fees?.bridgeFee,
           ),
           const SizedBox(height: 8),
           _FeeRow(
             AppLocalizations.of(context).networkFee,
             _formatFee(fees?.networkFee, fees?.asset),
+            valueKey: const Key('transfer-network-fee-value'),
+            comparisonValue: fees?.networkFee,
           ),
           const SizedBox(height: 8),
           _FeeRow(
             AppLocalizations.of(context).totalFee,
             _formatFee(fees?.totalFee, fees?.asset),
+            valueKey: const Key('transfer-total-fee-value'),
+            comparisonValue: fees?.totalFee,
           ),
         ],
       ),
@@ -1422,10 +1430,12 @@ class _FeeSummary extends StatelessWidget {
 }
 
 class _FeeRow extends StatelessWidget {
-  const _FeeRow(this.label, this.value);
+  const _FeeRow(this.label, this.value, {this.valueKey, this.comparisonValue});
 
   final String label;
   final String value;
+  final Key? valueKey;
+  final String? comparisonValue;
 
   @override
   Widget build(BuildContext context) {
@@ -1442,14 +1452,25 @@ class _FeeRow extends StatelessWidget {
             color: colors.secondaryText,
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 13,
-            height: 18 / 13,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        valueKey == null
+            ? Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13,
+                  height: 18 / 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              )
+            : AnimatedNumberText(
+                value,
+                key: valueKey,
+                comparisonValue: comparisonValue,
+                style: const TextStyle(
+                  fontSize: 13,
+                  height: 18 / 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ],
     );
   }

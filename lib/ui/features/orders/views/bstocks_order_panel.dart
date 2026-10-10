@@ -17,6 +17,7 @@ import 'package:nobell/domain/models/order_preview.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
+import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
@@ -52,6 +53,12 @@ class BstocksOrderPanel extends ConsumerStatefulWidget {
 }
 
 class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
+  static const _rejectedPreviewCodes = {
+    'preview_expired',
+    'bstocks_preview_changed',
+    'bstocks_preview_already_consumed',
+  };
+
   final amount = TextEditingController();
   final quantity = TextEditingController();
   final orderValue = TextEditingController();
@@ -69,6 +76,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   _BstocksErrorSource? _errorSource;
   bool reviewing = false;
   bool _approving = false;
+  bool _recoveringRejectedPreview = false;
   bool _approvalNeedsPreviewRefresh = false;
   bool _fundingRechecking = false;
   bool _confirmationFromFunding = false;
@@ -514,7 +522,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     if (initial == null ||
         !initial.approvalRequired ||
         _approving ||
-        reviewing) {
+        reviewing ||
+        _recoveringRejectedPreview) {
       return;
     }
     var current = initial;
@@ -610,7 +619,11 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     }
   }
 
-  void _showConfirmation(OrderPreview next, {required bool fromFunding}) {
+  void _showConfirmation(
+    OrderPreview next, {
+    required bool fromFunding,
+    bool clearError = true,
+  }) {
     if (!next.executionReady) {
       setState(() {
         quotePreview = next;
@@ -626,7 +639,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _previewPollingGeneration++;
     _liveMarketPrice = next.marketPrice;
     setState(() {
-      _clearError();
+      if (clearError) _clearError();
       preview = next;
       _confirmationFromFunding = fromFunding;
     });
@@ -645,27 +658,35 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         return;
       }
       _refreshingPreview = true;
+      OrderPreview? refreshed;
       try {
         final provider = orderPreviewProvider(next.intent);
         ref.invalidate(provider);
-        final refreshed = await ref.read(provider.future);
-        if (mounted &&
-            preview?.intent.fingerprint == next.intent.fingerprint &&
-            generation == _previewPollingGeneration) {
-          // The preview ID binds the quote used by both the initial order
-          // creation and the post-approval order recreation. Keep the full
-          // refreshed preview, not only its display price, so submissions do
-          // not send an expired or stale preview ID.
-          setState(() {
-            preview = refreshed;
-            _liveMarketPrice = refreshed.marketPrice;
-          });
-        }
+        refreshed = await ref.read(provider.future);
       } on Object {
         // Keep the last confirmed preview price when a transient refresh fails.
-      } finally {
-        _refreshingPreview = false;
       }
+      if (!mounted ||
+          preview?.intent.fingerprint != next.intent.fingerprint ||
+          generation != _previewPollingGeneration) {
+        if (generation == _previewPollingGeneration) {
+          _refreshingPreview = false;
+        }
+        return;
+      }
+      // The preview ID binds the quote used by both the initial order
+      // creation and the post-approval order recreation. Keep the full
+      // refreshed preview, not only its display price, so submissions do not
+      // send an expired or stale preview ID. A failed refresh leaves the last
+      // confirmed values on screen.
+      final confirmed = refreshed;
+      if (confirmed != null) {
+        setState(() {
+          preview = confirmed;
+          _liveMarketPrice = confirmed.marketPrice;
+        });
+      }
+      _refreshingPreview = false;
     }
 
     refresh();
@@ -679,6 +700,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     _previewPollingTimer?.cancel();
     _previewPollingTimer = null;
     _previewPollingGeneration++;
+    _refreshingPreview = false;
     _liveMarketPrice = null;
   }
 
@@ -740,7 +762,12 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
 
   Future<void> _submit() async {
     final current = preview;
-    if (current == null || reviewing || _approving) return;
+    if (current == null ||
+        reviewing ||
+        _approving ||
+        _recoveringRejectedPreview) {
+      return;
+    }
     if (current.approvalRequired) {
       await _approveConfirmation();
       return;
@@ -762,25 +789,83 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       'success=${result != null}',
     );
     if (!mounted) return;
+    if (result != null) {
+      setState(() {
+        reviewing = false;
+        submittedOrder = result.resource;
+      });
+      return;
+    }
+
+    final state = ref.read(orderCommandProvider);
+    final failure =
+        state is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>
+        ? state.failure
+        : const CompatibilityFailure();
+    final failureMessage = apiFailureMessage(
+      failure,
+      fallback: AppLocalizations.of(context).orderSubmissionFailed,
+    );
+    if (failure is ServerFailure &&
+        _rejectedPreviewCodes.contains(failure.code)) {
+      await _recoverFromRejectedPreview(
+        current: current,
+        failureMessage: failureMessage,
+      );
+      return;
+    }
+
     setState(() {
       reviewing = false;
-      if (result == null) {
-        final state = ref.read(orderCommandProvider);
-        final failure =
-            state is CommandFailure<OrderIntent, ResourceResult<TradingOrder>>
-            ? state.failure
-            : const CompatibilityFailure();
+      _setError(failureMessage, source: _BstocksErrorSource.operation);
+    });
+    // An uncertain submission keeps its original idempotency key and preview
+    // binding in OrderCommandNotifier. Keep the visible quote frozen as well,
+    // so the terms shown to the trader still match that exact retry request.
+  }
+
+  Future<void> _recoverFromRejectedPreview({
+    required OrderPreview current,
+    required String failureMessage,
+  }) async {
+    setState(() {
+      reviewing = false;
+      _recoveringRejectedPreview = true;
+      _setError(failureMessage, source: _BstocksErrorSource.operation);
+    });
+    final provider = orderPreviewProvider(current.intent);
+    try {
+      ref.invalidate(provider);
+      final refreshed = await ref.read(provider.future);
+      if (!mounted) return;
+      setState(() {
+        quotePreview = refreshed;
+        _recoveringRejectedPreview = false;
+      });
+      _showConfirmation(
+        refreshed,
+        fromFunding: _confirmationFromFunding,
+        clearError: false,
+      );
+    } on Object catch (refreshError) {
+      if (!mounted) return;
+      // Do not leave a rejected preview actionable. Returning to the form gives
+      // the trader an explicit retry path, which will request a new preview.
+      ref.invalidate(provider);
+      setState(() {
+        reviewing = false;
+        _recoveringRejectedPreview = false;
+        preview = null;
+        quotePreview = null;
         _setError(
-          apiFailureMessage(
-            failure,
-            fallback: AppLocalizations.of(context).orderSubmissionFailed,
+          _errorMessage(
+            error: refreshError,
+            fallback: AppLocalizations.of(context).prepareOrderFailed,
           ),
           source: _BstocksErrorSource.operation,
         );
-      } else {
-        submittedOrder = result.resource;
-      }
-    });
+      });
+    }
   }
 
   Future<void> _editSlippage() async {
@@ -970,6 +1055,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final receive =
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
+    final showFee = _hasNonZeroValue(fee);
+    final quoteLoading = _quoting && quotePreview == null;
     final formHeight =
         (type == TradingOrderType.limit ? 579.0 : 560.0) +
         // The failure notice is normally one compact row. Its text scrolls
@@ -1171,35 +1258,29 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             ),
           ),
           if (type == TradingOrderType.limit) ...[
-            const SizedBox(height: 16),
-            Divider(color: colors.subtleSurface),
-            const SizedBox(height: 14),
-            if (_quoting)
-              _LoadingSummaryRow(label: l10n.estimatedFee)
-            else
-              _SummaryRow(
+            if (showFee) ...[
+              const SizedBox(height: 16),
+              Divider(color: colors.subtleSurface),
+              const SizedBox(height: 14),
+              _AnimatedAmountSummaryRow(
                 label: l10n.estimatedFee,
-                value: fee == null
-                    ? '-'
-                    : TokenAmountFormatter.format(
-                        fee,
-                        symbol: fee.asset ?? widget.symbol,
-                      ),
+                value: TokenAmountFormatter.formatValue(fee!),
+                symbol: settlementAsset,
+                valueKey: const Key('bstocks-order-form-fee-value'),
               ),
+            ],
           ] else ...[
             const SizedBox(height: 8),
             _OutlinedSummaryRow(
               label: l10n.willReceive,
-              value: _quoting
+              value: quoteLoading
                   ? const SkeletonBlock(width: 76, height: 14, radius: 4)
-                  : Text(
-                      receive == null
-                          ? '- ${widget.symbol}'
-                          : TokenAmountFormatter.format(
-                              receive,
-                              symbol: receive.asset ?? widget.symbol,
-                            ),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                  : _AnimatedAmountText(
+                      value: receive == null
+                          ? '-'
+                          : TokenAmountFormatter.formatValue(receive),
+                      symbol: receive?.asset ?? widget.symbol,
+                      valueKey: const Key('bstocks-order-form-receive-value'),
                     ),
             ),
             const SizedBox(height: 16),
@@ -1210,23 +1291,16 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               onEdit: _editSlippage,
               editKey: const Key('bstocks-edit-slippage'),
             ),
-            const SizedBox(height: 8),
-            if (_quoting)
-              _LoadingSummaryRow(
+            if (showFee) ...[
+              const SizedBox(height: 8),
+              _AnimatedAmountSummaryRow(
                 label: l10n.estimatedFee,
                 padding: EdgeInsets.zero,
-              )
-            else
-              _SummaryRow(
-                label: l10n.estimatedFee,
-                padding: EdgeInsets.zero,
-                value: fee == null
-                    ? '-'
-                    : TokenAmountFormatter.format(
-                        fee,
-                        symbol: fee.asset ?? widget.symbol,
-                      ),
+                value: TokenAmountFormatter.formatValue(fee!),
+                symbol: settlementAsset,
+                valueKey: const Key('bstocks-order-form-fee-value'),
               ),
+            ],
           ],
           if (error case final error?) ...[
             const SizedBox(height: 8),
@@ -1272,6 +1346,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         current.orderValue.asset ?? current.settlementAsset ?? 'USDT';
     final quantity = current.estimatedQuantity ?? current.intent.quantity;
     final fee = current.fee;
+    final showFee = _hasNonZeroValue(fee);
     final marketPrice = current.marketPrice;
     final liveMarketPrice = _liveMarketPrice;
     final marketPriceChanged =
@@ -1339,9 +1414,17 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         ),
         if (marketPrice case final price?)
           _MarketPriceSummaryRow(
-            label: AppLocalizations.of(context).marketPrice,
+            key: const Key('bstocks-confirmation-market-price'),
+            label: l10n.marketPrice,
             original: price,
             current: marketPriceChanged ? liveMarketPrice : null,
+            padding: const EdgeInsets.symmetric(vertical: 4),
+          ),
+        if (marketPrice == null)
+          _SummaryRow(
+            key: const Key('bstocks-confirmation-market-price'),
+            label: l10n.marketPrice,
+            value: '—',
             padding: const EdgeInsets.symmetric(vertical: 4),
           ),
         if (current.intent.type == TradingOrderType.market)
@@ -1350,16 +1433,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             value: '${current.intent.slippage?.value ?? slippage}%',
             padding: const EdgeInsets.symmetric(vertical: 4),
           ),
-        _SummaryRow(
-          label: l10n.estimatedFee,
-          value: fee == null
-              ? '0 $settlementAsset'
-              : TokenAmountFormatter.format(
-                  fee,
-                  symbol: fee.asset ?? settlementAsset,
-                ),
-          padding: const EdgeInsets.symmetric(vertical: 4),
-        ),
+        if (showFee)
+          _AnimatedAmountSummaryRow(
+            key: const Key('bstocks-confirmation-fee'),
+            label: l10n.estimatedFee,
+            value: TokenAmountFormatter.formatValue(fee!),
+            symbol: settlementAsset,
+            valueKey: const Key('bstocks-confirmation-fee-value'),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+          ),
         if (current.priceUpdated || marketPriceChanged) ...[
           const SizedBox(height: 8),
           Text(AppLocalizations.of(context).priceChangedReview),
@@ -1375,7 +1457,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               child: SizedBox(
                 height: 48,
                 child: OutlinedButton(
-                  onPressed: _approving || reviewing
+                  onPressed:
+                      _approving || reviewing || _recoveringRejectedPreview
                       ? null
                       : () {
                           _stopPreviewPolling();
@@ -1391,7 +1474,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 height: 48,
                 child: FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: actionColor),
-                  onPressed: reviewing || _approving
+                  onPressed:
+                      reviewing || _approving || _recoveringRejectedPreview
                       ? null
                       : current.approvalRequired
                       ? _approveConfirmation
@@ -1777,41 +1861,21 @@ class _OutlinedSummaryRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: colors.secondaryText)),
-          value,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Align(alignment: Alignment.centerRight, child: value),
+          ),
         ],
       ),
     );
   }
 }
 
-class _LoadingSummaryRow extends StatelessWidget {
-  const _LoadingSummaryRow({
-    required this.label,
-    this.padding = const EdgeInsets.symmetric(vertical: 6),
-  });
-
-  final String label;
-  final EdgeInsetsGeometry padding;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: padding,
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(label, style: const TextStyle(color: Color(0xFF676776))),
-        ),
-        const SkeletonBlock(width: 52, height: 14, radius: 4),
-      ],
-    ),
-  );
-}
-
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow({
+    super.key,
     required this.label,
     required this.value,
     this.padding = const EdgeInsets.symmetric(vertical: 6),
@@ -1842,8 +1906,81 @@ class _SummaryRow extends StatelessWidget {
   );
 }
 
+class _AnimatedAmountSummaryRow extends StatelessWidget {
+  const _AnimatedAmountSummaryRow({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.symbol,
+    required this.valueKey,
+    this.padding = const EdgeInsets.symmetric(vertical: 6),
+  });
+
+  final String label;
+  final String value;
+  final String symbol;
+  final Key valueKey;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: padding,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(label, style: const TextStyle(color: Color(0xFF676776))),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Align(
+            alignment: Alignment.topRight,
+            child: _AnimatedAmountText(
+              value: value,
+              symbol: symbol,
+              valueKey: valueKey,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _AnimatedAmountText extends StatelessWidget {
+  const _AnimatedAmountText({
+    required this.value,
+    required this.symbol,
+    required this.valueKey,
+  });
+
+  final String value;
+  final String symbol;
+  final Key valueKey;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.end,
+    children: [
+      Flexible(
+        child: AnimatedNumberText(
+          value,
+          key: valueKey,
+          textAlign: TextAlign.end,
+          softWrap: true,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+      const SizedBox(width: 4),
+      Text(symbol, style: const TextStyle(fontWeight: FontWeight.w600)),
+    ],
+  );
+}
+
 class _MarketPriceSummaryRow extends StatelessWidget {
   const _MarketPriceSummaryRow({
+    super.key,
     required this.label,
     required this.original,
     this.current,
@@ -1871,36 +2008,38 @@ class _MarketPriceSummaryRow extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: TokenAmountFormatter.formatUsd(original),
-                    style: current == null
-                        ? const TextStyle(fontWeight: FontWeight.w600)
-                        : TextStyle(color: colors.secondaryText),
-                  ),
-                  if (current case final updated?) ...[
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: Icon(
-                          Icons.arrow_forward,
-                          size: 14,
-                          color: colors.secondaryText,
-                        ),
-                      ),
-                    ),
-                    TextSpan(
-                      text: TokenAmountFormatter.formatUsd(updated),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: current == null
+                  ? AnimatedNumberText(
+                      TokenAmountFormatter.formatUsd(original),
+                      key: const Key('bstocks-confirmation-market-price-value'),
                       style: const TextStyle(fontWeight: FontWeight.w600),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          TokenAmountFormatter.formatUsd(original),
+                          style: TextStyle(color: colors.secondaryText),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: Icon(
+                            Icons.arrow_forward,
+                            size: 14,
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                        AnimatedNumberText(
+                          TokenAmountFormatter.formatUsd(current!),
+                          key: const Key(
+                            'bstocks-confirmation-market-price-value',
+                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
-                  ],
-                ],
-              ),
-              textAlign: TextAlign.end,
-              softWrap: true,
             ),
           ),
         ],
@@ -1939,6 +2078,7 @@ class _BstocksConfirmationConversion extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: _BstocksConfirmationAmountCard(
+                key: const Key('bstocks-confirmation-receive-card'),
                 value: right,
                 asset: rightAsset,
                 alignEnd: true,
@@ -1970,6 +2110,7 @@ class _BstocksConfirmationConversion extends StatelessWidget {
 
 class _BstocksConfirmationAmountCard extends StatelessWidget {
   const _BstocksConfirmationAmountCard({
+    super.key,
     required this.value,
     required this.asset,
     this.alignEnd = false,
@@ -2001,15 +2142,27 @@ class _BstocksConfirmationAmountCard extends StatelessWidget {
                 : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (alignEnd) _BstocksConfirmationAssetMark(asset: asset),
+              if (alignEnd)
+                _BstocksConfirmationAssetMark(
+                  key: const Key('bstocks-confirmation-receive-mark'),
+                  asset: asset,
+                ),
               if (alignEnd) const SizedBox(width: 4),
               Flexible(
-                child: Text(
-                  value,
-                  textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-                  softWrap: true,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                child: alignEnd
+                    ? AnimatedNumberText(
+                        value,
+                        key: const Key('bstocks-confirmation-receive-value'),
+                        style: Theme.of(context).textTheme.titleMedium!,
+                        textAlign: TextAlign.end,
+                        softWrap: true,
+                      )
+                    : Text(
+                        value,
+                        textAlign: TextAlign.start,
+                        softWrap: true,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
               ),
               if (!alignEnd) const SizedBox(width: 4),
               if (!alignEnd) _BstocksConfirmationAssetMark(asset: asset),
@@ -2018,6 +2171,9 @@ class _BstocksConfirmationAmountCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             asset,
+            key: alignEnd
+                ? const Key('bstocks-confirmation-receive-symbol')
+                : null,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colors.secondaryText,
               fontWeight: FontWeight.w600,
@@ -2030,7 +2186,7 @@ class _BstocksConfirmationAmountCard extends StatelessWidget {
 }
 
 class _BstocksConfirmationAssetMark extends StatelessWidget {
-  const _BstocksConfirmationAssetMark({required this.asset});
+  const _BstocksConfirmationAssetMark({super.key, required this.asset});
 
   final String asset;
 
@@ -2536,6 +2692,9 @@ String _formatDecimal(double value) {
   final text = value.toStringAsFixed(8);
   return text.replaceFirst(RegExp(r'\.?0+$'), '');
 }
+
+bool _hasNonZeroValue(DecimalValue? value) =>
+    value != null && RegExp(r'[1-9]').hasMatch(value.value);
 
 String _formatDecimalForToken(double value, int? decimals) =>
     _truncateDecimal(_formatDecimal(value), decimals);

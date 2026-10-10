@@ -14,6 +14,8 @@ import '../../../../domain/repositories/hip3_order_execution_repository.dart';
 import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/formatters/token_amount_formatter.dart';
+import '../../../core/motion/animated_number_text.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../providers/order_providers.dart';
 import '../../portfolio/providers/portfolio_providers.dart';
@@ -41,6 +43,12 @@ class Hip3ConfirmSheet extends ConsumerStatefulWidget {
 }
 
 class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
+  static const _quoteRefreshLeadTime = Duration(seconds: 5);
+  // A venue can return a quote whose lifetime is already inside the safety
+  // window. Do not turn that response into a post-frame refresh loop: give the
+  // quote service a short interval to produce a newer expiry.
+  static const _shortQuoteRetryDelay = Duration(seconds: 1);
+
   var _submitting = false;
   var _refreshing = false;
   String? _error;
@@ -60,18 +68,28 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
     super.dispose();
   }
 
-  /// A lapsed quote is re-requested rather than reported: the terms are the
-  /// server's to refresh, and there is nothing for the trader to act on.
-  void _armExpiry() {
+  /// Refresh shortly before expiry so a quote does not lapse between the
+  /// trader pressing confirm and the create-order request reaching the server.
+  void _armExpiry({bool refreshUnsafeImmediately = true}) {
     _expiry?.cancel();
     if (_pendingOrderId != null) return;
     final remaining = _preview.expiresAt?.difference(DateTime.now().toUtc());
-    if (remaining != null && !remaining.isNegative) {
-      _expiry = Timer(remaining, () => unawaited(_refreshQuote()));
+    final refreshAfter = remaining == null
+        ? null
+        : remaining - _quoteRefreshLeadTime;
+    if (refreshAfter != null && refreshAfter > Duration.zero) {
+      _expiry = Timer(refreshAfter, () => unawaited(_refreshQuote()));
       return;
     }
-    // Already stale. Defer so the first call can come from initState without
-    // calling setState before this State is mounted.
+    // Already stale or inside the safety window. The initial quote can refresh
+    // immediately, but a short-lived replacement must be rate-limited or every
+    // response will schedule another request on the next frame.
+    if (!refreshUnsafeImmediately) {
+      _expiry = Timer(_shortQuoteRetryDelay, () => unawaited(_refreshQuote()));
+      return;
+    }
+    // Defer so the first call can come from initState without calling setState
+    // before this State is mounted.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(_refreshQuote());
     });
@@ -91,7 +109,7 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
       final next = await ref.read(orderPreviewProvider(target).future);
       if (!mounted || ref.read(sessionGenerationProvider) != generation) return;
       setState(() => _preview = next);
-      _armExpiry();
+      _armExpiry(refreshUnsafeImmediately: false);
     } on Object catch (error, stackTrace) {
       ref
           .read(observabilityReporterProvider)
@@ -131,10 +149,13 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
     );
   }
 
-  /// A quote past its window is refreshed, never reported.
+  /// A quote too close to expiry is refreshed before it can be submitted.
   bool get _quoteStale =>
       _pendingOrderId == null &&
-      (_preview.expiresAt == null || _preview.isExpired);
+      (_preview.expiresAt?.isAfter(
+            DateTime.now().toUtc().add(_quoteRefreshLeadTime),
+          ) !=
+          true);
 
   /// Why the frozen quote can no longer be submitted, as a ready-to-show
   /// message. The quote can expire while this sheet is open.
@@ -437,8 +458,10 @@ class _SizeCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            '${execution.notional.value} USDC',
+          AnimatedNumberText(
+            '${TokenAmountFormatter.formatValue(execution.notional)} USDC',
+            key: const Key('hip3-confirm-order-size-value'),
+            comparisonValue: execution.notional.value,
             style: TextStyle(
               fontSize: 20,
               height: 26 / 20,
@@ -463,8 +486,12 @@ class _SizeCard extends StatelessWidget {
                   height: 12,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  l10n.hip3MarginChip('${execution.marginRequired.value} USDC'),
+                AnimatedNumberText(
+                  l10n.hip3MarginChip(
+                    '${TokenAmountFormatter.formatValue(execution.marginRequired)} USDC',
+                  ),
+                  key: const Key('hip3-confirm-margin-value'),
+                  comparisonValue: execution.marginRequired.value,
                   style: TextStyle(
                     fontSize: 11,
                     height: 14 / 11,
@@ -508,21 +535,28 @@ class _Terms extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _TermRow(label: l10n.entryPrice, value: '\$${entry.value}'),
+        _TermRow(
+          label: l10n.entryPrice,
+          value: '\$${TokenAmountFormatter.formatValue(entry)}',
+          valueKey: const Key('hip3-confirm-entry-price-value'),
+          comparisonValue: entry.value,
+        ),
         if (marketPrice != null)
           _TermRow(
             label: l10n.marketPrice,
-            value: '\$${marketPrice.value}',
+            value: '\$${TokenAmountFormatter.formatValue(marketPrice)}',
+            valueKey: const Key('hip3-confirm-market-price-value'),
+            comparisonValue: marketPrice.value,
             // A quote taken before the market moved shows both prices.
             leadingValue:
                 preview.priceUpdated && entry.value != marketPrice.value
-                ? '\$${entry.value}→'
+                ? '\$${TokenAmountFormatter.formatValue(entry)}→'
                 : null,
           ),
         _TermRow(
           label: l10n.leverage,
           value:
-              '${execution.leverage.value}x・'
+            '${TokenAmountFormatter.formatValue(execution.leverage)}x・'
               '${execution.marginMode == TradingMarginMode.cross ? l10n.cross : l10n.isolated}',
         ),
         // A resting limit order is GTC and carries no slippage tolerance, so
@@ -531,27 +565,33 @@ class _Terms extends StatelessWidget {
           _TermRow(
             key: const Key('hip3-slippage-row'),
             label: l10n.slippage,
-            value: '${execution.slippagePercent.value}%',
+            value: '${TokenAmountFormatter.formatValue(execution.slippagePercent)}%',
+            valueKey: const Key('hip3-confirm-slippage-value'),
+            comparisonValue: execution.slippagePercent.value,
             icon: 'assets/figma/trade/order_slippage_edit.svg',
             onTap: onEditSlippage,
           ),
         _TermRow(
           label: l10n.estimatedFee,
-          value: '${execution.estimatedFee.value} USDC',
+          value: '${TokenAmountFormatter.formatValue(execution.estimatedFee)} USDC',
+          valueKey: const Key('hip3-confirm-fee-value'),
+          comparisonValue: execution.estimatedFee.value,
         ),
         _TermRow(
           label: l10n.liquidationPrice,
           value: execution.liquidationPrice == null
               ? l10n.unavailable
-              : '\$${execution.liquidationPrice!.value}',
+              : '\$${TokenAmountFormatter.formatValue(execution.liquidationPrice!)}',
+          valueKey: const Key('hip3-confirm-liquidation-price-value'),
+          comparisonValue: execution.liquidationPrice?.value,
         ),
         _TermRow(
           label: '${l10n.takeProfit}/${l10n.stopLoss}',
           value: takeProfit == null && stopLoss == null
               ? '—'
-              : '${takeProfit == null ? '—' : '\$${takeProfit.triggerPrice.value}'}'
+              : '${takeProfit == null ? '—' : '\$${TokenAmountFormatter.formatValue(takeProfit.triggerPrice)}'}'
                     '/'
-                    '${stopLoss == null ? '—' : '\$${stopLoss.triggerPrice.value}'}',
+                    '${stopLoss == null ? '—' : '\$${TokenAmountFormatter.formatValue(stopLoss.triggerPrice)}'}',
         ),
       ],
     );
@@ -564,6 +604,8 @@ class _TermRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.leadingValue,
+    this.valueKey,
+    this.comparisonValue,
     this.icon,
     this.onTap,
   });
@@ -571,6 +613,8 @@ class _TermRow extends StatelessWidget {
   final String label;
   final String value;
   final String? leadingValue;
+  final Key? valueKey;
+  final String? comparisonValue;
   final String? icon;
   final VoidCallback? onTap;
 
@@ -610,26 +654,41 @@ class _TermRow extends StatelessWidget {
                   SvgPicture.asset(path, width: 12, height: 12),
                   const SizedBox(width: 4),
                 ],
-                Flexible(
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        if (leadingValue case final leading?)
-                          TextSpan(
-                            text: leading,
-                            style: TextStyle(color: colors.secondaryText),
-                          ),
-                        TextSpan(text: value),
-                      ],
-                    ),
-                    textAlign: TextAlign.end,
+                if (leadingValue case final leading?)
+                  Text(
+                    leading,
                     style: TextStyle(
                       fontSize: 13,
                       height: 18 / 13,
                       fontWeight: FontWeight.w600,
-                      color: colors.primaryText,
+                      color: colors.secondaryText,
                     ),
                   ),
+                Flexible(
+                  child: valueKey == null
+                      ? Text(
+                          value,
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 18 / 13,
+                            fontWeight: FontWeight.w600,
+                            color: colors.primaryText,
+                          ),
+                        )
+                      : AnimatedNumberText(
+                          value,
+                          key: valueKey,
+                          comparisonValue: comparisonValue,
+                          textAlign: TextAlign.end,
+                          softWrap: true,
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 18 / 13,
+                            fontWeight: FontWeight.w600,
+                            color: colors.primaryText,
+                          ),
+                        ),
                 ),
               ],
             ),

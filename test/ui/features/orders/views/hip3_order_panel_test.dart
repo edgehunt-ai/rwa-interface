@@ -27,6 +27,7 @@ import 'package:nobell/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:nobell/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/motion/animated_number_text.dart';
 
 import 'package:nobell/app/observability/observability_reporter.dart';
 import 'package:nobell/app/providers/observability_providers.dart';
@@ -1344,15 +1345,15 @@ void main() {
     expect(hip3OpeningNotional(balance, 5, 100, quote: quote), '30');
   });
 
-  testWidgets('a quote that lapses on the confirmation is re-requested', (
+  testWidgets('a quote is refreshed before it lapses on the confirmation', (
     tester,
   ) async {
     final requote = Completer<void>();
     final orders = _ExecutableHip3Orders(
-      // Long enough to survive the sheet's open animation, short enough to
-      // lapse inside the test.
-      firstQuoteLifetime: const Duration(seconds: 2),
+      // The confirmation refreshes five seconds before the server deadline.
+      firstQuoteLifetime: const Duration(seconds: 8),
       holdRequote: requote,
+      changingRequoteValues: true,
     );
     await tester.pumpWidget(
       ProviderScope(
@@ -1371,10 +1372,18 @@ void main() {
       findsNothing,
     );
     expect(orders.previews, 1);
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('hip3-confirm-fee-value')),
+          )
+          .value,
+      '0.05 USDC',
+    );
 
-    // Letting the window lapse must not report anything to the trader: the
-    // sheet asks for new terms and the action shows it is busy.
-    await tester.pump(const Duration(seconds: 2));
+    // Entering the five-second safety window must not report anything to the
+    // trader: the sheet asks for new terms and the action shows it is busy.
+    await tester.pump(const Duration(seconds: 3));
     await tester.pump();
     expect(find.byKey(const Key('hip3-confirm-busy')), findsOneWidget);
     expect(find.textContaining('quote is unavailable'), findsNothing);
@@ -1386,17 +1395,71 @@ void main() {
     );
 
     requote.complete();
+    await tester.pump(const Duration(milliseconds: 40));
+    for (final key in const [
+      Key('hip3-confirm-order-size-value'),
+      Key('hip3-confirm-margin-value'),
+      Key('hip3-confirm-entry-price-value'),
+      Key('hip3-confirm-market-price-value'),
+      Key('hip3-confirm-fee-value'),
+      Key('hip3-confirm-liquidation-price-value'),
+    ]) {
+      expect(
+        find.descendant(
+          of: find.byKey(key),
+          matching: find.byType(FractionalTranslation),
+        ),
+        findsWidgets,
+      );
+    }
     await tester.pumpAndSettle();
     // The expiry timer and the explicit refresh completion can each schedule
     // a request; the contract is that a fresh quote is eventually available.
     expect(orders.previews, greaterThanOrEqualTo(2));
     expect(find.byKey(const Key('hip3-confirm-busy')), findsNothing);
     expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+    expect(find.text('0.06 USDC'), findsOneWidget);
     expect(
       tester
           .widget<FilledButton>(find.byKey(const Key('hip3-confirm-button')))
           .onPressed,
       isNotNull,
+    );
+  });
+
+  testWidgets('short-lived replacement quotes are not requested every frame', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders(
+      everyQuoteLifetime: const Duration(seconds: 2),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: _app(const Hip3OrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '100');
+    await tester.pump();
+    await tester.tap(find.byType(FilledButton).first);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(Hip3ConfirmSheet), findsOneWidget);
+    final requestsAfterImmediateRefresh = orders.previews;
+    expect(requestsAfterImmediateRefresh, greaterThanOrEqualTo(2));
+
+    for (var frame = 0; frame < 12; frame++) {
+      await tester.pump();
+    }
+    expect(orders.previews, requestsAfterImmediateRefresh);
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(orders.previews, greaterThan(requestsAfterImmediateRefresh));
+    expect(
+      orders.previews,
+      lessThanOrEqualTo(requestsAfterImmediateRefresh + 2),
     );
   });
 
@@ -2469,7 +2532,9 @@ final class _ExecutableHip3Orders implements OrdersRepository {
     this.missingExecution = false,
     this.missingLiquidationPrice = false,
     this.firstQuoteLifetime,
+    this.everyQuoteLifetime,
     this.holdRequote,
+    this.changingRequoteValues = false,
   });
   final bool expired;
   final bool missingExecution;
@@ -2478,8 +2543,12 @@ final class _ExecutableHip3Orders implements OrdersRepository {
   /// When set, only the first quote gets this (short) window.
   final Duration? firstQuoteLifetime;
 
+  /// When set, every response stays inside the confirmation safety window.
+  final Duration? everyQuoteLifetime;
+
   /// Holds every quote after the first, so a re-request can be observed.
   final Completer<void>? holdRequote;
+  final bool changingRequoteValues;
   var previews = 0;
 
   final intents = <OrderIntent>[];
@@ -2491,20 +2560,29 @@ final class _ExecutableHip3Orders implements OrdersRepository {
   }) async {
     intents.add(intent);
     if (previews > 0 && holdRequote != null) await holdRequote!.future;
-    final lifetime = previews == 0 && firstQuoteLifetime != null
-        ? firstQuoteLifetime!
-        : Duration(minutes: expired ? -1 : 1);
+    final refreshingWithNewValues = changingRequoteValues && previews > 0;
+    final lifetime =
+        everyQuoteLifetime ??
+        (previews == 0 && firstQuoteLifetime != null
+            ? firstQuoteLifetime!
+            : Duration(minutes: expired ? -1 : 1));
     previews++;
     return OrderPreview(
       previewId: 'hip3-preview-$previews',
       intent: intent,
       orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+      estimatedPrice: DecimalValue(refreshingWithNewValues ? '101' : '100'),
+      marketPrice: DecimalValue(refreshingWithNewValues ? '102' : '101'),
       hip3Execution: missingExecution
           ? null
           : _previewExecution(
               intent,
               slippage: intent.slippage?.value ?? '1',
               missingLiquidationPrice: missingLiquidationPrice,
+              notional: refreshingWithNewValues ? '101' : '100',
+              marginRequired: refreshingWithNewValues ? '11' : '10',
+              estimatedFee: refreshingWithNewValues ? '0.06' : '0.05',
+              liquidationPrice: refreshingWithNewValues ? '91' : '90',
             ),
       expiresAt: DateTime.now().toUtc().add(lifetime),
     );
@@ -2573,6 +2651,10 @@ Hip3PreviewExecution _previewExecution(
   String? maximum = '1',
   String margin = '20',
   String slippage = '1',
+  String notional = '100',
+  String marginRequired = '10',
+  String estimatedFee = '0.05',
+  String liquidationPrice = '90',
   bool missingLiquidationPrice = false,
 }) => Hip3PreviewExecution(
   openingProtection: intent.openingProtection == null
@@ -2604,15 +2686,17 @@ Hip3PreviewExecution _previewExecution(
   leverage: intent.leverage ?? DecimalValue('1'),
   marginMode: intent.marginMode ?? TradingMarginMode.cross,
   reduceOnly: false,
-  notional: DecimalValue('100'),
-  marginRequired: DecimalValue('10'),
+  notional: DecimalValue(notional),
+  marginRequired: DecimalValue(marginRequired),
   availableMargin: DecimalValue(margin),
   maximumQuantity: maximum == null ? null : DecimalValue(maximum),
-  estimatedFee: DecimalValue('0.05'),
+  estimatedFee: DecimalValue(estimatedFee),
   slippagePercent: DecimalValue(slippage),
   liquidationPriceUnavailableReason:
       'cross_margin_requires_full_account_simulation',
-  liquidationPrice: missingLiquidationPrice ? null : DecimalValue('90'),
+  liquidationPrice: missingLiquidationPrice
+      ? null
+      : DecimalValue(liquidationPrice),
 );
 
 /// One transfer satisfies the order: the first session needs funding, the

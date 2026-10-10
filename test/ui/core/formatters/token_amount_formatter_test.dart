@@ -35,6 +35,30 @@ void main() {
       }
     });
 
+    test('applies adaptive precision to numeric and token display helpers', () {
+      final token = DecimalValue(
+        '12.123456789',
+        asset: 'ETH',
+        unit: 'token',
+      );
+      final smallToken = DecimalValue(
+        '0.0000123456789',
+        asset: 'ETH',
+        unit: 'token',
+      );
+
+      expect(TokenAmountFormatter.formatValue(token), '12.123457');
+      expect(
+        TokenAmountFormatter.format(token, symbol: 'ETH', decimals: 18),
+        '12.123457 ETH',
+      );
+      expect(TokenAmountFormatter.formatValue(smallToken), '0.0000123457');
+      expect(
+        TokenAmountFormatter.format(smallToken, symbol: 'ETH', decimals: 18),
+        '0.0000123457 ETH',
+      );
+    });
+
     test('preserves an 18-decimal non-zero amount exactly', () {
       final value = DecimalValue(
         '0.000000000000000001',
@@ -83,7 +107,7 @@ void main() {
         );
         expect(
           TokenAmountFormatter.formatUsd(DecimalValue('0.839996378700433967')),
-          r'$0.839996378700433967',
+          r'$0.839996',
         );
         expect(
           TokenAmountFormatter.formatUsd(DecimalValue('-0.0049')),
@@ -177,6 +201,10 @@ void main() {
           usd: true,
         ),
         r'-$12.58K',
+      );
+      expect(
+        TokenAmountFormatter.formatCompact(DecimalValue('12.123456789')),
+        '12.123457',
       );
     });
 

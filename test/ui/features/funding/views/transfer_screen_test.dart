@@ -12,7 +12,10 @@ import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/funding_catalog.dart';
 import 'package:nobell/domain/models/funding_catalog_summary.dart';
+import 'package:nobell/domain/models/funding_session.dart';
+import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
@@ -239,7 +242,14 @@ void main() {
     expect(withdrawals.createdAmounts, ['51.4']);
     expect(withdrawals.previewAmounts, ['51.4']);
     expect(withdrawals.createdRails, ['float']);
-    expect(find.text('50.22'), findsOneWidget);
+    expect(
+      tester
+          .widget<AnimatedNumberText>(
+            find.byKey(const Key('transfer-receive-amount-value')),
+          )
+          .value,
+      '50.22',
+    );
     expect(find.text('1.18 USDC'), findsNWidgets(2));
     expect(find.text('总费用: 1.18 USDC'), findsOneWidget);
     expect(find.text('接收数量: 50.22 USDC'), findsOneWidget);
@@ -303,6 +313,176 @@ void main() {
     );
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
+
+  testWidgets('refreshed transfer quote animates amounts and fees', (
+    tester,
+  ) async {
+    final funding = _RefreshingTransferQuoteRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(funding),
+          transferOptionsProvider.overrideWith(
+            (ref) async => TransferOptions(
+              account: UnifiedFundingAccountSummary(
+                totalUsd: DecimalValue('100', asset: 'USD'),
+                availableToFundUsd: DecimalValue('100', asset: 'USD'),
+                reservedUsd: DecimalValue('0', asset: 'USD'),
+                inTransitUsd: DecimalValue('0', asset: 'USD'),
+                dataStatus: 'complete',
+                calculatedAt: DateTime.utc(2026),
+                positions: [
+                  FundingSourcePosition(
+                    positionId: 'usdc',
+                    token: 'USDC',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('100', asset: 'USDC'),
+                    eligible: true,
+                  ),
+                ],
+              ),
+              catalog: FundingCatalogSummary(
+                catalogVersion: 'test',
+                depositRailCount: 0,
+                updatedAt: DateTime.utc(2026),
+                transferTarget: const FundingTransferTarget(
+                  token: 'USDC',
+                  network: 'Hyperliquid',
+                ),
+              ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), '10');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+
+    const receiveKey = Key('transfer-receive-amount-value');
+    const bridgeKey = Key('transfer-bridge-fee-value');
+    const networkKey = Key('transfer-network-fee-value');
+    const totalKey = Key('transfer-total-fee-value');
+    expect(
+      tester.widget<AnimatedNumberText>(find.byKey(receiveKey)).value,
+      '9.7',
+    );
+    expect(
+      tester.widget<AnimatedNumberText>(find.byKey(totalKey)).value,
+      '0.3 USDC',
+    );
+
+    await tester.pump(const Duration(seconds: 5));
+    expect(funding.refreshCalls, 1);
+    expect(
+      tester.widget<AnimatedNumberText>(find.byKey(receiveKey)).value,
+      '9.7',
+    );
+
+    funding.completeRefresh();
+    await tester.pump(const Duration(milliseconds: 40));
+    for (final key in const [receiveKey, bridgeKey, networkKey, totalKey]) {
+      expect(
+        find.descendant(
+          of: find.byKey(key),
+          matching: find.byType(FractionalTranslation),
+        ),
+        findsWidgets,
+      );
+    }
+
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<AnimatedNumberText>(find.byKey(receiveKey)).value,
+      '9.6',
+    );
+    expect(
+      tester.widget<AnimatedNumberText>(find.byKey(totalKey)).value,
+      '0.4 USDC',
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+}
+
+final class _RefreshingTransferQuoteRepository implements FundingRepository {
+  final _refresh = Completer<FundingSessionSummary>();
+  var refreshCalls = 0;
+
+  void completeRefresh() => _refresh.complete(
+    _session(
+      version: 3,
+      minimumReceived: '9.6',
+      bridgeFee: '0.15',
+      networkFee: '0.25',
+      totalFee: '0.4',
+      allocations: const {'usdc': '10'},
+    ),
+  );
+
+  @override
+  Future<FundingSessionSummary> createTransferFundingSession({
+    required String destination,
+    required String amount,
+    required String idempotencyKey,
+  }) async => _session(version: 1);
+
+  @override
+  Future<FundingSessionSummary> updateFundingSessionSelection({
+    required String fundingSessionId,
+    required int version,
+    required Map<String, String> allocations,
+    required String idempotencyKey,
+  }) async => _session(
+    version: 2,
+    minimumReceived: '9.7',
+    bridgeFee: '0.1',
+    networkFee: '0.2',
+    totalFee: '0.3',
+    allocations: allocations,
+  );
+
+  @override
+  Future<FundingSessionSummary> getFundingSession(String id) {
+    refreshCalls++;
+    return _refresh.future;
+  }
+
+  FundingSessionSummary _session({
+    required int version,
+    String? minimumReceived,
+    String? bridgeFee,
+    String? networkFee,
+    String? totalFee,
+    Map<String, String> allocations = const {},
+  }) => FundingSessionSummary(
+    sessionId: 'transfer-session',
+    status: 'ready_to_confirm',
+    version: version,
+    canConfirmTransfer: true,
+    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    minimumReceived: minimumReceived,
+    targetToken: 'USDC',
+    targetNetwork: 'Hyperliquid',
+    allocations: allocations,
+    fees: bridgeFee == null || networkFee == null || totalFee == null
+        ? null
+        : FundingSessionFees(
+            asset: 'USDC',
+            bridgeFee: bridgeFee,
+            networkFee: networkFee,
+            totalFee: totalFee,
+          ),
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {

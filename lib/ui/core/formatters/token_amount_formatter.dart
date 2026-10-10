@@ -10,11 +10,15 @@ abstract final class TokenAmountFormatter {
   static String formatDecimal(DecimalValue amount) =>
       _groupIntegerDigits(_formatAdaptiveDecimal(amount.value));
 
-  /// Formats only the numeric portion of a decimal amount.
+  /// Formats only the numeric portion of a decimal amount for display.
+  ///
+  /// The token's decimal limit is validated first, then the shared adaptive
+  /// display precision is applied. Use [formatFixed] for editable fields that
+  /// must retain an exact scale.
   static String formatValue(DecimalValue amount, {int? decimals}) {
     if (decimals != null) _validateDecimals(decimals);
     return _groupIntegerDigits(
-      _trimInsignificantZeros(_enforceDecimals(amount.value, decimals)),
+      _formatAdaptiveDecimal(_enforceDecimals(amount.value, decimals)),
     );
   }
 
@@ -26,7 +30,7 @@ abstract final class TokenAmountFormatter {
         : amount.value;
     final integerPart = absoluteValue.split('.').first;
     final formatted = integerPart == '0'
-        ? _trimInsignificantZeros(amount.value)
+        ? _formatAdaptiveDecimal(amount.value)
         : _trimInsignificantZeros(_roundToFractionDigits(amount.value, 2));
     return '\$${_groupIntegerDigits(formatted)}';
   }
@@ -60,7 +64,7 @@ abstract final class TokenAmountFormatter {
       _ => (scale: 0, label: ''),
     };
     if (suffix.scale == 0) {
-      final value = _trimInsignificantZeros(unsigned);
+      final value = _formatAdaptiveDecimal(unsigned);
       return '${negative ? '-' : ''}${usd ? '\$' : ''}$value';
     }
 
@@ -167,7 +171,7 @@ abstract final class TokenAmountFormatter {
     final effectiveValue = _enforceDecimals(amount.value, decimals);
     final displayedValue = switch (display) {
       TokenAmountDisplay.exact => effectiveValue,
-      TokenAmountDisplay.normalized => _trimInsignificantZeros(effectiveValue),
+      TokenAmountDisplay.normalized => _formatAdaptiveDecimal(effectiveValue),
     };
     return '${_groupIntegerDigits(displayedValue)} $normalizedSymbol';
   }
