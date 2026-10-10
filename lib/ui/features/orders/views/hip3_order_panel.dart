@@ -3357,7 +3357,7 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
           child: SizedBox(
-            height: 66,
+            height: 42,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -3367,46 +3367,50 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
                       ?.copyWith(color: colors.secondaryText),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        key: widget.inputKey,
-                        controller: widget.controller,
-                        focusNode: _focusNode,
-                        readOnly: widget.onTap != null,
-                        showCursor: widget.onTap == null,
-                        onTap: widget.onTap ?? _focusNode.requestFocus,
-                        keyboardType: widget.onTap == null
-                            ? const TextInputType.numberWithOptions(
-                                decimal: true,
-                              )
-                            : TextInputType.text,
-                        inputFormatters: widget.onTap == null
-                            ? [
-                                _decimalTruncatingFormatter(
-                                  widget.maxFractionDigits ?? 8,
-                                ),
-                              ]
-                            : null,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
+                SizedBox(
+                  height: 22,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          key: widget.inputKey,
+                          controller: widget.controller,
+                          focusNode: _focusNode,
+                          readOnly: widget.onTap != null,
+                          showCursor: widget.onTap == null,
+                          onTap: widget.onTap ?? _focusNode.requestFocus,
+                          keyboardType: widget.onTap == null
+                              ? const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                )
+                              : TextInputType.text,
+                          inputFormatters: widget.onTap == null
+                              ? [
+                                  _decimalTruncatingFormatter(
+                                    widget.maxFractionDigits ?? 8,
+                                  ),
+                                ]
+                              : null,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: false,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                            constraints: BoxConstraints.tightFor(height: 22),
+                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
+                      ),
+                      Text(
+                        widget.suffix,
                         style: Theme.of(context).textTheme.bodyLarge
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                    ),
-                    Text(
-                      widget.suffix,
-                      style: Theme.of(context).textTheme.bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),

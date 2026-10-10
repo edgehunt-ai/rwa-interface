@@ -148,8 +148,8 @@ void main() {
       matching: find.text('Limit Price'),
     );
 
-    expect(tester.getSize(priceCard).height, 88);
-    expect(tester.getSize(quantityCard).height, 88);
+    expect(tester.getSize(priceCard).height, 64);
+    expect(tester.getSize(quantityCard).height, 64);
     expect(
       tester.getRect(quantityCard).left - tester.getRect(priceCard).right,
       12,
@@ -161,6 +161,10 @@ void main() {
     expect(
       tester.getRect(priceInput).top - tester.getRect(priceLabel).bottom,
       6,
+    );
+    expect(
+      tester.getRect(priceCard).bottom - tester.getRect(priceInput).bottom,
+      10,
     );
   });
 

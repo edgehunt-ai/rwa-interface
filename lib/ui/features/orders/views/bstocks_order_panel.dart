@@ -2025,7 +2025,7 @@ class _LimitInputState extends State<_LimitInput> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
           child: SizedBox(
-            height: 66,
+            height: 42,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -2035,38 +2035,42 @@ class _LimitInputState extends State<_LimitInput> {
                       ?.copyWith(color: colors.secondaryText),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        key: widget.inputKey,
-                        controller: widget.controller,
-                        focusNode: _focusNode,
-                        onTap: widget.onTap,
-                        readOnly: widget.onTap != null,
-                        showCursor: widget.onTap == null,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: widget.inputFormatters,
-                        style: Theme.of(context).textTheme.bodyLarge
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
+                SizedBox(
+                  height: 22,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          key: widget.inputKey,
+                          controller: widget.controller,
+                          focusNode: _focusNode,
+                          onTap: widget.onTap,
+                          readOnly: widget.onTap != null,
+                          showCursor: widget.onTap == null,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: widget.inputFormatters,
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: false,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                            constraints: BoxConstraints.tightFor(height: 22),
+                          ),
                         ),
                       ),
-                    ),
-                    Text(
-                      widget.suffix,
-                      style: Theme.of(context).textTheme.bodyLarge
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ],
+                      Text(
+                        widget.suffix,
+                        style: Theme.of(context).textTheme.bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
