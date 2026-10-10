@@ -712,6 +712,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get orderSubmissionFailed => '订单未提交成功，请重试。';
 
   @override
+  String get approvalCompletedQuoteRefreshFailed => '授权已完成，但无法加载最新报价。';
+
+  @override
   String get marketPrice => '市价';
 
   @override

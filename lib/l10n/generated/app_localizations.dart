@@ -1460,6 +1460,12 @@ abstract class AppLocalizations {
   /// **'Order was not submitted. Try again.'**
   String get orderSubmissionFailed;
 
+  /// No description provided for @approvalCompletedQuoteRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval completed, but the latest quote could not be loaded.'**
+  String get approvalCompletedQuoteRefreshFailed;
+
   /// No description provided for @marketPrice.
   ///
   /// In en, this message translates to:

@@ -131,6 +131,7 @@ final class MarketsRepositoryImpl implements MarketsRepository {
     }
     return MarketSnapshot(
       price: DecimalValue(product.quote.price, asset: 'USDC', unit: 'price'),
+      productId: book?.productId,
       change24hPercent: _decimal(
         product.quote.change24hPercent,
         unit: 'percent',

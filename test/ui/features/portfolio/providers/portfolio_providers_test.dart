@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/portfolio.dart';
@@ -73,6 +76,48 @@ void main() {
       expect(value?.value, '1.25');
     },
   );
+
+  test(
+    'bStocks sell availability starts assets before accounts resolve',
+    () async {
+      final repository = _PendingAccountsAvailabilityRepository();
+      final container = ProviderContainer(
+        overrides: [portfolioRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      final availability = container.read(
+        bstocksSellAvailabilityProvider('product-1').future,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(repository.productId, 'product-1');
+      expect(repository.assetCalls, 1);
+
+      repository.accounts.complete(const []);
+      expect(await availability, isNull);
+    },
+  );
+
+  test('bStocks sell availability retries a transient API failure', () async {
+    final repository = _RetryingAvailabilityRepository();
+    final container = ProviderContainer(
+      overrides: [portfolioRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      bstocksSellAvailabilityProvider('product-1'),
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+
+    final value = await container.read(
+      bstocksSellAvailabilityProvider('product-1').future,
+    );
+
+    expect(repository.assetCalls, 2);
+    expect(value?.value, '1.25');
+  });
 }
 
 TradingAccount _account(TradingAccountKind kind, String availableUsd) =>
@@ -160,6 +205,77 @@ final class _BstocksAvailabilityRepository
         bstocksAvailableQuantity: DecimalValue('8'),
         bstocksAvailabilityStatus: 'complete',
         freshness: 'stale',
+      ),
+    ];
+  }
+
+  @override
+  Future<Portfolio> getSummary() => throw UnimplementedError();
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      throw UnimplementedError();
+}
+
+final class _PendingAccountsAvailabilityRepository
+    implements PortfolioRepository, PortfolioAssetsRepository {
+  final accounts = Completer<List<TradingAccount>>();
+  var assetCalls = 0;
+  String? productId;
+
+  @override
+  Future<List<TradingAccount>> listAccounts() => accounts.future;
+
+  @override
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+  }) async {
+    assetCalls++;
+    this.productId = productId;
+    return const [];
+  }
+
+  @override
+  Future<Portfolio> getSummary() => throw UnimplementedError();
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      throw UnimplementedError();
+}
+
+final class _RetryingAvailabilityRepository
+    implements PortfolioRepository, PortfolioAssetsRepository {
+  var assetCalls = 0;
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async => const [
+    TradingAccount(
+      kind: TradingAccountKind.bstocks,
+      balances: [],
+      walletId: 'trading-wallet',
+    ),
+  ];
+
+  @override
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+  }) async {
+    assetCalls++;
+    if (assetCalls == 1) throw const NetworkFailure();
+    return [
+      PortfolioAsset(
+        assetId: 'valid',
+        network: 'BSC',
+        symbol: 'NVDAB',
+        decimals: 18,
+        balance: DecimalValue('2'),
+        walletId: 'trading-wallet',
+        productId: productId,
+        bstocksAvailableQuantity: DecimalValue('1.25'),
+        bstocksAvailabilityStatus: 'complete',
+        freshness: 'live',
       ),
     ];
   }

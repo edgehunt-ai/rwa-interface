@@ -14,12 +14,16 @@ import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/order.dart';
 import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/order_preview.dart';
+import 'package:nobell/domain/models/portfolio.dart';
+import 'package:nobell/domain/models/portfolio_asset.dart';
+import 'package:nobell/domain/models/market_snapshot.dart';
 import 'package:nobell/domain/models/resource_result.dart';
 import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/domain/repositories/bstocks_order_execution_repository.dart';
 import 'package:nobell/domain/repositories/orders_repository.dart';
+import 'package:nobell/domain/repositories/portfolio_repository.dart';
 import 'package:nobell/domain/repositories/wallets_repository.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/views/bstocks_order_panel.dart';
@@ -33,10 +37,56 @@ import '../../../../helpers/funded_repository.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
-  testWidgets('sell availability resolves after opening without a product ID', (
+  testWidgets('limit-order input layout matches HIP-3 for Buy and Sell', (
     tester,
   ) async {
-    final products = Completer<DomainPage<MarketProduct>>();
+    await tester.pumpWidget(
+      ProviderScope(child: buildTestApp(const BstocksOrderPanel())),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit'));
+    await tester.pumpAndSettle();
+    final limitPriceInput = find.byKey(
+      const Key('bstocks-limit-price-sheet-input'),
+    );
+    Navigator.of(tester.element(limitPriceInput)).pop('100');
+    await tester.pumpAndSettle();
+
+    final priceCard = find.byKey(const Key('bstocks-limit-price-card'));
+    final quantityCard = find.byKey(const Key('bstocks-limit-quantity-card'));
+    final priceInput = find.byKey(const Key('bstocks-limit-price-input'));
+    final priceLabel = find.descendant(
+      of: priceCard,
+      matching: find.text('Limit Price'),
+    );
+
+    void expectCompactLayout() {
+      expect(tester.getSize(priceCard).height, 88);
+      expect(tester.getSize(quantityCard).height, 88);
+      expect(
+        tester.getRect(quantityCard).left - tester.getRect(priceCard).right,
+        12,
+      );
+      expect(
+        tester.getRect(priceInput).top - tester.getRect(priceLabel).bottom,
+        6,
+      );
+    }
+
+    expectCompactLayout();
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('bstocks-side-tabs')),
+        matching: find.text('Sell'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expectCompactLayout();
+  });
+
+  testWidgets('sell availability uses the product ID from the order book', (
+    tester,
+  ) async {
     final requests = <String>[];
     await tester.pumpWidget(
       ProviderScope(
@@ -45,8 +95,11 @@ void main() {
           ordersRepositoryProvider.overrideWithValue(
             _CapturingOrdersRepository(),
           ),
-          marketProductLookupProvider.overrideWith(
-            (ref, query) => products.future,
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(
+              price: DecimalValue('100'),
+              productId: 'bstocks:nvdab',
+            ),
           ),
           bstocksSellAvailabilityProvider.overrideWith((ref, productId) async {
             requests.add(productId);
@@ -59,29 +112,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(requests, isEmpty);
+    expect(requests, ['bstocks:nvdab']);
+    expect(find.text('12 NVDAB'), findsOneWidget);
     final slider = find.byKey(const Key('bstocks-percentage-slider'));
     tester.widget<Slider>(slider).onChanged!(50);
     await tester.pump();
-    products.complete(
-      DomainPage(
-        items: [
-          MarketProduct(
-            symbol: 'NVDAB',
-            name: 'NVIDIA',
-            kind: MarketProductKind.bstock,
-            productId: 'bstocks:nvdab',
-            price: DecimalValue('100'),
-            settlementAsset: 'USDT',
-            network: 'BSC',
-            tradable: true,
-          ),
-        ],
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(requests, ['bstocks:nvdab']);
-    expect(find.text('12 NVDAB'), findsOneWidget);
     final input = tester.widget<TextField>(
       find.byKey(const Key('bstocks-market-amount-input')),
     );
@@ -1063,6 +1098,51 @@ void main() {
   });
 
   testWidgets(
+    'a post-approval quote failure reports success and the real refresh reason',
+    (tester) async {
+      final orders = _ApprovalOrdersRepository()
+        ..postApprovalPreviewFailure = const NetworkFailure(
+          userAction: 'Quote service closed the connection',
+        );
+      final execution = _ApprovalExecutionRepository(orders);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+            ordersRepositoryProvider.overrideWithValue(orders),
+            bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+              execution,
+            ),
+          ],
+          child: buildTestApp(const BstocksOrderPanel()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, '10');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.byKey(const Key('bstocks-primary-order-action')));
+      final approve = find.widgetWithText(FilledButton, 'Approve');
+      await _pumpUntilFound(tester, approve);
+      await tester.ensureVisible(approve);
+      await tester.tap(approve);
+      await tester.pump();
+      execution.completeApproval();
+
+      await _pumpUntilFound(
+        tester,
+        find.textContaining(
+          'Approval completed, but the latest quote could not be loaded.',
+        ),
+      );
+      expect(
+        find.textContaining('Quote service closed the connection'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Order was not submitted'), findsNothing);
+    },
+  );
+
+  testWidgets(
     'expired approval preview is refreshed before creating an action',
     (tester) async {
       final orders = _ApprovalOrdersRepository(uniquePreviewIds: true)
@@ -1210,6 +1290,53 @@ void main() {
       expect(find.text(r'Sell NVDAB · $5'), findsNothing);
     },
   );
+
+  testWidgets('reopening sell shows cached availability while refreshing it', (
+    tester,
+  ) async {
+    final repository = _RefreshingAvailabilityRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(FundedRepository()),
+          portfolioRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: buildTestApp(
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => const BstocksOrderPanel(
+                  symbol: 'NVDAB',
+                  productId: 'bstocks:nvdab',
+                  initialSide: TradingSide.sell,
+                ),
+              ),
+              child: const Text('Open sell'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open sell'));
+    await tester.pumpAndSettle();
+    expect(repository.assetCalls, 1);
+    expect(find.text('12.5 NVDAB'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.keyboard_double_arrow_down));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open sell'));
+    await tester.pumpAndSettle();
+
+    expect(repository.assetCalls, 2);
+    expect(find.text('12.5 NVDAB'), findsOneWidget);
+    expect(find.byKey(const Key('bstocks-balance-loading')), findsNothing);
+
+    repository.completeRefresh('10.25');
+    await tester.pumpAndSettle();
+    expect(find.text('10.25 NVDAB'), findsOneWidget);
+  });
 
   testWidgets('manual bStocks quantities are limited to 18 decimals', (
     tester,
@@ -1773,6 +1900,56 @@ void main() {
   );
 }
 
+final class _RefreshingAvailabilityRepository
+    implements PortfolioRepository, PortfolioAssetsRepository {
+  final _refresh = Completer<List<PortfolioAsset>>();
+  var assetCalls = 0;
+
+  void completeRefresh(String value) => _refresh.complete([_asset(value)]);
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async => const [
+    TradingAccount(
+      kind: TradingAccountKind.bstocks,
+      balances: [],
+      walletId: 'trading-wallet',
+    ),
+  ];
+
+  @override
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+  }) async {
+    assetCalls++;
+    return assetCalls == 1 ? [_asset('12.5')] : _refresh.future;
+  }
+
+  PortfolioAsset _asset(String value) => PortfolioAsset(
+    assetId: 'nvdab',
+    network: 'BSC',
+    symbol: 'NVDAB',
+    decimals: 18,
+    balance: DecimalValue(value, asset: 'NVDAB', unit: 'token'),
+    walletId: 'trading-wallet',
+    productId: 'bstocks:nvdab',
+    bstocksAvailableQuantity: DecimalValue(
+      value,
+      asset: 'NVDAB',
+      unit: 'token',
+    ),
+    bstocksAvailabilityStatus: 'complete',
+    freshness: 'live',
+  );
+
+  @override
+  Future<Portfolio> getSummary() => throw UnimplementedError();
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      throw UnimplementedError();
+}
+
 Future<void> _pumpUntilFound(
   WidgetTester tester,
   Finder finder, {
@@ -1941,6 +2118,7 @@ final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
   var previewCalls = 0;
   var rejectNextCreate = false;
   var expirePreviews = false;
+  ApiFailure? postApprovalPreviewFailure;
   final createdPreviewIds = <String?>[];
   final createKeys = <String>[];
 
@@ -1950,6 +2128,10 @@ final class _ApprovalOrdersRepository extends _DelayedOrdersRepository {
     required String idempotencyKey,
   }) async {
     previewCalls++;
+    final previewFailure = postApprovalPreviewFailure;
+    if (approved && previewFailure != null) {
+      throw previewFailure;
+    }
     return OrderPreview(
       previewId: uniquePreviewIds
           ? 'approval-preview-$previewCalls'

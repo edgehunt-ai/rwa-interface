@@ -52,6 +52,7 @@ final class OrderBookEntry {
 final class MarketSnapshot {
   const MarketSnapshot({
     required this.price,
+    this.productId,
     this.change24hPercent,
     this.bids = const [],
     this.asks = const [],
@@ -77,6 +78,7 @@ final class MarketSnapshot {
     this.assetRights = const [],
   });
   final DecimalValue price;
+  final String? productId;
   final DecimalValue? change24hPercent;
   final List<OrderBookEntry> bids;
   final List<OrderBookEntry> asks;

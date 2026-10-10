@@ -45,6 +45,17 @@ void main() {
     ]);
   });
 
+  test(
+    'bStocks snapshot preserves the product ID from the order book',
+    () async {
+      final snapshot = await MarketsRepositoryImpl(_Markets('100')).getSnapshot(
+        const MarketProductRef(symbol: 'NVDAB', kind: MarketProductKind.bstock),
+      );
+
+      expect(snapshot.productId, 'bstocks:nvdab');
+    },
+  );
+
   test('只有通过准入且启用的 bStock 才可执行', () async {
     final tokens = await MarketsRepositoryImpl(_BstocksDiscovery())
         .listBstocksSupportedTokens();
@@ -152,6 +163,29 @@ final class _Markets implements MarketsService {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  Future<wire.ProductDetail> getProduct(
+    String symbol,
+    wire.ProductKind kind,
+  ) async => wire.ProductDetail(
+    (product) => product
+      ..symbol = symbol
+      ..kind = kind
+      ..quote.update((quote) => quote.price = financial)
+      ..assetInfo.update(
+        (info) => info
+          ..title = symbol
+          ..badge = ''
+          ..description = '',
+      ),
+  );
+
+  @override
+  Future<wire.OrderBook> getOrderBook(
+    String symbol,
+    wire.ProductKind kind,
+  ) async => wire.OrderBook((book) => book.productId = 'bstocks:nvdab');
 
   @override
   Future<wire.StockPage> listStocks() async => wire.StockPage(

@@ -78,6 +78,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   var _syncingLimitFields = false;
   double? _percentageAvailable;
   double? _lastPercentageAvailable;
+  String? _sellAvailabilityRefreshCheckedFor;
   DecimalValue? _liveMarketPrice;
   String? _currentMarketPrice;
   late final OrderCommandNotifier _orderCommands;
@@ -188,6 +189,19 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       _refreshLimitPercentage(
         side == TradingSide.buy ? orderValue.text : quantity.text,
       );
+    });
+  }
+
+  void _refreshCachedSellAvailability(
+    String productId,
+    AsyncValue<DecimalValue?> availability,
+  ) {
+    if (_sellAvailabilityRefreshCheckedFor == productId) return;
+    _sellAvailabilityRefreshCheckedFor = productId;
+    if (availability.isLoading || availability.isRefreshing) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || side != TradingSide.sell) return;
+      ref.invalidate(bstocksSellAvailabilityProvider(productId));
     });
   }
 
@@ -418,6 +432,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       return;
     }
     var current = initial;
+    var approvalCompleted = false;
     _stopPreviewPolling();
     setState(() {
       error = null;
@@ -457,6 +472,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             ? state.failure
             : const CompatibilityFailure();
       }
+      approvalCompleted = true;
 
       // Approval only changes allowance. Keep the user at confirmation until
       // a fresh preview verifies that a separate order submission is ready.
@@ -481,12 +497,18 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     } on Object catch (approvalError) {
       if (mounted) {
         _approvalNeedsPreviewRefresh = true;
-        setState(
-          () => error = _errorMessage(
-            error: approvalError,
-            fallback: AppLocalizations.of(context).orderSubmissionFailed,
-          ),
+        final l10n = AppLocalizations.of(context);
+        final reason = _errorMessage(
+          error: approvalError,
+          fallback: approvalCompleted
+              ? l10n.prepareOrderFailed
+              : l10n.orderSubmissionFailed,
         );
+        setState(() {
+          error = approvalCompleted
+              ? '${l10n.approvalCompletedQuoteRefreshFailed} $reason'
+              : reason;
+        });
       }
     } finally {
       if (mounted) {
@@ -805,6 +827,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
     final sellProductId = isBuy
         ? null
         : widget.productId ??
+              snapshot.value?.productId ??
               ref.watch(
                 marketProductIdProvider(
                   MarketProductRef(
@@ -820,6 +843,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       sellAvailability = ref.watch(
         bstocksSellAvailabilityProvider(sellProductId),
       );
+      _refreshCachedSellAvailability(sellProductId, sellAvailability);
     }
     final availableAmount = isBuy
         ? availableBalance.value
@@ -834,7 +858,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         : '${TokenAmountFormatter.formatValue(availableAmount)} ${widget.symbol}';
     final balanceLoading = isBuy
         ? availableBalance.isLoading || availableBalance.isRefreshing
-        : sellAvailability.isLoading || sellAvailability.isRefreshing;
+        : availableAmount == null && sellAvailability.isLoading;
     final receive =
         quotePreview?.estimatedReceive ?? quotePreview?.estimatedQuantity;
     final fee = quotePreview?.fee;
@@ -917,6 +941,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
               children: [
                 Expanded(
                   child: _LimitInput(
+                    cardKey: const Key('bstocks-limit-price-card'),
                     controller: limitPrice,
                     label: l10n.limitPrice,
                     suffix: 'USDT',
@@ -927,6 +952,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _LimitInput(
+                    cardKey: const Key('bstocks-limit-quantity-card'),
                     controller: quantity,
                     label: l10n.quantity,
                     suffix: widget.symbol,
@@ -1951,6 +1977,7 @@ class _OrderFailureNotice extends StatelessWidget {
 
 class _LimitInput extends StatefulWidget {
   const _LimitInput({
+    required this.cardKey,
     required this.controller,
     required this.label,
     required this.suffix,
@@ -1958,6 +1985,7 @@ class _LimitInput extends StatefulWidget {
     this.inputKey,
     this.inputFormatters,
   });
+  final Key cardKey;
   final TextEditingController controller;
   final String label;
   final String suffix;
@@ -1988,6 +2016,7 @@ class _LimitInputState extends State<_LimitInput> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     return Material(
+      key: widget.cardKey,
       color: colors.subtleSurface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
@@ -1996,7 +2025,7 @@ class _LimitInputState extends State<_LimitInput> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
           child: SizedBox(
-            height: 69,
+            height: 66,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -2005,41 +2034,39 @@ class _LimitInputState extends State<_LimitInput> {
                   style: Theme.of(context).textTheme.labelSmall
                       ?.copyWith(color: colors.secondaryText),
                 ),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          key: widget.inputKey,
-                          controller: widget.controller,
-                          focusNode: _focusNode,
-                          onTap: widget.onTap,
-                          readOnly: widget.onTap != null,
-                          showCursor: widget.onTap == null,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: widget.inputFormatters,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            filled: false,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
-                          ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        key: widget.inputKey,
+                        controller: widget.controller,
+                        focusNode: _focusNode,
+                        onTap: widget.onTap,
+                        readOnly: widget.onTap != null,
+                        showCursor: widget.onTap == null,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
-                      ),
-                      Text(
-                        widget.suffix,
+                        inputFormatters: widget.inputFormatters,
                         style: Theme.of(context).textTheme.bodyLarge
                             ?.copyWith(fontWeight: FontWeight.w600),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                    Text(
+                      widget.suffix,
+                      style: Theme.of(context).textTheme.bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
               ],
             ),

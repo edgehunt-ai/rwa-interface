@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/domain_page.dart';
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/portfolio.dart';
+import '../../../../domain/models/portfolio_asset.dart';
 import '../../../../domain/models/portfolio_history.dart';
 import '../../../../domain/models/portfolio_allocation.dart';
 import '../../../../domain/repositories/portfolio_repository.dart';
@@ -239,14 +241,18 @@ final bstocksSellAvailabilityProvider = FutureProvider.autoDispose
       final repository = ref.watch(portfolioRepositoryProvider);
       if (repository is! PortfolioAssetsRepository) return null;
       final assetsRepository = repository as PortfolioAssetsRepository;
-      final accounts = await repository.listAccounts();
+      final results = await Future.wait<Object>([
+        repository.listAccounts(),
+        assetsRepository.listAssets(productId: productId),
+      ]);
+      final accounts = results[0] as List<TradingAccount>;
+      final assets = results[1] as List<PortfolioAsset>;
       final walletIds = accounts
           .where((account) => account.kind == TradingAccountKind.bstocks)
           .map((account) => account.walletId)
           .whereType<String>()
           .toSet();
       if (walletIds.length != 1) return null;
-      final assets = await assetsRepository.listAssets(productId: productId);
       final matches = assets.where(
         (asset) =>
             asset.productId == productId &&
@@ -257,4 +263,9 @@ final bstocksSellAvailabilityProvider = FutureProvider.autoDispose
       );
       if (matches.length != 1) return null;
       return matches.single.bstocksAvailableQuantity;
-    });
+    }, retry: _retryBstocksSellAvailability);
+
+Duration? _retryBstocksSellAvailability(int count, Object error) {
+  if (error is ApiFailure && !error.retryable) return null;
+  return ProviderContainer.defaultRetry(count, error, maxRetries: 3);
+}

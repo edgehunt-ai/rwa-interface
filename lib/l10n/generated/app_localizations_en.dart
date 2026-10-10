@@ -732,6 +732,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderSubmissionFailed => 'Order was not submitted. Try again.';
 
   @override
+  String get approvalCompletedQuoteRefreshFailed =>
+      'Approval completed, but the latest quote could not be loaded.';
+
+  @override
   String get marketPrice => 'Market price';
 
   @override
