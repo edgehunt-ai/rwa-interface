@@ -93,7 +93,9 @@ abstract final class SentryBootstrap {
         // ignore: experimental_member_use
         ..profilesSampleRate = config.profilesSampleRate
         ..sendDefaultPii = false
-        ..beforeSend = SentryEventSanitizer.sanitize
+        ..captureFailedRequests = false
+        ..captureNativeFailedRequests = false
+        ..beforeSend = SentryEventSanitizer.filterAndSanitize
         ..enableAutoPerformanceTracing = true;
       if (config.smokeTest) {
         options

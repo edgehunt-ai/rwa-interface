@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nobell/app/observability/observability_reporter.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/app/providers/auth_providers.dart';
+import 'package:nobell/app/providers/observability_providers.dart';
 import 'package:nobell/domain/auth/identity_auth_gateway.dart';
 import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
@@ -19,6 +21,7 @@ void main() {
     required _Executions executions,
     required _Sender sender,
     _Signer? signer,
+    _RecordingObservabilityReporter? observability,
   }) {
     final result = ProviderContainer(
       overrides: [
@@ -28,6 +31,8 @@ void main() {
           signer ?? _Signer(),
         ),
         fundingRepositoryProvider.overrideWithValue(_Funding()),
+        if (observability != null)
+          observabilityReporterProvider.overrideWithValue(observability),
       ],
     );
     addTearDown(result.dispose);
@@ -87,6 +92,7 @@ void main() {
   test(
     'an authorization that drifts from the frozen call is refused',
     () async {
+      final observability = _RecordingObservabilityReporter();
       final signer = _Signer();
       final executions = _Executions(
         create: _sponsored(
@@ -98,6 +104,7 @@ void main() {
         executions: executions,
         sender: sender,
         signer: signer,
+        observability: observability,
       ).read(selfCustodialWithdrawalCommandsProvider);
 
       await expectLater(
@@ -110,8 +117,36 @@ void main() {
       );
       expect(signer.requests, isEmpty);
       expect(executions.submittedSignatures, isEmpty);
+      expect(observability.errors, [isA<StateError>()]);
+      expect(observability.operations, [
+        'execute_self_custodial_withdrawal:started',
+        'execute_self_custodial_withdrawal:failed',
+      ]);
     },
   );
+
+  test('a wallet broadcast failure is reported', () async {
+    final observability = _RecordingObservabilityReporter();
+    final commands = container(
+      executions: _Executions(create: _userPaid()),
+      sender: _Sender(failure: StateError('wallet broadcast failed')),
+      observability: observability,
+    ).read(selfCustodialWithdrawalCommandsProvider);
+
+    await expectLater(
+      commands.executeUserPaid(
+        quote: _quote,
+        prepared: _prepared(canPayGas: true),
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(observability.errors, [isA<StateError>()]);
+    expect(observability.operations, [
+      'execute_user_paid_self_custodial_withdrawal:started',
+      'execute_user_paid_self_custodial_withdrawal:failed',
+    ]);
+  });
 
   test('an expired authorization window is refused', () async {
     final signer = _Signer();
@@ -517,6 +552,9 @@ final class _Signer implements WalletAuthorizationSigner {
 
 final class _Sender
     implements IdentityAuthGateway, EmbeddedWalletTransactionSender {
+  _Sender({this.failure});
+
+  final Object? failure;
   int calls = 0;
 
   @override
@@ -528,11 +566,59 @@ final class _Sender
     required String value,
   }) async {
     calls++;
+    if (failure case final error?) throw error;
     return '0xtx';
   }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _RecordingObservabilityReporter implements ObservabilityReporter {
+  final operations = <String>[];
+  final failures = <ApiFailure>[];
+  final errors = <Object>[];
+
+  @override
+  Future<void> clearUser() async {}
+
+  @override
+  void recordApiFailure({
+    required String operation,
+    required ApiFailure failure,
+    StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
+    failures.add(failure);
+    recordOperation(operation, outcome: 'failed');
+  }
+
+  @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+    String failureKind = 'unexpected',
+  }) {
+    errors.add(error);
+    recordOperation(operation, outcome: 'failed');
+  }
+
+  @override
+  void recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
+    operations.add('$operation:$outcome');
+  }
+
+  @override
+  Future<void> setUserId(String userId) async {}
 }
 
 final class _Funding implements FundingRepository {

@@ -44,11 +44,23 @@ final class SelfCustodialWithdrawalCommands {
   Future<PreparedSelfCustodialWithdrawal> prepare({
     required WithdrawalQuote quote,
     int attempt = 0,
+  }) {
+    _validateRequest(quote);
+    return _runObserved(
+      operation: 'prepare_self_custodial_withdrawal',
+      context: const {'stage': 'prepare'},
+      successContext: (prepared) => {'withdrawal_id': prepared.withdrawalId},
+      command: () => _prepare(quote, attempt: attempt),
+    );
+  }
+
+  Future<PreparedSelfCustodialWithdrawal> _prepare(
+    WithdrawalQuote quote, {
+    required int attempt,
   }) => _guard.run(
     operation: 'self-custodial-withdrawal-prepare',
     fingerprint: '${quote.intent.fingerprint}|$attempt',
     command: (createKey) async {
-      _validateRequest(quote);
       final wallet = await _findWallet(quote.intent.chain);
       final asset = await _findAsset(quote, wallet: wallet);
       // The endpoint takes the canonical EVM identity, never the opaque
@@ -90,6 +102,24 @@ final class SelfCustodialWithdrawalCommands {
     required WithdrawalQuote quote,
     required PreparedSelfCustodialWithdrawal prepared,
     required Future<bool> Function(GasPaymentQuote gas) confirmWalletUpgrade,
+  }) => _runObserved(
+    operation: 'execute_self_custodial_withdrawal',
+    context: {
+      'withdrawal_id': prepared.withdrawalId,
+      'mode': GasPaymentMode.appSponsored.name,
+      'stage': 'execute',
+    },
+    command: () => _execute(
+      quote: quote,
+      prepared: prepared,
+      confirmWalletUpgrade: confirmWalletUpgrade,
+    ),
+  );
+
+  Future<SelfCustodialWithdrawalSummary> _execute({
+    required WithdrawalQuote quote,
+    required PreparedSelfCustodialWithdrawal prepared,
+    required Future<bool> Function(GasPaymentQuote gas) confirmWalletUpgrade,
   }) => _guard.run(
     operation: 'self-custodial-withdrawal-execute',
     // The key reaches the server as the execution's idempotency key, so it
@@ -120,6 +150,11 @@ final class SelfCustodialWithdrawalCommands {
             .recordOperation(
               'self_custodial_withdrawal_sponsorship',
               outcome: execution.gasPayment.decision.name,
+              context: {
+                'withdrawal_id': prepared.withdrawalId,
+                'execution_id': execution.executionId,
+                'mode': GasPaymentMode.appSponsored.name,
+              },
             );
         throw SponsoredGasUnavailable(
           executionId: execution.executionId,
@@ -162,6 +197,19 @@ final class SelfCustodialWithdrawalCommands {
   /// User-paid fallback after sponsorship was refused pre-broadcast. The user
   /// signs and broadcasts the frozen transaction and pays gas themselves.
   Future<SelfCustodialWithdrawalSummary> executeUserPaid({
+    required WithdrawalQuote quote,
+    required PreparedSelfCustodialWithdrawal prepared,
+  }) => _runObserved(
+    operation: 'execute_user_paid_self_custodial_withdrawal',
+    context: {
+      'withdrawal_id': prepared.withdrawalId,
+      'mode': GasPaymentMode.userPaidNative.name,
+      'stage': 'execute',
+    },
+    command: () => _executeUserPaid(quote: quote, prepared: prepared),
+  );
+
+  Future<SelfCustodialWithdrawalSummary> _executeUserPaid({
     required WithdrawalQuote quote,
     required PreparedSelfCustodialWithdrawal prepared,
   }) => _guard.run(
@@ -237,7 +285,7 @@ final class SelfCustodialWithdrawalCommands {
     String fingerprint,
     _PendingWithdrawalSubmission pending,
   ) async {
-    final result = await submit(
+    final result = await _submit(
       withdrawalId: pending.withdrawalId,
       txHash: pending.txHash,
       executionId: pending.executionId,
@@ -284,48 +332,111 @@ final class SelfCustodialWithdrawalCommands {
     required String withdrawalId,
     required String txHash,
     String? executionId,
+  }) => _runObserved(
+    operation: 'submit_self_custodial_withdrawal',
+    context: {
+      'withdrawal_id': withdrawalId,
+      'execution_id': ?executionId,
+      'stage': 'submit',
+    },
+    command: () => _submit(
+      withdrawalId: withdrawalId,
+      txHash: txHash,
+      executionId: executionId,
+    ),
+  );
+
+  Future<SelfCustodialWithdrawalSummary> _submit({
+    required String withdrawalId,
+    required String txHash,
+    String? executionId,
   }) async {
-    const operation = 'submit_self_custodial_withdrawal';
-    _ref
-        .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: 'started');
-    try {
-      final result = await _guard.run(
-        operation: 'self-custodial-withdrawal-submit',
-        fingerprint: '$withdrawalId|$txHash',
-        command: (key) async {
-          if (executionId != null) {
-            await _ref
-                .read(walletActionExecutionRepositoryProvider)
-                .submitTransactionHash(
-                  executionId: executionId,
-                  txHash: txHash,
-                  idempotencyKey: key,
-                );
-            return _reload(withdrawalId);
-          }
-          return _ref
-              .read(fundingRepositoryProvider)
-              .submitSelfCustodialWithdrawal(
-                id: withdrawalId,
+    final result = await _guard.run(
+      operation: 'self-custodial-withdrawal-submit',
+      fingerprint: '$withdrawalId|$txHash',
+      command: (key) async {
+        if (executionId != null) {
+          await _ref
+              .read(walletActionExecutionRepositoryProvider)
+              .submitTransactionHash(
+                executionId: executionId,
                 txHash: txHash,
                 idempotencyKey: key,
               );
-        },
+          return _reload(withdrawalId);
+        }
+        return _ref
+            .read(fundingRepositoryProvider)
+            .submitSelfCustodialWithdrawal(
+              id: withdrawalId,
+              txHash: txHash,
+              idempotencyKey: key,
+            );
+      },
+    );
+    _ref.invalidate(selfCustodialWithdrawalProvider(withdrawalId));
+    return result;
+  }
+
+  Future<T> _runObserved<T>({
+    required String operation,
+    Map<String, String> context = const {},
+    Map<String, String> Function(T result)? successContext,
+    required Future<T> Function() command,
+  }) async {
+    final reporter = _ref.read(observabilityReporterProvider);
+    final stopwatch = Stopwatch()..start();
+    reporter.recordOperation(operation, outcome: 'started', context: context);
+    try {
+      final result = await command();
+      reporter.recordOperation(
+        operation,
+        outcome: 'succeeded',
+        context: {...context, ...?successContext?.call(result)},
+        duration: stopwatch.elapsed,
       );
-      _ref
-          .read(observabilityReporterProvider)
-          .recordOperation(operation, outcome: 'succeeded');
-      _ref.invalidate(selfCustodialWithdrawalProvider(withdrawalId));
       return result;
     } on ApiFailure catch (failure, stackTrace) {
-      _ref
-          .read(observabilityReporterProvider)
-          .recordApiFailure(
-            operation: operation,
-            failure: failure,
-            stackTrace: stackTrace,
-          );
+      reporter.recordApiFailure(
+        operation: operation,
+        failure: failure,
+        stackTrace: stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    } on WalletUpgradeDeclined {
+      reporter.recordOperation(
+        operation,
+        outcome: 'cancelled',
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    } on InsufficientWithdrawalGas {
+      reporter.recordOperation(
+        operation,
+        outcome: 'blocked',
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    } on SponsoredGasUnavailable {
+      reporter.recordOperation(
+        operation,
+        outcome: 'fallback_required',
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    } on Object catch (error, stackTrace) {
+      reporter.recordError(
+        operation: operation,
+        error: error,
+        stackTrace: stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
       rethrow;
     }
   }

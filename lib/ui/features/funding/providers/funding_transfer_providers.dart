@@ -106,6 +106,7 @@ final class FundingTransferCommands {
   Future<FundingPlan> plan({required String tradePreviewId}) async {
     final result = await _run(
       operation: 'funding_plan',
+      successContext: (plan) => {'plan_id': plan.planId},
       command: () => _commands.run(
         operation: 'funding-plan',
         fingerprint: tradePreviewId,
@@ -124,6 +125,10 @@ final class FundingTransferCommands {
   Future<OrderFundingRequirement> session({required OrderIntent intent}) async {
     final session = await _run(
       operation: 'funding_session',
+      successContext: (session) => {
+        'funding_session_id': session.sessionId,
+        'status': session.status,
+      },
       command: () => _commands.run(
         operation: 'funding-session',
         fingerprint: intent.fingerprint,
@@ -208,6 +213,10 @@ final class FundingTransferCommands {
       final generation = _transferDraftGeneration++;
       session = await _run(
         operation: 'transfer_funding_session',
+        successContext: (session) => {
+          'funding_session_id': session.sessionId,
+          'status': session.status,
+        },
         command: () => _commands.run(
           operation: 'transfer-funding-session',
           fingerprint: '$destination|$amount|$generation',
@@ -258,6 +267,8 @@ final class FundingTransferCommands {
   ) async {
     final selected = await _run(
       operation: 'funding_session_selection',
+      context: {'funding_session_id': session.sessionId},
+      successContext: (selected) => {'status': selected.status},
       command: () => _commands.run(
         operation: 'funding-session-selection',
         fingerprint: '${session.sessionId}|${session.version}|$allocations',
@@ -279,6 +290,8 @@ final class FundingTransferCommands {
       _serializeQuote(() async {
         final refreshed = await _run(
           operation: 'funding_session_refresh',
+          context: {'funding_session_id': sessionId},
+          successContext: (session) => {'status': session.status},
           command: () =>
               _ref.read(fundingRepositoryProvider).getFundingSession(sessionId),
         );
@@ -313,6 +326,8 @@ final class FundingTransferCommands {
   Future<FundingPlan> planForSession(FundingSessionSummary session) async {
     final result = await _run(
       operation: 'funding_plan',
+      context: {'funding_session_id': session.sessionId},
+      successContext: (plan) => {'plan_id': plan.planId},
       command: () => _commands.run(
         operation: 'funding-plan-session',
         fingerprint: '${session.sessionId}|${session.version}',
@@ -331,6 +346,7 @@ final class FundingTransferCommands {
 
   Future<FundingPlan> refresh(String planId) => _run(
     operation: 'funding_plan_refresh',
+    context: {'plan_id': planId},
     command: () => _ref.read(fundingRepositoryProvider).getFundingPlan(planId),
   );
 
@@ -340,6 +356,7 @@ final class FundingTransferCommands {
       if (transferId == null) continue;
       final transfer = await _run(
         operation: 'funding_transfer_refresh',
+        context: {'plan_id': plan.planId, 'transfer_id': transferId},
         command: () =>
             _ref.read(fundingRepositoryProvider).getFundingTransfer(transferId),
       );
@@ -362,6 +379,7 @@ final class FundingTransferCommands {
     }
     return _run(
       operation: 'funding_authorization',
+      context: {'plan_id': plan.planId, 'stage': 'authorize'},
       command: () => _ref
           .read(walletsRepositoryProvider)
           .authorizeFundingTransfer(
@@ -385,6 +403,8 @@ final class FundingTransferCommands {
     }
     final result = await _run(
       operation: 'funding_transfer',
+      context: {'plan_id': plan.planId, 'stage': 'create'},
+      successContext: (transfer) => {'transfer_id': transfer.transferId},
       command: () => _commands.run(
         operation: 'funding-transfer',
         fingerprint: '${plan.planId}|${authorization.authorizationId}',
@@ -409,6 +429,27 @@ final class FundingTransferCommands {
     final actionKey = '${transfer.transferId}|$actionId';
     if (_submittedTransferActions.contains(actionKey)) return;
 
+    await _run(
+      operation: 'funding_transfer_execute',
+      context: {
+        'transfer_id': transfer.transferId,
+        'action_id': actionId,
+        'mode': GasPaymentMode.appSponsored.name,
+        'stage': 'execute',
+      },
+      command: () => _executeNextActionCommand(
+        transfer: transfer,
+        actionId: actionId,
+        actionKey: actionKey,
+      ),
+    );
+  }
+
+  Future<void> _executeNextActionCommand({
+    required FundingTransfer transfer,
+    required String actionId,
+    required String actionKey,
+  }) async {
     final executions = _ref.read(walletActionExecutionRepositoryProvider);
     final execution = await executions.createTransferWalletActionExecution(
       transferId: transfer.transferId,
@@ -462,41 +503,75 @@ final class FundingTransferCommands {
 
   Future<T> _run<T>({
     required String operation,
+    Map<String, String> context = const {},
+    Map<String, String> Function(T result)? successContext,
     required Future<T> Function() command,
-  }) {
-    _recordOperation(operation, outcome: 'started');
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    _recordOperation(operation, outcome: 'started', context: context);
     try {
-      final request = command();
-      unawaited(
-        request.then<void>(
-          (_) => _recordOperation(operation, outcome: 'succeeded'),
-          onError: (Object error, StackTrace stackTrace) {
-            _recordFailure(operation, error, stackTrace);
-          },
-        ),
+      final result = await command();
+      _recordOperation(
+        operation,
+        outcome: 'succeeded',
+        context: {...context, ...?successContext?.call(result)},
+        duration: stopwatch.elapsed,
       );
-      return request;
-    } on ApiFailure catch (failure, stackTrace) {
-      _recordFailure(operation, failure, stackTrace);
+      return result;
+    } on Object catch (error, stackTrace) {
+      _recordFailure(
+        operation,
+        error,
+        stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
       rethrow;
     }
   }
 
-  void _recordOperation(String operation, {required String outcome}) {
+  void _recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
     if (!_ref.mounted) return;
     _ref
         .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: outcome);
+        .recordOperation(
+          operation,
+          outcome: outcome,
+          context: context,
+          duration: duration,
+        );
   }
 
-  void _recordFailure(String operation, Object error, StackTrace stackTrace) {
-    if (!_ref.mounted || error is! ApiFailure) return;
-    _ref
-        .read(observabilityReporterProvider)
-        .recordApiFailure(
-          operation: operation,
-          failure: error,
-          stackTrace: stackTrace,
-        );
+  void _recordFailure(
+    String operation,
+    Object error,
+    StackTrace stackTrace, {
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
+    if (!_ref.mounted) return;
+    final reporter = _ref.read(observabilityReporterProvider);
+    if (error is ApiFailure) {
+      reporter.recordApiFailure(
+        operation: operation,
+        failure: error,
+        stackTrace: stackTrace,
+        context: context,
+        duration: duration,
+      );
+    } else {
+      reporter.recordError(
+        operation: operation,
+        error: error,
+        stackTrace: stackTrace,
+        context: context,
+        duration: duration,
+      );
+    }
   }
 }

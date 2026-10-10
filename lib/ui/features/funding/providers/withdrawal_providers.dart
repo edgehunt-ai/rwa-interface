@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
@@ -83,6 +81,7 @@ final class WithdrawalCommands {
     required WithdrawalQuote quote,
   }) => _run(
     operation: 'withdrawal_authorization',
+    context: {'stage': 'authorize'},
     command: () => _ref
         .read(walletsRepositoryProvider)
         .authorizeWithdrawal(
@@ -103,6 +102,10 @@ final class WithdrawalCommands {
     }
     final result = await _run(
       operation: 'create_withdrawal',
+      context: {'stage': 'create'},
+      successContext: (withdrawal) => {
+        'withdrawal_id': withdrawal.withdrawalId,
+      },
       command: () => _ref
           .read(fundingRepositoryProvider)
           .createWithdrawal(
@@ -122,41 +125,75 @@ final class WithdrawalCommands {
 
   Future<T> _run<T>({
     required String operation,
+    Map<String, String> context = const {},
+    Map<String, String> Function(T result)? successContext,
     required Future<T> Function() command,
-  }) {
-    _recordOperation(operation, outcome: 'started');
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    _recordOperation(operation, outcome: 'started', context: context);
     try {
-      final request = command();
-      unawaited(
-        request.then<void>(
-          (_) => _recordOperation(operation, outcome: 'succeeded'),
-          onError: (Object error, StackTrace stackTrace) {
-            _recordFailure(operation, error, stackTrace);
-          },
-        ),
+      final result = await command();
+      _recordOperation(
+        operation,
+        outcome: 'succeeded',
+        context: {...context, ...?successContext?.call(result)},
+        duration: stopwatch.elapsed,
       );
-      return request;
-    } on ApiFailure catch (failure, stackTrace) {
-      _recordFailure(operation, failure, stackTrace);
+      return result;
+    } on Object catch (error, stackTrace) {
+      _recordFailure(
+        operation,
+        error,
+        stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
       rethrow;
     }
   }
 
-  void _recordOperation(String operation, {required String outcome}) {
+  void _recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
     if (!_ref.mounted) return;
     _ref
         .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: outcome);
+        .recordOperation(
+          operation,
+          outcome: outcome,
+          context: context,
+          duration: duration,
+        );
   }
 
-  void _recordFailure(String operation, Object error, StackTrace stackTrace) {
-    if (!_ref.mounted || error is! ApiFailure) return;
-    _ref
-        .read(observabilityReporterProvider)
-        .recordApiFailure(
-          operation: operation,
-          failure: error,
-          stackTrace: stackTrace,
-        );
+  void _recordFailure(
+    String operation,
+    Object error,
+    StackTrace stackTrace, {
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
+    if (!_ref.mounted) return;
+    final reporter = _ref.read(observabilityReporterProvider);
+    if (error is ApiFailure) {
+      reporter.recordApiFailure(
+        operation: operation,
+        failure: error,
+        stackTrace: stackTrace,
+        context: context,
+        duration: duration,
+      );
+    } else {
+      reporter.recordError(
+        operation: operation,
+        error: error,
+        stackTrace: stackTrace,
+        context: context,
+        duration: duration,
+      );
+    }
   }
 }

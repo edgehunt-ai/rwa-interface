@@ -16,6 +16,8 @@ import '../../../../domain/models/order.dart';
 import '../../../../domain/models/market_product.dart';
 import '../../../../domain/models/order_intent.dart';
 import '../../../../domain/models/order_preview.dart';
+import '../../../../domain/repositories/hip3_order_execution_repository.dart';
+import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../portfolio/providers/portfolio_providers.dart';
 import '../../../../domain/models/resource_result.dart';
 
@@ -185,11 +187,78 @@ final class Hip3ActionCommands {
   final Ref _ref;
   final IdempotentCommandGuard _commands = IdempotentCommandGuard();
 
+  Future<ResourceResult<TradingOrder>> submitPending(String orderId) async {
+    const operation = 'submit_hip3_order_action';
+    final context = {'order_id': orderId, 'stage': 'submit_action'};
+    final stopwatch = Stopwatch()..start();
+    final reporter = _ref.read(observabilityReporterProvider);
+    reporter.recordOperation(operation, outcome: 'started', context: context);
+    try {
+      final result = await _ref
+          .read(hip3OrderExecutionRepositoryProvider)
+          .awaitActionAndSubmit(orderId);
+      reporter.recordOperation(
+        operation,
+        outcome: 'succeeded',
+        context: {...context, 'order_id': result.resource.orderId},
+        duration: stopwatch.elapsed,
+      );
+      return result;
+    } on Hip3ExecutionPending catch (pending) {
+      reporter.recordOperation(
+        operation,
+        outcome: 'pending',
+        context: {...context, 'action_id': pending.actionId},
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    } on Hip3SigningFailure catch (failure, stackTrace) {
+      if (failure.code == Hip3SigningFailureCode.rejected) {
+        reporter.recordOperation(
+          operation,
+          outcome: 'cancelled',
+          context: context,
+          duration: stopwatch.elapsed,
+        );
+      } else {
+        reporter.recordError(
+          operation: operation,
+          error: failure,
+          stackTrace: stackTrace,
+          context: context,
+          duration: stopwatch.elapsed,
+          failureKind: 'wallet_signing',
+        );
+      }
+      rethrow;
+    } on ApiFailure catch (failure, stackTrace) {
+      reporter.recordApiFailure(
+        operation: operation,
+        failure: failure,
+        stackTrace: stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    } on Object catch (error, stackTrace) {
+      reporter.recordError(
+        operation: operation,
+        error: error,
+        stackTrace: stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    }
+  }
+
   Future<Hip3ActionSummary> cancel(String actionId) async {
     const operation = 'cancel_hip3_action';
+    final context = {'action_id': actionId};
+    final stopwatch = Stopwatch()..start();
     _ref
         .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: 'started');
+        .recordOperation(operation, outcome: 'started', context: context);
     try {
       final result = await _commands.run(
         operation: 'cancel-hip3-action',
@@ -200,7 +269,12 @@ final class Hip3ActionCommands {
       );
       _ref
           .read(observabilityReporterProvider)
-          .recordOperation(operation, outcome: 'succeeded');
+          .recordOperation(
+            operation,
+            outcome: 'succeeded',
+            context: context,
+            duration: stopwatch.elapsed,
+          );
       _ref.invalidate(hip3ActionsProvider);
       _ref.invalidate(hip3ActionProvider(actionId));
       return result;
@@ -211,6 +285,8 @@ final class Hip3ActionCommands {
             operation: operation,
             failure: failure,
             stackTrace: stackTrace,
+            context: context,
+            duration: stopwatch.elapsed,
           );
       rethrow;
     }
@@ -315,6 +391,12 @@ final class OrderCommandNotifier
     // Replaying an uncertain command must preserve the entire create request,
     // even if the confirmation view has fetched a newer display quote.
     final requestPreviewId = _requestPreviewId;
+    final operationContext = <String, String>{
+      'product_kind': intent.kind.name,
+      'stage': approvalOnly ? 'approve' : 'submit',
+      'order_id': ?continuationOrderId,
+    };
+    final stopwatch = Stopwatch()..start();
     debugPrint(
       'bStocks/order submit: creating order '
       'preview=$requestPreviewId key=$key kind=${intent.kind.name}',
@@ -334,7 +416,11 @@ final class OrderCommandNotifier
     _inFlight = request;
     ref
         .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: 'started');
+        .recordOperation(
+          operation,
+          outcome: 'started',
+          context: operationContext,
+        );
     try {
       final result = await request;
       if (!isCurrent()) return null;
@@ -372,7 +458,12 @@ final class OrderCommandNotifier
       ref.invalidate(bstocksSellAvailabilityProvider);
       ref
           .read(observabilityReporterProvider)
-          .recordOperation(operation, outcome: 'succeeded');
+          .recordOperation(
+            operation,
+            outcome: 'succeeded',
+            context: {...operationContext, 'order_id': result.resource.orderId},
+            duration: stopwatch.elapsed,
+          );
       return result;
     } on CancelledFailure {
       if (isCurrent()) state = const CommandIdle();
@@ -385,6 +476,8 @@ final class OrderCommandNotifier
             operation: operation,
             failure: failure,
             stackTrace: stackTrace,
+            context: operationContext,
+            duration: stopwatch.elapsed,
           );
       // A rejected preview created no wallet action. A replacement quote
       // needs a new create key; ambiguous failures must keep their original key.
@@ -404,13 +497,23 @@ final class OrderCommandNotifier
         failure: failure,
       );
       return null;
-    } on FormatException catch (error) {
+    } on FormatException catch (error, stackTrace) {
       // Keep malformed server payloads from escaping the command notifier and
       // leaving the order sheet permanently in its submitting state.
       final failure = CompatibilityFailure(
         userAction: '订单响应解析失败: ${error.message}',
       );
       if (!isCurrent()) return null;
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: operation,
+            error: error,
+            stackTrace: stackTrace,
+            context: operationContext,
+            duration: stopwatch.elapsed,
+            failureKind: FailureKind.compatibility.name,
+          );
       state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
         intent: intent,
         idempotencyKey: key,
@@ -432,13 +535,13 @@ final class OrderCommandNotifier
       );
       ref
           .read(observabilityReporterProvider)
-          .recordOperation(operation, outcome: 'failed');
-      ref
-          .read(observabilityReporterProvider)
-          .recordApiFailure(
+          .recordError(
             operation: operation,
-            failure: failure,
+            error: error,
             stackTrace: stackTrace,
+            context: operationContext,
+            duration: stopwatch.elapsed,
+            failureKind: FailureKind.unknown.name,
           );
       state = CommandFailure<OrderIntent, ResourceResult<TradingOrder>>(
         intent: intent,
@@ -522,13 +625,18 @@ final class OrderCommandNotifier
 
   Future<void> cancel(TradingOrder order) async {
     const operation = 'cancel_order';
+    final context = {
+      'order_id': order.orderId,
+      'product_kind': order.kind.name,
+    };
+    final stopwatch = Stopwatch()..start();
     final generation = ref.read(sessionGenerationProvider);
     bool isCurrent() =>
         ref.mounted && ref.read(sessionGenerationProvider) == generation;
     final key = newIdempotencyKey();
     ref
         .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: 'started');
+        .recordOperation(operation, outcome: 'started', context: context);
     try {
       final result = order.kind == MarketProductKind.bstock
           ? await _cancellations.run(
@@ -560,7 +668,12 @@ final class OrderCommandNotifier
       ref.invalidate(bstocksSellAvailabilityProvider);
       ref
           .read(observabilityReporterProvider)
-          .recordOperation(operation, outcome: 'succeeded');
+          .recordOperation(
+            operation,
+            outcome: 'succeeded',
+            context: context,
+            duration: stopwatch.elapsed,
+          );
     } on ApiFailure catch (failure, stackTrace) {
       if (!isCurrent()) return;
       ref
@@ -569,10 +682,21 @@ final class OrderCommandNotifier
             operation: operation,
             failure: failure,
             stackTrace: stackTrace,
+            context: context,
+            duration: stopwatch.elapsed,
           );
       rethrow;
-    } catch (_) {
+    } on Object catch (error, stackTrace) {
       if (!isCurrent()) return;
+      ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: operation,
+            error: error,
+            stackTrace: stackTrace,
+            context: context,
+            duration: stopwatch.elapsed,
+          );
       rethrow;
     } finally {
       if (isCurrent()) {

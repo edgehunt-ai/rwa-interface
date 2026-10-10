@@ -148,13 +148,15 @@ final class PositionCommands {
   Future<T> _run<T>({
     required String operation,
     required String fingerprint,
+    Map<String, String> context = const {},
     required Future<T> Function(String) command,
   }) async {
     if (!_ref.mounted) throw const CancelledFailure();
     final generation = _ref.read(sessionGenerationProvider);
+    final stopwatch = Stopwatch()..start();
     _ref
         .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: 'started');
+        .recordOperation(operation, outcome: 'started', context: context);
     try {
       final result = await _commands.run(
         operation: operation,
@@ -166,7 +168,12 @@ final class PositionCommands {
       }
       _ref
           .read(observabilityReporterProvider)
-          .recordOperation(operation, outcome: 'succeeded');
+          .recordOperation(
+            operation,
+            outcome: 'succeeded',
+            context: context,
+            duration: stopwatch.elapsed,
+          );
       return result;
     } on ApiFailure catch (failure, stackTrace) {
       if (_ref.mounted) {
@@ -176,6 +183,21 @@ final class PositionCommands {
               operation: operation,
               failure: failure,
               stackTrace: stackTrace,
+              context: context,
+              duration: stopwatch.elapsed,
+            );
+      }
+      rethrow;
+    } on Object catch (error, stackTrace) {
+      if (_ref.mounted) {
+        _ref
+            .read(observabilityReporterProvider)
+            .recordError(
+              operation: operation,
+              error: error,
+              stackTrace: stackTrace,
+              context: context,
+              duration: stopwatch.elapsed,
             );
       }
       rethrow;
@@ -195,6 +217,7 @@ final class PositionCommands {
     await _run(
       operation: 'resume-hip3',
       fingerprint: actionId,
+      context: {'action_id': actionId},
       command: (_) =>
           _ref.read(positionsRepositoryProvider).resumeHip3Action(actionId),
     );
@@ -215,6 +238,7 @@ final class PositionCommands {
   }) async {
     final result = await _run(
       operation: 'tp-sl',
+      context: {'position_id': position.positionId},
       fingerprint:
           '${position.positionId}|${position.productId}|${position.positionVersion}|$takeProfit|$takeLimit|$stopLoss|$stopLimit|$quantity|$clearScope',
       command: (key) => _ref
@@ -243,6 +267,7 @@ final class PositionCommands {
     final result = await _run(
       operation: 'clear-tp-sl',
       fingerprint: '$positionId|$scope',
+      context: {'position_id': positionId},
       command: (key) => _ref
           .read(positionsRepositoryProvider)
           .clearTpSl(positionId, scope: scope, idempotencyKey: key),
@@ -261,6 +286,7 @@ final class PositionCommands {
     final result = await _run(
       operation: 'leverage',
       fingerprint: '${position.positionId}|$leverage|$marginMode',
+      context: {'position_id': position.positionId},
       command: (key) => _ref
           .read(positionsRepositoryProvider)
           .updateLeverage(
@@ -291,6 +317,7 @@ final class PositionCommands {
   }) async {
     final result = await _run(
       operation: 'close-position',
+      context: {'position_id': positionId},
       fingerprint:
           '$positionId|$quantity|$percent|$type|$limitPrice|${expectedPosition?.productId}|${expectedPosition?.positionVersion}|${preview?.previewId}',
       command: (key) => _ref

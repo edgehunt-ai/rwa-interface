@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/session_scope.dart';
 import '../../../../domain/models/api_failure.dart';
@@ -170,8 +169,8 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
     try {
       var submitted = _pendingOrderId != null
           ? await ref
-                .read(hip3OrderExecutionRepositoryProvider)
-                .awaitActionAndSubmit(_pendingOrderId!)
+                .read(hip3ActionCommandsProvider)
+                .submitPending(_pendingOrderId!)
           : await ref
                 .read(orderCommandProvider.notifier)
                 .submit(_preview.intent, previewId: _preview.previewId);
@@ -179,8 +178,8 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
       if (submitted?.resource.status == TradingOrderStatus.pendingSignature) {
         _pendingOrderId = submitted!.resource.orderId;
         submitted = await ref
-            .read(hip3OrderExecutionRepositoryProvider)
-            .awaitActionAndSubmit(_pendingOrderId!);
+            .read(hip3ActionCommandsProvider)
+            .submitPending(_pendingOrderId!);
       }
       if (!isCurrent()) return;
       ref.invalidate(hip3OrdersProvider);

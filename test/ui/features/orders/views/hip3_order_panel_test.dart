@@ -2307,6 +2307,8 @@ final class _RecordingReporter implements ObservabilityReporter {
     required String operation,
     required ApiFailure failure,
     StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
   }) => recordOperation(operation, outcome: 'failed');
 
   @override
@@ -2314,11 +2316,18 @@ final class _RecordingReporter implements ObservabilityReporter {
     required String operation,
     required Object error,
     StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+    String failureKind = 'unexpected',
   }) => recordOperation(operation, outcome: 'failed');
 
   @override
-  void recordOperation(String operation, {required String outcome}) =>
-      operations.add('$operation:$outcome');
+  void recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) => operations.add('$operation:$outcome');
 
   @override
   Future<void> setUserId(String userId) async {}

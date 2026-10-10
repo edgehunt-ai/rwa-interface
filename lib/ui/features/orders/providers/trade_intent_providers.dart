@@ -34,6 +34,7 @@ final class TradeIntentCommands {
   Future<TradeIntent> create(TradeIntentCreateInput input) async {
     final result = await _run(
       operation: 'create_trade_intent',
+      successContext: (intent) => {'trade_intent_id': intent.tradeIntentId},
       command: () => _commands.run(
         operation: 'create-trade-intent',
         fingerprint: input.fingerprint,
@@ -50,6 +51,7 @@ final class TradeIntentCommands {
   Future<TradeIntent> cancel(String tradeIntentId) async {
     final result = await _run(
       operation: 'cancel_trade_intent',
+      context: {'trade_intent_id': tradeIntentId},
       command: () => _commands.run(
         operation: 'cancel-trade-intent',
         fingerprint: tradeIntentId,
@@ -65,16 +67,24 @@ final class TradeIntentCommands {
 
   Future<T> _run<T>({
     required String operation,
+    Map<String, String> context = const {},
+    Map<String, String> Function(T result)? successContext,
     required Future<T> Function() command,
   }) async {
+    final stopwatch = Stopwatch()..start();
     _ref
         .read(observabilityReporterProvider)
-        .recordOperation(operation, outcome: 'started');
+        .recordOperation(operation, outcome: 'started', context: context);
     try {
       final result = await command();
       _ref
           .read(observabilityReporterProvider)
-          .recordOperation(operation, outcome: 'succeeded');
+          .recordOperation(
+            operation,
+            outcome: 'succeeded',
+            context: {...context, ...?successContext?.call(result)},
+            duration: stopwatch.elapsed,
+          );
       return result;
     } on ApiFailure catch (failure, stackTrace) {
       _ref
@@ -83,6 +93,19 @@ final class TradeIntentCommands {
             operation: operation,
             failure: failure,
             stackTrace: stackTrace,
+            context: context,
+            duration: stopwatch.elapsed,
+          );
+      rethrow;
+    } on Object catch (error, stackTrace) {
+      _ref
+          .read(observabilityReporterProvider)
+          .recordError(
+            operation: operation,
+            error: error,
+            stackTrace: stackTrace,
+            context: context,
+            duration: stopwatch.elapsed,
           );
       rethrow;
     }

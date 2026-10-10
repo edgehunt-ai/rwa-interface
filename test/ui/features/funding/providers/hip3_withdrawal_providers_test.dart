@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nobell/app/observability/observability_reporter.dart';
 import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/observability_providers.dart';
 import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 import 'package:nobell/domain/models/hip3_withdrawal.dart';
 import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
 import 'package:nobell/domain/repositories/hip3_withdrawal_repository.dart';
@@ -37,8 +40,12 @@ void main() {
     'lost submit response uses the same intent and idempotency key',
     () async {
       final repo = _Repository()..failSubmissionOnce = true;
+      final observability = _RecordingObservabilityReporter();
       final container = ProviderContainer(
-        overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+          observabilityReporterProvider.overrideWithValue(observability),
+        ],
       );
       addTearDown(container.dispose);
       final commands = container.read(hip3WithdrawalCommandsProvider);
@@ -49,8 +56,44 @@ void main() {
       await commands.submit(intent);
       expect(repo.creationKeys, hasLength(1));
       expect(repo.submissionKeys.toSet(), hasLength(1));
+      expect(observability.errors, [isA<StateError>()]);
+      expect(observability.operations, [
+        'hip3_withdrawal_prepare:started',
+        'hip3_withdrawal_prepare:succeeded',
+        'hip3_withdrawal_submit:started',
+        'hip3_withdrawal_submit:failed',
+        'hip3_withdrawal_prepare:started',
+        'hip3_withdrawal_prepare:succeeded',
+        'hip3_withdrawal_submit:started',
+        'hip3_withdrawal_submit:succeeded',
+      ]);
     },
   );
+
+  test('preparation reports API failures', () async {
+    final repo = _Repository()..createFailure = const UnknownFailure();
+    final observability = _RecordingObservabilityReporter();
+    final container = ProviderContainer(
+      overrides: [
+        hip3WithdrawalRepositoryProvider.overrideWithValue(repo),
+        observabilityReporterProvider.overrideWithValue(observability),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container
+          .read(hip3WithdrawalCommandsProvider)
+          .prepare('51.4', rail: 'float'),
+      throwsA(isA<UnknownFailure>()),
+    );
+
+    expect(observability.failures, [isA<UnknownFailure>()]);
+    expect(observability.operations, [
+      'hip3_withdrawal_prepare:started',
+      'hip3_withdrawal_prepare:failed',
+    ]);
+  });
 
   test('a terminal intent gets a new creation key', () async {
     final repo = _Repository();
@@ -89,6 +132,7 @@ class _Repository implements Hip3WithdrawalRepository {
   final submissionKeys = <String>[];
   int submitted = 0;
   bool failSubmissionOnce = false;
+  ApiFailure? createFailure;
   String status = 'awaiting_signature';
   Hip3Withdrawal? submittedIntent;
 
@@ -131,6 +175,7 @@ class _Repository implements Hip3WithdrawalRepository {
     required String rail,
     required String idempotencyKey,
   }) async {
+    if (createFailure case final failure?) throw failure;
     creationKeys.add(idempotencyKey);
     creationRails.add(rail);
     return _intent('awaiting_signature');
@@ -154,4 +199,51 @@ class _Repository implements Hip3WithdrawalRepository {
     submitted++;
     return _intent('submitted');
   }
+}
+
+final class _RecordingObservabilityReporter implements ObservabilityReporter {
+  final operations = <String>[];
+  final failures = <ApiFailure>[];
+  final errors = <Object>[];
+
+  @override
+  Future<void> clearUser() async {}
+
+  @override
+  void recordApiFailure({
+    required String operation,
+    required ApiFailure failure,
+    StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
+    failures.add(failure);
+    recordOperation(operation, outcome: 'failed');
+  }
+
+  @override
+  void recordError({
+    required String operation,
+    required Object error,
+    StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+    String failureKind = 'unexpected',
+  }) {
+    errors.add(error);
+    recordOperation(operation, outcome: 'failed');
+  }
+
+  @override
+  void recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
+    operations.add('$operation:$outcome');
+  }
+
+  @override
+  Future<void> setUserId(String userId) async {}
 }

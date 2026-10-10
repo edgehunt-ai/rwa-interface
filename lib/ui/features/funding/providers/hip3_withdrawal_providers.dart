@@ -2,11 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/providers/api_providers.dart';
 import '../../../../app/providers/idempotent_command_guard.dart';
+import '../../../../app/providers/observability_providers.dart';
 import '../../../../app/providers/session_scope.dart';
+import '../../../../domain/models/api_failure.dart';
 import '../../../../domain/models/decimal_value.dart';
 import '../../../../domain/models/hip3_withdrawal.dart';
 import '../../../../domain/models/hip3_withdrawal_preview.dart';
 import '../../../../domain/models/trading_account.dart';
+import '../../../../domain/services/hip3_typed_data_signer.dart';
 
 // Portfolio availability is a snapshot, not a withdrawal guarantee. The create
 // endpoint performs the authoritative withdrawal balance and margin checks.
@@ -45,10 +48,7 @@ final class Hip3WithdrawalCommands {
 
   Future<Hip3WithdrawalPreview> preview(String amount) async {
     _checkSession();
-    final decimal = DecimalValue(amount);
-    if (decimal.scale > 6 || decimal.compareTo(DecimalValue('0')) <= 0) {
-      throw const FormatException('Invalid USDC amount');
-    }
+    _validateAmount(amount);
     final current = _preview;
     if (current?.amount == amount) return current!;
     final result = await _ref
@@ -61,10 +61,16 @@ final class Hip3WithdrawalCommands {
 
   Future<Hip3Withdrawal> prepare(String amount, {required String rail}) async {
     _checkSession();
-    final decimal = DecimalValue(amount);
-    if (decimal.scale > 6 || decimal.compareTo(DecimalValue('0')) <= 0) {
-      throw const FormatException('Invalid USDC amount');
-    }
+    _validateAmount(amount);
+    return _runObserved(
+      operation: 'hip3_withdrawal_prepare',
+      context: {'rail': rail, 'stage': 'prepare'},
+      successContext: (withdrawal) => {'withdrawal_id': withdrawal.id},
+      command: () => _prepare(amount, rail: rail),
+    );
+  }
+
+  Future<Hip3Withdrawal> _prepare(String amount, {required String rail}) async {
     final current = _prepared;
     if (current != null &&
         current.amount == amount &&
@@ -95,6 +101,18 @@ final class Hip3WithdrawalCommands {
 
   Future<Hip3Withdrawal> submit(Hip3Withdrawal prepared) async {
     _checkSession();
+    return _runObserved(
+      operation: 'hip3_withdrawal_submit',
+      context: {
+        'withdrawal_id': prepared.id,
+        'rail': prepared.rail,
+        'stage': 'submit',
+      },
+      command: () => _submit(prepared),
+    );
+  }
+
+  Future<Hip3Withdrawal> _submit(Hip3Withdrawal prepared) async {
     // Reconcile before retrying a submission whose HTTP response may have been
     // lost, so a venue-accepted withdrawal never triggers another signature.
     final repository = _ref.read(hip3WithdrawalRepositoryProvider);
@@ -113,4 +131,68 @@ final class Hip3WithdrawalCommands {
 
   Future<Hip3Withdrawal> refresh(String id) =>
       _ref.read(hip3WithdrawalRepositoryProvider).get(id);
+
+  Future<T> _runObserved<T>({
+    required String operation,
+    Map<String, String> context = const {},
+    Map<String, String> Function(T result)? successContext,
+    required Future<T> Function() command,
+  }) async {
+    final reporter = _ref.read(observabilityReporterProvider);
+    final stopwatch = Stopwatch()..start();
+    reporter.recordOperation(operation, outcome: 'started', context: context);
+    try {
+      final result = await command();
+      reporter.recordOperation(
+        operation,
+        outcome: 'succeeded',
+        context: {...context, ...?successContext?.call(result)},
+        duration: stopwatch.elapsed,
+      );
+      return result;
+    } on ApiFailure catch (failure, stackTrace) {
+      reporter.recordApiFailure(
+        operation: operation,
+        failure: failure,
+        stackTrace: stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    } on Hip3SigningFailure catch (failure, stackTrace) {
+      if (failure.code == Hip3SigningFailureCode.rejected) {
+        reporter.recordOperation(
+          operation,
+          outcome: 'cancelled',
+          context: context,
+          duration: stopwatch.elapsed,
+        );
+      } else {
+        reporter.recordError(
+          operation: operation,
+          error: failure,
+          stackTrace: stackTrace,
+          context: context,
+          duration: stopwatch.elapsed,
+        );
+      }
+      rethrow;
+    } on Object catch (error, stackTrace) {
+      reporter.recordError(
+        operation: operation,
+        error: error,
+        stackTrace: stackTrace,
+        context: context,
+        duration: stopwatch.elapsed,
+      );
+      rethrow;
+    }
+  }
+
+  void _validateAmount(String amount) {
+    final decimal = DecimalValue(amount);
+    if (decimal.scale > 6 || decimal.compareTo(DecimalValue('0')) <= 0) {
+      throw const FormatException('Invalid USDC amount');
+    }
+  }
 }

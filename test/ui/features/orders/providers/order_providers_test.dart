@@ -176,6 +176,39 @@ void main() {
     },
   );
 
+  test(
+    'pending HIP-3 submission is observed through the command boundary',
+    () async {
+      final reporter = _RecordingObservabilityReporter();
+      final execution = _PendingSubmitExecution(
+        const ServerFailure(statusCode: 503, code: 'venue_unavailable'),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+          observabilityReporterProvider.overrideWithValue(reporter),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await expectLater(
+        container.read(hip3ActionCommandsProvider).submitPending('order-1'),
+        throwsA(isA<ServerFailure>()),
+      );
+
+      expect(execution.orderId, 'order-1');
+      expect(reporter.failures, [isA<ServerFailure>()]);
+      expect(reporter.operations, [
+        'submit_hip3_order_action:started',
+        'submit_hip3_order_action:failed',
+      ]);
+      expect(reporter.contexts, [
+        {'order_id': 'order-1', 'stage': 'submit_action'},
+        {'order_id': 'order-1', 'stage': 'submit_action'},
+      ]);
+    },
+  );
+
   test('dismissed uncertain create replays its original request before a new trade', () async {
     final orders = _LifecycleOrders(loseFirstResponse: true);
     final container = ProviderContainer(
@@ -687,6 +720,31 @@ void main() {
     },
   );
 
+  test('malformed order response reports a compatibility failure', () async {
+    final observability = _RecordingObservabilityReporter();
+    final container = ProviderContainer(
+      overrides: [
+        ordersRepositoryProvider.overrideWithValue(
+          _MalformedOrdersRepository(),
+        ),
+        observabilityReporterProvider.overrideWithValue(observability),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container
+        .read(orderCommandProvider.notifier)
+        .submit(_intent('NVDA'));
+
+    expect(result, isNull);
+    expect(observability.failures, isEmpty);
+    expect(observability.errors, [isA<FormatException>()]);
+    expect(observability.operations, [
+      'create_order:started',
+      'create_order:failed',
+    ]);
+  });
+
   for (final status in [
     TradingOrderStatus.failed,
     TradingOrderStatus.manualReview,
@@ -932,6 +990,15 @@ final class _FailedBstocksOrders extends _OrdersRepository {
   );
 }
 
+final class _MalformedOrdersRepository extends _OrdersRepository {
+  @override
+  Future<ResourceResult<TradingOrder>> create(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) async => throw const FormatException('invalid order payload');
+}
+
 final class _RejectedApprovalOrders extends _OrdersRepository {
   _RejectedApprovalOrders(this.failure);
 
@@ -961,6 +1028,7 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
   final List<String> operations = [];
   final List<ApiFailure> failures = [];
   final List<Object> errors = [];
+  final List<Map<String, String>> contexts = [];
 
   @override
   Future<void> clearUser() async {}
@@ -970,9 +1038,11 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
     required String operation,
     required ApiFailure failure,
     StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
   }) {
     failures.add(failure);
-    recordOperation(operation, outcome: 'failed');
+    recordOperation(operation, outcome: 'failed', context: context);
   }
 
   @override
@@ -980,18 +1050,45 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
     required String operation,
     required Object error,
     StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+    String failureKind = 'unexpected',
   }) {
     errors.add(error);
-    recordOperation(operation, outcome: 'failed');
+    recordOperation(operation, outcome: 'failed', context: context);
   }
 
   @override
-  void recordOperation(String operation, {required String outcome}) {
+  void recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {
     operations.add('$operation:$outcome');
+    contexts.add(context);
   }
 
   @override
   Future<void> setUserId(String userId) async {}
+}
+
+final class _PendingSubmitExecution implements Hip3OrderExecutionRepository {
+  _PendingSubmitExecution(this.failure);
+
+  final ApiFailure failure;
+  String? orderId;
+
+  @override
+  Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(
+    String orderId,
+  ) async {
+    this.orderId = orderId;
+    throw failure;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 OrderIntent _intent(String symbol) => OrderIntent(

@@ -61,6 +61,8 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
     required String operation,
     required ApiFailure failure,
     StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
   }) {}
 
   @override
@@ -68,10 +70,18 @@ final class _RecordingObservabilityReporter implements ObservabilityReporter {
     required String operation,
     required Object error,
     StackTrace? stackTrace,
+    Map<String, String> context = const {},
+    Duration? duration,
+    String failureKind = 'unexpected',
   }) {}
 
   @override
-  void recordOperation(String operation, {required String outcome}) {}
+  void recordOperation(
+    String operation, {
+    required String outcome,
+    Map<String, String> context = const {},
+    Duration? duration,
+  }) {}
 
   @override
   Future<void> setUserId(String userId) async {}
