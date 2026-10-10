@@ -55,6 +55,7 @@ void main() {
     final priceCard = find.byKey(const Key('bstocks-limit-price-card'));
     final quantityCard = find.byKey(const Key('bstocks-limit-quantity-card'));
     final priceInput = find.byKey(const Key('bstocks-limit-price-input'));
+    final quantityInput = find.byKey(const Key('bstocks-limit-quantity-input'));
     final priceLabel = find.descendant(
       of: priceCard,
       matching: find.text('Limit Price'),
@@ -78,6 +79,7 @@ void main() {
     }
 
     expectCompactLayout();
+    expect(tester.widget<TextField>(quantityInput).decoration?.hintText, '0.0');
     await tester.tap(
       find.descendant(
         of: find.byKey(const Key('bstocks-side-tabs')),

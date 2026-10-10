@@ -3391,7 +3391,8 @@ class _Hip3LimitInputState extends State<_Hip3LimitInput> {
                                   ),
                                 ]
                               : null,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
+                            hintText: widget.onTap == null ? '0.0' : null,
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
                             focusedBorder: InputBorder.none,

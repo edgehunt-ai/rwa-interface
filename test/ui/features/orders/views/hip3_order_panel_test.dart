@@ -143,6 +143,7 @@ void main() {
     final quantityCard = find.byKey(const Key('hip3-limit-quantity-card'));
     final modeCard = find.byKey(const Key('hip3-mode-leverage-card'));
     final priceInput = find.byKey(const Key('hip3-limit-price-input'));
+    final quantityInput = find.byKey(const Key('hip3-limit-quantity-input'));
     final priceLabel = find.descendant(
       of: priceCard,
       matching: find.text('Limit Price'),
@@ -166,6 +167,7 @@ void main() {
       tester.getRect(priceCard).bottom - tester.getRect(priceInput).bottom,
       10,
     );
+    expect(tester.widget<TextField>(quantityInput).decoration?.hintText, '0.0');
   });
 
   testWidgets(

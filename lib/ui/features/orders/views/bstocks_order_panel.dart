@@ -2053,7 +2053,8 @@ class _LimitInputState extends State<_LimitInput> {
                           inputFormatters: widget.inputFormatters,
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w600),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
+                            hintText: widget.onTap == null ? '0.0' : null,
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
                             focusedBorder: InputBorder.none,
