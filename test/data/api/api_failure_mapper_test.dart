@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/api_failure_mapper.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:nobell/data/api/api_failure_mapper.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   const mapper = ApiFailureMapper();

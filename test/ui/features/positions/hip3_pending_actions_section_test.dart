@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
-import 'package:rwa_interface/domain/models/hip3_action_summary.dart';
-import 'package:rwa_interface/domain/repositories/positions_repository.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/features/positions/views/hip3_pending_actions_section.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/hip3_action_pending.dart';
+import 'package:nobell/domain/models/hip3_action_summary.dart';
+import 'package:nobell/domain/repositories/positions_repository.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/features/positions/views/hip3_pending_actions_section.dart';
 
 void main() {
   testWidgets(

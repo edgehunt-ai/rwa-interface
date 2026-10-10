@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/domain/models/hip3_account_abstraction.dart';
-import 'package:rwa_interface/domain/models/user_account.dart';
-import 'package:rwa_interface/domain/repositories/hip3_account_abstraction_repository.dart';
-import 'package:rwa_interface/ui/features/account/providers/account_providers.dart';
-import 'package:rwa_interface/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/hip3_account_abstraction.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/domain/repositories/hip3_account_abstraction_repository.dart';
+import 'package:nobell/ui/features/account/providers/account_providers.dart';
+import 'package:nobell/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 
 void main() {
   test(

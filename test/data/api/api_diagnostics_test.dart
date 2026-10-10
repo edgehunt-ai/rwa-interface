@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/api_diagnostics.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:nobell/data/api/api_diagnostics.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   test('诊断摘要不包含 token、stack、raw body 或金融 payload', () {

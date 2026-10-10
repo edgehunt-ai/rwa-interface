@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/api/order_preview_payload.dart';
-import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
-import 'package:rwa_interface/data/services/generated_orders_service.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
+import 'package:nobell/data/api/order_preview_payload.dart';
+import 'package:nobell/data/repositories/orders_repository_impl.dart';
+import 'package:nobell/data/services/generated_orders_service.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/order_intent.dart';
 
 Map<String, Object?> _asset() => {
   'chain_id': 56,

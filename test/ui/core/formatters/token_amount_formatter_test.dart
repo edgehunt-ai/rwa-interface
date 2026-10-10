@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 
 void main() {
   group('TokenAmountFormatter', () {

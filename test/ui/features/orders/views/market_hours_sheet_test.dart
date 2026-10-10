@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/market_snapshot.dart';
-import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
-import 'package:rwa_interface/ui/features/orders/views/trade_screen.dart';
+import 'package:nobell/domain/models/market_snapshot.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 
 import '../../../../helpers/test_app.dart';
 

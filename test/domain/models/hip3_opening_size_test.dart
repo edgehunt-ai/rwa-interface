@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/hip3_opening_size.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/hip3_opening_size.dart';
 
 void main() {
   test('reserves the taker fee from margin before applying leverage', () {

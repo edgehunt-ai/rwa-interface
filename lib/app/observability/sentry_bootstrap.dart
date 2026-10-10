@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:rwa_interface/app/observability/observability_config.dart';
-import 'package:rwa_interface/app/observability/sentry_event_sanitizer.dart';
+import 'package:nobell/app/observability/observability_config.dart';
+import 'package:nobell/app/observability/sentry_event_sanitizer.dart';
 
 typedef ApplicationRunner = FutureOr<void> Function();
 typedef MonitoringInitializer = Future<void> Function(

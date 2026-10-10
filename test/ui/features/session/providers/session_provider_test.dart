@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/observability_providers.dart';
-import 'package:rwa_interface/app/observability/observability_reporter.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/application_state.dart';
-import 'package:rwa_interface/domain/models/product_session.dart';
-import 'package:rwa_interface/domain/models/user_account.dart';
-import 'package:rwa_interface/domain/repositories/session_repository.dart';
-import 'package:rwa_interface/ui/features/session/providers/session_provider.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/observability_providers.dart';
+import 'package:nobell/app/observability/observability_reporter.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/application_state.dart';
+import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/domain/repositories/session_repository.dart';
+import 'package:nobell/ui/features/session/providers/session_provider.dart';
 
 void main() {
   test('creates once and discards an old generation result', () async {

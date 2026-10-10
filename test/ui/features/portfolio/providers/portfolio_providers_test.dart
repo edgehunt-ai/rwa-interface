@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/portfolio.dart';
-import 'package:rwa_interface/domain/models/portfolio_asset.dart';
-import 'package:rwa_interface/domain/models/trading_account.dart';
-import 'package:rwa_interface/domain/repositories/portfolio_repository.dart';
-import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/portfolio.dart';
+import 'package:nobell/domain/models/portfolio_asset.dart';
+import 'package:nobell/domain/models/trading_account.dart';
+import 'package:nobell/domain/repositories/portfolio_repository.dart';
+import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 
 void main() {
   test('summary is session-scoped and independent from accounts', () async {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/models/order_preview.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/order_preview.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/features/orders/views/hip3_cross_liquidation_impacts_card.dart';
 
 void main() {
   testWidgets('shows the summary and expands real liquidation changes', (

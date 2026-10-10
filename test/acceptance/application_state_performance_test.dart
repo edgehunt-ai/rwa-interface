@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/deposit.dart';
-import 'package:rwa_interface/domain/models/funding_catalog.dart';
-import 'package:rwa_interface/domain/repositories/funding_repository.dart';
-import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/deposit.dart';
+import 'package:nobell/domain/models/funding_catalog.dart';
+import 'package:nobell/domain/repositories/funding_repository.dart';
+import 'package:nobell/ui/features/funding/providers/deposit_providers.dart';
 
 void main() {
   test('100 controlled queries reach a consumable terminal state under one second p95', () async {

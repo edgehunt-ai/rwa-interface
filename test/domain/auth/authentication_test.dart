@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/auth/identity_auth_gateway_factory.dart';
-import 'package:rwa_interface/data/auth/unsupported_identity_auth_gateway.dart';
-import 'package:rwa_interface/domain/auth/authentication.dart';
+import 'package:nobell/data/auth/identity_auth_gateway_factory.dart';
+import 'package:nobell/data/auth/unsupported_identity_auth_gateway.dart';
+import 'package:nobell/domain/auth/authentication.dart';
 
 void main() {
   test('web and desktop select deterministic unsupported gateway', () {

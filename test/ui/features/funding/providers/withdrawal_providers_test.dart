@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/withdrawal.dart';
-import 'package:rwa_interface/domain/repositories/funding_repository.dart';
-import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
-import 'package:rwa_interface/ui/features/funding/providers/withdrawal_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/withdrawal.dart';
+import 'package:nobell/domain/repositories/funding_repository.dart';
+import 'package:nobell/domain/repositories/wallets_repository.dart';
+import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 
 void main() {
   test(

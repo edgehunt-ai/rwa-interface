@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/idempotent_command_guard.dart';
+import 'package:nobell/app/providers/idempotent_command_guard.dart';
 import 'package:uuid/uuid.dart';
 
 void main() {

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/hip3_opening_repository_impl.dart';
-import 'package:rwa_interface/data/services/hip3_position_action_executor.dart';
-import 'package:rwa_interface/data/services/hip3_position_action_service.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:nobell/data/repositories/hip3_opening_repository_impl.dart';
+import 'package:nobell/data/services/hip3_position_action_executor.dart';
+import 'package:nobell/data/services/hip3_position_action_service.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
   test(

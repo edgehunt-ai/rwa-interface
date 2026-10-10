@@ -1,26 +1,26 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
+import 'package:nobell/app/providers/session_scope.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/observability_providers.dart';
-import 'package:rwa_interface/app/observability/observability_reporter.dart';
-import 'package:rwa_interface/data/api/idempotency_key.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/hip3_action_summary.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/application_state.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/order.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/models/order_preview.dart';
-import 'package:rwa_interface/domain/models/resource_result.dart';
-import 'package:rwa_interface/domain/repositories/orders_repository.dart';
-import 'package:rwa_interface/domain/repositories/bstocks_order_execution_repository.dart';
-import 'package:rwa_interface/domain/repositories/hip3_order_execution_repository.dart';
-import 'package:rwa_interface/ui/features/orders/providers/order_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/observability_providers.dart';
+import 'package:nobell/app/observability/observability_reporter.dart';
+import 'package:nobell/data/api/idempotency_key.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/hip3_action_summary.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/application_state.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/order.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/order_preview.dart';
+import 'package:nobell/domain/models/resource_result.dart';
+import 'package:nobell/domain/repositories/orders_repository.dart';
+import 'package:nobell/domain/repositories/bstocks_order_execution_repository.dart';
+import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart';
+import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 
 void main() {
   group('bStocks Open orders', () {

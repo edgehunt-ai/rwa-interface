@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 void main() {
   test('semantic colors exist in both appearances', () {

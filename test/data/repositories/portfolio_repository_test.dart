@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/portfolio_repository_impl.dart';
-import 'package:rwa_interface/data/services/portfolio_service.dart';
-import 'package:rwa_interface/domain/models/trading_account.dart';
-import 'package:rwa_interface/domain/models/portfolio_history.dart';
-import 'package:rwa_interface/domain/models/position.dart';
+import 'package:nobell/data/repositories/portfolio_repository_impl.dart';
+import 'package:nobell/data/services/portfolio_service.dart';
+import 'package:nobell/domain/models/trading_account.dart';
+import 'package:nobell/domain/models/portfolio_history.dart';
+import 'package:nobell/domain/models/position.dart';
 
 void main() {
   test(

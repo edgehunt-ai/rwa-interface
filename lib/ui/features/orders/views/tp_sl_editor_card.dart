@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 class TpSlEditorCard extends StatefulWidget {
   const TpSlEditorCard({

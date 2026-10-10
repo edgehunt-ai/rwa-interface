@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/hip3_confirmation_provider.dart';
-import 'package:rwa_interface/domain/models/hip3_step_confirmation.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/features/positions/views/hip3_confirmation_host.dart';
+import 'package:nobell/app/providers/hip3_confirmation_provider.dart';
+import 'package:nobell/domain/models/hip3_step_confirmation.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/features/positions/views/hip3_confirmation_host.dart';
 
 void main() {
   testWidgets(

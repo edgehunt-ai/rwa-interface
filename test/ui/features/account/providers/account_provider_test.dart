@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/account_deletion.dart';
-import 'package:rwa_interface/domain/models/registered_device.dart';
-import 'package:rwa_interface/domain/models/user_account.dart';
-import 'package:rwa_interface/domain/repositories/account_repository.dart';
-import 'package:rwa_interface/ui/features/account/providers/account_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/account_deletion.dart';
+import 'package:nobell/domain/models/registered_device.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/domain/repositories/account_repository.dart';
+import 'package:nobell/ui/features/account/providers/account_providers.dart';
 
 void main() {
   test('account state reloads when the session generation changes', () async {

@@ -1,18 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/auth_providers.dart';
-import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/self_custodial_withdrawal.dart';
-import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
-import 'package:rwa_interface/domain/models/withdrawal.dart';
-import 'package:rwa_interface/domain/repositories/funding_repository.dart';
-import 'package:rwa_interface/domain/repositories/wallet_action_execution_repository.dart';
-import 'package:rwa_interface/domain/services/embedded_wallet_transaction_sender.dart';
-import 'package:rwa_interface/domain/services/wallet_authorization_signer.dart';
-import 'package:rwa_interface/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/auth_providers.dart';
+import 'package:nobell/domain/auth/identity_auth_gateway.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/self_custodial_withdrawal.dart';
+import 'package:nobell/domain/models/wallet_action_execution.dart';
+import 'package:nobell/domain/models/withdrawal.dart';
+import 'package:nobell/domain/repositories/funding_repository.dart';
+import 'package:nobell/domain/repositories/wallet_action_execution_repository.dart';
+import 'package:nobell/domain/services/embedded_wallet_transaction_sender.dart';
+import 'package:nobell/domain/services/wallet_authorization_signer.dart';
+import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 
 void main() {
   ProviderContainer container({

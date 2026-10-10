@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/push_notification_providers.dart';
-import 'package:rwa_interface/data/notifications/shared_preferences_device_identity_store.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/registered_device.dart';
-import 'package:rwa_interface/domain/models/user_account.dart';
-import 'package:rwa_interface/domain/notifications/push_messaging_gateway.dart';
-import 'package:rwa_interface/domain/repositories/account_repository.dart';
+import 'package:nobell/app/providers/push_notification_providers.dart';
+import 'package:nobell/data/notifications/shared_preferences_device_identity_store.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/registered_device.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/domain/notifications/push_messaging_gateway.dart';
+import 'package:nobell/domain/repositories/account_repository.dart';
 
 void main() {
   test(

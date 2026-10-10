@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/repositories/order_command_repository.dart';
-import 'package:rwa_interface/ui/features/api_example/providers/order_command_provider.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/repositories/order_command_repository.dart';
+import 'package:nobell/ui/features/api_example/providers/order_command_provider.dart';
 
 void main() {
   test('clearing user scope advances session generation', () {

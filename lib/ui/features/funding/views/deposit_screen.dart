@@ -3,19 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter_wc/qr_flutter_wc.dart';
-import 'package:rwa_interface/app/routing/routes.dart';
-import 'package:rwa_interface/domain/models/deposit.dart';
-import 'package:rwa_interface/domain/models/funding_catalog.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/feedback/copyable_text.dart';
-import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
-import 'package:rwa_interface/ui/core/feedback/empty_state.dart';
-import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
-import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
-import 'package:rwa_interface/ui/core/navigation/app_page_header.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/ui/features/funding/providers/deposit_providers.dart';
-import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:nobell/app/routing/routes.dart';
+import 'package:nobell/domain/models/deposit.dart';
+import 'package:nobell/domain/models/funding_catalog.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/feedback/copyable_text.dart';
+import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
+import 'package:nobell/ui/core/feedback/empty_state.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
+import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
+import 'package:nobell/ui/core/navigation/app_page_header.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/features/funding/providers/deposit_providers.dart';
+import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 
 Future<void> showDepositRoutesSheet(BuildContext context) =>
     showModalBottomSheet<void>(

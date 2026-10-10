@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/api_environment.dart';
-import 'package:rwa_interface/data/api/rwa_api_data_source.dart';
-import 'package:rwa_interface/data/repositories/wallet_action_execution_repository_impl.dart';
-import 'package:rwa_interface/data/services/generated_wallet_action_execution_service.dart';
-import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
+import 'package:nobell/data/api/api_environment.dart';
+import 'package:nobell/data/api/rwa_api_data_source.dart';
+import 'package:nobell/data/repositories/wallet_action_execution_repository_impl.dart';
+import 'package:nobell/data/services/generated_wallet_action_execution_service.dart';
+import 'package:nobell/domain/models/wallet_action_execution.dart';
 
 import '../../helpers/controlled_api_adapter.dart';
 import '../../helpers/trading_provider_harness.dart';

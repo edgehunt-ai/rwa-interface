@@ -1,18 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/api/idempotency_key.dart';
-import 'package:rwa_interface/data/repositories/positions_repository_impl.dart';
-import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
-import 'package:rwa_interface/data/services/positions_service.dart';
-import 'package:rwa_interface/data/services/hip3_position_action_service.dart';
-import 'package:rwa_interface/data/services/hip3_position_action_executor.dart';
-import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
-import 'package:rwa_interface/domain/models/position_operation.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/models/hip3_action_pending.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/position.dart';
-import 'package:rwa_interface/domain/models/position_close_preview.dart';
+import 'package:nobell/data/api/idempotency_key.dart';
+import 'package:nobell/data/repositories/positions_repository_impl.dart';
+import 'package:nobell/data/repositories/orders_repository_impl.dart';
+import 'package:nobell/data/services/positions_service.dart';
+import 'package:nobell/data/services/hip3_position_action_service.dart';
+import 'package:nobell/data/services/hip3_position_action_executor.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
+import 'package:nobell/domain/models/position_operation.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/hip3_action_pending.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/position.dart';
+import 'package:nobell/domain/models/position_close_preview.dart';
 
 void main() {
   test('wire conditional details survive repository mapping', () {

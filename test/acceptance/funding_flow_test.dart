@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/data/api/api_environment.dart';
-import 'package:rwa_interface/data/api/rwa_api_data_source.dart';
-import 'package:rwa_interface/data/repositories/funding_repository_impl.dart';
-import 'package:rwa_interface/data/repositories/wallets_repository_impl.dart';
-import 'package:rwa_interface/data/services/generated_funding_service.dart';
-import 'package:rwa_interface/data/services/generated_wallets_service.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/withdrawal.dart';
-import 'package:rwa_interface/ui/features/funding/providers/withdrawal_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/data/api/api_environment.dart';
+import 'package:nobell/data/api/rwa_api_data_source.dart';
+import 'package:nobell/data/repositories/funding_repository_impl.dart';
+import 'package:nobell/data/repositories/wallets_repository_impl.dart';
+import 'package:nobell/data/services/generated_funding_service.dart';
+import 'package:nobell/data/services/generated_wallets_service.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/withdrawal.dart';
+import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
 
 import '../helpers/controlled_api_adapter.dart';
 import '../helpers/trading_provider_harness.dart';

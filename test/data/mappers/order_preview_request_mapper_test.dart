@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/mappers/order_preview_request_mapper.dart';
-import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
-import 'package:rwa_interface/data/services/orders_service.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
+import 'package:nobell/data/mappers/order_preview_request_mapper.dart';
+import 'package:nobell/data/repositories/orders_repository_impl.dart';
+import 'package:nobell/data/services/orders_service.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/order_intent.dart';
 
 void main() {
   OrderIntent bstockIntent({TradingOrderType type = TradingOrderType.market}) =>

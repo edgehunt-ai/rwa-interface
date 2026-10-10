@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/observability/observability_config.dart';
+import 'package:nobell/app/observability/observability_config.dart';
 
 void main() {
   test('parses valid build-time values', () {

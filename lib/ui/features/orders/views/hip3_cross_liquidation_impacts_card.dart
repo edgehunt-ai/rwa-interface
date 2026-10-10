@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/models/order_preview.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/widgets/liquidation_risk_summary.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/order_preview.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/widgets/liquidation_risk_summary.dart';
 
 /// HIP-3 adapter for the reusable liquidation risk summary component.
 class Hip3CrossLiquidationImpactsCard extends StatelessWidget {

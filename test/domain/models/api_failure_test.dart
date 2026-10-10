@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   test('failure 具备值语义且仅保存安全字段', () {

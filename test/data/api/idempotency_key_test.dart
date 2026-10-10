@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/idempotency_key.dart';
+import 'package:nobell/data/api/idempotency_key.dart';
 
 void main() {
   final uuid = RegExp(

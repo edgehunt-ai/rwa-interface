@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/sse_parser.dart';
+import 'package:nobell/data/api/sse_parser.dart';
 
 void main() {
   test(

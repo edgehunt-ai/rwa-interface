@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/markets_repository_impl.dart';
-import 'package:rwa_interface/data/services/markets_service.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:nobell/data/repositories/markets_repository_impl.dart';
+import 'package:nobell/data/services/markets_service.dart';
+import 'package:nobell/domain/models/market_product.dart';
 
 void main() {
   test('maps product union, pagination, favorite, and decimal text', () async {

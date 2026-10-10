@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/app_update_repository_impl.dart';
-import 'package:rwa_interface/data/services/package_info_service.dart';
-import 'package:rwa_interface/data/services/system_service.dart';
-import 'package:rwa_interface/domain/models/app_update.dart';
+import 'package:nobell/data/repositories/app_update_repository_impl.dart';
+import 'package:nobell/data/services/package_info_service.dart';
+import 'package:nobell/data/services/system_service.dart';
+import 'package:nobell/domain/models/app_update.dart';
 
 void main() {
   test('reports an optional update when latest version is newer', () async {

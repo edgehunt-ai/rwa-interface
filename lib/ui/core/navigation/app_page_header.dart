@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rwa_interface/app/routing/routes.dart';
+import 'package:nobell/app/routing/routes.dart';
 
 /// A compact back-navigation header whose icon, gap, and title share one tap
 /// target.

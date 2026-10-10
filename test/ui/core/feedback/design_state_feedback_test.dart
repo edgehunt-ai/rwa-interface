@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
-import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
+import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 
 import '../../../helpers/test_app.dart';
 

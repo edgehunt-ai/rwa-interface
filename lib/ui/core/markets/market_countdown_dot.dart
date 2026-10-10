@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 /// The market-open indicator, with a breathing outline around a solid dot.
 class MarketCountdownDot extends StatefulWidget {

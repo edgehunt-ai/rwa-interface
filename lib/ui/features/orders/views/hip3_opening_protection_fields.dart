@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
 
 /// A limit is optional; an omitted limit selects native market protection.
 class Hip3OpeningProtectionFields extends StatelessWidget {

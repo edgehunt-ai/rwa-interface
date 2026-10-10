@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 enum LiquidationRiskLevel { safe, caution, high, unknown }
 

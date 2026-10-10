@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/hip3_withdrawal_preview.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations_zh.dart';
-import 'package:rwa_interface/ui/features/funding/hip3_withdrawal_blocker_message.dart';
+import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
+import 'package:nobell/l10n/generated/app_localizations_zh.dart';
+import 'package:nobell/ui/features/funding/hip3_withdrawal_blocker_message.dart';
 
 void main() {
   final l10n = AppLocalizationsZh();

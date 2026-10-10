@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 class RwaRichTooltip extends StatefulWidget {
   const RwaRichTooltip({super.key, required this.child, required this.message});

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 abstract interface class ObservabilityReporter {

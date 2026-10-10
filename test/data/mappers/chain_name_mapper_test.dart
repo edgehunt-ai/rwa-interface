@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/mappers/chain_name_mapper.dart';
+import 'package:nobell/data/mappers/chain_name_mapper.dart';
 
 void main() {
   test('maps generated enum names to stable chain labels', () {

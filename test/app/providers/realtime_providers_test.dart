@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/realtime_providers.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/data/services/realtime_service.dart';
-import 'package:rwa_interface/domain/models/realtime_envelope.dart';
-import 'package:rwa_interface/domain/models/realtime_replay_page.dart';
-import 'package:rwa_interface/domain/repositories/realtime_repository.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/realtime_providers.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/data/services/realtime_service.dart';
+import 'package:nobell/domain/models/realtime_envelope.dart';
+import 'package:nobell/domain/models/realtime_replay_page.dart';
+import 'package:nobell/domain/repositories/realtime_repository.dart';
 
 void main() {
   test('canonical channel key prevents order-dependent state', () {

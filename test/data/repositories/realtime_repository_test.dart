@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/repositories/realtime_repository_impl.dart';
-import 'package:rwa_interface/data/services/realtime_service.dart';
-import 'package:rwa_interface/domain/models/realtime_envelope.dart';
+import 'package:nobell/data/repositories/realtime_repository_impl.dart';
+import 'package:nobell/data/services/realtime_service.dart';
+import 'package:nobell/domain/models/realtime_envelope.dart';
 
 void main() {
   test('maps envelope to typed entity and sequence', () async {

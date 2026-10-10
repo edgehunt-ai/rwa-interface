@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/positions_repository_impl.dart';
-import 'package:rwa_interface/data/services/positions_service.dart';
-import 'package:rwa_interface/data/services/hip3_position_action_service.dart';
-import 'package:rwa_interface/data/services/hip3_position_action_executor.dart';
-import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/position.dart';
+import 'package:nobell/data/repositories/positions_repository_impl.dart';
+import 'package:nobell/data/services/positions_service.dart';
+import 'package:nobell/data/services/hip3_position_action_service.dart';
+import 'package:nobell/data/services/hip3_position_action_executor.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/position.dart';
 
 void main() {
   final service = _Positions();

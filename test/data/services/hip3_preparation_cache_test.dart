@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/services/hip3_preparation_cache.dart';
+import 'package:nobell/data/services/hip3_preparation_cache.dart';
 
 void main() {
   test('concurrent retries retain the original prepared snapshot', () async {

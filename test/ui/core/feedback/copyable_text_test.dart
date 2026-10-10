@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/core/feedback/copyable_text.dart';
+import 'package:nobell/ui/core/feedback/copyable_text.dart';
 
 import '../../../helpers/test_app.dart';
 

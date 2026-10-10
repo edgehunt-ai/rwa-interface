@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/reconnect_policy.dart';
-import 'package:rwa_interface/data/services/dio_realtime_service.dart';
+import 'package:nobell/data/api/reconnect_policy.dart';
+import 'package:nobell/data/services/dio_realtime_service.dart';
 
 void main() {
   test('重连携带 Last-Event-ID、去重并在 resync 停止', () async {

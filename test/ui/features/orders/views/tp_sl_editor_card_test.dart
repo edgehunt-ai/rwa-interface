@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/features/orders/views/tp_sl_editor_card.dart';
+import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 
 import '../../../../helpers/test_app.dart';
 

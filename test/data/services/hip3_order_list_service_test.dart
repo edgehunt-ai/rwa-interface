@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/services/generated_orders_service.dart';
+import 'package:nobell/data/services/generated_orders_service.dart';
 
 void main() {
   test(

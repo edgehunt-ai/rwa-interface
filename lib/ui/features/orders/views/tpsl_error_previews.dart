@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
 
 import 'position_protection_quantity_card.dart';
 import 'tpsl_risk_agreement_sheet.dart';

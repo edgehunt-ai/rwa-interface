@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/position.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/position.dart';
 
 void main() {
   test('HIP-3 mark notional is quantity multiplied by mark price', () {

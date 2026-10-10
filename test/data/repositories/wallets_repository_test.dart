@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/withdrawal.dart';
+import 'package:nobell/domain/models/withdrawal.dart';
 
 void main() {
   test('expired withdrawal authorization is not usable', () {

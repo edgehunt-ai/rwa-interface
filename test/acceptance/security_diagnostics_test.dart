@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/api_failure_mapper.dart';
+import 'package:nobell/data/api/api_failure_mapper.dart';
 
 void main() {
   test('diagnostic failure representation excludes sensitive payloads', () {

@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/data/api/api_environment.dart';
-import 'package:rwa_interface/data/api/rwa_api_data_source.dart';
-import 'package:rwa_interface/data/repositories/session_repository_impl.dart';
-import 'package:rwa_interface/data/services/generated_session_service.dart';
-import 'package:rwa_interface/domain/models/application_state.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/product_session.dart';
-import 'package:rwa_interface/ui/features/session/providers/session_provider.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/data/api/api_environment.dart';
+import 'package:nobell/data/api/rwa_api_data_source.dart';
+import 'package:nobell/data/repositories/session_repository_impl.dart';
+import 'package:nobell/data/services/generated_session_service.dart';
+import 'package:nobell/domain/models/application_state.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/ui/features/session/providers/session_provider.dart';
 
 import '../helpers/controlled_api_adapter.dart';
 import '../helpers/trading_provider_harness.dart';

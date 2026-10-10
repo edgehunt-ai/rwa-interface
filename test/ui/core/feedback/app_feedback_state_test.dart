@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/core/feedback/app_feedback_state.dart';
+import 'package:nobell/ui/core/feedback/app_feedback_state.dart';
 
 import '../../../helpers/test_app.dart';
 

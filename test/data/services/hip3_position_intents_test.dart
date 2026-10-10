@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/services/hip3_position_intents.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/position.dart';
-import 'package:rwa_interface/domain/models/position_operation.dart';
+import 'package:nobell/data/services/hip3_position_intents.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/position.dart';
+import 'package:nobell/domain/models/position_operation.dart';
 
 void main() {
   final position = Position(

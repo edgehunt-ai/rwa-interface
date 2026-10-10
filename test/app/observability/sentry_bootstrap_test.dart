@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/observability/observability_config.dart';
-import 'package:rwa_interface/app/observability/sentry_bootstrap.dart';
+import 'package:nobell/app/observability/observability_config.dart';
+import 'package:nobell/app/observability/sentry_bootstrap.dart';
 
 void main() {
   const enabled = ObservabilityConfig(

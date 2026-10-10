@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/market_snapshot.dart';
-import 'package:rwa_interface/domain/models/stock.dart';
-import 'package:rwa_interface/domain/repositories/markets_repository.dart';
-import 'package:rwa_interface/data/services/market_search_history_service.dart';
-import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/market_snapshot.dart';
+import 'package:nobell/domain/models/stock.dart';
+import 'package:nobell/domain/repositories/markets_repository.dart';
+import 'package:nobell/data/services/market_search_history_service.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 
 void main() {
   test('ranking tab defaults and persisted selection respect auth state', () {

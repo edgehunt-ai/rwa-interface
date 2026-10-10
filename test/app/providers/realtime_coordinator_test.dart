@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/realtime_coordinator.dart';
-import 'package:rwa_interface/domain/repositories/realtime_repository.dart';
+import 'package:nobell/app/providers/realtime_coordinator.dart';
+import 'package:nobell/domain/repositories/realtime_repository.dart';
 
 void main() {
   TypedRealtimeEvent event(int sequence, {String? id}) => TypedRealtimeEvent(

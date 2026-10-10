@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/application_state.dart';
-import 'package:rwa_interface/domain/models/resource_result.dart';
-import 'package:rwa_interface/domain/models/unsupported_capability.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/application_state.dart';
+import 'package:nobell/domain/models/resource_result.dart';
+import 'package:nobell/domain/models/unsupported_capability.dart';
 
 void main() {
   group('QueryState', () {

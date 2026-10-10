@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/session_repository_impl.dart';
-import 'package:rwa_interface/data/services/session_service.dart';
+import 'package:nobell/data/repositories/session_repository_impl.dart';
+import 'package:nobell/data/services/session_service.dart';
 
 void main() {
   test('maps generated session and user into domain values', () async {

@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/domain/models/hip3_withdrawal.dart';
-import 'package:rwa_interface/domain/models/hip3_withdrawal_preview.dart';
-import 'package:rwa_interface/domain/repositories/hip3_withdrawal_repository.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/funding_catalog.dart';
-import 'package:rwa_interface/domain/models/funding_catalog_summary.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
-import 'package:rwa_interface/ui/features/funding/providers/hip3_withdrawal_providers.dart';
-import 'package:rwa_interface/ui/features/funding/views/transfer_screen.dart';
-import 'package:rwa_interface/ui/features/funding/widgets/transfer_account_pair.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/hip3_withdrawal.dart';
+import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
+import 'package:nobell/domain/repositories/hip3_withdrawal_repository.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/funding_catalog.dart';
+import 'package:nobell/domain/models/funding_catalog_summary.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
+import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
+import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
+import 'package:nobell/ui/features/funding/widgets/transfer_account_pair.dart';
 
 void main() {
   testWidgets('matches the transfer design structure and interactions', (

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:rwa_interface/app/config/privy_configuration.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/feedback/app_toast.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/app/config/privy_configuration.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/feedback/app_toast.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PrivateKeyExportSheet extends StatelessWidget {

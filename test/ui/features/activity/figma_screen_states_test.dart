@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/features/activity/views/activity_screen.dart';
+import 'package:nobell/ui/features/activity/views/activity_screen.dart';
 
 import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';

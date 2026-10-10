@@ -10,15 +10,15 @@ import 'package:privy_flutter/src/logging/privy_logger.dart';
 import 'package:privy_flutter/src/modules/email/login_with_email.dart';
 import 'package:privy_flutter/src/modules/login_with_siwe/login_with_siwe.dart';
 import 'package:privy_flutter/src/modules/oauth/login_with_oauth.dart';
-import 'package:rwa_interface/data/auth/privy_identity_auth_gateway.dart';
-import 'package:rwa_interface/domain/auth/authentication.dart';
-import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
-import 'package:rwa_interface/domain/models/wallet_action_execution.dart';
-import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
-import 'package:rwa_interface/domain/services/wallet_authorization_signer.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/order.dart';
-import 'package:rwa_interface/data/services/bstocks_broadcast_journal.dart';
+import 'package:nobell/data/auth/privy_identity_auth_gateway.dart';
+import 'package:nobell/domain/auth/authentication.dart';
+import 'package:nobell/domain/auth/identity_auth_gateway.dart';
+import 'package:nobell/domain/models/wallet_action_execution.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
+import 'package:nobell/domain/services/wallet_authorization_signer.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/order.dart';
+import 'package:nobell/data/services/bstocks_broadcast_journal.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/hip3_withdrawal_repository_impl.dart';
-import 'package:rwa_interface/data/services/hip3_withdrawal_service.dart';
-import 'package:rwa_interface/domain/models/hip3_withdrawal.dart' as domain;
-import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:nobell/data/repositories/hip3_withdrawal_repository_impl.dart';
+import 'package:nobell/data/services/hip3_withdrawal_service.dart';
+import 'package:nobell/domain/models/hip3_withdrawal.dart' as domain;
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
   test('previews with auto rail and maps risk details', () async {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/routing/app_router.dart';
-import 'package:rwa_interface/ui/features/home/views/home_screen.dart';
+import 'package:nobell/app/routing/app_router.dart';
+import 'package:nobell/ui/features/home/views/home_screen.dart';
 
 import '../../helpers/test_app.dart';
 

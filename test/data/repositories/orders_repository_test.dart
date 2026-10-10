@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:one_of/one_of.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/api/order_preview_payload.dart';
-import 'package:rwa_interface/data/repositories/orders_repository_impl.dart';
-import 'package:rwa_interface/data/services/orders_service.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/order.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/models/hip3_opening_protection.dart';
+import 'package:nobell/data/api/order_preview_payload.dart';
+import 'package:nobell/data/repositories/orders_repository_impl.dart';
+import 'package:nobell/data/services/orders_service.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/order.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/hip3_opening_protection.dart';
 
 void main() {
   for (final asset in ['USDT', 'TUSDT', 'LUSDT', null]) {

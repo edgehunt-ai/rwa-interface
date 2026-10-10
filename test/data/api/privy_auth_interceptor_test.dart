@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/privy_access_token_provider.dart';
-import 'package:rwa_interface/data/api/privy_auth_interceptor.dart';
+import 'package:nobell/data/api/privy_access_token_provider.dart';
+import 'package:nobell/data/api/privy_auth_interceptor.dart';
 
 void main() {
   test('public operation 不附加 bearer token', () async {

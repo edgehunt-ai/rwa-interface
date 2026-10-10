@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/realtime_event_decoder.dart';
-import 'package:rwa_interface/data/api/sse_frame.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:nobell/data/api/realtime_event_decoder.dart';
+import 'package:nobell/data/api/sse_frame.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   const decoder = RealtimeEventDecoder();

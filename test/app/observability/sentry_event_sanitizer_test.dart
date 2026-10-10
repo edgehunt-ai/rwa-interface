@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/observability/sentry_event_sanitizer.dart';
+import 'package:nobell/app/observability/sentry_event_sanitizer.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() {

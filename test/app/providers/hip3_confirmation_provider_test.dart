@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/hip3_confirmation_provider.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/models/hip3_step_confirmation.dart';
+import 'package:nobell/app/providers/hip3_confirmation_provider.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/hip3_step_confirmation.dart';
 
 Hip3StepConfirmation summary() => Hip3StepConfirmation(
   actionId: 'a1',

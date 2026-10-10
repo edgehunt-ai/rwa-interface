@@ -1,5 +1,5 @@
-import 'package:rwa_interface/domain/models/hip3_withdrawal_preview.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
+import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
 
 /// Converts server-provided withdrawal blockers into safe, actionable UI text.
 ///

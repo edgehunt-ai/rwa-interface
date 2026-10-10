@@ -3,34 +3,34 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/funding_transfer.dart';
-import 'package:rwa_interface/domain/models/funding_session.dart';
-import 'package:rwa_interface/domain/models/funding_catalog.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/order.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/models/order_preview.dart';
-import 'package:rwa_interface/domain/models/resource_result.dart';
-import 'package:rwa_interface/domain/models/trading_account.dart';
-import 'package:rwa_interface/domain/models/withdrawal.dart';
-import 'package:rwa_interface/domain/repositories/funding_repository.dart';
-import 'package:rwa_interface/domain/repositories/bstocks_order_execution_repository.dart';
-import 'package:rwa_interface/domain/repositories/orders_repository.dart';
-import 'package:rwa_interface/domain/repositories/wallets_repository.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/ui/features/orders/views/bstocks_order_panel.dart';
-import 'package:rwa_interface/ui/features/funding/providers/funding_transfer_providers.dart';
-import 'package:rwa_interface/ui/features/portfolio/providers/portfolio_providers.dart';
-import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/funding_transfer.dart';
+import 'package:nobell/domain/models/funding_session.dart';
+import 'package:nobell/domain/models/funding_catalog.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/order.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/order_preview.dart';
+import 'package:nobell/domain/models/resource_result.dart';
+import 'package:nobell/domain/models/trading_account.dart';
+import 'package:nobell/domain/models/withdrawal.dart';
+import 'package:nobell/domain/repositories/funding_repository.dart';
+import 'package:nobell/domain/repositories/bstocks_order_execution_repository.dart';
+import 'package:nobell/domain/repositories/orders_repository.dart';
+import 'package:nobell/domain/repositories/wallets_repository.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/features/orders/views/bstocks_order_panel.dart';
+import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
+import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 
 import '../../../../helpers/test_app.dart';
 import '../../../../helpers/funded_repository.dart';
 
-import 'package:rwa_interface/ui/features/orders/views/order_funding_sheet.dart';
+import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
 
 void main() {
   testWidgets('sell availability resolves after opening without a product ID', (

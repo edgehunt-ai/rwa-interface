@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/config/privy_configuration.dart';
-import 'package:rwa_interface/domain/auth/authentication.dart';
+import 'package:nobell/app/config/privy_configuration.dart';
+import 'package:nobell/domain/auth/authentication.dart';
 
 void main() {
   group('PrivyConfiguration', () {

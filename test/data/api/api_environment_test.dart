@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/api/api_environment.dart';
+import 'package:nobell/data/api/api_environment.dart';
 
 void main() {
   test('rejects missing and relative URLs', () {

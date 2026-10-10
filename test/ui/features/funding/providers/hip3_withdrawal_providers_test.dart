@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/domain/models/hip3_withdrawal.dart';
-import 'package:rwa_interface/domain/models/hip3_withdrawal_preview.dart';
-import 'package:rwa_interface/domain/repositories/hip3_withdrawal_repository.dart';
-import 'package:rwa_interface/ui/features/funding/providers/hip3_withdrawal_providers.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/domain/models/hip3_withdrawal.dart';
+import 'package:nobell/domain/models/hip3_withdrawal_preview.dart';
+import 'package:nobell/domain/repositories/hip3_withdrawal_repository.dart';
+import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 
 void main() {
   test('preparation reuses the frozen intent and submits it once', () async {

@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/core/adaptive/app_adaptive_date_picker.dart';
-import 'package:rwa_interface/ui/core/adaptive/app_adaptive_dialogs.dart';
+import 'package:nobell/ui/core/adaptive/app_adaptive_date_picker.dart';
+import 'package:nobell/ui/core/adaptive/app_adaptive_dialogs.dart';
 
 import '../../../helpers/test_app.dart';
 

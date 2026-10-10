@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/services/cache_storage_service.dart';
+import 'package:nobell/data/services/cache_storage_service.dart';
 
 void main() {
   test('calculates and clears only the application cache directory', () async {

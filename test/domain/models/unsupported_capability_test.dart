@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/models/unsupported_capability.dart';
+import 'package:nobell/domain/models/unsupported_capability.dart';
 
 void main() {
   test('only exposes the two stable non-retryable capabilities', () {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/domain/auth/authentication.dart';
-import 'package:rwa_interface/domain/models/product_session.dart';
-import 'package:rwa_interface/domain/models/user_account.dart';
-import 'package:rwa_interface/ui/features/session/providers/authentication_provider.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/domain/auth/authentication.dart';
+import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 Widget buildTestApp(
   Widget child, {

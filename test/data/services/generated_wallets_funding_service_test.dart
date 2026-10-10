@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/services/funding_service.dart';
-import 'package:rwa_interface/data/services/wallets_service.dart';
+import 'package:nobell/data/services/funding_service.dart';
+import 'package:nobell/data/services/wallets_service.dart';
 
 void main() {
   test('narrow ports do not expose plans transfers or claims', () {

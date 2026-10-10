@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 
 void main() {
   test('splits a compact signature and normalizes recovery id zero', () {

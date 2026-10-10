@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/stock.dart';
-import 'package:rwa_interface/domain/repositories/markets_repository.dart';
-import 'package:rwa_interface/ui/features/api_example/providers/stocks_provider.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/stock.dart';
+import 'package:nobell/domain/repositories/markets_repository.dart';
+import 'package:nobell/ui/features/api_example/providers/stocks_provider.dart';
 
 void main() {
   test('loads domain stocks through an overridden repository', () async {

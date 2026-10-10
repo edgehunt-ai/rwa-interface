@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:rwa_interface/app/routing/routes.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/stock.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/feedback/design_state_feedback.dart';
-import 'package:rwa_interface/ui/core/feedback/loading_skeleton.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
-import 'package:rwa_interface/ui/features/markets/views/market_product_widgets.dart';
+import 'package:nobell/app/routing/routes.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/stock.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 
 class MarketSearchScreen extends ConsumerStatefulWidget {
   const MarketSearchScreen({super.key});

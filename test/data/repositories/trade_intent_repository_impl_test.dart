@@ -4,10 +4,10 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/trade_intent_repository_impl.dart';
-import 'package:rwa_interface/data/services/trade_intent_service.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/trade_intent.dart';
+import 'package:nobell/data/repositories/trade_intent_repository_impl.dart';
+import 'package:nobell/data/services/trade_intent_service.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/trade_intent.dart';
 
 void main() {
   test(

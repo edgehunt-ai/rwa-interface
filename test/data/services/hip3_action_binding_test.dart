@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/services/hip3_action_binding.dart';
-import 'package:rwa_interface/domain/services/hip3_typed_data_signer.dart';
+import 'package:nobell/data/services/hip3_action_binding.dart';
+import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 
 api.Hip3Action action() =>
     api.standardSerializers.deserializeWith(api.Hip3Action.serializer, {

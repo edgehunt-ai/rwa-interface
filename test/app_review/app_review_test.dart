@@ -1,26 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app_review/app_review.dart';
-import 'package:rwa_interface/data/api/api_environment.dart';
-import 'package:rwa_interface/data/repositories/funding_repository_impl.dart';
-import 'package:rwa_interface/domain/auth/authentication.dart';
-import 'package:rwa_interface/domain/models/bstocks_support.dart';
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/domain_page.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/domain/models/market_snapshot.dart';
-import 'package:rwa_interface/domain/models/order.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
-import 'package:rwa_interface/domain/models/order_preview.dart';
-import 'package:rwa_interface/domain/models/position.dart';
-import 'package:rwa_interface/domain/models/position_operation.dart';
-import 'package:rwa_interface/domain/models/product_session.dart';
-import 'package:rwa_interface/domain/models/resource_result.dart';
-import 'package:rwa_interface/domain/models/stock.dart';
-import 'package:rwa_interface/domain/models/user_account.dart';
-import 'package:rwa_interface/domain/repositories/markets_repository.dart';
-import 'package:rwa_interface/domain/repositories/orders_repository.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app_review/app_review.dart';
+import 'package:nobell/data/api/api_environment.dart';
+import 'package:nobell/data/repositories/funding_repository_impl.dart';
+import 'package:nobell/domain/auth/authentication.dart';
+import 'package:nobell/domain/models/bstocks_support.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/domain_page.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/domain/models/market_snapshot.dart';
+import 'package:nobell/domain/models/order.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/order_preview.dart';
+import 'package:nobell/domain/models/position.dart';
+import 'package:nobell/domain/models/position_operation.dart';
+import 'package:nobell/domain/models/product_session.dart';
+import 'package:nobell/domain/models/resource_result.dart';
+import 'package:nobell/domain/models/stock.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/domain/repositories/markets_repository.dart';
+import 'package:nobell/domain/repositories/orders_repository.dart';
 
 void main() {
   group('AppReviewConfiguration', () {

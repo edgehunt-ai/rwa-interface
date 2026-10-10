@@ -1,8 +1,8 @@
-import 'package:rwa_interface/domain/models/decimal_value.dart';
-import 'package:rwa_interface/domain/models/funding_transfer.dart';
-import 'package:rwa_interface/domain/repositories/funding_repository.dart';
-import 'package:rwa_interface/domain/models/funding_session.dart';
-import 'package:rwa_interface/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/funding_transfer.dart';
+import 'package:nobell/domain/repositories/funding_repository.dart';
+import 'package:nobell/domain/models/funding_session.dart';
+import 'package:nobell/domain/models/order_intent.dart';
 
 class FundedRepository implements FundingRepository {
   final previewIds = <String>[];

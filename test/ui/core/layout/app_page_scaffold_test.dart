@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/ui/core/layout/app_page_scaffold.dart';
+import 'package:nobell/ui/core/layout/app_page_scaffold.dart';
 
 import '../../../helpers/display_config.dart';
 import '../../../helpers/test_app.dart';

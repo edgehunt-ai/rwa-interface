@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/repositories/account_repository_impl.dart';
-import 'package:rwa_interface/data/services/account_service.dart';
-import 'package:rwa_interface/domain/models/user_account.dart';
-import 'package:rwa_interface/domain/models/account_deletion.dart';
+import 'package:nobell/data/repositories/account_repository_impl.dart';
+import 'package:nobell/data/services/account_service.dart';
+import 'package:nobell/domain/models/user_account.dart';
+import 'package:nobell/domain/models/account_deletion.dart';
 
 void main() {
   test(

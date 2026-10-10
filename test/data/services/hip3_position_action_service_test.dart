@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
-import 'package:rwa_interface/data/services/hip3_position_action_service.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:nobell/data/services/hip3_position_action_service.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   test(

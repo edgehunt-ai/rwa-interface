@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:rwa_interface/data/services/bstocks_broadcast_journal.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
-import 'package:rwa_interface/domain/models/order.dart';
+import 'package:nobell/data/services/bstocks_broadcast_journal.dart';
+import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/order.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

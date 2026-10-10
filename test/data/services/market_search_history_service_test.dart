@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/data/services/market_search_history_service.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:nobell/data/services/market_search_history_service.dart';
+import 'package:nobell/domain/models/market_product.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

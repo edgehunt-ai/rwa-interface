@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:rwa_interface/domain/models/market_snapshot.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
+import 'package:nobell/domain/models/market_snapshot.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
 
 String marketSessionLabel(AppLocalizations l10n, MarketSessionKind kind) =>
     switch (kind) {

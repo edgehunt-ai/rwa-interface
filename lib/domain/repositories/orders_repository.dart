@@ -1,4 +1,4 @@
-import 'package:rwa_interface/domain/models/market_product.dart';
+import 'package:nobell/domain/models/market_product.dart';
 
 import '../models/domain_page.dart';
 import '../models/order.dart';

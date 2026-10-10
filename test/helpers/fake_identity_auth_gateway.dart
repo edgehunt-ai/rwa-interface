@@ -1,5 +1,5 @@
-import 'package:rwa_interface/domain/auth/authentication.dart';
-import 'package:rwa_interface/domain/auth/identity_auth_gateway.dart';
+import 'package:nobell/domain/auth/authentication.dart';
+import 'package:nobell/domain/auth/identity_auth_gateway.dart';
 
 final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   FakeIdentityAuthGateway({

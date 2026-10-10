@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/providers/api_providers.dart';
-import 'package:rwa_interface/app/providers/session_scope.dart';
-import 'package:rwa_interface/data/api/api_environment.dart';
-import 'package:rwa_interface/data/api/privy_access_token_provider.dart';
+import 'package:nobell/app/providers/api_providers.dart';
+import 'package:nobell/app/providers/session_scope.dart';
+import 'package:nobell/data/api/api_environment.dart';
+import 'package:nobell/data/api/privy_access_token_provider.dart';
 
 ProviderContainer createTradingProviderContainer({
   ApiEnvironment environment = const ApiEnvironment(

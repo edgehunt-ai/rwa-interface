@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:rwa_interface/domain/models/market_product.dart';
-import 'package:rwa_interface/l10n/generated/app_localizations.dart';
-import 'package:rwa_interface/ui/core/formatters/token_amount_formatter.dart';
-import 'package:rwa_interface/ui/core/motion/animated_number_text.dart';
-import 'package:rwa_interface/ui/core/theme/app_theme.dart';
-import 'package:rwa_interface/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/domain/models/market_product.dart';
+import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
+import 'package:nobell/ui/core/motion/animated_number_text.dart';
+import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 
 enum _ProductFilterChoice { all, bstock, perp }
 

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:rwa_interface/app/observability/observability_reporter.dart';
-import 'package:rwa_interface/domain/models/api_failure.dart';
+import 'package:nobell/app/observability/observability_reporter.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   test('reports only non-recoverable API failures', () {
