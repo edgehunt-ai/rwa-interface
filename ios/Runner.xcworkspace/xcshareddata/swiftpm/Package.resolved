@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "privy-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/privy-io/privy-ios",
+      "state" : {
+        "revision" : "5a6fa267dd45af29f5517f82bb9e61a768b01283",
+        "version" : "2.16.3"
+      }
+    }
+  ],
+  "version" : 2
+}
