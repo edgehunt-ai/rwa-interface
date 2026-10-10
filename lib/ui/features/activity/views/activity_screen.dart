@@ -15,6 +15,7 @@ import 'package:nobell/ui/core/feedback/app_toast.dart';
 import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
+import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/activity/providers/activity_provider.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
@@ -1003,23 +1004,22 @@ class _NetworkLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final isBsc = network.toLowerCase() == 'bsc';
+    final asset = networkIconAssetPath(network);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 14,
-          height: 14,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isBsc ? const Color(0xFFF0B90B) : const Color(0xFF8247E5),
+        if (asset != null)
+          SvgPicture.asset(asset, width: 14, height: 14)
+        else
+          Container(
+            width: 14,
+            height: 14,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFF8247E5),
+            ),
+            child: const Icon(Icons.link, size: 9, color: Colors.white),
           ),
-          child: Icon(
-            isBsc ? Icons.currency_exchange : Icons.link,
-            size: 9,
-            color: Colors.white,
-          ),
-        ),
         const SizedBox(width: 4),
         Text(
           network,

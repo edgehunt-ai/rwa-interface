@@ -13,6 +13,7 @@ import 'package:nobell/ui/core/feedback/empty_state.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
+import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/providers/deposit_providers.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -157,7 +158,7 @@ class _DepositRouteList extends StatelessWidget {
             onTap: () {
               final router = GoRouter.of(context);
               Navigator.of(context).pop();
-              router.pushNamed(AppRoutes.depositSelectName);
+              router.pushNamed(AppRoutes.depositName);
             },
           ),
       ],
@@ -310,13 +311,7 @@ class _SupportedAssetMark extends StatelessWidget {
 }
 
 class DepositScreen extends ConsumerStatefulWidget {
-  const DepositScreen({
-    super.key,
-    this.showSelector = false,
-    this.chain,
-    this.token,
-  });
-  final bool showSelector;
+  const DepositScreen({super.key, this.chain, this.token});
   final String? chain;
   final String? token;
 
@@ -330,21 +325,10 @@ class _DepositScreenState extends ConsumerState<DepositScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final showSelector = widget.showSelector;
     final chain = widget.chain;
     final token = widget.token;
-    if (showSelector) return const _DepositSelector();
     if (chain == null || token == null) {
-      return Scaffold(
-        body: SafeArea(
-          child: DesignStateFeedback(
-            state: DesignState.unavailable,
-            title: AppLocalizations.of(context).depositRouteRequired,
-            message: AppLocalizations.of(context)
-                .depositRouteRequiredDescription,
-          ),
-        ),
-      );
+      return _DepositSelector(initialChain: chain);
     }
     final route = (chain: chain, token: token);
     final instruction = ref.watch(depositInstructionProvider(route));
@@ -481,7 +465,7 @@ class _DepositInstructions extends StatelessWidget {
           onBack: () => context.pop(),
         ),
         const SizedBox(height: 40),
-        _ReadonlyRoute(instruction: instruction),
+        _EditableRoute(instruction: instruction),
         const SizedBox(height: 32),
         Center(
           child: Container(
@@ -530,70 +514,49 @@ class _DepositInstructions extends StatelessWidget {
   }
 }
 
-class _ReadonlyRoute extends StatelessWidget {
-  const _ReadonlyRoute({required this.instruction});
+class _EditableRoute extends ConsumerWidget {
+  const _EditableRoute({required this.instruction});
   final DepositInstruction instruction;
 
   @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final l10n = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.border),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          _RouteValue(
-            label: l10n.network,
-            value: instruction.chain,
-            icon: _depositNetworkIcon(instruction.chain),
-          ),
-          Divider(height: 1, color: colors.border),
-          _RouteValue(
-            label: l10n.token,
-            value: instruction.token,
-            icon: _depositTokenIcon(instruction.token),
-          ),
-        ],
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final availableRoutes = ref.watch(depositRoutesProvider).value ?? const [];
+    final chains = availableRoutes
+        .map((route) => route.chain)
+        .followedBy([instruction.chain])
+        .toSet()
+        .toList();
+    final tokens = availableRoutes
+        .where((route) => route.chain == instruction.chain)
+        .map((route) => route.token)
+        .followedBy([instruction.token])
+        .toSet()
+        .toList();
+    return _DepositSelectionCard(
+      chain: instruction.chain,
+      token: instruction.token,
+      chains: chains,
+      tokens: tokens,
+      onChainSelected: (chain) {
+        if (chain == instruction.chain) return;
+        context.replaceNamed(
+          AppRoutes.depositName,
+          queryParameters: {'chain': chain},
+        );
+      },
+      onTokenSelected: (token) {
+        if (token == instruction.token) return;
+        context.replaceNamed(
+          AppRoutes.depositName,
+          queryParameters: {'chain': instruction.chain, 'token': token},
+        );
+      },
     );
   }
 }
 
-class _RouteValue extends StatelessWidget {
-  const _RouteValue({required this.label, required this.value, this.icon});
-  final String label;
-  final String value;
-  final Widget? icon;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 51,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Text(label),
-          const Spacer(),
-          if (icon != null) ...[icon!, const SizedBox(width: 8)],
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ],
-      ),
-    ),
-  );
-}
-
 Widget? _depositNetworkIcon(String network, {double size = 24}) {
-  final asset = switch (network.trim().toLowerCase()) {
-    'bsc' || 'bnb chain' => 'assets/figma/common/network_bsc.svg',
-    'arbitrum' => 'assets/figma/funding/arbitrum.svg',
-    'ethereum' => 'assets/figma/funding/eth.svg',
-    'polygon' => 'assets/figma/funding/polygon.svg',
-    _ => null,
-  };
+  final asset = networkIconAssetPath(network);
   return asset == null
       ? null
       : SvgPicture.asset(
@@ -702,7 +665,9 @@ class _DetailRow extends StatelessWidget {
 }
 
 class _DepositSelector extends ConsumerStatefulWidget {
-  const _DepositSelector();
+  const _DepositSelector({this.initialChain});
+
+  final String? initialChain;
 
   @override
   ConsumerState<_DepositSelector> createState() => _DepositSelectorState();
@@ -711,6 +676,12 @@ class _DepositSelector extends ConsumerStatefulWidget {
 class _DepositSelectorState extends ConsumerState<_DepositSelector> {
   String? _selectedChain;
   String? _selectedToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedChain = widget.initialChain;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -748,12 +719,13 @@ class _DepositSelectorState extends ConsumerState<_DepositSelector> {
                   chains: chains,
                   tokens: tokens,
                   onChainSelected: (chain) => setState(() {
+                    if (_selectedChain == chain) return;
                     _selectedChain = chain;
                     _selectedToken = null;
                   }),
                   onTokenSelected: (token) {
                     setState(() => _selectedToken = token);
-                    context.pushNamed(
+                    context.replaceNamed(
                       AppRoutes.depositName,
                       queryParameters: {
                         'chain': _selectedChain!,
@@ -825,9 +797,13 @@ class _DepositSelectionCard extends StatelessWidget {
       child: Column(
         children: [
           _SelectionRow(
+            key: const ValueKey('deposit-network-selector'),
             label: AppLocalizations.of(context).network,
             value: chain ?? 'Choose Network',
             valueColor: chain == null ? colors.primaryText : colors.primaryText,
+            icon: chain == null ? null : _depositNetworkIcon(chain!),
+            showArrow: chain == null,
+            arrowKey: const ValueKey('deposit-network-selector-arrow'),
             onTap: () => _showOptions(
               context,
               title: AppLocalizations.of(context).network,
@@ -837,11 +813,15 @@ class _DepositSelectionCard extends StatelessWidget {
           ),
           Divider(height: 1, color: colors.subtleSurface),
           _SelectionRow(
+            key: const ValueKey('deposit-token-selector'),
             label: AppLocalizations.of(context).token,
             value: token ?? 'Choose network first',
             valueColor: chain == null
                 ? colors.secondaryText
                 : colors.primaryText,
+            icon: token == null ? null : _depositTokenIcon(token!),
+            showArrow: token == null,
+            arrowKey: const ValueKey('deposit-token-selector-arrow'),
             enabled: chain != null,
             onTap: chain == null
                 ? null
@@ -885,10 +865,14 @@ class _DepositSelectionCard extends StatelessWidget {
 
 class _SelectionRow extends StatelessWidget {
   const _SelectionRow({
+    super.key,
     required this.label,
     required this.value,
     required this.valueColor,
     required this.onTap,
+    required this.showArrow,
+    required this.arrowKey,
+    this.icon,
     this.enabled = true,
   });
 
@@ -896,6 +880,9 @@ class _SelectionRow extends StatelessWidget {
   final String value;
   final Color valueColor;
   final VoidCallback? onTap;
+  final bool showArrow;
+  final Key arrowKey;
+  final Widget? icon;
   final bool enabled;
 
   @override
@@ -909,21 +896,35 @@ class _SelectionRow extends StatelessWidget {
           children: [
             SizedBox(width: 80, child: Text(label)),
             Expanded(
-              child: Text(
-                value,
-                style: TextStyle(
-                  color: valueColor,
-                  fontWeight: value.startsWith('Choose')
-                      ? null
-                      : FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (icon != null) ...[icon!, const SizedBox(width: 8)],
+                  Flexible(
+                    child: Text(
+                      value,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: valueColor,
+                        fontWeight: value.startsWith('Choose')
+                            ? null
+                            : FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            SvgPicture.asset(
-              'assets/figma/funding/chevron_right.svg',
-              width: 20,
-              height: 20,
-            ),
+            if (showArrow) ...[
+              const SizedBox(width: 8),
+              SvgPicture.asset(
+                'assets/figma/funding/chevron_right.svg',
+                key: arrowKey,
+                width: 20,
+                height: 20,
+              ),
+            ],
           ],
         ),
       ),

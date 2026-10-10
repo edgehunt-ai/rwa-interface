@@ -14,6 +14,7 @@ import '../../../../domain/models/market_product.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/inline_error_notice.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
+import '../../../core/network/network_icon_assets.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../funding/providers/funding_transfer_providers.dart';
 
@@ -247,7 +248,7 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
                     onDeposit: () {
                       final router = GoRouter.of(context);
                       Navigator.of(context).pop(false);
-                      router.pushNamed(AppRoutes.depositSelectName);
+                      router.pushNamed(AppRoutes.depositName);
                     },
                   ),
               ],
@@ -1315,7 +1316,7 @@ class _NetworkIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final path = _networkAssetPath(network);
     if (path == null) return const SizedBox.shrink();
-    if (network.toLowerCase() != 'arbitrum') {
+    if (networkKind(network) != NetworkKind.arbitrum) {
       return SvgPicture.asset(path, width: size, height: size);
     }
 
@@ -1337,13 +1338,8 @@ class _NetworkIcon extends StatelessWidget {
   }
 }
 
-String? _networkAssetPath(String? network) => switch (network?.toLowerCase()) {
-  'polygon' => 'assets/figma/funding/polygon.svg',
-  'bsc' || 'bnb chain' => 'assets/figma/common/network_bsc.svg',
-  'arbitrum' => 'assets/figma/portfolio/network_arbitrum_mark.svg',
-  'hyperliquid' => 'assets/figma/home_markets/venue_hyperliquid.svg',
-  _ => null,
-};
+String? _networkAssetPath(String? network) =>
+    networkIconAssetPath(network, variant: NetworkIconVariant.mark);
 
 class _RouteRows extends StatelessWidget {
   const _RouteRows({required this.leg, required this.slippage});

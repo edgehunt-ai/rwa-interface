@@ -76,7 +76,7 @@ abstract final class AppRouter {
         GoRoute(
           name: AppRoutes.depositSelectName,
           path: AppRoutes.depositSelectPath,
-          builder: (context, state) => const DepositScreen(showSelector: true),
+          redirect: (_, _) => AppRoutes.depositPath,
         ),
         GoRoute(
           name: AppRoutes.withdrawalName,

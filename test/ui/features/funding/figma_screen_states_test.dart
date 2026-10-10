@@ -53,7 +53,7 @@ void main() {
   testWidgets('deposit asset selector shows additional available routes', (
     tester,
   ) async {
-    final router = AppRouter.create(initialLocation: '/funding/deposit/select');
+    final router = AppRouter.create(initialLocation: '/funding/deposit');
     addTearDown(router.dispose);
 
     await tester.pumpWidget(
@@ -70,14 +70,124 @@ void main() {
     expect(find.text('Deposit crypto'), findsOneWidget);
     expect(find.text('Choose Network'), findsOneWidget);
     expect(find.text('Choose network first'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('deposit-network-selector-arrow')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('deposit-token-selector-arrow')),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Choose Network'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('BSC'));
     await tester.pumpAndSettle();
     expect(find.text('BSC'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('deposit-network-selector-arrow')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('deposit-token-selector-arrow')),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Choose network first'));
     await tester.pumpAndSettle();
     expect(find.text('USDC'), findsOneWidget);
+  });
+
+  testWidgets('changing the deposit network clears the selected token', (
+    tester,
+  ) async {
+    const route = (chain: 'Arbitrum', token: 'USDC');
+    const otherTokenRoute = (chain: 'Arbitrum', token: 'USDT');
+    final router = AppRouter.create(
+      initialLocation: '/funding/deposit?chain=Arbitrum&token=USDC',
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          depositRoutesProvider.overrideWith((_) async => _depositRoutes),
+          depositInstructionProvider(route)
+              .overrideWith((_) async => _depositInstruction(route)),
+          depositInstructionProvider(otherTokenRoute)
+              .overrideWith((_) async => _depositInstruction(otherTokenRoute)),
+          depositBalanceChangesProvider(route)
+              .overrideWith((_) => const Stream.empty()),
+          depositBalanceChangesProvider(otherTokenRoute)
+              .overrideWith((_) => const Stream.empty()),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('deposit-qr')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('deposit-network-selector-arrow')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('deposit-token-selector-arrow')),
+      findsNothing,
+    );
+    final networkSelector = find.byKey(
+      const ValueKey('deposit-network-selector'),
+    );
+    final tokenSelector = find.byKey(const ValueKey('deposit-token-selector'));
+    expect(
+      tester.getRect(networkSelector).right -
+          tester
+              .getRect(
+                find.descendant(
+                  of: networkSelector,
+                  matching: find.text('Arbitrum'),
+                ),
+              )
+              .right,
+      16,
+    );
+    expect(
+      tester.getRect(tokenSelector).right -
+          tester
+              .getRect(
+                find.descendant(of: tokenSelector, matching: find.text('USDC')),
+              )
+              .right,
+      16,
+    );
+    await tester.tap(find.byKey(const ValueKey('deposit-token-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('USDT'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Deposit USDT on Arbitrum'), findsOneWidget);
+    expect(router.routerDelegate.currentConfiguration.uri.queryParameters, {
+      'chain': 'Arbitrum',
+      'token': 'USDT',
+    });
+
+    await tester.tap(find.byKey(const ValueKey('deposit-network-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('BSC'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('deposit-qr')), findsNothing);
+    expect(find.text('BSC'), findsOneWidget);
+    expect(find.text('Choose network first'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('deposit-network-selector-arrow')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('deposit-token-selector-arrow')),
+      findsOneWidget,
+    );
+    expect(router.routerDelegate.currentConfiguration.uri.queryParameters, {
+      'chain': 'BSC',
+    });
   });
 
   testWidgets('deposit instructions render the wallet address QR', (
@@ -193,7 +303,7 @@ void main() {
     expect(find.byKey(const ValueKey('deposit-token-icon-usdc')), findsNothing);
   });
 
-  testWidgets('deposit instructions omit icons for unknown route values', (
+  testWidgets('deposit instructions map Base and omit unknown token icons', (
     tester,
   ) async {
     const route = (chain: 'Base', token: 'DAI');
@@ -213,7 +323,7 @@ void main() {
 
     expect(
       find.byKey(const ValueKey('deposit-network-icon-base')),
-      findsNothing,
+      findsOneWidget,
     );
     expect(find.byKey(const ValueKey('deposit-token-icon-usdc')), findsNothing);
     expect(find.byKey(const ValueKey('deposit-token-icon-usdt')), findsNothing);
@@ -570,6 +680,12 @@ final _depositRoutes = [
     token: 'USDC',
     minimumAmount: DecimalValue('1', asset: 'USDC', unit: 'token'),
     confirmationsRequired: 15,
+  ),
+  DepositRoute(
+    chain: 'Arbitrum',
+    token: 'USDT',
+    minimumAmount: DecimalValue('1', asset: 'USDT', unit: 'token'),
+    confirmationsRequired: 20,
   ),
 ];
 

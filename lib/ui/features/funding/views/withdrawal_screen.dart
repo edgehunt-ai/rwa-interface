@@ -20,6 +20,7 @@ import 'package:nobell/ui/core/feedback/app_toast.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
+import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/providers/self_custodial_withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/providers/withdrawal_providers.dart';
@@ -1327,10 +1328,8 @@ String _tokenIcon(String symbol) => switch (symbol.toUpperCase()) {
   _ => 'assets/figma/funding/usdc.svg',
 };
 
-String _networkIcon(String chain) => switch (chain.toLowerCase()) {
-  'bsc' || 'bnb chain' => 'assets/figma/common/network_bsc.svg',
-  _ => 'assets/figma/funding/arbitrum.svg',
-};
+String _networkIcon(String chain) =>
+    networkIconAssetPath(chain) ?? NetworkIconAssets.arbitrum;
 
 String _assetName(String symbol) => switch (symbol.toUpperCase()) {
   'USDC' => 'USD Coin',

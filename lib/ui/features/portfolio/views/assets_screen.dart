@@ -18,6 +18,7 @@ import 'package:nobell/ui/core/feedback/design_state_feedback.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/layout/app_bottom_navigation.dart';
+import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
@@ -2125,16 +2126,16 @@ class _NetworkBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final normalized = network.toLowerCase();
-    if (normalized.contains('bnb') || normalized.contains('bsc')) {
-      return SvgPicture.asset(
-        'assets/figma/common/network_bsc.svg',
-        width: 16,
-        height: 16,
-      );
+    final kind = networkKind(network);
+    final asset = networkIconAssetPath(
+      network,
+      variant: NetworkIconVariant.mark,
+    );
+    if (kind == NetworkKind.bsc || kind == NetworkKind.base) {
+      return SvgPicture.asset(asset!, width: 16, height: 16);
     }
-    final isEthereum = normalized.contains('ethereum');
-    final isArbitrum = normalized.contains('arbitrum');
+    final isEthereum = kind == NetworkKind.ethereum;
+    final isArbitrum = kind == NetworkKind.arbitrum;
     if (!isEthereum && !isArbitrum) return const SizedBox.shrink();
     return Container(
       width: 16,
@@ -2149,9 +2150,10 @@ class _NetworkBadge extends StatelessWidget {
             ? const EdgeInsets.symmetric(horizontal: 4.25, vertical: 2)
             : const EdgeInsets.symmetric(horizontal: 2.64, vertical: 2),
         child: SvgPicture.asset(
-          isEthereum
-              ? 'assets/figma/portfolio/network_ethereum_mark.svg'
-              : 'assets/figma/portfolio/network_arbitrum_mark.svg',
+          asset ??
+              (isEthereum
+                  ? NetworkIconAssets.ethereumMark
+                  : NetworkIconAssets.arbitrumMark),
         ),
       ),
     );
