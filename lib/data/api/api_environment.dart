@@ -1,7 +1,7 @@
 final class ApiEnvironment {
   const ApiEnvironment({
     required this.baseUrl,
-    this.connectTimeout = const Duration(seconds: 5),
+    this.connectTimeout = const Duration(seconds: 7),
     this.sendTimeout = const Duration(seconds: 10),
     this.receiveTimeout = const Duration(seconds: 15),
   });
