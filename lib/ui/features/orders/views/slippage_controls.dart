@@ -45,6 +45,9 @@ class SlippageRow extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 16, height: 20),
             visualDensity: VisualDensity.compact,
+            style: IconButton.styleFrom(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
           ),
           const SizedBox(width: 1),
           Text('$value%', style: const TextStyle(fontWeight: FontWeight.w600)),

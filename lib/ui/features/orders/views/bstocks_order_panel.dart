@@ -1100,10 +1100,14 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             ),
             const SizedBox(height: 8),
             if (_quoting)
-              _LoadingSummaryRow(label: l10n.estimatedFee)
+              _LoadingSummaryRow(
+                label: l10n.estimatedFee,
+                padding: EdgeInsets.zero,
+              )
             else
               _SummaryRow(
                 label: l10n.estimatedFee,
+                padding: EdgeInsets.zero,
                 value: fee == null
                     ? '-'
                     : TokenAmountFormatter.format(
@@ -1659,13 +1663,17 @@ class _OutlinedSummaryRow extends StatelessWidget {
 }
 
 class _LoadingSummaryRow extends StatelessWidget {
-  const _LoadingSummaryRow({required this.label});
+  const _LoadingSummaryRow({
+    required this.label,
+    this.padding = const EdgeInsets.symmetric(vertical: 6),
+  });
 
   final String label;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
+    padding: padding,
     child: Row(
       children: [
         Expanded(
@@ -1678,12 +1686,17 @@ class _LoadingSummaryRow extends StatelessWidget {
 }
 
 class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.label, required this.value});
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.padding = const EdgeInsets.symmetric(vertical: 6),
+  });
   final String label;
   final String value;
+  final EdgeInsetsGeometry padding;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
+    padding: padding,
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

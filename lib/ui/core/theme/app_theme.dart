@@ -219,7 +219,8 @@ abstract final class AppTheme {
           horizontal: 16,
           vertical: 12,
         ),
-        hintStyle: textTheme.bodyMedium?.copyWith(color: rwa.tertiaryText),
+        // Leave typography unset so each hint inherits its TextField's style.
+        hintStyle: TextStyle(color: rwa.tertiaryText),
         filled: true,
         fillColor: rwa.surface,
         border: OutlineInputBorder(

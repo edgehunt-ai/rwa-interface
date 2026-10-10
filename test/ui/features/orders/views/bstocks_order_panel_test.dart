@@ -601,6 +601,11 @@ void main() {
     expect(find.text('0.54 NVDAB'), findsOneWidget);
     expect(find.text('0.02 NVDAB'), findsOneWidget);
     expect(find.text('USDC'), findsOneWidget);
+    expect(
+      tester.getRect(find.text('Estimated Fee')).top -
+          tester.getRect(find.text('Slippage')).bottom,
+      8,
+    );
   });
 
   testWidgets('review summary formats fee with its settlement asset', (
