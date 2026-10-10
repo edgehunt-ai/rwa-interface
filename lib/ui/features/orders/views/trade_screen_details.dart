@@ -636,11 +636,12 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
       semantic: semantic,
     );
     final availabilityProductId = position.productId ?? productId;
-    final availability = availabilityProductId == null
+    final availabilityState = availabilityProductId == null
         ? null
-        : ref
-              .watch(bstocksSellAvailabilityProvider(availabilityProductId))
-              .value;
+        : ref.watch(bstocksSellAvailabilityProvider(availabilityProductId));
+    final availability = availabilityState?.value;
+    final availabilityLoading =
+        availability == null && availabilityState?.isLoading == true;
 
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -743,10 +744,14 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
               _Hip3Metric(
                 l10n.available,
                 _formatTokenQuantity(availability?.quantity),
+                loading: availabilityLoading,
+                skeletonKey: const Key('bstocks-available-loading'),
               ),
               _Hip3Metric(
                 l10n.unavailable,
                 _formatTokenQuantity(availability?.unavailableQuantity),
+                loading: availabilityLoading,
+                skeletonKey: const Key('bstocks-unavailable-loading'),
               ),
               const _Hip3Metric('', ''),
             ],
@@ -1057,11 +1062,19 @@ class _Hip3SourceChip extends StatelessWidget {
 }
 
 class _Hip3Metric {
-  const _Hip3Metric(this.label, this.value, {this.valueColor});
+  const _Hip3Metric(
+    this.label,
+    this.value, {
+    this.valueColor,
+    this.loading = false,
+    this.skeletonKey,
+  });
 
   final String label;
   final String value;
   final Color? valueColor;
+  final bool loading;
+  final Key? skeletonKey;
 }
 
 class _Hip3MetricRow extends StatelessWidget {
@@ -1096,20 +1109,28 @@ class _Hip3MetricRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    metrics[index].value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: index == metrics.length - 1
-                        ? TextAlign.end
-                        : TextAlign.start,
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 16 / 12,
-                      fontWeight: FontWeight.w600,
-                      color: metrics[index].valueColor,
+                  if (metrics[index].loading)
+                    SkeletonBlock(
+                      key: metrics[index].skeletonKey,
+                      width: 48,
+                      height: 14,
+                      radius: 4,
+                    )
+                  else
+                    Text(
+                      metrics[index].value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: index == metrics.length - 1
+                          ? TextAlign.end
+                          : TextAlign.start,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 16 / 12,
+                        fontWeight: FontWeight.w600,
+                        color: metrics[index].valueColor,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

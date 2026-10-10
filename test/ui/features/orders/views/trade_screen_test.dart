@@ -964,6 +964,43 @@ void main() {
     expect(find.text('Edit TP/SL'), findsNothing);
   });
 
+  testWidgets('Trade bStocks availability uses skeletons while loading', (
+    tester,
+  ) async {
+    final availabilityGate = Completer<void>();
+    addTearDown(() {
+      if (!availabilityGate.isCompleted) availabilityGate.complete();
+    });
+    await tester.pumpWidget(
+      _tradeWithMarkets(
+        locale: const Locale('en'),
+        positionsRepository: _PositionsRepository(),
+        portfolioRepository: _BstocksPositionPortfolioRepository(
+          availabilityGate: availabilityGate,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollToTradeTab(tester, 'Position');
+    await tester.tap(_tradeTab('Position'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('bstocks-available-loading')), findsOneWidget);
+    expect(
+      find.byKey(const Key('bstocks-unavailable-loading')),
+      findsOneWidget,
+    );
+    expect(find.text('0'), findsNothing);
+
+    availabilityGate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('bstocks-available-loading')), findsNothing);
+    expect(find.byKey(const Key('bstocks-unavailable-loading')), findsNothing);
+    expect(find.text('2.0154'), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
+  });
+
   testWidgets('Trade keeps both product tabs and empties the unsupported one', (
     tester,
   ) async {
@@ -1261,34 +1298,41 @@ Position _position(
 
 final class _BstocksPositionPortfolioRepository
     implements PortfolioRepository, PortfolioAssetsRepository {
+  _BstocksPositionPortfolioRepository({this.availabilityGate});
+
+  final Completer<void>? availabilityGate;
+
   @override
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
-  }) async => [
-    PortfolioAsset(
-      assetId: 'portfolio-nvdab',
-      network: 'bsc',
-      symbol: 'NVDAB',
-      decimals: 18,
-      balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
-      walletId: 'wallet-1',
-      productId: 'bstocks:nvdab',
-      bstocksAvailableQuantity: DecimalValue(
-        '2.0154',
-        asset: 'NVDAB',
-        unit: 'token',
+  }) async {
+    await availabilityGate?.future;
+    return [
+      PortfolioAsset(
+        assetId: 'portfolio-nvdab',
+        network: 'bsc',
+        symbol: 'NVDAB',
+        decimals: 18,
+        balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
+        walletId: 'wallet-1',
+        productId: 'bstocks:nvdab',
+        bstocksAvailableQuantity: DecimalValue(
+          '2.0154',
+          asset: 'NVDAB',
+          unit: 'token',
+        ),
+        bstocksUnavailableQuantity: DecimalValue(
+          '1',
+          asset: 'NVDAB',
+          unit: 'token',
+        ),
+        withdrawable: true,
+        bstocksAvailabilityStatus: 'complete',
+        freshness: 'fresh',
       ),
-      bstocksUnavailableQuantity: DecimalValue(
-        '1',
-        asset: 'NVDAB',
-        unit: 'token',
-      ),
-      withdrawable: true,
-      bstocksAvailabilityStatus: 'complete',
-      freshness: 'fresh',
-    ),
-  ];
+    ];
+  }
 
   @override
   Future<List<TradingAccount>> listAccounts() async => const [
