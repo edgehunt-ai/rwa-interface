@@ -152,7 +152,7 @@ class _UtilityBar extends StatelessWidget {
                   border: Border.all(color: colors.border),
                   image: const DecorationImage(
                     image: AssetImage(
-                      'assets/figma/home_markets/account_avatar.png',
+                      'assets/figma/home_markets/account_avatar.webp',
                     ),
                     fit: BoxFit.cover,
                   ),
