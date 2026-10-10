@@ -891,7 +891,8 @@ class _AccountRow extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Image.asset(
-                'assets/figma/account_activity/account_avatar.png',
+                'assets/figma/home_markets/account_avatar.webp',
+                key: const Key('settings-account-avatar'),
                 fit: BoxFit.cover,
               ),
             ),

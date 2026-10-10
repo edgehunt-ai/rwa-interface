@@ -34,6 +34,13 @@ void main() {
     expect(find.text('Passkey'), findsOneWidget);
     expect(find.text('Export Private Key'), findsOneWidget);
     expect(find.text('Terms & Conditions'), findsOneWidget);
+    final avatar = tester.widget<Image>(
+      find.byKey(const Key('settings-account-avatar')),
+    );
+    expect(
+      (avatar.image as AssetImage).assetName,
+      'assets/figma/home_markets/account_avatar.webp',
+    );
 
     await tester.tap(find.text('Export Private Key'));
     await tester.pumpAndSettle();
