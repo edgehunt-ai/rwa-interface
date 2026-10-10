@@ -39,4 +39,41 @@ void main() {
     expect(sanitized.breadcrumbs!.single.message, 'token=<redacted>');
     expect(sanitized.exceptions!.single.value, contains('<redacted-email>'));
   });
+
+  test('redacts credential and wallet secret formats', () {
+    const privateKey = '0x0123456789abcdef';
+    const mnemonic = 'alpha beta gamma delta';
+    const password = 'correct-horse-battery-staple';
+    const clientSecret = 'client-secret-value';
+    final value = SentryEventSanitizer.redact(
+      'private_key=$privateKey '
+      'mnemonic="$mnemonic" '
+      'password:$password '
+      '{"client_secret":"$clientSecret"} '
+      'https://example.test/callback?api_key=api-key-value',
+    );
+
+    expect(value, isNot(contains(privateKey)));
+    expect(value, isNot(contains(mnemonic)));
+    expect(value, isNot(contains(password)));
+    expect(value, isNot(contains(clientSecret)));
+    expect(value, isNot(contains('api-key-value')));
+    expect('<redacted>'.allMatches(value), hasLength(5));
+  });
+
+  test('drops tags whose keys identify secrets', () {
+    final event = SentryEvent(
+      tags: {
+        'operation': 'sign_in',
+        'private_key': 'private',
+        'mnemonic_phrase': 'words',
+        'client_secret': 'secret',
+        'password_reset': 'password',
+      },
+    );
+
+    final sanitized = SentryEventSanitizer.sanitize(event, Hint());
+
+    expect(sanitized.tags, {'operation': 'sign_in'});
+  });
 }

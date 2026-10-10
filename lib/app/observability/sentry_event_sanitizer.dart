@@ -52,25 +52,37 @@ abstract final class SentryEventSanitizer {
       )
       .replaceAllMapped(
         RegExp(
-          r'\b(access_token|authorization|code|id_token|state|token|signature|address)\s*=\s*[^\s,&]+',
+          '"($_sensitiveValueKeyPattern)"\\s*:\\s*"[^"]*"',
           caseSensitive: false,
         ),
-        (match) => '${match.group(1)}=<redacted>',
+        (match) => '"${match.group(1)}":"<redacted>"',
       )
       .replaceAllMapped(
         RegExp(
-          r'([?&](?:access_token|authorization|code|id_token|state|token|signature|address)=)[^&#\s]+',
+          '\\b($_sensitiveValueKeyPattern)\\b\\s*([=:])\\s*(["\'])[^"\']*\\3',
           caseSensitive: false,
         ),
-        (match) => '${match.group(1)}<redacted>',
+        (match) => '${match.group(1)}${match.group(2)}<redacted>',
       )
       .replaceAllMapped(
         RegExp(
-          r'("(?:access_token|authorization|code|id_token|state|token|signature|address)"\s*:\s*")[^"]+',
+          '\\b($_sensitiveValueKeyPattern)\\b\\s*([=:])\\s*[^\\s,&]+',
+          caseSensitive: false,
+        ),
+        (match) => '${match.group(1)}${match.group(2)}<redacted>',
+      )
+      .replaceAllMapped(
+        RegExp(
+          '([?&](?:$_sensitiveValueKeyPattern)=)[^&#\\s]+',
           caseSensitive: false,
         ),
         (match) => '${match.group(1)}<redacted>',
       );
+
+  static const _sensitiveValueKeyPattern =
+      'access_token|authorization|code|id_token|state|token|signature|address|'
+      'private[_-]?key|mnemonic|seed(?:[_-]?phrase)?|password|passphrase|'
+      'client[_-]?secret|api[_-]?key|secret';
 
   static bool _safeKey(String key) => !const {
     'token',
@@ -79,6 +91,17 @@ abstract final class SentryEventSanitizer {
     'email',
     'address',
     'signature',
+    'private_key',
+    'private-key',
+    'privatekey',
+    'mnemonic',
+    'seed',
+    'password',
+    'passphrase',
+    'secret',
+    'api_key',
+    'api-key',
+    'apikey',
     'payload',
     'body',
     'amount',

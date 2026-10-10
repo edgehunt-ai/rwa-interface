@@ -11,6 +11,10 @@ typedef MonitoringInitializer = Future<void> Function(
   ApplicationRunner appRunner,
 );
 typedef SmokeTestReporter = Future<void> Function();
+typedef BootstrapErrorReporter = Future<void> Function(
+  Object error,
+  StackTrace stackTrace,
+);
 
 abstract final class SentryBootstrap {
   static Future<void> run({
@@ -18,6 +22,7 @@ abstract final class SentryBootstrap {
     required ApplicationRunner appRunner,
     MonitoringInitializer initializer = _initialize,
     SmokeTestReporter smokeTestReporter = _reportSmokeTest,
+    BootstrapErrorReporter bootstrapErrorReporter = _reportBootstrapError,
     bool isWeb = kIsWeb,
   }) async {
     if (isWeb || !config.enabled) {
@@ -28,8 +33,13 @@ abstract final class SentryBootstrap {
     var started = false;
     Future<void> guardedRunner() async {
       started = true;
-      if (config.smokeTest) await smokeTestReporter();
-      await appRunner();
+      try {
+        if (config.smokeTest) await smokeTestReporter();
+        await appRunner();
+      } on Object catch (error, stackTrace) {
+        await bootstrapErrorReporter(error, stackTrace);
+        rethrow;
+      }
     }
 
     try {
@@ -53,10 +63,26 @@ abstract final class SentryBootstrap {
     },
   );
 
+  static Future<void> _reportBootstrapError(
+    Object error,
+    StackTrace stackTrace,
+  ) => Sentry.captureException(
+    error,
+    stackTrace: stackTrace,
+    withScope: (scope) => scope.setTag('phase', 'application_bootstrap'),
+  );
+
   static Future<void> _initialize(
     ObservabilityConfig config,
     ApplicationRunner appRunner,
-  ) {
+  ) => initializeForTesting(config, appRunner);
+
+  @visibleForTesting
+  static Future<void> initializeForTesting(
+    ObservabilityConfig config,
+    ApplicationRunner appRunner, {
+    FlutterOptionsConfiguration? optionsOverride,
+  }) {
     return SentryFlutter.init((options) {
       options
         ..dsn = config.dsn
@@ -74,6 +100,7 @@ abstract final class SentryBootstrap {
           ..debug = true
           ..diagnosticLevel = SentryLevel.debug;
       }
+      return optionsOverride?.call(options);
     }, appRunner: appRunner);
   }
 }

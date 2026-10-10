@@ -7,18 +7,32 @@ import 'package:nobell/app/observability/observability_config.dart';
 import 'package:nobell/app/observability/sentry_bootstrap.dart';
 import 'package:nobell/firebase_options.dart';
 
-Future<void> main() async {
+typedef ApplicationInitializer = Future<void> Function();
+typedef ApplicationLauncher = void Function(Widget app);
+
+Future<void> main() => SentryBootstrap.run(
+  config: ObservabilityConfig.fromEnvironment(),
+  appRunner: runApplication,
+);
+
+@visibleForTesting
+Future<void> runApplication({
+  ApplicationInitializer firebaseInitializer = _initializeFirebase,
+  ApplicationLauncher applicationLauncher = runApp,
+  bool? initializeFirebase,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
   enableHttpTimelineLogging();
-  if (!kIsWeb &&
-      (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS)) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  final shouldInitializeFirebase =
+      initializeFirebase ??
+      (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS));
+  if (shouldInitializeFirebase) {
+    await firebaseInitializer();
   }
-  await SentryBootstrap.run(
-    config: ObservabilityConfig.fromEnvironment(),
-    appRunner: () => runApp(AppRoot()),
-  );
+  applicationLauncher(AppRoot());
 }
+
+Future<void> _initializeFirebase() =>
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

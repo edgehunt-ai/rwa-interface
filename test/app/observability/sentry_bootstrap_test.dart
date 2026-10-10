@@ -84,6 +84,32 @@ void main() {
     expect(starts, 1);
   });
 
+  test('application bootstrap failure is reported once', () async {
+    final failure = StateError('firebase unavailable');
+    var starts = 0;
+    var reports = 0;
+    Object? reportedError;
+
+    await SentryBootstrap.run(
+      config: enabled,
+      appRunner: () {
+        starts++;
+        throw failure;
+      },
+      initializer: (config, runner) => Future.sync(runner),
+      bootstrapErrorReporter: (error, stackTrace) async {
+        reports++;
+        reportedError = error;
+        expect(stackTrace, isNot(StackTrace.empty));
+      },
+      isWeb: false,
+    );
+
+    expect(starts, 1);
+    expect(reports, 1);
+    expect(reportedError, same(failure));
+  });
+
   test('smoke test reports once before the app starts', () async {
     var starts = 0;
     var reports = 0;
