@@ -733,6 +733,8 @@
   "tokenPosition": "代币持仓",
   "value": "价值",
   "tokenAmount": "代币数量",
+  "marketPriceTitle": "市价",
+  "available": "可用",
   "marketHoursUnavailable": "市场交易时段不可用",
   "marketHoursRefreshHint": "请刷新市场交易时段后重试。",
   "noMarketSessionData": "没有可用的市场时段数据。",

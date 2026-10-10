@@ -557,7 +557,7 @@ class _Terms extends StatelessWidget {
         _TermRow(
           label: l10n.leverage,
           value:
-            '${TokenAmountFormatter.formatValue(execution.leverage)}x・'
+              '${TokenAmountFormatter.formatValue(execution.leverage)}x・'
               '${execution.marginMode == TradingMarginMode.cross ? l10n.cross : l10n.isolated}',
         ),
         // A resting limit order is GTC and carries no slippage tolerance, so
@@ -566,7 +566,8 @@ class _Terms extends StatelessWidget {
           _TermRow(
             key: const Key('hip3-slippage-row'),
             label: l10n.slippage,
-            value: '${TokenAmountFormatter.formatValue(execution.slippagePercent)}%',
+            value:
+                '${TokenAmountFormatter.formatValue(execution.slippagePercent)}%',
             valueKey: const Key('hip3-confirm-slippage-value'),
             comparisonValue: execution.slippagePercent.value,
             icon: 'assets/figma/trade/order_slippage_edit.svg',
@@ -574,7 +575,8 @@ class _Terms extends StatelessWidget {
           ),
         _TermRow(
           label: l10n.estimatedFee,
-          value: '${TokenAmountFormatter.formatValue(execution.estimatedFee)} USDC',
+          value:
+              '${TokenAmountFormatter.formatValue(execution.estimatedFee)} USDC',
           valueKey: const Key('hip3-confirm-fee-value'),
           comparisonValue: execution.estimatedFee.value,
         ),

@@ -2299,6 +2299,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tokenAmount => 'Token amount';
 
   @override
+  String get marketPriceTitle => 'Market Price';
+
+  @override
+  String get available => 'Available';
+
+  @override
   String get marketHoursUnavailable => 'Market hours unavailable';
 
   @override

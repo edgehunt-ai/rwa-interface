@@ -771,6 +771,8 @@
   "tokenPosition": "Token position",
   "value": "Value",
   "tokenAmount": "Token amount",
+  "marketPriceTitle": "Market Price",
+  "available": "Available",
   "marketHoursUnavailable": "Market hours unavailable",
   "marketHoursRefreshHint": "Try again to refresh market hours.",
   "noMarketSessionData": "No market session data is available.",

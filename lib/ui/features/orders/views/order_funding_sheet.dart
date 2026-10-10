@@ -1327,7 +1327,7 @@ class _NetworkIcon extends StatelessWidget {
 
 String? _networkAssetPath(String? network) => switch (network?.toLowerCase()) {
   'polygon' => 'assets/figma/funding/polygon.svg',
-  'bsc' || 'bnb chain' => 'assets/figma/portfolio/network_bsc.svg',
+  'bsc' || 'bnb chain' => 'assets/figma/common/network_bsc.svg',
   'arbitrum' => 'assets/figma/portfolio/network_arbitrum_mark.svg',
   'hyperliquid' => 'assets/figma/home_markets/venue_hyperliquid.svg',
   _ => null,

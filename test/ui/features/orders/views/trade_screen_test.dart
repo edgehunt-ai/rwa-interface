@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/data/repositories/bstocks_order_execution_repository_impl.dart';
 import 'package:nobell/domain/models/api_failure.dart';
@@ -11,24 +14,31 @@ import 'package:nobell/domain/models/domain_page.dart';
 import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/market_snapshot.dart';
 import 'package:nobell/domain/models/hip3_account_abstraction.dart';
+import 'package:nobell/domain/models/hip3_opening_context.dart';
 import 'package:nobell/domain/models/order.dart';
 import 'package:nobell/domain/models/order_intent.dart';
 import 'package:nobell/domain/models/order_preview.dart';
 import 'package:nobell/domain/models/position.dart';
 import 'package:nobell/domain/models/position_close_preview.dart';
 import 'package:nobell/domain/models/position_operation.dart';
+import 'package:nobell/domain/models/portfolio.dart';
+import 'package:nobell/domain/models/portfolio_asset.dart';
 import 'package:nobell/domain/models/resource_result.dart';
+import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/repositories/markets_repository.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/domain/repositories/orders_repository.dart';
 import 'package:nobell/domain/repositories/bstocks_order_action_repository.dart';
 import 'package:nobell/domain/repositories/positions_repository.dart';
+import 'package:nobell/domain/repositories/portfolio_repository.dart';
 import 'package:nobell/domain/repositories/hip3_account_abstraction_repository.dart';
+import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
+import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 
 import '../../../../helpers/test_app.dart';
@@ -737,6 +747,77 @@ void main() {
     );
   }
 
+  for (final orderType in TradingOrderType.values) {
+    testWidgets(
+      'View Position reveals the ${orderType.name} HIP-3 result card',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(800, 900);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        addTearDown(tester.view.resetPhysicalSize);
+        final positions = _ResultNavigationPositionsRepository();
+        final orders = _Hip3ResultNavigationOrdersRepository(orderType);
+        final execution = _Hip3ResultNavigationExecution(orders, positions);
+        await tester.pumpWidget(
+          _tradeWithMarkets(
+            initialKind: MarketProductKind.perp,
+            fundingRepository: FundedRepository(),
+            ordersRepository: orders,
+            positionsRepository: positions,
+            hip3OpeningContext: _hip3OpeningContext(),
+            hip3ExecutionRepository: execution,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.widgetWithText(FilledButton, 'Long'));
+        await tester.pumpAndSettle();
+        if (orderType == TradingOrderType.limit) {
+          await tester.tap(find.text('Limit').last);
+          await tester.pumpAndSettle();
+          final priceInput = find.byKey(
+            const Key('hip3-limit-price-sheet-input'),
+          );
+          await tester.enterText(priceInput, '100');
+          Navigator.of(tester.element(priceInput)).pop('100');
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.byKey(const Key('hip3-limit-quantity-input')),
+            '1',
+          );
+        } else {
+          await tester.enterText(find.byType(TextField).first, '100');
+        }
+        await tester.pump(const Duration(milliseconds: 301));
+        await tester.pumpAndSettle();
+        final submit = find.byKey(const Key('hip3-submit-button'));
+        await tester.ensureVisible(submit);
+        await tester.tap(submit);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('hip3-confirm-button')));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.widgetWithText(FilledButton, 'View Position'),
+          findsOneWidget,
+        );
+        await tester.tap(find.byKey(const Key('hip3-order-result-action')));
+        await tester.pumpAndSettle();
+
+        final target = orderType == TradingOrderType.limit
+            ? find.byKey(const ValueKey('trade-open-order-card-result-order'))
+            : find.byKey(const ValueKey('trade-position-card-position-1'));
+        expect(target, findsOneWidget);
+        final viewport = tester.getRect(
+          find.byKey(const Key('trade-screen-scroll-view')),
+        );
+        final card = tester.getRect(target);
+        expect(card.top, greaterThanOrEqualTo(viewport.top));
+        expect(card.bottom, lessThanOrEqualTo(viewport.bottom));
+      },
+    );
+  }
+
   testWidgets('Trade renders HIP-3-specific price and rights disclosures', (
     tester,
   ) async {
@@ -838,6 +919,7 @@ void main() {
       _tradeWithMarkets(
         locale: const Locale('en'),
         positionsRepository: _PositionsRepository(),
+        portfolioRepository: _BstocksPositionPortfolioRepository(),
       ),
     );
     await tester.pumpAndSettle();
@@ -846,23 +928,39 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final text in [
-      'NVDA/USDT',
-      'Token position',
-      'bStocks · BSC',
+      'NVDAB',
+      'Spot · BSC',
       'Unrealized PnL',
-      r'+$16',
-      '+3%',
-      r'$0.41',
+      r'+$16.00',
+      '+3.00%',
+      'Value',
+      r'$550.00',
+      'Token amount',
+      '3.0154',
+      'Market Price',
       r'$228.71',
-      r'$177.09',
-      'Close',
+      'Available',
+      '2.0154',
+      'Unavailable',
+      '1',
+      'Withdraw',
     ]) {
       expect(find.text(text), findsOneWidget);
     }
     expect(
-      tester.getSize(find.widgetWithText(OutlinedButton, 'Close')).height,
+      tester.getSize(find.widgetWithText(OutlinedButton, 'Withdraw')).height,
       36,
     );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is SvgPicture &&
+            widget.bytesLoader.toString().contains('common/network_bsc.svg'),
+      ),
+      findsWidgets,
+    );
+    expect(find.text('Token position'), findsNothing);
+    expect(find.text('Close'), findsNothing);
     expect(find.text('Edit TP/SL'), findsNothing);
   });
 
@@ -895,13 +993,33 @@ void main() {
     expect(find.text('HIP-3 Perp'), findsOneWidget);
   });
 
-  testWidgets('Trade bStocks position card opens the sell panel from Close', (
+  testWidgets('Trade bStocks Withdraw selects its token and chain', (
     tester,
   ) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const TradeScreen()),
+        GoRoute(
+          path: AppRoutes.withdrawalPath,
+          builder: (_, state) => WithdrawalScreen(
+            token: state.uri.queryParameters['token'] ?? 'USDC',
+            chain: state.uri.queryParameters['chain'] ?? 'Arbitrum',
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.withdrawalSelectPath,
+          builder: (_, _) => const WithdrawalScreen(showSelector: true),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
     await tester.pumpWidget(
       _tradeWithMarkets(
+        router: router,
         locale: const Locale('en'),
         positionsRepository: _PositionsRepository(),
+        portfolioRepository: _BstocksPositionPortfolioRepository(),
       ),
     );
 
@@ -909,15 +1027,19 @@ void main() {
     await _scrollToTradeTab(tester, 'Position');
     await tester.tap(_tradeTab('Position'));
     await tester.pumpAndSettle();
-    expect(find.text('bStocks · BSC'), findsOneWidget);
+    expect(find.text('Spot · BSC'), findsOneWidget);
 
-    final close = find.widgetWithText(OutlinedButton, 'Close');
+    final withdraw = find.widgetWithText(OutlinedButton, 'Withdraw');
+    await tester.ensureVisible(withdraw);
+    expect(withdraw, findsOneWidget);
+    await tester.tap(withdraw);
     await tester.pumpAndSettle();
-    await _scrollToTradeTab(tester, 'Position');
-    await tester.ensureVisible(close);
-    await tester.tap(close);
-    await tester.pumpAndSettle();
-    expect(find.text('Sell NVDA'), findsWidgets);
+
+    expect(find.byType(WithdrawalScreen), findsOneWidget);
+    expect(find.text('Withdraw NVDAB'), findsOneWidget);
+    expect(find.text('NVDAB'), findsWidgets);
+    expect(find.text('BSC'), findsOneWidget);
+    expect(find.text('Available 3.0154 NVDAB'), findsOneWidget);
   });
 
   testWidgets('Trade tab counts stay on their matching tabs without overflow', (
@@ -1124,10 +1246,11 @@ Position _position(
   ),
   _ => Position(
     positionId: 'position-1',
+    productId: 'bstocks:nvdab',
     symbol: 'NVDA',
     kind: kind,
     side: PositionSide.long,
-    quantity: DecimalValue('0.0018', unit: 'quantity'),
+    quantity: DecimalValue('3.0154', unit: 'quantity'),
     valueUsd: DecimalValue('550', asset: 'USDC', unit: 'token'),
     entryPrice: DecimalValue('177.09', asset: 'USDC', unit: 'price'),
     markPrice: DecimalValue('228.71', asset: 'USDC', unit: 'price'),
@@ -1135,6 +1258,54 @@ Position _position(
     unrealizedPnlPercent: DecimalValue('3', unit: 'percent'),
   ),
 };
+
+final class _BstocksPositionPortfolioRepository
+    implements PortfolioRepository, PortfolioAssetsRepository {
+  @override
+  Future<List<PortfolioAsset>> listAssets({
+    String? cursor,
+    String? productId,
+  }) async => [
+    PortfolioAsset(
+      assetId: 'portfolio-nvdab',
+      network: 'bsc',
+      symbol: 'NVDAB',
+      decimals: 18,
+      balance: DecimalValue('3.0154', asset: 'NVDAB', unit: 'token'),
+      walletId: 'wallet-1',
+      productId: 'bstocks:nvdab',
+      bstocksAvailableQuantity: DecimalValue(
+        '2.0154',
+        asset: 'NVDAB',
+        unit: 'token',
+      ),
+      bstocksUnavailableQuantity: DecimalValue(
+        '1',
+        asset: 'NVDAB',
+        unit: 'token',
+      ),
+      withdrawable: true,
+      bstocksAvailabilityStatus: 'complete',
+      freshness: 'fresh',
+    ),
+  ];
+
+  @override
+  Future<List<TradingAccount>> listAccounts() async => const [
+    TradingAccount(
+      kind: TradingAccountKind.bstocks,
+      walletId: 'wallet-1',
+      balances: [],
+    ),
+  ];
+
+  @override
+  Future<Portfolio> getSummary() => throw UnimplementedError();
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      throw UnimplementedError();
+}
 
 CandleChart _chart(String symbol, CandleChartRange range) => CandleChart(
   symbol: symbol,
@@ -1185,14 +1356,19 @@ Finder _headerPrice(String value) => find.byWidgetPredicate(
 );
 
 Widget _tradeWithMarkets({
+  GoRouter? router,
   List<MarketProduct>? products,
   PositionsRepository? positionsRepository,
   OrdersRepository? ordersRepository,
   FundingRepository? fundingRepository,
+  PortfolioRepository? portfolioRepository,
   Locale? locale,
   MarketHours? marketHours,
   MarketSnapshot? bstockSnapshot,
   MarketSnapshot? perpSnapshot,
+  MarketProductKind initialKind = MarketProductKind.bstock,
+  Hip3OpeningContext? hip3OpeningContext,
+  Hip3OrderExecutionRepository? hip3ExecutionRepository,
 }) => ProviderScope(
   overrides: [
     authenticatedStateOverride,
@@ -1212,6 +1388,16 @@ Widget _tradeWithMarkets({
       ordersRepositoryProvider.overrideWithValue(ordersRepository),
     if (fundingRepository != null)
       fundingRepositoryProvider.overrideWithValue(fundingRepository),
+    if (portfolioRepository != null)
+      portfolioRepositoryProvider.overrideWithValue(portfolioRepository),
+    if (hip3OpeningContext != null)
+      hip3OpeningContextProvider.overrideWith(
+        (_, _) async => hip3OpeningContext,
+      ),
+    if (hip3ExecutionRepository != null)
+      hip3OrderExecutionRepositoryProvider.overrideWithValue(
+        hip3ExecutionRepository,
+      ),
     marketProductLookupProvider((
       query: 'NVDA',
       cursor: null,
@@ -1243,7 +1429,9 @@ Widget _tradeWithMarkets({
     if (marketHours != null)
       marketHoursProvider.overrideWith((_) async => marketHours),
   ],
-  child: buildTestApp(const TradeScreen(), locale: locale),
+  child: router == null
+      ? buildTestApp(TradeScreen(initialKind: initialKind), locale: locale)
+      : buildRouterTestApp(router),
 );
 
 final class _UnifiedAccountRepository
@@ -1649,6 +1837,135 @@ final class _ResultNavigationOrdersRepository implements OrdersRepository {
         ? [ResourceResult(resource: _result)]
         : const [],
   );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Hip3OpeningContext _hip3OpeningContext() => Hip3OpeningContext(
+  contextId: 'context',
+  productId: 'xyz:NVDA',
+  environment: 'testnet',
+  currentLeverage: 10,
+  maximumLeverage: 20,
+  currentMarginMode: TradingMarginMode.cross,
+  marginModes: const {TradingMarginMode.cross, TradingMarginMode.isolated},
+  orderTypes: const {TradingOrderType.market, TradingOrderType.limit},
+  timeInForce: const {'gtc', 'ioc'},
+  availableMargin: DecimalValue('1000'),
+  minimumNotional: DecimalValue('10'),
+  maximumNotional: DecimalValue('10000'),
+  sizeDecimals: 3,
+  validUntil: DateTime.now().toUtc().add(const Duration(minutes: 5)),
+  operations: const {'placeOrder', 'setLeverage'},
+);
+
+final class _Hip3ResultNavigationOrdersRepository implements OrdersRepository {
+  _Hip3ResultNavigationOrdersRepository(this.type);
+
+  final TradingOrderType type;
+
+  TradingOrder get result => TradingOrder(
+    orderId: 'result-order',
+    positionId: type == TradingOrderType.market ? 'position-1' : null,
+    symbol: 'NVDA',
+    productId: 'xyz:NVDA',
+    kind: MarketProductKind.perp,
+    side: TradingSide.long,
+    type: type,
+    status: type == TradingOrderType.limit
+        ? TradingOrderStatus.open
+        : TradingOrderStatus.filled,
+    quantity: DecimalValue('1', asset: 'NVDA', unit: 'token'),
+    filledQuantity: DecimalValue(
+      type == TradingOrderType.limit ? '0' : '1',
+      asset: 'NVDA',
+      unit: 'token',
+    ),
+    limitPrice: type == TradingOrderType.limit
+        ? DecimalValue('100', asset: 'USDC', unit: 'price')
+        : null,
+    createdAt: DateTime.utc(2026),
+  );
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) async => OrderPreview(
+    previewId: 'hip3-result-preview',
+    intent: intent,
+    orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
+    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    hip3Execution: Hip3PreviewExecution(
+      contextId: 'context',
+      productId: 'xyz:NVDA',
+      environment: 'testnet',
+      quantity: DecimalValue('1'),
+      type: intent.type,
+      timeInForce: intent.type == TradingOrderType.limit ? 'gtc' : 'ioc',
+      limitPrice: DecimalValue('100'),
+      leverage: intent.leverage ?? DecimalValue('10'),
+      marginMode: intent.marginMode ?? TradingMarginMode.cross,
+      reduceOnly: false,
+      notional: DecimalValue('100'),
+      marginRequired: DecimalValue('10'),
+      availableMargin: DecimalValue('1000'),
+      estimatedFee: DecimalValue('0.05'),
+      slippagePercent: DecimalValue('1'),
+      liquidationPrice: DecimalValue('90'),
+    ),
+  );
+
+  @override
+  Future<ResourceResult<TradingOrder>> create(
+    OrderIntent intent, {
+    required String idempotencyKey,
+    String? previewId,
+  }) async => ResourceResult(
+    resource: TradingOrder(
+      orderId: result.orderId,
+      symbol: result.symbol,
+      productId: result.productId,
+      kind: result.kind,
+      side: result.side,
+      type: result.type,
+      status: TradingOrderStatus.pendingSignature,
+      createdAt: result.createdAt,
+    ),
+  );
+
+  @override
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) async => DomainPage(
+    items: type == TradingOrderType.limit
+        ? [ResourceResult(resource: result)]
+        : const [],
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _Hip3ResultNavigationExecution
+    implements Hip3OrderExecutionRepository {
+  _Hip3ResultNavigationExecution(this.orders, this.positions);
+
+  final _Hip3ResultNavigationOrdersRepository orders;
+  final _ResultNavigationPositionsRepository positions;
+
+  @override
+  Future<ResourceResult<TradingOrder>> awaitActionAndSubmit(
+    String orderId,
+  ) async {
+    if (orders.type == TradingOrderType.market) positions.revealPosition();
+    return ResourceResult(resource: orders.result);
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

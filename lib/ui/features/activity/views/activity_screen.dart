@@ -979,7 +979,7 @@ class _VenueLabel extends StatelessWidget {
         SvgPicture.asset(
           isPerp
               ? 'assets/figma/home_markets/venue_hyperliquid.svg'
-              : 'assets/figma/home_markets/venue_bnb.svg',
+              : 'assets/figma/common/network_bsc.svg',
           width: 14,
           height: 14,
         ),

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nobell/app/routing/routes.dart';
 import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/api_failure.dart';
+import 'package:nobell/domain/models/portfolio_asset.dart';
 import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/models/wallet_action_execution.dart';
 import 'package:nobell/domain/models/withdrawal.dart';
@@ -333,7 +334,9 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         .value
         ?.where(
           (asset) =>
-              asset.symbol == widget.token && asset.chain == widget.chain,
+              asset.symbol == widget.token &&
+              normalizeChainLabel(asset.chain) ==
+                  normalizeChainLabel(widget.chain),
         )
         .firstOrNull;
     return Scaffold(
@@ -1325,7 +1328,7 @@ String _tokenIcon(String symbol) => switch (symbol.toUpperCase()) {
 };
 
 String _networkIcon(String chain) => switch (chain.toLowerCase()) {
-  'bsc' || 'bnb chain' => 'assets/figma/funding/bnb_chain.svg',
+  'bsc' || 'bnb chain' => 'assets/figma/common/network_bsc.svg',
   _ => 'assets/figma/funding/arbitrum.svg',
 };
 

@@ -128,6 +128,8 @@ class _Details extends ConsumerWidget {
             key: ValueKey('hip3-open-$symbol'),
             symbol: symbol,
             productId: selectedProductId,
+            targetOrderId: targetOpenOrderId,
+            targetOrderKey: openOrderCardKey,
           ),
         if (activeTab == 'Open' && kind != MarketProductKind.perp)
           _OpenOrdersTab(
@@ -143,6 +145,7 @@ class _Details extends ConsumerWidget {
             positions: positionState,
             kind: kind,
             symbol: symbol,
+            productId: selectedProductId,
             positionCardKey: positionCardKey,
             targetPositionId: targetPositionId,
           ),
@@ -539,12 +542,14 @@ class _PositionTab extends ConsumerWidget {
     required this.positions,
     required this.kind,
     required this.symbol,
+    required this.productId,
     required this.positionCardKey,
     required this.targetPositionId,
   });
   final AsyncValue<DomainPage<Position>> positions;
   final MarketProductKind kind;
   final String symbol;
+  final String? productId;
   final GlobalKey positionCardKey;
   final String? targetPositionId;
 
@@ -582,6 +587,7 @@ class _PositionTab extends ConsumerWidget {
                   position,
                   key: ValueKey('trade-position-card-${position.positionId}'),
                   kind: kind,
+                  productId: productId,
                 ),
               ),
           ],
@@ -592,24 +598,34 @@ class _PositionTab extends ConsumerWidget {
 }
 
 class _PositionCard extends StatelessWidget {
-  const _PositionCard(this.position, {super.key, required this.kind});
+  const _PositionCard(
+    this.position, {
+    super.key,
+    required this.kind,
+    required this.productId,
+  });
   final Position position;
   final MarketProductKind kind;
+  final String? productId;
 
   @override
   Widget build(BuildContext context) => switch (kind) {
     MarketProductKind.perp => _Hip3PositionSummaryCard(position: position),
-    _ => _BstocksPositionSummaryCard(position: position),
+    _ => _BstocksPositionSummaryCard(position: position, productId: productId),
   };
 }
 
-class _BstocksPositionSummaryCard extends StatelessWidget {
-  const _BstocksPositionSummaryCard({required this.position});
+class _BstocksPositionSummaryCard extends ConsumerWidget {
+  const _BstocksPositionSummaryCard({
+    required this.position,
+    required this.productId,
+  });
 
   final Position position;
+  final String? productId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final l10n = AppLocalizations.of(context);
@@ -619,6 +635,12 @@ class _BstocksPositionSummaryCard extends StatelessWidget {
       colors: colors,
       semantic: semantic,
     );
+    final availabilityProductId = position.productId ?? productId;
+    final availability = availabilityProductId == null
+        ? null
+        : ref
+              .watch(bstocksSellAvailabilityProvider(availabilityProductId))
+              .value;
 
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -631,41 +653,26 @@ class _BstocksPositionSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${position.symbol}/USDT',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        height: 22 / 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.tokenPosition,
-                      style: TextStyle(
-                        fontSize: 11,
-                        height: 14 / 11,
-                        fontWeight: FontWeight.w500,
-                        color: colors.secondaryText,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  '${_underlyingSymbol(position.symbol)}B',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 22 / 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               _Hip3SourceChip(
-                label: 'bStocks · BSC',
-                backgroundColor: const Color(0x1AF3BA2F),
+                label: 'Spot · BSC',
+                backgroundColor: const Color(0x1AEDBC04),
                 leading: SvgPicture.asset(
-                  'assets/figma/funding/bnb_chain.svg',
+                  'assets/figma/common/network_bsc.svg',
                   width: 14,
                   height: 14,
                   fit: BoxFit.contain,
@@ -687,7 +694,7 @@ class _BstocksPositionSummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                _formatSignedUsd(pnl),
+                _formatSignedUsdFixed2(pnl),
                 style: TextStyle(
                   fontSize: 20,
                   height: 26 / 20,
@@ -703,6 +710,7 @@ class _BstocksPositionSummaryCard extends StatelessWidget {
                   child: Text(
                     TokenAmountFormatter.formatPercent(
                       position.unrealizedPnlPercent!,
+                      trimInsignificantZeros: false,
                     ),
                     style: TextStyle(
                       fontSize: 12,
@@ -718,24 +726,40 @@ class _BstocksPositionSummaryCard extends StatelessWidget {
           const SizedBox(height: 16),
           _Hip3MetricRow(
             metrics: [
-              _Hip3Metric(l10n.value, _formatUsdFixed2(position.markValue)),
-              _Hip3Metric(l10n.marketPrice, _formatUsd(position.markPrice)),
-              _Hip3Metric(l10n.entryPrice, _formatUsd(position.entryPrice)),
+              _Hip3Metric(l10n.value, _formatUsdFixed2(position.valueUsd)),
+              _Hip3Metric(
+                l10n.tokenAmount,
+                TokenAmountFormatter.formatDecimal(position.quantity),
+              ),
+              _Hip3Metric(
+                l10n.marketPriceTitle,
+                _formatUsd(position.markPrice),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _Hip3MetricRow(
+            metrics: [
+              _Hip3Metric(
+                l10n.available,
+                _formatTokenQuantity(availability?.quantity),
+              ),
+              _Hip3Metric(
+                l10n.unavailable,
+                _formatTokenQuantity(availability?.unavailableQuantity),
+              ),
+              const _Hip3Metric('', ''),
             ],
           ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: _Hip3ActionButton(
-              label: l10n.close,
-              foregroundColor: semantic.loss,
-              onPressed: () => showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => BstocksOrderPanel(
-                  symbol: position.symbol,
-                  productId: position.productId,
-                  initialSide: TradingSide.sell,
+              label: l10n.withdraw,
+              onPressed: () => context.push(
+                AppRoutes.withdrawalLocation(
+                  token: '${_underlyingSymbol(position.symbol)}B',
+                  chain: 'BSC',
                 ),
               ),
             ),
@@ -981,6 +1005,17 @@ String _formatUsd(DecimalValue? value) =>
 
 String _formatUsdFixed2(DecimalValue? value) =>
     value == null ? '—' : TokenAmountFormatter.formatUsdFixed(value);
+
+String _formatTokenQuantity(DecimalValue? value) =>
+    value == null ? '—' : TokenAmountFormatter.formatDecimal(value);
+
+String _formatSignedUsdFixed2(DecimalValue? value) {
+  if (value == null) return '—';
+  final formatted = TokenAmountFormatter.formatUsdFixed(value);
+  return value.value.startsWith('-') || value.value == '0'
+      ? formatted
+      : '+$formatted';
+}
 
 String _formatSignedUsd(DecimalValue? value) {
   if (value == null) return '—';

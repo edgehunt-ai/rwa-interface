@@ -1517,13 +1517,6 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
   Widget _submitted(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final current = submittedOrder!;
-    final canViewResult =
-        current.status == TradingOrderStatus.filled ||
-        (current.type == TradingOrderType.limit &&
-            const {
-              TradingOrderStatus.open,
-              TradingOrderStatus.partiallyFilled,
-            }.contains(current.status));
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1552,21 +1545,15 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
         const SizedBox(height: 16),
         FilledButton(
           key: const Key('bstocks-order-result-action'),
-          onPressed: canViewResult
-              ? () {
-                  final onViewPosition = widget.onViewPosition;
-                  if (onViewPosition != null) {
-                    onViewPosition(current);
-                  } else {
-                    Navigator.of(context).pop();
-                  }
-                }
-              : () => Navigator.of(context).pop(),
-          child: Text(
-            canViewResult
-                ? l10n.viewPosition
-                : AppLocalizations.of(context).closeViewLater,
-          ),
+          onPressed: () {
+            final onViewPosition = widget.onViewPosition;
+            if (onViewPosition != null) {
+              onViewPosition(current);
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
+          child: Text(l10n.viewPosition),
         ),
       ],
     );

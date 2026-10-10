@@ -2174,6 +2174,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tokenAmount => '代币数量';
 
   @override
+  String get marketPriceTitle => '市价';
+
+  @override
+  String get available => '可用';
+
+  @override
   String get marketHoursUnavailable => '市场交易时段不可用';
 
   @override

@@ -2210,6 +2210,7 @@ void main() {
     final orders = _ExecutableHip3Orders();
     final submission = Completer<void>();
     final execution = _Hip3Execution(waitFor: submission.future);
+    TradingOrder? viewedOrder;
     var positionLoads = 0;
     const positionFilter = (
       symbol: 'NVDA',
@@ -2229,7 +2230,7 @@ void main() {
         child: _app(
           Stack(
             children: [
-              const Hip3OrderPanel(),
+              Hip3OrderPanel(onViewPosition: (order) => viewedOrder = order),
               const Offstage(child: _PositionProbe(filter: positionFilter)),
             ],
           ),
@@ -2277,7 +2278,10 @@ void main() {
     expect(successImage.fit, BoxFit.contain);
     expect(tester.getSize(successIllustration).height, 120);
     expect(tester.takeException(), isNull);
-    expect(find.text('Close & View Later'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'View Position'), findsOneWidget);
+    expect(find.text('Close & View Later'), findsNothing);
+    await tester.tap(find.byKey(const Key('hip3-order-result-action')));
+    expect(viewedOrder?.orderId, 'order-1');
   });
 }
 

@@ -264,7 +264,7 @@ class MarketProductRow extends ConsumerWidget {
                     const SizedBox(width: 4),
                     SvgPicture.asset(
                       product.kind == MarketProductKind.bstock
-                          ? 'assets/figma/home_markets/venue_bnb.svg'
+                          ? 'assets/figma/common/network_bsc.svg'
                           : 'assets/figma/home_markets/venue_hyperliquid.svg',
                       width: 14,
                       height: 14,

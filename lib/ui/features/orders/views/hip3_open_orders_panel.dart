@@ -17,9 +17,17 @@ import '../../../core/theme/app_theme.dart';
 import '../providers/order_providers.dart';
 
 class Hip3OpenOrdersPanel extends ConsumerStatefulWidget {
-  const Hip3OpenOrdersPanel({super.key, required this.symbol, this.productId});
+  const Hip3OpenOrdersPanel({
+    super.key,
+    required this.symbol,
+    this.productId,
+    this.targetOrderId,
+    this.targetOrderKey,
+  });
   final String symbol;
   final String? productId;
+  final String? targetOrderId;
+  final GlobalKey? targetOrderKey;
   @override
   ConsumerState<Hip3OpenOrdersPanel> createState() => _PanelState();
 }
@@ -94,10 +102,15 @@ class _PanelState extends ConsumerState<Hip3OpenOrdersPanel> {
             description: l10n.openOrdersEmptyDescription,
           ),
         for (final order in orders.values)
-          Hip3OpenOrderCard(
-            key: ValueKey(order.orderId),
-            order: order,
-            onChanged: _refresh,
+          KeyedSubtree(
+            key: order.orderId == widget.targetOrderId
+                ? widget.targetOrderKey
+                : null,
+            child: Hip3OpenOrderCard(
+              key: ValueKey('trade-open-order-card-${order.orderId}'),
+              order: order,
+              onChanged: _refresh,
+            ),
           ),
         if (last?.hasMore == true && !invalidCursor)
           TextButton(

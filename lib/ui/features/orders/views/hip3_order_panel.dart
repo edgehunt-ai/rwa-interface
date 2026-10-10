@@ -54,6 +54,7 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
     this.symbol = 'NVDA',
     this.productId,
     this.onYourPositionTap,
+    this.onViewPosition,
   });
 
   final TradingSide initialSide;
@@ -61,6 +62,7 @@ class Hip3OrderPanel extends ConsumerStatefulWidget {
   final String symbol;
   final String? productId;
   final VoidCallback? onYourPositionTap;
+  final ValueChanged<TradingOrder>? onViewPosition;
 
   @override
   ConsumerState<Hip3OrderPanel> createState() => _Hip3OrderPanelState();
@@ -1745,8 +1747,16 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
               ],
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(AppLocalizations.of(context).closeViewLater),
+                key: const Key('hip3-order-result-action'),
+                onPressed: () {
+                  final onViewPosition = widget.onViewPosition;
+                  if (onViewPosition != null) {
+                    onViewPosition(_submitted!);
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: Text(AppLocalizations.of(context).viewPosition),
               ),
             ],
           ),

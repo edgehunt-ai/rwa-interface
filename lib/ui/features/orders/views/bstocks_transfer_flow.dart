@@ -7,6 +7,7 @@ class BstocksTransferFlowSheet extends ConsumerStatefulWidget {
     required this.amountNeeded,
     this.initialStage = BstocksTransferFlowStage.source,
     this.onClose,
+    this.onViewPosition,
     required this.plan,
     required this.orderPreview,
     required this.symbol,
@@ -15,6 +16,7 @@ class BstocksTransferFlowSheet extends ConsumerStatefulWidget {
   final DecimalValue amountNeeded;
   final BstocksTransferFlowStage initialStage;
   final VoidCallback? onClose;
+  final ValueChanged<TradingOrder>? onViewPosition;
   final FundingPlan plan;
   final OrderPreview orderPreview;
   final String symbol;
@@ -36,6 +38,7 @@ class _BstocksTransferFlowState
     extends ConsumerState<BstocksTransferFlowSheet> {
   late BstocksTransferFlowStage _stage;
   String? error;
+  TradingOrder? _submittedOrder;
 
   @override
   void initState() {
@@ -175,6 +178,7 @@ class _BstocksTransferFlowState
           .submit(preview.intent, previewId: preview.previewId);
       if (!mounted) return;
       setState(() {
+        _submittedOrder = result?.resource;
         _stage = result == null
             ? BstocksTransferFlowStage.review
             : BstocksTransferFlowStage.tradeSuccess;
@@ -281,9 +285,18 @@ class _BstocksTransferFlowState
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 16),
-        OutlinedButton(
-          onPressed: widget.onClose,
-          child: Text(l10n.closeViewLater),
+        FilledButton(
+          key: const Key('bstocks-transfer-result-action'),
+          onPressed: () {
+            final order = _submittedOrder;
+            final onViewPosition = widget.onViewPosition;
+            if (order != null && onViewPosition != null) {
+              onViewPosition(order);
+            } else {
+              widget.onClose?.call();
+            }
+          },
+          child: Text(l10n.viewPosition),
         ),
       ],
     );

@@ -1792,7 +1792,7 @@ class _HoldingRow extends StatelessWidget {
                             children: [
                               SvgPicture.asset(
                                 isBstock
-                                    ? 'assets/figma/home_markets/venue_bnb.svg'
+                                    ? 'assets/figma/common/network_bsc.svg'
                                     : 'assets/figma/home_markets/venue_hyperliquid.svg',
                                 width: 14,
                                 height: 14,
@@ -2128,7 +2128,7 @@ class _NetworkBadge extends StatelessWidget {
     final normalized = network.toLowerCase();
     if (normalized.contains('bnb') || normalized.contains('bsc')) {
       return SvgPicture.asset(
-        'assets/figma/portfolio/network_bsc.svg',
+        'assets/figma/common/network_bsc.svg',
         width: 16,
         height: 16,
       );

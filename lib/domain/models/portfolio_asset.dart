@@ -13,6 +13,7 @@ final class PortfolioAsset {
     this.native = false,
     this.productId,
     this.bstocksAvailableQuantity,
+    this.bstocksUnavailableQuantity,
     this.bstocksAvailabilityStatus,
     this.freshness,
   });
@@ -32,6 +33,7 @@ final class PortfolioAsset {
   final bool native;
   final String? productId;
   final DecimalValue? bstocksAvailableQuantity;
+  final DecimalValue? bstocksUnavailableQuantity;
   final String? bstocksAvailabilityStatus;
   final String? freshness;
 

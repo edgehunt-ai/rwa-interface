@@ -2093,7 +2093,10 @@ void main() {
     expect(tester.takeException(), isNull);
 
     repository.complete();
-    await tester.pump();
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(FilledButton, 'View Position'), findsOneWidget);
+    expect(find.text('Close & View Later'), findsNothing);
   });
 
   testWidgets('insufficient funds sheet presents recoverable funding routes', (
@@ -2302,6 +2305,48 @@ void main() {
         find.widgetWithText(OutlinedButton, 'Close & View Later'),
       );
       expect(closed, isTrue);
+    },
+  );
+
+  testWidgets(
+    'completed funding success exposes View Position with its order',
+    (tester) async {
+      final funding = _CompletedFundingRepository();
+      final wallets = _FundingWalletsRepository();
+      TradingOrder? viewedOrder;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(
+              _FilledOrdersRepository(),
+            ),
+            fundingRepositoryProvider.overrideWithValue(funding),
+            walletsRepositoryProvider.overrideWithValue(wallets),
+          ],
+          child: buildTestApp(
+            BstocksTransferFlowSheet(
+              amountNeeded: DecimalValue('100', asset: 'USDT', unit: 'token'),
+              plan: _readyFundingPlan,
+              orderPreview: _fundedPreview,
+              symbol: 'NVDAB',
+              onViewPosition: (order) => viewedOrder = order,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.widgetWithText(FilledButton, 'View Position'),
+        findsOneWidget,
+      );
+      expect(find.text('Close & View Later'), findsNothing);
+      await tester.tap(find.byKey(const Key('bstocks-transfer-result-action')));
+      expect(viewedOrder?.orderId, 'filled-order-1');
     },
   );
 

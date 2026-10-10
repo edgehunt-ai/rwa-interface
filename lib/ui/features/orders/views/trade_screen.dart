@@ -46,6 +46,7 @@ import 'package:nobell/data/services/tpsl_risk_consent_service.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
+import 'package:nobell/ui/features/portfolio/providers/portfolio_providers.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 
@@ -63,7 +64,7 @@ final class _OrderPanelResult {
     this.positionId,
   });
 
-  factory _OrderPanelResult.forBstocks(TradingOrder order) => _OrderPanelResult(
+  factory _OrderPanelResult.forOrder(TradingOrder order) => _OrderPanelResult(
     target: order.type == TradingOrderType.limit
         ? _OrderPanelTarget.openOrder
         : _OrderPanelTarget.position,
@@ -140,9 +141,19 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
     try {
       if (showOpenOrder) {
-        final query = (symbol: symbol, productId: _productId);
-        ref.invalidate(bstocksOpenOrdersProvider(query));
-        await ref.read(bstocksOpenOrdersProvider(query).future);
+        if (productKind == MarketProductKind.perp) {
+          final query = (
+            symbol: symbol,
+            productId: _productId,
+            cursor: null as String?,
+          );
+          ref.invalidate(hip3OpenOrdersProvider(query));
+          await ref.read(hip3OpenOrdersProvider(query).future);
+        } else {
+          final query = (symbol: symbol, productId: _productId);
+          ref.invalidate(bstocksOpenOrdersProvider(query));
+          await ref.read(bstocksOpenOrdersProvider(query).future);
+        }
       } else {
         ref.invalidate(positionsProvider(positionFilter));
         await ref.read(positionsProvider(positionFilter).future);
@@ -241,8 +252,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         side: side,
         onYourPositionTap: () => Navigator.of(sheetContext)
             .pop(const _OrderPanelResult(target: _OrderPanelTarget.position)),
-        onBstocksViewPosition: (order) =>
-            Navigator.of(sheetContext).pop(_OrderPanelResult.forBstocks(order)),
+        onViewPosition: (order) =>
+            Navigator.of(sheetContext).pop(_OrderPanelResult.forOrder(order)),
       ),
     );
     if (!mounted) return;
@@ -510,7 +521,7 @@ class _OrderPanelEntrySheet extends ConsumerStatefulWidget {
     required this.productKind,
     required this.side,
     required this.onYourPositionTap,
-    required this.onBstocksViewPosition,
+    required this.onViewPosition,
   });
 
   final String symbol;
@@ -518,7 +529,7 @@ class _OrderPanelEntrySheet extends ConsumerStatefulWidget {
   final MarketProductKind productKind;
   final TradingSide side;
   final VoidCallback onYourPositionTap;
-  final ValueChanged<TradingOrder> onBstocksViewPosition;
+  final ValueChanged<TradingOrder> onViewPosition;
 
   @override
   ConsumerState<_OrderPanelEntrySheet> createState() =>
@@ -556,7 +567,7 @@ class _OrderPanelEntrySheetState extends ConsumerState<_OrderPanelEntrySheet> {
             symbol: widget.symbol,
             productId: widget.productId,
             initialSide: widget.side,
-            onViewPosition: widget.onBstocksViewPosition,
+            onViewPosition: widget.onViewPosition,
           )
         : Hip3OrderPanel(
             symbol: widget.symbol,
@@ -565,6 +576,7 @@ class _OrderPanelEntrySheetState extends ConsumerState<_OrderPanelEntrySheet> {
                 ? TradingSide.long
                 : TradingSide.short,
             onYourPositionTap: widget.onYourPositionTap,
+            onViewPosition: widget.onViewPosition,
           );
   }
 }
@@ -758,7 +770,7 @@ class _ProductSwitch extends StatelessWidget {
                     ? 'bStocks'
                     : l10n.hip3Perp,
                 asset: value == MarketProductKind.bstock
-                    ? 'assets/figma/home_markets/venue_bnb.svg'
+                    ? 'assets/figma/common/network_bsc.svg'
                     : 'assets/figma/home_markets/venue_hyperliquid.svg',
                 selected: kind == value,
                 onTap: () => onChanged(value),

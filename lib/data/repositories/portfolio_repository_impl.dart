@@ -113,6 +113,14 @@ final class PortfolioRepositoryImpl
                     asset: asset.symbol,
                     unit: 'token',
                   ),
+            bstocksUnavailableQuantity:
+                asset.bstocks?.unavailableQuantity == null
+                ? null
+                : DecimalValue(
+                    asset.bstocks!.unavailableQuantity!,
+                    asset: asset.symbol,
+                    unit: 'token',
+                  ),
             bstocksAvailabilityStatus: asset.bstocks?.availabilityStatus.name,
             freshness: asset.freshness.name,
           ),

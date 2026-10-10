@@ -102,6 +102,7 @@ void main() {
 
       expect(repository.productId, 'product-1');
       expect(value?.quantity.value, '1.25');
+      expect(value?.unavailableQuantity?.value, '0.75');
       expect(value?.decimals, 18);
     },
   );
@@ -209,6 +210,7 @@ final class _BstocksAvailabilityRepository
         walletId: 'trading-wallet',
         productId: 'product-1',
         bstocksAvailableQuantity: DecimalValue('1.25'),
+        bstocksUnavailableQuantity: DecimalValue('0.75'),
         bstocksAvailabilityStatus: 'complete',
         freshness: 'live',
       ),

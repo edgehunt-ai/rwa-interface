@@ -588,7 +588,7 @@ class _RouteValue extends StatelessWidget {
 
 Widget? _depositNetworkIcon(String network, {double size = 24}) {
   final asset = switch (network.trim().toLowerCase()) {
-    'bsc' || 'bnb chain' => 'assets/figma/funding/bnb_chain.svg',
+    'bsc' || 'bnb chain' => 'assets/figma/common/network_bsc.svg',
     'arbitrum' => 'assets/figma/funding/arbitrum.svg',
     'ethereum' => 'assets/figma/funding/eth.svg',
     'polygon' => 'assets/figma/funding/polygon.svg',

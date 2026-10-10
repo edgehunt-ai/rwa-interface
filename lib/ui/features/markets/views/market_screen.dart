@@ -398,7 +398,7 @@ class _StockProductSources extends StatelessWidget {
         children: [
           if (kinds.contains(MarketProductKind.bstock)) ...[
             SvgPicture.asset(
-              'assets/figma/home_markets/venue_bnb.svg',
+              'assets/figma/common/network_bsc.svg',
               width: 16,
               height: 16,
             ),

@@ -4152,6 +4152,18 @@ abstract class AppLocalizations {
   /// **'Token amount'**
   String get tokenAmount;
 
+  /// No description provided for @marketPriceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Market Price'**
+  String get marketPriceTitle;
+
+  /// No description provided for @available.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get available;
+
   /// No description provided for @marketHoursUnavailable.
   ///
   /// In en, this message translates to:

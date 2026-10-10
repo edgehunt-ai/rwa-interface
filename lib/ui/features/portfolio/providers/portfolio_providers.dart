@@ -258,10 +258,12 @@ final class BstocksSellAvailability {
   const BstocksSellAvailability({
     required this.quantity,
     required this.decimals,
+    this.unavailableQuantity,
   });
 
   final DecimalValue quantity;
   final int decimals;
+  final DecimalValue? unavailableQuantity;
 }
 
 final bstocksSellAvailabilityProvider = FutureProvider.autoDispose
@@ -296,6 +298,7 @@ final bstocksSellAvailabilityProvider = FutureProvider.autoDispose
       return BstocksSellAvailability(
         quantity: asset.bstocksAvailableQuantity!,
         decimals: asset.decimals,
+        unavailableQuantity: asset.bstocksUnavailableQuantity,
       );
     }, retry: _retryBstocksSellAvailability);
 
