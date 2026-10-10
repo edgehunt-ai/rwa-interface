@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -1630,11 +1631,8 @@ class _CashActionSheet extends StatelessWidget {
             label: balance.valueUsd == null
                 ? '—'
                 : TokenAmountFormatter.formatUsd(balance.valueUsd!),
-            value: TokenAmountFormatter.format(
-              balance.balance,
-              symbol: balance.symbol,
-              decimals: balance.decimals,
-            ),
+            value:
+                '${TokenAmountFormatter.formatDecimal(balance.balance)} ${balance.symbol}',
           ),
           const SizedBox(height: 16),
           Row(
@@ -1835,7 +1833,7 @@ class _HoldingRow extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${TokenAmountFormatter.formatValue(position.quantity)} '
+                            '${TokenAmountFormatter.formatDecimal(position.quantity)} '
                             '$quantitySymbol',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1935,12 +1933,47 @@ String _formatBalanceQuantity(TokenBalance balance) {
   if (balance.symbol == 'USDC' || balance.symbol == 'USDT') {
     return '${_formatUsdFixed2(balance.balance).substring(1)} ${balance.symbol}';
   }
-  return TokenAmountFormatter.format(
-    balance.balance,
-    symbol: balance.symbol,
-    decimals: balance.decimals,
-  );
+  return '${TokenAmountFormatter.formatDecimal(balance.balance)} ${balance.symbol}';
 }
+
+@Preview(name: 'Asset decimal precision', group: 'Assets', size: Size(393, 220))
+@Preview(
+  name: 'Asset decimal precision narrow',
+  group: 'Assets',
+  size: Size(320, 220),
+)
+Widget assetDecimalPrecisionPreview() => MaterialApp(
+  theme: AppTheme.light,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  home: Scaffold(
+    body: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Cash balance',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          ),
+          Text(
+            '${TokenAmountFormatter.formatDecimal(DecimalValue('0.0000123456789'))} ETH',
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Holding quantity',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+          ),
+          Text(
+            '${TokenAmountFormatter.formatDecimal(DecimalValue('12.123456789'))} NVDAB',
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    ),
+  ),
+);
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.title, required this.value});

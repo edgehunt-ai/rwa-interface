@@ -22,6 +22,50 @@ import 'package:nobell/ui/features/portfolio/views/assets_screen.dart';
 import '../../../helpers/test_app.dart';
 
 void main() {
+  testWidgets(
+    'Assets limits high-precision quantities in rows and cash details',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            portfolioRepositoryProvider.overrideWithValue(
+              _PrecisionPortfolio(),
+            ),
+          ],
+          child: _assetsApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('12.123457 NVDAB'), findsOneWidget);
+      expect(find.text('0.0000123457 ETH'), findsOneWidget);
+      expect(find.text('0.0000123456789 ETH'), findsNothing);
+      await tester.ensureVisible(find.text('ETH'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ETH'));
+      await tester.pumpAndSettle();
+      expect(find.text('0.0000123457 ETH'), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Asset precision preview stays within mobile and desktop bounds',
+    (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.view.devicePixelRatio = 1;
+      for (final width in [320.0, 393.0, 1024.0]) {
+        tester.view.physicalSize = Size(width, 852);
+        await tester.pumpWidget(assetDecimalPrecisionPreview());
+        await tester.pumpAndSettle();
+        expect(find.text('0.0000123457 ETH'), findsOneWidget);
+        expect(find.text('12.123457 NVDAB'), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: 'width: $width');
+      }
+    },
+  );
+
   testWidgets('Assets exposes API-backed allocation and type-tab states', (
     tester,
   ) async {
@@ -514,10 +558,12 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
   const _BstockHoldingsPortfolio({
     this.includeReturn = true,
     this.includeWalletBalances = false,
+    this.quantity = '3.0154',
   });
 
   final bool includeReturn;
   final bool includeWalletBalances;
+  final String quantity;
 
   @override
   Future<Portfolio> getSummary() async => Portfolio(
@@ -561,7 +607,7 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
                 symbol: 'NVDA',
                 kind: MarketProductKind.bstock,
                 side: PositionSide.long,
-                quantity: DecimalValue('3.0154', asset: 'NVDA', unit: 'token'),
+                quantity: DecimalValue(quantity, asset: 'NVDA', unit: 'token'),
                 valueUsd: DecimalValue(
                   includeWalletBalances ? '550' : '1',
                   asset: 'USD',
@@ -579,6 +625,28 @@ final class _BstockHoldingsPortfolio implements PortfolioRepository {
           ),
         ],
       );
+}
+
+final class _PrecisionPortfolio extends _Portfolio {
+  @override
+  Future<List<TradingAccount>> listAccounts() async => [
+    TradingAccount(
+      kind: TradingAccountKind.app,
+      balances: [
+        TokenBalance(
+          symbol: 'ETH',
+          decimals: 18,
+          balance: DecimalValue('0.0000123456789', asset: 'ETH', unit: 'token'),
+          valueUsd: DecimalValue('0.04', asset: 'USD', unit: 'fiat'),
+        ),
+      ],
+    ),
+  ];
+
+  @override
+  Future<DomainPage<HoldingGroup>> listHoldings({String? cursor}) =>
+      const _BstockHoldingsPortfolio(quantity: '12.123456789')
+          .listHoldings(cursor: cursor);
 }
 
 final class _EmptyPortfolio implements PortfolioRepository {

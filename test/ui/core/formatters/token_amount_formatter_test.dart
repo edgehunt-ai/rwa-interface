@@ -4,6 +4,37 @@ import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 
 void main() {
   group('TokenAmountFormatter', () {
+    group('formatDecimal', () {
+      final cases = <String, String>{
+        '0': '0',
+        '0.000000': '0',
+        '-0.0000': '0',
+        '1': '1',
+        '1.000000000': '1',
+        '1234.123456789': '1,234.123457',
+        '12345678901234567890.1234564': '12,345,678,901,234,567,890.123456',
+        '1.1234565': '1.123457',
+        '0.1234564': '0.123456',
+        '0.0000123456789': '0.0000123457',
+        '0.0000100200304': '0.00001002',
+        '0.000000000000000001': '0.000000000000000001',
+        '0.00120': '0.0012',
+        '0.00009999999': '0.0001',
+        '0.9999999': '1',
+        '999.9999999': '1,000',
+        '-0.0000123456789': '-0.0000123457',
+        '-12.1234565': '-12.123457',
+      };
+      for (final entry in cases.entries) {
+        test('formats ${entry.key} as ${entry.value}', () {
+          expect(
+            TokenAmountFormatter.formatDecimal(DecimalValue(entry.key)),
+            entry.value,
+          );
+        });
+      }
+    });
+
     test('preserves an 18-decimal non-zero amount exactly', () {
       final value = DecimalValue(
         '0.000000000000000001',

@@ -4,6 +4,12 @@ enum TokenAmountDisplay { exact, normalized }
 
 /// Formats token amounts without converting them to binary floating point.
 abstract final class TokenAmountFormatter {
+  /// Displays at most six fractional digits, or six digits starting at the
+  /// first non-zero fractional digit when the absolute value is below one.
+  /// Rounds half away from zero and trims trailing fractional zeros.
+  static String formatDecimal(DecimalValue amount) =>
+      _groupIntegerDigits(_formatAdaptiveDecimal(amount.value));
+
   /// Formats only the numeric portion of a decimal amount.
   static String formatValue(DecimalValue amount, {int? decimals}) {
     if (decimals != null) _validateDecimals(decimals);
@@ -231,6 +237,21 @@ abstract final class TokenAmountFormatter {
     return withoutZeros.endsWith('.')
         ? withoutZeros.substring(0, withoutZeros.length - 1)
         : withoutZeros;
+  }
+
+  static String _formatAdaptiveDecimal(String value) {
+    final unsigned = value.startsWith('-') ? value.substring(1) : value;
+    final parts = unsigned.split('.');
+    var fractionDigits = 6;
+    if (parts.first == '0' && parts.length > 1) {
+      final firstNonZero = parts.last.indexOf(RegExp('[1-9]'));
+      if (firstNonZero == -1) return '0';
+      fractionDigits += firstNonZero;
+    }
+    final rounded = _trimInsignificantZeros(
+      _roundToFractionDigits(value, fractionDigits),
+    );
+    return rounded == '-0' ? '0' : rounded;
   }
 
   static String _padFractionDigits(String value, int fractionDigits) {
