@@ -20,6 +20,7 @@ import 'package:nobell/domain/models/position.dart';
 import 'package:nobell/domain/models/position_operation.dart';
 import 'package:nobell/domain/models/order.dart';
 import 'package:nobell/domain/models/resource_result.dart';
+import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
@@ -80,11 +81,11 @@ final class _OrderPanelResult {
 class TradeScreen extends ConsumerStatefulWidget {
   const TradeScreen({
     super.key,
-    this.symbol,
+    required this.symbol,
     this.initialKind = MarketProductKind.bstock,
-  });
+  }) : assert(symbol != '');
 
-  final String? symbol;
+  final String symbol;
   final MarketProductKind initialKind;
 
   @override
@@ -100,6 +101,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   late MarketProductKind productKind;
   late String symbol;
   String? _productId;
+  String? _stockSymbol;
   var _orderPanelOpen = false;
   final _detailsKey = GlobalKey();
   final _openOrderCardKey = GlobalKey();
@@ -118,9 +120,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   void initState() {
     super.initState();
     productKind = widget.initialKind;
-    symbol = widget.symbol?.trim().toUpperCase().isNotEmpty == true
-        ? widget.symbol!.trim().toUpperCase()
-        : _defaultSymbolFor(productKind);
+    symbol = widget.symbol.trim().toUpperCase();
   }
 
   @override
@@ -179,9 +179,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       await Future<void>.delayed(const Duration(milliseconds: 50));
     }
   }
-
-  static String _defaultSymbolFor(MarketProductKind kind) =>
-      kind == MarketProductKind.perp ? 'NVDA' : 'NVDAB';
 
   void _changeProduct(MarketProduct product) {
     setState(() {
@@ -264,18 +261,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     }
   }
 
-  ({
-    String? query,
-    String? cursor,
-    String? group,
-    MarketProductKind? productType,
-  })
-  get _productQuery => (
-    query: _underlyingSymbol(symbol),
-    cursor: null,
-    group: 'hot',
-    productType: null,
-  );
+  MarketQuery _productQuery(String stockSymbol) =>
+      (query: stockSymbol, cursor: null, group: 'hot', productType: null);
 
   Future<void> _refreshDetails({bool waitForResults = true}) async {
     final product = MarketProductRef(symbol: symbol, kind: productKind);
@@ -286,7 +273,10 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       cursor: null,
     );
 
-    ref.invalidate(marketProductLookupProvider(_productQuery));
+    ref.invalidate(marketStocksProvider);
+    if (_stockSymbol case final stockSymbol?) {
+      ref.invalidate(marketProductLookupProvider(_productQuery(stockSymbol)));
+    }
     ref.invalidate(marketProductProvider(product));
     ref.invalidate(marketSnapshotProvider(product));
     ref.invalidate(
@@ -303,32 +293,54 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     }
 
     if (!waitForResults) return;
-    await Future.wait([
-      ref.read(marketProductLookupProvider(_productQuery).future),
-      ref.read(marketProductProvider(product).future),
-      ref.read(marketSnapshotProvider(product).future),
-      ref.read(
-        marketCandlesProvider((product: product, range: chartRange)).future,
-      ),
-      ref.read(marketHoursProvider.future),
-      ref.read(positionsProvider(positionFilter).future),
-      if (productKind == MarketProductKind.perp)
-        ref.read(hip3OpenOrdersProvider(openOrderQuery).future)
-      else
+    try {
+      await Future.wait([
+        ref.read(marketStocksProvider.future),
+        if (_stockSymbol case final stockSymbol?)
+          ref.read(
+            marketProductLookupProvider(_productQuery(stockSymbol)).future,
+          ),
+        ref.read(marketProductProvider(product).future),
+        ref.read(marketSnapshotProvider(product).future),
         ref.read(
-          bstocksOpenOrdersProvider((symbol: symbol, productId: _productId))
-              .future,
+          marketCandlesProvider((product: product, range: chartRange)).future,
         ),
-    ]);
+        ref.read(marketHoursProvider.future),
+        ref.read(positionsProvider(positionFilter).future),
+        if (productKind == MarketProductKind.perp)
+          ref.read(hip3OpenOrdersProvider(openOrderQuery).future)
+        else
+          ref.read(
+            bstocksOpenOrdersProvider((symbol: symbol, productId: _productId))
+                .future,
+          ),
+      ]);
+    } on Object {
+      // Each provider exposes its own retry state in the screen. Refresh must
+      // still complete normally so its error does not reach the global zone.
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final productQuery = _productQuery;
-    final productsState = ref.watch(marketProductLookupProvider(productQuery));
-    final availableProducts = productsState.value?.items
+    final productRef = MarketProductRef(symbol: symbol, kind: productKind);
+    final stocksState = ref.watch(marketStocksProvider);
+    final stock = _stockForProduct(stocksState.value?.items, productRef);
+    if (stock != null) {
+      _stockSymbol = stock.symbol;
+    } else if (stocksState.hasValue) {
+      _stockSymbol = null;
+    }
+    final productQuery = stock == null ? null : _productQuery(stock.symbol);
+    final productsState = productQuery == null
+        ? null
+        : ref.watch(marketProductLookupProvider(productQuery));
+    final stockProducts = stock?.products.toSet();
+    final availableProducts = productsState?.value?.items
         .where(
-          (product) => _underlyingSymbol(product.symbol) == productQuery.query,
+          (product) => stockProducts!.contains(
+            MarketProductRef(symbol: product.symbol, kind: product.kind),
+          ),
         )
         .toList(growable: false);
     MarketProduct? activeProduct;
@@ -352,8 +364,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     if (activeProduct?.productId != _productId) {
       _productId = activeProduct?.productId;
     }
-    final productRef = MarketProductRef(symbol: symbol, kind: productKind);
     final productDetailState = ref.watch(marketProductProvider(productRef));
+    final productDisplaySymbol =
+        activeProduct?.symbol ?? productDetailState.value?.symbol;
     final productTradable =
         productDetailState.value?.tradable ?? activeProduct?.tradable ?? true;
     final isFavorite = _favoriteOverrideRef == productRef
@@ -415,7 +428,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 30, 20, 160),
                 children: [
                   _NavigationBar(
-                    symbol: symbol,
+                    stockSymbol: stock?.symbol,
+                    stockName: stock?.name,
                     marketHours: marketHours,
                     onMarketHours: () => setState(() => marketHoursOpen = true),
                   ),
@@ -430,13 +444,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     const SizedBox(height: 16),
                   ],
                   if (_unavailableKind case final kind?)
-                    _ProductUnavailable(
-                      kind: kind,
-                      symbol: _underlyingSymbol(symbol),
-                    )
+                    _ProductUnavailable(kind: kind, symbol: stock?.symbol)
                   else ...[
                     _ProductHeader(
-                      symbol: symbol,
+                      symbol: productDisplaySymbol,
+                      markSymbol: stock?.symbol,
                       kind: productKind,
                       chartStyle: chartStyle,
                       snapshot: snapshot,
@@ -656,19 +668,20 @@ class _OrderPanelLoading extends StatelessWidget {
 
 class _NavigationBar extends StatelessWidget {
   const _NavigationBar({
-    required this.symbol,
+    required this.stockSymbol,
+    required this.stockName,
     required this.marketHours,
     required this.onMarketHours,
   });
 
-  final String symbol;
+  final String? stockSymbol;
+  final String? stockName;
   final MarketHours? marketHours;
   final VoidCallback onMarketHours;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final underlying = _underlyingSymbol(symbol);
     return Row(
       children: [
         Semantics(
@@ -692,45 +705,57 @@ class _NavigationBar extends StatelessWidget {
             ),
           ),
         ),
-        _ProductMark(symbol: underlying, size: 32, logoSize: 17.455),
+        if (stockSymbol case final symbol?)
+          _ProductMark(symbol: symbol, size: 32, logoSize: 17.455)
+        else
+          const SkeletonBlock(width: 32, height: 32, radius: 12),
         const SizedBox(width: 8),
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                underlying,
-                style: const TextStyle(
-                  fontSize: 15,
-                  height: 22 / 15,
-                  fontWeight: FontWeight.w600,
+              if (stockSymbol case final symbol?) ...[
+                Text(
+                  symbol,
+                  key: const Key('trade-stock-symbol'),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 22 / 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              GestureDetector(
-                key: const Key('trade-market-status-navigation'),
-                onTap: onMarketHours,
-                child: Row(
-                  children: [
-                    Text(
-                      _companyName(underlying),
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 16 / 12,
-                        color: colors.secondaryText,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    if (underlying != 'ETH')
-                      MarketSessionBadge(hours: marketHours, compact: true)
-                    else
-                      Text(
-                        AppLocalizations.of(context).perpetual,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                  ],
+                GestureDetector(
+                  key: const Key('trade-market-status-navigation'),
+                  onTap: onMarketHours,
+                  child: Row(
+                    children: [
+                      if (stockName case final name?)
+                        Text(
+                          name,
+                          key: const Key('trade-stock-name'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 16 / 12,
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                      const SizedBox(width: 4),
+                      if (symbol != 'ETH')
+                        MarketSessionBadge(hours: marketHours, compact: true)
+                      else
+                        Text(
+                          AppLocalizations.of(context).perpetual,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
+              ] else ...[
+                const SkeletonBlock(width: 54, height: 15, radius: 4),
+                const SizedBox(height: 3),
+                const SkeletonBlock(width: 96, height: 12, radius: 4),
+              ],
             ],
           ),
         ),
@@ -789,7 +814,7 @@ class _ProductUnavailable extends StatelessWidget {
   const _ProductUnavailable({required this.kind, required this.symbol});
 
   final MarketProductKind kind;
-  final String symbol;
+  final String? symbol;
 
   @override
   Widget build(BuildContext context) {
@@ -801,7 +826,9 @@ class _ProductUnavailable extends StatelessWidget {
         title: kind == MarketProductKind.bstock
             ? l10n.tradeBstocksUnavailable
             : l10n.tradePerpUnavailable,
-        description: l10n.tradeProductUnavailableDescription(symbol),
+        description: symbol == null
+            ? null
+            : l10n.tradeProductUnavailableDescription(symbol!),
       ),
     );
   }
@@ -853,6 +880,7 @@ class _Segment extends StatelessWidget {
 class _ProductHeader extends StatelessWidget {
   const _ProductHeader({
     required this.symbol,
+    required this.markSymbol,
     required this.kind,
     required this.chartStyle,
     required this.snapshot,
@@ -864,7 +892,8 @@ class _ProductHeader extends StatelessWidget {
     required this.favoriteLoading,
     required this.onFavoriteToggle,
   });
-  final String symbol;
+  final String? symbol;
+  final String? markSymbol;
   final MarketProductKind kind;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
@@ -890,35 +919,38 @@ class _ProductHeader extends StatelessWidget {
       children: [
         Row(
           children: [
-            _ProductMark(
-              symbol: _underlyingSymbol(symbol),
-              size: 24,
-              logoSize: 13.091,
-            ),
+            if (markSymbol case final mark?)
+              _ProductMark(symbol: mark, size: 24, logoSize: 13.091)
+            else
+              const SkeletonBlock(width: 24, height: 24, radius: 12),
             const SizedBox(width: 4),
-            Semantics(
-              button: true,
-              label: l10n.searchMarkets,
-              child: InkWell(
-                key: const Key('trade-product-switch-search'),
-                borderRadius: BorderRadius.circular(8),
-                onTap: () => context.pushNamed(AppRoutes.marketSearchName),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      symbol,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        height: 22 / 17,
-                        fontWeight: FontWeight.w600,
+            if (symbol case final productSymbol?)
+              Semantics(
+                button: true,
+                label: l10n.searchMarkets,
+                child: InkWell(
+                  key: const Key('trade-product-switch-search'),
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => context.pushNamed(AppRoutes.marketSearchName),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        productSymbol,
+                        key: const Key('trade-product-symbol'),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          height: 22 / 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const Icon(Icons.arrow_drop_down, size: 20),
-                  ],
+                      const Icon(Icons.arrow_drop_down, size: 20),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              )
+            else
+              const SkeletonBlock(width: 76, height: 17, radius: 4),
             const Spacer(),
             IconButton(
               tooltip: isFavorite ? l10n.removeFavorite : l10n.addFavorite,
@@ -1828,21 +1860,8 @@ class _Statistics extends StatelessWidget {
         );
 }
 
-String _underlyingSymbol(String symbol) =>
-    symbol.endsWith('B') ? symbol.substring(0, symbol.length - 1) : symbol;
-
-String _companyName(String symbol) => switch (symbol) {
-  'NVDA' => 'NVIDIA',
-  'TSLA' => 'Tesla',
-  'MSFT' => 'Microsoft',
-  'AAPL' => 'Apple',
-  'META' => 'Meta',
-  'GOOGL' => 'Alphabet',
-  'AMD' => 'AMD',
-  'NFLX' => 'Netflix',
-  'PLTR' => 'Palantir',
-  _ => symbol,
-};
+Stock? _stockForProduct(List<Stock>? stocks, MarketProductRef product) =>
+    stocks?.where((stock) => stock.products.contains(product)).firstOrNull;
 
 class _ProductMark extends StatelessWidget {
   const _ProductMark({

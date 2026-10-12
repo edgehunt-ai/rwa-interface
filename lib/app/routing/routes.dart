@@ -34,11 +34,13 @@ abstract final class AppRoutes {
   static const tradeName = 'trade';
   static const tradePath = '/trade';
 
-  /// Builds a deep-linkable trade detail location. `kind` is optional so
-  /// existing `/trade` links retain the bStocks default.
-  static String tradeLocation({String? symbol, String? kind}) {
-    if (symbol == null || symbol.isEmpty) return tradePath;
-    final parameters = <String, String>{'symbol': symbol};
+  /// Builds a deep-linkable trade detail location for a specific product.
+  static String tradeLocation({required String symbol, String? kind}) {
+    final normalizedSymbol = symbol.trim();
+    if (normalizedSymbol.isEmpty) {
+      throw ArgumentError.value(symbol, 'symbol', 'must not be empty');
+    }
+    final parameters = <String, String>{'symbol': normalizedSymbol};
     if (kind != null && kind.isNotEmpty) parameters['kind'] = kind;
     return Uri(path: tradePath, queryParameters: parameters).toString();
   }

@@ -5,6 +5,7 @@ import 'package:nobell/app/routing/app_router.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:nobell/ui/features/home/views/home_screen.dart';
+import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 
 import '../../helpers/test_app.dart';
@@ -34,14 +35,22 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 
-  testWidgets('opens each Trade/Foundation route directly', (tester) async {
+  testWidgets('trade route without a symbol redirects to markets', (
+    tester,
+  ) async {
     final router = AppRouter.create(initialLocation: '/trade');
     addTearDown(router.dispose);
     await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
     await tester.pumpAndSettle();
-    expect(find.byType(TradeScreen), findsOneWidget);
 
-    router.go('/funding/deposit');
+    expect(find.byType(MarketScreen), findsOneWidget);
+    expect(find.byType(TradeScreen), findsNothing);
+  });
+
+  testWidgets('opens each funding route directly', (tester) async {
+    final router = AppRouter.create(initialLocation: '/funding/deposit');
+    addTearDown(router.dispose);
+    await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
     await tester.pumpAndSettle();
     expect(find.byType(DepositScreen), findsOneWidget);
 
@@ -82,7 +91,7 @@ void main() {
     await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
     await tester.pumpAndSettle();
 
-    router.push('/trade');
+    router.push('/trade?symbol=NVDAB');
     await tester.pumpAndSettle();
     expect(find.byType(TradeScreen), findsOneWidget);
 

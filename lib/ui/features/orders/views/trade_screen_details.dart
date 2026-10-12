@@ -658,7 +658,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${_underlyingSymbol(position.symbol)}B',
+                  position.symbol,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -763,7 +763,7 @@ class _BstocksPositionSummaryCard extends ConsumerWidget {
               label: l10n.withdraw,
               onPressed: () => context.push(
                 AppRoutes.withdrawalLocation(
-                  token: '${_underlyingSymbol(position.symbol)}B',
+                  token: position.symbol,
                   chain: 'BSC',
                 ),
               ),

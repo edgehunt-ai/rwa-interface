@@ -95,13 +95,19 @@ abstract final class AppRouter {
         GoRoute(
           name: AppRoutes.tradeName,
           path: AppRoutes.tradePath,
+          redirect: (context, state) {
+            final symbol = state.uri.queryParameters['symbol']?.trim();
+            return symbol == null || symbol.isEmpty
+                ? AppRoutes.marketsPath
+                : null;
+          },
           builder: (context, state) {
             final kind = switch (state.uri.queryParameters['kind']) {
               'perp' => MarketProductKind.perp,
               _ => MarketProductKind.bstock,
             };
             return TradeScreen(
-              symbol: state.uri.queryParameters['symbol'],
+              symbol: state.uri.queryParameters['symbol']!,
               initialKind: kind,
             );
           },

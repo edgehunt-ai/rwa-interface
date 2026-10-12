@@ -24,6 +24,7 @@ import 'package:nobell/domain/models/position_operation.dart';
 import 'package:nobell/domain/models/portfolio.dart';
 import 'package:nobell/domain/models/portfolio_asset.dart';
 import 'package:nobell/domain/models/resource_result.dart';
+import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/domain/models/trading_account.dart';
 import 'package:nobell/domain/repositories/markets_repository.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
@@ -61,6 +62,76 @@ void expectNodeVisible({
 }
 
 void main() {
+  testWidgets('Trade displays stock and product identities from the API', (
+    tester,
+  ) async {
+    const productRef = MarketProductRef(
+      symbol: 'TOKEN-X',
+      kind: MarketProductKind.bstock,
+    );
+    final product = _marketProduct('TOKEN-X', MarketProductKind.bstock);
+    const lookup = (
+      query: 'ACME',
+      cursor: null,
+      group: 'hot',
+      productType: null,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketStocksProvider.overrideWith(
+            (_) async => const DomainPage(
+              items: [
+                Stock(
+                  symbol: 'ACME',
+                  name: 'Acme Corporation',
+                  referencePrice: '100',
+                  products: [productRef],
+                ),
+              ],
+            ),
+          ),
+          marketProductLookupProvider(lookup)
+              .overrideWith((_) async => DomainPage(items: [product])),
+          marketProductProvider(productRef).overrideWith((_) async => product),
+          marketSnapshotProvider(productRef).overrideWith(
+            (_) async => MarketSnapshot(price: DecimalValue('100')),
+          ),
+          marketCandlesProvider((
+            product: productRef,
+            range: CandleChartRange.oneHour,
+          )).overrideWith(
+            (_) async => _chart('TOKEN-X', CandleChartRange.oneHour),
+          ),
+          marketHoursProvider.overrideWith(
+            (_) async => const MarketHours(
+              timezone: 'America/New_York',
+              current: MarketSessionKind.weekend,
+              currentLabel: 'Closed',
+              segments: [],
+            ),
+          ),
+        ],
+        child: buildTestApp(const TradeScreen(symbol: 'TOKEN-X')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<Text>(find.byKey(const Key('trade-stock-symbol'))).data,
+      'ACME',
+    );
+    expect(
+      tester.widget<Text>(find.byKey(const Key('trade-stock-name'))).data,
+      'Acme Corporation',
+    );
+    expect(
+      tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
+      'TOKEN-X',
+    );
+  });
+
   testWidgets('Trade pull-to-refresh reloads the current position list', (
     tester,
   ) async {
@@ -79,6 +150,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          marketStocksProvider.overrideWith((_) async => _nvdaStockPage),
           marketProductLookupProvider(lookup).overrideWith(
             (_) async => DomainPage(
               items: [_marketProduct('NVDAB', MarketProductKind.bstock)],
@@ -110,7 +182,7 @@ void main() {
           bstocksOpenOrdersProvider((symbol: 'NVDAB', productId: null))
               .overrideWith((_) async => const DomainPage(items: [])),
         ],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -123,6 +195,77 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(positionLoads, 2);
+  });
+
+  testWidgets('Trade pull-to-refresh keeps provider failures in the UI', (
+    tester,
+  ) async {
+    var snapshotLoads = 0;
+    const filter = (
+      symbol: 'NVDAB',
+      kind: MarketProductKind.bstock,
+      cursor: null,
+    );
+    const lookup = (
+      query: 'NVDA',
+      cursor: null,
+      group: 'hot',
+      productType: null,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketStocksProvider.overrideWith((_) async => _nvdaStockPage),
+          marketProductLookupProvider(lookup).overrideWith(
+            (_) async => DomainPage(
+              items: [_marketProduct('NVDAB', MarketProductKind.bstock)],
+            ),
+          ),
+          marketProductProvider(_bstockProduct).overrideWith(
+            (_) async => _marketProduct('NVDAB', MarketProductKind.bstock),
+          ),
+          marketSnapshotProvider(_bstockProduct).overrideWith((_) async {
+            snapshotLoads++;
+            if (snapshotLoads > 1) {
+              throw const ServerFailure(
+                statusCode: 503,
+                code: 'provider_unavailable',
+              );
+            }
+            return _bstockDisclosureSnapshot();
+          }),
+          marketCandlesProvider((
+            product: _bstockProduct,
+            range: CandleChartRange.oneHour,
+          )).overrideWith(
+            (_) async => _chart('NVDAB', CandleChartRange.oneHour),
+          ),
+          marketHoursProvider.overrideWith(
+            (_) async => MarketHours(
+              timezone: 'America/New_York',
+              current: MarketSessionKind.weekend,
+              currentLabel: 'Closed',
+              segments: const [],
+            ),
+          ),
+          positionsProvider(filter)
+              .overrideWith((_) async => const DomainPage<Position>(items: [])),
+          bstocksOpenOrdersProvider((symbol: 'NVDAB', productId: null))
+              .overrideWith((_) async => const DomainPage(items: [])),
+        ],
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(
+      find.byKey(const Key('trade-screen-scroll-view')),
+      const Offset(0, 500),
+    );
+    await tester.pumpAndSettle();
+
+    expect(snapshotLoads, greaterThan(1));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('successful order reloads the detail position list', (
@@ -149,7 +292,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -242,7 +385,7 @@ void main() {
           marketSnapshotProvider(_bstockProduct)
               .overrideWith((_) async => _bstockDisclosureSnapshot()),
         ],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -273,7 +416,7 @@ void main() {
         overrides: [
           marketSnapshotProvider(product).overrideWith((_) => snapshot.future),
         ],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
 
@@ -309,7 +452,7 @@ void main() {
             range: CandleChartRange.fourHours,
           )).overrideWith((_) => fourHours.future),
         ],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
 
@@ -348,7 +491,7 @@ void main() {
             range: CandleChartRange.oneHour,
           )).overrideWith((_) async => _interactiveChart(product.symbol)),
         ],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -393,7 +536,7 @@ void main() {
             range: CandleChartRange.oneHour,
           )).overrideWith((_) async => _interactiveChart(product.symbol)),
         ],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -429,7 +572,7 @@ void main() {
               ),
             ),
           ],
-          child: buildTestApp(const TradeScreen()),
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
         ),
       );
       await tester.pumpAndSettle();
@@ -446,7 +589,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -466,7 +609,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -487,7 +630,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -509,7 +652,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [marketsRepositoryProvider.overrideWithValue(repository)],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -535,7 +678,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
 
@@ -560,7 +703,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
 
@@ -649,7 +792,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [authenticatedStateOverride],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
 
@@ -1049,7 +1192,10 @@ void main() {
   ) async {
     final router = GoRouter(
       routes: [
-        GoRoute(path: '/', builder: (_, _) => const TradeScreen()),
+        GoRoute(
+          path: '/',
+          builder: (_, _) => const TradeScreen(symbol: 'NVDAB'),
+        ),
         GoRoute(
           path: AppRoutes.withdrawalPath,
           builder: (_, state) => WithdrawalScreen(
@@ -1101,7 +1247,7 @@ void main() {
         overrides: [
           positionsRepositoryProvider.overrideWithValue(_PositionsRepository()),
         ],
-        child: buildTestApp(const TradeScreen()),
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
       ),
     );
     await tester.pumpAndSettle();
@@ -1142,7 +1288,7 @@ void main() {
               ),
             ),
           ],
-          child: buildTestApp(const TradeScreen()),
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
         ),
       );
 
@@ -1211,7 +1357,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
-          child: buildTestApp(const TradeScreen()),
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
         ),
       );
       await tester.pumpAndSettle();
@@ -1298,7 +1444,7 @@ Position _position(
   _ => Position(
     positionId: 'position-1',
     productId: 'bstocks:nvdab',
-    symbol: 'NVDA',
+    symbol: 'NVDAB',
     kind: kind,
     side: PositionSide.long,
     quantity: DecimalValue('3.0154', unit: 'quantity'),
@@ -1430,6 +1576,7 @@ Widget _tradeWithMarkets({
 }) => ProviderScope(
   overrides: [
     authenticatedStateOverride,
+    marketStocksProvider.overrideWith((_) async => _nvdaStockPage),
     hip3AccountAbstractionProvider.overrideWith(
       (_) async => const Hip3AccountAbstractionStatus(
         ownerAddress: '0xowner',
@@ -1488,7 +1635,13 @@ Widget _tradeWithMarkets({
       marketHoursProvider.overrideWith((_) async => marketHours),
   ],
   child: router == null
-      ? buildTestApp(TradeScreen(initialKind: initialKind), locale: locale)
+      ? buildTestApp(
+          TradeScreen(
+            symbol: initialKind == MarketProductKind.perp ? 'NVDA' : 'NVDAB',
+            initialKind: initialKind,
+          ),
+          locale: locale,
+        )
       : buildRouterTestApp(router),
 );
 
@@ -1517,6 +1670,17 @@ const _bstockProduct = MarketProductRef(
 const _perpProduct = MarketProductRef(
   symbol: 'NVDA',
   kind: MarketProductKind.perp,
+);
+
+const _nvdaStockPage = DomainPage<Stock>(
+  items: [
+    Stock(
+      symbol: 'NVDA',
+      name: 'NVIDIA',
+      referencePrice: '100',
+      products: [_bstockProduct, _perpProduct],
+    ),
+  ],
 );
 
 MarketSnapshot _bstockDisclosureSnapshot() => MarketSnapshot(
@@ -1558,6 +1722,9 @@ final class _FavoriteMarketsRepository implements MarketsRepository {
   final Completer<void>? addGate;
   final List<MarketProductRef> added = [];
   final List<MarketProductRef> removed = [];
+
+  @override
+  Future<DomainPage<Stock>> listStocks() async => _nvdaStockPage;
 
   @override
   Future<DomainPage<MarketProduct>> listProducts({
