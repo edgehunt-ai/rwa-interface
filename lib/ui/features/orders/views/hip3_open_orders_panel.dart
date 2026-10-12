@@ -149,12 +149,10 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
     try {
       await ref.read(orderCommandProvider.notifier).cancel(widget.order);
       if (mounted) {
-        if (widget.order.conditional == null) {
-          AppToast.showFailure(
-            context,
-            AppLocalizations.of(context).parentCancelWarning,
-          );
-        }
+        AppToast.showSuccess(
+          context,
+          AppLocalizations.of(context).cancellationSubmitted,
+        );
         widget.onChanged();
       }
     } on Hip3ExecutionPending {
@@ -241,8 +239,10 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          height: 18,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.border,
                             borderRadius: BorderRadius.circular(8),
@@ -392,14 +392,6 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 l10n.parentCancelledProtectionWarning,
-                style: TextStyle(fontSize: 12, color: colors.secondaryText),
-              ),
-            ),
-          if (conditional == null && !order.isTerminal)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                l10n.parentCancelWarning,
                 style: TextStyle(fontSize: 12, color: colors.secondaryText),
               ),
             ),

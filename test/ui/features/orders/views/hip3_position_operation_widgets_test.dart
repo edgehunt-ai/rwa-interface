@@ -19,6 +19,7 @@ import 'package:nobell/domain/models/hip3_action_pending.dart';
 import 'package:nobell/domain/models/resource_result.dart';
 import 'package:nobell/domain/repositories/positions_repository.dart';
 import 'package:nobell/domain/repositories/orders_repository.dart';
+import 'package:nobell/domain/repositories/hip3_order_execution_repository.dart';
 import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
 import 'package:nobell/ui/features/orders/views/hip3_close_position_sheet.dart';
@@ -28,6 +29,7 @@ import 'package:nobell/ui/features/orders/views/hip3_position_settings_sheet.dar
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:nobell/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
+import 'package:nobell/ui/core/feedback/app_toast.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
@@ -102,7 +104,7 @@ void main() {
       isNull,
     );
   });
-  testWidgets('parent warns before cancellation about attached protection', (
+  testWidgets('parent omits the cancellation protection warning', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -116,7 +118,49 @@ void main() {
       find.textContaining(
         'replacement protection is not created automatically',
       ),
+      findsNothing,
+    );
+    final role = find.text('Limit');
+    final date = find.text('2026/01/01');
+    expect(tester.getSize(role).height, tester.getSize(date).height);
+    expect(tester.getCenter(role).dy, tester.getCenter(date).dy);
+  });
+  testWidgets('successful parent cancellation shows a success toast', (
+    tester,
+  ) async {
+    final execution = _CancellingHip3Orders();
+    var changed = false;
+    addTearDown(AppToast.dismiss);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3OrderExecutionRepositoryProvider.overrideWithValue(execution),
+        ],
+        child: buildTestApp(
+          Hip3OpenOrderCard(
+            order: _order('parent'),
+            onChanged: () => changed = true,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
+    await tester.pump();
+
+    expect(execution.cancelledOrderId, 'parent');
+    expect(changed, isTrue);
+    expect(
+      find.text(
+        'Cancellation submitted. Refresh to confirm the final order status.',
+      ),
       findsOneWidget,
+    );
+    expect(
+      find.textContaining(
+        'replacement protection is not created automatically',
+      ),
+      findsNothing,
     );
   });
   testWidgets('existing fixed protection keeps its quantity when reopened', (
@@ -1930,6 +1974,24 @@ class _Orders implements OrdersRepository {
       ],
       hasMore: cursor == null,
       nextCursor: cursor == null ? 'page-2' : null,
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _CancellingHip3Orders implements Hip3OrderExecutionRepository {
+  String? cancelledOrderId;
+
+  @override
+  Future<ResourceResult<TradingOrder>> cancelOrder(
+    String orderId, {
+    required String idempotencyKey,
+  }) async {
+    cancelledOrderId = orderId;
+    return ResourceResult(
+      resource: _order(orderId, status: TradingOrderStatus.cancelled),
     );
   }
 

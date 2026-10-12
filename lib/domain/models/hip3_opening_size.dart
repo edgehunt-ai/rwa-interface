@@ -55,6 +55,37 @@ String hip3OpeningNotional(
   return _decimal(affordable * BigInt.from(percent) ~/ BigInt.from(100), scale);
 }
 
+/// The smallest quantity step whose notional satisfies the venue minimum.
+///
+/// Limit-order quantities must align to [sizeDecimals]. Rounding the requested
+/// minimum down can therefore produce an order that looks valid in the form
+/// but is rejected because `quantity * price` is still below the minimum.
+Hip3OpeningMinimum hip3OpeningMinimum({
+  required DecimalValue minimumNotional,
+  required DecimalValue price,
+  required int sizeDecimals,
+}) {
+  if (sizeDecimals < 0) throw ArgumentError('Invalid HIP3 size decimals');
+  final minimum = _fixed(minimumNotional);
+  final executionPrice = _fixed(price);
+  if (minimum.units.isNegative || executionPrice.units <= BigInt.zero) {
+    throw ArgumentError('Invalid HIP3 minimum opening size');
+  }
+  final quantity = _divideCeil(minimum, executionPrice, sizeDecimals);
+  final notional = _multiply(quantity, executionPrice);
+  return Hip3OpeningMinimum(
+    notional: _value(notional, asset: 'USDC', unit: 'notional'),
+    quantity: _value(quantity, unit: 'quantity'),
+  );
+}
+
+final class Hip3OpeningMinimum {
+  const Hip3OpeningMinimum({required this.notional, required this.quantity});
+
+  final DecimalValue notional;
+  final DecimalValue quantity;
+}
+
 /// The 100% opening size after reserving the opening taker fee. The returned
 /// notional is recomputed from the size-decimal-truncated quantity, so sending
 /// it to the market-order preview cannot exceed the calculated capacity.
@@ -173,6 +204,12 @@ _Fixed _divideFloor(_Fixed dividend, _Fixed divisor, int scale) {
   final numerator = dividend.units * _pow10(divisor.scale + scale);
   final denominator = divisor.units * _pow10(dividend.scale);
   return _Fixed(numerator ~/ denominator, scale);
+}
+
+_Fixed _divideCeil(_Fixed dividend, _Fixed divisor, int scale) {
+  final numerator = dividend.units * _pow10(divisor.scale + scale);
+  final denominator = divisor.units * _pow10(dividend.scale);
+  return _Fixed((numerator + denominator - BigInt.one) ~/ denominator, scale);
 }
 
 DecimalValue _value(_Fixed value, {String? asset, String? unit}) =>

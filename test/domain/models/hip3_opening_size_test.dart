@@ -3,6 +3,17 @@ import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/domain/models/hip3_opening_size.dart';
 
 void main() {
+  test('rounds the minimum quantity up to the product size step', () {
+    final minimum = hip3OpeningMinimum(
+      minimumNotional: DecimalValue('12'),
+      price: DecimalValue('123'),
+      sizeDecimals: 2,
+    );
+
+    expect(minimum.quantity.value, '0.1');
+    expect(minimum.notional.value, '12.3');
+  });
+
   test('reserves the taker fee from margin before applying leverage', () {
     final maximum = hip3OpeningMaximum(
       availableMargin: DecimalValue('100'),

@@ -1556,10 +1556,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tpSlRiskAgreementPrefix => '我已阅读并同意';
 
   @override
-  String get tpSlRiskAgreementLink => '止盈止损风险披露';
+  String get tpSlRiskAgreementLink => '止盈止损风险协议';
 
   @override
-  String get tpSlRiskAgreementTitle => '止盈止损风险披露';
+  String get tpSlRiskAgreementTitle => '止盈止损风险协议';
 
   @override
   String get tpSlRiskAgreementDetails =>

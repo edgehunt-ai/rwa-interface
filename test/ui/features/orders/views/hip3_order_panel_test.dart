@@ -603,6 +603,182 @@ void main() {
     });
   }
 
+  testWidgets(
+    'HIP-3 limit slider rounds up to an executable minimum quantity',
+    (tester) async {
+      final orders = _ExecutableHip3Orders();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(orders),
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async =>
+                  MarketSnapshot(price: DecimalValue('123')),
+            ),
+          ],
+          child: _app(
+            const Hip3OrderPanel(),
+            opening: _Opening(
+              minimumNotional: '12',
+              availableMargin: '100',
+              directionalAvailableMargin: '100',
+              venueMaximumQuantity: '100',
+              takerFeeRate: '0.001',
+              feeReserveMultiplier: '1',
+              sizeDecimals: 2,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Limit').last);
+      await tester.pumpAndSettle();
+      Navigator.of(
+        tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+      ).pop('123');
+      await tester.pumpAndSettle();
+
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const Key('hip3-order-value-input')))
+            .controller
+            ?.text,
+        '12',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('hip3-limit-quantity-input')),
+            )
+            .controller
+            ?.text,
+        '0.1',
+      );
+      expect(orders.intents.last.quantity?.value, '0.1');
+    },
+  );
+
+  testWidgets(
+    'HIP-3 limit slider keeps the API minimum above reported capacity',
+    (tester) async {
+      final orders = _ExecutableHip3Orders();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ordersRepositoryProvider.overrideWithValue(orders),
+            marketSnapshotProvider.overrideWith(
+              (ref, product) async =>
+                  MarketSnapshot(price: DecimalValue('229.61')),
+            ),
+          ],
+          child: _app(
+            const Hip3OrderPanel(),
+            opening: _Opening(
+              minimumNotional: '10',
+              availableMargin: '0.145588',
+              directionalAvailableMargin: '0.145588',
+              venueMaximumQuantity: '0.013',
+              takerFeeRate: '0.001',
+              feeReserveMultiplier: '1',
+              sizeDecimals: 3,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Limit').last);
+      await tester.pumpAndSettle();
+      Navigator.of(
+        tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+      ).pop('229.61');
+      await tester.pumpAndSettle();
+
+      tester.widget<Slider>(find.byType(Slider)).onChanged!(0.35);
+      await tester.pump(const Duration(milliseconds: 301));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<TextField>(find.byKey(const Key('hip3-order-value-input')))
+            .controller
+            ?.text,
+        '10',
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const Key('hip3-limit-quantity-input')),
+            )
+            .controller
+            ?.text,
+        '0.044',
+      );
+      expect(tester.widget<Slider>(find.byType(Slider)).value, 0.35);
+      expect(orders.intents.last.quantity?.value, '0.044');
+    },
+  );
+
+  testWidgets('manual HIP-3 limit value is not replaced by derived quantity', (
+    tester,
+  ) async {
+    final orders = _ExecutableHip3Orders();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(orders),
+          marketSnapshotProvider.overrideWith(
+            (ref, product) async => MarketSnapshot(price: DecimalValue('123')),
+          ),
+        ],
+        child: _app(const Hip3OrderPanel(), opening: _Opening(sizeDecimals: 3)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Limit').last);
+    await tester.pumpAndSettle();
+    Navigator.of(
+      tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+    ).pop('123');
+    await tester.pumpAndSettle();
+
+    final orderValue = find.byKey(const Key('hip3-order-value-input'));
+    await tester.enterText(orderValue, '25');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<TextField>(orderValue).controller?.text, '25');
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('hip3-limit-quantity-input')))
+          .controller
+          ?.text,
+      '0.203',
+    );
+    expect(orders.intents.last.quantity?.value, '0.203');
+
+    await tester.tap(find.byKey(const Key('hip3-limit-price-card')));
+    await tester.pumpAndSettle();
+    Navigator.of(
+      tester.element(find.byKey(const Key('hip3-limit-price-sheet-input'))),
+    ).pop('246');
+    await tester.pump(const Duration(milliseconds: 301));
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<TextField>(orderValue).controller?.text, '25');
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('hip3-limit-quantity-input')))
+          .controller
+          ?.text,
+      '0.101',
+    );
+    expect(orders.intents.last.quantity?.value, '0.101');
+  });
+
   testWidgets('HIP-3 minimum never raises an order above available capacity', (
     tester,
   ) async {
