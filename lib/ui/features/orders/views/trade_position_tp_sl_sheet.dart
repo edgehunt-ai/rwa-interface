@@ -51,6 +51,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     _stopLoss = TextEditingController(
       text: widget.position.stopLossPrice?.value ?? '',
     );
+    _quantity.text = absoluteQuantity(widget.position.quantity.value);
     _stopLimit.text = widget.position.stopLimitPrice?.value ?? '';
     _stopIsLimit = widget.position.stopLimitPrice != null;
     _hadTakeProfit = widget.position.takeProfitPrice != null;
@@ -176,7 +177,7 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
               widget.position.quantity.value,
               _quantityPercent.round().toString(),
             )
-          : '';
+          : absoluteQuantity(widget.position.quantity.value);
       _sizeChoiceRequired = false;
       _error = null;
     });
@@ -383,13 +384,14 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
     final locked =
         _submitting || _pending || _loadingProtection || _protectionLoadFailed;
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Material(
-      color: colors.surface,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          child: Padding(
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Material(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,

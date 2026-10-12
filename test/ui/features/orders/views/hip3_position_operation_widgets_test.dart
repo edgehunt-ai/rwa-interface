@@ -1599,6 +1599,86 @@ void main() {
   }
 
   for (final short in [false, true]) {
+    testWidgets(
+      'default 100% protection displays the full ${short ? 'short' : 'long'} position quantity',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              positionsRepositoryProvider.overrideWithValue(_Positions()),
+            ],
+            child: buildTestApp(
+              PositionTpSlSheet(
+                position: _position(short: short, quantity: '1.2345'),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final quantity = tester.widget<TextField>(
+          find.byKey(const Key('protection-quantity')),
+        );
+        expect(quantity.controller!.text, '1.2345');
+        expect(
+          tester
+              .widget<Slider>(
+                find.byKey(const Key('protection-percentage-slider')),
+              )
+              .value,
+          100,
+        );
+      },
+    );
+  }
+
+  testWidgets('quantity input stays above the keyboard in the bottom sheet', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(393, 760);
+    addTearDown(() {
+      tester.view.resetDevicePixelRatio();
+      tester.view.resetPhysicalSize();
+      tester.view.resetViewInsets();
+    });
+    final position = _position();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          positionsRepositoryProvider.overrideWithValue(_Positions()),
+        ],
+        child: buildTestApp(
+          Builder(
+            builder: (context) => FilledButton(
+              onPressed: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => PositionTpSlSheet(position: position),
+              ),
+              child: const Text('Open'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    final quantity = find.byKey(const Key('protection-quantity'));
+    await tester.tap(quantity);
+    await tester.pump();
+
+    const keyboardHeight = 300.0;
+    tester.view.viewInsets = const FakeViewPadding(bottom: keyboardHeight);
+    await tester.pumpAndSettle();
+
+    final keyboardTop = tester.view.physicalSize.height - keyboardHeight;
+    expect(tester.getBottomLeft(quantity).dy, lessThanOrEqualTo(keyboardTop));
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final short in [false, true]) {
     for (final percentage in [20.0, 100.0]) {
       testWidgets('protection slider submits $percentage%, short=$short', (
         tester,
@@ -1629,6 +1709,15 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.widget<Slider>(slider).value, percentage);
         expect(find.text('${percentage.round()}%'), findsOneWidget);
+        if (percentage == 100) {
+          expect(
+            tester
+                .widget<TextField>(find.byKey(const Key('protection-quantity')))
+                .controller!
+                .text,
+            '1',
+          );
+        }
 
         await tester.ensureVisible(
           find.widgetWithText(FilledButton, 'Sign and confirm'),
