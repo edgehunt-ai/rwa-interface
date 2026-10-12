@@ -252,6 +252,12 @@ void main() {
     expect(find.text('Asset & Rights'), findsOneWidget);
     expect(find.text('BTECH Holdings Limited'), findsOneWidget);
     expect(find.text('No Shareholder Voting Rights'), findsOneWidget);
+
+    final rightsValue = tester.widget<Text>(
+      find.text('No Shareholder Voting Rights'),
+    );
+    expect(rightsValue.style?.fontSize, 15);
+    expect(rightsValue.style?.fontWeight, FontWeight.w600);
   });
 
   testWidgets('Trade shows field skeletons while market data loads', (

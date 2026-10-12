@@ -1338,7 +1338,10 @@ class _AssetRightsRow extends StatelessWidget {
             color: Theme.of(context).extension<AppRwaColors>()!.secondaryText,
           ),
         ),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
       ],
     ),
   );
