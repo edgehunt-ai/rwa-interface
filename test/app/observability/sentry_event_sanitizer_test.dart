@@ -20,6 +20,58 @@ void main() {
     }
   });
 
+  test('drops browser extension errors but keeps application web errors', () {
+    SentryEvent eventFrom(String path) => SentryEvent(
+      exceptions: [
+        SentryException(
+          type: 'Error',
+          value: 'func sseError not found',
+          stackTrace: SentryStackTrace(
+            frames: [SentryStackFrame(fileName: path)],
+          ),
+        ),
+      ],
+    );
+
+    expect(
+      SentryEventSanitizer.filterAndSanitize(
+        eventFrom('chrome-extension://extension/inpage.js'),
+        Hint(),
+      ),
+      isNull,
+    );
+    expect(
+      SentryEventSanitizer.filterAndSanitize(
+        eventFrom('/main.dart.js'),
+        Hint(),
+      ),
+      isNotNull,
+    );
+    final mixedEvent = eventFrom('chrome-extension://extension/inpage.js');
+    mixedEvent.exceptions!.single.stackTrace = SentryStackTrace(
+      frames: [
+        SentryStackFrame(fileName: 'chrome-extension://extension/inpage.js'),
+        SentryStackFrame(fileName: '/main.dart.js'),
+      ],
+    );
+    expect(
+      SentryEventSanitizer.filterAndSanitize(mixedEvent, Hint()),
+      isNotNull,
+    );
+  });
+
+  test('uses a stable domain exception type for API failures', () {
+    final event = SentryEvent(
+      throwable: const DecodingFailure(),
+      exceptions: [SentryException(type: 'uWa', value: "Instance of 'uWa'")],
+    );
+
+    final sanitized = SentryEventSanitizer.sanitize(event, Hint());
+
+    expect(sanitized.exceptions!.single.type, 'ApiFailure.decoding');
+    expect(sanitized.exceptions!.single.value, "Instance of 'uWa'");
+  });
+
   test('removes request data and redacts event content', () {
     final event = SentryEvent(
       user: SentryUser(
@@ -52,11 +104,21 @@ void main() {
         ..['business_operation'] = {
           'operation': 'create_order',
           'order_id': 'order-1',
+          'api_operation': 'orders.create',
+          'response_model': 'Order',
+          'response_content_type': 'application/json',
+          'response_size_bytes': '321',
+          'decoder_error': 'generated_client',
           'amount': '100',
+          'raw_response': 'must-not-survive',
           'unknown': 'drop-me',
         }
         ..['privy_auth'] = {
           'safe_message': 'person@example.com code=123456 Bearer secret',
+          'failure_code': 'invalidCode',
+          'provider_error': 'auth_exception',
+          'provider_flow': 'email',
+          'provider_stage': 'login-with-code',
           'raw_payload': 'must-not-survive',
         },
     );
@@ -73,9 +135,18 @@ void main() {
     expect(sanitized.contexts['business_operation'], {
       'operation': 'create_order',
       'order_id': 'order-1',
+      'api_operation': 'orders.create',
+      'response_model': 'Order',
+      'response_content_type': 'application/json',
+      'response_size_bytes': '321',
+      'decoder_error': 'generated_client',
     });
     expect(sanitized.contexts['privy_auth'], {
       'safe_message': '<redacted-email> code=<redacted> Bearer <redacted>',
+      'failure_code': 'invalidCode',
+      'provider_error': 'auth_exception',
+      'provider_flow': 'email',
+      'provider_stage': 'login-with-code',
     });
     expect(sanitized.message?.formatted, contains('<redacted-email>'));
     expect(sanitized.breadcrumbs!.single.data, isNull);

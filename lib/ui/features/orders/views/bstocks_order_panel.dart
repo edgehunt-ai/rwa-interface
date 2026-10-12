@@ -1323,14 +1323,8 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
             child: FilledButton(
               key: const Key('bstocks-primary-order-action'),
               style: FilledButton.styleFrom(
-                backgroundColor: !isBuy
-                    ? actionColor
-                    : type == TradingOrderType.limit
-                    ? colors.primaryAction
-                    : actionColor,
-                foregroundColor: isBuy && type == TradingOrderType.limit
-                    ? colors.onPrimaryAction
-                    : Colors.white,
+                backgroundColor: actionColor,
+                foregroundColor: Colors.white,
               ),
               onPressed: reviewing || hasExplicitInvalidAmount ? null : _review,
               child: Text(

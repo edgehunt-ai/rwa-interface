@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/data/api/reconnect_policy.dart';
 import 'package:nobell/data/services/dio_realtime_service.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 void main() {
   test('重连携带 Last-Event-ID、去重并在 resync 停止', () async {
@@ -55,6 +56,45 @@ void main() {
       delay: (_) async {},
     ).subscribe(channels: {' Positions ', 'orders'}).first;
     expect(adapter.channels, ['orders,positions']);
+  });
+
+  test('响应流连接异常会重连并恢复订阅', () async {
+    final adapter = _StreamFailureAdapter();
+    final dio = Dio(BaseOptions(baseUrl: 'https://fixture.example'))
+      ..httpClientAdapter = adapter;
+    final service = DioRealtimeService(
+      dio,
+      reconnectPolicy: const ReconnectPolicy(
+        maxAttempts: 1,
+        baseDelay: Duration.zero,
+      ),
+      delay: (_) async {},
+    );
+
+    final events = await service.subscribe(channels: {'balances'}).toList();
+
+    expect(events.map((event) => event.eventId), ['2']);
+    expect(adapter.calls, 2);
+  });
+
+  test('响应流持续失败会转换为 NetworkFailure', () async {
+    final adapter = _StreamFailureAdapter(alwaysFail: true);
+    final dio = Dio(BaseOptions(baseUrl: 'https://fixture.example'))
+      ..httpClientAdapter = adapter;
+    final service = DioRealtimeService(
+      dio,
+      reconnectPolicy: const ReconnectPolicy(
+        maxAttempts: 1,
+        baseDelay: Duration.zero,
+      ),
+      delay: (_) async {},
+    );
+
+    await expectLater(
+      service.subscribe(channels: {'balances'}).toList(),
+      throwsA(isA<NetworkFailure>()),
+    );
+    expect(adapter.calls, 2);
   });
 }
 
@@ -108,6 +148,37 @@ final class _CancelableAdapter implements HttpClientAdapter {
     cancelFuture?.then((_) => cancelled = true);
     return ResponseBody(
       Stream.value(Uint8List.fromList(utf8.encode(_priceFrame('1')))),
+      200,
+      headers: {
+        Headers.contentTypeHeader: ['text/event-stream'],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+final class _StreamFailureAdapter implements HttpClientAdapter {
+  _StreamFailureAdapter({this.alwaysFail = false});
+
+  final bool alwaysFail;
+  var calls = 0;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    calls++;
+    final stream = alwaysFail || calls == 1
+        ? Stream<Uint8List>.error(
+            StateError('Connection closed while receiving data'),
+          )
+        : Stream.value(Uint8List.fromList(utf8.encode(_priceFrame('2'))));
+    return ResponseBody(
+      stream,
       200,
       headers: {
         Headers.contentTypeHeader: ['text/event-stream'],

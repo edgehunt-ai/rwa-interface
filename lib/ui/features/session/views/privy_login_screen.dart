@@ -126,6 +126,7 @@ class _PrivyLoginScreenState extends ConsumerState<PrivyLoginScreen> {
     await ref
         .read(authenticationProvider.notifier)
         .verifyEmailCode(_codeController.text);
+    if (!mounted) return;
     if (ref.read(authenticationProvider) is AuthenticationAuthenticated) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('recent_login_method', 'Email');

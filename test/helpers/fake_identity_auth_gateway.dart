@@ -16,6 +16,7 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   IdentityFailure? initializeFailure;
   IdentityFailure? sendFailure;
   IdentityFailure? verifyFailure;
+  Future<void>? verifyBarrier;
   IdentityFailure? loginFailure;
   IdentityFailure? oauthFailure;
   IdentityFailure? passkeyFailure;
@@ -77,6 +78,7 @@ final class FakeIdentityAuthGateway implements IdentityAuthGateway {
   }) async {
     verifiedEmail = email;
     verifiedCode = code;
+    await verifyBarrier;
     if (verifyFailure case final failure?) throw failure;
     return verifiedPrincipal;
   }

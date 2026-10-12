@@ -36,16 +36,25 @@ final class GeneratedHip3PositionActionService
   final ApiFailureMapper mapper;
 
   @override
-  Future<api.Hip3ActionPage> active({String? cursor}) =>
-      _body(() => _api.listHip3Actions(cursor: cursor, statusGroup: 'active'));
+  Future<api.Hip3ActionPage> active({String? cursor}) => _body(
+    () => _api.listHip3Actions(cursor: cursor, statusGroup: 'active'),
+    apiOperation: 'orders.list_hip3_actions',
+    responseModel: 'Hip3ActionPage',
+  );
 
   @override
-  Future<api.Order> order(String orderId) =>
-      _body(() => _api.getOrder(orderId: orderId));
+  Future<api.Order> order(String orderId) => _body(
+    () => _api.getOrder(orderId: orderId),
+    apiOperation: 'orders.get_order',
+    responseModel: 'Order',
+  );
 
   @override
-  Future<api.Hip3TradingContext> context(String productId) =>
-      _body(() => _api.getHip3TradingContext(productId: productId));
+  Future<api.Hip3TradingContext> context(String productId) => _body(
+    () => _api.getHip3TradingContext(productId: productId),
+    apiOperation: 'orders.get_hip3_trading_context',
+    responseModel: 'Hip3TradingContext',
+  );
   @override
   Future<api.Hip3ClosePreview> previewClose(
     String positionId,
@@ -57,6 +66,8 @@ final class GeneratedHip3PositionActionService
       hip3ClosePreviewRequest: request,
       idempotencyKey: idempotencyKey,
     ),
+    apiOperation: 'orders.preview_hip3_close_position',
+    responseModel: 'Hip3ClosePreview',
   );
   @override
   Future<api.Hip3Action> create(
@@ -67,10 +78,15 @@ final class GeneratedHip3PositionActionService
       hip3ActionCreateRequest: request,
       idempotencyKey: idempotencyKey,
     ),
+    apiOperation: 'orders.create_hip3_action',
+    responseModel: 'Hip3Action',
   );
   @override
-  Future<api.Hip3Action> get(String actionId) =>
-      _body(() => _api.getHip3Action(actionId: actionId));
+  Future<api.Hip3Action> get(String actionId) => _body(
+    () => _api.getHip3Action(actionId: actionId),
+    apiOperation: 'orders.get_hip3_action',
+    responseModel: 'Hip3Action',
+  );
   @override
   Future<api.Hip3Action> submit(
     String actionId,
@@ -84,15 +100,32 @@ final class GeneratedHip3PositionActionService
       hip3ActionSubmissionRequest: request,
       idempotencyKey: idempotencyKey,
     ),
+    apiOperation: 'orders.submit_hip3_action_step',
+    responseModel: 'Hip3Action',
   );
 
-  Future<T> _body<T>(Future<Response<T>> Function() request) async {
+  Future<T> _body<T>(
+    Future<Response<T>> Function() request, {
+    required String apiOperation,
+    required String responseModel,
+  }) async {
     try {
-      final body = (await request()).data;
-      if (body == null) throw const FormatException('Missing response body');
+      final response = await request();
+      final body = response.data;
+      if (body == null) {
+        throw mapper.fromMissingBody(
+          response,
+          apiOperation: apiOperation,
+          responseModel: responseModel,
+        );
+      }
       return body;
     } on DioException catch (error) {
-      throw mapper.fromDio(error);
+      throw mapper.fromDio(
+        error,
+        apiOperation: apiOperation,
+        responseModel: responseModel,
+      );
     }
   }
 }

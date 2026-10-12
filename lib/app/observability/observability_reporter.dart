@@ -156,6 +156,16 @@ final class SentryObservabilityReporter implements ObservabilityReporter {
         'http_status': server.statusCode.toString(),
         'api_code': server.code,
       },
+      if (failure case DecodingFailure(:final diagnostics?)) ...{
+        'api_operation': ?diagnostics.apiOperation,
+        'response_model': ?diagnostics.responseModel,
+        if (diagnostics.httpStatus case final status?)
+          'http_status': status.toString(),
+        'response_content_type': ?diagnostics.contentType,
+        if (diagnostics.responseBodySize case final size?)
+          'response_size_bytes': size.toString(),
+        'decoder_error': diagnostics.decoderError,
+      },
     };
     if (failure is CancelledFailure) {
       recordOperation(
@@ -198,6 +208,18 @@ final class SentryObservabilityReporter implements ObservabilityReporter {
             scope
               ..setTag('http_status', server.statusCode.toString())
               ..setTag('api_code', server.code);
+          }
+          if (failure case DecodingFailure(:final diagnostics?)) {
+            if (diagnostics.apiOperation case final value?) {
+              scope.setTag('api_operation', value);
+            }
+            if (diagnostics.responseModel case final value?) {
+              scope.setTag('response_model', value);
+            }
+            scope.setTag('decoder_error', diagnostics.decoderError);
+            if (diagnostics.httpStatus case final value?) {
+              scope.setTag('http_status', value.toString());
+            }
           }
         },
       ),
@@ -273,7 +295,14 @@ final class SentryObservabilityReporter implements ObservabilityReporter {
   static String apiFailureClassifier(ApiFailure failure) => switch (failure) {
     ServerFailure(:final statusCode, :final code) =>
       'server:$statusCode:${normalizeClassifier(code)}',
-    _ => failure.runtimeType.toString(),
+    AuthenticationFailure() => 'authentication',
+    NetworkFailure() => 'network',
+    TimeoutFailure() => 'timeout',
+    CancelledFailure() => 'cancelled',
+    DecodingFailure() => 'decoding',
+    CompatibilityFailure() => 'compatibility',
+    UnknownFailure() => 'unknown',
+    WalletTransactionNotBroadcastFailure() => 'wallet-not-broadcast',
   };
 
   static String normalizeClassifier(String value) {

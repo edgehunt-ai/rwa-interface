@@ -134,13 +134,85 @@ void main() {
       final failure = mapper.fromDio(
         DioException(
           requestOptions: request,
-          response: Response(requestOptions: request, statusCode: 200),
+          response: Response(
+            requestOptions: request,
+            statusCode: 200,
+            headers: Headers.fromMap({
+              'content-type': ['application/json; charset=utf-8'],
+              'content-length': ['37'],
+              'x-request-id': ['decode-request-1'],
+            }),
+            data: '{"sensitive":"must-not-be-reported"}',
+          ),
           type: DioExceptionType.unknown,
           error: const FormatException('Unexpected response shape'),
         ),
+        apiOperation: 'funding.get_catalog',
+        responseModel: 'FundingCatalog',
       );
 
       expect(failure, isA<DecodingFailure>());
+      final decoding = failure as DecodingFailure;
+      expect(decoding.requestId, 'decode-request-1');
+      expect(decoding.diagnostics, (
+        apiOperation: 'funding.get_catalog',
+        responseModel: 'FundingCatalog',
+        httpStatus: 200,
+        contentType: 'application/json',
+        responseBodySize: 37,
+        decoderError: 'format_exception',
+      ));
+      expect(decoding.toString(), isNot(contains('sensitive')));
     },
   );
+
+  test('does not expose an invalid content type or structured response', () {
+    final request = RequestOptions(path: '/v1/markets/products');
+    final failure = mapper.fromDio(
+      DioException(
+        requestOptions: request,
+        response: Response(
+          requestOptions: request,
+          statusCode: 200,
+          headers: Headers.fromMap({
+            'content-type': ['text/plain token=secret'],
+          }),
+          data: {'token': 'secret'},
+        ),
+        type: DioExceptionType.unknown,
+        error: StateError('decoder rejected payload'),
+      ),
+    ) as DecodingFailure;
+
+    expect(failure.diagnostics?.contentType, isNull);
+    expect(failure.diagnostics?.responseBodySize, isNull);
+    expect(failure.diagnostics?.decoderError, 'state_error');
+  });
+
+  test('maps a missing response body with safe response metadata', () {
+    final request = RequestOptions(path: '/v1/markets/products');
+    final failure = mapper.fromMissingBody(
+      Response<void>(
+        requestOptions: request,
+        statusCode: 204,
+        headers: Headers.fromMap({
+          'content-type': ['application/json'],
+          'content-length': ['0'],
+          'x-request-id': ['empty-request-1'],
+        }),
+      ),
+      apiOperation: 'markets.list_products',
+      responseModel: 'ProductPage',
+    );
+
+    expect(failure.requestId, 'empty-request-1');
+    expect(failure.diagnostics, (
+      apiOperation: 'markets.list_products',
+      responseModel: 'ProductPage',
+      httpStatus: 204,
+      contentType: 'application/json',
+      responseBodySize: 0,
+      decoderError: 'missing_body',
+    ));
+  });
 }

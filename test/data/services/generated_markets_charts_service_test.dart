@@ -1,9 +1,11 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:nobell/data/api/api_environment.dart';
 import 'package:nobell/data/api/rwa_api_data_source.dart';
 import 'package:nobell/data/services/generated_charts_service.dart';
 import 'package:nobell/data/services/generated_markets_service.dart';
+import 'package:nobell/domain/models/api_failure.dart';
 
 import '../../helpers/controlled_api_adapter.dart';
 import '../../helpers/trading_provider_harness.dart';
@@ -51,6 +53,51 @@ void main() {
       );
     },
   );
+
+  test('labels market response decoding failures for diagnostics', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test.invalid'));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (request, handler) => handler.reject(
+          DioException(
+            requestOptions: request,
+            response: Response<String>(
+              requestOptions: request,
+              statusCode: 200,
+              headers: Headers.fromMap({
+                'content-type': ['application/json'],
+                'x-request-id': ['market-decode-request'],
+              }),
+              data: '{"invalid":true}',
+            ),
+            type: DioExceptionType.unknown,
+            error: const FormatException('invalid ProductPage'),
+          ),
+        ),
+      ),
+    );
+    final service = GeneratedMarketsService(
+      api.RwaApiClient(dio: dio).getMarketsApi(),
+    );
+
+    await expectLater(
+      service.listProducts(),
+      throwsA(
+        isA<DecodingFailure>().having(
+          (failure) => failure.diagnostics,
+          'diagnostics',
+          (
+            apiOperation: 'markets.list_products',
+            responseModel: 'ProductPage',
+            httpStatus: 200,
+            contentType: 'application/json',
+            responseBodySize: 16,
+            decoderError: 'format_exception',
+          ),
+        ),
+      ),
+    );
+  });
 }
 
 RwaApiDataSource _source(ControlledApiAdapter adapter) {

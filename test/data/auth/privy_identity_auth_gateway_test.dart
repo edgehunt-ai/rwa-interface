@@ -303,21 +303,39 @@ void main() {
   test('maps email code failure without exposing provider exception', () async {
     late String capturedOperation;
     late String capturedDiagnostic;
+    late String capturedFailureCode;
+    late String capturedProviderError;
+    String? capturedProviderFlow;
+    String? capturedProviderStage;
     final email = _FakeEmail(
       sendResult: const Success(null),
       loginResult: const Failure(
-        PrivyException(
+        PrivyAuthException(
           'invalid otp 123456 for user@example.com with Bearer token-value',
+          flow: 'email',
+          stage: 'loginWithCode',
         ),
       ),
     );
     final gateway = PrivyIdentityAuthGateway(
       createPrivy: (_) =>
           _FakePrivy(authState: const Unauthenticated(), email: email),
-      reportDiagnostic: ({required operation, required message}) {
-        capturedOperation = operation;
-        capturedDiagnostic = message;
-      },
+      reportDiagnostic:
+          ({
+            required operation,
+            required message,
+            required failureCode,
+            required providerError,
+            providerFlow,
+            providerStage,
+          }) {
+            capturedOperation = operation;
+            capturedDiagnostic = message;
+            capturedFailureCode = failureCode;
+            capturedProviderError = providerError;
+            capturedProviderFlow = providerFlow;
+            capturedProviderStage = providerStage;
+          },
     );
     await gateway.initialize(configuration);
     await gateway.requestEmailCode('user@example.com');
@@ -333,6 +351,10 @@ void main() {
       ),
     );
     expect(capturedOperation, 'verify_email_code');
+    expect(capturedFailureCode, 'invalidCode');
+    expect(capturedProviderError, 'auth_exception');
+    expect(capturedProviderFlow, 'email');
+    expect(capturedProviderStage, 'loginwithcode');
     expect(
       capturedDiagnostic,
       'invalid otp <redacted-code> for <redacted-email> with Bearer <redacted>',

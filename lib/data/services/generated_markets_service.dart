@@ -12,17 +12,31 @@ final class GeneratedMarketsService implements MarketsService {
   @override
   Future<StockPage> listStocks() async {
     try {
-      final data = (await _api.listStocks()).data;
-      if (data == null) throw const FormatException('Missing listStocks body');
+      final response = await _api.listStocks();
+      final data = response.data;
+      if (data == null) {
+        throw _mapper.fromMissingBody(
+          response,
+          apiOperation: 'markets.list_stocks',
+          responseModel: 'StockPage',
+        );
+      }
       return data;
     } on DioException catch (error) {
-      throw _mapper.fromDio(error);
+      throw _mapper.fromDio(
+        error,
+        apiOperation: 'markets.list_stocks',
+        responseModel: 'StockPage',
+      );
     }
   }
 
   @override
-  Future<BstocksSupportedTokenPage> listBstocksSupportedTokens() =>
-      _body(() => _api.listBstocksSupportedTokens());
+  Future<BstocksSupportedTokenPage> listBstocksSupportedTokens() => _body(
+    () => _api.listBstocksSupportedTokens(),
+    apiOperation: 'markets.list_bstocks_supported_tokens',
+    responseModel: 'BstocksSupportedTokenPage',
+  );
 
   @override
   Future<ProductPage> listProducts({
@@ -37,19 +51,30 @@ final class GeneratedMarketsService implements MarketsService {
       q: query,
       cursor: cursor,
     ),
+    apiOperation: 'markets.list_products',
+    responseModel: 'ProductPage',
   );
 
   @override
-  Future<ProductDetail> getProduct(String symbol, ProductKind kind) =>
-      _body(() => _api.getProduct(symbol: symbol, kind: kind));
+  Future<ProductDetail> getProduct(String symbol, ProductKind kind) => _body(
+    () => _api.getProduct(symbol: symbol, kind: kind),
+    apiOperation: 'markets.get_product',
+    responseModel: 'ProductDetail',
+  );
 
   @override
-  Future<MarketStats> getProductStats(String symbol, ProductKind kind) =>
-      _body(() => _api.getProductStats(symbol: symbol, kind: kind));
+  Future<MarketStats> getProductStats(String symbol, ProductKind kind) => _body(
+    () => _api.getProductStats(symbol: symbol, kind: kind),
+    apiOperation: 'markets.get_product_stats',
+    responseModel: 'MarketStats',
+  );
 
   @override
-  Future<OrderBook> getOrderBook(String symbol, ProductKind kind) =>
-      _body(() => _api.getOrderBook(symbol: symbol, kind: kind));
+  Future<OrderBook> getOrderBook(String symbol, ProductKind kind) => _body(
+    () => _api.getOrderBook(symbol: symbol, kind: kind),
+    apiOperation: 'markets.get_order_book',
+    responseModel: 'OrderBook',
+  );
 
   @override
   Future<void> addFavorite(String symbol, ProductKind kind) =>
@@ -68,13 +93,28 @@ final class GeneratedMarketsService implements MarketsService {
     ),
   );
 
-  Future<T> _body<T>(Future<Response<T>> Function() request) async {
+  Future<T> _body<T>(
+    Future<Response<T>> Function() request, {
+    required String apiOperation,
+    required String responseModel,
+  }) async {
     try {
-      final data = (await request()).data;
-      if (data == null) throw const FormatException('Missing response body');
+      final response = await request();
+      final data = response.data;
+      if (data == null) {
+        throw _mapper.fromMissingBody(
+          response,
+          apiOperation: apiOperation,
+          responseModel: responseModel,
+        );
+      }
       return data;
     } on DioException catch (error) {
-      throw _mapper.fromDio(error);
+      throw _mapper.fromDio(
+        error,
+        apiOperation: apiOperation,
+        responseModel: responseModel,
+      );
     }
   }
 

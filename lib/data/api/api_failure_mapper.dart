@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../../domain/models/api_failure.dart';
@@ -5,7 +7,28 @@ import '../../domain/models/api_failure.dart';
 final class ApiFailureMapper {
   const ApiFailureMapper();
 
-  ApiFailure fromDio(DioException error) {
+  DecodingFailure fromMissingBody<T>(
+    Response<T> response, {
+    String? apiOperation,
+    String? responseModel,
+  }) => DecodingFailure(
+    requestId: response.headers['x-request-id']?.firstOrNull,
+    userAction: 'Missing response body',
+    diagnostics: (
+      apiOperation: apiOperation,
+      responseModel: responseModel,
+      httpStatus: response.statusCode,
+      contentType: _contentType(response.headers),
+      responseBodySize: _responseBodySize(response),
+      decoderError: 'missing_body',
+    ),
+  );
+
+  ApiFailure fromDio(
+    DioException error, {
+    String? apiOperation,
+    String? responseModel,
+  }) {
     final response = error.response;
     // Some gateways emit duplicate x-request-id values. `Headers.value()`
     // throws when that happens, masking the original API/decoding failure.
@@ -40,6 +63,11 @@ final class ApiFailureMapper {
       return DecodingFailure(
         requestId: requestId,
         userAction: reason == null || reason.isEmpty ? null : reason,
+        diagnostics: _decodeDiagnostics(
+          error,
+          apiOperation: apiOperation,
+          responseModel: responseModel,
+        ),
       );
     }
     if (status != null) {
@@ -59,6 +87,48 @@ final class ApiFailureMapper {
       );
     }
     return UnknownFailure(retryable: true, userAction: _transportReason(error));
+  }
+
+  ApiDecodeDiagnostics _decodeDiagnostics(
+    DioException error, {
+    required String? apiOperation,
+    required String? responseModel,
+  }) {
+    final response = error.response;
+    return (
+      apiOperation: apiOperation,
+      responseModel: responseModel,
+      httpStatus: response?.statusCode,
+      contentType: _contentType(response?.headers),
+      responseBodySize: _responseBodySize(response),
+      decoderError: switch (error.error) {
+        FormatException() => 'format_exception',
+        TypeError() => 'type_error',
+        StateError() => 'state_error',
+        _ => 'generated_client',
+      },
+    );
+  }
+
+  String? _contentType(Headers? headers) {
+    final raw = headers?['content-type']?.firstOrNull;
+    if (raw == null) return null;
+    final value = raw.split(';').first.trim().toLowerCase();
+    if (!RegExp(r'^[a-z0-9.+-]+/[a-z0-9.+-]+$').hasMatch(value)) return null;
+    return value;
+  }
+
+  int? _responseBodySize(Response<dynamic>? response) {
+    if (response == null) return null;
+    final declared = int.tryParse(
+      response.headers['content-length']?.firstOrNull ?? '',
+    );
+    if (declared != null && declared >= 0) return declared;
+    return switch (response.data) {
+      final String value => utf8.encode(value).length,
+      final List<int> value => value.length,
+      _ => null,
+    };
   }
 
   String? _transportReason(DioException error) {

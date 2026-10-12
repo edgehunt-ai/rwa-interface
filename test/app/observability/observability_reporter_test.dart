@@ -62,6 +62,19 @@ void main() {
     },
   );
 
+  test('non-server classifiers do not depend on obfuscated runtime types', () {
+    expect(
+      SentryObservabilityReporter.apiFailureClassifier(const DecodingFailure()),
+      'decoding',
+    );
+    expect(
+      SentryObservabilityReporter.apiFailureClassifier(
+        const CancelledFailure(),
+      ),
+      'cancelled',
+    );
+  });
+
   test(
     'identifies network and timeout failures as non-reportable telemetry',
     () {

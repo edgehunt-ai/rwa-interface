@@ -37,6 +37,10 @@ sealed class ApiFailure implements Exception {
 
   @override
   int get hashCode => Object.hash(runtimeType, Object.hashAll(_properties));
+
+  @override
+  String toString() =>
+      'ApiFailure(kind: ${kind.name}, retryable: $retryable${requestId == null ? '' : ', requestId: $requestId'})';
 }
 
 String apiFailureMessage(ApiFailure failure, {required String fallback}) {
@@ -146,10 +150,25 @@ final class WalletTransactionNotBroadcastFailure extends ApiFailure {
   FailureKind get kind => FailureKind.unknown;
 }
 
+typedef ApiDecodeDiagnostics = ({
+  String? apiOperation,
+  String? responseModel,
+  int? httpStatus,
+  String? contentType,
+  int? responseBodySize,
+  String decoderError,
+});
+
 final class DecodingFailure extends ApiFailure {
-  const DecodingFailure({super.requestId, super.userAction});
+  const DecodingFailure({super.requestId, super.userAction, this.diagnostics});
+
+  final ApiDecodeDiagnostics? diagnostics;
+
   @override
   FailureKind get kind => FailureKind.decoding;
+
+  @override
+  Iterable<Object?> get _properties => [...super._properties, diagnostics];
 }
 
 final class CompatibilityFailure extends ApiFailure {

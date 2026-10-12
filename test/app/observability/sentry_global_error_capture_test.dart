@@ -71,7 +71,7 @@ void main() {
       'business-operation',
       'create_order',
       'compatibility',
-      'CompatibilityFailure',
+      'compatibility',
     ]);
     expect(event.contexts['business_operation'], {
       'operation': 'create_order',
@@ -80,6 +80,42 @@ void main() {
       'failure_kind': 'compatibility',
       'request_id': 'request-1',
       'duration_ms': 125,
+    });
+  });
+
+  test('reports safe decoding diagnostics without response content', () async {
+    final fixture = await _initializeSentry();
+
+    SentryObservabilityReporter().recordApiFailure(
+      operation: 'tp-sl',
+      failure: const DecodingFailure(
+        requestId: 'request-1',
+        diagnostics: (
+          apiOperation: 'orders.get_hip3_action',
+          responseModel: 'Hip3Action',
+          httpStatus: 200,
+          contentType: 'application/json',
+          responseBodySize: 321,
+          decoderError: 'generated_client',
+        ),
+      ),
+    );
+    await fixture.transport.waitForEventCount(1);
+
+    final event = fixture.transport.events.single;
+    expect(event.tags, containsPair('api_operation', 'orders.get_hip3_action'));
+    expect(event.tags, containsPair('response_model', 'Hip3Action'));
+    expect(event.tags, containsPair('decoder_error', 'generated_client'));
+    expect(event.contexts['business_operation'], {
+      'operation': 'tp-sl',
+      'failure_kind': 'decoding',
+      'request_id': 'request-1',
+      'api_operation': 'orders.get_hip3_action',
+      'response_model': 'Hip3Action',
+      'http_status': '200',
+      'response_content_type': 'application/json',
+      'response_size_bytes': '321',
+      'decoder_error': 'generated_client',
     });
   });
 

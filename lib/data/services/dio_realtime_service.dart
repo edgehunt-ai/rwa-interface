@@ -76,6 +76,15 @@ final class DioRealtimeService
           throw const ApiFailureMapper().fromDio(error);
         }
         await _delay(_policy.delayFor(attempt));
+      } on ApiFailure {
+        rethrow;
+      } on Object catch (error) {
+        // Once Dio has returned a streaming response, socket failures surface
+        // from ResponseBody.stream instead of as DioException instances.
+        if (attempt == _policy.maxAttempts) {
+          throw NetworkFailure(userAction: error.toString());
+        }
+        await _delay(_policy.delayFor(attempt));
       } finally {
         if (!cancelToken.isCancelled) {
           cancelToken.cancel('SSE subscription closed');

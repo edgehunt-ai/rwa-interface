@@ -1346,6 +1346,47 @@ void main() {
     },
   );
 
+  testWidgets('Trade open tab handles a failed bStocks cancellation', (
+    tester,
+  ) async {
+    final repository = _OpenOrderRepository(
+      cancelFailure: const ServerFailure(
+        statusCode: 503,
+        code: 'provider_unavailable',
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(repository),
+          bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+            BstocksOrderExecutionRepositoryImpl(
+              repository,
+              _UnusedOrderActions(),
+              null,
+            ),
+          ),
+        ],
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollToTradeTab(tester, 'Open');
+    await tester.tap(_tradeTab('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
+    await tester.pump();
+
+    expect(
+      find.text(
+        'Unable to complete cancellation. Refresh the order and retry.',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   for (final asset in ['USDT', null]) {
     testWidgets('Trade uses settlement $asset and disables IOC cancellation', (
       tester,
@@ -1916,9 +1957,11 @@ final class _OpenOrderRepository implements OrdersRepository {
   _OpenOrderRepository({
     this.type = TradingOrderType.limit,
     this.settlementAsset = 'TUSDT',
+    this.cancelFailure,
   });
   final TradingOrderType type;
   final String? settlementAsset;
+  final ApiFailure? cancelFailure;
   String? cancelledOrderId;
   String? lastStatusGroup;
   String? lastSymbol;
@@ -1958,6 +2001,7 @@ final class _OpenOrderRepository implements OrdersRepository {
     required String idempotencyKey,
   }) async {
     cancelledOrderId = orderId;
+    if (cancelFailure case final failure?) throw failure;
     return ResourceResult(
       resource: TradingOrder(
         orderId: _order.orderId,

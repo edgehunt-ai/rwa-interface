@@ -9,14 +9,44 @@ abstract final class SentryEventSanitizer {
     final error = event.throwable as Object?;
     if (error is NetworkFailure ||
         error is TimeoutFailure ||
-        error is CancelledFailure) {
+        error is CancelledFailure ||
+        _comesFromBrowserExtension(event)) {
       return null;
     }
     return sanitize(event, hint);
   }
 
+  static bool _comesFromBrowserExtension(SentryEvent event) {
+    final frames = event.exceptions
+        ?.expand(
+          (exception) =>
+              exception.stackTrace?.frames ?? const <SentryStackFrame>[],
+        )
+        .toList(growable: false);
+    if (frames == null || frames.isEmpty) return false;
+    return frames.every(
+      (frame) => _browserExtensionSchemes.any(
+        (scheme) =>
+            (frame.absPath?.startsWith(scheme) ?? false) ||
+            (frame.fileName?.startsWith(scheme) ?? false),
+      ),
+    );
+  }
+
+  static const _browserExtensionSchemes = <String>{
+    'chrome-extension://',
+    'moz-extension://',
+    'safari-extension://',
+    'ms-browser-extension://',
+  };
+
   static SentryEvent sanitize(SentryEvent event, Hint _) {
-    final privyAuthMessage = _privyAuthMessage(event.contexts['privy_auth']);
+    if (event.throwable case final ApiFailure failure) {
+      for (final exception in event.exceptions ?? const <SentryException>[]) {
+        exception.type = 'ApiFailure.${failure.kind.name}';
+      }
+    }
+    final privyAuth = _safePrivyAuth(event.contexts['privy_auth']);
     final businessOperation = _safeBusinessOperation(
       event.contexts['business_operation'],
     );
@@ -45,10 +75,10 @@ abstract final class SentryEventSanitizer {
         'business_operation',
       }.contains(key),
     );
-    if (privyAuthMessage == null) {
+    if (privyAuth == null) {
       event.contexts.remove('privy_auth');
     } else {
-      event.contexts['privy_auth'] = {'safe_message': privyAuthMessage};
+      event.contexts['privy_auth'] = privyAuth;
     }
     if (businessOperation == null) {
       event.contexts.remove('business_operation');
@@ -122,12 +152,16 @@ abstract final class SentryEventSanitizer {
       'private[_-]?key|mnemonic|seed(?:[_-]?phrase)?|password|passphrase|'
       'client[_-]?secret|api[_-]?key|secret';
 
-  static String? _privyAuthMessage(Object? context) {
-    if (context is! Map<Object?, Object?>) return null;
-    final message = context['safe_message'];
-    if (message is! String || message.trim().isEmpty) return null;
-    return redact(message)
-        .replaceAll(RegExp(r'\b\d{4,10}\b'), '<redacted-code>');
+  static Map<String, Object?>? _safePrivyAuth(Object? context) {
+    final result = _safeMap(context, _privyAuthKeys);
+    final message = result?['safe_message'];
+    if (message is String) {
+      result!['safe_message'] = message.replaceAll(
+        RegExp(r'\b\d{4,10}\b'),
+        '<redacted-code>',
+      );
+    }
+    return result;
   }
 
   static Map<String, Object?>? _safeBusinessOperation(Object? context) =>
@@ -168,6 +202,11 @@ abstract final class SentryEventSanitizer {
     'request_id',
     'http_status',
     'api_code',
+    'api_operation',
+    'response_model',
+    'response_content_type',
+    'response_size_bytes',
+    'decoder_error',
     'order_id',
     'withdrawal_id',
     'action_id',
@@ -182,6 +221,14 @@ abstract final class SentryEventSanitizer {
     'mode',
     'stage',
     'status',
+  };
+
+  static const _privyAuthKeys = <String>{
+    'safe_message',
+    'failure_code',
+    'provider_error',
+    'provider_flow',
+    'provider_stage',
   };
 
   static const _httpBreadcrumbKeys = <String>{

@@ -20,6 +20,10 @@ typedef PrivyFactory = Privy Function(PrivyConfig configuration);
 typedef PrivyDiagnosticReporter = void Function({
   required String operation,
   required String message,
+  required String failureCode,
+  required String providerError,
+  String? providerFlow,
+  String? providerStage,
 });
 typedef PrivyTypedDataRequester = Future<Result<EthereumRpcResponse>> Function(
   EmbeddedEthereumWallet wallet,
@@ -373,9 +377,14 @@ final class PrivyIdentityAuthGateway
     } catch (error, stackTrace) {
       final reason =
           (error is PrivyException ? error.message : error.toString()).trim();
+      final providerDiagnostic = _providerDiagnostic(error);
       _reportDiagnostic(
         operation: 'generate_authorization_signature',
-        message: '$reason\n$stackTrace',
+        message: _sanitizeDiagnosticMessage('$reason\n$stackTrace'),
+        failureCode: 'wallet_unavailable',
+        providerError: providerDiagnostic.error,
+        providerFlow: providerDiagnostic.flow,
+        providerStage: providerDiagnostic.stage,
       );
       throw WalletAuthorizationFailure(
         WalletAuthorizationFailureCode.walletUnavailable,
@@ -783,6 +792,7 @@ final class PrivyIdentityAuthGateway
     operation: operation,
     message: error.message,
     codeOperation: codeOperation,
+    providerDiagnostic: _providerDiagnostic(error),
   );
 
   IdentityFailure _mapUnexpectedFailure({
@@ -792,47 +802,102 @@ final class PrivyIdentityAuthGateway
     operation: operation,
     message: error.toString(),
     codeOperation: operation == 'verify_email_code',
+    providerDiagnostic: _providerDiagnostic(error),
   );
 
   IdentityFailure _failureForMessage({
     required String operation,
     required String message,
     required bool codeOperation,
+    required _PrivyProviderDiagnostic providerDiagnostic,
   }) {
     final normalized = message.toLowerCase();
-    _reportFailure(operation: operation, message: message);
+    late final IdentityFailure failure;
     if (normalized.contains('network') || normalized.contains('timeout')) {
-      return const IdentityFailure(
+      failure = const IdentityFailure(
         AuthenticationFailureCode.network,
         retryable: true,
       );
-    }
-    if (normalized.contains('failed to launch oauth browser')) {
-      return const IdentityFailure(
+    } else if (normalized.contains('failed to launch oauth browser')) {
+      failure = const IdentityFailure(
         AuthenticationFailureCode.browserUnavailable,
         retryable: true,
       );
-    }
-    if (codeOperation &&
+    } else if (codeOperation &&
         (normalized.contains('code') ||
             normalized.contains('otp') ||
             normalized.contains('verification') ||
             normalized.contains('invalid email'))) {
-      return const IdentityFailure(
+      failure = const IdentityFailure(
         AuthenticationFailureCode.invalidCode,
         retryable: true,
       );
+    } else {
+      failure = const IdentityFailure(
+        AuthenticationFailureCode.provider,
+        retryable: true,
+      );
     }
-    return const IdentityFailure(
-      AuthenticationFailureCode.provider,
-      retryable: true,
+    _reportFailure(
+      operation: operation,
+      message: message,
+      failureCode: failure.code.name,
+      providerDiagnostic: providerDiagnostic,
+    );
+    return failure;
+  }
+
+  void _reportFailure({
+    required String operation,
+    required String message,
+    required String failureCode,
+    required _PrivyProviderDiagnostic providerDiagnostic,
+  }) {
+    final safeMessage = _sanitizeDiagnosticMessage(message);
+    if (kDebugMode) debugPrint('Privy $operation failed: $safeMessage');
+    _reportDiagnostic(
+      operation: operation,
+      message: safeMessage,
+      failureCode: failureCode,
+      providerError: providerDiagnostic.error,
+      providerFlow: providerDiagnostic.flow,
+      providerStage: providerDiagnostic.stage,
     );
   }
 
-  void _reportFailure({required String operation, required String message}) {
-    final safeMessage = _sanitizeDiagnosticMessage(message);
-    if (kDebugMode) debugPrint('Privy $operation failed: $safeMessage');
-    _reportDiagnostic(operation: operation, message: safeMessage);
+  static _PrivyProviderDiagnostic _providerDiagnostic(Object error) =>
+      switch (error) {
+        PrivyAuthException(:final flow, :final stage) => (
+          error: 'auth_exception',
+          flow: _safeDiagnosticLabel(flow),
+          stage: _safeDiagnosticLabel(stage),
+        ),
+        PrivyTimeoutException(:final operation) => (
+          error: 'timeout_exception',
+          flow: null,
+          stage: _safeDiagnosticLabel(operation),
+        ),
+        PrivyWalletException(:final operation) => (
+          error: 'wallet_exception',
+          flow: null,
+          stage: _safeDiagnosticLabel(operation),
+        ),
+        PrivyException() => (error: 'privy_exception', flow: null, stage: null),
+        PlatformException(:final code) => (
+          error: 'platform_exception',
+          flow: null,
+          stage: _safeDiagnosticLabel(code),
+        ),
+        _ => (error: 'unexpected', flow: null, stage: null),
+      };
+
+  static String? _safeDiagnosticLabel(String value) {
+    final normalized = value.trim().toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9._-]+'),
+      '-',
+    );
+    if (normalized.isEmpty) return null;
+    return normalized.length <= 64 ? normalized : normalized.substring(0, 64);
   }
 
   static String _sanitizeDiagnosticMessage(String value) => value
@@ -860,6 +925,10 @@ final class PrivyIdentityAuthGateway
   static void _reportToSentry({
     required String operation,
     required String message,
+    required String failureCode,
+    required String providerError,
+    String? providerFlow,
+    String? providerStage,
   }) {
     unawaited(
       Sentry.captureMessage(
@@ -867,10 +936,30 @@ final class PrivyIdentityAuthGateway
         withScope: (scope) {
           scope
             ..setTag('auth_provider', 'privy')
-            ..setTag('operation', operation);
-          scope.setContexts('privy_auth', {'safe_message': message});
+            ..setTag('operation', operation)
+            ..setTag('auth_failure', failureCode)
+            ..setTag('provider_error', providerError);
+          if (providerFlow != null) {
+            scope.setTag('provider_flow', providerFlow);
+          }
+          if (providerStage != null) {
+            scope.setTag('provider_stage', providerStage);
+          }
+          scope.setContexts('privy_auth', {
+            'safe_message': message,
+            'failure_code': failureCode,
+            'provider_error': providerError,
+            'provider_flow': ?providerFlow,
+            'provider_stage': ?providerStage,
+          });
         },
       ),
     );
   }
 }
+
+typedef _PrivyProviderDiagnostic = ({
+  String error,
+  String? flow,
+  String? stage,
+});

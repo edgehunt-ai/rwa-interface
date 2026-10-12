@@ -46,4 +46,49 @@ void main() {
       // Public synthetic fixture only; no wallet signing or network broadcast.
     },
   );
+
+  test('labels HIP-3 response decoding failures for diagnostics', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test.invalid'));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (request, handler) => handler.reject(
+          DioException(
+            requestOptions: request,
+            response: Response<String>(
+              requestOptions: request,
+              statusCode: 200,
+              headers: Headers.fromMap({
+                'content-type': ['application/json'],
+                'x-request-id': ['hip3-decode-request'],
+              }),
+              data: '{"invalid":true}',
+            ),
+            type: DioExceptionType.unknown,
+            error: const FormatException('invalid Hip3Action'),
+          ),
+        ),
+      ),
+    );
+    final service = GeneratedHip3PositionActionService(
+      api.RwaApiClient(dio: dio).getOrdersApi(),
+    );
+
+    await expectLater(
+      service.get('action-1'),
+      throwsA(
+        isA<DecodingFailure>().having(
+          (failure) => failure.diagnostics,
+          'diagnostics',
+          (
+            apiOperation: 'orders.get_hip3_action',
+            responseModel: 'Hip3Action',
+            httpStatus: 200,
+            contentType: 'application/json',
+            responseBodySize: 16,
+            decoderError: 'format_exception',
+          ),
+        ),
+      ),
+    );
+  });
 }

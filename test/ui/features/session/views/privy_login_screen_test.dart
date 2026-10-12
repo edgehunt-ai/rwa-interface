@@ -413,6 +413,53 @@ void main() {
     expect(gateway.requestedEmail, 'user@example.com');
     expect(find.text('Code resent'), findsOneWidget);
   });
+
+  testWidgets('verification completion after unmount does not access ref', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final verifyBarrier = Completer<void>();
+    final gateway = FakeIdentityAuthGateway()
+      ..verifyBarrier = verifyBarrier.future;
+    final container = ProviderContainer(
+      overrides: [
+        identityAuthGatewayProvider.overrideWithValue(gateway),
+        sessionRepositoryProvider.overrideWithValue(_LoginSessions()),
+        walletsRepositoryProvider.overrideWithValue(
+          _LoginWallets()..failure = null,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container
+        .read(authenticationProvider.notifier)
+        .requestEmailCode('user@example.com');
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: _buildLoginApp(const _AuthenticationLogin()),
+      ),
+    );
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.pump();
+    expect(gateway.verifiedCode, '123456');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    verifyBarrier.complete();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
+}
+
+final class _AuthenticationLogin extends ConsumerWidget {
+  const _AuthenticationLogin();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) =>
+      PrivyLoginScreen(authentication: ref.watch(authenticationProvider));
 }
 
 final class _LoginSessions implements SessionRepository {

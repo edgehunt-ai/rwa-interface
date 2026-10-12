@@ -242,12 +242,6 @@ class _OpenOrdersTab extends ConsumerWidget {
                           !order.isBstocksCancellable
                       ? null
                       : () async {
-                          if (order.kind != MarketProductKind.perp) {
-                            await ref
-                                .read(orderCommandProvider.notifier)
-                                .cancel(order);
-                            return;
-                          }
                           String message;
                           try {
                             await ref

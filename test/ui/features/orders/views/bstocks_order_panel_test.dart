@@ -82,6 +82,18 @@ void main() {
 
     expectCompactLayout();
     expect(tester.widget<TextField>(quantityInput).decoration?.hintText, '0.0');
+    final primaryAction = find.byKey(const Key('bstocks-primary-order-action'));
+    final success = Theme.of(tester.element(primaryAction))
+        .extension<AppSemanticColors>()!
+        .success;
+    expect(
+      tester
+          .widget<FilledButton>(primaryAction)
+          .style
+          ?.backgroundColor
+          ?.resolve(<WidgetState>{}),
+      success,
+    );
     await tester.tap(
       find.descendant(
         of: find.byKey(const Key('bstocks-side-tabs')),
@@ -90,6 +102,14 @@ void main() {
     );
     await tester.pumpAndSettle();
     expectCompactLayout();
+    expect(
+      tester
+          .widget<FilledButton>(primaryAction)
+          .style
+          ?.backgroundColor
+          ?.resolve(<WidgetState>{}),
+      kShortTradeColor,
+    );
   });
 
   testWidgets('sell availability uses the product ID from the order book', (
