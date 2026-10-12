@@ -581,8 +581,50 @@ Widget? _depositTokenIcon(String token, {double size = 24}) =>
         width: size,
         height: size,
       ),
+      'ETH' => SvgPicture.asset(
+        'assets/figma/portfolio/token_eth.svg',
+        key: const ValueKey('deposit-token-icon-eth'),
+        width: size,
+        height: size,
+      ),
+      'BNB' => SvgPicture.asset(
+        NetworkIconAssets.bsc,
+        key: const ValueKey('deposit-token-icon-bnb'),
+        width: size,
+        height: size,
+      ),
       _ => null,
     };
+
+Widget? _depositNetworkMenuIcon(String network) {
+  final kind = networkKind(network);
+  if (kind == NetworkKind.arbitrum || kind == NetworkKind.ethereum) {
+    final isArbitrum = kind == NetworkKind.arbitrum;
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: isArbitrum ? const Color(0xFF2F3749) : const Color(0xFF627EEA),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Center(
+        child: SvgPicture.asset(
+          networkIconAssetPath(network, variant: NetworkIconVariant.mark)!,
+          width: isArbitrum ? 10.7122 : 7.49905,
+          height: isArbitrum ? 12 : 11.9981,
+        ),
+      ),
+    );
+  }
+  final asset = switch (kind) {
+    NetworkKind.bsc => 'assets/figma/funding/deposit_network_bsc.svg',
+    NetworkKind.polygon => 'assets/figma/funding/deposit_network_polygon.svg',
+    _ => null,
+  };
+  return asset == null
+      ? _depositNetworkIcon(network, size: 16)
+      : SvgPicture.asset(asset, width: 16, height: 16);
+}
 
 class _RouteDetails extends ConsumerWidget {
   const _RouteDetails({required this.instruction});
@@ -800,16 +842,15 @@ class _DepositSelectionCard extends StatelessWidget {
             key: const ValueKey('deposit-network-selector'),
             label: AppLocalizations.of(context).network,
             value: chain ?? 'Choose Network',
-            valueColor: chain == null ? colors.primaryText : colors.primaryText,
+            valueColor: colors.primaryText,
             icon: chain == null ? null : _depositNetworkIcon(chain!),
             showArrow: chain == null,
             arrowKey: const ValueKey('deposit-network-selector-arrow'),
-            onTap: () => _showOptions(
-              context,
-              title: AppLocalizations.of(context).network,
-              options: chains,
-              onSelected: onChainSelected,
-            ),
+            options: chains,
+            selectedValue: chain,
+            optionKeyPrefix: 'deposit-network-option',
+            optionIconBuilder: _depositNetworkMenuIcon,
+            onSelected: onChainSelected,
           ),
           Divider(height: 1, color: colors.subtleSurface),
           _SelectionRow(
@@ -823,43 +864,15 @@ class _DepositSelectionCard extends StatelessWidget {
             showArrow: token == null,
             arrowKey: const ValueKey('deposit-token-selector-arrow'),
             enabled: chain != null,
-            onTap: chain == null
-                ? null
-                : () => _showOptions(
-                    context,
-                    title: AppLocalizations.of(context).token,
-                    options: tokens,
-                    onSelected: onTokenSelected,
-                  ),
+            options: tokens,
+            selectedValue: token,
+            optionKeyPrefix: 'deposit-token-option',
+            optionIconBuilder: (value) => _depositTokenIcon(value, size: 16),
+            onSelected: onTokenSelected,
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _showOptions(
-    BuildContext context, {
-    required String title,
-    required List<String> options,
-    required ValueChanged<String> onSelected,
-  }) async {
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            ListTile(title: Text(title)),
-            for (final option in options)
-              ListTile(
-                title: Text(option),
-                onTap: () => Navigator.of(context).pop(option),
-              ),
-          ],
-        ),
-      ),
-    );
-    if (selected != null) onSelected(selected);
   }
 }
 
@@ -869,9 +882,13 @@ class _SelectionRow extends StatelessWidget {
     required this.label,
     required this.value,
     required this.valueColor,
-    required this.onTap,
     required this.showArrow,
     required this.arrowKey,
+    required this.options,
+    required this.selectedValue,
+    required this.optionKeyPrefix,
+    required this.optionIconBuilder,
+    required this.onSelected,
     this.icon,
     this.enabled = true,
   });
@@ -879,15 +896,19 @@ class _SelectionRow extends StatelessWidget {
   final String label;
   final String value;
   final Color valueColor;
-  final VoidCallback? onTap;
   final bool showArrow;
   final Key arrowKey;
+  final List<String> options;
+  final String? selectedValue;
+  final String optionKeyPrefix;
+  final Widget? Function(String) optionIconBuilder;
+  final ValueChanged<String> onSelected;
   final Widget? icon;
   final bool enabled;
 
   @override
   Widget build(BuildContext context) => InkWell(
-    onTap: enabled ? onTap : null,
+    onTap: enabled && options.isNotEmpty ? () => _showOptions(context) : null,
     child: SizedBox(
       height: 51,
       child: Padding(
@@ -930,4 +951,85 @@ class _SelectionRow extends StatelessWidget {
       ),
     ),
   );
+
+  Future<void> _showOptions(BuildContext context) async {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final row = context.findRenderObject()! as RenderBox;
+    final overlay =
+        Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
+    RelativeRect position() {
+      final anchor = row.localToGlobal(
+        Offset(row.size.width - 16, row.size.height - 4),
+        ancestor: overlay,
+      );
+      return RelativeRect.fromRect(
+        anchor & Size.zero,
+        Offset.zero & overlay.size,
+      );
+    }
+
+    var lastPosition = position();
+    final selected = await showMenu<String>(
+      context: context,
+      semanticLabel: label,
+      positionBuilder: (_, _) {
+        // Route replacement can detach the row during the closing animation.
+        if (row.attached && overlay.attached) lastPosition = position();
+        return lastPosition;
+      },
+      color: colors.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: colors.border),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      constraints: const BoxConstraints.tightFor(width: 240),
+      menuPadding: const EdgeInsets.all(4),
+      items: [
+        for (final option in options)
+          PopupMenuItem<String>(
+            key: ValueKey('$optionKeyPrefix-$option'),
+            value: option,
+            height: 44,
+            padding: EdgeInsets.zero,
+            child: Semantics(
+              selected: option == selectedValue,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 44),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: option == selectedValue ? colors.selectedSoft : null,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    if (optionIconBuilder(option) case final icon?) ...[
+                      icon,
+                      const SizedBox(width: 8),
+                    ],
+                    Expanded(
+                      child: Text(
+                        option,
+                        style: TextStyle(
+                          color: option == selectedValue
+                              ? colors.primaryText
+                              : colors.secondaryText,
+                          fontSize: 15,
+                          height: 22 / 15,
+                          fontWeight: option == selectedValue
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+    if (context.mounted && selected != null) onSelected(selected);
+  }
 }
