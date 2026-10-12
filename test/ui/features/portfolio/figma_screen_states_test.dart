@@ -232,6 +232,27 @@ void main() {
     );
   });
 
+  testWidgets('Allocation details animate between expanded and collapsed', (
+    tester,
+  ) async {
+    await tester.pumpWidget(allocationExpandedPreview());
+    await tester.pumpAndSettle();
+
+    final animation = find.byKey(const Key('allocation-details-animation'));
+    final expandedHeight = tester.getSize(animation).height;
+
+    await tester.tap(find.text('Allocation'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 110));
+    final animationHeight = tester.getSize(animation).height;
+    await tester.pumpAndSettle();
+    final collapsedHeight = tester.getSize(animation).height;
+
+    expect(animationHeight, lessThan(expandedHeight));
+    expect(animationHeight, greaterThan(collapsedHeight));
+    expect(find.text('Cross Margin · 18%'), findsNothing);
+  });
+
   testWidgets('Max Withdraw help matches the Figma tooltip', (tester) async {
     tester.view.physicalSize = const Size(320, 852);
     tester.view.devicePixelRatio = 1;

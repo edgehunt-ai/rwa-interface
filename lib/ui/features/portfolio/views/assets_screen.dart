@@ -802,90 +802,105 @@ class _AllocationValues extends StatelessWidget {
           perpsBreakdown: perpsBreakdown,
           colors: colors,
         ),
-        if (expanded) ...[
-          if (spot != null) ...[
-            const SizedBox(height: 16),
-            _AllocationAccountRow(label: l10n.spot, account: spot),
-            const SizedBox(height: 8),
-            for (final entry in spotDetails)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: _AllocationDetailRow(
-                  label: entry.rail == 'bstock'
-                      ? l10n.bstockAllocation
-                      : l10n.cash,
-                  amount: PortfolioAllocationAmount(
-                    valueUsd: entry.valueUsd,
-                    percent: entry.percent,
+        AnimatedSize(
+          key: const Key('allocation-details-animation'),
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (expanded) ...[
+                if (spot != null) ...[
+                  const SizedBox(height: 16),
+                  _AllocationAccountRow(label: l10n.spot, account: spot),
+                  const SizedBox(height: 8),
+                  for (final entry in spotDetails)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: _AllocationDetailRow(
+                        label: entry.rail == 'bstock'
+                            ? l10n.bstockAllocation
+                            : l10n.cash,
+                        amount: PortfolioAllocationAmount(
+                          valueUsd: entry.valueUsd,
+                          percent: entry.percent,
+                        ),
+                        color: entry.rail == 'bstock'
+                            ? colors.primaryText
+                            : colors.secondaryText,
+                      ),
+                    ),
+                ],
+                if (perps != null) ...[
+                  const SizedBox(height: 12),
+                  _AllocationAccountRow(label: l10n.perps, account: perps),
+                  if (perpsBreakdown != null) ...[
+                    const SizedBox(height: 8),
+                    if (perpsBreakdown.crossMargin case final amount?) ...[
+                      _AllocationDetailRow(
+                        label: l10n.crossMargin,
+                        amount: amount,
+                        color: colors.selected,
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    if (perpsBreakdown.estimatedWithdrawable
+                        case final amount?) ...[
+                      _AllocationDetailRow(
+                        label: l10n.maxWithdraw,
+                        amount: amount,
+                        indent: true,
+                        tooltip: _maxWithdrawTooltipMessage(context),
+                        tooltipKey: const Key('max-withdraw-tooltip'),
+                        tooltipTriggerKey: const Key(
+                          'max-withdraw-tooltip-trigger',
+                        ),
+                        tooltipBorderColor: colors.subtleSurface,
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    if (perpsBreakdown.crossLiquidationRisk
+                        case final risk?) ...[
+                      _AllocationRiskRow(risk: risk),
+                      const SizedBox(height: 4),
+                    ],
+                    if (perpsBreakdown.isolatedMargin case final amount?) ...[
+                      _AllocationDetailRow(
+                        label: l10n.isolatedMargin,
+                        amount: amount,
+                        color: colors.selected.withValues(alpha: .5),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    if (perpsBreakdown.openOrderMargin case final amount?)
+                      _AllocationDetailRow(
+                        label: l10n.openOrderMargin,
+                        amount: amount,
+                        color: colors.selected.withValues(alpha: .3),
+                      ),
+                  ],
+                ],
+              ] else ...[
+                const SizedBox(height: 8),
+                Text(
+                  [
+                    if (spot != null)
+                      '${l10n.spot} ${_formatAllocationPercent(spot.percent)}',
+                    if (perps != null)
+                      '${l10n.perps} ${_formatAllocationPercent(perps.percent)}',
+                  ].join(' · '),
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 16 / 12,
+                    color: colors.secondaryText,
                   ),
-                  color: entry.rail == 'bstock'
-                      ? colors.primaryText
-                      : colors.secondaryText,
                 ),
-              ),
-          ],
-          if (perps != null) ...[
-            const SizedBox(height: 12),
-            _AllocationAccountRow(label: l10n.perps, account: perps),
-            if (perpsBreakdown != null) ...[
-              const SizedBox(height: 8),
-              if (perpsBreakdown.crossMargin case final amount?) ...[
-                _AllocationDetailRow(
-                  label: l10n.crossMargin,
-                  amount: amount,
-                  color: colors.selected,
-                ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 20),
               ],
-              if (perpsBreakdown.estimatedWithdrawable case final amount?) ...[
-                _AllocationDetailRow(
-                  label: l10n.maxWithdraw,
-                  amount: amount,
-                  indent: true,
-                  tooltip: _maxWithdrawTooltipMessage(context),
-                  tooltipKey: const Key('max-withdraw-tooltip'),
-                  tooltipTriggerKey: const Key('max-withdraw-tooltip-trigger'),
-                  tooltipBorderColor: colors.subtleSurface,
-                ),
-                const SizedBox(height: 4),
-              ],
-              if (perpsBreakdown.crossLiquidationRisk case final risk?) ...[
-                _AllocationRiskRow(risk: risk),
-                const SizedBox(height: 4),
-              ],
-              if (perpsBreakdown.isolatedMargin case final amount?) ...[
-                _AllocationDetailRow(
-                  label: l10n.isolatedMargin,
-                  amount: amount,
-                  color: colors.selected.withValues(alpha: .5),
-                ),
-                const SizedBox(height: 4),
-              ],
-              if (perpsBreakdown.openOrderMargin case final amount?)
-                _AllocationDetailRow(
-                  label: l10n.openOrderMargin,
-                  amount: amount,
-                  color: colors.selected.withValues(alpha: .3),
-                ),
             ],
-          ],
-        ] else ...[
-          const SizedBox(height: 8),
-          Text(
-            [
-              if (spot != null)
-                '${l10n.spot} ${_formatAllocationPercent(spot.percent)}',
-              if (perps != null)
-                '${l10n.perps} ${_formatAllocationPercent(perps.percent)}',
-            ].join(' · '),
-            style: TextStyle(
-              fontSize: 12,
-              height: 16 / 12,
-              color: colors.secondaryText,
-            ),
           ),
-          const SizedBox(height: 20),
-        ],
+        ),
       ],
     );
   }
