@@ -105,16 +105,15 @@ void main() {
     await tester.pump();
 
     expect(find.text('USDT'), findsOneWidget);
-    expect(find.text('USDC'), findsNWidgets(2));
-    expect(find.text('ETH'), findsOneWidget);
+    expect(find.text('USDC'), findsOneWidget);
+    expect(find.text('ETH'), findsNothing);
     expect(find.text('Add token'), findsNothing);
     expect(find.text('Signature Details'), findsNothing);
     expect(find.byIcon(Icons.check), findsNothing);
-    expect(find.byType(RawScrollbar), findsOneWidget);
-    expect(
-      tester.getSize(find.byKey(const Key('send-token-list'))).height,
-      279,
-    );
+    expect(find.byType(RawScrollbar), findsNothing);
+    expect(tester.getSize(find.byKey(const Key('send-token-card'))).height, 66);
+    expect(find.byKey(const Key('transfer-token-chevron')), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
     expect(find.text('Total Fee'), findsOneWidget);
     expect(find.text('-'), findsNWidgets(4));
     expect(find.text('--'), findsNothing);
@@ -131,6 +130,43 @@ void main() {
     expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
     expect(find.text('Spot'), findsOneWidget);
     expect(find.text('Perps'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('transfer-token-selector')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('transfer-token-picker')), findsOneWidget);
+    expect(find.text('Search assets'), findsOneWidget);
+    expect(find.text('Available to withdraw'), findsOneWidget);
+    expect(find.text('All network'), findsOneWidget);
+    expect(find.byKey(const Key('transfer-token-usdt')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-token-usdc')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-token-eth')), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('transfer-token-search')),
+      'polygon',
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('transfer-token-eth')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-token-usdt')), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('transfer-token-search')), '');
+    await tester.tap(find.byKey(const Key('transfer-token-network-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Polygon').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('transfer-token-eth')), findsOneWidget);
+    expect(find.byKey(const Key('transfer-token-usdt')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('transfer-token-eth')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('transfer-token-picker')), findsNothing);
+    expect(find.text('ETH'), findsOneWidget);
+    expect(find.text('USDT'), findsNothing);
+    expect(find.byType(TextField), findsOneWidget);
 
     expect(
       tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
@@ -194,6 +230,14 @@ void main() {
 
     expect(find.text('转出数量'), findsOneWidget);
     expect(find.text('USDC'), findsOneWidget);
+    expect(find.byKey(const Key('transfer-token-chevron')), findsNothing);
+    final tokenSelector = tester.widget<InkWell>(
+      find.byKey(const Key('transfer-token-selector')),
+    );
+    expect(tokenSelector.onTap, isNull);
+    await tester.tap(find.byKey(const Key('transfer-token-selector')));
+    await tester.pump();
+    expect(find.byKey(const Key('transfer-token-picker')), findsNothing);
     final accounts = find.byType(TransferAccountPair);
     final spotIcon = find.descendant(
       of: accounts,
@@ -221,7 +265,8 @@ void main() {
     expect(spotIcon, findsOneWidget);
     expect(find.text('暂不支持从永续合约转至现货账户。'), findsNothing);
     expect(find.byKey(const Key('hip3-transfer-amount')), findsOneWidget);
-    expect(find.text('USDC (Arbitrum)'), findsOneWidget);
+    expect(find.text('USDC'), findsWidgets);
+    expect(find.text('USDC (Arbitrum)'), findsNothing);
     expect(find.text('总费用'), findsOneWidget);
     expect(find.text('-'), findsNWidgets(4));
     expect(find.text('--'), findsNothing);
@@ -287,6 +332,73 @@ void main() {
     expect(withdrawals.submissions, 1);
     expect(find.text('转账处理中…'), findsOneWidget);
     expect(find.byKey(const Key('transfer-close-view-later')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('quotes only the token selected from the picker', (tester) async {
+    final funding = _RefreshingTransferQuoteRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(funding),
+          transferOptionsProvider.overrideWith(
+            (ref) async => TransferOptions(
+              account: UnifiedFundingAccountSummary(
+                totalUsd: DecimalValue('150', asset: 'USD'),
+                availableToFundUsd: DecimalValue('150', asset: 'USD'),
+                reservedUsd: DecimalValue('0', asset: 'USD'),
+                inTransitUsd: DecimalValue('0', asset: 'USD'),
+                dataStatus: 'complete',
+                calculatedAt: DateTime.utc(2026),
+                positions: [
+                  FundingSourcePosition(
+                    positionId: 'usdc',
+                    token: 'USDC',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('100', asset: 'USDC'),
+                    eligible: true,
+                  ),
+                  FundingSourcePosition(
+                    positionId: 'usdt',
+                    token: 'USDT',
+                    network: 'BNB Smart Chain',
+                    availableAmount: DecimalValue('50', asset: 'USDT'),
+                    eligible: true,
+                  ),
+                ],
+              ),
+              catalog: FundingCatalogSummary(
+                catalogVersion: 'test',
+                depositRailCount: 0,
+                updatedAt: DateTime.utc(2026),
+                transferTarget: const FundingTransferTarget(
+                  token: 'USDC',
+                  network: 'Hyperliquid',
+                ),
+              ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('transfer-token-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('transfer-token-usdt')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '7');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+
+    expect(funding.lastAllocations, const {'usdt': '7'});
+    expect(find.byType(TextField), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -519,6 +631,7 @@ final class _RejectedTransferRepository implements FundingRepository {
 final class _RefreshingTransferQuoteRepository implements FundingRepository {
   final _refresh = Completer<FundingSessionSummary>();
   var refreshCalls = 0;
+  Map<String, String> lastAllocations = const {};
 
   void completeRefresh() => _refresh.complete(
     _session(
@@ -544,14 +657,17 @@ final class _RefreshingTransferQuoteRepository implements FundingRepository {
     required int version,
     required Map<String, String> allocations,
     required String idempotencyKey,
-  }) async => _session(
-    version: 2,
-    minimumReceived: '9.7',
-    bridgeFee: '0.1',
-    networkFee: '0.2',
-    totalFee: '0.3',
-    allocations: allocations,
-  );
+  }) async {
+    lastAllocations = allocations;
+    return _session(
+      version: 2,
+      minimumReceived: '9.7',
+      bridgeFee: '0.1',
+      networkFee: '0.2',
+      totalFee: '0.3',
+      allocations: allocations,
+    );
+  }
 
   @override
   Future<FundingSessionSummary> getFundingSession(String id) {

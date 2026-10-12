@@ -63,12 +63,71 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   bool _transferPending = false;
   bool _completionToastShown = false;
   bool _sendFromSpot = true;
+  bool _selectingToken = false;
+  String? _selectedPositionId;
+  Set<String> _eligiblePositionIds = const {};
+  String _tokenQuery = '';
+  String? _tokenNetworkFilter;
 
-  Map<String, String> get _allocations => {
-    for (final entry in _amounts.entries)
-      if ((double.tryParse(entry.value.text.trim()) ?? 0) > 0)
-        entry.key: entry.value.text.trim(),
-  };
+  Map<String, String> get _allocations {
+    final positionId = _selectedPositionId;
+    if (positionId == null || !_eligiblePositionIds.contains(positionId)) {
+      return const {};
+    }
+    final amount = _amounts[positionId]?.text.trim();
+    if (amount == null || (double.tryParse(amount) ?? 0) <= 0) {
+      return const {};
+    }
+    return {positionId: amount};
+  }
+
+  void _preparePositions(List<FundingSourcePosition> positions) {
+    _eligiblePositionIds = positions
+        .map((position) => position.positionId)
+        .toSet();
+    if (!_eligiblePositionIds.contains(_selectedPositionId)) {
+      _selectedPositionId = positions.firstOrNull?.positionId;
+    }
+    for (final position in positions) {
+      _amounts.putIfAbsent(position.positionId, () {
+        final controller = TextEditingController();
+        controller.addListener(_scheduleQuote);
+        return controller;
+      });
+    }
+  }
+
+  void _openTokenSelector() {
+    if (_eligiblePositionIds.length <= 1) return;
+    setState(() => _selectingToken = true);
+  }
+
+  void _closeTokenSelector() {
+    setState(() {
+      _selectingToken = false;
+      _tokenQuery = '';
+      _tokenNetworkFilter = null;
+    });
+  }
+
+  void _selectToken(FundingSourcePosition position) {
+    _quoteDebounce?.cancel();
+    _quoteRefresh?.cancel();
+    _quoteSequence++;
+    setState(() {
+      _selectedPositionId = position.positionId;
+      _selectingToken = false;
+      _tokenQuery = '';
+      _tokenNetworkFilter = null;
+      _quote = null;
+      _quoting = false;
+      _error = null;
+      _statusMessage = null;
+      _transferPending = false;
+      _completionToastShown = false;
+    });
+    _scheduleQuote();
+  }
 
   void _scheduleQuote() {
     _quoteDebounce?.cancel();
@@ -709,6 +768,51 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                   _withdrawalPreview?.isRiskExpired == false &&
                   _withdrawalPreview?.amount == _withdrawalAmount.text.trim());
 
+    if (_selectingToken) {
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _closeTokenSelector();
+        },
+        child: Scaffold(
+          backgroundColor: colors.canvas,
+          body: SafeArea(
+            child: options.when(
+              data: (value) {
+                final positions = value.account.positions
+                    .where((position) => position.eligible)
+                    .toList(growable: false);
+                _preparePositions(positions);
+                return _TokenSelector(
+                  positions: positions,
+                  query: _tokenQuery,
+                  networkFilter: _tokenNetworkFilter,
+                  onBack: _closeTokenSelector,
+                  onQueryChanged: (value) =>
+                      setState(() => _tokenQuery = value),
+                  onNetworkChanged: (value) =>
+                      setState(() => _tokenNetworkFilter = value),
+                  onSelected: _selectToken,
+                );
+              },
+              loading: () => const Center(
+                child: SizedBox(
+                  width: 353,
+                  child: _TransferSkeleton(height: 64),
+                ),
+              ),
+              error: (error, _) => Center(
+                child: _LoadError(
+                  error: error,
+                  onRetry: () => ref.invalidate(transferOptionsProvider),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return PopScope(
       canPop: !_submitting,
       child: Scaffold(
@@ -743,19 +847,24 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                             final positions = value.account.positions
                                 .where((position) => position.eligible)
                                 .toList(growable: false);
-                            for (final position in positions) {
-                              _amounts.putIfAbsent(position.positionId, () {
-                                final controller = TextEditingController();
-                                controller.addListener(_scheduleQuote);
-                                return controller;
-                              });
-                            }
+                            _preparePositions(positions);
+                            final selected = positions
+                                .where(
+                                  (position) =>
+                                      position.positionId ==
+                                      _selectedPositionId,
+                                )
+                                .firstOrNull;
                             return _SendAmountCard(
-                              positions: positions,
-                              controllers: _amounts,
+                              position: selected,
+                              controller: selected == null
+                                  ? null
+                                  : _amounts[selected.positionId],
+                              canSelect: positions.length > 1,
+                              onSelect: _openTokenSelector,
                             );
                           },
-                          loading: () => const _TransferSkeleton(height: 216),
+                          loading: () => const _TransferSkeleton(height: 64),
                           error: (error, _) => _LoadError(
                             error: error,
                             onRetry: () {
@@ -1022,70 +1131,49 @@ class _SkeletonBlock extends StatelessWidget {
   );
 }
 
-class _SendAmountCard extends StatefulWidget {
-  const _SendAmountCard({required this.positions, required this.controllers});
+class _SendAmountCard extends StatelessWidget {
+  const _SendAmountCard({
+    required this.position,
+    required this.controller,
+    required this.canSelect,
+    required this.onSelect,
+  });
 
-  final List<FundingSourcePosition> positions;
-  final Map<String, TextEditingController> controllers;
-
-  @override
-  State<_SendAmountCard> createState() => _SendAmountCardState();
+  final FundingSourcePosition? position;
+  final TextEditingController? controller;
+  final bool canSelect;
+  final VoidCallback onSelect;
 
   static String _assetPath(String token) => switch (token.toUpperCase()) {
     'USDT' => 'assets/figma/funding/usdt.png',
     'ETH' => 'assets/figma/funding/eth.svg',
     _ => 'assets/figma/funding/usdc.svg',
   };
-}
-
-class _SendAmountCardState extends State<_SendAmountCard> {
-  final _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return DecoratedBox(
+    final selected = position;
+    return Container(
+      key: const Key('send-token-card'),
       decoration: BoxDecoration(
         color: colors.surface,
         border: Border.all(color: colors.border),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: widget.positions.isEmpty
+      child: selected == null || controller == null
           ? Padding(
               padding: const EdgeInsets.all(16),
               child: Text(AppLocalizations.of(context).noEligibleFundingAssets),
             )
-          : SizedBox(
-              key: const Key('send-token-list'),
-              height: math.min(72 + (widget.positions.length - 1) * 69, 279),
-              child: RawScrollbar(
-                controller: _scrollController,
-                thumbVisibility: widget.positions.length > 4,
-                radius: const Radius.circular(3),
-                thickness: 4,
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.zero,
-                  itemCount: widget.positions.length,
-                  itemBuilder: (context, index) {
-                    final position = widget.positions[index];
-                    return _AssetAmountRow(
-                      asset: position.token,
-                      network: position.network,
-                      available: position.availableAmount.value,
-                      assetPath: _SendAmountCard._assetPath(position.token),
-                      controller: widget.controllers[position.positionId]!,
-                      isFirst: index == 0,
-                    );
-                  },
-                ),
-              ),
+          : _AssetAmountRow(
+              asset: selected.token,
+              network: selected.network,
+              available: selected.availableAmount.value,
+              assetPath: _assetPath(selected.token),
+              controller: controller!,
+              canSelect: canSelect,
+              onSelect: canSelect ? onSelect : null,
             ),
     );
   }
@@ -1098,7 +1186,8 @@ class _AssetAmountRow extends StatelessWidget {
     required this.available,
     required this.assetPath,
     required this.controller,
-    required this.isFirst,
+    required this.canSelect,
+    required this.onSelect,
   });
 
   final String asset;
@@ -1106,62 +1195,84 @@ class _AssetAmountRow extends StatelessWidget {
   final String available;
   final String assetPath;
   final TextEditingController controller;
-  final bool isFirst;
+  final bool canSelect;
+  final VoidCallback? onSelect;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: isFirst ? 72 : 69),
+    return SizedBox(
+      height: 64,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            assetPath.endsWith('.svg')
-                ? SvgPicture.asset(assetPath, width: 28, height: 28)
-                : Image.asset(assetPath, width: 28, height: 28),
-            const SizedBox(width: 4),
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        asset,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          height: 18 / 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          '($network)',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            height: 14 / 11,
-                            color: colors.secondaryText,
+              child: InkWell(
+                key: const Key('transfer-token-selector'),
+                onTap: onSelect,
+                borderRadius: BorderRadius.circular(8),
+                child: Row(
+                  children: [
+                    assetPath.endsWith('.svg')
+                        ? SvgPicture.asset(assetPath, width: 28, height: 28)
+                        : Image.asset(assetPath, width: 28, height: 28),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                asset,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  height: 18 / 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  '($network)',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    height: 14 / 11,
+                                    color: colors.secondaryText,
+                                  ),
+                                ),
+                              ),
+                              if (canSelect) ...[
+                                const SizedBox(width: 2),
+                                SvgPicture.asset(
+                                  'assets/figma/portfolio/chevron_down.svg',
+                                  key: const Key('transfer-token-chevron'),
+                                  width: 18,
+                                  height: 18,
+                                ),
+                              ],
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppLocalizations.of(context).availableAmount(
+                              TokenAmountFormatter.formatText(available),
+                            ),
+                            style: TextStyle(
+                              fontSize: 11,
+                              height: 14 / 11,
+                              color: colors.secondaryText,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppLocalizations.of(context).availableAmount(
-                      TokenAmountFormatter.formatText(available),
                     ),
-                    style: TextStyle(
-                      fontSize: 11,
-                      height: 14 / 11,
-                      color: colors.secondaryText,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -1210,6 +1321,344 @@ class _AssetAmountRow extends StatelessWidget {
   }
 }
 
+class _TokenSelector extends StatelessWidget {
+  const _TokenSelector({
+    required this.positions,
+    required this.query,
+    required this.networkFilter,
+    required this.onBack,
+    required this.onQueryChanged,
+    required this.onNetworkChanged,
+    required this.onSelected,
+  });
+
+  final List<FundingSourcePosition> positions;
+  final String query;
+  final String? networkFilter;
+  final VoidCallback onBack;
+  final ValueChanged<String> onQueryChanged;
+  final ValueChanged<String?> onNetworkChanged;
+  final ValueChanged<FundingSourcePosition> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    final normalizedQuery = query.trim().toLowerCase();
+    final networks =
+        positions
+            .map((position) => position.network)
+            .toSet()
+            .toList(growable: false)
+          ..sort();
+    final filtered = positions
+        .where(
+          (position) =>
+              (networkFilter == null || position.network == networkFilter) &&
+              (normalizedQuery.isEmpty ||
+                  '${position.token} ${position.network}'
+                      .toLowerCase()
+                      .contains(normalizedQuery)),
+        )
+        .toList(growable: false);
+
+    return LayoutBuilder(
+      builder: (context, constraints) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: CustomScrollView(
+            key: const Key('transfer-token-picker'),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppPageHeader(
+                              title: l10n.transfer,
+                              onBack: onBack,
+                            ),
+                          ),
+                          TextButton.icon(
+                            key: const Key('transfer-token-history'),
+                            onPressed: () =>
+                                context.goNamed(AppRoutes.activityName),
+                            style: TextButton.styleFrom(
+                              foregroundColor: colors.secondaryText,
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(76, 34),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            icon: SvgPicture.asset(
+                              'assets/figma/funding/activity.svg',
+                              width: 20,
+                              height: 20,
+                              colorFilter: ColorFilter.mode(
+                                colors.primaryText,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            label: Text(l10n.history),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 44,
+                        child: TextField(
+                          key: const Key('transfer-token-search'),
+                          onChanged: onQueryChanged,
+                          decoration: InputDecoration(
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: SvgPicture.asset(
+                                'assets/figma/home_markets/search.svg',
+                                width: 20,
+                                height: 20,
+                                colorFilter: ColorFilter.mode(
+                                  colors.primaryText,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ),
+                            hintText: l10n.searchAssets,
+                            fillColor: colors.subtleSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.availableToWithdraw,
+                        style: TextStyle(
+                          fontSize: 12,
+                          height: 16 / 12,
+                          color: colors.tertiaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _NetworkFilter(
+                        networks: networks,
+                        selected: networkFilter,
+                        onSelected: onNetworkChanged,
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              ),
+              if (filtered.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: Text(l10n.noMatchingAssets)),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  sliver: SliverList.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final position = filtered[index];
+                      return _TokenSelectorRow(
+                        position: position,
+                        onTap: () => onSelected(position),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NetworkFilter extends StatelessWidget {
+  const _NetworkFilter({
+    required this.networks,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<String> networks;
+  final String? selected;
+  final ValueChanged<String?> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final l10n = AppLocalizations.of(context);
+    return PopupMenuButton<String>(
+      key: const Key('transfer-token-network-filter'),
+      color: colors.surface,
+      constraints: const BoxConstraints.tightFor(width: 168),
+      menuPadding: const EdgeInsets.all(4),
+      offset: const Offset(0, 40),
+      onSelected: (value) => onSelected(value.isEmpty ? null : value),
+      itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          value: '',
+          height: 40,
+          child: Text(l10n.allNetworks),
+        ),
+        for (final network in networks)
+          PopupMenuItem<String>(
+            value: network,
+            height: 40,
+            child: Text(network),
+          ),
+      ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 135),
+        child: Container(
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border.all(color: colors.border),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  selected ?? l10n.allNetworks,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    height: 18 / 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              SvgPicture.asset(
+                'assets/figma/portfolio/chevron_down.svg',
+                width: 20,
+                height: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TokenSelectorRow extends StatelessWidget {
+  const _TokenSelectorRow({required this.position, required this.onTap});
+
+  final FundingSourcePosition position;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return InkWell(
+      key: Key('transfer-token-${position.positionId}'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        height: 64,
+        child: Row(
+          children: [
+            _PositionIcon(position: position),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    position.token,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 22 / 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppLocalizations.of(context).cash,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 16 / 12,
+                      color: colors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              TokenAmountFormatter.formatText(position.availableAmount.value),
+              style: const TextStyle(
+                fontSize: 15,
+                height: 22 / 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PositionIcon extends StatelessWidget {
+  const _PositionIcon({required this.position});
+
+  final FundingSourcePosition position;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokenPath = _SendAmountCard._assetPath(position.token);
+    final networkPath = switch (position.network.toLowerCase()) {
+      final value when value.contains('arbitrum') =>
+        'assets/figma/funding/arbitrum.svg',
+      final value when value.contains('bnb') =>
+        'assets/figma/funding/bnb_chain.svg',
+      final value when value.contains('polygon') =>
+        'assets/figma/funding/polygon.svg',
+      _ => 'assets/figma/funding/eth.svg',
+    };
+    return SizedBox.square(
+      dimension: 40,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: tokenPath.endsWith('.svg')
+                ? SvgPicture.asset(tokenPath)
+                : Image.asset(tokenPath),
+          ),
+          Positioned(
+            right: -1,
+            bottom: -1,
+            child: Container(
+              width: 16,
+              height: 16,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Theme.of(context).extension<AppRwaColors>()!.surface,
+                border: Border.all(
+                  color: Theme.of(context).extension<AppRwaColors>()!.border,
+                  width: 0.8,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: SvgPicture.asset(networkPath),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Hip3SendAmountCard extends StatelessWidget {
   const _Hip3SendAmountCard({
     required this.controller,
@@ -1246,7 +1695,7 @@ class _Hip3SendAmountCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'USDC (Arbitrum)',
+                  'USDC',
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                 ),
