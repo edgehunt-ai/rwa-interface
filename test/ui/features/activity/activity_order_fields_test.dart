@@ -54,7 +54,7 @@ void main() {
     expect(find.text('Close'), findsWidgets);
     expect(find.text('Stop loss'), findsNothing);
 
-    await tester.tap(find.text('SNDK/SNDK'));
+    await tester.tap(find.text('SNDK'));
     await tester.pumpAndSettle();
     expect(find.text('Close Price'), findsOneWidget);
     expect(find.text('1706.67'), findsOneWidget);
@@ -121,7 +121,7 @@ void main() {
     expect(find.text('Stop loss'), findsOneWidget);
     expect(find.text('Buy / Limit Price'), findsOneWidget);
 
-    await tester.tap(find.text('AAPL/AAPL'));
+    await tester.tap(find.text('AAPL'));
     await tester.pumpAndSettle();
     expect(find.text('Limit Price'), findsOneWidget);
     expect(find.text('50'), findsOneWidget);
@@ -177,7 +177,7 @@ void main() {
     expect(find.text('Sell / Market'), findsOneWidget);
     expect(find.text('Liquidation'), findsOneWidget);
 
-    await tester.tap(find.text('ETH/ETH'));
+    await tester.tap(find.text('ETH'));
     await tester.pumpAndSettle();
     expect(find.text('Side'), findsOneWidget);
     expect(find.text('Long'), findsOneWidget);
@@ -221,13 +221,22 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('NVDAB/NVDAB'), findsOneWidget);
+    expect(find.text('NVDAB'), findsOneWidget);
+    expect(find.text('NVDAB/NVDAB'), findsNothing);
     expect(find.text('Buy / Market'), findsOneWidget);
     expect(find.text('Completed'), findsOneWidget);
     expect(find.text('0.00159954 NVDAB'), findsOneWidget);
     expect(
       tester.getRect(find.text('Buy / Market')).right,
       lessThanOrEqualTo(tester.getRect(find.text('0.00159954 NVDAB')).left),
+    );
+    final activityCard = find.ancestor(
+      of: find.text('0.00159954 NVDAB'),
+      matching: find.byType(Card),
+    );
+    expect(
+      tester.getRect(find.text('0.00159954 NVDAB')).right,
+      closeTo(tester.getRect(activityCard).right - 16, 0.01),
     );
   });
 }

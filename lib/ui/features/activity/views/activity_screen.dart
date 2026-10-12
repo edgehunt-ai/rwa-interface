@@ -862,7 +862,7 @@ class _ExpandableActivityRowState extends State<_ExpandableActivityRow> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Flexible(
+                  Expanded(
                     flex: 4,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -1255,10 +1255,7 @@ String? _orderSideLabel(ActivityRecord record, AppLocalizations l10n) {
 
 String _orderTitle(ActivityRecord record) {
   final symbol = record.symbol?.trim();
-  if (symbol == null || symbol.isEmpty) return record.title;
-  if (symbol.contains('/')) return symbol;
-  final quote = record.asset?.trim();
-  return '$symbol/${quote == null || quote.isEmpty ? 'USDT' : quote}';
+  return symbol == null || symbol.isEmpty ? record.title : symbol;
 }
 
 String _fundingSide(ActivityRecord record, AppLocalizations l10n) {
