@@ -116,6 +116,36 @@ void main() {
     });
   });
 
+  test(
+    'portfolio Perps open-order pages keep the server filter and cursor',
+    () async {
+      final repository = _PagedPerpsOpenOrders();
+      final container = ProviderContainer(
+        overrides: [ordersRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      final first = await container.read(perpsOpenOrdersProvider(null).future);
+      final second = await container.read(
+        perpsOpenOrdersProvider(first.nextCursor).future,
+      );
+
+      expect(repository.cursors, [null, 'perps-next']);
+      expect(
+        repository.filters,
+        everyElement((kind: MarketProductKind.perp, statusGroup: 'open')),
+      );
+      expect(first.items.map((item) => item.resource.orderId), [
+        'perps-open-new',
+      ]);
+      expect(second.items.map((item) => item.resource.orderId), [
+        'perps-open-old',
+      ]);
+      expect(first.hasMore, isTrue);
+      expect(second.hasMore, isFalse);
+    },
+  );
+
   for (final status in [
     TradingOrderStatus.submitted,
     TradingOrderStatus.open,
@@ -918,6 +948,53 @@ final class _PagedOpenOrders extends _OrdersRepository {
     resource: _openOrder(orderId, TradingOrderStatus.cancelled),
   );
 }
+
+final class _PagedPerpsOpenOrders extends _OrdersRepository {
+  final cursors = <String?>[];
+  final filters = <Object>[];
+
+  @override
+  Future<DomainPage<ResourceResult<TradingOrder>>> list({
+    String? cursor,
+    MarketProductKind? kind,
+    String? symbol,
+    String? productId,
+    String? statusGroup,
+  }) async {
+    cursors.add(cursor);
+    filters.add((kind: kind, statusGroup: statusGroup));
+    return DomainPage(
+      items: [
+        ResourceResult(
+          resource: _perpsOpenOrder(
+            cursor == null ? 'perps-open-new' : 'perps-open-old',
+            TradingOrderStatus.open,
+          ),
+        ),
+        ResourceResult(
+          resource: _perpsOpenOrder('perps-closed', TradingOrderStatus.filled),
+        ),
+        ResourceResult(
+          resource: _openOrder('bstock-open', TradingOrderStatus.open),
+        ),
+      ],
+      hasMore: cursor == null,
+      nextCursor: cursor == null ? 'perps-next' : null,
+    );
+  }
+}
+
+TradingOrder _perpsOpenOrder(String id, TradingOrderStatus status) =>
+    TradingOrder(
+      orderId: id,
+      productId: 'xyz:NVDA',
+      symbol: 'NVDA',
+      kind: MarketProductKind.perp,
+      side: TradingSide.long,
+      type: TradingOrderType.limit,
+      status: status,
+      createdAt: DateTime.utc(2026),
+    );
 
 /// Models immutable create replay and rejects continuation previews at create.
 final class _LifecycleOrders extends _OrdersRepository {

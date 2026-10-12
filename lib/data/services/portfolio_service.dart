@@ -11,6 +11,7 @@ abstract interface class PortfolioService {
   Future<api.PortfolioAssetPage> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   });
   Future<api.PortfolioHoldingPage> listHoldings({String? cursor});
 }

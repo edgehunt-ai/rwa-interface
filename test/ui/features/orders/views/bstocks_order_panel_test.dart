@@ -2697,6 +2697,7 @@ final class _RefreshingAvailabilityRepository
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async {
     assetCalls++;
     return assetCalls == 1 ? [_asset('12.5')] : _refresh.future;

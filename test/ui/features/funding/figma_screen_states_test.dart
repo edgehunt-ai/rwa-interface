@@ -789,6 +789,7 @@ final class _WithdrawablePortfolio
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async => [
     PortfolioAsset(
       // Opaque row id: the withdrawal endpoint must not receive this.

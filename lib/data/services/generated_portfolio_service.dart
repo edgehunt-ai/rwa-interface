@@ -27,8 +27,13 @@ final class GeneratedPortfolioService implements PortfolioService {
   Future<api.PortfolioAssetPage> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) => _body(
-    () => _api.listPortfolioAssets(cursor: cursor, productId: productId),
+    () => _api.listPortfolioAssets(
+      cursor: cursor,
+      productId: productId,
+      account: account,
+    ),
   );
   @override
   Future<api.PortfolioHoldingPage> listHoldings({String? cursor}) =>

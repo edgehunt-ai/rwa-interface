@@ -2900,6 +2900,96 @@ abstract class AppLocalizations {
   /// **'Allocation unavailable'**
   String get allocationUnavailable;
 
+  /// No description provided for @bstockAllocation.
+  ///
+  /// In en, this message translates to:
+  /// **'bStock'**
+  String get bstockAllocation;
+
+  /// No description provided for @crossMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross Margin'**
+  String get crossMargin;
+
+  /// No description provided for @isolatedMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Isolated Margin'**
+  String get isolatedMargin;
+
+  /// No description provided for @openOrderMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Order Margin'**
+  String get openOrderMargin;
+
+  /// No description provided for @maxWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Withdraw'**
+  String get maxWithdraw;
+
+  /// No description provided for @risk.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk'**
+  String get risk;
+
+  /// No description provided for @maxWithdrawTooltipSourceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get maxWithdrawTooltipSourceTitle;
+
+  /// No description provided for @maxWithdrawTooltipSourceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits, transfers, or USDC released from reduced/closed positions.'**
+  String get maxWithdrawTooltipSourceDescription;
+
+  /// No description provided for @maxWithdrawTooltipUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use'**
+  String get maxWithdrawTooltipUseTitle;
+
+  /// No description provided for @maxWithdrawTooltipUseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Use for trading and as shared margin for Cross positions.'**
+  String get maxWithdrawTooltipUseDescription;
+
+  /// No description provided for @maxWithdrawTooltipRiskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk'**
+  String get maxWithdrawTooltipRiskTitle;
+
+  /// No description provided for @maxWithdrawTooltipRiskDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Using or transferring it may increase Cross liquidation risk.'**
+  String get maxWithdrawTooltipRiskDescription;
+
+  /// No description provided for @safeLiquidationRiskTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross positions have a good safety buffer. The closest position is at least 10% from liquidation.'**
+  String get safeLiquidationRiskTooltip;
+
+  /// No description provided for @liquidationRiskTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'The liquidation price is 5–10% away from the current market price. Market moves or margin changes may bring it closer.'**
+  String get liquidationRiskTooltip;
+
+  /// No description provided for @highLiquidationRiskTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'The liquidation price is less than 5% away from the current market price. A small market move or margin change may trigger liquidation.'**
+  String get highLiquidationRiskTooltip;
+
   /// No description provided for @noCashBalances.
   ///
   /// In en, this message translates to:
@@ -4235,6 +4325,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Token details'**
   String get tokenDetails;
+
+  /// No description provided for @contract.
+  ///
+  /// In en, this message translates to:
+  /// **'Contract'**
+  String get contract;
 
   /// No description provided for @cashBalance.
   ///

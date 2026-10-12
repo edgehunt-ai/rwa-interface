@@ -1507,6 +1507,7 @@ final class _BstocksPositionPortfolioRepository
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async {
     await availabilityGate?.future;
     return [

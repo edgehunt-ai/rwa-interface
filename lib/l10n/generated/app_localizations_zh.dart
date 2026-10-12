@@ -1465,6 +1465,53 @@ class AppLocalizationsZh extends AppLocalizations {
   String get allocationUnavailable => '资产配置不可用';
 
   @override
+  String get bstockAllocation => 'bStock';
+
+  @override
+  String get crossMargin => '全仓保证金';
+
+  @override
+  String get isolatedMargin => '逐仓保证金';
+
+  @override
+  String get openOrderMargin => '挂单保证金';
+
+  @override
+  String get maxWithdraw => '最大可转出';
+
+  @override
+  String get risk => '风险';
+
+  @override
+  String get maxWithdrawTooltipSourceTitle => '来源';
+
+  @override
+  String get maxWithdrawTooltipSourceDescription => '充值、转账，或减仓/平仓后释放的 USDC。';
+
+  @override
+  String get maxWithdrawTooltipUseTitle => '用途';
+
+  @override
+  String get maxWithdrawTooltipUseDescription => '可用于交易，并作为全仓仓位的共享保证金。';
+
+  @override
+  String get maxWithdrawTooltipRiskTitle => '风险';
+
+  @override
+  String get maxWithdrawTooltipRiskDescription => '使用或转出可能增加全仓仓位的强平风险。';
+
+  @override
+  String get safeLiquidationRiskTooltip => '全仓仓位有较充足的安全缓冲，距离最近的仓位强平至少还有 10%。';
+
+  @override
+  String get liquidationRiskTooltip =>
+      '强平价格距离当前市场价格为 5%–10%，市场波动或保证金变化可能使其进一步接近。';
+
+  @override
+  String get highLiquidationRiskTooltip =>
+      '强平价格距离当前市场价格不足 5%，较小的市场波动或保证金变化就可能触发强平。';
+
+  @override
   String get noCashBalances => '暂无现金余额';
 
   @override
@@ -2214,6 +2261,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tokenDetails => '代币详情';
+
+  @override
+  String get contract => '合约';
 
   @override
   String get cashBalance => '现金余额';

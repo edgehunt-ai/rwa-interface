@@ -3,6 +3,7 @@ import 'package:rwa_api_client/rwa_api_client.dart' as api;
 import 'package:nobell/data/repositories/portfolio_repository_impl.dart';
 import 'package:nobell/data/services/portfolio_service.dart';
 import 'package:nobell/domain/models/trading_account.dart';
+import 'package:nobell/domain/models/portfolio_allocation.dart';
 import 'package:nobell/domain/models/portfolio_history.dart';
 import 'package:nobell/domain/models/position.dart';
 
@@ -120,12 +121,13 @@ void main() {
     expect(history.points.single.timestamp, DateTime.utc(2026, 1, 1));
   });
 
-  test('requests and maps product-scoped bStocks sell availability', () async {
+  test('requests and maps scoped bStocks sell availability', () async {
     final service = _ProductPortfolio();
     final assets = await PortfolioRepositoryImpl(service)
-        .listAssets(productId: 'bstocks:nvdab');
+        .listAssets(productId: 'bstocks:nvdab', account: 'spot');
 
     expect(service.productId, 'bstocks:nvdab');
+    expect(service.account, 'spot');
     expect(assets.single.productId, 'bstocks:nvdab');
     expect(assets.single.walletId, 'wallet-1');
     expect(assets.single.bstocksAvailableQuantity?.value, '1.25');
@@ -161,6 +163,57 @@ void main() {
         ('perp', '250', '25'),
       ],
     );
+  });
+
+  test('maps perps allocation details and liquidation risk', () {
+    final allocation = mapRailPortfolioAllocation(
+      _allocation(
+        spot: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.spot,
+          valueUsd: '600',
+          percent: '60',
+        ),
+        perps: _accountAllocation(
+          account: api.PortfolioAccountAllocationItemAccountEnum.perps,
+          valueUsd: '400',
+          percent: '40',
+          crossMarginUsedUsd: '180',
+          isolatedMarginUsedUsd: '110',
+          openOrderMarginEstimate: api.PortfolioOpenOrderMarginEstimate(
+            (builder) => builder
+              ..status =
+                  api.PortfolioOpenOrderMarginEstimateStatusEnum.available
+              ..amountUsd = '110'
+              ..orderCount = 2,
+          ),
+          estimatedWithdrawableUsd: '100',
+          crossLiquidationRisk: api.PortfolioCrossLiquidationRisk(
+            (builder) => builder
+              ..status = api.PortfolioCrossLiquidationRiskStatusEnum.safe
+              ..closestDistancePercent = '12.5'
+              ..crossPositionCount = 3,
+          ),
+        ),
+      ),
+    );
+
+    expect(allocation.spot?.valueUsd.value, '600');
+    expect(allocation.perps?.percent.value, '40');
+    final details = allocation.perps?.perpsBreakdown;
+    expect(details?.crossMargin?.valueUsd.value, '180');
+    expect(details?.crossMargin?.percent.value, '18');
+    expect(details?.isolatedMargin?.valueUsd.value, '110');
+    expect(details?.openOrderMargin?.valueUsd.value, '110');
+    expect(details?.estimatedWithdrawable?.valueUsd.value, '100');
+    expect(
+      details?.crossLiquidationRisk?.level,
+      PortfolioLiquidationRiskLevel.safe,
+    );
+    expect(
+      details?.crossLiquidationRisk?.closestDistancePercent?.value,
+      '12.5',
+    );
+    expect(details?.crossLiquidationRisk?.crossPositionCount, 3);
   });
 
   test('does not convert unavailable allocation values to zero', () {
@@ -204,6 +257,11 @@ api.PortfolioAccountAllocationItem _accountAllocation({
   String? percent,
   api.PortfolioAllocationValue? cash,
   api.PortfolioAllocationValue? bstocks,
+  String? crossMarginUsedUsd,
+  String? isolatedMarginUsedUsd,
+  api.PortfolioOpenOrderMarginEstimate? openOrderMarginEstimate,
+  String? estimatedWithdrawableUsd,
+  api.PortfolioCrossLiquidationRisk? crossLiquidationRisk,
 }) => api.PortfolioAccountAllocationItem((builder) {
   builder
     ..account = account
@@ -211,10 +269,25 @@ api.PortfolioAccountAllocationItem _accountAllocation({
     ..valueUsd = valueUsd
     ..percent = percent
     ..unvaluedAssetCount = 0;
-  if (cash != null || bstocks != null) {
+  if (cash != null ||
+      bstocks != null ||
+      crossMarginUsedUsd != null ||
+      isolatedMarginUsedUsd != null ||
+      openOrderMarginEstimate != null ||
+      estimatedWithdrawableUsd != null ||
+      crossLiquidationRisk != null) {
     builder.breakdown.update((breakdown) {
       if (cash != null) breakdown.cash.replace(cash);
       if (bstocks != null) breakdown.bstocks.replace(bstocks);
+      breakdown.crossMarginUsedUsd = crossMarginUsedUsd;
+      breakdown.isolatedMarginUsedUsd = isolatedMarginUsedUsd;
+      if (openOrderMarginEstimate != null) {
+        breakdown.openOrderMarginEstimate.replace(openOrderMarginEstimate);
+      }
+      breakdown.estimatedWithdrawableUsd = estimatedWithdrawableUsd;
+      if (crossLiquidationRisk != null) {
+        breakdown.crossLiquidationRisk.replace(crossLiquidationRisk);
+      }
     });
   }
 });
@@ -280,13 +353,16 @@ final class _Portfolio implements PortfolioService {
 
 final class _ProductPortfolio implements PortfolioService {
   String? productId;
+  String? account;
 
   @override
   Future<api.PortfolioAssetPage> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async {
     this.productId = productId;
+    this.account = account;
     return api.PortfolioAssetPage(
       (page) => page
         ..unvaluedAssetCount = 0

@@ -1529,6 +1529,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allocationUnavailable => 'Allocation unavailable';
 
   @override
+  String get bstockAllocation => 'bStock';
+
+  @override
+  String get crossMargin => 'Cross Margin';
+
+  @override
+  String get isolatedMargin => 'Isolated Margin';
+
+  @override
+  String get openOrderMargin => 'Open Order Margin';
+
+  @override
+  String get maxWithdraw => 'Max Withdraw';
+
+  @override
+  String get risk => 'Risk';
+
+  @override
+  String get maxWithdrawTooltipSourceTitle => 'Source';
+
+  @override
+  String get maxWithdrawTooltipSourceDescription =>
+      'Deposits, transfers, or USDC released from reduced/closed positions.';
+
+  @override
+  String get maxWithdrawTooltipUseTitle => 'Use';
+
+  @override
+  String get maxWithdrawTooltipUseDescription =>
+      'Use for trading and as shared margin for Cross positions.';
+
+  @override
+  String get maxWithdrawTooltipRiskTitle => 'Risk';
+
+  @override
+  String get maxWithdrawTooltipRiskDescription =>
+      'Using or transferring it may increase Cross liquidation risk.';
+
+  @override
+  String get safeLiquidationRiskTooltip =>
+      'Cross positions have a good safety buffer. The closest position is at least 10% from liquidation.';
+
+  @override
+  String get liquidationRiskTooltip =>
+      'The liquidation price is 5–10% away from the current market price. Market moves or margin changes may bring it closer.';
+
+  @override
+  String get highLiquidationRiskTooltip =>
+      'The liquidation price is less than 5% away from the current market price. A small market move or margin change may trigger liquidation.';
+
+  @override
   String get noCashBalances => 'No cash balances';
 
   @override
@@ -2340,6 +2391,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tokenDetails => 'Token details';
+
+  @override
+  String get contract => 'Contract';
 
   @override
   String get cashBalance => 'Cash balance';

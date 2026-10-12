@@ -90,6 +90,25 @@ PortfolioRailAllocation _legacyAllocation(List<TradingAccount> accounts) {
     values[account.kind] = (values[account.kind] ?? 0) + accountValue;
   }
   final total = values.values.fold<double>(0, (sum, value) => sum + value);
+  final spotValue =
+      (values[TradingAccountKind.app] ?? 0) +
+      (values[TradingAccountKind.bstocks] ?? 0);
+  final perpsValue = values[TradingAccountKind.hip3] ?? 0;
+  PortfolioAccountAllocation? account(double value) {
+    if (value == 0) return null;
+    return PortfolioAccountAllocation(
+      valueUsd: DecimalValue(
+        value.toStringAsFixed(2),
+        asset: 'USD',
+        unit: 'fiat',
+      ),
+      percent: DecimalValue(
+        total == 0 ? '0' : (value / total * 100).toStringAsFixed(1),
+        unit: 'percent',
+      ),
+    );
+  }
+
   return PortfolioRailAllocation(
     items: values.entries
         .where((entry) => labels.containsKey(entry.key))
@@ -118,6 +137,8 @@ PortfolioRailAllocation _legacyAllocation(List<TradingAccount> accounts) {
       unit: 'fiat',
     ),
     unvaluedAssetCount: 0,
+    spot: account(spotValue),
+    perps: account(perpsValue),
   );
 }
 
@@ -252,6 +273,19 @@ final holdingsProvider = FutureProvider.autoDispose
       return ref
           .watch(portfolioRepositoryProvider)
           .listHoldings(cursor: cursor);
+    });
+
+final spotPortfolioAssetsProvider =
+    FutureProvider.autoDispose<List<PortfolioAsset>>((ref) {
+      _cachePortfolioList(ref);
+      ref.watch(sessionGenerationProvider);
+      final repository = ref.watch(portfolioRepositoryProvider);
+      if (repository is! PortfolioAssetsRepository) {
+        return const <PortfolioAsset>[];
+      }
+      return (repository as PortfolioAssetsRepository).listAssets(
+        account: 'spot',
+      );
     });
 
 final class BstocksSellAvailability {

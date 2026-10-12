@@ -81,6 +81,7 @@ final class PortfolioRepositoryImpl
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async {
     final values = <PortfolioAsset>[];
     var nextCursor = cursor;
@@ -88,6 +89,7 @@ final class PortfolioRepositoryImpl
       final page = await _service.listAssets(
         cursor: nextCursor,
         productId: productId,
+        account: account,
       );
       values.addAll(
         page.items.map(
@@ -245,9 +247,12 @@ PortfolioRailAllocation mapRailPortfolioAllocation(
   api.RailPortfolioAllocation value,
 ) {
   final items = <PortfolioRailAllocationItem>[];
+  PortfolioAccountAllocation? spot;
+  PortfolioAccountAllocation? perps;
   for (final item in value.items) {
     switch (item.account) {
       case api.PortfolioAccountAllocationItemAccountEnum.spot:
+        spot = _accountAllocation(item);
         final breakdown = item.breakdown;
         if (breakdown == null) {
           _addAllocationItem(
@@ -273,6 +278,10 @@ PortfolioRailAllocation mapRailPortfolioAllocation(
           parentPercent: item.percent,
         );
       case api.PortfolioAccountAllocationItemAccountEnum.perps:
+        perps = _accountAllocation(
+          item,
+          perpsBreakdown: _perpsBreakdown(item.breakdown, value.valuedTotalUsd),
+        );
         _addAllocationItem(
           items,
           rail: 'perp',
@@ -285,6 +294,83 @@ PortfolioRailAllocation mapRailPortfolioAllocation(
     items: List.unmodifiable(items),
     valuedTotalUsd: _usdValue(value.valuedTotalUsd),
     unvaluedAssetCount: value.unvaluedAssetCount,
+    spot: spot,
+    perps: perps,
+  );
+}
+
+PortfolioAccountAllocation? _accountAllocation(
+  api.PortfolioAccountAllocationItem item, {
+  PortfolioPerpsAllocationBreakdown? perpsBreakdown,
+}) {
+  final valueUsd = item.valueUsd;
+  final percent = item.percent;
+  if (valueUsd == null || percent == null) return null;
+  return PortfolioAccountAllocation(
+    valueUsd: _usdValue(valueUsd),
+    percent: DecimalValue(percent, unit: 'percent'),
+    perpsBreakdown: perpsBreakdown,
+  );
+}
+
+PortfolioPerpsAllocationBreakdown? _perpsBreakdown(
+  api.PortfolioAccountAllocationBreakdown? value,
+  String valuedTotalUsd,
+) {
+  if (value == null) return null;
+  return PortfolioPerpsAllocationBreakdown(
+    crossMargin: _allocationAmount(value.crossMarginUsedUsd, valuedTotalUsd),
+    isolatedMargin: _allocationAmount(
+      value.isolatedMarginUsedUsd,
+      valuedTotalUsd,
+    ),
+    openOrderMargin: _allocationAmount(
+      value.openOrderMarginEstimate?.amountUsd,
+      valuedTotalUsd,
+    ),
+    estimatedWithdrawable: _allocationAmount(
+      value.estimatedWithdrawableUsd,
+      valuedTotalUsd,
+    ),
+    crossLiquidationRisk: _crossLiquidationRisk(value.crossLiquidationRisk),
+  );
+}
+
+PortfolioAllocationAmount? _allocationAmount(String? value, String total) {
+  if (value == null) return null;
+  return PortfolioAllocationAmount(
+    valueUsd: _usdValue(value),
+    percent: DecimalValue(_percentageOf(value, total), unit: 'percent'),
+  );
+}
+
+PortfolioCrossLiquidationRisk? _crossLiquidationRisk(
+  api.PortfolioCrossLiquidationRisk? value,
+) {
+  if (value == null) return null;
+  final distance = double.tryParse(value.closestDistancePercent ?? '');
+  final level = switch (value.status) {
+    api.PortfolioCrossLiquidationRiskStatusEnum.safe =>
+      PortfolioLiquidationRiskLevel.safe,
+    api.PortfolioCrossLiquidationRiskStatusEnum.liquidationRisk =>
+      PortfolioLiquidationRiskLevel.liquidationRisk,
+    api.PortfolioCrossLiquidationRiskStatusEnum.highLiquidationRisk =>
+      PortfolioLiquidationRiskLevel.highLiquidationRisk,
+    api.PortfolioCrossLiquidationRiskStatusEnum.available
+        when distance != null =>
+      distance >= 10
+          ? PortfolioLiquidationRiskLevel.safe
+          : distance >= 5
+          ? PortfolioLiquidationRiskLevel.liquidationRisk
+          : PortfolioLiquidationRiskLevel.highLiquidationRisk,
+    _ => PortfolioLiquidationRiskLevel.unavailable,
+  };
+  return PortfolioCrossLiquidationRisk(
+    level: level,
+    closestDistancePercent: value.closestDistancePercent == null
+        ? null
+        : DecimalValue(value.closestDistancePercent!, unit: 'percent'),
+    crossPositionCount: value.crossPositionCount,
   );
 }
 

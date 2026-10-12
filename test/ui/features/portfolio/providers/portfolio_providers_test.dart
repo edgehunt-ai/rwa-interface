@@ -198,6 +198,7 @@ final class _BstocksAvailabilityRepository
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async {
     this.productId = productId;
     return [
@@ -262,6 +263,7 @@ final class _PendingAccountsAvailabilityRepository
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async {
     assetCalls++;
     this.productId = productId;
@@ -293,6 +295,7 @@ final class _RetryingAvailabilityRepository
   Future<List<PortfolioAsset>> listAssets({
     String? cursor,
     String? productId,
+    String? account,
   }) async {
     assetCalls++;
     if (assetCalls == 1) throw const NetworkFailure();

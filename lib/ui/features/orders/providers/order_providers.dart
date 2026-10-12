@@ -95,6 +95,45 @@ final hip3OrdersProvider = FutureProvider.autoDispose
           .list(cursor: cursor, kind: MarketProductKind.perp);
     });
 
+/// Server-filtered page used by the portfolio's lazy-loading margin details.
+final perpsOpenOrdersProvider = FutureProvider.autoDispose
+    .family<DomainPage<ResourceResult<TradingOrder>>, String?>(
+      (ref, cursor) async {
+        ref.watch(sessionGenerationProvider);
+        final page = await ref
+            .watch(ordersRepositoryProvider)
+            .list(
+              cursor: cursor,
+              kind: MarketProductKind.perp,
+              statusGroup: 'open',
+            );
+        if (!ref.mounted) throw const CancelledFailure();
+        final nextCursor = page.nextCursor;
+        if (page.hasMore &&
+            (nextCursor == null ||
+                nextCursor.isEmpty ||
+                nextCursor == cursor)) {
+          throw const CompatibilityFailure(
+            userAction: 'Open orders pagination is incomplete',
+          );
+        }
+        return DomainPage(
+          items: page.items
+              .where(
+                (item) =>
+                    item.resource.kind == MarketProductKind.perp &&
+                    item.resource.isOpen,
+              )
+              .toList(growable: false),
+          nextCursor: nextCursor,
+          hasMore: page.hasMore,
+        );
+      },
+      retry: (count, error) => error is CompatibilityFailure
+          ? null
+          : ProviderContainer.defaultRetry(count, error),
+    );
+
 typedef Hip3OpenOrderQuery = ({
   String symbol,
   String? productId,
@@ -448,6 +487,7 @@ final class OrderCommandNotifier
       ref.invalidate(bstocksOrdersProvider);
       ref.invalidate(bstocksOpenOrdersProvider);
       ref.invalidate(hip3OrdersProvider);
+      ref.invalidate(perpsOpenOrdersProvider);
       ref.invalidate(orderProvider(result.resource.orderId));
       // Order acceptance can change reserved/available balances and holdings
       // even when the order is still processing. Keep portfolio surfaces from
@@ -702,6 +742,7 @@ final class OrderCommandNotifier
       if (isCurrent()) {
         ref.invalidate(hip3OrdersProvider);
         ref.invalidate(hip3OpenOrdersProvider);
+        ref.invalidate(perpsOpenOrdersProvider);
         ref.invalidate(orderProvider(order.orderId));
       }
     }
