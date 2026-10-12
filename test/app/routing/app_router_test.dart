@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nobell/app/routing/app_router.dart';
+import 'package:nobell/domain/models/decimal_value.dart';
+import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/ui/features/funding/views/deposit_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
 import 'package:nobell/ui/features/home/views/home_screen.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 
 import '../../helpers/test_app.dart';
@@ -62,25 +65,61 @@ void main() {
   testWidgets('trade deep link selects a symbol and defaults an omitted kind', (
     tester,
   ) async {
+    const product = MarketProductRef(
+      symbol: 'TSLA',
+      kind: MarketProductKind.bstock,
+    );
     final router = AppRouter.create(initialLocation: '/trade?symbol=TSLA');
     addTearDown(router.dispose);
-    await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketProductProvider(product)
+              .overrideWith((_) async => _marketProduct(product)),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byType(TradeScreen), findsOneWidget);
-    expect(find.text('TSLA'), findsWidgets);
+    final screen = tester.widget<TradeScreen>(find.byType(TradeScreen));
+    expect(screen.symbol, product.symbol);
+    expect(screen.initialKind, product.kind);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
+      product.symbol,
+    );
     expect(find.text('24/7'), findsNothing);
   });
 
   testWidgets('trade deep link accepts an explicit perp kind', (tester) async {
+    const product = MarketProductRef(
+      symbol: 'ETH',
+      kind: MarketProductKind.perp,
+    );
     final router = AppRouter.create(
       initialLocation: '/trade?symbol=ETH&kind=perp',
     );
     addTearDown(router.dispose);
-    await tester.pumpWidget(ProviderScope(child: buildRouterTestApp(router)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketProductProvider(product)
+              .overrideWith((_) async => _marketProduct(product)),
+        ],
+        child: buildRouterTestApp(router),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('ETH'), findsWidgets);
+    final screen = tester.widget<TradeScreen>(find.byType(TradeScreen));
+    expect(screen.symbol, product.symbol);
+    expect(screen.initialKind, product.kind);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
+      product.symbol,
+    );
     expect(find.widgetWithText(FilledButton, 'Long'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Short'), findsOneWidget);
   });
@@ -123,3 +162,13 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 }
+
+MarketProduct _marketProduct(MarketProductRef ref) => MarketProduct(
+  symbol: ref.symbol,
+  name: ref.symbol,
+  kind: ref.kind,
+  price: DecimalValue('100', asset: 'USD', unit: 'fiat'),
+  settlementAsset: 'USDC',
+  network: 'Arbitrum',
+  tradable: true,
+);

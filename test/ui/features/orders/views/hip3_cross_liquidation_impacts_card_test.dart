@@ -61,6 +61,6 @@ void main() {
     expect(find.textContaining(r'Mkt. $200'), findsOneWidget);
     expect(find.textContaining('To liq. 8.8% →6.6%'), findsOneWidget);
     expect(find.textContaining(r'Liq. $182.4 → $186.8'), findsOneWidget);
-    expect(find.textContaining(r'Liq. $128.40 → $131.20'), findsOneWidget);
+    expect(find.textContaining(r'Liq. $128.4 → $131.2'), findsOneWidget);
   });
 }

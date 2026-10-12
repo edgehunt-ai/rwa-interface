@@ -13,6 +13,7 @@ import 'package:nobell/domain/models/market_product.dart';
 import 'package:nobell/domain/models/portfolio.dart';
 import 'package:nobell/domain/models/product_session.dart';
 import 'package:nobell/domain/models/registered_device.dart';
+import 'package:nobell/domain/models/stock.dart';
 import 'package:nobell/domain/models/user_account.dart';
 import 'package:nobell/domain/models/wallet.dart';
 import 'package:nobell/domain/repositories/account_repository.dart';
@@ -26,6 +27,7 @@ import 'package:nobell/ui/features/home/views/home_screen.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
 import 'package:nobell/ui/features/markets/views/market_screen.dart';
+import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 
@@ -297,7 +299,17 @@ void main() {
     await tester.tap(find.text('NVDA').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('NVDA'), findsWidgets);
+    final screen = tester.widget<TradeScreen>(find.byType(TradeScreen));
+    expect(screen.symbol, 'NVDA');
+    expect(screen.initialKind, MarketProductKind.bstock);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('trade-stock-symbol'))).data,
+      'NVDA',
+    );
+    expect(
+      tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
+      'NVDA',
+    );
   });
 
   testWidgets('home limits markets to five without a redundant view more', (
@@ -497,28 +509,46 @@ final class _Portfolio implements PortfolioRepository {
 }
 
 final class _Markets implements MarketsRepository {
+  static final _product = MarketProduct(
+    symbol: 'NVDA',
+    name: 'NVIDIA',
+    kind: MarketProductKind.bstock,
+    price: DecimalValue('120', asset: 'USD', unit: 'fiat'),
+    settlementAsset: 'USDC',
+    network: 'Arbitrum',
+    tradable: true,
+    isFavorite: true,
+  );
+
+  @override
+  Future<DomainPage<Stock>> listStocks() async => const DomainPage(
+    items: [
+      Stock(
+        symbol: 'NVDA',
+        name: 'NVIDIA',
+        referencePrice: '120',
+        products: [
+          MarketProductRef(symbol: 'NVDA', kind: MarketProductKind.bstock),
+        ],
+      ),
+    ],
+  );
+
+  @override
+  Future<MarketProduct> getProduct(MarketProductRef ref) async {
+    if (ref.symbol != _product.symbol || ref.kind != _product.kind) {
+      throw StateError('Unexpected market product: ${ref.symbol}/${ref.kind}');
+    }
+    return _product;
+  }
+
   @override
   Future<DomainPage<MarketProduct>> listProducts({
     String? query,
     String? cursor,
     String? group,
     MarketProductKind? productType,
-  }) async => DomainPage(
-    items: group == 'favorites'
-        ? const []
-        : [
-            MarketProduct(
-              symbol: 'NVDA',
-              name: 'NVIDIA',
-              kind: MarketProductKind.bstock,
-              price: DecimalValue('120', asset: 'USD', unit: 'fiat'),
-              settlementAsset: 'USDC',
-              network: 'Arbitrum',
-              tradable: true,
-              isFavorite: true,
-            ),
-          ],
-  );
+  }) async => DomainPage(items: group == 'favorites' ? const [] : [_product]);
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
