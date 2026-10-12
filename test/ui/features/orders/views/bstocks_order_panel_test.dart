@@ -2397,13 +2397,50 @@ void main() {
             plan: _readyFundingPlan,
             orderPreview: _fundedPreview,
             symbol: 'NVDAB',
+            onClose: () {},
           ),
         ),
       ),
     );
 
     expect(find.text('Preparing trading funds…'), findsOneWidget);
-    expect(find.text('Close & View Later'), findsOneWidget);
+    final buttonFinder = find.widgetWithText(
+      OutlinedButton,
+      'Close & View Later',
+    );
+    expect(buttonFinder, findsOneWidget);
+    expect(tester.getSize(buttonFinder).height, 48);
+
+    final button = tester.widget<OutlinedButton>(buttonFinder);
+    final states = <WidgetState>{};
+    expect(
+      button.style?.backgroundColor?.resolve(states),
+      const Color(0xFFF1F1F5),
+    );
+    expect(
+      button.style?.foregroundColor?.resolve(states),
+      const Color(0xFF1D1D24),
+    );
+    expect(
+      button.style?.side?.resolve(states),
+      const BorderSide(color: Color(0xFFE4E4EA)),
+    );
+    expect(
+      button.style?.shape?.resolve(states),
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    );
+    expect(
+      button.style?.padding?.resolve(states),
+      const EdgeInsets.symmetric(horizontal: 20),
+    );
+    expect(
+      button.style?.textStyle?.resolve(states),
+      const TextStyle(
+        fontSize: 15,
+        height: 22 / 15,
+        fontWeight: FontWeight.w600,
+      ),
+    );
   });
 
   testWidgets(

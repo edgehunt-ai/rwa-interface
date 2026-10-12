@@ -236,9 +236,10 @@ class _BstocksTransferFlowState
         ),
         if (_fundingSubmitted) ...[
           const SizedBox(height: 16),
-          OutlinedButton(
+          OrderStatusSecondaryButton(
+            buttonKey: const Key('bstocks-transfer-close-view-later'),
             onPressed: widget.onClose,
-            child: Text(l10n.closeViewLater),
+            label: l10n.closeViewLater,
           ),
         ],
       ],

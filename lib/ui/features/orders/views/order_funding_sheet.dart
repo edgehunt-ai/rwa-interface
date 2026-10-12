@@ -952,23 +952,53 @@ class OrderFundingPendingContent extends StatelessWidget {
         ),
         if (transferSubmitted && onClose != null) ...[
           const SizedBox(height: 16),
-          SizedBox(
-            height: 48,
-            child: OutlinedButton(
-              key: const Key('order-funding-close-view-later'),
-              onPressed: onClose,
-              style: OutlinedButton.styleFrom(
-                backgroundColor: colors.subtleSurface,
-                side: BorderSide(color: colors.border),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(l10n.closeViewLater),
-            ),
+          OrderStatusSecondaryButton(
+            buttonKey: const Key('order-funding-close-view-later'),
+            onPressed: onClose,
+            label: l10n.closeViewLater,
           ),
         ],
       ],
+    );
+  }
+}
+
+class OrderStatusSecondaryButton extends StatelessWidget {
+  const OrderStatusSecondaryButton({
+    super.key,
+    this.buttonKey,
+    required this.onPressed,
+    required this.label,
+  });
+
+  final Key? buttonKey;
+  final VoidCallback? onPressed;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    return SizedBox(
+      height: 48,
+      child: OutlinedButton(
+        key: buttonKey,
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colors.primaryText,
+          backgroundColor: colors.subtleSurface,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          side: BorderSide(color: colors.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 15,
+            height: 22 / 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        child: Text(label),
+      ),
     );
   }
 }
