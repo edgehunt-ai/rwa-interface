@@ -243,6 +243,7 @@
   "transfer": "Transfer",
   "availableBalance": "Available balance",
   "loadMore": "Load more",
+  "viewMore": "View more",
   "refreshOrders": "Refresh orders",
   "openOrdersUnavailable": "Open orders unavailable",
   "noOpenOrders": "No open orders",

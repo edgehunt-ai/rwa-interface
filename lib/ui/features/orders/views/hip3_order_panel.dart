@@ -1808,13 +1808,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     : AppLocalizations.of(context).orderProcessingInDetails,
                 textAlign: TextAlign.center,
               ),
-              if (_preview?.intent.openingProtection != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  AppLocalizations.of(context).openingProtectionPendingNotice,
-                  textAlign: TextAlign.center,
-                ),
-              ],
               const SizedBox(height: 16),
               FilledButton(
                 key: const Key('hip3-order-result-action'),

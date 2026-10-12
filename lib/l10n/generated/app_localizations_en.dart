@@ -633,6 +633,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadMore => 'Load more';
 
   @override
+  String get viewMore => 'View more';
+
+  @override
   String get refreshOrders => 'Refresh orders';
 
   @override

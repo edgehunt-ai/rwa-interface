@@ -23,6 +23,9 @@ import 'package:nobell/domain/repositories/wallets_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/home/views/home_screen.dart';
+import 'package:nobell/ui/features/markets/providers/market_providers.dart';
+import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
+import 'package:nobell/ui/features/markets/views/market_screen.dart';
 import 'package:nobell/ui/features/session/providers/authentication_provider.dart';
 import 'package:nobell/ui/features/session/views/privy_login_screen.dart';
 
@@ -297,6 +300,62 @@ void main() {
     expect(find.text('NVDA'), findsWidgets);
   });
 
+  testWidgets('home limits markets to five without a redundant view more', (
+    tester,
+  ) async {
+    final container = await _authenticatedContainer(
+      markets: const _ManyMarkets(count: 5),
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: buildTestApp(const HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MarketProductRow), findsNWidgets(5));
+    expect(find.byKey(const Key('home-markets-view-more')), findsNothing);
+  });
+
+  testWidgets('home view more opens markets on the selected ranking tab', (
+    tester,
+  ) async {
+    await configureDisplay(tester, size: const Size(393, 852));
+    final router = AppRouter.create();
+    addTearDown(router.dispose);
+    final container = await _authenticatedContainer(
+      markets: const _ManyMarkets(count: 6),
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: buildRouterTestApp(router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Gainers'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MarketProductRow), findsNWidgets(5));
+    expect(find.text('STOCK6'), findsNothing);
+
+    final viewMore = find.byKey(const Key('home-markets-view-more'));
+    expect(viewMore, findsOneWidget);
+    await tester.ensureVisible(viewMore);
+    await tester.tap(viewMore);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MarketScreen), findsOneWidget);
+    expect(
+      tester.widget<MarketRankingTabs>(find.byType(MarketRankingTabs)).active,
+      'Gainers',
+    );
+    expect(container.read(marketRankingTabProvider).value, 'Gainers');
+  });
+
   testWidgets('home switches to Popular when initial favorites are empty', (
     tester,
   ) async {
@@ -350,6 +409,42 @@ void main() {
       find.text('Tap the star on any market to save it here.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('home empty favorites explores the Popular markets tab', (
+    tester,
+  ) async {
+    final router = AppRouter.create();
+    addTearDown(router.dispose);
+    final container = await _authenticatedContainer(
+      markets: _EmptyFavoritesMarkets(),
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: buildRouterTestApp(router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Favorites'));
+    await tester.pumpAndSettle();
+    expect(find.text('No favorites yet'), findsOneWidget);
+
+    final explore = find.text('Explore markets');
+    await tester.ensureVisible(explore);
+    await tester.drag(find.byType(ListView).first, const Offset(0, -80));
+    await tester.pumpAndSettle();
+    await tester.tap(explore);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MarketScreen), findsOneWidget);
+    expect(
+      tester.widget<MarketRankingTabs>(find.byType(MarketRankingTabs)).active,
+      'Popular',
+    );
+    expect(container.read(marketRankingTabProvider).value, 'Popular');
   });
 }
 
@@ -453,6 +548,37 @@ final class _EmptyFavoritesMarkets implements MarketsRepository {
               isFavorite: false,
             ),
           ],
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+final class _ManyMarkets implements MarketsRepository {
+  const _ManyMarkets({required this.count});
+
+  final int count;
+
+  @override
+  Future<DomainPage<MarketProduct>> listProducts({
+    String? query,
+    String? cursor,
+    String? group,
+    MarketProductKind? productType,
+  }) async => DomainPage(
+    items: [
+      for (var index = 1; index <= count; index++)
+        MarketProduct(
+          symbol: 'STOCK$index',
+          name: 'Stock $index',
+          kind: MarketProductKind.bstock,
+          price: DecimalValue('$index', asset: 'USD', unit: 'fiat'),
+          settlementAsset: 'USDC',
+          network: 'Arbitrum',
+          tradable: true,
+          isFavorite: true,
+        ),
+    ],
   );
 
   @override

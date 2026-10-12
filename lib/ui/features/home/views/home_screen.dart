@@ -547,9 +547,7 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
                   _schedulePopularFallback();
                 }
                 return FavoritesEmptyState(
-                  onExplore: () => ref
-                      .read(marketRankingTabProvider.notifier)
-                      .select('Popular'),
+                  onExplore: () => _openMarkets('Popular'),
                 );
               }
               return Container(
@@ -565,7 +563,9 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
               );
             }
             final visible = items.take(5).toList(growable: false);
+            final showViewMore = items.length > visible.length || page.hasMore;
             return Container(
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: colors.surface,
                 borderRadius: BorderRadius.circular(18),
@@ -594,6 +594,27 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
                         color: colors.border,
                       ),
                   ],
+                  if (showViewMore) ...[
+                    Divider(height: 1, color: colors.border),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 40,
+                      child: TextButton(
+                        key: const Key('home-markets-view-more'),
+                        onPressed: () => _openMarkets(selectedTab),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colors.secondaryText,
+                          shape: const RoundedRectangleBorder(),
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            height: 16 / 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        child: Text(l10n.viewMore),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -620,6 +641,11 @@ class _MarketPreviewState extends ConsumerState<_MarketPreview> {
       }
       ref.read(marketRankingTabProvider.notifier).select('Popular');
     });
+  }
+
+  void _openMarkets(String tab) {
+    unawaited(ref.read(marketRankingTabProvider.notifier).select(tab));
+    context.goNamed(AppRoutes.marketsName);
   }
 }
 

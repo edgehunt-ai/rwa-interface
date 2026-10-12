@@ -1268,6 +1268,12 @@ abstract class AppLocalizations {
   /// **'Load more'**
   String get loadMore;
 
+  /// No description provided for @viewMore.
+  ///
+  /// In en, this message translates to:
+  /// **'View more'**
+  String get viewMore;
+
   /// No description provided for @refreshOrders.
   ///
   /// In en, this message translates to:

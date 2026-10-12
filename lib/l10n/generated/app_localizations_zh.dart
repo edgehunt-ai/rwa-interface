@@ -615,6 +615,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loadMore => '加载更多';
 
   @override
+  String get viewMore => '查看更多';
+
+  @override
   String get refreshOrders => '刷新订单';
 
   @override

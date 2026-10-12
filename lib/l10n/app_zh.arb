@@ -207,6 +207,7 @@
   "transfer": "转账",
   "availableBalance": "可用余额",
   "loadMore": "加载更多",
+  "viewMore": "查看更多",
   "refreshOrders": "刷新订单",
   "openOrdersUnavailable": "未能加载未完成订单",
   "noOpenOrders": "暂无未完成订单",

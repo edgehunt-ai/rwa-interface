@@ -34,8 +34,6 @@ class Hip3OpeningProtectionFields extends StatelessWidget {
           const SizedBox(height: 12),
         ],
         Text(l10n.openingProtectionQuantityNotice),
-        const SizedBox(height: 8),
-        Text(l10n.openingProtectionPendingNotice),
       ],
     );
   }

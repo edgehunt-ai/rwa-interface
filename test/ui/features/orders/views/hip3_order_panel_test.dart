@@ -1246,6 +1246,10 @@ void main() {
       await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.byKey(const Key('hip3-tp-sl-toggle')));
       await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Submitted protection is not yet active.'),
+        findsNothing,
+      );
       await tester.enterText(
         find.byKey(const Key('opening-protection-0')),
         '120',
@@ -1271,7 +1275,7 @@ void main() {
       expect(execution.calls, 1);
       expect(
         find.textContaining('Submitted protection is not yet active.'),
-        findsOneWidget,
+        findsNothing,
       );
     },
   );
