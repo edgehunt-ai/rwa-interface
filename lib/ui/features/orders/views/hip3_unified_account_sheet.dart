@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/models/api_failure.dart';
-import '../../../../ui/core/theme/app_theme.dart';
+import '../../../core/feedback/inline_error_notice.dart';
+import '../../../core/theme/app_theme.dart';
 
 class Hip3UnifiedAccountSheet extends StatefulWidget {
   const Hip3UnifiedAccountSheet({super.key, required this.onConfirm});
@@ -54,7 +55,6 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final title = _isZh ? '账户设置' : 'Account Settings';
     final heading = _isZh ? '设置统一交易' : 'Set Up Unified Trading';
     final body = _isZh
@@ -158,6 +158,13 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
                 ),
               ),
               const SizedBox(height: 16),
+              if (_error case final error?) ...[
+                InlineErrorNotice(
+                  key: const Key('hip3-unified-account-error'),
+                  message: error,
+                ),
+                const SizedBox(height: 8),
+              ],
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -187,10 +194,6 @@ class _Hip3UnifiedAccountSheetState extends State<Hip3UnifiedAccountSheet> {
                         ),
                 ),
               ),
-              if (_error case final error?) ...[
-                const SizedBox(height: 8),
-                Text(error, style: TextStyle(color: semantic.loss)),
-              ],
             ],
           ),
         ),

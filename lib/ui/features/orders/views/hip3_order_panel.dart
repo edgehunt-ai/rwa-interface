@@ -17,7 +17,7 @@ import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/app/providers/api_providers.dart';
 import 'package:nobell/data/api/idempotency_key.dart';
 import 'package:nobell/app/providers/observability_providers.dart';
-import 'package:nobell/ui/core/feedback/app_toast.dart';
+import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/feedback/rwa_tooltip.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
@@ -640,7 +640,6 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           ),
       fallback: AppLocalizations.of(context).hip3TradingContextUnavailable,
     );
-    AppToast.showFailure(context, message);
     setState(() => _error = message);
   }
 
@@ -1082,12 +1081,10 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       }
     }
     if (_amountError() case final amountError?) {
-      AppToast.showFailure(context, amountError);
       setState(() => _error = amountError);
       return;
     }
     if (_ruleViolation(_context!) case final violation?) {
-      AppToast.showFailure(context, violation);
       setState(() => _error = violation);
       return;
     }
@@ -1640,22 +1637,23 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
                     _editTpSl();
                   },
                 ),
-                if ((visibleError ?? visibleDisabledReason)
-                    case final error?) ...[
-                  const SizedBox(height: 16),
-                  _Hip3OrderFailureNotice(
-                    key: const Key('hip3-form-error'),
-                    message: error,
-                  ),
-                ],
-                const SizedBox(height: 24),
                 if (!tradingSettingsEnabled) ...[
+                  const SizedBox(height: 24),
                   _Hip3TradingSettingsNotice(
                     key: const Key('hip3-trading-settings-notice'),
                     message: l10n.hip3TradingSettingsLocked,
                   ),
-                  const SizedBox(height: 8),
                 ],
+                if ((visibleError ?? visibleDisabledReason)
+                    case final error?) ...[
+                  SizedBox(height: tradingSettingsEnabled ? 16 : 8),
+                  InlineErrorNotice(
+                    key: const Key('hip3-form-error'),
+                    message: error,
+                  ),
+                  const SizedBox(height: 8),
+                ] else
+                  SizedBox(height: tradingSettingsEnabled ? 24 : 8),
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -2015,8 +2013,9 @@ class _Hip3TpSlSheetState extends State<_Hip3TpSlSheet> {
                       ...?(_error == null ? null : [_error!]),
                     }.toList(),
                   ),
-                ],
-                const SizedBox(height: 48),
+                  const SizedBox(height: 8),
+                ] else
+                  const SizedBox(height: 48),
                 Row(
                   children: [
                     Expanded(
@@ -2301,34 +2300,6 @@ class _Hip3Badge extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(label, style: const TextStyle(fontSize: 12, height: 16 / 12)),
-    );
-  }
-}
-
-class _Hip3OrderFailureNotice extends StatelessWidget {
-  const _Hip3OrderFailureNotice({super.key, required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    return Semantics(
-      liveRegion: true,
-      label: message,
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 40),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFEEF0),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          message,
-          style: TextStyle(color: semantic.loss, fontSize: 12),
-        ),
-      ),
     );
   }
 }
@@ -3650,11 +3621,11 @@ class _Hip3LimitPriceSheetState extends State<_Hip3LimitPriceSheet> {
               ),
               const Spacer(),
               if (_marketPriceError case final error?) ...[
-                _Hip3OrderFailureNotice(
+                InlineErrorNotice(
                   key: const Key('hip3-limit-price-error'),
                   message: error,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
               ],
               Row(
                 children: [

@@ -29,6 +29,7 @@ import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:nobell/ui/features/orders/views/tpsl_risk_agreement_sheet.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
+import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -248,6 +249,9 @@ void main() {
 
       expect(find.text('Signature request was cancelled.'), findsOneWidget);
       expect(find.text("Instance of 'Hip3SigningFailure'"), findsNothing);
+      final notice = find.byKey(const Key('position-settings-error'));
+      final button = find.widgetWithText(FilledButton, 'Sign and confirm');
+      expect(tester.getTopLeft(button).dy - tester.getBottomLeft(notice).dy, 8);
     },
   );
 
@@ -328,6 +332,12 @@ void main() {
           .extension<AppSemanticColors>()!;
       expect(text.style!.color, semantic.loss);
       expect(find.text("Instance of 'Hip3SigningFailure'"), findsNothing);
+      final notice = find.byKey(const Key('close-error'));
+      expect(
+        tester.getTopLeft(find.byKey(const Key('close-review'))).dy -
+            tester.getBottomLeft(notice).dy,
+        8,
+      );
     });
   }
 
@@ -1206,17 +1216,12 @@ void main() {
       expect(find.text('止盈: 请输入有效的正数价格。'), findsOneWidget);
       expect(find.text('无法完成保护更新，请刷新后重试。'), findsNothing);
       final notice = find.byKey(const Key('tpsl-inline-error'));
-      final container = tester.widget<Container>(notice);
       expect(
-        (container.decoration! as BoxDecoration).color,
-        const Color(0xFFFFEEF0),
+        tester.widget<InlineErrorNotice>(notice).message,
+        '止盈: 请输入有效的正数价格。',
       );
-      final text = tester.widget<Text>(
-        find.descendant(of: notice, matching: find.byType(Text)),
-      );
-      final semantic = Theme.of(tester.element(notice))
-          .extension<AppSemanticColors>()!;
-      expect(text.style!.color, semantic.loss);
+      final button = find.widgetWithText(FilledButton, '签名并确认');
+      expect(tester.getTopLeft(button).dy - tester.getBottomLeft(notice).dy, 8);
     });
   }
 

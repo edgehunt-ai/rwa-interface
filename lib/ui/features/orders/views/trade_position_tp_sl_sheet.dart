@@ -492,12 +492,6 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     ),
                     decoration: InputDecoration(labelText: l10n.stopLimitPrice),
                   ),
-                if (_sizeChoiceRequired)
-                  TpSlInlineError(messages: [l10n.protectionSizesDiffer]),
-                if (_error case final error?) ...[
-                  const SizedBox(height: 12),
-                  TpSlInlineError(messages: [error]),
-                ],
                 const SizedBox(height: 12),
                 TpSlConsentRow(
                   accepted: _riskAccepted,
@@ -519,7 +513,17 @@ class _PositionTpSlSheetState extends ConsumerState<PositionTpSlSheet> {
                     }
                   },
                 ),
-                const SizedBox(height: 20),
+                if (_sizeChoiceRequired || _error != null) ...[
+                  const SizedBox(height: 20),
+                  TpSlInlineError(
+                    messages: [
+                      if (_sizeChoiceRequired) l10n.protectionSizesDiffer,
+                      ?_error,
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ] else
+                  const SizedBox(height: 20),
                 Row(
                   children: [
                     Expanded(

@@ -12,6 +12,7 @@ import '../../../../domain/models/position_operation.dart';
 import '../../../../domain/services/hip3_typed_data_signer.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../core/feedback/app_toast.dart';
+import '../../../core/feedback/inline_error_notice.dart';
 import '../../../core/feedback/loading_skeleton.dart';
 import '../../../core/formatters/token_amount_formatter.dart';
 import '../../../core/theme/app_theme.dart';
@@ -529,30 +530,13 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                 loading: previewLoading,
               ),
               const SizedBox(height: 8),
-              if (errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Semantics(
-                    liveRegion: true,
-                    label: errorMessage,
-                    child: Container(
-                      width: double.infinity,
-                      constraints: const BoxConstraints(minHeight: 40),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFEEF0),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        errorMessage,
-                        style: TextStyle(color: semantic.loss, fontSize: 12),
-                      ),
-                    ),
-                  ),
+              if (errorMessage != null) ...[
+                InlineErrorNotice(
+                  key: const Key('close-error'),
+                  message: errorMessage,
                 ),
+                const SizedBox(height: 8),
+              ],
               Row(
                 children: [
                   Expanded(

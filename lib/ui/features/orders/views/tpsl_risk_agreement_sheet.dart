@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
+import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 
 class TpSlInlineError extends StatelessWidget {
@@ -10,20 +11,9 @@ class TpSlInlineError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (messages.isEmpty) return const SizedBox.shrink();
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    return Container(
+    return InlineErrorNotice(
       key: const Key('tpsl-inline-error'),
-      constraints: const BoxConstraints(minHeight: 40),
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFEEF0),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        messages.join('\n'),
-        style: TextStyle(fontSize: 12, height: 16 / 12, color: semantic.loss),
-      ),
+      message: messages.join('\n'),
     );
   }
 }

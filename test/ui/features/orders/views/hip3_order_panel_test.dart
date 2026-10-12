@@ -26,6 +26,7 @@ import 'package:nobell/domain/repositories/orders_repository.dart';
 import 'package:nobell/ui/features/orders/views/hip3_confirm_sheet.dart';
 import 'package:nobell/ui/features/orders/views/hip3_order_panel.dart';
 import 'package:nobell/ui/features/orders/views/order_funding_sheet.dart';
+import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 
@@ -927,7 +928,11 @@ void main() {
 
     await tester.enterText(find.byType(TextField).first, '51');
     await tester.pump();
-    expect(find.byKey(const Key('hip3-form-error')), findsOneWidget);
+    final error = find.byKey(const Key('hip3-form-error'));
+    final action = find.byKey(const Key('hip3-submit-button'));
+    expect(error, findsOneWidget);
+    expect(tester.widget(error), isA<InlineErrorNotice>());
+    expect(tester.getRect(action).top - tester.getRect(error).bottom, 8);
     expect(find.byKey(const Key('hip3-order-amount-error')), findsNothing);
     expect(
       find.text('Order value is above the 50 USDC maximum.'),
@@ -1010,7 +1015,7 @@ void main() {
     }
   });
 
-  testWidgets('an order value under the minimum is refused with a toast', (
+  testWidgets('an order value under the minimum uses the shared error area', (
     tester,
   ) async {
     await tester.pumpWidget(_app(const Hip3OrderPanel()));
@@ -1021,26 +1026,29 @@ void main() {
     await tester.pump();
     expect(
       find.text('Order value is below the 12 USDC minimum.'),
-      findsWidgets,
+      findsOneWidget,
     );
+    expect(find.byKey(const Key('hip3-form-error')), findsOneWidget);
   });
 
-  testWidgets('a leverage above the product maximum is refused with a toast', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _app(const Hip3OrderPanel(), opening: _Opening(maximum: 5)),
-    );
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).first, '50');
-    await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $50'));
-    await tester.pump();
-    expect(
-      find.text('Leverage exceeds the 5x limit for this product.'),
-      findsWidgets,
-    );
-  });
+  testWidgets(
+    'a leverage above the product maximum uses the shared error area',
+    (tester) async {
+      await tester.pumpWidget(
+        _app(const Hip3OrderPanel(), opening: _Opening(maximum: 5)),
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, '50');
+      await tester.pump();
+      await tester.tap(find.widgetWithText(FilledButton, r'Long NVDA · $50'));
+      await tester.pump();
+      expect(
+        find.text('Leverage exceeds the 5x limit for this product.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('hip3-form-error')), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'opening protection is reviewed and submitted with the parent, not labelled active',
@@ -1791,7 +1799,11 @@ void main() {
       final input = find.byKey(const Key('hip3-limit-price-sheet-input'));
       expect(input, findsOneWidget);
       expect(tester.widget<TextField>(input).controller?.text, isEmpty);
-      expect(find.byKey(const Key('hip3-limit-price-error')), findsOneWidget);
+      final error = find.byKey(const Key('hip3-limit-price-error'));
+      final action = find.widgetWithText(FilledButton, 'Confirm');
+      expect(error, findsOneWidget);
+      expect(tester.widget(error), isA<InlineErrorNotice>());
+      expect(tester.getRect(action).top - tester.getRect(error).bottom, 8);
       // The wrapped failure is unwrapped so the user sees the real reason.
       expect(find.text('Too many requests'), findsOneWidget);
       final requestsAfterFirstOpen = quoteRequests;

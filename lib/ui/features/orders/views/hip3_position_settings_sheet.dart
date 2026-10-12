@@ -7,6 +7,7 @@ import 'package:nobell/domain/services/hip3_typed_data_signer.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
+import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/features/orders/views/hip3_order_messages.dart';
 import 'package:nobell/ui/features/orders/views/tp_sl_editor_card.dart';
 import 'package:nobell/ui/features/positions/providers/position_providers.dart';
@@ -284,7 +285,10 @@ class _SettingsContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (errorMessage != null) ...[
-            _SettingsFailureNotice(message: errorMessage!),
+            InlineErrorNotice(
+              key: const Key('position-settings-error'),
+              message: errorMessage!,
+            ),
             const SizedBox(height: 8),
           ],
           SizedBox(
@@ -303,34 +307,6 @@ class _SettingsContent extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SettingsFailureNotice extends StatelessWidget {
-  const _SettingsFailureNotice({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final semantic = Theme.of(context).extension<AppSemanticColors>()!;
-    return Semantics(
-      liveRegion: true,
-      label: message,
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 40),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFEEF0),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          message,
-          style: TextStyle(color: semantic.loss, fontSize: 12),
-        ),
       ),
     );
   }
