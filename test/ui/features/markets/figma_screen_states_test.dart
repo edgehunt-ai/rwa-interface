@@ -292,7 +292,8 @@ void main() {
     );
 
     // NVDA trades as a bStock and a HIP-3 perp, TSLA only as a HIP-3 perp.
-    expect(venue('network_bsc.svg'), findsOneWidget);
+    expect(venue('venue_bnb.svg'), findsOneWidget);
+    expect(venue('network_bsc.svg'), findsNothing);
     expect(venue('venue_hyperliquid.svg'), findsNWidgets(2));
   });
 

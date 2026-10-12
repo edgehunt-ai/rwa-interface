@@ -528,7 +528,7 @@ class _StockBrowseRow extends StatelessWidget {
               ),
               if (kinds.contains(MarketProductKind.bstock))
                 SvgPicture.asset(
-                  'assets/figma/common/network_bsc.svg',
+                  'assets/figma/home_markets/venue_bnb.svg',
                   width: 20,
                   height: 20,
                 ),

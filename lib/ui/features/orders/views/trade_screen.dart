@@ -771,7 +771,7 @@ class _ProductSwitch extends StatelessWidget {
                     ? 'bStocks'
                     : l10n.hip3Perp,
                 asset: value == MarketProductKind.bstock
-                    ? 'assets/figma/common/network_bsc.svg'
+                    ? 'assets/figma/home_markets/venue_bnb.svg'
                     : 'assets/figma/home_markets/venue_hyperliquid.svg',
                 selected: kind == value,
                 onTap: () => onChanged(value),

@@ -1022,6 +1022,14 @@ void main() {
     expect(find.text('HIP-3 Perp'), findsOneWidget);
     expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
     expect(find.byKey(const Key('trade-product-unavailable')), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is SvgPicture &&
+            widget.bytesLoader.toString().contains('venue_bnb.svg'),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('bStocks'));
     await tester.pumpAndSettle();

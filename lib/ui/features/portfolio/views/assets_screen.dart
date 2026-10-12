@@ -1793,7 +1793,7 @@ class _HoldingRow extends StatelessWidget {
                             children: [
                               SvgPicture.asset(
                                 isBstock
-                                    ? 'assets/figma/common/network_bsc.svg'
+                                    ? 'assets/figma/home_markets/venue_bnb.svg'
                                     : 'assets/figma/home_markets/venue_hyperliquid.svg',
                                 width: 14,
                                 height: 14,
