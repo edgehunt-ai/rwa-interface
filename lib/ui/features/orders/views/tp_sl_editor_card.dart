@@ -396,13 +396,6 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final current = _currentValue;
-    final visualRange = _rangeFor(current);
-    final visualMinimum = widget.unbounded
-        ? (current - visualRange / 2).clamp(0.0, double.infinity)
-        : widget.minimum;
-    final visualMaximum = widget.unbounded
-        ? visualMinimum + visualRange
-        : widget.maximum;
     final tickCount = (widget.divisions + 1).clamp(2, 21);
     return Semantics(
       container: true,
@@ -429,10 +422,11 @@ class _TpSlTickRulerState extends State<TpSlTickRuler> {
                 CustomPaint(
                   painter: _TpSlRulerPainter(
                     value: current,
-                    minimum: visualMinimum,
-                    maximum: visualMaximum,
+                    minimum: widget.minimum,
+                    maximum: widget.maximum,
                     divisions: widget.divisions,
                     tickCount: tickCount,
+                    unbounded: widget.unbounded,
                     tickColor: colors.border,
                     accentColor: colors.selected,
                   ),
@@ -491,6 +485,7 @@ class _TpSlRulerPainter extends CustomPainter {
     required this.maximum,
     required this.divisions,
     required this.tickCount,
+    required this.unbounded,
     required this.tickColor,
     required this.accentColor,
   });
@@ -500,6 +495,7 @@ class _TpSlRulerPainter extends CustomPainter {
   final double maximum;
   final int divisions;
   final int tickCount;
+  final bool unbounded;
   final Color tickColor;
   final Color accentColor;
 
@@ -514,15 +510,22 @@ class _TpSlRulerPainter extends CustomPainter {
       stops: [0, 0.5, 1],
     ).createShader(Rect.fromLTWH(trackLeft, 0, trackWidth, size.height));
     final paint = Paint()..shader = gradient;
+    // Keep the interval fixed so a changing value scrolls the ticks beneath
+    // the center indicator, including when the ruler has no upper bound.
     final tickSpacing = trackWidth / divisions;
-    final selectedIndex = ((value - minimum) / (maximum - minimum) * divisions)
-        .round()
-        .clamp(0, divisions);
+    final interval = (maximum - minimum) / divisions;
+    final position = (value - minimum) / interval;
     final halfTicks = tickCount ~/ 2;
-    final firstIndex = (selectedIndex - halfTicks).clamp(0, divisions);
-    final lastIndex = (firstIndex + tickCount - 1).clamp(0, divisions);
+    final firstIndex = (position.floor() - halfTicks).clamp(
+      0,
+      unbounded ? position.ceil() + halfTicks : divisions,
+    );
+    final lastIndex = (firstIndex + tickCount).clamp(
+      0,
+      unbounded ? position.ceil() + halfTicks : divisions,
+    );
     for (var index = firstIndex; index <= lastIndex; index++) {
-      final x = centerX + (index - selectedIndex) * tickSpacing;
+      final x = centerX + (index - position) * tickSpacing;
       if (x < trackLeft || x > trackRight) continue;
       final height = index % 5 == 0 ? 25.0 : 18.0;
       canvas.drawRect(
@@ -544,5 +547,10 @@ class _TpSlRulerPainter extends CustomPainter {
   bool shouldRepaint(_TpSlRulerPainter oldDelegate) =>
       value != oldDelegate.value ||
       minimum != oldDelegate.minimum ||
-      maximum != oldDelegate.maximum;
+      maximum != oldDelegate.maximum ||
+      divisions != oldDelegate.divisions ||
+      tickCount != oldDelegate.tickCount ||
+      unbounded != oldDelegate.unbounded ||
+      tickColor != oldDelegate.tickColor ||
+      accentColor != oldDelegate.accentColor;
 }

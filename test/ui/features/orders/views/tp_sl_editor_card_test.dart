@@ -172,6 +172,44 @@ void main() {
     expect(priceFrom100! / 100, closeTo(priceFrom50! / 50, 0.000001));
   });
 
+  testWidgets('unbounded ruler ticks visibly move while dragging', (
+    tester,
+  ) async {
+    var draggedValue = 100.0;
+    await tester.pumpWidget(
+      buildTestApp(
+        TpSlTickRuler(
+          key: rulerKey,
+          semanticLabel: 'Price',
+          value: 100,
+          minimum: 0,
+          maximum: 110,
+          divisions: 20,
+          unbounded: true,
+          onChanged: (value) => draggedValue = value,
+        ),
+      ),
+    );
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byKey(rulerKey)),
+    );
+    await gesture.moveBy(const Offset(-60, 0));
+    await tester.pump();
+
+    final customPaint = find.descendant(
+      of: find.byKey(rulerKey),
+      matching: find.byType(CustomPaint),
+    );
+    final painter = tester.widget<CustomPaint>(customPaint).painter as dynamic;
+    expect(painter.value, draggedValue);
+    expect(painter.minimum, 0);
+    expect(painter.maximum, 110);
+    expect(draggedValue / (110 / 20), isNot(equals(20)));
+    expect(customPaint, paints..rect());
+    await gesture.up();
+  });
+
   testWidgets('a new drag continues from the previously dragged price', (
     tester,
   ) async {
