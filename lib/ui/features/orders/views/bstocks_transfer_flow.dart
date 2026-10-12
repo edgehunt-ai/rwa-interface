@@ -42,12 +42,16 @@ class _BstocksTransferFlowState
   String? error;
   TradingOrder? _submittedOrder;
   late bool _fundingSubmitted;
+  late FundingPlan _plan;
+  late OrderPreview _orderPreview;
 
   @override
   void initState() {
     super.initState();
     _stage = widget.initialStage;
     _fundingSubmitted = widget.initialFundingSubmitted;
+    _plan = widget.plan;
+    _orderPreview = widget.orderPreview;
   }
 
   @override
@@ -84,19 +88,19 @@ class _BstocksTransferFlowState
         const Divider(),
         Text(l10n.inAppTransferLowercase),
         const SizedBox(height: 8),
-        _ServerSelectedSource(plan: widget.plan),
+        _ServerSelectedSource(plan: _plan),
         if (error case final value?)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(value, style: const TextStyle(color: Colors.red)),
           ),
         _AmountOverview(amount: widget.amountNeeded),
-        _TransferDetails(plan: widget.plan),
+        _TransferDetails(plan: _plan),
         const SizedBox(height: 16),
         _Actions(
           primary: l10n.confirm,
           onBack: widget.onClose,
-          onPrimary: widget.plan.isActionable
+          onPrimary: _plan.isActionable
               ? () => setState(() => _stage = BstocksTransferFlowStage.review)
               : null,
         ),
@@ -115,9 +119,9 @@ class _BstocksTransferFlowState
         Text(l10n.buySymbolMarket(widget.symbol)),
         const SizedBox(height: 12),
         const _UnifiedFundingAccountSummary(),
-        _ConversionOverview(plan: widget.plan, preview: widget.orderPreview),
+        _ConversionOverview(plan: _plan, preview: _orderPreview),
         const SizedBox(height: 16),
-        _ReviewDetails(preview: widget.orderPreview),
+        _ReviewDetails(preview: _orderPreview),
         const SizedBox(height: 16),
         _Actions(
           primary: '${l10n.confirm} ${l10n.buy}',
@@ -130,7 +134,7 @@ class _BstocksTransferFlowState
   }
 
   Future<void> _submitTransfer() async {
-    var plan = widget.plan;
+    var plan = _plan;
     setState(() {
       error = null;
       _stage = BstocksTransferFlowStage.submitting;
@@ -164,7 +168,12 @@ class _BstocksTransferFlowState
         if (!mounted) return;
       }
       if (plan.status == FundingPlanState.alreadyFunded) {
-        await _submitCompletedOrder();
+        _plan = plan;
+        if (_fundingSubmitted) {
+          await _refreshOrderPreviewAfterFunding(plan);
+        } else {
+          await _submitCompletedOrder();
+        }
         return;
       }
       setState(() {
@@ -181,8 +190,24 @@ class _BstocksTransferFlowState
     }
   }
 
+  Future<void> _refreshOrderPreviewAfterFunding(FundingPlan plan) async {
+    final provider = orderPreviewProvider(_orderPreview.intent);
+    ref.invalidate(provider);
+    final refreshed = await ref.read(provider.future);
+    if (!mounted) return;
+    if (!refreshed.executionReady || refreshed.isExpired) {
+      throw StateError(AppLocalizations.of(context).orderQuoteUnavailable);
+    }
+    setState(() {
+      _plan = plan;
+      _orderPreview = refreshed;
+      _fundingSubmitted = false;
+      _stage = BstocksTransferFlowStage.review;
+    });
+  }
+
   Future<void> _submitCompletedOrder() async {
-    final preview = widget.orderPreview;
+    final preview = _orderPreview;
     try {
       final result = await ref
           .read(orderCommandProvider.notifier)

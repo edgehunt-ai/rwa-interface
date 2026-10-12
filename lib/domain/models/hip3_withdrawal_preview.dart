@@ -48,4 +48,7 @@ final class Hip3WithdrawalPreview {
   final String? riskUnavailableReason;
 
   bool get canProceed => blockers.isEmpty;
+
+  bool get isRiskExpired =>
+      riskValidUntil?.isAfter(DateTime.now().toUtc()) == false;
 }

@@ -46,11 +46,18 @@ final class Hip3WithdrawalCommands {
     }
   }
 
-  Future<Hip3WithdrawalPreview> preview(String amount) async {
+  Future<Hip3WithdrawalPreview> preview(
+    String amount, {
+    bool forceRefresh = false,
+  }) async {
     _checkSession();
     _validateAmount(amount);
     final current = _preview;
-    if (current?.amount == amount) return current!;
+    if (!forceRefresh &&
+        current?.amount == amount &&
+        current?.isRiskExpired == false) {
+      return current!;
+    }
     final result = await _ref
         .read(hip3WithdrawalRepositoryProvider)
         .preview(amount: amount);

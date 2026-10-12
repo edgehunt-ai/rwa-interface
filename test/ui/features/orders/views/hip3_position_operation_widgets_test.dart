@@ -365,6 +365,84 @@ void main() {
     );
     expect(repo.closeCalls, 1);
   });
+
+  testWidgets(
+    'close conflict refreshes the authoritative position before another preview',
+    (tester) async {
+      final initial = _position();
+      final refreshed = _position(positionVersion: 'v2', quantity: '0.5');
+      final repo = _Positions()
+        ..currentPosition = refreshed
+        ..closeError = const ServerFailure(
+          statusCode: 409,
+          code: 'close_preview_binding_changed',
+          message: 'The close action no longer matches the position or signer. Request a new preview.',
+        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: initial)),
+        ),
+      );
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.75');
+      await tester.ensureVisible(find.byKey(const Key('close-review')));
+      await _settleClosePreview(tester);
+      await tester.tap(find.byKey(const Key('close-review')));
+      await tester.pumpAndSettle();
+
+      expect(repo.getCalls, 1);
+      expect(find.text('Balance: 0.5'), findsOneWidget);
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('close-review')))
+            .onPressed,
+        isNull,
+      );
+
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.25');
+      await _settleClosePreview(tester);
+      expect(repo.previewRequests.last.position, same(refreshed));
+      expect(repo.previewRequests.last.position.positionVersion, 'v2');
+    },
+  );
+
+  testWidgets(
+    'close preview polls but submit keeps the preview rendered at tap time',
+    (tester) async {
+      final refreshed = Completer<PositionClosePreview>();
+      final repo = _Positions()..previewCallCompletions[2] = refreshed;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [positionsRepositoryProvider.overrideWithValue(repo)],
+          child: buildTestApp(Hip3ClosePositionSheet(position: _position())),
+        ),
+      );
+      await tester.enterText(find.byKey(const Key('close-quantity')), '0.5');
+      await tester.ensureVisible(find.byKey(const Key('close-review')));
+      await _settleClosePreview(tester);
+      expect(repo.previewRequests, hasLength(1));
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 301));
+      expect(repo.previewRequests, hasLength(2));
+      expect(repo.previewKeys.toSet(), hasLength(2));
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('close-review')))
+            .onPressed,
+        isNotNull,
+      );
+
+      refreshed.complete(_closePreview('0.5', previewId: 'preview-refreshed'));
+      await tester.idle();
+      await tester.tap(find.byKey(const Key('close-review')));
+      await tester.pumpAndSettle();
+
+      expect(repo.closeCalls, 1);
+      expect(repo.closePreview?.previewId, 'preview-0.5');
+    },
+  );
+
   testWidgets(
     'market partial close passes selected short position, not default NVDA',
     (tester) async {
@@ -704,6 +782,9 @@ void main() {
       expect(find.text(r'$25'), findsOneWidget);
       final refreshed = Completer<PositionClosePreview>();
       repo.previewCompletions['0.25'] = refreshed;
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 1050)),
+      );
       await tester.pump(const Duration(seconds: 1));
       await _settleClosePreview(tester);
       expect(find.text(r'$25'), findsNothing);
@@ -1603,13 +1684,14 @@ Future<void> _settleClosePreview(WidgetTester tester) async {
 
 PositionClosePreview _closePreview(
   String quantity, {
+  String? previewId,
   String value = '25',
   Duration lifetime = const Duration(minutes: 1),
   PositionSide side = PositionSide.short,
   TradingOrderType type = TradingOrderType.market,
   String? limitPrice,
 }) => PositionClosePreview(
-  previewId: 'preview-$quantity',
+  previewId: previewId ?? 'preview-$quantity',
   positionId: 'p-tsla',
   productId: 'xyz:TSLA',
   positionVersion: 'v1',
@@ -1635,11 +1717,13 @@ Position _position({
   bool withProtection = true,
   String mark = '100',
   String? entry,
+  String positionVersion = 'v1',
+  String quantity = '1',
   List<String> protectionIds = const [],
 }) => Position(
   positionId: 'p-tsla',
   productId: 'xyz:TSLA',
-  positionVersion: 'v1',
+  positionVersion: positionVersion,
   protectionOrderIds: protectionIds,
   symbol: 'TSLA',
   kind: MarketProductKind.perp,
@@ -1647,8 +1731,8 @@ Position _position({
   quantity: DecimalValue(
     (side ?? (short ? PositionSide.short : PositionSide.long)) ==
             PositionSide.short
-        ? '-1'
-        : '1',
+        ? '-$quantity'
+        : quantity,
   ),
   valueUsd: DecimalValue('100'),
   markPrice: DecimalValue(mark, asset: 'USD', unit: 'price'),
@@ -1696,10 +1780,20 @@ TradingOrder _order(
 );
 
 class _Positions implements PositionsRepository {
+  Position currentPosition = _position();
+  int getCalls = 0;
+
+  @override
+  Future<Position> get(String positionId) async {
+    getCalls++;
+    return currentPosition;
+  }
+
   Object? previewError;
   final previewRequests = <PositionClosePreviewRequest>[];
   final previewKeys = <String>[];
   final previewCompletions = <String, Completer<PositionClosePreview>>{};
+  final previewCallCompletions = <int, Completer<PositionClosePreview>>{};
   Duration previewLifetime = const Duration(minutes: 1);
   @override
   Future<PositionClosePreview> previewClose(
@@ -1717,6 +1811,8 @@ class _Positions implements PositionsRepository {
     ));
     previewKeys.add(idempotencyKey);
     if (previewError case final error?) throw error;
+    final callCompletion = previewCallCompletions[previewRequests.length];
+    if (callCompletion != null) return callCompletion.future;
     final completion = previewCompletions[quantity];
     if (completion != null) return completion.future;
     return _closePreview(

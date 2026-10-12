@@ -37,6 +37,41 @@ void main() {
   });
 
   test(
+    'an expired risk preview is requested again for the same amount',
+    () async {
+      final repo = _Repository()
+        ..riskValidUntil = DateTime.now().toUtc().subtract(
+          const Duration(seconds: 1),
+        );
+      final container = ProviderContainer(
+        overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+      final commands = container.read(hip3WithdrawalCommandsProvider);
+
+      await commands.preview('51.4');
+      await commands.preview('51.4');
+
+      expect(repo.previewAmounts, ['51.4', '51.4']);
+    },
+  );
+
+  test('a current risk preview remains cached for the same amount', () async {
+    final repo = _Repository()
+      ..riskValidUntil = DateTime.now().toUtc().add(const Duration(minutes: 1));
+    final container = ProviderContainer(
+      overrides: [hip3WithdrawalRepositoryProvider.overrideWithValue(repo)],
+    );
+    addTearDown(container.dispose);
+    final commands = container.read(hip3WithdrawalCommandsProvider);
+
+    await commands.preview('51.4');
+    await commands.preview('51.4');
+
+    expect(repo.previewAmounts, ['51.4']);
+  });
+
+  test(
     'lost submit response uses the same intent and idempotency key',
     () async {
       final repo = _Repository()..failSubmissionOnce = true;
@@ -135,11 +170,12 @@ class _Repository implements Hip3WithdrawalRepository {
   ApiFailure? createFailure;
   String status = 'awaiting_signature';
   Hip3Withdrawal? submittedIntent;
+  DateTime? riskValidUntil;
 
   @override
   Future<Hip3WithdrawalPreview> preview({required String amount}) async {
     previewAmounts.add(amount);
-    return const Hip3WithdrawalPreview(
+    return Hip3WithdrawalPreview(
       amount: '51.4',
       fee: '1.18',
       minimumReceived: '50.22',
@@ -152,6 +188,7 @@ class _Repository implements Hip3WithdrawalRepository {
       feeDetails: [],
       crossLiquidationImpacts: [],
       riskStatus: 'available',
+      riskValidUntil: riskValidUntil,
     );
   }
 

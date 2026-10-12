@@ -49,6 +49,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
   Timer? _planRefresh;
   Timer? _withdrawalRefresh;
   Timer? _withdrawalPreviewDebounce;
+  Timer? _withdrawalPreviewRefresh;
   bool _withdrawalPreviewing = false;
   Hip3WithdrawalPreview? _withdrawalPreview;
   int _withdrawalPreviewSequence = 0;
@@ -102,6 +103,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _quoteRefresh?.cancel();
     _quoteSequence++;
     _withdrawalPreviewDebounce?.cancel();
+    _withdrawalPreviewRefresh?.cancel();
     _withdrawalPreviewSequence++;
     setState(() {
       _sendFromSpot = !_sendFromSpot;
@@ -122,6 +124,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
 
   void _scheduleHip3Preview() {
     _withdrawalPreviewDebounce?.cancel();
+    _withdrawalPreviewRefresh?.cancel();
     final sequence = ++_withdrawalPreviewSequence;
     final amount = _withdrawalAmount.text.trim();
     setState(() {
@@ -146,11 +149,15 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     );
   }
 
-  Future<void> _requestHip3Preview(int sequence, String amount) async {
+  Future<void> _requestHip3Preview(
+    int sequence,
+    String amount, {
+    bool forceRefresh = false,
+  }) async {
     try {
       final preview = await ref
           .read(hip3WithdrawalCommandsProvider)
-          .preview(amount);
+          .preview(amount, forceRefresh: forceRefresh);
       if (!mounted || sequence != _withdrawalPreviewSequence) return;
       setState(() {
         _withdrawalPreview = preview;
@@ -160,6 +167,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
           AppLocalizations.of(context),
         );
       });
+      _scheduleHip3PreviewRefresh(preview, sequence, amount);
     } catch (error) {
       if (!mounted || sequence != _withdrawalPreviewSequence) return;
       setState(() {
@@ -171,7 +179,36 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
               )
             : AppLocalizations.of(context).transferFailed;
       });
+      final current = _withdrawalPreview;
+      if (current != null && current.amount == amount) {
+        _scheduleHip3PreviewRefresh(current, sequence, amount);
+      }
     }
+  }
+
+  void _scheduleHip3PreviewRefresh(
+    Hip3WithdrawalPreview preview,
+    int sequence,
+    String amount,
+  ) {
+    _withdrawalPreviewRefresh?.cancel();
+    final validUntil = preview.riskValidUntil;
+    if (validUntil == null) return;
+    final remaining = validUntil.difference(DateTime.now().toUtc());
+    final delay = remaining > Duration.zero
+        ? remaining
+        : const Duration(seconds: 1);
+    _withdrawalPreviewRefresh = Timer(delay, () {
+      if (!mounted ||
+          sequence != _withdrawalPreviewSequence ||
+          _sendFromSpot ||
+          _submitting ||
+          _withdrawalAmount.text.trim() != amount) {
+        return;
+      }
+      setState(() => _withdrawalPreviewing = true);
+      unawaited(_requestHip3Preview(sequence, amount, forceRefresh: true));
+    });
   }
 
   Future<void> _requestQuote() async {
@@ -352,6 +389,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
       final preview = _withdrawalPreview;
       if (preview == null || preview.amount != amount || !preview.canProceed) {
         throw StateError(AppLocalizations.of(context).transferWaitForQuote);
+      }
+      if (preview.isRiskExpired) {
+        final sequence = _withdrawalPreviewSequence;
+        final refreshed = await commands.preview(amount, forceRefresh: true);
+        if (!mounted || sequence != _withdrawalPreviewSequence) return;
+        setState(() {
+          _withdrawalPreview = refreshed;
+          _error = hip3WithdrawalBlockerMessage(refreshed, l10n);
+        });
+        _scheduleHip3PreviewRefresh(refreshed, sequence, amount);
+        return;
       }
       final prepared = await commands.prepare(amount, rail: preview.rail);
       if (!mounted) return;
@@ -628,6 +676,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
     _planRefresh?.cancel();
     _withdrawalRefresh?.cancel();
     _withdrawalPreviewDebounce?.cancel();
+    _withdrawalPreviewRefresh?.cancel();
     _withdrawalAmount.dispose();
     for (final controller in _amounts.values) {
       controller.dispose();
@@ -657,6 +706,7 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
             : _withdrawalAmount.text.trim().isNotEmpty &&
                   !_withdrawalPreviewing &&
                   _withdrawalPreview?.canProceed == true &&
+                  _withdrawalPreview?.isRiskExpired == false &&
                   _withdrawalPreview?.amount == _withdrawalAmount.text.trim());
 
     return PopScope(

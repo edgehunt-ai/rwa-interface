@@ -1099,6 +1099,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
       return;
     }
     var completedFundingFlow = false;
+    var accountStateChanged = false;
     try {
       _setProcessingStep('validating order intent');
       final intent = _intentFromFields();
@@ -1146,6 +1147,7 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
         }
         setState(() => _fundingRechecking = true);
         completedFundingFlow = true;
+        accountStateChanged = true;
         await _refreshAvailableMargin();
         if (!isCurrent()) return;
       }
@@ -1174,22 +1176,27 @@ class _Hip3OrderPanelState extends ConsumerState<Hip3OrderPanel> {
           );
           if (!mounted || !isCurrent()) return;
           if (converted != true) return;
+          accountStateChanged = true;
         }
         await _refreshAvailableMargin();
         if (!isCurrent()) return;
       }
       final cachedQuote = _quotePreview;
+      final previewProvider = orderPreviewProvider(intent);
+      if (accountStateChanged) ref.invalidate(previewProvider);
       _setProcessingStep(
-        cachedQuote?.intent.fingerprint == intent.fingerprint &&
+        !accountStateChanged &&
+                cachedQuote?.intent.fingerprint == intent.fingerprint &&
                 cachedQuote?.isExpired == false
             ? 'using current preview'
             : 'requesting order preview',
       );
       final preview =
-          cachedQuote?.intent.fingerprint == intent.fingerprint &&
+          !accountStateChanged &&
+              cachedQuote?.intent.fingerprint == intent.fingerprint &&
               cachedQuote?.isExpired == false
           ? cachedQuote
-          : await ref.read(orderPreviewProvider(intent).future);
+          : await ref.read(previewProvider.future);
       if (!isCurrent()) return;
       if (preview == null) {
         setState(() => _error = 'The server returned no HIP-3 preview.');

@@ -2444,7 +2444,7 @@ void main() {
   });
 
   testWidgets(
-    'completed funding submits the original preview ID and keeps submitting locked',
+    'completed funding refreshes the preview before explicit confirmation and submission',
     (tester) async {
       final orders = _PreviewCapturingOrdersRepository();
       final funding = _CompletedFundingRepository();
@@ -2497,7 +2497,16 @@ void main() {
         find.text('Unable to authorize or start this transfer. Try again.'),
         findsNothing,
       );
-      expect(orders.receivedPreviewIds, [preview.previewId]);
+      expect(orders.receivedPreviewIds, isEmpty);
+      expect(find.text('Buy NVDAB · Market'), findsOneWidget);
+
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Confirm Buy'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
+      await tester.pump();
+
+      expect(orders.receivedPreviewIds, ['preview-1']);
       expect(find.text('Submitting Order…'), findsOneWidget);
       expect(
         find.image(
@@ -2544,6 +2553,8 @@ void main() {
       );
 
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Confirm Buy'));
       await tester.pumpAndSettle();

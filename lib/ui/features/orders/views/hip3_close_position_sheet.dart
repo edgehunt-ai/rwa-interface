@@ -32,6 +32,7 @@ class Hip3ClosePositionSheet extends ConsumerStatefulWidget {
 class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
   final _quantity = TextEditingController();
   final _limitPrice = TextEditingController();
+  late Position _position;
   TradingOrderType _type = TradingOrderType.market;
   double _percent = 0;
   bool _busy = false;
@@ -40,10 +41,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
 
   bool get _hasValidInputs {
     try {
-      requireWithinPosition(
-        _quantity.text.trim(),
-        widget.position.quantity.value,
-      );
+      requireWithinPosition(_quantity.text.trim(), _position.quantity.value);
       if (_type == TradingOrderType.limit) {
         requirePositiveDecimal(_limitPrice.text.trim());
       }
@@ -57,12 +55,12 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
 
   PositionClosePreviewRequest? get _previewRequest {
     if (!_hasValidInputs ||
-        widget.position.productId == null ||
-        widget.position.side == PositionSide.none) {
+        _position.productId == null ||
+        _position.side == PositionSide.none) {
       return null;
     }
     return (
-      position: widget.position,
+      position: _position,
       quantity: _quantity.text.trim(),
       type: _type,
       limitPrice: _type == TradingOrderType.limit
@@ -74,9 +72,24 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
   PositionClosePreview? _usablePreview(
     AsyncValue<PositionClosePreview>? state,
   ) {
-    if (state == null || state.isLoading || state.hasError) return null;
+    if (state == null || state.hasError) return null;
     final preview = state.value;
     return preview == null || preview.isExpired ? null : preview;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _position = widget.position;
+  }
+
+  @override
+  void didUpdateWidget(covariant Hip3ClosePositionSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.position, widget.position)) {
+      _position = widget.position;
+      _syncPercentToPosition();
+    }
   }
 
   @override
@@ -86,12 +99,11 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    final request = _previewRequest;
-    final preview = request == null
-        ? null
-        : _usablePreview(ref.read(positionClosePreviewProvider(request)));
-    if (_busy || _pending || request == null || preview == null) {
+  Future<void> _submit(
+    PositionClosePreview preview,
+    PositionClosePreviewRequest request,
+  ) async {
+    if (_busy || _pending || preview.isExpired || _previewRequest != request) {
       return;
     }
     setState(() {
@@ -100,7 +112,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
     });
     try {
       final quantity = _quantity.text.trim();
-      requireWithinPosition(quantity, widget.position.quantity.value);
+      requireWithinPosition(quantity, _position.quantity.value);
       final limitPrice = _type == TradingOrderType.limit
           ? _limitPrice.text.trim()
           : null;
@@ -116,8 +128,8 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
       await ref
           .read(positionCommandProvider)
           .close(
-            widget.position.positionId,
-            expectedPosition: widget.position,
+            _position.positionId,
+            expectedPosition: _position,
             type: _type,
             limitPrice: limitPrice,
             quantity: quantity,
@@ -142,12 +154,42 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
         );
       }
     } on Object catch (error) {
+      final message = _specificErrorMessage(error);
+      if (error is ServerFailure || error is FormatException) {
+        await _refreshPositionAfterFailure();
+      }
       if (mounted) {
-        setState(() => _error = _specificErrorMessage(error));
+        setState(() => _error = message);
       }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _refreshPositionAfterFailure() async {
+    final positionId = _position.positionId;
+    ref.invalidate(positionProvider(positionId));
+    ref.invalidate(positionsProvider);
+    try {
+      final refreshed = await ref.read(positionProvider(positionId).future);
+      if (!mounted || refreshed.positionId != positionId) return;
+      setState(() {
+        _position = refreshed;
+        _syncPercentToPosition();
+      });
+    } on Object {
+      // Preserve the actionable close error when the reconciliation read fails.
+    }
+  }
+
+  void _syncPercentToPosition() {
+    final quantity = double.tryParse(_quantity.text.trim());
+    final available = double.tryParse(
+      absoluteQuantity(_position.quantity.value),
+    );
+    _percent = quantity == null || available == null || available <= 0
+        ? 0
+        : (quantity / available * 100).clamp(0, 100);
   }
 
   String _specificErrorMessage(Object error) {
@@ -190,10 +232,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
       _error = null;
       _percent = value;
       _quantity.text = _trimDecimal(
-        percentageQuantity(
-          widget.position.quantity.value,
-          value.round().toString(),
-        ),
+        percentageQuantity(_position.quantity.value, value.round().toString()),
       );
     });
   }
@@ -201,7 +240,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
   void _setQuantity(String value) {
     final quantity = double.tryParse(value);
     final available = double.tryParse(
-      absoluteQuantity(widget.position.quantity.value),
+      absoluteQuantity(_position.quantity.value),
     );
     setState(() {
       _error = null;
@@ -214,7 +253,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
   @override
   Widget build(BuildContext context) {
     ref.watch(positionCommandProvider);
-    final position = widget.position;
+    final position = _position;
     final locked = _busy || _pending;
     final l10n = AppLocalizations.of(context);
     final previewRequest = _previewRequest;
@@ -222,7 +261,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
         ? null
         : ref.watch(positionClosePreviewProvider(previewRequest));
     final preview = _usablePreview(previewState);
-    final previewLoading = previewState?.isLoading == true;
+    final previewLoading = preview == null && previewState?.isLoading == true;
     final previewError = previewState?.hasError == true
         ? previewState!.error
         : null;
@@ -564,7 +603,7 @@ class _CloseState extends ConsumerState<Hip3ClosePositionSheet> {
                               position.productId == null ||
                               position.side == PositionSide.none
                           ? null
-                          : _submit,
+                          : () => _submit(preview, previewRequest!),
                       child: Text(_busy ? l10n.preparing : l10n.signAndConfirm),
                     ),
                   ),

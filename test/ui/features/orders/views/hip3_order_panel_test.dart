@@ -238,6 +238,9 @@ void main() {
       expect(funding.transfers, 1);
       // The second session is the loop re-checking funding after the transfer.
       expect(funding.sessions, 2);
+      // Funding changes the account snapshot, so the confirmation must not
+      // reuse the quote that was rendered before the transfer.
+      expect(orders.previews, 2);
       // The settings action, completed transfer, and unified-account check
       // each refresh the authoritative context.
       expect(opening.contextCalls, 4);
@@ -2313,15 +2316,17 @@ final class _PositionProbe extends ConsumerWidget {
 
 final class _CapturingHip3Orders implements OrdersRepository {
   OrderIntent? intent;
+  var previews = 0;
 
   @override
   Future<OrderPreview> preview(
     OrderIntent value, {
     required String idempotencyKey,
   }) async {
+    previews++;
     intent = value;
     return OrderPreview(
-      previewId: 'hip3-preview',
+      previewId: 'hip3-preview-$previews',
       intent: value,
       orderValue: DecimalValue('100', asset: 'USDC', unit: 'token'),
       settlementAsset: 'USDT',

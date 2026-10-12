@@ -65,6 +65,8 @@ typedef PositionClosePreviewRequest = ({
   String? limitPrice,
 });
 
+const _closePreviewRefreshInterval = Duration(seconds: 5);
+
 /// Separate provider instances prevent older responses replacing edited inputs.
 final positionClosePreviewProvider = FutureProvider.autoDispose
     .family<PositionClosePreview, PositionClosePreviewRequest>((
@@ -109,7 +111,9 @@ final positionClosePreviewProvider = FutureProvider.autoDispose
         preview.expiresAt.difference(DateTime.now().toUtc()),
         ref.invalidateSelf,
       );
+      final refresh = Timer(_closePreviewRefreshInterval, ref.invalidateSelf);
       ref.onDispose(expiry.cancel);
+      ref.onDispose(refresh.cancel);
       return preview;
     }, retry: (_, _) => null);
 
