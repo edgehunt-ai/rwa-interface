@@ -150,7 +150,6 @@ class MarketSessionBadge extends StatelessWidget {
     return Container(
       constraints: BoxConstraints(minHeight: compact ? 0 : 32),
       padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 10, vertical: 2),
-      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: value == null
             ? colors.subtleSurface
@@ -169,10 +168,20 @@ class MarketSessionBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
           ],
-          Text(
-            segment == null
-                ? label
-                : '$label ${_formatLocalTime(segment.start)}',
+          Text.rich(
+            key: const Key('market-session-label'),
+            TextSpan(
+              text: label,
+              children: segment == null
+                  ? const []
+                  : [
+                      const TextSpan(text: ' '),
+                      TextSpan(
+                        text: _formatLocalTime(segment.start),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+            ),
             style: style,
           ),
         ],

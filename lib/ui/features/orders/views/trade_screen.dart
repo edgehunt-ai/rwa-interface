@@ -755,29 +755,47 @@ class _ProductHeader extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 17,
-                                  height: 22 / 17,
+                                  fontSize: 15,
+                                  height: 22 / 15,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                            if (maximumLeverage != null) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                '${maximumLeverage}x',
+                            if (maximumLeverage != null)
+                              Container(
                                 key: const Key(
                                   'trade-product-maximum-leverage',
                                 ),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  height: 18 / 13,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
                                   color: Theme.of(context)
                                       .extension<AppRwaColors>()!
-                                      .secondaryText,
+                                      .subtleSurface,
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                        .extension<AppRwaColors>()!
+                                        .border,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${maximumLeverage}x',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    height: 16 / 12,
+                                    color: Theme.of(context)
+                                        .extension<AppRwaColors>()!
+                                        .primaryText,
+                                  ),
                                 ),
                               ),
-                            ],
-                            const Icon(Icons.arrow_drop_down, size: 20),
+                            SvgPicture.asset(
+                              'assets/figma/trade/chevron_down_18.svg',
+                              key: const Key('trade-product-chevron'),
+                            ),
                           ],
                         ),
                       ),
@@ -788,18 +806,19 @@ class _ProductHeader extends StatelessWidget {
                   GestureDetector(
                     key: const Key('trade-market-status-navigation'),
                     onTap: onMarketHours,
-                    child: Wrap(
+                    child: Row(
                       key: const Key('trade-product-meta'),
-                      spacing: 4,
-                      runSpacing: 2,
-                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        _TradeProductTypeBadge(
-                          kind: kind,
-                          productId: productId,
+                        Flexible(
+                          child: _TradeProductTypeBadge(
+                            kind: kind,
+                            productId: productId,
+                          ),
                         ),
-                        if (symbol != 'ETH')
+                        if (symbol != 'ETH') ...[
+                          const SizedBox(width: 4),
                           MarketSessionBadge(hours: marketHours, compact: true),
+                        ],
                       ],
                     ),
                   ),
@@ -807,7 +826,13 @@ class _ProductHeader extends StatelessWidget {
               ),
             ),
             IconButton(
+              key: const Key('trade-favorite-toggle'),
               tooltip: isFavorite ? l10n.removeFavorite : l10n.addFavorite,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+              style: IconButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               icon: favoriteLoading
                   ? const SizedBox(
                       key: Key('trade-favorite-loading'),
@@ -815,12 +840,17 @@ class _ProductHeader extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : Icon(
-                      isFavorite ? Icons.star : Icons.star_border,
+                  : isFavorite
+                  ? Icon(
+                      Icons.star,
                       size: 24,
                       color: Theme.of(context)
                           .extension<AppRwaColors>()!
                           .primaryText,
+                    )
+                  : SvgPicture.asset(
+                      'assets/figma/trade/favorite_outline.svg',
+                      key: const Key('trade-favorite-outline'),
                     ),
               onPressed: favoriteLoading ? null : onFavoriteToggle,
             ),
@@ -920,7 +950,7 @@ class _TradeProductTypeBadge extends StatelessWidget {
             width: 14,
             height: 14,
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: 4),
           Flexible(
             child: Text(
               isPerp && venue != null
@@ -931,9 +961,9 @@ class _TradeProductTypeBadge extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 11,
-                height: 16 / 11,
-                color: colors.primaryText,
+                fontSize: 12,
+                height: 16 / 12,
+                color: colors.secondaryText,
               ),
             ),
           ),

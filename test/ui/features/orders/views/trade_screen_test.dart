@@ -39,6 +39,7 @@ import 'package:nobell/ui/features/orders/providers/order_providers.dart';
 import 'package:nobell/ui/features/orders/providers/hip3_account_abstraction_providers.dart';
 import 'package:nobell/ui/features/markets/providers/market_providers.dart';
 import 'package:nobell/ui/features/markets/views/market_product_widgets.dart';
+import 'package:nobell/ui/core/markets/market_session_presentation.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/orders/views/trade_screen.dart';
 import 'package:nobell/ui/features/funding/views/withdrawal_screen.dart';
@@ -150,14 +151,25 @@ void main() {
   testWidgets('Trade HIP-3 header shows maximum leverage and product source', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       _tradeWithMarkets(
         initialKind: MarketProductKind.perp,
         hip3OpeningContext: _hip3OpeningContext(),
-        marketHours: const MarketHours(
+        marketHours: MarketHours(
           timezone: 'America/New_York',
           current: MarketSessionKind.overnight,
           currentLabel: 'Overnight',
+          segments: [
+            MarketSessionSegment(
+              kind: MarketSessionKind.overnight,
+              start: DateTime(2026, 10, 13, 4, 30),
+              end: DateTime(2026, 10, 13, 9, 30),
+            ),
+          ],
         ),
       ),
     );
@@ -174,14 +186,31 @@ void main() {
       of: productType,
       matching: find.byType(SvgPicture),
     );
+    final marketSession = find.byType(MarketSessionBadge);
 
     expect(find.text('NVDA'), findsOneWidget);
     expect(find.text('20x'), findsOneWidget);
     expect(find.text('HIP-3 · XYZ'), findsOneWidget);
-    expect(find.text('Overnight'), findsOneWidget);
+    expect(find.text('Overnight 04:30', findRichText: true), findsOneWidget);
     expect(find.descendant(of: header, matching: productType), findsOneWidget);
     expect(productTypeIcon, findsOneWidget);
     expect(tester.getSize(productTypeIcon), const Size.square(14));
+    expect(
+      tester.getRect(marketSession).center.dy,
+      closeTo(tester.getRect(productType).center.dy, 0.01),
+    );
+    expect(
+      tester.getSize(marketSession).width,
+      lessThan(tester.getSize(metadata).width),
+    );
+    final leveragePill = tester.widget<Container>(maximumLeverage);
+    final leverageDecoration = leveragePill.decoration! as BoxDecoration;
+    expect(
+      leveragePill.padding,
+      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    );
+    expect(leverageDecoration.borderRadius, BorderRadius.circular(8));
+    expect(leverageDecoration.border, isNotNull);
     expect(
       tester.getRect(maximumLeverage).center.dy,
       closeTo(tester.getRect(symbol).center.dy, 1),
@@ -191,6 +220,17 @@ void main() {
       greaterThan(tester.getRect(symbol).top),
     );
     expect(find.byTooltip('Add favorite'), findsOneWidget);
+    final favorite = find.byKey(const Key('trade-favorite-toggle'));
+    expect(tester.getSize(favorite), const Size.square(24));
+    expect(
+      tester.getRect(favorite).right,
+      closeTo(tester.getRect(header).right, 0.01),
+    );
+    expect(find.byKey(const Key('trade-favorite-outline')), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const Key('trade-product-chevron'))),
+      const Size.square(18),
+    );
   });
 
   testWidgets('Trade pull-to-refresh reloads the current position list', (

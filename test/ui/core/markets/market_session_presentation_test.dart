@@ -48,6 +48,11 @@ void main() {
       badgeText(tester),
       'Overnight ${_localTime(DateTime.now().subtract(const Duration(hours: 1)))}',
     );
+    final label = tester.widget<Text>(
+      find.byKey(const Key('market-session-label')),
+    );
+    final time = (label.textSpan! as TextSpan).children!.last as TextSpan;
+    expect(time.style?.fontWeight, FontWeight.w600);
     final decoration =
         tester.widget<Container>(find.byType(Container).first).decoration
             as BoxDecoration;
