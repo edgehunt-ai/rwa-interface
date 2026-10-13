@@ -1414,6 +1414,63 @@ void main() {
     },
   );
 
+  testWidgets('Trade shows a loading button while cancelling bStocks order', (
+    tester,
+  ) async {
+    final cancelGate = Completer<void>();
+    final repository = _OpenOrderRepository(cancelGate: cancelGate);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ordersRepositoryProvider.overrideWithValue(repository),
+          bstocksOrderExecutionRepositoryProvider.overrideWithValue(
+            BstocksOrderExecutionRepositoryImpl(
+              repository,
+              _UnusedOrderActions(),
+              null,
+            ),
+          ),
+        ],
+        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _scrollToTradeTab(tester, 'Open');
+    await tester.tap(_tradeTab('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancel'));
+    await tester.pump();
+
+    final loading = find.byKey(
+      const ValueKey('trade-open-order-cancel-loading-open-order'),
+    );
+    expect(loading, findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Cancel'), findsNothing);
+    expect(
+      tester
+          .widget<OutlinedButton>(
+            find.ancestor(of: loading, matching: find.byType(OutlinedButton)),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    await tester.tap(
+      find.ancestor(of: loading, matching: find.byType(OutlinedButton)),
+    );
+    await tester.pump();
+    expect(repository.cancelCallCount, 1);
+
+    cancelGate.complete();
+    await tester.pumpAndSettle();
+
+    expect(loading, findsNothing);
+    expect(find.widgetWithText(OutlinedButton, 'Cancel'), findsOneWidget);
+    expect(repository.cancelCallCount, 1);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Trade open tab handles a failed bStocks cancellation', (
     tester,
   ) async {
@@ -2035,10 +2092,13 @@ final class _OpenOrderRepository implements OrdersRepository {
     this.type = TradingOrderType.limit,
     this.settlementAsset = 'TUSDT',
     this.cancelFailure,
+    this.cancelGate,
   });
   final TradingOrderType type;
   final String? settlementAsset;
   final ApiFailure? cancelFailure;
+  final Completer<void>? cancelGate;
+  int cancelCallCount = 0;
   String? cancelledOrderId;
   String? lastStatusGroup;
   String? lastSymbol;
@@ -2078,6 +2138,8 @@ final class _OpenOrderRepository implements OrdersRepository {
     required String idempotencyKey,
   }) async {
     cancelledOrderId = orderId;
+    cancelCallCount++;
+    await cancelGate?.future;
     if (cancelFailure case final failure?) throw failure;
     return ResourceResult(
       resource: TradingOrder(

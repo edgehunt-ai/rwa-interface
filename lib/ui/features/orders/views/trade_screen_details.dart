@@ -270,7 +270,7 @@ class _OpenOrdersTab extends ConsumerWidget {
   }
 }
 
-class _OpenOrderCard extends StatelessWidget {
+class _OpenOrderCard extends StatefulWidget {
   const _OpenOrderCard({
     super.key,
     required this.order,
@@ -278,11 +278,30 @@ class _OpenOrderCard extends StatelessWidget {
   });
 
   final TradingOrder order;
-  final VoidCallback? onCancel;
+  final Future<void> Function()? onCancel;
+
+  @override
+  State<_OpenOrderCard> createState() => _OpenOrderCardState();
+}
+
+class _OpenOrderCardState extends State<_OpenOrderCard> {
+  bool _cancelling = false;
+
+  Future<void> _cancel() async {
+    final onCancel = widget.onCancel;
+    if (_cancelling || onCancel == null) return;
+    setState(() => _cancelling = true);
+    try {
+      await onCancel();
+    } finally {
+      if (mounted) setState(() => _cancelling = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final order = widget.order;
     final quantity = order.quantity;
     final filled = order.filledQuantity;
     final total = double.tryParse(quantity?.value ?? '');
@@ -380,9 +399,12 @@ class _OpenOrderCard extends StatelessWidget {
                 ),
               ),
               SizedBox(
+                width: 72,
                 height: 28,
                 child: OutlinedButton(
-                  onPressed: onCancel,
+                  onPressed: widget.onCancel == null || _cancelling
+                      ? null
+                      : _cancel,
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 28),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -396,7 +418,19 @@ class _OpenOrderCard extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  child: Text(l10n.cancel),
+                  child: _cancelling
+                      ? SizedBox(
+                          key: ValueKey(
+                            'trade-open-order-cancel-loading-${order.orderId}',
+                          ),
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            semanticsLabel: l10n.cancelling,
+                          ),
+                        )
+                      : Text(l10n.cancel),
                 ),
               ),
             ],
