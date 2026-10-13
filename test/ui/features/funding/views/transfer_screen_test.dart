@@ -18,6 +18,7 @@ import 'package:nobell/domain/models/funding_transfer.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
+import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
 import 'package:nobell/ui/features/funding/views/transfer_screen.dart';
@@ -361,7 +362,7 @@ void main() {
                   FundingSourcePosition(
                     positionId: 'usdt',
                     token: 'USDT',
-                    network: 'BNB Smart Chain',
+                    network: 'BSC',
                     availableAmount: DecimalValue('50', asset: 'USDT'),
                     eligible: true,
                   ),
@@ -391,6 +392,17 @@ void main() {
 
     await tester.tap(find.byKey(const Key('transfer-token-selector')));
     await tester.pumpAndSettle();
+    final bscNetworkIcon = find.descendant(
+      of: find.byKey(const Key('transfer-token-usdt')),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is SvgPicture &&
+            widget.bytesLoader is SvgAssetLoader &&
+            (widget.bytesLoader as SvgAssetLoader).assetName ==
+                NetworkIconAssets.bsc,
+      ),
+    );
+    expect(bscNetworkIcon, findsOneWidget);
     await tester.tap(find.byKey(const Key('transfer-token-usdt')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '7');

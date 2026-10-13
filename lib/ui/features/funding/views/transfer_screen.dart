@@ -21,6 +21,7 @@ import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
+import 'package:nobell/ui/core/network/network_icon_assets.dart';
 import 'package:nobell/ui/core/theme/app_theme.dart';
 import 'package:nobell/ui/features/funding/providers/funding_transfer_providers.dart';
 import 'package:nobell/ui/features/funding/providers/hip3_withdrawal_providers.dart';
@@ -1616,15 +1617,7 @@ class _PositionIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokenPath = _SendAmountCard._assetPath(position.token);
-    final networkPath = switch (position.network.toLowerCase()) {
-      final value when value.contains('arbitrum') =>
-        'assets/figma/funding/arbitrum.svg',
-      final value when value.contains('bnb') =>
-        'assets/figma/funding/bnb_chain.svg',
-      final value when value.contains('polygon') =>
-        'assets/figma/funding/polygon.svg',
-      _ => 'assets/figma/funding/eth.svg',
-    };
+    final networkPath = networkIconAssetPath(position.network);
     return SizedBox.square(
       dimension: 40,
       child: Stack(
@@ -1635,24 +1628,25 @@ class _PositionIcon extends StatelessWidget {
                 ? SvgPicture.asset(tokenPath)
                 : Image.asset(tokenPath),
           ),
-          Positioned(
-            right: -1,
-            bottom: -1,
-            child: Container(
-              width: 16,
-              height: 16,
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Theme.of(context).extension<AppRwaColors>()!.surface,
-                border: Border.all(
-                  color: Theme.of(context).extension<AppRwaColors>()!.border,
-                  width: 0.8,
+          if (networkPath != null)
+            Positioned(
+              right: -1,
+              bottom: -1,
+              child: Container(
+                width: 16,
+                height: 16,
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).extension<AppRwaColors>()!.surface,
+                  border: Border.all(
+                    color: Theme.of(context).extension<AppRwaColors>()!.border,
+                    width: 0.8,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                borderRadius: BorderRadius.circular(4),
+                child: SvgPicture.asset(networkPath),
               ),
-              child: SvgPicture.asset(networkPath),
             ),
-          ),
         ],
       ),
     );
