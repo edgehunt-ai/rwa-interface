@@ -4,13 +4,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
-import { compare, generate, html, percentile, scenarioIds, summarize } from './performance-report.mjs';
+import { compare, generate, html, markdown, percentile, scenarioIds, summarize } from './performance-report.mjs';
 
 function fixture() {
   return {
     schema_version: 1, suite_version: 2, platform: 'android', mode: 'profile',
     samples: 10, warmups: 2, fixture: 'controlled-repositories-no-network-no-wallet',
-    environment: { device_model: 'Pixel 6', flutter_version: '3.47.6', runner: 'test' },
+    environment: { device_model: 'Pixel 6', flutter_version: '3.47.6', runner: 'test', physical_device: true },
     machine: {
       host: { os: 'linux 6.1', arch: 'x64', cpu_model: 'Test CPU', logical_cores: 8, memory_bytes: 16 * 1024 ** 3 },
       device: { manufacturer: 'Google', model: 'Pixel 6', hardware: 'oriole', cpu_abi: 'arm64-v8a',
@@ -42,6 +42,25 @@ test('nearest-rank percentiles and slow-frame union honor the refresh rate', () 
   assert.equal(summarize(raw).scenarios[0].slow_frames_percent, 100);
 });
 
+test('emulator reports keep raster timings diagnostic-only', () => {
+  const raw = fixture();
+  raw.environment.physical_device = false;
+  raw.scenarios[0].frames[0].raster_ms = 30;
+  const report = summarize(raw);
+  assert.equal(report.scenarios[0].slow_frames_percent, 50);
+  assert.equal(report.scenarios[0].ui_slow_frame_count, 1);
+  assert.equal(report.scenarios[0].raster_slow_frame_count, 2);
+  assert.equal(report.highlights.frames.raster_actionable, false);
+  assert.equal(report.highlights.frames.slow_basis, 'ui');
+
+  const next = structuredClone(report);
+  next.scenarios[0].raster_ms.p95 += 100;
+  const comparison = compare(next, report);
+  assert.ok(!comparison.rows.some((row) => row.metric === 'raster_ms'));
+  assert.match(markdown(next, comparison), /软件 GPU 光栅耗时仅保留用于诊断/);
+  assert.match(html(next, comparison, raw, [report, next]), /UI 慢帧/);
+});
+
 test('summary highlights user workflows and frame health', () => {
   const report = summarize(fixture());
   assert.equal(report.highlights.page_load.id, 'home_load');
@@ -60,7 +79,8 @@ test('incomplete, invalid, debug, and web results fail instead of producing a gr
     (r) => { r.scenarios[0].duration_ms.pop(); }, (r) => { r.scenarios[0].frames = []; },
     (r) => { r.scenarios[0].duration_ms[0] = NaN; },
     (r) => { r.scenarios[0].frames[0].build_ms = -1; },
-    (r) => { delete r.environment; }, (r) => { delete r.machine; },
+    (r) => { delete r.environment; }, (r) => { delete r.environment.physical_device; },
+    (r) => { delete r.machine; },
     (r) => { r.machine.host.logical_cores = 0; }, (r) => { r.refresh_rate_hz = 0; },
   ]) {
     const raw = fixture(); mutate(raw);
@@ -76,14 +96,17 @@ test('baseline requires matching device, mode, SDK, viewport, refresh rate and s
     (c) => { c.environment.flutter_version = 'new SDK'; },
     (c) => { c.environment.runner = 'physical runner'; },
     (c) => { c.logical_size.width = 400; }, (c) => { c.refresh_rate_hz = 120; },
-    (c) => { c.suite_version = 1; }, (c) => { c.samples = 20; },
+    (c) => { c.report_version = 1; }, (c) => { c.suite_version = 1; },
+    (c) => { c.samples = 20; },
     (c) => { c.diagnostic_tracing = true; },
   ]) {
     const old = structuredClone(report); mutate(old.compatibility);
     assert.equal(compare(report, old).comparable, false);
   }
   const reordered = structuredClone(report);
-  reordered.compatibility.environment = { runner: 'test', flutter_version: '3.47.6', device_model: 'Pixel 6' };
+  reordered.compatibility.environment = {
+    runner: 'test', physical_device: true, flutter_version: '3.47.6', device_model: 'Pixel 6',
+  };
   assert.equal(compare(report, reordered).comparable, true);
   const otherHost = structuredClone(report);
   otherHost.machine.host.cpu_model = 'Another host CPU';
@@ -159,7 +182,11 @@ test('report generation writes all artifacts, keeps compatible history, and appl
   const raw = fixture();
   const input = join(dir, 'input.json');
   const baselineDir = join(dir, 'baseline');
+  const actionsSummary = join(dir, 'github-summary.md');
+  const originalActionsSummary = process.env.GITHUB_STEP_SUMMARY;
   try {
+    await writeFile(actionsSummary, 'existing summary\n');
+    process.env.GITHUB_STEP_SUMMARY = actionsSummary;
     await writeFile(input, JSON.stringify(raw));
     await generate({ input, output: baselineDir, baselineDir: join(dir, 'missing') });
     raw.commit = 'def456';
@@ -175,7 +202,10 @@ test('report generation writes all artifacts, keeps compatible history, and appl
     await generate({ input, output, baselineDir, gate: true });
     assert.equal(process.exitCode, 1);
     process.exitCode = 0;
+    assert.equal(await readFile(actionsSummary, 'utf8'), 'existing summary\n');
   } finally {
+    if (originalActionsSummary === undefined) delete process.env.GITHUB_STEP_SUMMARY;
+    else process.env.GITHUB_STEP_SUMMARY = originalActionsSummary;
     await rm(dir, { recursive: true, force: true });
   }
 });

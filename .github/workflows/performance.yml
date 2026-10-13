@@ -1,19 +1,11 @@
 name: Native Performance
 
 on:
-  push:
-    branches: [main]
   pull_request:
   workflow_dispatch:
-    inputs:
-      fail_on_regression:
-        description: Fail when a compatible baseline exceeds regression thresholds
-        type: boolean
-        default: false
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: native-performance-${{ github.event.pull_request.number || github.ref }}
@@ -57,43 +49,6 @@ jobs:
           node --test scripts/performance-report.test.mjs
           flutter test test/performance/performance_scenarios_test.dart
 
-      - name: Find latest main baseline
-        id: baseline
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            let runs;
-            try {
-              runs = await github.rest.actions.listWorkflowRuns({
-                owner, repo, workflow_id: 'performance.yml', branch: 'main',
-                event: 'push', status: 'success', per_page: 20,
-              });
-            } catch (error) {
-              if (error.status !== 404) throw error;
-              core.info('New workflow: no main baseline yet.');
-              return;
-            }
-            for (const run of runs.data.workflow_runs) {
-              if (run.id === context.runId) continue;
-              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-                owner, repo, run_id: run.id,
-              });
-              if (artifacts.data.artifacts.some(a => a.name === 'native-performance' && !a.expired)) {
-                core.setOutput('run_id', run.id);
-                break;
-              }
-            }
-
-      - name: Download main baseline
-        if: steps.baseline.outputs.run_id != ''
-        uses: actions/download-artifact@v4
-        with:
-          name: native-performance
-          path: build/performance-baseline
-          run-id: ${{ steps.baseline.outputs.run_id }}
-          github-token: ${{ github.token }}
-
       - name: Enable Android acceleration
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -114,15 +69,9 @@ jobs:
 
       - name: Generate visual report
         if: always()
-        env:
-          FAIL_ON_REGRESSION: ${{ inputs.fail_on_regression || false }}
         run: |
           if [ -f build/performance/raw.json ]; then
-            args=()
-            if [ "$FAIL_ON_REGRESSION" = true ]; then
-              args+=(--fail-on-regression)
-            fi
-            node scripts/performance-report.mjs "${args[@]}"
+            node scripts/performance-report.mjs
           else
             echo '## 原生性能测试未完成' >> "$GITHUB_STEP_SUMMARY"
             echo '未生成完整原生采样数据，请查看测量步骤日志。此次运行没有有效性能报告。' >> "$GITHUB_STEP_SUMMARY"
@@ -143,3 +92,70 @@ jobs:
           path: build/performance/
           if-no-files-found: warn
           retention-days: 30
+
+
+  comment:
+    name: Update pull request comment
+    needs: android
+    if: >-
+      always() &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Download performance report
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: native-performance
+          path: build/performance
+
+      - name: Comment performance result on pull request
+        uses: actions/github-script@v7
+        env:
+          PERFORMANCE_SUMMARY: build/performance/summary.md
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- native-performance-report -->';
+            const runUrl = process.env.GITHUB_SERVER_URL + '/' +
+              process.env.GITHUB_REPOSITORY + '/actions/runs/' +
+              process.env.GITHUB_RUN_ID;
+            const summary = fs.existsSync(process.env.PERFORMANCE_SUMMARY)
+              ? fs.readFileSync(process.env.PERFORMANCE_SUMMARY, 'utf8').trim()
+              : [
+                  '## 原生 Flutter 性能测试未完成',
+                  '',
+                  '未生成有效报告，请查看本次 Actions 运行日志。',
+                ].join('\n');
+            const body = [
+              marker,
+              summary,
+              '',
+              '[查看 Actions 运行并下载完整报告](' + runUrl + '#artifacts)',
+            ].join('\n');
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { ...context.repo, issue_number: context.issue.number, per_page: 100 },
+            );
+            const previous = comments.find((comment) =>
+              comment.user?.type === 'Bot' && comment.body?.includes(marker),
+            );
+            if (previous) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: previous.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

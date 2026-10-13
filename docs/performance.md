@@ -1,16 +1,22 @@
 # 原生 Flutter CI 性能报告
 
 性能测试仅运行 Android / iOS 的 **profile** 模式，不构建或运行 Web。
-默认 CI 使用固定 Android 35 / x86_64 / Pixel 6 模拟器，在 PR 和 main push 时执行。
+默认 CI 使用固定 Android 35 / x86_64 / Pixel 6 模拟器，仅在 PR 创建或更新时执行；
+也可以从 Actions 手动触发。直接 push 到 `main` 不运行性能测试。
 模拟器用于观察代码变更带来的趋势；真机性能结论应在固定真机上复测。
 
 ## 查看结果
+
+同仓库 PR 完成测试后会创建一条性能评论；后续 push 更新同一条评论，不重复刷屏。
+评论包含自动总结、全部关键操作、机器参数和 Actions artifact 链接。出于权限安全考虑，
+fork PR 不授予评论写权限，结果仍可在对应 Actions 运行的 Summary 和 artifact 中查看。
+手动运行没有对应 PR，因此只生成 Actions Summary 和 artifact。
 
 打开 GitHub Actions 的 **Native Performance** 运行：
 
 1. Summary 顶部自动总结最慢的页面加载、面板可交互、报价和命令操作，并展示整体慢帧比例及最差 UI/光栅 P95。
 2. 下载 `native-performance` artifact 并解压，打开 `report.html`。
-3. 选择场景和指标查看 P95 基线对比、样本分布、历史趋势。报告离线可用，无需部署服务。
+3. 选择场景和指标查看 P95、样本分布及帧数据。报告离线可用，无需部署服务。
 4. `report-preview.png` 是完整页面长截图，包含全部操作及下方图表；交互切换仍需打开 HTML。
 
 附件还包含 `raw.json`（逐次操作耗时、逐帧数据和设备信息）、`report.json`（汇总与对比）、
@@ -98,18 +104,20 @@ npm run perf:report -- --input build/performance-diagnostic/raw.json --output bu
 
 - 操作耗时：从触发动作到对应可用状态的 wall-clock 毫秒，统计 P50/P95/max。
 - UI / 光栅帧：Flutter 引擎 `FrameTiming` 的 build/raster 耗时，按操作窗口的 buildStart 时间归属。
-- 慢帧：UI 或光栅耗时超过 `1000 / refreshRate` 毫秒；同一帧只计一次。
+- 慢帧：真机按 UI 或光栅耗时超过 `1000 / refreshRate` 毫秒计算，同一帧只计一次。
+  模拟器使用软件 GPU，慢帧只按 UI 耗时计算；光栅数据仍保留用于诊断，但不参与退化提示或门禁。
 - `total_ms` 保留帧总跨度，供原始数据分析，不作为 UI/光栅慢帧的判定依据。
 
-CI 自动下载最近成功的 main push 报告作基线，沿 artifact 保留最近 30 次兼容报告。
-首次运行或设备、Flutter SDK、runner、视口、刷新率、采样配置、fixture/场景版本不一致时，
-显示“未比较”，不把不同环境的数值当成退化。过期或不存在的 artifact 不提供基线。
-本地默认 runner 按主机 OS/架构区分；多台同型号设备应自行设置不同 `PERF_RUNNER_LABEL`。
+性能 CI 不自动运行或维护 `main` 基线，因此报告默认显示“未比较”，重点展示本次绝对指标。
+需要对比时，可在固定设备上通过 `--baseline-dir` 指定已解压的历史 artifact。本地默认 runner
+按主机 OS/架构区分；多台同型号设备应自行设置不同 `PERF_RUNNER_LABEL`。设备、Flutter SDK、
+runner、视口、刷新率、采样配置、fixture 或场景版本不一致时不会比较，避免产生错误结论。
 
-退化提示条件：操作 P95 增加超过 `max(20%, 20ms)`；UI/光栅 P95 增加超过
-`max(20%, 3ms)`；慢帧比例增加超过 5 个百分点。
-默认只提示；workflow_dispatch 可选 `fail_on_regression`，本地可用
-`npm run perf:report -- --fail-on-regression`。门禁失败时仍保存报告供查看。
+退化提示条件：操作 P95 增加超过 `max(20%, 20ms)`；UI P95 增加超过
+`max(20%, 3ms)`；慢帧比例增加超过 5 个百分点。真机还检查相同阈值的光栅 P95，
+模拟器光栅 P95 不参与退化提示或门禁。
+默认只提示；本地可用 `npm run perf:report -- --fail-on-regression` 开启门禁。
+门禁失败时仍保存报告供查看。
 共享 CI 主机有噪声，严格门禁更适合固定真机/专用 runner。
 
 ## 增加场景

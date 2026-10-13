@@ -167,8 +167,9 @@ Native performance CI runs Android in profile mode and measures page loading,
 scrolling, product details, quotes, order previews, submissions, and
 cancellations. It uses fixed repository data and never sends a real order. The
 artifact includes an interactive HTML report, a complete PNG preview, machine
-specifications, native frame timings, baseline comparisons, and an automatic
-summary. See [Native performance testing](docs/performance.md).
+specifications, native frame timings, optional baseline comparisons, and an
+automatic summary. The result is also updated in a single PR comment. See
+[Native performance testing](docs/performance.md).
 
 ## Documentation
 

@@ -25,6 +25,7 @@ function distribution(values, label) {
 
 function compatibility(raw) {
   return {
+    report_version: 2,
     schema_version: raw.schema_version,
     suite_version: raw.suite_version,
     environment: raw.environment,
@@ -52,7 +53,7 @@ function worstScenario(scenarios, predicate, metric = 'duration_ms') {
     !worst || scenario[metric].p95 > worst[metric].p95 ? scenario : worst, null);
 }
 
-function performanceHighlights(scenarios, frameBudget) {
+function performanceHighlights(scenarios, frameBudget, rasterActionable) {
   const pageLoad = worstScenario(scenarios, (s) => ['home_load', 'markets_load', 'details_load'].includes(s.id));
   const interactive = worstScenario(scenarios, (s) => s.id.endsWith('_open_ready'));
   const quote = worstScenario(scenarios, (s) => s.id.endsWith('_quote'));
@@ -61,6 +62,8 @@ function performanceHighlights(scenarios, frameBudget) {
   const raster = worstScenario(scenarios, () => true, 'raster_ms');
   const frameCount = scenarios.reduce((sum, s) => sum + s.frame_count, 0);
   const slowFrameCount = scenarios.reduce((sum, s) => sum + s.slow_frame_count, 0);
+  const uiSlowFrameCount = scenarios.reduce((sum, s) => sum + s.ui_slow_frame_count, 0);
+  const rasterSlowFrameCount = scenarios.reduce((sum, s) => sum + s.raster_slow_frame_count, 0);
   const result = (scenario) => ({ id: scenario.id, label: scenario.label, p95_ms: scenario.duration_ms.p95 });
   return {
     page_load: result(pageLoad),
@@ -72,6 +75,10 @@ function performanceHighlights(scenarios, frameBudget) {
       count: frameCount,
       slow_count: slowFrameCount,
       slow_percent: slowFrameCount / frameCount * 100,
+      slow_basis: rasterActionable ? 'ui_or_raster' : 'ui',
+      raster_actionable: rasterActionable,
+      ui_slow_count: uiSlowFrameCount,
+      raster_slow_count: rasterSlowFrameCount,
       worst_build: { id: build.id, label: build.label, p95_ms: build.build_ms.p95 },
       worst_raster: { id: raster.id, label: raster.label, p95_ms: raster.raster_ms.p95 },
     },
@@ -83,6 +90,7 @@ export function summarize(raw) {
     throw new Error('Expected suite version 2 native profile performance data');
   }
   if (!raw.environment?.device_model || !raw.environment?.flutter_version || !raw.environment?.runner ||
+      typeof raw.environment.physical_device !== 'boolean' ||
       !raw.commit || !raw.generated_at || !Number.isInteger(raw.samples) || raw.samples < 5 ||
       !Number.isInteger(raw.warmups) || raw.warmups < 1 ||
       !raw.machine?.host?.cpu_model || !Number.isInteger(raw.machine.host.logical_cores) ||
@@ -98,6 +106,7 @@ export function summarize(raw) {
     throw new Error('Missing or duplicate performance scenarios');
   }
   const budget = 1000 / raw.refresh_rate_hz;
+  const rasterActionable = raw.environment.physical_device !== false;
   const scenarios = raw.scenarios.map((s) => {
     const duration = distribution(s.duration_ms, s.id);
     if (duration.count !== raw.samples || !Array.isArray(s.frames) || !s.frames.length) {
@@ -106,14 +115,18 @@ export function summarize(raw) {
     const build = distribution(s.frames.map((f) => f.build_ms), `${s.id} build`);
     const raster = distribution(s.frames.map((f) => f.raster_ms), `${s.id} raster`);
     const total = distribution(s.frames.map((f) => f.total_ms), `${s.id} total`);
-    const slow = s.frames.filter((f) => f.build_ms > budget || f.raster_ms > budget).length;
+    const uiSlow = s.frames.filter((f) => f.build_ms > budget).length;
+    const rasterSlow = s.frames.filter((f) => f.raster_ms > budget).length;
+    const slow = s.frames.filter((f) =>
+      f.build_ms > budget || (rasterActionable && f.raster_ms > budget)).length;
     return { id: s.id, label: s.label, duration_ms: duration, build_ms: build, raster_ms: raster,
       total_ms: total, frame_count: s.frames.length, slow_frame_count: slow,
+      ui_slow_frame_count: uiSlow, raster_slow_frame_count: rasterSlow,
       slow_frames_percent: slow / s.frames.length * 100 };
   });
   return { schema_version: 1, commit: raw.commit, generated_at: raw.generated_at,
     compatibility: compatibility(raw), machine: raw.machine, frame_budget_ms: budget,
-    highlights: performanceHighlights(scenarios, budget), scenarios };
+    highlights: performanceHighlights(scenarios, budget, rasterActionable), scenarios };
 }
 
 export function compare(current, baseline) {
@@ -125,9 +138,9 @@ export function compare(current, baseline) {
   for (const scenario of current.scenarios) {
     const old = baseline.scenarios.find((s) => s.id === scenario.id);
     if (!old) return { comparable: false, reason: '基线场景不完整', rows: [] };
-    for (const [metric, label, floor] of [
-      ['duration_ms', '操作 P95', 20], ['build_ms', 'UI 帧 P95', 3], ['raster_ms', '光栅帧 P95', 3],
-    ]) {
+    const metrics = [['duration_ms', '操作 P95', 20], ['build_ms', 'UI 帧 P95', 3]];
+    if (current.highlights.frames.raster_actionable) metrics.push(['raster_ms', '光栅帧 P95', 3]);
+    for (const [metric, label, floor] of metrics) {
       const value = scenario[metric].p95;
       const before = old[metric].p95;
       const delta = value - before;
@@ -153,12 +166,14 @@ export function markdown(report, comparison) {
   const env = report.compatibility.environment;
   const machine = report.machine;
   const highlights = report.highlights;
+  const rasterActionable = highlights.frames.raster_actionable;
+  const slowLabel = rasterActionable ? '慢帧' : 'UI 慢帧';
   const warnings = comparison.rows.filter((r) => r.regression);
   const lines = ['## 原生 Flutter 性能报告', '',
     `平台：${markdownText(report.compatibility.platform)} · ${markdownText(env.device_model)} · profile · Flutter ${markdownText(env.flutter_version)}`,
     `每场景 ${report.compatibility.samples} 次采样，排除 ${report.compatibility.warmups} 次预热；刷新率 ${fmt(report.compatibility.refresh_rate_hz)} Hz。`,
-    '', '固定仓库数据，不含网络、钱包签名或链上确认；页面加载不代表冷启动。慢帧指 UI 或光栅耗时超过设备帧预算。', '',
-    ...(env.physical_device === false ? ['当前为模拟器数据，仅用于同配置趋势观察；真机性能需在固定真机上复测。', ''] : []),
+    '', `固定仓库数据，不含网络、钱包签名或链上确认；页面加载不代表冷启动。${rasterActionable ? '慢帧指 UI 或光栅耗时超过设备帧预算。' : '模拟器慢帧只按 UI 耗时是否超过设备帧预算计算。'}`, '',
+    ...(env.physical_device === false ? ['当前为模拟器数据；软件 GPU 光栅耗时仅保留用于诊断，不参与慢帧、退化提示或门禁。真机性能需在固定真机上复测。', ''] : []),
     ...(report.compatibility.diagnostic_tracing ? ['已启用诊断 tracing，数值包含追踪开销，不用于常规性能基线。', ''] : []),
     comparison.comparable ? `基线：\`${markdownText(comparison.baseline_commit)}\`；${warnings.length} 项退化提示。` : `未比较：${comparison.reason}。`, '',
     '### 总结', '',
@@ -167,7 +182,7 @@ export function markdown(report, comparison) {
     `| 面板可交互 | ${fmt(highlights.interaction_ready.p95_ms)} ms | ${markdownText(highlights.interaction_ready.label)} |`,
     `| 报价更新 | ${fmt(highlights.quote.p95_ms)} ms | ${markdownText(highlights.quote.label)} |`,
     `| 确认 / 提交 / 撤单 | ${fmt(highlights.command.p95_ms)} ms | ${markdownText(highlights.command.label)} |`,
-    `| 帧健康 | ${fmt(highlights.frames.slow_percent)}% 慢帧 (${highlights.frames.slow_count}/${highlights.frames.count}) | UI ${fmt(highlights.frames.worst_build.p95_ms)} ms / 光栅 ${fmt(highlights.frames.worst_raster.p95_ms)} ms |`,
+    `| 帧健康 | ${fmt(highlights.frames.slow_percent)}% ${slowLabel} (${highlights.frames.slow_count}/${highlights.frames.count}) | UI ${fmt(highlights.frames.worst_build.p95_ms)} ms / 光栅 ${fmt(highlights.frames.worst_raster.p95_ms)} ms${rasterActionable ? '' : '（诊断）'} |`,
     '', '### 测试机器', '',
     '| 项目 | 参数 |', '|---|---|',
     `| Runner | ${markdownText(env.runner)} |`,
@@ -179,7 +194,7 @@ export function markdown(report, comparison) {
     `| 屏幕 | ${machine.device.display_width_px && machine.device.display_height_px ? `${machine.device.display_width_px}×${machine.device.display_height_px}px` : '未知'} · ${fmt(report.compatibility.logical_size.width)}×${fmt(report.compatibility.logical_size.height)}dp · ${machine.device.density_dpi ?? '未知'} dpi · ${fmt(report.compatibility.refresh_rate_hz)} Hz |`,
     `| Flutter | ${markdownText(env.flutter_version)} · ${markdownText(shortRevision(env.flutter_revision))} |`, '',
     '### 全部操作', '',
-    '| 场景 | 操作 P50 / P95 (ms) | UI P95 (ms) | 光栅 P95 (ms) | 慢帧 | 操作 P95 对比 |',
+    `| 场景 | 操作 P50 / P95 (ms) | UI P95 (ms) | 光栅 P95 (ms) | ${slowLabel} | 操作 P95 对比 |`,
     '|---|---:|---:|---:|---:|---:|'];
   for (const s of report.scenarios) {
     const delta = comparison.rows.find((r) => r.id === s.id && r.metric === 'duration_ms');
@@ -190,7 +205,7 @@ export function markdown(report, comparison) {
     lines.push('', '### 退化提示', '', ...warnings.map((r) => `- ${markdownText(r.label)} / ${r.metric_label}：${fmt(r.before)} → ${fmt(r.value)} ${r.metric === 'slow_frames_percent' ? '%' : 'ms'}`));
   }
   lines.push('', '下载 `native-performance` 附件，打开 `report.html` 查看交互对比、分布及趋势；`raw.json` 保留逐次耗时和逐帧数据。',
-    '', '提示阈值：耗时增加超过 max(20%, 20ms)，UI/光栅 P95 增加超过 max(20%, 3ms)，慢帧比例增加超过 5 个百分点。默认仅提示，固定设备可启用严格门禁。');
+    '', `提示阈值：耗时增加超过 max(20%, 20ms)，UI${rasterActionable ? '/光栅' : ''} P95 增加超过 max(20%, 3ms)，${slowLabel}比例增加超过 5 个百分点。默认仅提示，固定设备可启用严格门禁。`);
   return `${lines.join('\n')}\n`;
 }
 
@@ -200,6 +215,8 @@ export function html(report, comparison, raw, history) {
   const env = report.compatibility.environment;
   const machine = report.machine;
   const highlights = report.highlights;
+  const rasterActionable = highlights.frames.raster_actionable;
+  const slowLabel = rasterActionable ? '慢帧' : 'UI 慢帧';
   const comparisonText = comparison.comparable
     ? `与 main ${comparison.baseline_commit.slice(0, 12)} 比较；${comparison.rows.filter((r) => r.regression).length} 项退化提示。`
     : `未比较：${comparison.reason}。`;
@@ -228,9 +245,9 @@ export function html(report, comparison, raw, history) {
 <style>
 body{font:15px system-ui;margin:0;background:#f3f5f8;color:#182538}main{max-width:1180px;margin:auto;padding:28px}h1{font-size:26px}h2{font-size:18px}section{background:white;padding:22px;border-radius:8px;margin:18px 0}select{padding:8px;max-width:100%;margin:4px 12px 4px 0}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e7ebf0}tr.warn{background:#fff0ee}.scroll{overflow:auto}svg{width:100%;height:auto}p{line-height:1.65;color:#536176}.legend{color:#2563eb}.baseline{color:#8895a7}#tip{min-height:24px}svg circle:hover{r:6;cursor:pointer}.overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #e7ebf0;border-radius:6px}.metric{display:grid;gap:5px;padding:16px;border-right:1px solid #e7ebf0}.metric:last-child{border:0}.metric span,.metric small,dt{color:#69778a}.metric strong{font-size:20px}.metric small{font-size:12px}.frame-health{margin:16px 0 0}.specs{display:grid;grid-template-columns:1fr 1fr;margin:0}.specs div{display:grid;grid-template-columns:120px 1fr;padding:9px 0;border-bottom:1px solid #e7ebf0}.specs div:nth-child(odd){margin-right:24px}.specs dt,.specs dd{margin:0}.specs dd{overflow-wrap:anywhere}@media(max-width:760px){main{padding:16px}.overview,.specs{grid-template-columns:1fr}.metric{border-right:0;border-bottom:1px solid #e7ebf0}.specs div:nth-child(odd){margin-right:0}}
 </style>
-<main><h1>Nobell · 原生 Flutter 性能报告</h1><p id="meta"></p><p>固定仓库数据；不含真实网络、钱包签名或链上确认。页面加载为进入页面到数据就绪，不代表 App 冷启动。慢帧表示 UI 或光栅耗时超过设备刷新率预算。</p>${report.compatibility.environment.physical_device === false ? '<p>当前为模拟器数据，仅用于同配置趋势观察；真机性能需在固定真机上复测。</p>' : ''}
+<main><h1>Nobell · 原生 Flutter 性能报告</h1><p id="meta"></p><p>固定仓库数据；不含真实网络、钱包签名或链上确认。页面加载为进入页面到数据就绪，不代表 App 冷启动。${rasterActionable ? '慢帧表示 UI 或光栅耗时超过设备刷新率预算。' : '模拟器慢帧只按 UI 耗时是否超过设备刷新率预算计算。'}</p>${report.compatibility.environment.physical_device === false ? '<p>当前为模拟器数据；软件 GPU 光栅耗时仅保留用于诊断，不参与慢帧、退化提示或门禁。真机性能需在固定真机上复测。</p>' : ''}
 ${report.compatibility.diagnostic_tracing ? '<p><strong>诊断 tracing 已启用：</strong>本报告包含追踪开销，不用于常规性能基线。</p>' : ''}
-<section><h2>总结</h2><p>${esc(comparisonText)}</p><div class="overview">${overview}</div><p class="frame-health">帧健康：${fmt(highlights.frames.slow_percent)}% 慢帧（${highlights.frames.slow_count}/${highlights.frames.count}）；最差 UI P95 ${fmt(highlights.frames.worst_build.p95_ms)} ms，最差光栅 P95 ${fmt(highlights.frames.worst_raster.p95_ms)} ms，帧预算 ${fmt(highlights.frames.budget_ms)} ms。</p></section>
+<section><h2>总结</h2><p>${esc(comparisonText)}</p><div class="overview">${overview}</div><p class="frame-health">帧健康：${fmt(highlights.frames.slow_percent)}% ${slowLabel}（${highlights.frames.slow_count}/${highlights.frames.count}）；最差 UI P95 ${fmt(highlights.frames.worst_build.p95_ms)} ms，最差光栅 P95 ${fmt(highlights.frames.worst_raster.p95_ms)} ms${rasterActionable ? '' : '（诊断）'}，帧预算 ${fmt(highlights.frames.budget_ms)} ms。</p></section>
 <section><h2>测试机器</h2><dl class="specs">${machineRows}</dl></section>
 <section><h2>全部关键操作</h2><p id="comparison"></p><div class="scroll"><table id="summary"></table></div></section>
 <section><h2>场景分析</h2><label>场景 <select id="scenario"></select></label><label>指标 <select id="metric"><option value="duration_ms">操作耗时</option><option value="build_ms">UI 帧耗时</option><option value="raster_ms">光栅帧耗时</option></select></label>
@@ -242,7 +259,7 @@ const {report,comparison,raw,history}=JSON.parse(document.getElementById('data')
 const $=id=>document.getElementById(id);const fmt=v=>Number(v).toFixed(2);const escape=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 $('meta').textContent=report.compatibility.platform+' · '+report.compatibility.environment.device_model+' · '+report.compatibility.environment.os_version+' · profile · Flutter '+report.compatibility.environment.flutter_version+' · '+report.compatibility.samples+' 次采样 / '+report.compatibility.warmups+' 次预热 · '+fmt(report.compatibility.refresh_rate_hz)+' Hz';
 $('comparison').textContent=comparison.comparable?'与 main '+comparison.baseline_commit.slice(0,12)+' 比较；'+comparison.rows.filter(r=>r.regression).length+' 项退化提示。':'未比较：'+comparison.reason;
-$('summary').innerHTML='<tr><th>场景</th><th>操作 P50 / P95 ms</th><th>UI P95 ms</th><th>光栅 P95 ms</th><th>慢帧比例</th><th>帧数</th></tr>'+report.scenarios.map(s=>'<tr class="'+(comparison.rows.some(r=>r.id===s.id&&r.regression)?'warn':'')+'"><td>'+escape(s.label)+'</td><td>'+fmt(s.duration_ms.p50)+' / '+fmt(s.duration_ms.p95)+'</td><td>'+fmt(s.build_ms.p95)+'</td><td>'+fmt(s.raster_ms.p95)+'</td><td>'+fmt(s.slow_frames_percent)+'%</td><td>'+s.frame_count+'</td></tr>').join('');
+$('summary').innerHTML='<tr><th>场景</th><th>操作 P50 / P95 ms</th><th>UI P95 ms</th><th>光栅 P95 ms</th><th>${slowLabel}比例</th><th>帧数</th></tr>'+report.scenarios.map(s=>'<tr class="'+(comparison.rows.some(r=>r.id===s.id&&r.regression)?'warn':'')+'"><td>'+escape(s.label)+'</td><td>'+fmt(s.duration_ms.p50)+' / '+fmt(s.duration_ms.p95)+'</td><td>'+fmt(s.build_ms.p95)+'</td><td>'+fmt(s.raster_ms.p95)+'</td><td>'+fmt(s.slow_frames_percent)+'%</td><td>'+s.frame_count+'</td></tr>').join('');
 report.scenarios.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.label;$('scenario').append(o)});
 function svg(body,h=200){return '<svg viewBox="0 0 1000 '+h+'" role="img">'+body+'</svg>'}
 function update(){const id=$('scenario').value,metric=$('metric').value,s=report.scenarios.find(s=>s.id===id),r=raw.scenarios.find(s=>s.id===id);const base=comparison.rows.find(r=>r.id===id&&r.metric===metric);const max=Math.max(s[metric].p95,base?.before??0,1);$('bars').innerHTML=svg([[s[metric].p95,'本次','#2563eb'],...(base?[[base.before,'main','#8895a7']]:[])].map(([v,l,c],i)=>'<text x="0" y="'+(32+i*62)+'">'+l+'</text><rect x="80" y="'+(12+i*62)+'" width="'+(v/max*800)+'" height="30" fill="'+c+'"/><text x="'+(90+v/max*800)+'" y="'+(32+i*62)+'">'+fmt(v)+'</text>').join(''),145);
@@ -275,11 +292,10 @@ export async function generate({ input = 'build/performance/raw.json', output = 
     writeFile(`${output}/report.html`, html(report, comparison, raw, history)),
     ...(resolve(input) !== resolve(`${output}/raw.json`) ? [writeFile(`${output}/raw.json`, `${JSON.stringify(raw, null, 2)}\n`)] : []),
   ]);
-  if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   const regressions = comparison.rows.filter((r) => r.regression);
   console.log(`Performance report: ${output}/report.html (${regressions.length} regression warnings)`);
   if (gate && regressions.length) process.exitCode = 1;
-  return { report, comparison, history };
+  return { report, comparison, history, summary };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
@@ -292,5 +308,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
       options[{ '--input': 'input', '--output': 'output', '--baseline-dir': 'baselineDir' }[arg]] = args.shift();
     } else throw new Error(`Unknown or missing argument: ${arg}`);
   }
-  await generate(options);
+  const result = await generate(options);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    await appendFile(process.env.GITHUB_STEP_SUMMARY, result.summary);
+  }
 }

@@ -157,7 +157,8 @@ GitHub Actions 会在 push 和 pull request 上运行 Flutter 质量门禁。移
 
 原生性能 CI 使用 Android profile 模式测量页面加载、滚动、产品详情、报价、订单预览、
 提交和撤单。测试使用固定 repository 数据，不会发送真实订单。Artifact 包含交互式
-HTML、完整 PNG 长截图、机器参数、原生帧耗时、基线对比和自动总结。详见
+HTML、完整 PNG 长截图、机器参数、原生帧耗时、可选基线对比和自动总结，并会更新到
+同一条 PR 评论中。详见
 [原生性能测试](../performance.md)。
 
 ## 相关文档
