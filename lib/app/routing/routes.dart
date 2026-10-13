@@ -25,9 +25,10 @@ abstract final class AppRoutes {
   static String withdrawalLocation({
     required String token,
     required String chain,
+    String source = 'spot',
   }) => Uri(
     path: withdrawalPath,
-    queryParameters: {'token': token, 'chain': chain},
+    queryParameters: {'token': token, 'chain': chain, 'source': source},
   ).toString();
   static const tradeName = 'trade';
   static const tradePath = '/trade';
