@@ -56,6 +56,8 @@ part 'trade_position_tp_sl_sheet.dart';
 
 enum TradeChartStyle { line, candle, reference }
 
+const _referenceChartLineColor = Color(0xFF8A8A98);
+
 enum _OrderPanelTarget { openOrder, position }
 
 final class _OrderPanelResult {
@@ -1112,87 +1114,101 @@ class _Chart extends StatelessWidget {
                             referencePoints,
                             points[selectedIndex].at,
                           );
-                    return GestureDetector(
-                      key: const Key('trade-chart-plot'),
-                      behavior: HitTestBehavior.opaque,
-                      onHorizontalDragStart: (details) => _selectCandle(
-                        details.localPosition.dx,
+                    return MouseRegion(
+                      onHover: (event) => _selectCandle(
+                        event.localPosition.dx,
                         constraints.maxWidth,
                         points,
                       ),
-                      onHorizontalDragUpdate: (details) => _selectCandle(
-                        details.localPosition.dx,
-                        constraints.maxWidth,
-                        points,
-                      ),
-                      onHorizontalDragEnd: (_) => onSelectionChanged(null),
-                      onHorizontalDragCancel: () => onSelectionChanged(null),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: Semantics(
-                              label: latestClose == null
-                                  ? l10n.priceChartUnavailable
-                                  : l10n.priceChartLatestClose(
-                                      TokenAmountFormatter.formatUsd(
-                                        latestClose,
+                      onExit: (_) => onSelectionChanged(null),
+                      child: GestureDetector(
+                        key: const Key('trade-chart-plot'),
+                        behavior: HitTestBehavior.opaque,
+                        onHorizontalDragStart: (details) => _selectCandle(
+                          details.localPosition.dx,
+                          constraints.maxWidth,
+                          points,
+                        ),
+                        onHorizontalDragUpdate: (details) => _selectCandle(
+                          details.localPosition.dx,
+                          constraints.maxWidth,
+                          points,
+                        ),
+                        onHorizontalDragEnd: (_) => onSelectionChanged(null),
+                        onHorizontalDragCancel: () => onSelectionChanged(null),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: Semantics(
+                                label: latestClose == null
+                                    ? l10n.priceChartUnavailable
+                                    : l10n.priceChartLatestClose(
+                                        TokenAmountFormatter.formatUsd(
+                                          latestClose,
+                                        ),
                                       ),
+                                child: switch (style) {
+                                  TradeChartStyle.line => CustomPaint(
+                                    painter: _LineChartPainter(
+                                      semantic.success,
+                                      points,
                                     ),
-                              child: switch (style) {
-                                TradeChartStyle.line => CustomPaint(
-                                  painter: _LineChartPainter(
-                                    semantic.success,
-                                    points,
                                   ),
-                                ),
-                                TradeChartStyle.reference => CustomPaint(
-                                  painter: _ReferenceChartPainter(
-                                    productColor: semantic.success,
-                                    referenceColor: colors.secondaryText,
-                                    points: points,
-                                    referencePoints: referencePoints,
-                                    fallbackReferencePrice:
-                                        chart?.referencePrice,
+                                  TradeChartStyle.reference => CustomPaint(
+                                    key: const Key(
+                                      'trade-chart-reference-painter',
+                                    ),
+                                    painter: _ReferenceChartPainter(
+                                      productColor: semantic.success,
+                                      referenceColor: _referenceChartLineColor,
+                                      points: points,
+                                      referencePoints: referencePoints,
+                                    ),
                                   ),
-                                ),
-                                TradeChartStyle.candle => CustomPaint(
-                                  painter: _CandleChartPainter(
-                                    semantic.success,
-                                    points,
+                                  TradeChartStyle.candle => CustomPaint(
+                                    painter: _CandleChartPainter(
+                                      semantic.success,
+                                      points,
+                                    ),
                                   ),
-                                ),
-                              },
-                            ),
-                          ),
-                          if (selectedIndex != null) ...[
-                            Positioned(
-                              left: _chartX(
-                                selectedIndex,
-                                points.length,
-                                constraints.maxWidth,
-                              ),
-                              top: 0,
-                              bottom: 0,
-                              child: Container(width: 1, color: colors.border),
-                            ),
-                            Positioned(
-                              left: _tooltipLeft(
-                                selectedIndex,
-                                points.length,
-                                constraints.maxWidth,
-                              ),
-                              top: 8,
-                              child: _ChartValueTooltip(
-                                price: points[selectedIndex].close,
-                                changePercent: selectedChange,
-                                color: selectedColor,
-                                referencePrice:
-                                    selectedReference?.close ??
-                                    chart?.referencePrice,
+                                },
                               ),
                             ),
+                            if (selectedIndex != null) ...[
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: CustomPaint(
+                                    key: const Key('trade-chart-crosshair'),
+                                    painter: _ChartCrosshairPainter(
+                                      x: _chartX(
+                                        selectedIndex,
+                                        points.length,
+                                        constraints.maxWidth,
+                                      ),
+                                      color: semantic.success,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                left: _tooltipLeft(
+                                  selectedIndex,
+                                  points.length,
+                                  constraints.maxWidth,
+                                ),
+                                top: 8,
+                                child: _ChartValueTooltip(
+                                  price: points[selectedIndex].close,
+                                  changePercent: selectedChange,
+                                  color: selectedColor,
+                                  referencePrice:
+                                      selectedReference?.close ??
+                                      chart?.referencePrice,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     );
                   },
@@ -1647,24 +1663,17 @@ class _ReferenceChartPainter extends CustomPainter {
     required this.referenceColor,
     required this.points,
     required this.referencePoints,
-    this.fallbackReferencePrice,
   });
 
   final Color productColor;
   final Color referenceColor;
   final List<Candle> points;
   final List<Candle> referencePoints;
-  final DecimalValue? fallbackReferencePrice;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (points.isEmpty) return;
-    final scale = _ChartScale.fromCandles([
-      ...points,
-      ...referencePoints,
-      if (fallbackReferencePrice case final price?)
-        Candle(at: points.first.at, close: price),
-    ]);
+    final scale = _ChartScale.fromCandles([...points, ...referencePoints]);
     final productPath = _linePath(points, size, scale);
     final fill = Path.from(productPath)
       ..lineTo(size.width, size.height)
@@ -1690,27 +1699,23 @@ class _ReferenceChartPainter extends CustomPainter {
         ..strokeWidth = 2.2
         ..strokeCap = StrokeCap.round,
     );
-    final referencePath = referencePoints.isEmpty
-        ? _fallbackReferencePath(size, scale)
-        : _referencePath(referencePoints, points, size, scale);
-    if (referencePath == null) return;
-    _drawDashedPath(
-      canvas,
-      referencePath,
-      Paint()
-        ..color = referenceColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6,
-    );
-  }
-
-  Path? _fallbackReferencePath(Size size, _ChartScale scale) {
-    final price = fallbackReferencePrice;
-    if (price == null) return null;
-    final y = scale.y(_decimalAsDouble(price), size.height);
-    return Path()
-      ..moveTo(0, y)
-      ..lineTo(size.width, y);
+    if (referencePoints.isNotEmpty) {
+      final referencePath = _referencePath(
+        referencePoints,
+        points,
+        size,
+        scale,
+      );
+      _drawDashedPath(
+        canvas,
+        referencePath,
+        Paint()
+          ..color = referenceColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.6,
+        gapLength: 4,
+      );
+    }
   }
 
   Path _linePath(List<Candle> candles, Size size, _ChartScale scale) {
@@ -1736,12 +1741,18 @@ class _ReferenceChartPainter extends CustomPainter {
     _ChartScale scale,
   ) {
     final path = Path();
+    final gapThreshold = _chartGapThreshold(productPoints);
     for (var index = 0; index < candles.length; index++) {
       final offset = Offset(
         _chartXForTime(candles[index].at, productPoints, size.width),
         scale.y(_decimalAsDouble(candles[index].close), size.height),
       );
-      if (index == 0) {
+      final startsNewSegment =
+          index == 0 ||
+          (gapThreshold != null &&
+              candles[index].at.difference(candles[index - 1].at) >
+                  gapThreshold);
+      if (startsNewSegment) {
         path.moveTo(offset.dx, offset.dy);
       } else {
         path.lineTo(offset.dx, offset.dy);
@@ -1755,15 +1766,65 @@ class _ReferenceChartPainter extends CustomPainter {
       oldDelegate.productColor != productColor ||
       oldDelegate.referenceColor != referenceColor ||
       oldDelegate.points != points ||
-      oldDelegate.referencePoints != referencePoints ||
-      oldDelegate.fallbackReferencePrice != fallbackReferencePrice;
+      oldDelegate.referencePoints != referencePoints;
 }
 
-void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
+Duration? _chartGapThreshold(List<Candle> points) {
+  int? shortestInterval;
+  for (var index = 1; index < points.length; index++) {
+    final interval = points[index].at
+        .difference(points[index - 1].at)
+        .inMilliseconds;
+    if (interval > 0 &&
+        (shortestInterval == null || interval < shortestInterval)) {
+      shortestInterval = interval;
+    }
+  }
+  return shortestInterval == null
+      ? null
+      : Duration(milliseconds: shortestInterval * 2);
+}
+
+class _ChartCrosshairPainter extends CustomPainter {
+  const _ChartCrosshairPainter({required this.x, required this.color});
+
+  final double x;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _drawDashedPath(
+      canvas,
+      Path()
+        ..moveTo(x, 0)
+        ..lineTo(x, size.height),
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _ChartCrosshairPainter oldDelegate) =>
+      oldDelegate.x != x || oldDelegate.color != color;
+}
+
+void _drawDashedPath(
+  Canvas canvas,
+  Path path,
+  Paint paint, {
+  double dashLength = 4,
+  double gapLength = 3,
+}) {
   for (final metric in path.computeMetrics()) {
-    for (var distance = 0.0; distance < metric.length; distance += 7) {
+    for (
+      var distance = 0.0;
+      distance < metric.length;
+      distance += dashLength + gapLength
+    ) {
       canvas.drawPath(
-        metric.extractPath(distance, min(distance + 4, metric.length)),
+        metric.extractPath(distance, min(distance + dashLength, metric.length)),
         paint,
       );
     }

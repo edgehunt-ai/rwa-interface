@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PointerDeviceKind;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -562,6 +563,12 @@ void main() {
     await tester.pump();
     expect(find.text('US Stock \$175'), findsOneWidget);
     expect(find.text('Regular Market'), findsOneWidget);
+    final referencePaint = tester.widget<CustomPaint>(
+      find.byKey(const Key('trade-chart-reference-painter')),
+    );
+    final dynamic referencePainter = referencePaint.painter;
+    expect(referencePainter.referencePoints, hasLength(2));
+    expect(referencePainter.referenceColor, const Color(0xFF8A8A98));
 
     final chart = find.byKey(const Key('trade-chart-plot'));
     final bounds = tester.getRect(chart);
@@ -569,7 +576,23 @@ void main() {
     await gesture.moveTo(Offset(bounds.right - 1, bounds.center.dy));
     await tester.pump();
     expect(find.text('US \$175'), findsOneWidget);
+    final crosshair = tester.widget<CustomPaint>(
+      find.byKey(const Key('trade-chart-crosshair')),
+    );
+    final dynamic crosshairPainter = crosshair.painter;
+    expect(crosshairPainter.color, const Color(0xFF04A08B));
     await gesture.up();
+    await tester.pump();
+
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: bounds.centerLeft);
+    await mouse.moveTo(Offset(bounds.right - 1, bounds.center.dy));
+    await tester.pump();
+    expect(find.byKey(const Key('trade-chart-crosshair')), findsOneWidget);
+    expect(find.text('US \$175'), findsOneWidget);
+    await mouse.removePointer();
+    await tester.pump();
+    expect(find.byKey(const Key('trade-chart-crosshair')), findsNothing);
   });
 
   testWidgets(
