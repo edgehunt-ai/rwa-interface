@@ -1,149 +1,188 @@
-# Nobell
+<p align="center">
+  <img src="assets/branding/app-pink.svg" width="96" alt="Nobell app icon">
+</p>
 
-Nobell 是基于 Flutter 构建的跨平台数字资产交易应用，支持 Android、iOS 和 Web。
+<h1 align="center">Nobell</h1>
 
-## 技术栈
+<p align="center">
+  A cross-platform Flutter application for digital asset trading.
+</p>
 
-- Flutter 3.47.6 / Dart 3.13.5
-- Riverpod、GoRouter、Dio
-- OpenAPI Generator `dart-dio` 客户端
-- Privy 身份认证与 Reown AppKit 钱包连接
+<p align="center">
+  <a href="README.md">English</a> |
+  <a href="docs/zh/README.md">简体中文</a>
+</p>
 
-## 快速开始
+<p align="center">
+  <a href="https://github.com/edgehunt-ai/rwa-interface/actions/workflows/ci.yml"><img src="https://github.com/edgehunt-ai/rwa-interface/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/edgehunt-ai/rwa-interface/actions/workflows/performance.yml"><img src="https://github.com/edgehunt-ai/rwa-interface/actions/workflows/performance.yml/badge.svg" alt="Native performance"></a>
+  <img src="https://img.shields.io/badge/Flutter-3.47.6-02569B?logo=flutter" alt="Flutter 3.47.6">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="GPL-3.0 license"></a>
+</p>
 
-### 环境要求
+## Overview
 
-- Node.js 22
-- Flutter 3.47.6 / Dart 3.13.5
-- Docker daemon（仅在更新或生成 API 客户端时需要）
+Nobell provides market discovery, portfolio management, funding, and order
+workflows from one Flutter codebase. Application-facing requests follow a
+Riverpod-first boundary, while the API layer is generated from a versioned
+OpenAPI contract.
 
-### 安装依赖
+Key capabilities include:
+
+- Market lists, search, favorites, price charts, and product details.
+- Tokenized stock and perpetual trading workflows, including order funding.
+- Portfolio, deposit, withdrawal, transfer, and activity views.
+- Email, Google OAuth, passkey, and external EVM wallet authentication.
+- Native performance CI for page loading and buy/sell order journeys.
+- Sentry observability and Firebase Cloud Messaging integration.
+
+## Platform Support
+
+| Platform | Status | Notes |
+|---|---|---|
+| Android | Supported | Android API 28 or later |
+| iOS | Supported | iOS 17 or later |
+| Web | Supported | Uses the React-based Privy browser bridge |
+| macOS, Windows, Linux | Unsupported | Returns an explicit `unsupportedPlatform` state |
+
+## Getting Started
+
+### Prerequisites
+
+- Flutter 3.47.6 with Dart 3.13.5
+- Node.js 24
+- An Android/iOS toolchain or a browser for the selected target
+- Docker only when updating or regenerating the API client
+
+### Install
 
 ```bash
+git submodule update --init --recursive
 npm ci --ignore-scripts
 flutter pub get
-```
-
-### 配置环境变量
-
-复制配置模板并填写本地开发所需的公开客户端配置：
-
-```bash
 cp .env.example .env
 ```
 
-至少需要配置 API 地址、Privy App/Client ID 和 Reown Project ID。密钥、token 或其他服务端凭据不得写入 `.env`、源码或构建参数。
+Fill in the public client configuration in `.env`. At minimum, local
+development requires the API URL, Privy App/Client IDs, and Reown Project ID.
+Never place secrets, access tokens, or server credentials in `.env`, source
+files, or Dart build arguments.
 
-### 启动应用
+### Run
 
 ```bash
 make run
 ```
 
-也可以指定环境文件和 Flutter 参数：
+To select another environment file or Flutter target:
 
 ```bash
 make run ENV_FILE=.env.staging FLUTTER_ARGS='-d android'
 ```
 
-Web 端需要先生成 Privy 浏览器 bundle：
+For Web, build the Privy browser bundle first:
 
 ```bash
 npm run privy:web:build
 flutter run -d chrome --dart-define-from-file=.env
 ```
 
-## 项目结构
+## Common Commands
+
+| Command | Purpose |
+|---|---|
+| `make run` | Validate configuration, sync the Privy URL scheme, and run Flutter |
+| `npm run quality:check` | Check formatting, run static analysis, and execute Flutter tests |
+| `flutter test` | Run the Flutter unit and widget test suite |
+| `npm run perf:test` | Validate performance journeys and report generation |
+| `npm run perf:run -- --device DEVICE_ID` | Collect a native profile-mode performance run |
+| `npm run perf:report` | Generate the interactive performance report and CI summary |
+| `npm run api:update` | Update the API contract submodule and regenerate the Dart client |
+
+## Architecture
+
+Application requests follow this dependency direction:
 
 ```text
-lib/                         Flutter 应用、domain、data 和 presentation 层
-packages/rwa_api_client/     由 OpenAPI 生成的 Dart 客户端
-contracts/rwa-api-contract/  API 契约 submodule，只读输入
-private-key-export/          私钥导出页
-web/privy-auth/              Web 端 Privy bridge
-assets/                      设计稿和应用资源
-test/                        单元测试和 Widget 测试
-scripts/                     API 客户端和构建辅助脚本
+Widget / screen
+    -> Riverpod provider or notifier
+    -> repository or use case
+    -> data service
+    -> generated dart-dio client
+    -> Dio
 ```
 
-## 架构约束
+- Widgets and ordinary business classes do not create `Dio` or call generated
+  API operations directly.
+- Repositories map transport DTOs into domain models.
+- Presentation and state layers expose domain values and stable failures.
+- Financial values remain lossless and are represented as strings.
+- Bootstrap code, non-Flutter isolates, transport infrastructure, and focused
+  tests may use lower-level calls only when the exception is documented and
+  tested.
 
-应用请求遵循以下依赖方向：
+## Repository Layout
 
 ```text
-Widget/页面 → Riverpod provider/notifier → repository/use case
-           → data service → generated dart-dio client → Dio
+lib/                         Flutter application and domain/data/UI layers
+packages/rwa_api_client/     Generated dart-dio API client
+contracts/rwa-api-contract/  Read-only API contract submodule
+integration_test/            Native end-to-end and performance entry points
+test/                        Unit, widget, and performance journey tests
+scripts/                     API, configuration, and report tooling
+private-key-export/          Isolated private-key export page
+web/privy-auth/              Privy Web bridge
+assets/                      Application and design assets
 ```
 
-- 页面和普通业务类不得直接创建 Dio 或调用 generated API。
-- Repository 负责将 wire DTO 映射为 domain model。
-- Presentation/state 层只暴露 domain value 和稳定的 `ApiFailure`。
-- API 和金融数值处理保持无损；金融数值使用 `String` 表示。
-- 只有启动初始化、非 Flutter isolate、传输基础设施和 focused test 可以在明确记录理由后调用底层 API。
+## API Client
 
-## API 客户端
-
-`git@github.com:edgehunt-ai/rwa-api-contract.git` 是后端和客户端共享的 API 契约。本仓库通过
-`contracts/rwa-api-contract` submodule 固定消费契约版本，不要直接修改该目录或手动编辑生成文件。
-
-初始化或更新客户端：
+[`edgehunt-ai/rwa-api-contract`](https://github.com/edgehunt-ai/rwa-api-contract)
+is the contract source of truth. This repository consumes it through the
+`contracts/rwa-api-contract` submodule. Do not edit the submodule contents or
+generated files under `packages/rwa_api_client` by hand.
 
 ```bash
-# 初始化契约 submodule
+# Initialize the contract submodule.
 npm run api:init
 
-# 更新默认契约分支并生成客户端
+# Update the default contract branch and regenerate the client.
 npm run api:update
 
-# 更新指定契约分支并生成客户端
-npm run api:update:branch -- feat/mainnet-cross-chain-acceptance
+# Update a specific contract branch and regenerate the client.
+npm run api:update:branch -- feat/example
 ```
 
-生成流程会运行格式化、静态分析和测试。OpenAPI Generator 配置和生成后处理由 contract 子仓库统一维护，生成版本记录在
-`packages/rwa_api_client/.openapi-generator/VERSION`。
+Generation also runs formatting, static analysis, and tests. The generated
+OpenAPI version is recorded in
+`packages/rwa_api_client/.openapi-generator/VERSION`.
 
-## 认证与平台支持
+## Quality and CI
 
-- Android 支持 API 28+；iOS 支持 iOS 17+。
-- Android/iOS 使用 `privy_flutter`，Web 使用 React Privy bridge。
-- 当前支持 email、Google OAuth、passkey 和外部 EVM 钱包登录。
-- macOS、Windows 和 Linux 会返回明确的 `unsupportedPlatform` 状态，不初始化 native channel。
-- Privy SDK 独占身份凭据持久化；应用不保存或记录 access token、邮件验证码和原始 SDK 错误。
+GitHub Actions runs the Flutter quality gate for pushes and pull requests.
+Mobile releases are built from successful `main` revisions, while the Flutter
+Web app and private-key export page use their dedicated workflows.
 
-完整的设备联调说明和构建参数请参考 `specs/005-privy-auth-integration/`。
+Native performance CI runs Android in profile mode and measures page loading,
+scrolling, product details, quotes, order previews, submissions, and
+cancellations. It uses fixed repository data and never sends a real order. The
+artifact includes an interactive HTML report, a complete PNG preview, machine
+specifications, native frame timings, baseline comparisons, and an automatic
+summary. See [Native performance testing](docs/performance.md).
 
-## 测试与质量检查
+## Documentation
 
-运行完整质量检查：
+- [Native performance testing](docs/performance.md) (Chinese)
+- [Push notification setup](docs/push-notifications.md)
+- [Flutter documentation](https://docs.flutter.dev/)
 
-```bash
-npm run quality:check
-```
+## Security
 
-该命令包含 Dart 格式检查、静态分析和 Flutter 测试。单独运行测试：
+Privy owns identity credential persistence. The application must not store or
+log access tokens, email verification codes, private keys, or raw SDK errors.
+CI variables, signing material, and server credentials belong in repository or
+deployment secrets, never in committed configuration.
 
-```bash
-flutter test
-```
+## License
 
-## CI 与发布
-
-GitHub Actions 会在 push 和 pull request 上运行质量检查。`main` 分支的版本变更可触发移动端构建和 GitHub Release；Web 和私钥导出页的部署由对应 workflow 负责。
-
-发布构建所需的 GitHub Actions Variables、Secrets 和签名配置不放在 README 中，具体以 workflow 文件和仓库设置为准。
-
-原生性能 CI 在 Android profile 模式测量页面加载和买卖关键操作，提供 Actions Summary、
-交互式 HTML、基线对比和趋势图。仅测 Android/iOS，使用固定仓库数据，不发送真实订单。
-本地运行 `npm run perf:run -- --device DEVICE_ID` 后执行 `npm run perf:report`。
-详见[原生性能报告](docs/performance.md)。
-
-## 相关文档
-
-- [API 客户端和应用调用边界](#api-客户端)
-- [推送通知配置](docs/push-notifications.md)
-- [原生性能报告](docs/performance.md)
-- [Flutter 文档](https://docs.flutter.dev/)
-
-## 许可证
-
-本项目采用 [GNU General Public License v3.0](LICENSE) 授权。
+Nobell is licensed under the [GNU General Public License v3.0](LICENSE).
