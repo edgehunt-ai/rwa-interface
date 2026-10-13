@@ -295,6 +295,7 @@ class _OpenOrderCard extends StatelessWidget {
             filledValue.isFinite
         ? (filledValue / total).clamp(0.0, 1.0)
         : null;
+    final progressPercent = progress == null ? null : (progress * 100).floor();
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final semantic = Theme.of(context).extension<AppSemanticColors>()!;
     final side = order.side == TradingSide.buy ? l10n.buy : l10n.sell;
@@ -454,13 +455,13 @@ class _OpenOrderCard extends StatelessWidget {
                                 semanticsLabel: l10n.filled,
                                 semanticsValue: progress == null
                                     ? null
-                                    : '${(progress * 100).round()}%',
+                                    : '$progressPercent%',
                               ),
                             ),
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            _formatProgressFraction(filled, quantity),
+                            progressPercent == null ? '—' : '$progressPercent%',
                             style: const TextStyle(
                               fontSize: 12,
                               height: 16 / 12,
@@ -479,23 +480,6 @@ class _OpenOrderCard extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatProgressFraction(DecimalValue? filled, DecimalValue? total) {
-  if (filled == null || total == null) return '—';
-  final scale = max(filled.scale, total.scale);
-  var numerator = _scaledDecimalInteger(filled, scale);
-  final denominator = _scaledDecimalInteger(total, scale);
-  if (numerator.isNegative || denominator <= BigInt.zero) return '—';
-  if (numerator > denominator) numerator = denominator;
-  if (numerator == BigInt.zero) return '0/1';
-  final divisor = numerator.gcd(denominator);
-  return '${numerator ~/ divisor}/${denominator ~/ divisor}';
-}
-
-BigInt _scaledDecimalInteger(DecimalValue value, int scale) {
-  final digits = value.value.replaceAll('.', '');
-  return BigInt.parse(digits) * BigInt.from(10).pow(scale - value.scale);
 }
 
 class _TradeMetric extends StatelessWidget {

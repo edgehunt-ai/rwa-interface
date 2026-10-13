@@ -197,6 +197,7 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
             filled.isFinite
         ? (filled / total).clamp(0.0, 1.0)
         : null;
+    final progressPercent = progress == null ? null : (progress * 100).floor();
     final colors = Theme.of(context).extension<AppRwaColors>()!;
     final totalQuantity = order.quantity?.value ?? conditional?.quantity ?? '—';
     final filledQuantity = order.filledQuantity?.value ?? '0';
@@ -338,15 +339,13 @@ class _OrderCardState extends ConsumerState<Hip3OpenOrderCard> {
                                 semanticsLabel: l10n.filled,
                                 semanticsValue: progress == null
                                     ? null
-                                    : '${(progress * 100).round()}%',
+                                    : '$progressPercent%',
                               ),
                             ),
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            progress == null
-                                ? '—'
-                                : '${(progress * 100).round()}%',
+                            progress == null ? '—' : '$progressPercent%',
                             style: const TextStyle(
                               fontSize: 12,
                               height: 16 / 12,

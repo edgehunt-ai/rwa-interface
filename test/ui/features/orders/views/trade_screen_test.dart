@@ -1343,7 +1343,7 @@ void main() {
       expect(find.text('Buy / Limit'), findsOneWidget);
       expect(find.text('40 / 200'), findsOneWidget);
       expect(find.text('123.45'), findsOneWidget);
-      expect(find.text('1/5'), findsOneWidget);
+      expect(find.text('20%'), findsOneWidget);
       expect(find.text('123.45 TUSDT'), findsNothing);
 
       final semantic = AppTheme.light.extension<AppSemanticColors>()!;
