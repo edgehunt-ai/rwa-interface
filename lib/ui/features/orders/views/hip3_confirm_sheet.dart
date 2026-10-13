@@ -134,13 +134,10 @@ class _Hip3ConfirmSheetState extends ConsumerState<Hip3ConfirmSheet> {
         double.tryParse(execution.slippagePercent.value) ??
         double.tryParse(_preview.intent.slippage?.value ?? '') ??
         0;
-    final next = await showModalBottomSheet<double>(
+    final next = await showSlippageSheet(
       context: context,
-      isScrollControlled: true,
-      builder: (_) => SlippageSheet(
-        initialValue: current,
-        inputKey: const Key('hip3-slippage-input'),
-      ),
+      initialValue: current,
+      inputKey: const Key('hip3-slippage-input'),
     );
     if (next == null || !mounted || next == current) return;
     await _refreshQuote(
