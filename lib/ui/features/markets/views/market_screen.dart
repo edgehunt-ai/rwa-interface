@@ -59,118 +59,143 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               productType: kind,
             )).future,
           ),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-            children: [
-              Row(
-                children: [
-                  Text(
-                    l10n.marketsTitle,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const Spacer(),
-                  const _MarketStatusButton(),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Semantics(
-                button: true,
-                label: l10n.searchMarkets,
-                child: TextField(
-                  readOnly: true,
-                  onTap: () => context.pushNamed(AppRoutes.marketSearchName),
-                  decoration: InputDecoration(
-                    fillColor: colors.subtleSurface,
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: SvgPicture.asset(
-                        'assets/figma/home_markets/search.svg',
-                        width: 20,
-                        height: 20,
+          child: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                sliver: SliverList.list(
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          l10n.marketsTitle,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const Spacer(),
+                        const _MarketStatusButton(),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Semantics(
+                      button: true,
+                      label: l10n.searchMarkets,
+                      child: TextField(
+                        readOnly: true,
+                        onTap: () =>
+                            context.pushNamed(AppRoutes.marketSearchName),
+                        decoration: InputDecoration(
+                          fillColor: colors.subtleSurface,
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: SvgPicture.asset(
+                              'assets/figma/home_markets/search.svg',
+                              width: 20,
+                              height: 20,
+                            ),
+                          ),
+                          hintText: l10n.searchTickerOrCompany,
+                          border: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(14)),
+                          ),
+                        ),
                       ),
                     ),
-                    hintText: l10n.searchTickerOrCompany,
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(14)),
+                    const SizedBox(height: 16),
+                    _StockBrowse(
+                      onAll: () => context.pushNamed(AppRoutes.allStocksName),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Text(
+                          l10n.products,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const Spacer(),
+                        MarketProductFilter(
+                          value: kind,
+                          onChanged: (value) => setState(() => kind = value),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    MarketRankingTabs(
+                      active: selectedTab,
+                      showFavorites: authenticated,
+                      onSelected: (value) => ref
+                          .read(marketRankingTabProvider.notifier)
+                          .select(value),
+                    ),
+                  ],
+                ),
+              ),
+              products.when(
+                loading: () => SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 280,
+                      child: DesignStateFeedback(
+                        state: DesignState.loading,
+                        title: l10n.loadingProducts,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _StockBrowse(
-                onAll: () => context.pushNamed(AppRoutes.allStocksName),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Text(
-                    l10n.products,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const Spacer(),
-                  MarketProductFilter(
-                    value: kind,
-                    onChanged: (value) => setState(() => kind = value),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              MarketRankingTabs(
-                active: selectedTab,
-                showFavorites: authenticated,
-                onSelected: (value) =>
-                    ref.read(marketRankingTabProvider.notifier).select(value),
-              ),
-              products.when(
-                loading: () => SizedBox(
-                  height: 280,
-                  child: DesignStateFeedback(
-                    state: DesignState.loading,
-                    title: l10n.loadingProducts,
-                  ),
-                ),
-                error: (_, _) => SizedBox(
-                  height: 340,
-                  child: DesignStateFeedback(
-                    state: DesignState.failure,
-                    title: l10n.marketsUnavailable,
-                    message: l10n.pullToRefreshRetry,
-                    onRetry: () => ref.refresh(
-                      marketProductsProvider((
-                        query: null,
-                        cursor: null,
-                        group: marketProductGroupForTab(selectedTab),
-                        productType: kind,
-                      )).future,
+                error: (_, _) => SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 340,
+                      child: DesignStateFeedback(
+                        state: DesignState.failure,
+                        title: l10n.marketsUnavailable,
+                        message: l10n.pullToRefreshRetry,
+                        onRetry: () => ref.refresh(
+                          marketProductsProvider((
+                            query: null,
+                            cursor: null,
+                            group: marketProductGroupForTab(selectedTab),
+                            productType: kind,
+                          )).future,
+                        ),
+                      ),
                     ),
                   ),
                 ),
                 data: (page) {
                   final items = page.items;
                   if (items.isEmpty) {
-                    if (selectedTab == 'Favorites') {
-                      return SizedBox(
-                        height: 280,
-                        child: FavoritesEmptyState(
-                          onExplore: () => ref
-                              .read(marketRankingTabProvider.notifier)
-                              .select('Popular'),
+                    return SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: 280,
+                          child: selectedTab == 'Favorites'
+                              ? FavoritesEmptyState(
+                                  onExplore: () => ref
+                                      .read(marketRankingTabProvider.notifier)
+                                      .select('Popular'),
+                                )
+                              : DesignStateFeedback(
+                                  state: DesignState.empty,
+                                  title: l10n.noMatchingProducts,
+                                  message: l10n.tryAnotherSearchOrFilter,
+                                ),
                         ),
-                      );
-                    }
-                    return SizedBox(
-                      height: 280,
-                      child: DesignStateFeedback(
-                        state: DesignState.empty,
-                        title: l10n.noMatchingProducts,
-                        message: l10n.tryAnotherSearchOrFilter,
                       ),
                     );
                   }
-                  return Column(
-                    children: [
-                      for (final product in items) ...[
-                        MarketProductRow(
+                  return SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList.builder(
+                      itemCount: items.length * 2 - 1,
+                      itemBuilder: (context, index) {
+                        if (index.isOdd) {
+                          return Divider(height: 1, color: colors.border);
+                        }
+                        final product = items[index ~/ 2];
+                        return MarketProductRow(
                           product: product,
                           onTap: () => context.push(
                             AppRoutes.tradeLocation(
@@ -178,15 +203,14 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                               kind: product.kind.name,
                             ),
                           ),
-                        ),
-                        if (product != items.last)
-                          Divider(height: 1, color: colors.border),
-                      ],
-                    ],
+                        );
+                      },
+                    ),
                   );
                 },
                 skipLoadingOnRefresh: true,
               ),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
             ],
           ),
         ),

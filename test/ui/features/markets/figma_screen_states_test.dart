@@ -160,6 +160,51 @@ void main() {
     },
   );
 
+  testWidgets('market product rows are built lazily and remain scrollable', (
+    tester,
+  ) async {
+    final products = List.generate(
+      100,
+      (index) => MarketProduct(
+        symbol: 'PRODUCT-$index',
+        name: 'Product $index',
+        kind: MarketProductKind.bstock,
+        price: DecimalValue('$index', asset: 'USD', unit: 'price'),
+        settlementAsset: 'USDC',
+        network: 'Arbitrum',
+        tradable: true,
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          marketsRepositoryProvider.overrideWithValue(_MarketsRepository()),
+          marketProductsProvider.overrideWith(
+            (ref, query) async => DomainPage(items: products),
+          ),
+        ],
+        child: _marketApp(const MarketScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MarketProductRow).evaluate().length, lessThan(100));
+    expect(find.text('PRODUCT-99'), findsNothing);
+
+    final marketScroll = find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('PRODUCT-99'),
+      600,
+      scrollable: marketScroll.first,
+    );
+
+    expect(find.text('PRODUCT-99'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('market discovery starts with the server-backed product list', (
     tester,
   ) async {
