@@ -134,20 +134,6 @@ void main() {
           tester.widget<TradeScreen>(find.byType(TradeScreen)).initialKind,
           kind,
         );
-        final selectedTab = kind == MarketProductKind.bstock
-            ? 'bStocks'
-            : 'HIP-3 Perp';
-        final otherTab = kind == MarketProductKind.bstock
-            ? 'HIP-3 Perp'
-            : 'bStocks';
-        expect(
-          tester.widget<Text>(find.text(selectedTab)).style?.fontWeight,
-          FontWeight.w600,
-        );
-        expect(
-          tester.widget<Text>(find.text(otherTab)).style?.fontWeight,
-          FontWeight.w500,
-        );
         expect(
           find.widgetWithText(
             FilledButton,

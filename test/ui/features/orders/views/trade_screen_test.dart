@@ -389,20 +389,24 @@ void main() {
         }),
       ],
     );
-    addTearDown(container.dispose);
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(positionLoads, 1);
+    try {
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(positionLoads, 1);
 
-    await container.read(orderCommandProvider.notifier).submit(_bstockIntent);
-    await tester.pumpAndSettle();
+      await container.read(orderCommandProvider.notifier).submit(_bstockIntent);
+      await tester.pumpAndSettle();
 
-    expect(positionLoads, 2);
+      expect(positionLoads, 2);
+    } finally {
+      await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+    }
   });
 
   testWidgets('Trade switches chart states and exposes market hours', (
@@ -797,19 +801,23 @@ void main() {
         ),
       ],
     );
-    addTearDown(container.dispose);
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
-      ),
-    );
+    try {
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+        ),
+      );
 
-    await container.read(orderCommandProvider.notifier).submit(_bstockIntent);
-    await tester.pump();
+      await container.read(orderCommandProvider.notifier).submit(_bstockIntent);
+      await tester.pump();
 
-    expect(find.text('NVDAB Buy Successful!'), findsOneWidget);
-    expect(find.text('NVDAB Buy Failed!'), findsNothing);
+      expect(find.text('NVDAB Buy Successful!'), findsOneWidget);
+      expect(find.text('NVDAB Buy Failed!'), findsNothing);
+    } finally {
+      await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+    }
   });
 
   testWidgets('bStocks order failure shows only the failure toast', (
@@ -822,19 +830,23 @@ void main() {
         ),
       ],
     );
-    addTearDown(container.dispose);
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
-      ),
-    );
+    try {
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: buildTestApp(const TradeScreen(symbol: 'NVDAB')),
+        ),
+      );
 
-    await container.read(orderCommandProvider.notifier).submit(_bstockIntent);
-    await tester.pump();
+      await container.read(orderCommandProvider.notifier).submit(_bstockIntent);
+      await tester.pump();
 
-    expect(find.text('NVDAB Buy Failed!'), findsOneWidget);
-    expect(find.text('NVDAB Buy Successful!'), findsNothing);
+      expect(find.text('NVDAB Buy Failed!'), findsOneWidget);
+      expect(find.text('NVDAB Buy Successful!'), findsNothing);
+    } finally {
+      await tester.pumpWidget(const SizedBox.shrink());
+      container.dispose();
+    }
   });
 
   testWidgets('Trade routes HIP-3 actions to the perpetual order panel', (

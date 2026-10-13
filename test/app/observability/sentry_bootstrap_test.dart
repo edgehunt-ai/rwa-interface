@@ -155,8 +155,8 @@ void main() {
         tracesSampleRate: '0.10',
         performanceDiagnostics: true,
       );
-    final configured =
-        <({double? sampleRate, SentryLevel logLevel, bool hasHook})>[];
+      final configured =
+          <({double? sampleRate, SentryLevel logLevel, bool hasHook})>[];
 
       Future<void> checkOptions(ObservabilityConfig current) async {
         await Sentry.close();
