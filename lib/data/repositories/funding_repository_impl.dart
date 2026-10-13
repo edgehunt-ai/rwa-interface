@@ -16,6 +16,7 @@ import '../../domain/models/withdrawal.dart';
 import '../../domain/models/deposit_observation.dart';
 import '../../domain/models/funding_session.dart';
 import '../../domain/models/order_intent.dart';
+import '../../domain/models/order_preview.dart';
 import '../../domain/models/self_custodial_withdrawal.dart';
 import '../../domain/models/funding_catalog_summary.dart';
 import '../../domain/repositories/funding_repository.dart';
@@ -233,7 +234,42 @@ final class FundingRepositoryImpl implements FundingRepository {
           for (final allocation in value.allocations)
             allocation.sourcePositionId: allocation.inputAmount,
         },
+        crossLiquidationImpacts: List.unmodifiable(
+          value.riskPreview?.crossLiquidationImpacts.map(_fundingImpact) ??
+              const <Hip3CrossLiquidationImpact>[],
+        ),
       );
+
+  Hip3CrossLiquidationImpact _fundingImpact(
+    api.Hip3CrossLiquidationImpact impact,
+  ) => Hip3CrossLiquidationImpact(
+    productId: impact.productId,
+    side: switch (impact.side) {
+      api.Hip3CrossLiquidationImpactSideEnum.long => TradingSide.long,
+      api.Hip3CrossLiquidationImpactSideEnum.short => TradingSide.short,
+      _ => throw const FormatException(
+        'Unsupported cross liquidation impact side',
+      ),
+    },
+    markPrice: impact.markPrice == null
+        ? null
+        : DecimalValue(impact.markPrice!, asset: 'USDC', unit: 'price'),
+    beforeLiquidationPrice: impact.beforeLiquidationPrice == null
+        ? null
+        : DecimalValue(
+            impact.beforeLiquidationPrice!,
+            asset: 'USDC',
+            unit: 'price',
+          ),
+    afterLiquidationPrice: impact.afterLiquidationPrice == null
+        ? null
+        : DecimalValue(
+            impact.afterLiquidationPrice!,
+            asset: 'USDC',
+            unit: 'price',
+          ),
+    unavailableReason: impact.unavailableReason?.name,
+  );
 
   @override
   Future<FundingCatalogSummary> getFundingCatalog() async {

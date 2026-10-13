@@ -15,6 +15,8 @@ import 'package:nobell/domain/models/funding_catalog.dart';
 import 'package:nobell/domain/models/funding_catalog_summary.dart';
 import 'package:nobell/domain/models/funding_session.dart';
 import 'package:nobell/domain/models/funding_transfer.dart';
+import 'package:nobell/domain/models/order_intent.dart';
+import 'package:nobell/domain/models/order_preview.dart';
 import 'package:nobell/domain/repositories/funding_repository.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
@@ -230,7 +232,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('转出数量'), findsOneWidget);
-    expect(find.text('USDC'), findsOneWidget);
+    expect(find.text('USDC'), findsNWidgets(2));
     expect(find.byKey(const Key('transfer-token-chevron')), findsNothing);
     final tokenSelector = tester.widget<InkWell>(
       find.byKey(const Key('transfer-token-selector')),
@@ -435,9 +437,217 @@ void main() {
 
     expect(
       find.byKey(const Key('transfer-loading-skeleton')),
-      findsNWidgets(3),
+      findsNWidgets(2),
+    );
+    expect(
+      find.byKey(const Key('transfer-quote-eta-skeleton')),
+      findsOneWidget,
     );
     expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('shows a skeleton while the transfer balance is loading', (
+    tester,
+  ) async {
+    final balance = Completer<String?>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3TransferBalanceProvider.overrideWith((ref) => balance.future),
+          transferOptionsProvider.overrideWith(
+            (ref) async => TransferOptions(
+              account: UnifiedFundingAccountSummary(
+                totalUsd: DecimalValue('100', asset: 'USD'),
+                availableToFundUsd: DecimalValue('100', asset: 'USD'),
+                reservedUsd: DecimalValue('0', asset: 'USD'),
+                inTransitUsd: DecimalValue('0', asset: 'USD'),
+                dataStatus: 'complete',
+                calculatedAt: DateTime.utc(2026),
+                positions: [
+                  FundingSourcePosition(
+                    positionId: 'usdc',
+                    token: 'USDC',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('100', asset: 'USDC'),
+                    eligible: true,
+                  ),
+                ],
+              ),
+              catalog: null,
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('(Hyperliquid)'), findsOneWidget);
+    expect(find.text('- (-)'), findsNothing);
+    await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
+    await tester.pump();
+
+    expect(find.byKey(const Key('transfer-balance-skeleton')), findsOneWidget);
+    expect(find.text('Available: -'), findsNothing);
+
+    balance.complete('123.45');
+    await tester.pump();
+
+    expect(find.byKey(const Key('transfer-balance-skeleton')), findsNothing);
+    expect(find.text('Available: 123.45'), findsOneWidget);
+  });
+
+  testWidgets('shows skeletons while withdrawal quote details are loading', (
+    tester,
+  ) async {
+    final withdrawals = _PendingHip3Withdrawals();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          hip3WithdrawalRepositoryProvider.overrideWithValue(withdrawals),
+          hip3TransferBalanceProvider.overrideWith((ref) async => '100'),
+          transferOptionsProvider.overrideWith(
+            (ref) async => TransferOptions(
+              account: UnifiedFundingAccountSummary(
+                totalUsd: DecimalValue('100', asset: 'USD'),
+                availableToFundUsd: DecimalValue('100', asset: 'USD'),
+                reservedUsd: DecimalValue('0', asset: 'USD'),
+                inTransitUsd: DecimalValue('0', asset: 'USD'),
+                dataStatus: 'complete',
+                calculatedAt: DateTime.utc(2026),
+                positions: [
+                  FundingSourcePosition(
+                    positionId: 'usdc',
+                    token: 'USDC',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('100', asset: 'USDC'),
+                    eligible: true,
+                  ),
+                ],
+              ),
+              catalog: null,
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('transfer-swap-accounts')));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('hip3-transfer-amount')), '10');
+    await tester.pump(const Duration(milliseconds: 501));
+
+    expect(
+      find.byKey(const Key('transfer-receive-amount-skeleton')),
+      findsOneWidget,
+    );
+    for (final key in const [
+      Key('transfer-quote-eta-skeleton'),
+      Key('transfer-quote-bridge-fee-skeleton'),
+      Key('transfer-quote-network-fee-skeleton'),
+      Key('transfer-quote-total-fee-skeleton'),
+    ]) {
+      expect(find.byKey(key), findsOneWidget);
+    }
+
+    withdrawals.completePreview();
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('transfer-receive-amount-skeleton')),
+      findsNothing,
+    );
+    expect(find.byKey(const Key('transfer-quote-eta-skeleton')), findsNothing);
+    expect(find.text('~2min'), findsOneWidget);
+    expect(find.text('1.18 USDC'), findsNWidgets(2));
+  });
+
+  testWidgets('only quote values load during a spot transfer quote', (
+    tester,
+  ) async {
+    final funding = _PendingTransferQuoteRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          fundingRepositoryProvider.overrideWithValue(funding),
+          transferOptionsProvider.overrideWith(
+            (ref) async => TransferOptions(
+              account: UnifiedFundingAccountSummary(
+                totalUsd: DecimalValue('100', asset: 'USD'),
+                availableToFundUsd: DecimalValue('100', asset: 'USD'),
+                reservedUsd: DecimalValue('0', asset: 'USD'),
+                inTransitUsd: DecimalValue('0', asset: 'USD'),
+                dataStatus: 'complete',
+                calculatedAt: DateTime.utc(2026),
+                positions: [
+                  FundingSourcePosition(
+                    positionId: 'usdc',
+                    token: 'USDC',
+                    network: 'Arbitrum',
+                    availableAmount: DecimalValue('100', asset: 'USDC'),
+                    eligible: true,
+                  ),
+                ],
+              ),
+              catalog: null,
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TransferScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('(Hyperliquid)'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '10');
+    await tester.pump(const Duration(milliseconds: 501));
+    await tester.pump();
+
+    expect(find.byKey(const Key('transfer-loading-skeleton')), findsNothing);
+    expect(find.text('Estimate time'), findsOneWidget);
+    expect(find.text('Bridge Fee'), findsOneWidget);
+    expect(find.text('Network fee'), findsOneWidget);
+    expect(find.text('Total Fee'), findsOneWidget);
+    for (final key in const [
+      Key('transfer-receive-amount-skeleton'),
+      Key('transfer-quote-eta-skeleton'),
+      Key('transfer-quote-bridge-fee-skeleton'),
+      Key('transfer-quote-network-fee-skeleton'),
+      Key('transfer-quote-total-fee-skeleton'),
+    ]) {
+      expect(find.byKey(key), findsOneWidget);
+    }
+
+    funding.completeQuote();
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('transfer-quote-total-fee-skeleton')),
+      findsNothing,
+    );
+    expect(find.text('0.3 USDC'), findsOneWidget);
+    expect(
+      find.byKey(const Key('hip3-cross-liquidation-impacts')),
+      findsOneWidget,
+    );
+    expect(find.text('1 Cross position will be affected'), findsOneWidget);
   });
 
   testWidgets('refreshed transfer quote animates amounts and fees', (
@@ -718,6 +928,77 @@ final class _RefreshingTransferQuoteRepository implements FundingRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+final class _PendingTransferQuoteRepository implements FundingRepository {
+  final _quote = Completer<FundingSessionSummary>();
+
+  void completeQuote() => _quote.complete(
+    _session(
+      version: 2,
+      minimumReceived: '9.7',
+      bridgeFee: '0.1',
+      networkFee: '0.2',
+      totalFee: '0.3',
+      allocations: const {'usdc': '10'},
+      crossLiquidationImpacts: [
+        Hip3CrossLiquidationImpact(
+          productId: 'xyz:BTC',
+          side: TradingSide.long,
+          markPrice: DecimalValue('1000'),
+          beforeLiquidationPrice: DecimalValue('800'),
+          afterLiquidationPrice: DecimalValue('700'),
+        ),
+      ],
+    ),
+  );
+
+  @override
+  Future<FundingSessionSummary> createTransferFundingSession({
+    required String destination,
+    required String amount,
+    required String idempotencyKey,
+  }) async => _session(version: 1);
+
+  @override
+  Future<FundingSessionSummary> updateFundingSessionSelection({
+    required String fundingSessionId,
+    required int version,
+    required Map<String, String> allocations,
+    required String idempotencyKey,
+  }) => _quote.future;
+
+  FundingSessionSummary _session({
+    required int version,
+    String? minimumReceived,
+    String? bridgeFee,
+    String? networkFee,
+    String? totalFee,
+    Map<String, String> allocations = const {},
+    List<Hip3CrossLiquidationImpact> crossLiquidationImpacts = const [],
+  }) => FundingSessionSummary(
+    sessionId: 'pending-transfer-session',
+    status: 'ready_to_confirm',
+    version: version,
+    canConfirmTransfer: true,
+    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 1)),
+    minimumReceived: minimumReceived,
+    targetToken: 'USDC',
+    targetNetwork: 'Hyperliquid',
+    allocations: allocations,
+    crossLiquidationImpacts: crossLiquidationImpacts,
+    fees: bridgeFee == null || networkFee == null || totalFee == null
+        ? null
+        : FundingSessionFees(
+            asset: 'USDC',
+            bridgeFee: bridgeFee,
+            networkFee: networkFee,
+            totalFee: totalFee,
+          ),
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
   final destination = '0x1111111111111111111111111111111111111111';
   final previewAmounts = <String>[];
@@ -797,4 +1078,41 @@ class _FakeHip3Withdrawals implements Hip3WithdrawalRepository {
       expiresAt: prepared.expiresAt,
     );
   }
+}
+
+class _PendingHip3Withdrawals implements Hip3WithdrawalRepository {
+  final _preview = Completer<Hip3WithdrawalPreview>();
+
+  @override
+  Future<Hip3WithdrawalPreview> preview({required String amount}) =>
+      _preview.future;
+
+  void completePreview() {
+    _preview.complete(
+      Hip3WithdrawalPreview(
+        amount: '10',
+        fee: '1.18',
+        minimumReceived: '8.82',
+        rail: 'float',
+        destinationAddress: '0x1111111111111111111111111111111111111111',
+        chainId: '42161',
+        maximumTransferable: '100',
+        blockers: const [],
+        estimatedArrivalSeconds: 120,
+        feeDetails: const [
+          Hip3WithdrawalFeeDetail(
+            type: 'withdrawal',
+            amount: '1.18',
+            currency: 'USDC',
+            payer: 'user',
+          ),
+        ],
+        crossLiquidationImpacts: const [],
+        riskStatus: 'available',
+      ),
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

@@ -1,3 +1,5 @@
+import 'order_preview.dart';
+
 final class FundingSessionSummary {
   const FundingSessionSummary({
     required this.sessionId,
@@ -15,6 +17,7 @@ final class FundingSessionSummary {
     this.targetToken,
     this.targetNetwork,
     this.allocations = const {},
+    this.crossLiquidationImpacts = const [],
   });
   final String sessionId;
   final String status;
@@ -31,6 +34,7 @@ final class FundingSessionSummary {
   final String? targetToken;
   final String? targetNetwork;
   final Map<String, String> allocations;
+  final List<Hip3CrossLiquidationImpact> crossLiquidationImpacts;
 }
 
 final class FundingSessionFees {

@@ -38,6 +38,13 @@ void main() {
       expect(session.remainingMinimumTopUp, '5');
       expect(session.targetToken, 'USDC-PERPS');
       expect(session.targetNetwork, 'Hyperliquid');
+      expect(session.crossLiquidationImpacts.single.productId, 'xyz:BTC');
+      expect(session.crossLiquidationImpacts.single.side, TradingSide.long);
+      expect(session.crossLiquidationImpacts.single.markPrice?.value, '1000');
+      expect(
+        session.crossLiquidationImpacts.single.afterLiquidationPrice?.value,
+        '700',
+      );
     },
   );
 
@@ -315,6 +322,24 @@ Map<String, Object?> _fundingSessionBody(String id) => {
   },
   'continuation': null,
   'rail': 'perp',
+  'risk_preview': {
+    'status': 'available',
+    'collateral_asset': 'USDC',
+    'shared_margin_delta': '5',
+    'observed_at': '2026-09-28T08:27:18.098Z',
+    'valid_until': '2026-09-28T08:28:18.098Z',
+    'cross_liquidation_impacts': [
+      {
+        'product_id': 'xyz:BTC',
+        'side': 'long',
+        'mark_price': '1000',
+        'before_liquidation_price': '800',
+        'after_liquidation_price': '700',
+        'unavailable_reason': null,
+      },
+    ],
+    'unavailable_reason': null,
+  },
   'target_snapshot': {
     'account': 'hip3',
     'account_ref': '0x09920a496942e7aa8c9adabf97cdf035524248c1',

@@ -18,6 +18,7 @@ import 'package:nobell/domain/models/decimal_value.dart';
 import 'package:nobell/l10n/generated/app_localizations.dart';
 import 'package:nobell/ui/core/feedback/app_toast.dart';
 import 'package:nobell/ui/core/feedback/inline_error_notice.dart';
+import 'package:nobell/ui/core/feedback/loading_skeleton.dart';
 import 'package:nobell/ui/core/formatters/token_amount_formatter.dart';
 import 'package:nobell/ui/core/motion/animated_number_text.dart';
 import 'package:nobell/ui/core/navigation/app_page_header.dart';
@@ -880,15 +881,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         options.when(
                           data: (value) {
                             final target = value.catalog?.transferTarget;
-                            final asset = _quote?.targetToken ?? target?.token;
+                            final asset =
+                                _quote?.targetToken ?? target?.token ?? 'USDC';
                             final network =
-                                _quote?.targetNetwork ?? target?.network;
+                                _quote?.targetNetwork ??
+                                target?.network ??
+                                'Hyperliquid';
                             return _ReceiveAmountCard(
-                              asset: asset ?? '-',
-                              network: network ?? '-',
-                              value: _quoting
-                                  ? '...'
-                                  : _quote?.minimumReceived ?? '',
+                              asset: asset,
+                              network: network,
+                              value: _quote?.minimumReceived ?? '',
+                              loading: _quoting,
                             );
                           },
                           loading: () => const _TransferSkeleton(height: 59),
@@ -903,12 +906,20 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                           quote: _quote,
                           loading: _quoting || options.isLoading,
                         ),
+                        if (_quote?.crossLiquidationImpacts.isNotEmpty ==
+                            true) ...[
+                          const SizedBox(height: 12),
+                          Hip3CrossLiquidationImpactsCard(
+                            impacts: _quote!.crossLiquidationImpacts,
+                          ),
+                        ],
                       ] else ...[
                         const SizedBox(height: 16),
                         _SectionLabel(l10n.sendAmount),
                         _Hip3SendAmountCard(
                           controller: _withdrawalAmount,
                           balance: hip3Balance?.value,
+                          balanceLoading: hip3Balance?.isLoading ?? true,
                           onChanged: _scheduleHip3Preview,
                         ),
                         if (hip3Balance?.hasError ?? false)
@@ -922,16 +933,17 @@ class _TransferScreenState extends ConsumerState<TransferScreen> {
                         _ReceiveAmountCard(
                           asset: 'USDC',
                           network: 'Arbitrum',
-                          value: _withdrawalPreviewing
-                              ? '...'
-                              : _withdrawalPreview?.minimumReceived ??
-                                    _withdrawal?.minimumReceived ??
-                                    '',
+                          value:
+                              _withdrawalPreview?.minimumReceived ??
+                              _withdrawal?.minimumReceived ??
+                              '',
+                          loading: _withdrawalPreviewing,
                         ),
                         const SizedBox(height: 16),
                         _Hip3FeeSummary(
                           preview: _withdrawalPreview,
                           withdrawal: _withdrawal,
+                          loading: _withdrawalPreviewing,
                         ),
                         if (_withdrawalPreview
                                 ?.crossLiquidationImpacts
@@ -1657,11 +1669,13 @@ class _Hip3SendAmountCard extends StatelessWidget {
   const _Hip3SendAmountCard({
     required this.controller,
     required this.balance,
+    required this.balanceLoading,
     required this.onChanged,
   });
 
   final TextEditingController controller;
   final String? balance;
+  final bool balanceLoading;
   final VoidCallback onChanged;
 
   @override
@@ -1694,14 +1708,22 @@ class _Hip3SendAmountCard extends StatelessWidget {
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  AppLocalizations.of(context).availableAmount(
-                    balance == null
-                        ? '-'
-                        : TokenAmountFormatter.formatText(balance!),
+                if (balanceLoading)
+                  const SkeletonBlock(
+                    key: Key('transfer-balance-skeleton'),
+                    width: 72,
+                    height: 14,
+                    radius: 4,
+                  )
+                else
+                  Text(
+                    AppLocalizations.of(context).availableAmount(
+                      balance == null
+                          ? '-'
+                          : TokenAmountFormatter.formatText(balance!),
+                    ),
+                    style: TextStyle(fontSize: 11, color: colors.secondaryText),
                   ),
-                  style: TextStyle(fontSize: 11, color: colors.secondaryText),
-                ),
               ],
             ),
           ),
@@ -1738,10 +1760,11 @@ class _Hip3SendAmountCard extends StatelessWidget {
 }
 
 class _Hip3FeeSummary extends StatelessWidget {
-  const _Hip3FeeSummary({this.preview, this.withdrawal});
+  const _Hip3FeeSummary({this.preview, this.withdrawal, required this.loading});
 
   final Hip3WithdrawalPreview? preview;
   final Hip3Withdrawal? withdrawal;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -1768,13 +1791,30 @@ class _Hip3FeeSummary extends StatelessWidget {
           _FeeRow(
             AppLocalizations.of(context).estimateTime,
             _formatEta(preview?.estimatedArrivalSeconds),
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-eta-skeleton'),
           ),
           const SizedBox(height: 8),
-          _FeeRow(AppLocalizations.of(context).bridgeFee, withdrawalFee),
+          _FeeRow(
+            AppLocalizations.of(context).bridgeFee,
+            withdrawalFee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-bridge-fee-skeleton'),
+          ),
           const SizedBox(height: 8),
-          _FeeRow(AppLocalizations.of(context).networkFee, networkFee),
+          _FeeRow(
+            AppLocalizations.of(context).networkFee,
+            networkFee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-network-fee-skeleton'),
+          ),
           const SizedBox(height: 8),
-          _FeeRow(AppLocalizations.of(context).totalFee, fee),
+          _FeeRow(
+            AppLocalizations.of(context).totalFee,
+            fee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-total-fee-skeleton'),
+          ),
         ],
       ),
     );
@@ -1807,11 +1847,13 @@ class _ReceiveAmountCard extends StatelessWidget {
     required this.asset,
     required this.network,
     required this.value,
+    this.loading = false,
   });
 
   final String asset;
   final String network;
   final String value;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -1858,15 +1900,23 @@ class _ReceiveAmountCard extends StatelessWidget {
               ),
             ),
           ),
-          AnimatedNumberText(
-            TokenAmountFormatter.formatText(value),
-            key: const Key('transfer-receive-amount-value'),
-            style: const TextStyle(
-              fontSize: 15,
-              height: 22 / 15,
-              fontWeight: FontWeight.w600,
+          if (loading)
+            const SkeletonBlock(
+              key: Key('transfer-receive-amount-skeleton'),
+              width: 56,
+              height: 14,
+              radius: 4,
+            )
+          else
+            AnimatedNumberText(
+              TokenAmountFormatter.formatText(value),
+              key: const Key('transfer-receive-amount-value'),
+              style: const TextStyle(
+                fontSize: 15,
+                height: 22 / 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -1882,7 +1932,6 @@ class _FeeSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppRwaColors>()!;
-    if (loading) return const _TransferSkeleton(height: 116);
     final fees = quote?.fees;
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1895,6 +1944,8 @@ class _FeeSummary extends StatelessWidget {
           _FeeRow(
             AppLocalizations.of(context).estimateTime,
             _formatEta(quote?.etaSeconds),
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-eta-skeleton'),
           ),
           const SizedBox(height: 8),
           _FeeRow(
@@ -1902,6 +1953,8 @@ class _FeeSummary extends StatelessWidget {
             _formatFee(fees?.bridgeFee, fees?.asset),
             valueKey: const Key('transfer-bridge-fee-value'),
             comparisonValue: fees?.bridgeFee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-bridge-fee-skeleton'),
           ),
           const SizedBox(height: 8),
           _FeeRow(
@@ -1909,6 +1962,8 @@ class _FeeSummary extends StatelessWidget {
             _formatFee(fees?.networkFee, fees?.asset),
             valueKey: const Key('transfer-network-fee-value'),
             comparisonValue: fees?.networkFee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-network-fee-skeleton'),
           ),
           const SizedBox(height: 8),
           _FeeRow(
@@ -1916,6 +1971,8 @@ class _FeeSummary extends StatelessWidget {
             _formatFee(fees?.totalFee, fees?.asset),
             valueKey: const Key('transfer-total-fee-value'),
             comparisonValue: fees?.totalFee,
+            loading: loading,
+            skeletonKey: const Key('transfer-quote-total-fee-skeleton'),
           ),
         ],
       ),
@@ -1936,12 +1993,21 @@ class _FeeSummary extends StatelessWidget {
 }
 
 class _FeeRow extends StatelessWidget {
-  const _FeeRow(this.label, this.value, {this.valueKey, this.comparisonValue});
+  const _FeeRow(
+    this.label,
+    this.value, {
+    this.valueKey,
+    this.comparisonValue,
+    this.loading = false,
+    this.skeletonKey,
+  });
 
   final String label;
   final String value;
   final Key? valueKey;
   final String? comparisonValue;
+  final bool loading;
+  final Key? skeletonKey;
 
   @override
   Widget build(BuildContext context) {
@@ -1958,25 +2024,28 @@ class _FeeRow extends StatelessWidget {
             color: colors.secondaryText,
           ),
         ),
-        valueKey == null
-            ? Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 13,
-                  height: 18 / 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              )
-            : AnimatedNumberText(
-                value,
-                key: valueKey,
-                comparisonValue: comparisonValue,
-                style: const TextStyle(
-                  fontSize: 13,
-                  height: 18 / 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+        if (loading)
+          SkeletonBlock(key: skeletonKey, width: 56, height: 14, radius: 4)
+        else if (valueKey == null)
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 18 / 13,
+              fontWeight: FontWeight.w600,
+            ),
+          )
+        else
+          AnimatedNumberText(
+            value,
+            key: valueKey,
+            comparisonValue: comparisonValue,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 18 / 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
       ],
     );
   }
