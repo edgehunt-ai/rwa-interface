@@ -112,9 +112,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   String? _targetOpenOrderId;
   String? _targetPositionId;
 
-  /// Product the user selected from the switch that this underlying does not
-  /// offer; the tab stays selectable and the body shows an empty state.
-  MarketProductKind? _unavailableKind;
   MarketProductRef? _favoriteOverrideRef;
   bool? _favoriteOverride;
   var _favoriteBusy = false;
@@ -184,7 +181,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
 
   void _changeProduct(MarketProduct product) {
     setState(() {
-      _unavailableKind = null;
       symbol = product.symbol;
       productKind = product.kind;
       _productId = product.productId;
@@ -192,15 +188,6 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       _favoriteOverride = null;
       chartSelection = null;
     });
-  }
-
-  void _selectKind(MarketProductKind kind, List<MarketProduct> products) {
-    final match = products.where((product) => product.kind == kind).firstOrNull;
-    if (match == null) {
-      setState(() => _unavailableKind = kind);
-      return;
-    }
-    _changeProduct(match);
   }
 
   Future<void> _toggleFavorite(
@@ -381,6 +368,13 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     ref.watch(favoritesCommandProvider);
     final snapshotState = ref.watch(marketSnapshotProvider(productRef));
     final marketHours = ref.watch(marketHoursProvider).value;
+    final hip3ContextState =
+        productKind == MarketProductKind.perp && _productId != null
+        ? ref.watch(hip3OpeningContextProvider(_productId!))
+        : null;
+    final maximumLeverage = hip3ContextState?.value?.productId == _productId
+        ? hip3ContextState?.value?.maximumLeverage
+        : null;
     final candlesState = ref.watch(
       marketCandlesProvider((product: productRef, range: chartRange)),
     );
@@ -429,90 +423,72 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 30, 20, 160),
                 children: [
-                  _NavigationBar(
-                    stockSymbol: stock?.symbol,
-                    stockName: stock?.name,
-                    logoUrl: stock?.logoUrl,
-                    logoText: stock?.logoText,
+                  _ProductHeader(
+                    symbol: productDisplaySymbol,
+                    logoUrl:
+                        (productDetailState.value ?? activeProduct)?.logoUrl,
+                    logoText:
+                        (productDetailState.value ?? activeProduct)?.logoText,
+                    kind: productKind,
+                    productId: _productId,
+                    maximumLeverage: maximumLeverage,
                     marketHours: marketHours,
                     onMarketHours: () => setState(() => marketHoursOpen = true),
+                    chartStyle: chartStyle,
+                    snapshot: snapshot,
+                    selectedPrice: chartSelection?.close,
+                    selectedChangePercent: selectedChange,
+                    referencePrice:
+                        selectedReference?.close ??
+                        candles?.referencePoints.lastOrNull?.close ??
+                        candles?.referencePrice,
+                    loading: snapshotState.isLoading,
+                    isFavorite: isFavorite,
+                    favoriteLoading: _favoriteBusy,
+                    onFavoriteToggle: () =>
+                        _toggleFavorite(productRef, isFavorite),
+                  ),
+                  const SizedBox(height: 12),
+                  RepaintBoundary(
+                    child: _Chart(
+                      style: chartStyle,
+                      range: chartRange,
+                      candles: candles,
+                      loading: candlesState.isLoading,
+                      onStyleChanged: (next) =>
+                          setState(() => chartStyle = next),
+                      onRangeChanged: (next) => setState(() {
+                        chartRange = next;
+                        chartSelection = null;
+                      }),
+                      selectedCandle: chartSelection,
+                      onSelectionChanged: (next) =>
+                          setState(() => chartSelection = next),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  if (availableProducts case final products?
-                      when products.isNotEmpty) ...[
-                    _ProductSwitch(
-                      available: products.map((p) => p.kind).toSet(),
-                      kind: _unavailableKind ?? productKind,
-                      onChanged: (kind) => _selectKind(kind, products),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  if (_unavailableKind case final kind?)
-                    _ProductUnavailable(kind: kind, symbol: stock?.symbol)
-                  else ...[
-                    _ProductHeader(
-                      symbol: productDisplaySymbol,
-                      logoUrl:
-                          (productDetailState.value ?? activeProduct)?.logoUrl,
-                      logoText:
-                          (productDetailState.value ?? activeProduct)?.logoText,
-                      kind: productKind,
-                      chartStyle: chartStyle,
-                      snapshot: snapshot,
-                      selectedPrice: chartSelection?.close,
-                      selectedChangePercent: selectedChange,
-                      referencePrice:
-                          selectedReference?.close ??
-                          candles?.referencePoints.lastOrNull?.close ??
-                          candles?.referencePrice,
-                      loading: snapshotState.isLoading,
-                      isFavorite: isFavorite,
-                      favoriteLoading: _favoriteBusy,
-                      onFavoriteToggle: () =>
-                          _toggleFavorite(productRef, isFavorite),
-                    ),
-                    const SizedBox(height: 12),
-                    RepaintBoundary(
-                      child: _Chart(
-                        style: chartStyle,
-                        range: chartRange,
-                        candles: candles,
-                        loading: candlesState.isLoading,
-                        onStyleChanged: (next) =>
-                            setState(() => chartStyle = next),
-                        onRangeChanged: (next) => setState(() {
-                          chartRange = next;
-                          chartSelection = null;
-                        }),
-                        selectedCandle: chartSelection,
-                        onSelectionChanged: (next) =>
-                            setState(() => chartSelection = next),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _Statistics(
-                      snapshot: snapshot,
-                      candles: candles,
-                      loading: snapshotState.isLoading,
-                    ),
-                    const SizedBox(height: 16),
-                    _Details(
-                      key: _detailsKey,
-                      openOrderCardKey: _openOrderCardKey,
-                      positionCardKey: _positionCardKey,
-                      targetOpenOrderId: _targetOpenOrderId,
-                      targetPositionId: _targetPositionId,
-                      activeTab: detailTab,
-                      onChanged: (tab) => setState(() => detailTab = tab),
-                      kind: productKind,
-                      symbol: symbol,
-                      productId: _productId,
-                    ),
-                  ],
+                  _Statistics(
+                    snapshot: snapshot,
+                    candles: candles,
+                    loading: snapshotState.isLoading,
+                  ),
+                  const SizedBox(height: 16),
+                  _Details(
+                    key: _detailsKey,
+                    openOrderCardKey: _openOrderCardKey,
+                    positionCardKey: _positionCardKey,
+                    targetOpenOrderId: _targetOpenOrderId,
+                    targetPositionId: _targetPositionId,
+                    activeTab: detailTab,
+                    onChanged: (tab) => setState(() => detailTab = tab),
+                    kind: productKind,
+                    symbol: symbol,
+                    productId: _productId,
+                  ),
                 ],
               ),
             ),
-            if (_unavailableKind == null && productTradable)
+            if (productTradable)
               _TradeActions(
                 primaryLabel: productKind == MarketProductKind.bstock
                     ? AppLocalizations.of(context).buy
@@ -673,233 +649,16 @@ class _OrderPanelLoading extends StatelessWidget {
   }
 }
 
-class _NavigationBar extends StatelessWidget {
-  const _NavigationBar({
-    required this.stockSymbol,
-    required this.stockName,
-    required this.logoUrl,
-    required this.logoText,
-    required this.marketHours,
-    required this.onMarketHours,
-  });
-
-  final String? stockSymbol;
-  final String? stockName;
-  final String? logoUrl;
-  final String? logoText;
-  final MarketHours? marketHours;
-  final VoidCallback onMarketHours;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Row(
-      children: [
-        Semantics(
-          button: true,
-          label: AppLocalizations.of(context).back,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: () => context.canPop() ? context.pop() : context.go('/'),
-            // The chevron sits flush with the page gutter, so the tap target
-            // grows to the right of and around the icon, never to its left.
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-              child: Transform.flip(
-                flipX: true,
-                child: SvgPicture.asset(
-                  'assets/figma/home_markets/chevron_right.svg',
-                  width: 20,
-                  height: 20,
-                ),
-              ),
-            ),
-          ),
-        ),
-        if (stockSymbol case final symbol?)
-          MarketAssetMark(
-            symbol: symbol,
-            logoUrl: logoUrl,
-            logoText: logoText,
-            size: 32,
-            borderRadius: 12,
-          )
-        else
-          const SkeletonBlock(width: 32, height: 32, radius: 12),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (stockSymbol case final symbol?) ...[
-                Text(
-                  symbol,
-                  key: const Key('trade-stock-symbol'),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    height: 22 / 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                GestureDetector(
-                  key: const Key('trade-market-status-navigation'),
-                  onTap: onMarketHours,
-                  child: Row(
-                    children: [
-                      if (stockName case final name?)
-                        Text(
-                          name,
-                          key: const Key('trade-stock-name'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            height: 16 / 12,
-                            color: colors.secondaryText,
-                          ),
-                        ),
-                      const SizedBox(width: 4),
-                      if (symbol != 'ETH')
-                        MarketSessionBadge(hours: marketHours, compact: true)
-                      else
-                        Text(
-                          AppLocalizations.of(context).perpetual,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                    ],
-                  ),
-                ),
-              ] else ...[
-                const SkeletonBlock(width: 54, height: 15, radius: 4),
-                const SizedBox(height: 3),
-                const SkeletonBlock(width: 96, height: 12, radius: 4),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-}
-
-class _ProductSwitch extends StatelessWidget {
-  const _ProductSwitch({
-    required this.available,
-    required this.kind,
-    required this.onChanged,
-  });
-
-  final Set<MarketProductKind> available;
-  final MarketProductKind kind;
-  final ValueChanged<MarketProductKind> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final colors = Theme.of(context).extension<AppRwaColors>()!;
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: colors.subtleSurface,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          for (final value in MarketProductKind.values)
-            Expanded(
-              child: _Segment(
-                label: value == MarketProductKind.bstock
-                    ? 'bStocks'
-                    : l10n.hip3Perp,
-                asset: value == MarketProductKind.bstock
-                    ? 'assets/figma/home_markets/venue_bnb.svg'
-                    : 'assets/figma/home_markets/venue_hyperliquid.svg',
-                selected: kind == value,
-                onTap: () => onChanged(value),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Shown in place of the market body when the underlying has no product of the
-/// selected kind; the switch above it stays usable.
-class _ProductUnavailable extends StatelessWidget {
-  const _ProductUnavailable({required this.kind, required this.symbol});
-
-  final MarketProductKind kind;
-  final String? symbol;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Padding(
-      key: const Key('trade-product-unavailable'),
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: EmptyState(
-        title: kind == MarketProductKind.bstock
-            ? l10n.tradeBstocksUnavailable
-            : l10n.tradePerpUnavailable,
-        description: symbol == null
-            ? null
-            : l10n.tradeProductUnavailableDescription(symbol!),
-      ),
-    );
-  }
-}
-
-class _Segment extends StatelessWidget {
-  const _Segment({
-    required this.label,
-    required this.asset,
-    required this.selected,
-    required this.onTap,
-  });
-  final String label;
-  final String asset;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(12),
-    child: Container(
-      alignment: Alignment.center,
-      decoration: selected
-          ? BoxDecoration(
-              color: Theme.of(context).extension<AppRwaColors>()!.surface,
-              borderRadius: BorderRadius.circular(12),
-            )
-          : null,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SvgPicture.asset(asset, width: 16, height: 16),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              height: 18 / 13,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _ProductHeader extends StatelessWidget {
   const _ProductHeader({
     required this.symbol,
     required this.logoUrl,
     required this.logoText,
     required this.kind,
+    required this.productId,
+    required this.maximumLeverage,
+    required this.marketHours,
+    required this.onMarketHours,
     required this.chartStyle,
     required this.snapshot,
     required this.selectedPrice,
@@ -914,6 +673,10 @@ class _ProductHeader extends StatelessWidget {
   final String? logoUrl;
   final String? logoText;
   final MarketProductKind kind;
+  final String? productId;
+  final int? maximumLeverage;
+  final MarketHours? marketHours;
+  final VoidCallback onMarketHours;
   final TradeChartStyle chartStyle;
   final MarketSnapshot? snapshot;
   final DecimalValue? selectedPrice;
@@ -937,46 +700,112 @@ class _ProductHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          key: const Key('trade-product-header'),
           children: [
+            Semantics(
+              button: true,
+              label: l10n.back,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => context.canPop() ? context.pop() : context.go('/'),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+                  child: Transform.flip(
+                    flipX: true,
+                    child: SvgPicture.asset(
+                      'assets/figma/home_markets/chevron_right.svg',
+                      width: 20,
+                      height: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             if (symbol case final productSymbol?)
               MarketAssetMark(
                 symbol: productSymbol,
                 logoUrl: logoUrl,
                 logoText: logoText,
-                size: 24,
+                size: 32,
                 borderRadius: 12,
               )
             else
-              const SkeletonBlock(width: 24, height: 24, radius: 12),
-            const SizedBox(width: 4),
-            if (symbol case final productSymbol?)
-              Semantics(
-                button: true,
-                label: l10n.searchMarkets,
-                child: InkWell(
-                  key: const Key('trade-product-switch-search'),
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () => context.pushNamed(AppRoutes.marketSearchName),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        productSymbol,
-                        key: const Key('trade-product-symbol'),
-                        style: const TextStyle(
-                          fontSize: 17,
-                          height: 22 / 17,
-                          fontWeight: FontWeight.w600,
+              const SkeletonBlock(width: 32, height: 32, radius: 12),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (symbol case final productSymbol?)
+                    Semantics(
+                      button: true,
+                      label: l10n.searchMarkets,
+                      child: InkWell(
+                        key: const Key('trade-product-switch-search'),
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () =>
+                            context.pushNamed(AppRoutes.marketSearchName),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                productSymbol,
+                                key: const Key('trade-product-symbol'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  height: 22 / 17,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (maximumLeverage != null) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '${maximumLeverage}x',
+                                key: const Key(
+                                  'trade-product-maximum-leverage',
+                                ),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 18 / 13,
+                                  color: Theme.of(context)
+                                      .extension<AppRwaColors>()!
+                                      .secondaryText,
+                                ),
+                              ),
+                            ],
+                            const Icon(Icons.arrow_drop_down, size: 20),
+                          ],
                         ),
                       ),
-                      const Icon(Icons.arrow_drop_down, size: 20),
-                    ],
+                    )
+                  else
+                    const SkeletonBlock(width: 76, height: 17, radius: 4),
+                  const SizedBox(height: 2),
+                  GestureDetector(
+                    key: const Key('trade-market-status-navigation'),
+                    onTap: onMarketHours,
+                    child: Wrap(
+                      key: const Key('trade-product-meta'),
+                      spacing: 4,
+                      runSpacing: 2,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        _TradeProductTypeBadge(
+                          kind: kind,
+                          productId: productId,
+                        ),
+                        if (symbol != 'ETH')
+                          MarketSessionBadge(hours: marketHours, compact: true),
+                      ],
+                    ),
                   ),
-                ),
-              )
-            else
-              const SkeletonBlock(width: 76, height: 17, radius: 4),
-            const Spacer(),
+                ],
+              ),
+            ),
             IconButton(
               tooltip: isFavorite ? l10n.removeFavorite : l10n.addFavorite,
               icon: favoriteLoading
@@ -997,7 +826,7 @@ class _ProductHeader extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         Row(
           children: [
             if (loading)
@@ -1059,6 +888,67 @@ class _ProductHeader extends StatelessWidget {
       ],
     );
   }
+}
+
+class _TradeProductTypeBadge extends StatelessWidget {
+  const _TradeProductTypeBadge({required this.kind, required this.productId});
+
+  final MarketProductKind kind;
+  final String? productId;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<AppRwaColors>()!;
+    final venue = _venueFromProductId(productId);
+    final isPerp = kind == MarketProductKind.perp;
+    return Container(
+      key: const Key('trade-product-type'),
+      constraints: const BoxConstraints(maxWidth: 128),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            isPerp
+                ? 'assets/figma/home_markets/venue_hyperliquid.svg'
+                : 'assets/figma/home_markets/venue_bnb.svg',
+            width: 14,
+            height: 14,
+          ),
+          const SizedBox(width: 2),
+          Flexible(
+            child: Text(
+              isPerp && venue != null
+                  ? 'HIP-3 · $venue'
+                  : isPerp
+                  ? 'HIP-3'
+                  : 'bStocks',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                height: 16 / 11,
+                color: colors.primaryText,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String? _venueFromProductId(String? productId) {
+  if (productId == null) return null;
+  final separator = productId.indexOf(':');
+  if (separator <= 0) return null;
+  final venue = productId.substring(0, separator).trim();
+  return venue.isEmpty ? null : venue.toUpperCase();
 }
 
 class _Chart extends StatelessWidget {

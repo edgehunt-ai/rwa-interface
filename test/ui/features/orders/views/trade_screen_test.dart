@@ -64,90 +64,133 @@ void expectNodeVisible({
 }
 
 void main() {
-  testWidgets('Trade displays stock and product identities from the API', (
+  testWidgets(
+    'Trade displays only the selected product identity from the API',
+    (tester) async {
+      const productRef = MarketProductRef(
+        symbol: 'TOKEN-X',
+        kind: MarketProductKind.bstock,
+      );
+      final product = MarketProduct(
+        symbol: 'TOKEN-X',
+        name: 'Token X',
+        kind: MarketProductKind.bstock,
+        price: DecimalValue('100'),
+        settlementAsset: 'USDT',
+        network: 'BSC',
+        tradable: true,
+        logoText: 'PX',
+      );
+      const lookup = (
+        query: 'ACME',
+        cursor: null,
+        group: 'hot',
+        productType: null,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            marketStocksProvider.overrideWith(
+              (_) async => const DomainPage(
+                items: [
+                  Stock(
+                    symbol: 'ACME',
+                    name: 'Acme Corporation',
+                    referencePrice: '100',
+                    logoText: 'ST',
+                    products: [productRef],
+                  ),
+                ],
+              ),
+            ),
+            marketProductLookupProvider(lookup)
+                .overrideWith((_) async => DomainPage(items: [product])),
+            marketProductProvider(productRef)
+                .overrideWith((_) async => product),
+            marketSnapshotProvider(productRef).overrideWith(
+              (_) async => MarketSnapshot(price: DecimalValue('100')),
+            ),
+            marketCandlesProvider((
+              product: productRef,
+              range: CandleChartRange.oneHour,
+            )).overrideWith(
+              (_) async => _chart('TOKEN-X', CandleChartRange.oneHour),
+            ),
+            marketHoursProvider.overrideWith(
+              (_) async => const MarketHours(
+                timezone: 'America/New_York',
+                current: MarketSessionKind.weekend,
+                currentLabel: 'Closed',
+                segments: [],
+              ),
+            ),
+          ],
+          child: buildTestApp(const TradeScreen(symbol: 'TOKEN-X')),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
+        'TOKEN-X',
+      );
+      expect(find.byKey(const Key('trade-stock-symbol')), findsNothing);
+      expect(find.text('Acme Corporation'), findsNothing);
+      expect(find.text('ST'), findsNothing);
+      expect(find.text('PX'), findsOneWidget);
+      expect(find.text('bStocks'), findsOneWidget);
+      final marks = tester.widgetList<MarketAssetMark>(
+        find.byType(MarketAssetMark),
+      );
+      expect(marks.map((mark) => mark.logoText), ['PX']);
+    },
+  );
+
+  testWidgets('Trade HIP-3 header shows maximum leverage and product source', (
     tester,
   ) async {
-    const productRef = MarketProductRef(
-      symbol: 'TOKEN-X',
-      kind: MarketProductKind.bstock,
-    );
-    final product = MarketProduct(
-      symbol: 'TOKEN-X',
-      name: 'Token X',
-      kind: MarketProductKind.bstock,
-      price: DecimalValue('100'),
-      settlementAsset: 'USDT',
-      network: 'BSC',
-      tradable: true,
-      logoText: 'PX',
-    );
-    const lookup = (
-      query: 'ACME',
-      cursor: null,
-      group: 'hot',
-      productType: null,
-    );
-
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          marketStocksProvider.overrideWith(
-            (_) async => const DomainPage(
-              items: [
-                Stock(
-                  symbol: 'ACME',
-                  name: 'Acme Corporation',
-                  referencePrice: '100',
-                  logoText: 'ST',
-                  products: [productRef],
-                ),
-              ],
-            ),
-          ),
-          marketProductLookupProvider(lookup)
-              .overrideWith((_) async => DomainPage(items: [product])),
-          marketProductProvider(productRef).overrideWith((_) async => product),
-          marketSnapshotProvider(productRef).overrideWith(
-            (_) async => MarketSnapshot(price: DecimalValue('100')),
-          ),
-          marketCandlesProvider((
-            product: productRef,
-            range: CandleChartRange.oneHour,
-          )).overrideWith(
-            (_) async => _chart('TOKEN-X', CandleChartRange.oneHour),
-          ),
-          marketHoursProvider.overrideWith(
-            (_) async => const MarketHours(
-              timezone: 'America/New_York',
-              current: MarketSessionKind.weekend,
-              currentLabel: 'Closed',
-              segments: [],
-            ),
-          ),
-        ],
-        child: buildTestApp(const TradeScreen(symbol: 'TOKEN-X')),
+      _tradeWithMarkets(
+        initialKind: MarketProductKind.perp,
+        hip3OpeningContext: _hip3OpeningContext(),
+        marketHours: const MarketHours(
+          timezone: 'America/New_York',
+          current: MarketSessionKind.overnight,
+          currentLabel: 'Overnight',
+        ),
       ),
     );
     await tester.pumpAndSettle();
 
+    final header = find.byKey(const Key('trade-product-header'));
+    final symbol = find.byKey(const Key('trade-product-symbol'));
+    final maximumLeverage = find.byKey(
+      const Key('trade-product-maximum-leverage'),
+    );
+    final metadata = find.byKey(const Key('trade-product-meta'));
+    final productType = find.byKey(const Key('trade-product-type'));
+    final productTypeIcon = find.descendant(
+      of: productType,
+      matching: find.byType(SvgPicture),
+    );
+
+    expect(find.text('NVDA'), findsOneWidget);
+    expect(find.text('20x'), findsOneWidget);
+    expect(find.text('HIP-3 · XYZ'), findsOneWidget);
+    expect(find.text('Overnight'), findsOneWidget);
+    expect(find.descendant(of: header, matching: productType), findsOneWidget);
+    expect(productTypeIcon, findsOneWidget);
+    expect(tester.getSize(productTypeIcon), const Size.square(14));
     expect(
-      tester.widget<Text>(find.byKey(const Key('trade-stock-symbol'))).data,
-      'ACME',
+      tester.getRect(maximumLeverage).center.dy,
+      closeTo(tester.getRect(symbol).center.dy, 1),
     );
     expect(
-      tester.widget<Text>(find.byKey(const Key('trade-stock-name'))).data,
-      'Acme Corporation',
+      tester.getRect(metadata).top,
+      greaterThan(tester.getRect(symbol).top),
     );
-    expect(
-      tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
-      'TOKEN-X',
-    );
-    expect(find.text('ST'), findsOneWidget);
-    expect(find.text('PX'), findsOneWidget);
-    final marks = tester.widgetList<MarketAssetMark>(
-      find.byType(MarketAssetMark),
-    );
-    expect(marks.map((mark) => mark.logoText), ['ST', 'PX']);
+    expect(find.byTooltip('Add favorite'), findsOneWidget);
   });
 
   testWidgets('Trade pull-to-refresh reloads the current position list', (
@@ -758,12 +801,13 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _tradeWithMarkets(perpSnapshot: _perpDisclosureSnapshot()),
+      _tradeWithMarkets(
+        initialKind: MarketProductKind.perp,
+        perpSnapshot: _perpDisclosureSnapshot(),
+      ),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('HIP-3 Perp'));
-    await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Long'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
@@ -814,11 +858,11 @@ void main() {
   testWidgets('Trade preserves the HIP-3 short side when opening its panel', (
     tester,
   ) async {
-    await tester.pumpWidget(_tradeWithMarkets());
+    await tester.pumpWidget(
+      _tradeWithMarkets(initialKind: MarketProductKind.perp),
+    );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('HIP-3 Perp'));
-    await tester.pump();
     await tester.tap(find.widgetWithText(FilledButton, 'Short'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
@@ -1011,10 +1055,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _tradeWithMarkets(perpSnapshot: _perpDisclosureSnapshot()),
+      _tradeWithMarkets(
+        initialKind: MarketProductKind.perp,
+        perpSnapshot: _perpDisclosureSnapshot(),
+      ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('HIP-3 Perp'));
     await tester.pumpAndSettle();
 
     expect(find.text('24/7'), findsNothing);
@@ -1029,11 +1074,10 @@ void main() {
     await tester.pumpWidget(
       _tradeWithMarkets(
         locale: const Locale('en'),
+        initialKind: MarketProductKind.perp,
         positionsRepository: _PositionsRepository(),
       ),
     );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('HIP-3 Perp'));
     await tester.pumpAndSettle();
     await _scrollToTradeTab(tester, 'Position');
     await tester.tap(_tradeTab('Position'));
@@ -1078,14 +1122,13 @@ void main() {
       await tester.pumpWidget(
         _tradeWithMarkets(
           locale: const Locale('en'),
+          initialKind: MarketProductKind.perp,
           positionsRepository: _PositionsRepository(
             perpSide: side,
             perpPnl: pnl,
           ),
         ),
       );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('HIP-3 Perp'));
       await tester.pumpAndSettle();
       await _scrollToTradeTab(tester, 'Position');
       await tester.tap(_tradeTab('Position'));
@@ -1214,42 +1257,31 @@ void main() {
     expect(find.text('1'), findsOneWidget);
   });
 
-  testWidgets('Trade keeps both product tabs and empties the unsupported one', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _tradeWithMarkets(
-        products: [_marketProduct('NVDA', MarketProductKind.perp)],
-        perpSnapshot: _perpDisclosureSnapshot(),
-      ),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'Trade falls back to the available product without product tabs',
+    (tester) async {
+      await tester.pumpWidget(
+        _tradeWithMarkets(
+          products: [_marketProduct('NVDA', MarketProductKind.perp)],
+          perpSnapshot: _perpDisclosureSnapshot(),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('bStocks'), findsOneWidget);
-    expect(find.text('HIP-3 Perp'), findsOneWidget);
-    expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
-    expect(find.byKey(const Key('trade-product-unavailable')), findsNothing);
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is SvgPicture &&
-            widget.bytesLoader.toString().contains('venue_bnb.svg'),
-      ),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.text('bStocks'));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('trade-product-unavailable')), findsOneWidget);
-    expect(find.text('No bStocks market'), findsOneWidget);
-    expect(
-      find.textContaining('NVDA is not listed on this product yet'),
-      findsOneWidget,
-    );
-    // The tabs stay usable so the trader can go back.
-    expect(find.text('HIP-3 Perp'), findsOneWidget);
-  });
+      expect(find.text('bStocks'), findsNothing);
+      expect(find.text('HIP-3 Perp'), findsNothing);
+      expect(find.text('HIP-3 · XYZ'), findsOneWidget);
+      expect(find.text('HIP-3 Perpetual Contract'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is SvgPicture &&
+              widget.bytesLoader.toString().contains('venue_bnb.svg'),
+        ),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets('Trade bStocks Withdraw opens its selected Spot asset', (
     tester,
@@ -1876,6 +1908,7 @@ MarketProduct _marketProduct(String symbol, MarketProductKind kind) =>
       settlementAsset: kind == MarketProductKind.bstock ? 'USDT' : 'USDC',
       network: kind == MarketProductKind.bstock ? 'BSC' : 'Hyperliquid',
       tradable: true,
+      productId: kind == MarketProductKind.perp ? 'xyz:$symbol' : null,
     );
 
 final class _FavoriteMarketsRepository implements MarketsRepository {

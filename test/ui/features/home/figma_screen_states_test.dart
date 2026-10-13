@@ -310,10 +310,6 @@ void main() {
     expect(screen.symbol, 'NVDA');
     expect(screen.initialKind, MarketProductKind.bstock);
     expect(
-      tester.widget<Text>(find.byKey(const Key('trade-stock-symbol'))).data,
-      'NVDA',
-    );
-    expect(
       tester.widget<Text>(find.byKey(const Key('trade-product-symbol'))).data,
       'NVDA',
     );
