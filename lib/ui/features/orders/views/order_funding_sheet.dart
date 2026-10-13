@@ -50,9 +50,10 @@ class _OrderFundingSheetState extends ConsumerState<OrderFundingSheet> {
         (widget.kind == MarketProductKind.bstock ? 'USDT' : 'USDC'),
   );
 
-  String get _targetNetwork =>
-      _plan.targetNetwork ??
-      (widget.kind == MarketProductKind.bstock ? 'BSC' : 'Hyperliquid');
+  String get _targetNetwork => networkDisplayName(
+    _plan.targetNetwork ??
+        (widget.kind == MarketProductKind.bstock ? 'BSC' : 'Hyperliquid'),
+  );
 
   @override
   void dispose() {
@@ -839,7 +840,9 @@ class _TransferContent extends StatelessWidget {
           targetAsset: _displayTargetAsset(
             plan.targetAsset ?? fallbackTargetAsset,
           ),
-          targetNetwork: plan.targetNetwork,
+          targetNetwork: plan.targetNetwork == null
+              ? null
+              : networkDisplayName(plan.targetNetwork!),
           targetAmount: _outputAmount(plan),
         ),
         const SizedBox(height: 16),
@@ -1153,7 +1156,7 @@ class _AssetRow extends StatelessWidget {
                       TextSpan(
                         text: network == null || network.isEmpty
                             ? ''
-                            : ' ($network)',
+                            : ' (${networkDisplayName(network)})',
                         style: TextStyle(
                           fontSize: 11,
                           color: colors.secondaryText,
@@ -1242,7 +1245,7 @@ class _TargetAssetRow extends StatelessWidget {
                     ),
                     if (network != null && network!.isNotEmpty)
                       TextSpan(
-                        text: ' ($network)',
+                        text: ' (${networkDisplayName(network!)})',
                         style: TextStyle(
                           fontSize: 11,
                           color: colors.secondaryText,

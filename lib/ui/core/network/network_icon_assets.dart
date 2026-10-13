@@ -43,3 +43,13 @@ NetworkKind? networkKind(String? network) =>
       'hyperliquid' => NetworkKind.hyperliquid,
       _ => null,
     };
+
+String networkDisplayName(String network) => switch (networkKind(network)) {
+  NetworkKind.bsc => 'BNB Smart Chain',
+  NetworkKind.arbitrum => 'Arbitrum',
+  NetworkKind.ethereum => 'Ethereum',
+  NetworkKind.base => 'Base',
+  NetworkKind.polygon => 'Polygon',
+  NetworkKind.hyperliquid => 'Hyperliquid',
+  null => network,
+};

@@ -32,4 +32,10 @@ void main() {
     expect(networkIconAssetPath('Solana'), isNull);
     expect(networkIconAssetPath(null), isNull);
   });
+
+  test('uses the full BNB Smart Chain name for display', () {
+    expect(networkDisplayName('BSC'), 'BNB Smart Chain');
+    expect(networkDisplayName('bnb chain'), 'BNB Smart Chain');
+    expect(networkDisplayName('Solana'), 'Solana');
+  });
 }
