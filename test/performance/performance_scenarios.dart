@@ -8,7 +8,7 @@ import 'package:nobell/domain/models/order_intent.dart';
 
 import 'performance_fixture.dart';
 
-const performanceSuiteVersion = 1;
+const performanceSuiteVersion = 2;
 
 final class PerformanceRecorder {
   PerformanceRecorder({required this.recordFrames});
@@ -41,6 +41,39 @@ final class PerformanceRecorder {
       _windows.add((
         id: id,
         label: label,
+        start: start,
+        end: developer.Timeline.now,
+        ms: watch.elapsedMicroseconds / 1000,
+      ));
+    }
+  }
+
+  /// Cumulative milestones share the trigger timestamp. An input can be usable
+  /// while decorative number animations are still running.
+  Future<void> measureMilestones(
+    String id,
+    String label,
+    Future<void> Function() untilInteractive,
+    Future<void> Function() untilSettled,
+  ) async {
+    final start = developer.Timeline.now;
+    final watch = Stopwatch()..start();
+    await untilInteractive();
+    if (!warmingUp) {
+      _windows.add((
+        id: '${id}_ready',
+        label: '$label到可交互',
+        start: start,
+        end: developer.Timeline.now,
+        ms: watch.elapsedMicroseconds / 1000,
+      ));
+    }
+    await untilSettled();
+    watch.stop();
+    if (!warmingUp) {
+      _windows.add((
+        id: '${id}_settled',
+        label: '$label到动画完成',
         start: start,
         end: developer.Timeline.now,
         ms: watch.elapsedMicroseconds / 1000,
@@ -106,8 +139,9 @@ Future<void> _unmount(WidgetTester tester, PerformanceFixture fixture) async {
 Future<void> runPerformanceScenarios(
   WidgetTester tester,
   PerformanceRecorder recorder, {
-  int samples = 10,
+  int samples = 30,
   int warmups = 2,
+  Future<void> Function(Future<void> Function())? traceDetails,
 }) async {
   if (samples < 1 || warmups < 0) throw ArgumentError('Invalid sample count');
   for (var round = -warmups; round < samples; round++) {
@@ -147,14 +181,25 @@ Future<void> runPerformanceScenarios(
       );
       scrollable.position.jumpTo(0);
       await tester.pumpAndSettle();
-      await recorder.measure('details_load', '行情详情加载（240 根 K 线）', () async {
-        await tester.tap(find.byKey(const Key('stock-tile-NVDA')));
-        await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
-        await _waitFor(tester, find.byKey(const Key('trade-product-symbol')));
-        expect(market.markets.snapshots, greaterThan(0));
-        expect(market.markets.charts, greaterThan(0));
-        expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
-      });
+      Future<void> loadDetails() => recorder.measure(
+        'details_load',
+        '行情详情加载（240 根 K 线）',
+        () async {
+          await tester.tap(find.byKey(const Key('stock-tile-NVDA')));
+          await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
+          await _waitFor(tester, find.byKey(const Key('trade-product-symbol')));
+          expect(market.markets.snapshots, greaterThan(0));
+          expect(market.markets.charts, greaterThan(0));
+          expect(find.byKey(const Key('trade-price-skeleton')), findsNothing);
+        },
+      );
+      // Capture one measured navigation separately for diagnosis. VM tracing
+      // is optional and adds overhead; it is not part of the normal baseline.
+      if (traceDetails != null && round == 0) {
+        await traceDetails(loadDetails);
+      } else {
+        await loadDetails();
+      }
     } finally {
       await _unmount(tester, market);
     }
@@ -172,19 +217,30 @@ Future<void> runPerformanceScenarios(
           await tester.pumpWidget(fixture.app);
           await _waitFor(tester, find.byKey(const Key('trade-chart-plot')));
           await tester.pumpAndSettle();
-          await recorder.measure('${prefix}_open', '$name面板打开', () async {
-            await tester.tap(
-              find.widgetWithText(
-                FilledButton,
-                side == TradingSide.buy ? 'Buy' : 'Sell',
-              ),
-            );
-            await _waitFor(
-              tester,
-              find.byKey(const Key('bstocks-market-amount-input')),
-            );
-            await tester.pumpAndSettle();
-          });
+          await recorder.measureMilestones(
+            '${prefix}_open',
+            '$name面板打开',
+            () async {
+              await tester.tap(
+                find.widgetWithText(
+                  FilledButton,
+                  side == TradingSide.buy ? 'Buy' : 'Sell',
+                ),
+              );
+              final input = find.byKey(
+                const Key('bstocks-market-amount-input'),
+              );
+              await waitForPerformanceState(tester, () {
+                if (input.hitTestable().evaluate().isEmpty) return false;
+                final field = tester.widget<TextField>(input);
+                final route = ModalRoute.of(tester.element(input));
+                return field.enabled != false &&
+                    !field.readOnly &&
+                    route?.animation?.status == AnimationStatus.completed;
+              }, description: '$name interactive input after sheet transition');
+            },
+            () => tester.pumpAndSettle(const Duration(milliseconds: 16)),
+          );
 
           if (type == TradingOrderType.limit) {
             await tester.tap(find.text('Limit').last);

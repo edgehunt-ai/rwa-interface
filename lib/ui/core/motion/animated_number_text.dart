@@ -114,6 +114,7 @@ class AnimatedNumberText extends StatefulWidget {
     this.comparisonValue,
     this.trend,
     this.duration,
+    this.animateFirstChange = true,
   });
 
   /// Long enough to read the digits turn; `easeInOutCubic` keeps most of
@@ -138,6 +139,10 @@ class AnimatedNumberText extends StatefulWidget {
   /// Defaults to [defaultDuration]; `Duration.zero` swaps without motion.
   final Duration? duration;
 
+  /// Whether the first value change after mounting should roll. Set this to
+  /// false when the first value is initial data rather than a live update.
+  final bool animateFirstChange;
+
   @override
   State<AnimatedNumberText> createState() => _AnimatedNumberTextState();
 }
@@ -152,6 +157,7 @@ class _AnimatedNumberTextState extends State<AnimatedNumberText>
   late String _shownComparison = widget.comparisonValue ?? widget.value;
   String? _outgoing;
   var _trend = NumberTrend.flat;
+  var _hasChangedValue = false;
 
   @override
   void initState() {
@@ -173,12 +179,14 @@ class _AnimatedNumberTextState extends State<AnimatedNumberText>
     final previous = _shown;
     final previousComparison = _shownComparison;
     final nextComparison = widget.comparisonValue ?? widget.value;
+    final shouldAnimate = widget.animateFirstChange || _hasChangedValue;
+    _hasChangedValue = true;
     final trend =
         widget.trend ??
         compareFormattedAmounts(previousComparison, nextComparison);
     _shown = widget.value;
     _shownComparison = nextComparison;
-    if (trend == null || !_animationsAllowed) {
+    if (!shouldAnimate || trend == null || !_animationsAllowed) {
       setState(() => _outgoing = null);
       _controller.stop();
       return;

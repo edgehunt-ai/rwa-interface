@@ -14,9 +14,26 @@ void main() {
       final recorder = PerformanceRecorder(recordFrames: false);
       await runPerformanceScenarios(tester, recorder, samples: 1, warmups: 0);
       final results = recorder.results();
-      expect(results, hasLength(22));
+      expect(results, hasLength(26));
       for (final row in results) {
         expect(row['duration_ms'], hasLength(1));
+      }
+      for (final side in ['buy', 'sell']) {
+        for (final type in ['market', 'limit']) {
+          final prefix = '${type}_${side}_open';
+          final ready = results.singleWhere(
+            (r) => r['id'] == '${prefix}_ready',
+          );
+          final settled = results.singleWhere(
+            (r) => r['id'] == '${prefix}_settled',
+          );
+          expect(
+            (settled['duration_ms']! as List<double>).single,
+            greaterThanOrEqualTo(
+              (ready['duration_ms']! as List<double>).single,
+            ),
+          );
+        }
       }
     },
   );

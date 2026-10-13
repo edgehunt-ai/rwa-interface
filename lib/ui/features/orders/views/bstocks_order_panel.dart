@@ -361,7 +361,7 @@ class _BstocksOrderPanelState extends ConsumerState<BstocksOrderPanel> {
       return;
     }
     if (!_quoting) setState(() => _quoting = true);
-    _quoteDebounce = Timer(const Duration(milliseconds: 300), () async {
+    _quoteDebounce = Timer(const Duration(milliseconds: 200), () async {
       try {
         final quote = await ref.read(orderPreviewProvider(intent).future);
         if (mounted && generation == _quoteGeneration) {
@@ -1959,7 +1959,7 @@ class _AnimatedAmountSummaryRow extends StatelessWidget {
   );
 }
 
-class _AnimatedAmountText extends StatelessWidget {
+class _AnimatedAmountText extends StatefulWidget {
   const _AnimatedAmountText({
     required this.value,
     required this.symbol,
@@ -1971,21 +1971,29 @@ class _AnimatedAmountText extends StatelessWidget {
   final Key valueKey;
 
   @override
+  State<_AnimatedAmountText> createState() => _AnimatedAmountTextState();
+}
+
+class _AnimatedAmountTextState extends State<_AnimatedAmountText> {
+  late final bool _animateFirstChange = widget.value != '-';
+
+  @override
   Widget build(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.end,
     children: [
       Flexible(
         child: AnimatedNumberText(
-          value,
-          key: valueKey,
+          widget.value,
+          key: widget.valueKey,
+          animateFirstChange: _animateFirstChange,
           textAlign: TextAlign.end,
           softWrap: true,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
       const SizedBox(width: 4),
-      Text(symbol, style: const TextStyle(fontWeight: FontWeight.w600)),
+      Text(widget.symbol, style: const TextStyle(fontWeight: FontWeight.w600)),
     ],
   );
 }

@@ -8,9 +8,15 @@ import { compare, generate, html, percentile, scenarioIds, summarize } from './p
 
 function fixture() {
   return {
-    schema_version: 1, suite_version: 1, platform: 'android', mode: 'profile',
+    schema_version: 1, suite_version: 2, platform: 'android', mode: 'profile',
     samples: 10, warmups: 2, fixture: 'controlled-repositories-no-network-no-wallet',
     environment: { device_model: 'Pixel 6', flutter_version: '3.47.6', runner: 'test' },
+    machine: {
+      host: { os: 'linux 6.1', arch: 'x64', cpu_model: 'Test CPU', logical_cores: 8, memory_bytes: 16 * 1024 ** 3 },
+      device: { manufacturer: 'Google', model: 'Pixel 6', hardware: 'oriole', cpu_abi: 'arm64-v8a',
+        cpu_cores: 8, memory_bytes: 8 * 1024 ** 3, display_width_px: 1080,
+        display_height_px: 2400, density_dpi: 420 },
+    },
     logical_size: { width: 393, height: 852 }, refresh_rate_hz: 60,
     commit: 'abc123', generated_at: '2026-10-13T00:00:00Z',
     scenarios: scenarioIds.map((id) => ({ id, label: id,
@@ -36,6 +42,17 @@ test('nearest-rank percentiles and slow-frame union honor the refresh rate', () 
   assert.equal(summarize(raw).scenarios[0].slow_frames_percent, 100);
 });
 
+test('summary highlights user workflows and frame health', () => {
+  const report = summarize(fixture());
+  assert.equal(report.highlights.page_load.id, 'home_load');
+  assert.equal(report.highlights.interaction_ready.id, 'market_buy_open_ready');
+  assert.equal(report.highlights.quote.id, 'market_buy_quote');
+  assert.equal(report.highlights.command.id, 'market_buy_preview');
+  assert.equal(report.highlights.frames.count, 52);
+  assert.equal(report.highlights.frames.slow_count, 26);
+  assert.equal(report.machine.host.cpu_model, 'Test CPU');
+});
+
 test('incomplete, invalid, debug, and web results fail instead of producing a green report', () => {
   for (const mutate of [
     (r) => { r.mode = 'debug'; }, (r) => { r.platform = 'web'; },
@@ -43,7 +60,8 @@ test('incomplete, invalid, debug, and web results fail instead of producing a gr
     (r) => { r.scenarios[0].duration_ms.pop(); }, (r) => { r.scenarios[0].frames = []; },
     (r) => { r.scenarios[0].duration_ms[0] = NaN; },
     (r) => { r.scenarios[0].frames[0].build_ms = -1; },
-    (r) => { delete r.environment; }, (r) => { r.refresh_rate_hz = 0; },
+    (r) => { delete r.environment; }, (r) => { delete r.machine; },
+    (r) => { r.machine.host.logical_cores = 0; }, (r) => { r.refresh_rate_hz = 0; },
   ]) {
     const raw = fixture(); mutate(raw);
     assert.throws(() => summarize(raw));
@@ -58,7 +76,8 @@ test('baseline requires matching device, mode, SDK, viewport, refresh rate and s
     (c) => { c.environment.flutter_version = 'new SDK'; },
     (c) => { c.environment.runner = 'physical runner'; },
     (c) => { c.logical_size.width = 400; }, (c) => { c.refresh_rate_hz = 120; },
-    (c) => { c.suite_version = 2; }, (c) => { c.samples = 20; },
+    (c) => { c.suite_version = 1; }, (c) => { c.samples = 20; },
+    (c) => { c.diagnostic_tracing = true; },
   ]) {
     const old = structuredClone(report); mutate(old.compatibility);
     assert.equal(compare(report, old).comparable, false);
@@ -66,6 +85,10 @@ test('baseline requires matching device, mode, SDK, viewport, refresh rate and s
   const reordered = structuredClone(report);
   reordered.compatibility.environment = { runner: 'test', flutter_version: '3.47.6', device_model: 'Pixel 6' };
   assert.equal(compare(report, reordered).comparable, true);
+  const otherHost = structuredClone(report);
+  otherHost.machine.host.cpu_model = 'Another host CPU';
+  otherHost.machine.host.memory_bytes *= 2;
+  assert.equal(compare(report, otherHost).comparable, true);
 });
 
 test('regression thresholds combine relative and absolute tolerances', () => {
@@ -91,6 +114,9 @@ test('HTML is self-contained, escaped and contains valid interactive JavaScript'
   assert.ok(!document.includes(raw.scenarios[0].label));
   assert.ok(!document.includes(raw.commit));
   assert.ok(!document.includes('src="https://'));
+  assert.match(document, /Test CPU/);
+  assert.match(document, /页面加载 P95/);
+  assert.match(document, /测试机器/);
   const script = document.match(/<script>\n([\s\S]*?)<\/script>/)[1];
   assert.doesNotThrow(() => new vm.Script(script));
   const embedded = document.match(/type="application\/json">([\s\S]*?)<\/script>/)[1];
@@ -115,7 +141,7 @@ test('report controls render both action samples and native frame samples', () =
   vm.runInNewContext(document.match(/<script>\n([\s\S]*?)<\/script>/)[1], {
     document: { getElementById: getNode, createElement: () => ({}) },
   });
-  assert.equal(getNode('scenario').options.length, 22);
+  assert.equal(getNode('scenario').options.length, 26);
   assert.match(getNode('distribution').innerHTML, /样本数 10/);
   assert.match(getNode('bars').innerHTML, /main/);
   assert.match(getNode('trend').innerHTML, /previous/);

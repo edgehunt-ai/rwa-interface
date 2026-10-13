@@ -512,7 +512,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Add 90 TUSDT on BSC to continue'), findsOneWidget);
+    expect(
+      find.text('Add 90 TUSDT on BNB Smart Chain to continue'),
+      findsOneWidget,
+    );
     expect(find.text('90 TUSDT'), findsNWidgets(2));
     expect(find.text('Add 90 USDT on BSC to continue'), findsNothing);
   });
@@ -557,7 +560,7 @@ void main() {
     expect(find.text('Available: 150'), findsOneWidget);
     expect(find.text('150'), findsOneWidget);
     expect(find.text('USDC (Arbitrum)', findRichText: true), findsOneWidget);
-    expect(find.text('USDT (BSC)'), findsOneWidget);
+    expect(find.text('USDT (BNB Smart Chain)'), findsOneWidget);
     expect(find.text('100'), findsOneWidget);
     expect(find.byIcon(Icons.check_box), findsNothing);
     expect(find.text('Add token'), findsNothing);
@@ -712,6 +715,13 @@ void main() {
     final fee = find.byKey(const Key('bstocks-order-form-fee-value'));
     expect(tester.widget<AnimatedNumberText>(receive).value, '0.54');
     expect(tester.widget<AnimatedNumberText>(fee).value, '0.02');
+    // Receive remains mounted from '-', so its first data transition is
+    // skipped. Fee mounts with valid data and can animate its next update.
+    expect(
+      tester.widget<AnimatedNumberText>(receive).animateFirstChange,
+      isFalse,
+    );
+    expect(tester.widget<AnimatedNumberText>(fee).animateFirstChange, isTrue);
     expect(find.text('NVDAB'), findsOneWidget);
     expect(find.text('USDC'), findsWidgets);
     expect(
@@ -719,6 +729,57 @@ void main() {
           tester.getRect(find.text('Slippage')).bottom,
       8,
     );
+  });
+
+  testWidgets('live quote coalesces typing within the 200ms debounce', (
+    tester,
+  ) async {
+    final orders = _ControlledQuoteOrdersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final amount = find.byKey(const Key('bstocks-market-amount-input'));
+    await tester.enterText(amount, '100');
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.enterText(amount, '101');
+    await tester.pump(const Duration(milliseconds: 199));
+    expect(orders.intents, isEmpty);
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump();
+    expect(orders.intents, hasLength(1));
+    expect(orders.intents.single.amount?.value, '101');
+    orders.completeQuote(0);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('late live quote cannot replace the latest input quote', (
+    tester,
+  ) async {
+    final orders = _ControlledQuoteOrdersRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [ordersRepositoryProvider.overrideWithValue(orders)],
+        child: buildTestApp(const BstocksOrderPanel()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final amount = find.byKey(const Key('bstocks-market-amount-input'));
+    final receive = find.byKey(const Key('bstocks-order-form-receive-value'));
+    await tester.enterText(amount, '100');
+    await tester.pump(const Duration(milliseconds: 201));
+    await tester.enterText(amount, '200');
+    await tester.pump(const Duration(milliseconds: 201));
+    expect(orders.intents, hasLength(2));
+    orders.completeQuote(1);
+    await tester.pumpAndSettle();
+    expect(tester.widget<AnimatedNumberText>(receive).value, '2');
+    orders.completeQuote(0);
+    await tester.pumpAndSettle();
+    expect(tester.widget<AnimatedNumberText>(receive).value, '2');
   });
 
   testWidgets('a successful quote clears the previous quote error', (
@@ -2855,6 +2916,37 @@ final class _FilledOrdersRepository extends _DelayedOrdersRepository {
       type: intent.type,
       status: TradingOrderStatus.filled,
       createdAt: DateTime.utc(2026),
+    ),
+  );
+}
+
+final class _ControlledQuoteOrdersRepository extends _DelayedOrdersRepository {
+  final intents = <OrderIntent>[];
+  final _pending = <Completer<OrderPreview>>[];
+
+  @override
+  Future<OrderPreview> preview(
+    OrderIntent intent, {
+    required String idempotencyKey,
+  }) {
+    intents.add(intent);
+    final completion = Completer<OrderPreview>();
+    _pending.add(completion);
+    return completion.future;
+  }
+
+  void completeQuote(int index) => _pending[index].complete(
+    OrderPreview(
+      previewId: 'controlled-quote-$index',
+      intent: intents[index],
+      orderValue: DecimalValue('100', asset: 'USDT', unit: 'token'),
+      estimatedQuantity: DecimalValue(
+        '${index + 1}',
+        asset: 'NVDAB',
+        unit: 'token',
+      ),
+      fee: DecimalValue('0.02', asset: 'NVDAB', unit: 'token'),
+      settlementAsset: 'USDC',
     ),
   );
 }

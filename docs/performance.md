@@ -8,17 +8,22 @@
 
 打开 GitHub Actions 的 **Native Performance** 运行：
 
-1. Summary 展示各场景 P50/P95、帧耗时、慢帧比例及退化提示。
+1. Summary 顶部自动总结最慢的页面加载、面板可交互、报价和命令操作，并展示整体慢帧比例及最差 UI/光栅 P95。
 2. 下载 `native-performance` artifact 并解压，打开 `report.html`。
 3. 选择场景和指标查看 P95 基线对比、样本分布、历史趋势。报告离线可用，无需部署服务。
+4. `report-preview.png` 是完整页面长截图，包含全部操作及下方图表；交互切换仍需打开 HTML。
 
 附件还包含 `raw.json`（逐次操作耗时、逐帧数据和设备信息）、`report.json`（汇总与对比）、
 `summary.md` 和 `history.json`。HTML 是报告文件格式，与 Flutter Web 平台无关。
 无完整原生数据或交互断言失败时，测量步骤失败，不生成有效性能报告。
 
+“测试机器”区域记录 CI 主机的系统、架构、CPU、逻辑核数和内存，以及移动设备的
+型号、CPU/ABI、核数、内存、物理分辨率、DPI 和刷新率。机器参数用于解释结果，
+不参与基线兼容判断；GitHub 临时 runner 的宿主机型号变化不会单独中断趋势。
+
 ## 覆盖的操作
 
-共 22 个场景，执行真实页面和 Riverpod 业务流程：
+共 26 个场景，执行真实页面和 Riverpod 业务流程：
 
 | 场景 | 测量起止点 |
 |---|---|
@@ -26,7 +31,8 @@
 | 行情加载 | 挂载行情页 → 股票入口和 60 项行情数据就绪 |
 | 行情滚动 | 在真实行情列表执行 4 次、每次 300ms 的滚动手势 |
 | 详情加载 | 点击股票入口 → 价格和 240 根 K 线展示 |
-| 市价/限价 × 买入/卖出：面板打开 | 点击买卖按钮 → 输入面板动画完成 |
+| 市价/限价 × 买入/卖出：面板可交互 | 点击买卖按钮 → 面板过渡完成、输入控件可点击且允许输入 |
+| 市价/限价 × 买入/卖出：面板动画完成 | 同一次点击 → 包括数字动画在内的所有帧稳定；与可交互指标共享起点 |
 | 市价/限价 × 买入/卖出：报价更新 | 输入金额/数量 → 防抖后的报价展示 |
 | 市价/限价 × 买入/卖出：确认预览 | 点击订单预览 → 确认按钮可用 |
 | 市价/限价 × 买入/卖出：提交结果 | 点击确认 → 订单结果展示，并校验订单方向和类型 |
@@ -43,8 +49,10 @@
 
 需要 Flutter、Node.js，以及已连接的 Android 设备/模拟器，或 macOS 上的 iOS 真机。
 iOS 真机需完成项目正常的 Xcode 签名配置；iOS 模拟器不支持这里要求的 profile 测量。
-Android 构建需要可写的 Flutter SDK 插件目录；Nix 的只读 `/nix/store` SDK
-可能被 Gradle 拒绝，请使用可写的 SDK 安装。CI 使用标准 Flutter SDK。
+Gradle 9 要求插件项目目录可写。使用 Nix 只读 SDK 时，Android settings 自动将
+`integration_test/android` 复制到忽略的 `android/.gradle/flutter-sdk-plugins/` 目录，
+按 SDK 路径隔离副本；依赖仍来自 Flutter SDK，无需 `pubspec_overrides.yaml`。
+正常 `make run` 和性能测试都使用该兼容处理；CI 的可写 SDK 保持标准路径。
 
 ```bash
 flutter pub get
@@ -52,6 +60,7 @@ npm run perf:test
 flutter devices
 npm run perf:run -- --device emulator-5554
 npm run perf:report
+npm run perf:screenshot
 ```
 
 把设备 ID 换成真机 ID 即可。脚本会拒绝 Web 和桌面设备；未指定 ID 时要求恰好一个移动设备。
@@ -65,11 +74,25 @@ PERF_SAMPLES=20 PERF_WARMUPS=3 PERF_RUNNER_LABEL=lab-pixel6 npm run perf:run -- 
 npm run perf:report -- --baseline-dir /path/to/unpacked-main-artifact
 ```
 
-默认每场景 10 次采样，先执行 2 次预热并排除预热数据；最少 5 次采样、1 次预热。
+默认每场景 30 次采样，先执行 2 次预热并排除预热数据；最少 5 次采样、1 次预热。
 每次重新创建固定仓库和页面，避免上一次订单或持仓污染下一次结果。
 测试计时包含自动化手势、等待数据就绪和必要动画时间，适合比较同一套测试，
-不是单个函数的执行时间。默认 10 次采样的 nearest-rank P95 等于最大值，
-评估细微退化时建议提高采样数并重复真机实验。
+不是单个函数的执行时间。10 次采样的 nearest-rank P95 等于最大值，
+30 次采样时为第 29 个排序值；评估细微退化仍需重复真机实验。
+图片生成需要 Chrome/Chromium，可通过 `PERF_BROWSER` 指定可执行路径；
+它只打开本地报告 HTML，使用页面真实高度完整截图，不启动 Flutter Web。
+
+详情页诊断可单独执行，不覆盖常规报告：
+
+```bash
+PERF_TRACE_DETAILS=true PERF_SAMPLES=5 PERF_OUTPUT_DIR=build/performance-diagnostic npm run perf:run -- --device DEVICE_ID
+npm run perf:report -- --input build/performance-diagnostic/raw.json --output build/performance-diagnostic
+```
+
+`details-timeline.json` 包含首次测量导航的 Dart/引擎/GC timeline，以及 build/layout/paint
+事件，可导入 DevTools 的 Performance 页面分析。启用 tracing 的结果有额外开销，
+会标注为诊断数据，不能与常规数据比较。常规 CI 不启用 tracing。
+报价输入保留 200ms 防抖来合并连续输入，旧请求结果由 generation 检查丢弃。
 
 ## 指标与基线
 

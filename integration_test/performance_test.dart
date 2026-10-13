@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -13,8 +15,14 @@ void main() {
       fail('Performance reports support Android/iOS only');
     }
     if (!kProfileMode) fail('Run performance tests with --profile');
-    const samples = int.fromEnvironment('PERF_SAMPLES', defaultValue: 10);
+    const samples = int.fromEnvironment('PERF_SAMPLES', defaultValue: 30);
     const warmups = int.fromEnvironment('PERF_WARMUPS', defaultValue: 2);
+    const traceDetails = bool.fromEnvironment('PERF_TRACE_DETAILS');
+    if (traceDetails) {
+      debugProfileBuildsEnabled = true;
+      debugProfileLayoutsEnabled = true;
+      debugProfilePaintsEnabled = true;
+    }
     // In profile, the debug-only "client -1" text-input shortcut is disabled.
     // Register the test channel so enterText uses the actual active client ID.
     // This also excludes native IME animations from the quote measurement.
@@ -26,6 +34,13 @@ void main() {
         recorder,
         samples: samples,
         warmups: warmups,
+        traceDetails: traceDetails
+            ? (action) => binding.traceAction(
+                action,
+                reportKey: 'details_timeline',
+                streams: ['Dart', 'Embedder', 'GC'],
+              )
+            : null,
       );
       // FrameTiming batches can arrive a second after their frame. Keep the
       // callback alive, but filter each frame by its engine build timestamp.
@@ -39,12 +54,14 @@ void main() {
         );
       }
       binding.reportData = {
+        ...?binding.reportData,
         'schema_version': 1,
         'suite_version': performanceSuiteVersion,
         'platform': Platform.operatingSystem,
         'mode': 'profile',
         'samples': samples,
         'warmups': warmups,
+        'diagnostic_tracing': traceDetails,
         'fixture': 'controlled-repositories-no-network-no-wallet',
         'logical_size': {
           'width':
@@ -58,6 +75,9 @@ void main() {
     } finally {
       recorder.stop();
       binding.testTextInput.unregister();
+      debugProfileBuildsEnabled = false;
+      debugProfileLayoutsEnabled = false;
+      debugProfilePaintsEnabled = false;
     }
   });
 }

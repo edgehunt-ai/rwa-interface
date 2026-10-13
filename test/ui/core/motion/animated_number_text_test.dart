@@ -61,6 +61,25 @@ void main() {
     expect(rolling, findsNothing);
   });
 
+  testWidgets('can skip initial data and animate later live updates', (
+    tester,
+  ) async {
+    Widget app(String value) => buildTestApp(
+      AnimatedNumberText(value, key: const Key('n'), animateFirstChange: false),
+    );
+
+    await tester.pumpWidget(app(r'$100'));
+    await tester.pumpWidget(app(r'$110'));
+    await tester.pump();
+    expect(find.text(r'$110'), findsOneWidget);
+    expect(rolling, findsNothing);
+
+    await tester.pumpWidget(app(r'$120'));
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(rolling, findsWidgets);
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('digits stay opaque so the turn reads as a wheel', (
     tester,
   ) async {

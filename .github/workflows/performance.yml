@@ -27,7 +27,7 @@ jobs:
     env:
       PERF_RUNNER_LABEL: github-ubuntu-24.04-api35-pixel6-x86_64-v1
       PERF_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-      PERF_SAMPLES: 10
+      PERF_SAMPLES: 30
       PERF_WARMUPS: 2
     steps:
       - uses: actions/checkout@v5
@@ -126,6 +126,13 @@ jobs:
           else
             echo '## 原生性能测试未完成' >> "$GITHUB_STEP_SUMMARY"
             echo '未生成完整原生采样数据，请查看测量步骤日志。此次运行没有有效性能报告。' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Capture complete report image
+        if: always()
+        run: |
+          if [ -f build/performance/report.html ]; then
+            npm run perf:screenshot
           fi
 
       - name: Upload report and raw native frames
