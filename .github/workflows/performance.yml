@@ -1,0 +1,138 @@
+name: Native Performance
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fail_on_regression:
+        description: Fail when a compatible baseline exceeds regression thresholds
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: native-performance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android profile performance
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      PERF_RUNNER_LABEL: github-ubuntu-24.04-api35-pixel6-x86_64-v1
+      PERF_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      PERF_SAMPLES: 10
+      PERF_WARMUPS: 2
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.6
+          cache: true
+
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+
+      - name: Verify report logic and journeys
+        run: |
+          dart format --output=none --set-exit-if-changed test/performance integration_test test_driver
+          dart analyze --fatal-infos test/performance integration_test test_driver
+          node --test scripts/performance-report.test.mjs
+          flutter test test/performance/performance_scenarios_test.dart
+
+      - name: Find latest main baseline
+        id: baseline
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            let runs;
+            try {
+              runs = await github.rest.actions.listWorkflowRuns({
+                owner, repo, workflow_id: 'performance.yml', branch: 'main',
+                event: 'push', status: 'success', per_page: 20,
+              });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              core.info('New workflow: no main baseline yet.');
+              return;
+            }
+            for (const run of runs.data.workflow_runs) {
+              if (run.id === context.runId) continue;
+              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner, repo, run_id: run.id,
+              });
+              if (artifacts.data.artifacts.some(a => a.name === 'native-performance' && !a.expired)) {
+                core.setOutput('run_id', run.id);
+                break;
+              }
+            }
+
+      - name: Download main baseline
+        if: steps.baseline.outputs.run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: native-performance
+          path: build/performance-baseline
+          run-id: ${{ steps.baseline.outputs.run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Enable Android acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Measure native Android UI and trading operations
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          # Keep animations enabled: their rendering is part of the measurement.
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: node scripts/run-performance.mjs
+
+      - name: Generate visual report
+        if: always()
+        env:
+          FAIL_ON_REGRESSION: ${{ inputs.fail_on_regression || false }}
+        run: |
+          if [ -f build/performance/raw.json ]; then
+            args=()
+            if [ "$FAIL_ON_REGRESSION" = true ]; then
+              args+=(--fail-on-regression)
+            fi
+            node scripts/performance-report.mjs "${args[@]}"
+          else
+            echo '## 原生性能测试未完成' >> "$GITHUB_STEP_SUMMARY"
+            echo '未生成完整原生采样数据，请查看测量步骤日志。此次运行没有有效性能报告。' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload report and raw native frames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-performance
+          path: build/performance/
+          if-no-files-found: warn
+          retention-days: 30

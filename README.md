@@ -132,10 +132,16 @@ GitHub Actions 会在 push 和 pull request 上运行质量检查。`main` 分�
 
 发布构建所需的 GitHub Actions Variables、Secrets 和签名配置不放在 README 中，具体以 workflow 文件和仓库设置为准。
 
+原生性能 CI 在 Android profile 模式测量页面加载和买卖关键操作，提供 Actions Summary、
+交互式 HTML、基线对比和趋势图。仅测 Android/iOS，使用固定仓库数据，不发送真实订单。
+本地运行 `npm run perf:run -- --device DEVICE_ID` 后执行 `npm run perf:report`。
+详见[原生性能报告](docs/performance.md)。
+
 ## 相关文档
 
 - [API 客户端和应用调用边界](#api-客户端)
 - [推送通知配置](docs/push-notifications.md)
+- [原生性能报告](docs/performance.md)
 - [Flutter 文档](https://docs.flutter.dev/)
 
 ## 许可证
